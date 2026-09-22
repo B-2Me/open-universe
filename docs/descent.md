@@ -3,6 +3,8 @@ title: Gradient Descent
 audio: /audio/descent.mp3
 ---
 
+<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+
 # Gradient Descent
 
 Philosophy often floats in the clouds of abstract thought experiments. To make it useful, we must put it through a process of **gradient descent**—stepping these ideas down, constraint by constraint, until they hit the bare metal of measured physical reality. 
