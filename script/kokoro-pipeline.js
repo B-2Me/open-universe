@@ -11,6 +11,7 @@ const openai = new OpenAI({
 
 const CONTENT_DIR = './docs';
 const AUDIO_OUT_DIR = './docs/public/audio';
+const SYNC_MAP_DIR = './docs/public/audio/sync-maps';
 
 function extractText(node) {
   if (node.value) return node.value;
@@ -23,19 +24,14 @@ async function processFile(filePath) {
   if (filename === 'index') return; // Skip hero landing page
 
   const content = await fs.readFile(filePath, 'utf-8');
-  
-  if (content.includes('class="sync-text"')) {
-    console.log(`Skipping ${filename} (Already contains sync tags)`);
-    return;
-  }
-
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
+  const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
 
   try {
     const mdStat = await fs.stat(filePath);
     const mp3Stat = await fs.stat(finalAudioPath);
     if (mp3Stat.mtime > mdStat.mtime) {
-      console.log(`Skipping ${filename} (Audio is up to date)`);
+      console.log(`Skipping ${filename} (Audio and sync map are up to date)`);
       return;
     }
   } catch (err) {}
@@ -51,13 +47,13 @@ async function processFile(filePath) {
   const bodyContent = content.substring(bodyStartIndex);
   const parsedAST = remark().parse(bodyContent);
 
-  // Collect both paragraphs and headings so subtitles/titles get narrated
+  // Collect headings and paragraphs in exact DOM order
   const contentNodes = [];
   for (const node of parsedAST.children) {
     if (node.type === 'paragraph' || node.type === 'heading') {
       const textForTTS = extractText(node).replace(/\n/g, ' ');
       if (textForTTS.trim()) {
-        contentNodes.push({ node, text: textForTTS });
+        contentNodes.push({ type: node.type, text: textForTTS });
       }
     }
   }
@@ -68,8 +64,9 @@ async function processFile(filePath) {
   const joinedText = contentNodes.map(n => n.text).join(' ');
   const fullPageText = `[pause:${PAUSE_DURATION}s] ` + joinedText;
 
-  console.log(`Generating single audio file with headers for ${filename}...`);
+  console.log(`Generating continuous MP3 and sync map for ${filename}...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
+  await fs.mkdir(SYNC_MAP_DIR, { recursive: true });
 
   const mp3 = await openai.audio.speech.create({
     model: 'kokoro', 
@@ -86,7 +83,7 @@ async function processFile(filePath) {
   const totalChars = joinedText.length;
   const speechDuration = totalDuration - PAUSE_DURATION;
   let currentTime = PAUSE_DURATION; 
-  const replacements = [];
+  const syncEntries = [];
 
   for (const item of contentNodes) {
     const charRatio = item.text.length / totalChars;
@@ -96,32 +93,27 @@ async function processFile(filePath) {
     const endTime = currentTime + nodeDuration;
     currentTime = endTime;
 
-    const absoluteStart = item.node.position.start.offset + bodyStartIndex;
-    const absoluteEnd = item.node.position.end.offset + bodyStartIndex;
-    const rawMarkdown = content.substring(absoluteStart, absoluteEnd);
-
-    replacements.push({
-      start: absoluteStart,
-      end: absoluteEnd,
-      newText: `<span class="sync-text" data-start="${startTime.toFixed(3)}" data-end="${endTime.toFixed(3)}">${rawMarkdown}</span>`
+    syncEntries.push({
+      text: item.text,
+      start: Number(startTime.toFixed(3)),
+      end: Number(endTime.toFixed(3))
     });
   }
 
-  let updatedContent = content;
-  for (let i = replacements.length - 1; i >= 0; i--) {
-    const r = replacements[i];
-    updatedContent = updatedContent.substring(0, r.start) + r.newText + updatedContent.substring(r.end);
-  }
+  // Save the sync map as a lightweight JSON file
+  await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
 
+  // Ensure frontmatter includes the audio path without modifying markdown body content
+  let updatedContent = content;
   if (!updatedContent.includes('audio: ')) {
     updatedContent = updatedContent.replace(
       /^---\r?\n([\s\S]*?)\r?\n---/, 
       `---\n$1\naudio: /audio/${filename}.mp3\n---`
     );
+    await fs.writeFile(filePath, updatedContent);
   }
 
-  await fs.writeFile(filePath, updatedContent);
-  console.log(`Successfully generated audio and synced paragraphs + headings for ${filename}`);
+  console.log(`Successfully generated audio and sync map for ${filename}`);
 }
 
 async function run() {
