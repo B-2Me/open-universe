@@ -4,52 +4,75 @@
   --vp-c-brand-2: #3a7533; 
   --vp-c-brand-3: #4a9142;
   --vp-c-brand-soft: rgba(45, 90, 39, 0.16);
-  
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(242, 239, 233, 0.75);
   --vp-c-bg-soft: rgba(232, 228, 219, 0.85);
-
-  /* Hook into VitePress's native nav variables */
-  --vp-nav-bg-color: rgba(252, 251, 249, 0.88);
-  --vp-local-nav-bg-color: rgba(252, 251, 249, 0.88);
-  --vp-nav-screen-bg-color: rgba(252, 251, 249, 0.98); /* Fixes the mobile hamburger menu */
 }
 
-.dark {
+html.dark {
   /* Dark Mode */
   --vp-c-brand-1: #5f9e58; 
   --vp-c-brand-2: #75b86e;
   --vp-c-brand-3: #8cd185;
   --vp-c-brand-soft: rgba(95, 158, 88, 0.25);
-  
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
-
-  /* Hook into VitePress's native nav variables */
-  --vp-nav-bg-color: rgba(15, 20, 15, 0.88);
-  --vp-local-nav-bg-color: rgba(15, 20, 15, 0.88);
-  --vp-nav-screen-bg-color: rgba(15, 20, 15, 0.98); /* Fixes the mobile hamburger menu */
 }
 
 /* Full-page background scenery */
 body {
+  background-color: #f8f6f2; /* Matches your light WebP overlay color */
   background-image: url('/open-universe/images/forest-light.webp');
-  background-size: cover;
-  background-position: center;
+  background-size: 100% auto; 
+  background-position: top center; 
   background-attachment: fixed;
   background-repeat: no-repeat;
   min-height: 100vh;
 }
 
 html.dark body {
+  background-color: #0a0e0a; /* Matches your dark WebP overlay color */
   background-image: url('/open-universe/images/forest-dark.webp');
 }
 
-/* Apply the frosted blur cleanly to both headers */
-.VPNav, .VPLocalNav {
+/* Anchor the Main Navigation Header */
+.VPNav {
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(252, 251, 249, 0.88) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+html.dark .VPNav {
+  background-color: rgba(15, 20, 15, 0.88) !important;
+}
+
+/* Anchor the Local Navigation Header ("On this page") directly underneath */
+.VPLocalNav {
+  position: sticky !important;
+  top: 63px !important; /* Locks precisely below the main nav bar */
+  z-index: 90;
+  background-color: rgba(252, 251, 249, 0.88) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+html.dark .VPLocalNav {
+  background-color: rgba(15, 20, 15, 0.88) !important;
+}
+
+/* Force background on the mobile hamburger menu overlay */
+.VPNavScreen {
+  background-color: rgba(252, 251, 249, 0.98) !important;
+}
+
+html.dark .VPNavScreen {
+  background-color: rgba(15, 20, 15, 0.98) !important;
 }
 
 /* Shrink the empty space above the page header */
