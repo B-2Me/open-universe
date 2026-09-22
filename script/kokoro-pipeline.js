@@ -4,7 +4,6 @@ import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
 
-// Point directly to your private instance
 const openai = new OpenAI({
   baseURL: 'https://voice.i.rickey.io/v1',
   apiKey: 'local-key',
@@ -28,7 +27,6 @@ async function generateAudioForChunk(text, index, filepath) {
   return { path: chunkPath, duration: metadata.format.duration };
 }
 
-// Native Node.js MP3 concatenation (No FFmpeg required)
 async function mergeAudioChunks(chunks, outputPath) {
   const buffers = [];
   for (const chunk of chunks) {
@@ -39,7 +37,22 @@ async function mergeAudioChunks(chunks, outputPath) {
 
 async function processFile(filePath) {
   const content = await fs.readFile(filePath, 'utf-8');
-  if (content.includes('audio: ')) return; // Skip if already processed
+  const filename = path.basename(filePath, '.md');
+  const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
+
+  // 1. Check Modification Times (mtime)
+  try {
+    const mdStat = await fs.stat(filePath);
+    const mp3Stat = await fs.stat(finalAudioPath);
+    
+    // If the MP3 exists and is newer than the Markdown file, skip processing
+    if (mp3Stat.mtime > mdStat.mtime) {
+      console.log(`Skipping ${filename} (Audio is up to date)`);
+      return;
+    }
+  } catch (err) {
+    // If the MP3 doesn't exist, the stat check throws an error. Proceed with generation.
+  }
 
   let currentTime = 0.0;
   const audioChunks = [];
@@ -52,7 +65,7 @@ async function processFile(filePath) {
       const rawText = node.children.map(child => child.value).join(' ');
       if (!rawText.trim()) continue;
 
-      console.log(`Generating audio: "${rawText.substring(0, 30)}..."`);
+      console.log(`Generating audio for: "${rawText.substring(0, 30)}..."`);
       const chunkData = await generateAudioForChunk(rawText, i, filePath);
       
       const startTime = currentTime;
@@ -68,23 +81,28 @@ async function processFile(filePath) {
   }
 
   if (audioChunks.length > 0) {
-    const filename = path.basename(filePath, '.md');
-    const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
-    
     await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
+
+    const newMarkdown = remark().stringify(parsedAST);
+    let updatedContent = newMarkdown;
+    if (!updatedContent.includes('audio: ')) {
+      updatedContent = newMarkdown.replace(
+        /---\n/, 
+        `---\naudio: /audio/${filename}.mp3\n`
+      );
+    }
+
+    // 2. The Write-Order Fix
+    // Write the Markdown file FIRST
+    await fs.writeFile(filePath, updatedContent);
+
+    // Merge and write the MP3 LAST, ensuring the MP3 mtime is definitively newer than the Markdown mtime
     await mergeAudioChunks(audioChunks, finalAudioPath);
 
     for (const chunk of audioChunks) {
       await fs.unlink(chunk.path);
     }
 
-    const newMarkdown = remark().stringify(parsedAST);
-    const updatedContent = newMarkdown.replace(
-      /---\n/, 
-      `---\naudio: /audio/${filename}.mp3\n`
-    );
-
-    await fs.writeFile(filePath, updatedContent);
     console.log(`Successfully generated and synced ${filename}`);
   }
 }
