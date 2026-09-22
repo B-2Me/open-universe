@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "The Open Universe"
-  text: "Reality is a live-rendering, zero-storage computational grid."
-  tagline: "Step out of the deterministic block universe and into the active grid."
+  text: "Reality is a live-rendered stream of becoming."
+  tagline: "Step out of the frozen block universe and into the active, unwritten stream."
   actions:
     - theme: brand
       text: Enter The Clearing
@@ -14,10 +14,10 @@ hero:
       link: /interference
 
 features:
-  - title: Zero Storage Reality
-    details: The past is permanently overwritten to build right now. The future repository has no commits.
+  - title: Perpetual Flux
+    details: The past is continuously perishing and overwritten to actualize the present. The future repository has no pre-written commits.
   - title: Biological Interfaces
-    details: You are a direct, biological interface plugged straight into the bare-metal hardware.
-  - title: Active Interference
-    details: We run internal simulations to get in the way of bad predictions and force new local measurements.
+    details: You are an active, metabolic interface holding open a local window into the unfolding relational field.
+  - title: Intentional Interference
+    details: We maintain internal simulations to disrupt deterministic drift and forge fresh local measurements.
 ---
