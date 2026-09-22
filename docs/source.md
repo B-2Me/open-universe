@@ -6,7 +6,7 @@ audio: /audio/source.mp3
 
 # The Source
 
-The conceptual foundation of a live-rendered, open universe draws on physicists, philosophers, and computational theorists who rejected the frozen "block universe" in favor of dynamic becoming, relational tensions, and non-algorithmic truths.
+The conceptual foundation of a live-rendered, open universe draws on physicists, philosophers, and cybernetic theorists who rejected the frozen "block universe" in favor of dynamic becoming, relational tensions, and embodied feedback loops.
 
 ---
 
@@ -22,7 +22,16 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ---
 
-## II. Physics, Spacetime, and Geometry
+## II. Cybernetics, Embodiment, and Information
+
+### N. Katherine Hayles: The Materiality of Information & Recursive Loops
+* **The Disembodiment Fallacy:** In *How We Became Posthuman* (1999), Hayles dismantles the illusion that information is a weightless, disembodied ghost separate from physical reality. Information requires a physical medium to exist and act.
+* **The Cybernetic Feedback Loop:** Consciousness is not a passive mirror reflecting a pre-recorded world. It is a recursive feedback loop—we simulate our own simulations, feeding predictions back into the system as fresh physical inputs.
+* **Bridge to Old Constructs:** Dualists treat the mind as software floating above hardware. Hayles proves that *changing your mind is physics*, because every representation is a material event updating the state of the biological browser in real-time.
+
+---
+
+## III. Physics, Spacetime, and Geometry
 
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy reshape relational geometry, and objects simply follow natural geodesic paths through a landscape where time flows at varying rates.
@@ -35,7 +44,7 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ---
 
-## III. The Hardware of the Local Interface
+## IV. The Hardware of the Local Interface
 
 ### Sathvik Ajay Iyengar et al.: Quantum Orbital Flexoelectricity
 * **Sub-Nanometer Curvature:** In two-dimensional systems like graphene nanowrinkles (GNWrs), extreme nanoscale curvature breaks local inversion symmetry, perturbing out-of-plane orbitals to generate intrinsic quantum-mechanical polarization.
@@ -48,7 +57,7 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ---
 
-## IV. Translation Guide: Substance Ontology to Process Ontology
+## V. Translation Guide: Substance Ontology to Process Ontology
 
 To navigate the site without falling back into mechanistic traps, use the following translation framework when encountering legacy terminology:
 
@@ -59,3 +68,4 @@ To navigate the site without falling back into mechanistic traps, use the follow
 | **Forces (Gravity, Electromagnetism)** | "Invisible pushes and pulls across space." | **Relational Geometry:** Dynamic curvature and tension adjustments within an unbroken field of events. |
 | **Information Processing / Simulation** | "The brain/universe computes data." | **Live-Rendering:** The unwritten, non-algorithmic actualization of local experience from bare-metal hardware. |
 | **Sensory Transduction** | "A sensor measures an external object." | **Boundary Participation:** An active, metabolic bridge allowing a local interface to partake in the external stream. |
+| **Mind vs. Body (Software/Hardware)** | "The mind runs on the brain." | **The Hayles Loop:** Information as a material force; recursive self-simulation actively updating physical actualization. |
