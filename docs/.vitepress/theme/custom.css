@@ -43,3 +43,21 @@ html.dark {
 .VPHomeHero .actions {
   justify-content: center !important;
 }
+/* Transform VitePress feature cards into earthy forest nodes */
+.VPHomeFeatures .item {
+  background-color: var(--vp-c-bg-soft) !important;
+  border: 1px solid var(--vp-c-brand-soft) !important;
+  border-radius: 16px !important;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.VPHomeFeatures .item:hover {
+  transform: translateY(-4px);
+  border-color: var(--vp-c-brand-2) !important;
+  box-shadow: 0 12px 32px rgba(45, 90, 39, 0.2) !important;
+}
+
+.VPHomeFeatures .title {
+  color: var(--vp-c-brand-3) !important;
+  font-weight: 600 !important;
+}
