@@ -1,25 +1,30 @@
----
+***
+
 title: Interference
 audio: /audio/interference.mp3
----
+------------------------------
+
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # Interference
 
-Acoustic waves designed to inject data, disrupt deterministic assumptions, and force a new local measurement. 
+<span class="sync-text" data-start="0.000" data-end="7.560">Acoustic waves designed to inject data, disrupt deterministic assumptions, and force a new local measurement.</span>
 
-The mind’s job is not passive observation. We run internal simulations to get in the way of bad predictions and promote the ones we favor. This feed is dedicated to the active cycle of the biological interface: **Predict, Interfere, Measure.**
+<span class="sync-text" data-start="7.560" data-end="21.840">The mind’s job is not passive observation. We run internal simulations to get in the way of bad predictions and promote the ones we favor. This feed is dedicated to the active cycle of the biological interface:  </span>
 
 ## Active Broadcasts
 
 ### Episode 01: Why the VHS Tape is a Lie
-Dismantling the block universe model. We explore the physics of a zero-storage grid and why the future repository has no commits. 
-*(Audio generation pending)*
+
+<span class="sync-text" data-start="21.840" data-end="30.384">Dismantling the block universe model. We explore the physics of a zero-storage grid and why the future repository has no commits.
+ </span>
 
 ### Episode 02: Your Memories are Scars, Not Time Machines
-An examination of the biological `WHILE` loop. How touching present-day neural clay creates the illusion of time travel, and why this traps us in deterministic thinking.
-*(Audio generation pending)*
+
+<span class="sync-text" data-start="30.384" data-end="42.048">An examination of the biological  WHILE  loop. How touching present-day neural clay creates the illusion of time travel, and why this traps us in deterministic thinking.
+ </span>
 
 ### Episode 03: The Checksum of Language
-Decoding grammar as a hardware parity bit. A deep dive into how evidentiality, gender suffixes, and pronouns keep our local nodes synchronized without a central server.
-*(Audio generation pending)*
+
+<span class="sync-text" data-start="42.048" data-end="53.592">Decoding grammar as a hardware parity bit. A deep dive into how evidentiality, gender suffixes, and pronouns keep our local nodes synchronized without a central server.
+ </span>
