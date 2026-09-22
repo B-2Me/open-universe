@@ -27,6 +27,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Restore Git Timestamps
+        uses: step-security/git-restore-mtime-action@v2
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,12 +41,12 @@ jobs:
       - name: Run Kokoro Audio Pipeline
         run: npm run generate-audio
 
-      - name: Commit Synced Markdown and Audio
+      - name: Commit Synced Markdown, Audio, and Lockfile
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git diff --staged --quiet || git commit -m "chore: auto-generate audio and AST sync [skip ci]"
+          git add docs/ package-lock.json
+          git diff --staged --quiet || git commit -m "chore: auto-generate audio, AST sync, and lockfile [skip ci]"
           git push
 
       - name: Build VitePress Site
