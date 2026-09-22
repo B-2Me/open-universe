@@ -9,63 +9,87 @@ const props = defineProps({
 const audioRef = ref(null)
 const wrapperRef = ref(null)
 
-onMounted(() => {
+onMounted(async () => {
   if (!audioRef.value || !wrapperRef.value) return
 
-  // Automatically embed the player into the right side of the "On this page" local nav bar
+  // Embed player into the right side of the "On this page" local nav bar
   const localNavContainer = document.querySelector('.VPLocalNav .container')
   if (localNavContainer) {
     localNavContainer.appendChild(wrapperRef.value)
   }
 
-  // Target the spans injected by the markdown AST pipeline
-  const syncSpans = document.querySelectorAll("span.sync-text")
-  let currentActiveSpan = null
+  // Determine current page name from pathname to load its sync map
+  const pathSegments = window.location.pathname.replace(/^\/open-universe/, '').split('/').filter(Boolean)
+  const pageName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/\.html$/, '') : 'clearing'
 
-  const syncText = () => {
-    if (audioRef.value.paused) return
+  try {
+    const response = await fetch(withBase(`/audio/sync-maps/${pageName}.json`))
+    if (!response.ok) return
+    const syncMap = await response.json()
+
+    // Select all readable DOM nodes in exact order (Headings + Paragraphs)
+    const contentElements = document.querySelectorAll('.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc p')
     
-    const currentTime = audioRef.value.currentTime
-    let foundActive = false
-
-    syncSpans.forEach(span => {
-      const start = parseFloat(span.dataset.start)
-      const end = parseFloat(span.dataset.end)
-      
-      if (currentTime >= start && currentTime < end) {
-        foundActive = true
-        if (currentActiveSpan !== span) {
-          if (currentActiveSpan) currentActiveSpan.classList.remove('active')
-          span.classList.add('active')
-          currentActiveSpan = span
-          
-          const offsetHeight = 150 
-          const elementPosition = span.getBoundingClientRect().top + window.pageYOffset
-          window.scrollTo({
-            top: elementPosition - offsetHeight,
-            behavior: 'smooth'
-          })
-        }
+    // Attach sync metadata to DOM elements
+    contentElements.forEach((el, index) => {
+      if (syncMap[index]) {
+        el.classList.add('sync-text')
+        el.dataset.start = syncMap[index].start
+        el.dataset.end = syncMap[index].end
       }
     })
 
-    if (!foundActive && currentActiveSpan) {
-      currentActiveSpan.classList.remove('active')
-      currentActiveSpan = null
+    const syncSpans = document.querySelectorAll(".sync-text")
+    let currentActiveElement = null
+
+    const syncText = () => {
+      if (audioRef.value.paused) return
+      
+      const currentTime = audioRef.value.currentTime
+      let foundActive = false
+
+      syncSpans.forEach(el => {
+        const start = parseFloat(el.dataset.start)
+        const end = parseFloat(el.dataset.end)
+        
+        if (currentTime >= start && currentTime < end) {
+          foundActive = true
+          if (currentActiveElement !== el) {
+            if (currentActiveElement) currentActiveElement.classList.remove('active')
+            el.classList.add('active')
+            currentActiveElement = el
+            
+            const offsetHeight = 150 
+            const elementPosition = el.getBoundingClientRect().top + window.pageYOffset
+            window.scrollTo({
+              top: elementPosition - offsetHeight,
+              behavior: 'smooth'
+            })
+          }
+        }
+      })
+
+      if (!foundActive && currentActiveElement) {
+        currentActiveElement.classList.remove('active')
+        currentActiveElement = null
+      }
+
+      requestAnimationFrame(syncText)
     }
 
-    requestAnimationFrame(syncText)
-  }
-
-  audioRef.value.addEventListener("play", () => requestAnimationFrame(syncText))
-  
-  syncSpans.forEach(span => {
-    span.style.cursor = 'pointer'
-    span.addEventListener('click', () => {
-      audioRef.value.currentTime = parseFloat(span.dataset.start)
-      audioRef.value.play()
+    audioRef.value.addEventListener("play", () => requestAnimationFrame(syncText))
+    
+    syncSpans.forEach(el => {
+      el.style.cursor = 'pointer'
+      el.addEventListener('click', () => {
+        audioRef.value.currentTime = parseFloat(el.dataset.start)
+        audioRef.value.play()
+      })
     })
-  })
+
+  } catch (err) {
+    console.error("Failed to load sync map:", err)
+  }
 })
 </script>
 
@@ -81,7 +105,7 @@ onMounted(() => {
 .embedded-audio-wrapper {
   display: flex;
   align-items: center;
-  margin-left: auto; /* Pushes the player cleanly to the right side of the local nav bar */
+  margin-left: auto;
   max-width: 380px;
   width: 100%;
   height: 32px;
@@ -99,7 +123,6 @@ onMounted(() => {
 </style>
 
 <style>
-/* Unscoped global styles for the active text highlighting */
 .sync-text {
   transition: background-color 0.3s ease, color 0.3s ease;
   padding: 2px 4px;
