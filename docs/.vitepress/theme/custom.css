@@ -81,7 +81,9 @@ html.dark body {
   margin-top: 0 !important;
 }
 
-/* Center-align the VitePress Home Hero section */
+/* ---------------------------------------------------
+   Hero Section: Title & Layout Centering
+--------------------------------------------------- */
 .VPHomeHero {
   text-align: center;
 }
@@ -103,7 +105,20 @@ html.dark body {
   justify-content: center !important;
 }
 
-/* Transform VitePress feature cards into earthy forest nodes */
+/* Force the title (.name), sub-title (.text), and tagline to center perfectly */
+.VPHomeHero .name,
+.VPHomeHero .text,
+.VPHomeHero .tagline {
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* ---------------------------------------------------
+   Transform VitePress feature cards into earthy forest nodes
+--------------------------------------------------- */
 .VPHomeFeatures .item {
   background-color: var(--vp-c-bg-soft) !important;
   border: 1px solid var(--vp-c-brand-soft) !important;
@@ -120,4 +135,28 @@ html.dark body {
 .VPHomeFeatures .title {
   color: var(--vp-c-brand-3) !important;
   font-weight: 600 !important;
+}
+
+/* ---------------------------------------------------
+   Mobile Hamburger Menu: GitHub Link Label
+--------------------------------------------------- */
+/* Expand the social link container in the mobile menu to fit text */
+.VPNavScreen .VPSocialLink {
+  width: auto !important;
+  padding: 8px 16px !important;
+  border-radius: 8px;
+  background-color: var(--vp-c-bg-soft);
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inject the "Site Sourcecode" text next to the GitHub icon */
+.VPNavScreen .VPSocialLink::after {
+  content: "Site Sourcecode";
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
 }
