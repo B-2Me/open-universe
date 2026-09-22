@@ -4,9 +4,9 @@ html {
   --vp-c-brand-2: #3a7533; 
   --vp-c-brand-3: #4a9142;
   --vp-c-brand-soft: rgba(45, 90, 39, 0.16);
-  --vp-c-bg: #fcfbf9; 
-  --vp-c-bg-alt: #f2efe9;
-  --vp-c-bg-soft: #e8e4db;
+  --vp-c-bg: transparent; 
+  --vp-c-bg-alt: rgba(242, 239, 233, 0.75);
+  --vp-c-bg-soft: rgba(232, 228, 219, 0.85);
 }
 
 html.dark {
@@ -16,20 +16,34 @@ html.dark {
   --vp-c-brand-3: #8cd185;
   --vp-c-brand-soft: rgba(95, 158, 88, 0.25);
   
-  /* Semi-transparent backgrounds to let the scenery breathe through */
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
 }
 
-/* Full-page background scenery with a dark, atmospheric gradient overlay for Dark Mode */
+/* Full-page background scenery for Light Mode (uses a bright, warm mist overlay) */
+body {
+  background-image: linear-gradient(
+      to bottom, 
+      rgba(252, 251, 249, 0.88), 
+      rgba(242, 239, 233, 0.95)
+    ), 
+    url('/open-universe/images/forest-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+/* Full-page background scenery for Dark Mode (uses a deep, shadowy forest overlay) */
 html.dark body {
   background-image: linear-gradient(
       to bottom, 
-      rgba(15, 20, 15, 0.85), 
+      rgba(15, 20, 15, 0.88), 
       rgba(10, 14, 10, 0.95)
     ), 
-    url('/images/forest-bg.jpg');
+    url('/open-universe/images/forest-bg.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
