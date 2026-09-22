@@ -1,24 +1,38 @@
-html {
+:root {
+  /* Light Mode */
   --vp-c-brand-1: #2d5a27; 
   --vp-c-brand-2: #3a7533; 
   --vp-c-brand-3: #4a9142;
   --vp-c-brand-soft: rgba(45, 90, 39, 0.16);
+  
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(242, 239, 233, 0.75);
   --vp-c-bg-soft: rgba(232, 228, 219, 0.85);
+
+  /* Hook into VitePress's native nav variables */
+  --vp-nav-bg-color: rgba(252, 251, 249, 0.88);
+  --vp-local-nav-bg-color: rgba(252, 251, 249, 0.88);
+  --vp-nav-screen-bg-color: rgba(252, 251, 249, 0.98); /* Fixes the mobile hamburger menu */
 }
 
-html.dark {
+.dark {
+  /* Dark Mode */
   --vp-c-brand-1: #5f9e58; 
   --vp-c-brand-2: #75b86e;
   --vp-c-brand-3: #8cd185;
   --vp-c-brand-soft: rgba(95, 158, 88, 0.25);
+  
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
+
+  /* Hook into VitePress's native nav variables */
+  --vp-nav-bg-color: rgba(15, 20, 15, 0.88);
+  --vp-local-nav-bg-color: rgba(15, 20, 15, 0.88);
+  --vp-nav-screen-bg-color: rgba(15, 20, 15, 0.98); /* Fixes the mobile hamburger menu */
 }
 
-/* Full-page background scenery for Light Mode (points to your pre-faded light image) */
+/* Full-page background scenery */
 body {
   background-image: url('/open-universe/images/forest-light.webp');
   background-size: cover;
@@ -28,52 +42,23 @@ body {
   min-height: 100vh;
 }
 
-/* Full-page background scenery for Dark Mode (points to your pre-faded dark image) */
 html.dark body {
   background-image: url('/open-universe/images/forest-dark.webp');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  min-height: 100vh;
 }
 
-/* Unified Main Header Styling */
-/* Target .VPNavBar instead of .VPNav so the mobile menu isn't trapped by the blur filter */
-.VPNavBar {
-  background-color: rgba(252, 251, 249, 0.88) !important;
+/* Apply the frosted blur cleanly to both headers */
+.VPNav, .VPLocalNav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-
-html.dark .VPNavBar {
-  background-color: rgba(15, 20, 15, 0.88) !important;
-}
-
-/* Unified Local Nav ("On this page") Stacked cleanly beneath the main header */
-.VPLocalNav {
-  position: sticky !important;
-  /* Uses VitePress's native CSS variable to always anchor exactly underneath the top bar */
-  top: var(--vp-nav-height, 64px) !important; 
-  z-index: 90;
-  background-color: rgba(252, 251, 249, 0.88) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-
-html.dark .VPLocalNav {
-  background-color: rgba(15, 20, 15, 0.88) !important;
 }
 
 /* Shrink the empty space above the page header */
 .VPDoc {
-  padding-top: 24px !important; /* Reduces the default main container padding */
+  padding-top: 24px !important;
 }
 
 .vp-doc h1:first-child {
-  margin-top: 0 !important; /* Removes the default top margin on the main title */
+  margin-top: 0 !important;
 }
 
 /* Center-align the VitePress Home Hero section */
