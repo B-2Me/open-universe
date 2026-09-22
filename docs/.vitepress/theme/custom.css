@@ -18,14 +18,9 @@ html.dark {
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
 }
 
-/* Full-page background scenery for Light Mode */
+/* Full-page background scenery for Light Mode (points to your pre-faded light image) */
 body {
-  background-image: linear-gradient(
-      to bottom, 
-      rgba(252, 251, 249, 0.70), 
-      rgba(242, 239, 233, 0.80)
-    ), 
-    url('/open-universe/images/forest-bg.jpg');
+  background-image: url('/open-universe/images/forest-light.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -33,14 +28,9 @@ body {
   min-height: 100vh;
 }
 
-/* Full-page background scenery for Dark Mode */
+/* Full-page background scenery for Dark Mode (points to your pre-faded dark image) */
 html.dark body {
-  background-image: linear-gradient(
-      to bottom, 
-      rgba(15, 20, 15, 0.70), 
-      rgba(10, 14, 10, 0.80)
-    ), 
-    url('/open-universe/images/forest-bg.jpg');
+  background-image: url('/open-universe/images/forest-dark.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -48,25 +38,24 @@ html.dark body {
   min-height: 100vh;
 }
 
-/* Unified Main Header Styling & Sticky Anchor */
-.VPNav {
-  position: sticky !important;
-  top: 0;
-  z-index: 100;
+/* Unified Main Header Styling */
+/* Target .VPNavBar instead of .VPNav so the mobile menu isn't trapped by the blur filter */
+.VPNavBar {
   background-color: rgba(252, 251, 249, 0.88) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-html.dark .VPNav {
+html.dark .VPNavBar {
   background-color: rgba(15, 20, 15, 0.88) !important;
 }
 
-/* Unified Local Nav ("On this page") Stacked cleanly beneath VPNav */
+/* Unified Local Nav ("On this page") Stacked cleanly beneath the main header */
 .VPLocalNav {
   position: sticky !important;
-  top: 64px; /* Locks right under the top header */
+  /* Uses VitePress's native CSS variable to always anchor exactly underneath the top bar */
+  top: var(--vp-nav-height, 64px) !important; 
   z-index: 90;
   background-color: rgba(252, 251, 249, 0.88) !important;
   backdrop-filter: blur(12px);
@@ -76,6 +65,15 @@ html.dark .VPNav {
 
 html.dark .VPLocalNav {
   background-color: rgba(15, 20, 15, 0.88) !important;
+}
+
+/* Shrink the empty space above the page header */
+.VPDoc {
+  padding-top: 24px !important; /* Reduces the default main container padding */
+}
+
+.vp-doc h1:first-child {
+  margin-top: 0 !important; /* Removes the default top margin on the main title */
 }
 
 /* Center-align the VitePress Home Hero section */
