@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 
 const props = defineProps({
@@ -8,13 +8,20 @@ const props = defineProps({
 
 const audioRef = ref(null)
 const wrapperRef = ref(null)
+let animationFrameId = null
+let isMounted = true
 
 onMounted(async () => {
+  isMounted = true
   if (!audioRef.value || !wrapperRef.value) return
 
-  // Embed player into the right side of the "On this page" local nav bar
   const localNavContainer = document.querySelector('.VPLocalNav .container')
   if (localNavContainer) {
+    // Purge any stale audio wrappers left over from previous page navigations
+    const existingWrappers = localNavContainer.querySelectorAll('.embedded-audio-wrapper')
+    existingWrappers.forEach(el => el.remove())
+    
+    // Attach the fresh player for the current page
     localNavContainer.appendChild(wrapperRef.value)
   }
 
@@ -23,13 +30,10 @@ onMounted(async () => {
 
   try {
     const response = await fetch(withBase(`/audio/sync-maps/${pageName}.json`))
-    if (!response.ok) return
+    if (!response.ok || !isMounted) return
     const syncMap = await response.json()
 
-    // Select all potential text containers in exact DOM order
     const rawElements = document.querySelectorAll('.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc p, .vp-doc li')
-    
-    // Filter out list items (LI) that contain paragraphs to prevent double-highlighting
     const contentElements = Array.from(rawElements).filter(el => {
       if (el.tagName === 'LI' && el.querySelector('p')) {
         return false
@@ -37,7 +41,6 @@ onMounted(async () => {
       return true
     })
     
-    // Attach sync metadata to matched DOM elements
     contentElements.forEach((el, index) => {
       if (syncMap[index]) {
         el.classList.add('sync-text')
@@ -50,7 +53,7 @@ onMounted(async () => {
     let currentActiveElement = null
 
     const syncText = () => {
-      if (audioRef.value.paused) return
+      if (!isMounted || !audioRef.value || audioRef.value.paused) return
       
       const currentTime = audioRef.value.currentTime
       let foundActive = false
@@ -81,21 +84,43 @@ onMounted(async () => {
         currentActiveElement = null
       }
 
-      requestAnimationFrame(syncText)
+      animationFrameId = requestAnimationFrame(syncText)
     }
 
-    audioRef.value.addEventListener("play", () => requestAnimationFrame(syncText))
+    const handlePlay = () => {
+      cancelAnimationFrame(animationFrameId)
+      animationFrameId = requestAnimationFrame(syncText)
+    }
+
+    if (audioRef.value) {
+      audioRef.value.addEventListener("play", handlePlay)
+    }
     
     syncSpans.forEach(el => {
       el.style.cursor = 'pointer'
       el.addEventListener('click', () => {
-        audioRef.value.currentTime = parseFloat(el.dataset.start)
-        audioRef.value.play()
+        if (audioRef.value) {
+          audioRef.value.currentTime = parseFloat(el.dataset.start)
+          audioRef.value.play()
+        }
       })
     })
 
   } catch (err) {
     console.error("Failed to load sync map:", err)
+  }
+})
+
+onUnmounted(() => {
+  isMounted = false
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+  }
+  if (audioRef.value) {
+    audioRef.value.pause()
+  }
+  if (wrapperRef.value && wrapperRef.value.parentNode) {
+    wrapperRef.value.parentNode.removeChild(wrapperRef.value)
   }
 })
 </script>
