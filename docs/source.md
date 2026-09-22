@@ -6,11 +6,11 @@ audio: /audio/source.mp3
 
 # The Source
 
-<span class="sync-text" data-start="0.000" data-end="14.232">The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.</span>
+The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.
 
 ## The Taproot
-<span class="sync-text" data-start="14.232" data-end="40.680">**Karl Popper (*The Open Universe*)**
-The absolute cornerstone of the framework. Popper proved that determinism turns human history into a nightmare script. His epistemology of *conjectures and refutations* (trial and error) provides the exact blueprint for a live-rendering grid: knowledge is an active, physical force, and because new knowledge is inherently unpredictable, the future must be physically open.</span>
+**Karl Popper (*The Open Universe*)**
+The absolute cornerstone of the framework. Popper proved that determinism turns human history into a nightmare script. His epistemology of *conjectures and refutations* (trial and error) provides the exact blueprint for a live-rendering grid: knowledge is an active, physical force, and because new knowledge is inherently unpredictable, the future must be physically open.
 
 ## The Canopy
 * **The Ancient Intuition:** Heraclitus (perpetual flux and the zero-storage river) and Epicurus (the *clinamen* or uncalculated swerve).
@@ -19,4 +19,4 @@ The absolute cornerstone of the framework. Popper proved that determinism turns 
 * **The Computational Physicists:** David Deutsch (quantum computation and universal explainers), Seth Lloyd (the universe as a quantum computer), and Lee Smolin (time reborn).
 
 ## The Interference Principle
-<span class="sync-text" data-start="40.680" data-end="72.480">**Jenann Ismael** provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded *inside* the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.</span>
+**Jenann Ismael** provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded *inside* the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.
