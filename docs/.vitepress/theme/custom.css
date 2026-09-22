@@ -74,26 +74,37 @@ html.dark body {
 }
 
 /* ---------------------------------------------------
-   Desktop Header: Prevent Link Overflow
+   Desktop Header: Stacked & Fixed-Width Links
 --------------------------------------------------- */
-/* Reclaim horizontal space on the outer edges of the header */
 .VPNavBar > .wrapper {
   padding: 0 12px !important;
 }
 
-/* Shrink the padding, font size, and tracking of the links slightly */
+/* Force a fixed width, allow text wrapping, and stack the content */
 .VPNavBarMenuLink {
-  padding: 0 8px !important;
-  font-size: 13.5px !important;
-  letter-spacing: -0.2px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 85px !important; /* Fixed width ensures total nav size is predictable */
+  padding: 4px !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  text-align: center !important;
+  white-space: normal !important; /* Allows the text to break onto a new line under the emoji */
 }
 
-/* Shrink the gap after the site title */
+/* Ensure the inner span also respects the wrapping constraints */
+.VPNavBarMenuLink > span {
+  display: block !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
 .VPNavBarTitle {
   padding-right: 12px !important;
 }
 
-/* Compress the space before the dark mode toggle and GitHub icon */
 .VPNavBarAppearance, 
 .VPNavBarSocialLinks {
   margin-left: 8px !important;
