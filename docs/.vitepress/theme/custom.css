@@ -21,3 +21,25 @@ html.dark {
   --vp-c-bg-alt: #161c16;
   --vp-c-bg-soft: #1a221a;
 }
+
+/* Center-align the VitePress Home Hero section */
+.VPHomeHero {
+  text-align: center;
+}
+
+.VPHomeHero .container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.VPHomeHero .main {
+  max-width: 800px !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+.VPHomeHero .actions {
+  justify-content: center !important;
+}
