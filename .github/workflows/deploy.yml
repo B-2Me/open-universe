@@ -31,26 +31,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          # Temporarily removed "cache: 'npm'" until the lockfile is committed
-
-      - name: Install System Dependencies (FFmpeg)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+          cache: 'npm'
 
       - name: Install NPM Dependencies
-        # This step will automatically generate the package-lock.json
         run: npm install
-
-      - name: Run Kokoro Audio Pipeline
-        run: npm run generate-audio
-
-      - name: Commit Synced Markdown, Audio, and Lockfile
-        # We added package-lock.json to the git add command here
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/ package-lock.json
-          git diff --staged --quiet || git commit -m "chore: auto-generate audio, AST sync, and lockfile [skip ci]"
-          git push
 
       - name: Build VitePress Site
         run: npm run docs:build
