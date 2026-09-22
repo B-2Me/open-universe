@@ -8,7 +8,7 @@ audio: /audio/source.mp3
 
 # The Source
 
-<span class="sync-text" data-start="0.000" data-end="14.232">The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.</span>
+<span class="sync-text" data-start="0.000" data-end="22.488"><span class="sync-text" data-start="0.000" data-end="14.232">The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.</span></span>
 
 ## The Taproot
 
@@ -24,4 +24,4 @@ The absolute cornerstone of the framework. Popper proved that determinism turns 
 
 ## The Interference Principle
 
-<span class="sync-text" data-start="36.648" data-end="67.152">  provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded    the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.</span>
+<span class="sync-text" data-start="22.488" data-end="63.408"><span class="sync-text" data-start="36.648" data-end="67.152">  provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded    the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.</span></span>
