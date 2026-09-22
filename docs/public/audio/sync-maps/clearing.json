@@ -1,27 +1,47 @@
 [
   {
-    "text": "<span class=\"sync-text\" data-start=\"1.000\" data-end=\"2.859\"># Reality is rendered locally.</span>",
+    "text": "Reality is rendered locally.",
     "start": 1,
-    "end": 9.429
+    "end": 2.873
   },
   {
-    "text": "<span class=\"sync-text\" data-start=\"2.859\" data-end=\"21.245\">There is no global repository, and no local node has access to the universal source code. For generations, science and theology accidentally sold us a map of a frozen world—a pre-recorded block where the past, present, and future supposedly sit side by side in a closed system.</span>",
-    "start": 9.429,
-    "end": 39.407
+    "text": "There is no global repository, and no local node has access to the universal source code. For generations, science and theology accidentally sold us a map of a frozen world—a pre-recorded block where the past, present, and future supposedly sit side by side in a closed system.",
+    "start": 2.873,
+    "end": 21.406
   },
   {
-    "text": "<span class=\"sync-text\" data-start=\"21.245\" data-end=\"23.038\">It is time to drop the map.</span>",
-    "start": 39.407,
-    "end": 47.749
+    "text": "It is time to drop the map.",
+    "start": 21.406,
+    "end": 23.213
   },
   {
-    "text": "<span class=\"sync-text\" data-start=\"23.038\" data-end=\"46.336\">Reality is a live-rendering, zero-storage computational grid. The past is permanently overwritten to build right now. The future repository has no commits. You are not a passive observer watching a deterministic script play out; you are a direct, biological interface plugged straight into the bare-metal hardware. We are live. Step into the clearing.</span>",
-    "start": 47.749,
-    "end": 84.245
+    "text": "Reality is a live-rendering, zero-storage computational grid. The past is permanently overwritten to build right now. The future repository has no commits. You are not a passive observer watching a deterministic script play out; you are a direct, biological interface plugged straight into the bare-metal hardware. We are live. Step into the clearing.",
+    "start": 23.213,
+    "end": 46.697
   },
   {
-    "text": "<span class=\"sync-text\" data-start=\"46.336\" data-end=\"47.664\">## The Tactile Glossary</span> <span class=\"sync-text\" data-start=\"47.664\" data-end=\"54.700\">To understand the Open Universe, we must discard abstract, continuous math and return to physical reality.</span>",
-    "start": 84.245,
-    "end": 107.532
+    "text": "The Tactile Glossary",
+    "start": 46.697,
+    "end": 48.035
+  },
+  {
+    "text": "To understand the Open Universe, we must discard abstract, continuous math and return to physical reality.",
+    "start": 48.035,
+    "end": 55.127
+  },
+  {
+    "text": "The River (Perpetual Flux): Reality has no memory storage. To render the present frame, the universe must physically melt down and overwrite the previous one. Permanence is an illusion.",
+    "start": 55.127,
+    "end": 67.505
+  },
+  {
+    "text": "The Clay (Memory Scars): Nostalgia is not time travel. Memories are physical dents—scars—left in your neural earth. When you remember, you are touching present-day clay, not viewing a historical file.",
+    "start": 67.505,
+    "end": 80.886
+  },
+  {
+    "text": "The Swerve (The Symmetry Break): The universe operates on an unweighted Random Number Generator. The biological loop injects a non-algorithmic deviation (the swerve) to break symmetry and render the next frame.",
+    "start": 80.886,
+    "end": 94.937
   }
 ]
