@@ -6,6 +6,10 @@
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(242, 239, 233, 0.75);
   --vp-c-bg-soft: rgba(232, 228, 219, 0.85);
+
+  /* Hook into VitePress's native nav variables for clean backgrounds */
+  --vp-nav-bg-color: rgba(252, 251, 249, 0.88);
+  --vp-local-nav-bg-color: rgba(252, 251, 249, 0.88);
 }
 
 html.dark {
@@ -16,12 +20,16 @@ html.dark {
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
+
+  --vp-nav-bg-color: rgba(15, 20, 15, 0.88);
+  --vp-local-nav-bg-color: rgba(15, 20, 15, 0.88);
 }
 
+/* Full-page background scenery stretched to exact viewport dimensions */
 body {
   background-color: #f8f6f2; 
   background-image: url('/open-universe/images/forest-light.webp');
-  background-size: 100% auto; 
+  background-size: 100vw 100vh; /* Stretches exactly to screen width and height */
   background-position: top center; 
   background-attachment: fixed;
   background-repeat: no-repeat;
@@ -33,52 +41,50 @@ html.dark body {
   background-image: url('/open-universe/images/forest-dark.webp');
 }
 
+/* 
+  Safely anchor the main header. 
+  Using fixed positioning prevents the mobile menu context from breaking. 
+*/
 .VPNav {
-  position: sticky !important;
+  position: fixed !important;
   top: 0;
+  width: 100%;
   z-index: 100 !important;
-  background-color: rgba(252, 251, 249, 0.88) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-html.dark .VPNav {
-  background-color: rgba(15, 20, 15, 0.88) !important;
-}
-
+/* Anchor the Local Navigation Header ("On this page") directly beneath */
 .VPLocalNav {
-  position: sticky !important;
-  top: 63px !important; 
+  position: fixed !important;
+  top: 63px !important; /* Locks right below the main header */
+  width: 100%;
   z-index: 90 !important;
-  background-color: rgba(252, 251, 249, 0.88) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-html.dark .VPLocalNav {
-  background-color: rgba(15, 20, 15, 0.88) !important;
-}
-
-/* Fix mobile menu visibility and layering */
-.VPNavScreen {
-  background-color: rgba(252, 251, 249, 0.98) !important;
-  z-index: 200 !important; /* Forces the menu above all pinned headers */
-}
-
-html.dark .VPNavScreen {
-  background-color: rgba(15, 20, 15, 0.98) !important;
-}
-
+/* Compensate for the fixed headers so content isn't hidden under them */
 .VPDoc {
-  padding-top: 24px !important;
+  padding-top: 80px !important; 
 }
 
 .vp-doc h1:first-child {
   margin-top: 0 !important;
 }
 
+/* Ensure the mobile dropdown menu is solid and readable */
+.VPNavScreen {
+  background-color: rgba(252, 251, 249, 0.98) !important;
+}
+
+html.dark .VPNavScreen {
+  background-color: rgba(15, 20, 15, 0.98) !important;
+}
+
+/* Center-align the VitePress Home Hero section */
 .VPHomeHero {
   text-align: center;
 }
@@ -100,6 +106,7 @@ html.dark .VPNavScreen {
   justify-content: center !important;
 }
 
+/* Transform VitePress feature cards into earthy forest nodes */
 .VPHomeFeatures .item {
   background-color: var(--vp-c-bg-soft) !important;
   border: 1px solid var(--vp-c-brand-soft) !important;
