@@ -4,19 +4,19 @@ audio: /audio/source.mp3
 ---
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
-<span class="sync-text" data-start="1.000" data-end="1.656"># The Source</span>
+# The Source
 
-<span class="sync-text" data-start="1.656" data-end="15.488">The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.</span>
+The Open Universe is not a new invention; it is the culmination of a centuries-old rebellion against the deterministic block universe. This is the intellectual repository where our foundational code was drafted.
 
-<span class="sync-text" data-start="15.488" data-end="16.210">## The Taproot</span>
-<span class="sync-text" data-start="16.210" data-end="42.630">**Karl Popper (*The Open Universe*)**
-The absolute cornerstone of the framework. Popper proved that determinism turns human history into a nightmare script. His epistemology of *conjectures and refutations* (trial and error) provides the exact blueprint for a live-rendering grid: knowledge is an active, physical force, and because new knowledge is inherently unpredictable, the future must be physically open.</span>
+## The Taproot
+**Karl Popper (*The Open Universe*)**
+The absolute cornerstone of the framework. Popper proved that determinism turns human history into a nightmare script. His epistemology of *conjectures and refutations* (trial and error) provides the exact blueprint for a live-rendering grid: knowledge is an active, physical force, and because new knowledge is inherently unpredictable, the future must be physically open.
 
-<span class="sync-text" data-start="42.630" data-end="43.285">## The Canopy</span>
+## The Canopy
 * **The Ancient Intuition:** Heraclitus (perpetual flux and the zero-storage river) and Epicurus (the *clinamen* or uncalculated swerve).
 * **The Pragmatists:** C.S. Peirce, William James, and John Dewey, who proved that thought and language are not passive mirrors of reality, but active biological tools used to interfere with and shape the environment.
 * **The Time Realists:** Alfred North Whitehead (reality as discrete, perishing events) and Henri Bergson.
 * **The Computational Physicists:** David Deutsch (quantum computation and universal explainers), Seth Lloyd (the universe as a quantum computer), and Lee Smolin (time reborn).
 
-<span class="sync-text" data-start="43.285" data-end="44.990">## The Interference Principle</span>
-<span class="sync-text" data-start="44.990" data-end="76.983">**Jenann Ismael** provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded *inside* the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.</span>
+## The Interference Principle
+**Jenann Ismael** provides the definitive takedown of the Laplacean demon. She proves mathematically and philosophically that prediction is fundamentally subordinate to interference. Any system embedded *inside* the universe trying to predict its own domain crashes into self-reference loops. Representational activity is part of the physical fabric—its natural purpose is not to find "truth," but to use internal simulations to actively get in the way of bad predictions and sculpt the future.

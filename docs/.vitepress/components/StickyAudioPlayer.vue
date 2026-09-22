@@ -18,7 +18,6 @@ onMounted(async () => {
     localNavContainer.appendChild(wrapperRef.value)
   }
 
-  // Determine current page name from pathname to load its sync map
   const pathSegments = window.location.pathname.replace(/^\/open-universe/, '').split('/').filter(Boolean)
   const pageName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/\.html$/, '') : 'clearing'
 
@@ -27,10 +26,18 @@ onMounted(async () => {
     if (!response.ok) return
     const syncMap = await response.json()
 
-    // Select all readable DOM nodes in exact order (Headings + Paragraphs)
-    const contentElements = document.querySelectorAll('.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc p')
+    // Select all potential text containers in exact DOM order
+    const rawElements = document.querySelectorAll('.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc p, .vp-doc li')
     
-    // Attach sync metadata to DOM elements
+    // Filter out list items (LI) that contain paragraphs to prevent double-highlighting
+    const contentElements = Array.from(rawElements).filter(el => {
+      if (el.tagName === 'LI' && el.querySelector('p')) {
+        return false
+      }
+      return true
+    })
+    
+    // Attach sync metadata to matched DOM elements
     contentElements.forEach((el, index) => {
       if (syncMap[index]) {
         el.classList.add('sync-text')

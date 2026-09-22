@@ -19,6 +19,30 @@ function extractText(node) {
   return '';
 }
 
+// Recursively walk the AST to collect all readable content blocks (headings, paragraphs, list items)
+function getRenderableNodes(node, nodes = []) {
+  if (!node) return nodes;
+
+  if (node.type === 'heading' || node.type === 'paragraph') {
+    nodes.push(node);
+  } else if (node.type === 'listItem') {
+    const hasBlockChild = node.children && node.children.some(c => c.type === 'paragraph' || c.type === 'heading');
+    if (!hasBlockChild) {
+      nodes.push(node);
+    }
+    if (node.children) {
+      for (const child of node.children) {
+        getRenderableNodes(child, nodes);
+      }
+    }
+  } else if (node.children) {
+    for (const child of node.children) {
+      getRenderableNodes(child, nodes);
+    }
+  }
+  return nodes;
+}
+
 async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');
   if (filename === 'index') return; // Skip hero landing page
@@ -27,14 +51,19 @@ async function processFile(filePath) {
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
   const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
 
+  // Robust cache check: verify that BOTH the MP3 and the JSON sync map are newer than the Markdown file
   try {
     const mdStat = await fs.stat(filePath);
     const mp3Stat = await fs.stat(finalAudioPath);
-    if (mp3Stat.mtime > mdStat.mtime) {
+    const syncMapStat = await fs.stat(syncMapPath);
+    
+    if (mp3Stat.mtime > mdStat.mtime && syncMapStat.mtime > mdStat.mtime) {
       console.log(`Skipping ${filename} (Audio and sync map are up to date)`);
       return;
     }
-  } catch (err) {}
+  } catch (err) {
+    // If either file is missing or stats fail, it falls through to regenerate both from scratch
+  }
 
   let bodyStartIndex = 0;
   if (content.startsWith('---')) {
@@ -47,14 +76,13 @@ async function processFile(filePath) {
   const bodyContent = content.substring(bodyStartIndex);
   const parsedAST = remark().parse(bodyContent);
 
-  // Collect headings and paragraphs in exact DOM order
+  const rawNodes = getRenderableNodes({ children: parsedAST.children });
   const contentNodes = [];
-  for (const node of parsedAST.children) {
-    if (node.type === 'paragraph' || node.type === 'heading') {
-      const textForTTS = extractText(node).replace(/\n/g, ' ');
-      if (textForTTS.trim()) {
-        contentNodes.push({ type: node.type, text: textForTTS });
-      }
+
+  for (const node of rawNodes) {
+    const textForTTS = extractText(node).replace(/\n/g, ' ');
+    if (textForTTS.trim()) {
+      contentNodes.push({ type: node.type, text: textForTTS });
     }
   }
 
@@ -64,7 +92,7 @@ async function processFile(filePath) {
   const joinedText = contentNodes.map(n => n.text).join(' ');
   const fullPageText = `[pause:${PAUSE_DURATION}s] ` + joinedText;
 
-  console.log(`Generating continuous MP3 and sync map for ${filename}...`);
+  console.log(`Generating continuous MP3 and sync map for ${filename} (${contentNodes.length} nodes)...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
   await fs.mkdir(SYNC_MAP_DIR, { recursive: true });
 
@@ -100,10 +128,8 @@ async function processFile(filePath) {
     });
   }
 
-  // Save the sync map as a lightweight JSON file
   await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
 
-  // Ensure frontmatter includes the audio path without modifying markdown body content
   let updatedContent = content;
   if (!updatedContent.includes('audio: ')) {
     updatedContent = updatedContent.replace(
