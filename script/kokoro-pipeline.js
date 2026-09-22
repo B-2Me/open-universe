@@ -51,26 +51,24 @@ async function processFile(filePath) {
   const bodyContent = content.substring(bodyStartIndex);
   const parsedAST = remark().parse(bodyContent);
 
-  const paragraphs = [];
+  // Collect both paragraphs and headings so subtitles/titles get narrated
+  const contentNodes = [];
   for (const node of parsedAST.children) {
-    if (node.type === 'paragraph') {
+    if (node.type === 'paragraph' || node.type === 'heading') {
       const textForTTS = extractText(node).replace(/\n/g, ' ');
       if (textForTTS.trim()) {
-        paragraphs.push({ node, text: textForTTS });
+        contentNodes.push({ node, text: textForTTS });
       }
     }
   }
 
-  if (paragraphs.length === 0) return;
+  if (contentNodes.length === 0) return;
 
-  // Define your desired leading silence duration in seconds
   const PAUSE_DURATION = 1.0; 
-  const joinedText = paragraphs.map(p => p.text).join(' ');
-  
-  // Prepend the Kokoro-FastAPI control token for precise zero-padding
+  const joinedText = contentNodes.map(n => n.text).join(' ');
   const fullPageText = `[pause:${PAUSE_DURATION}s] ` + joinedText;
 
-  console.log(`Generating single audio file with ${PAUSE_DURATION}s leading silence for ${filename}...`);
+  console.log(`Generating single audio file with headers for ${filename}...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
 
   const mp3 = await openai.audio.speech.create({
@@ -85,22 +83,21 @@ async function processFile(filePath) {
   const metadata = await mm.parseFile(finalAudioPath);
   const totalDuration = metadata.format.duration;
 
-  // Calculate proportional timestamps starting after the leading pause
   const totalChars = joinedText.length;
   const speechDuration = totalDuration - PAUSE_DURATION;
-  let currentTime = PAUSE_DURATION; // Offset initial highlight tracking by the pause length
+  let currentTime = PAUSE_DURATION; 
   const replacements = [];
 
-  for (const p of paragraphs) {
-    const charRatio = p.text.length / totalChars;
-    const paragraphDuration = speechDuration * charRatio;
+  for (const item of contentNodes) {
+    const charRatio = item.text.length / totalChars;
+    const nodeDuration = speechDuration * charRatio;
 
     const startTime = currentTime;
-    const endTime = currentTime + paragraphDuration;
+    const endTime = currentTime + nodeDuration;
     currentTime = endTime;
 
-    const absoluteStart = p.node.position.start.offset + bodyStartIndex;
-    const absoluteEnd = p.node.position.end.offset + bodyStartIndex;
+    const absoluteStart = item.node.position.start.offset + bodyStartIndex;
+    const absoluteEnd = item.node.position.end.offset + bodyStartIndex;
     const rawMarkdown = content.substring(absoluteStart, absoluteEnd);
 
     replacements.push({
@@ -124,7 +121,7 @@ async function processFile(filePath) {
   }
 
   await fs.writeFile(filePath, updatedContent);
-  console.log(`Successfully generated padded MP3 and synced ${filename}`);
+  console.log(`Successfully generated audio and synced paragraphs + headings for ${filename}`);
 }
 
 async function run() {
