@@ -17,7 +17,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/nater0000/Chats' }
+      { icon: 'github', link: 'https://github.com/B-2Me/open-universe' }
     ]
   }
 })
