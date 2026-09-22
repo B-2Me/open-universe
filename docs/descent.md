@@ -1,5 +1,6 @@
 ---
 title: Gradient Descent
+audio: /audio/descent.mp3
 ---
 
 # Gradient Descent
