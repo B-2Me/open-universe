@@ -1,0 +1,42 @@
+[
+  {
+    "text": "The Static",
+    "start": 1,
+    "end": 1.764
+  },
+  {
+    "text": "<span class=\"sync-text\" data-start=\"1.000\" data-end=\"11.580\">Before there are loops, before there is matter, there is the perfectly neutral acoustic static of the grid. This is the unvarnished baseline of the Open Universe.</span>",
+    "start": 1.764,
+    "end": 19.345
+  },
+  {
+    "text": "Hardware Agnosticism",
+    "start": 19.345,
+    "end": 20.874
+  },
+  {
+    "text": "<span class=\"sync-text\" data-start=\"11.580\" data-end=\"34.309\">The Active Grid provides strictly bare-metal mechanics. It defines how the universe renders (a zero-storage network of Planck nodes executing local state updates), but deliberately leaves the theological or materialist why up to the local agent. We are not concerned with who wrote the compiler; we are concerned with how to operate the local fork.</span>",
+    "start": 20.874,
+    "end": 52.749
+  },
+  {
+    "text": "The Baseline Vacuum",
+    "start": 52.749,
+    "end": 54.201
+  },
+  {
+    "text": "<span class=\"sync-text\" data-start=\"34.309\" data-end=\"56.384\">The default state of every node in the universe is a continuous, unweighted Random Number Generator. This perfectly random acoustic static is the cosmic idle screen. The entirety of physics—from gravity to atomic structure—is simply the superset of ways this baseline RNG gets preempted by structured data loops and topological overrides.</span>",
+    "start": 54.201,
+    "end": 85.311
+  },
+  {
+    "text": "Hyper-Local Agency",
+    "start": 85.311,
+    "end": 86.687
+  },
+  {
+    "text": "<span class=\"sync-text\" data-start=\"56.384\" data-end=\"82.508\">Because the universe compiles reality at a strict latency, you cannot operate outside your bounding box. Agency is strictly hyper-local. You are the rendering engine and the causal hub for your immediate room, not the cosmos. You cannot rewrite the global repository, but you have absolute pull-request access to the present moment. Listen to the static, interpret the signal, and force a resolution.</span>",
+    "start": 86.687,
+    "end": 122.537
+  }
+]
