@@ -4,6 +4,7 @@ import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
 
+// Point directly to your private Kokoro-FastAPI instance
 const openai = new OpenAI({
   baseURL: 'https://voice.i.rickey.io/v1',
   apiKey: 'local-key',
@@ -34,6 +35,7 @@ async function generateAudioForChunk(text, index, filepath) {
   return { path: chunkPath, duration: metadata.format.duration };
 }
 
+// Native Node.js MP3 concatenation (No FFmpeg required)
 async function mergeAudioChunks(chunks, outputPath) {
   const buffers = [];
   for (const chunk of chunks) {
@@ -47,15 +49,18 @@ async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
 
+  // 1. Check Modification Times (mtime)
   try {
     const mdStat = await fs.stat(filePath);
     const mp3Stat = await fs.stat(finalAudioPath);
+    
+    // If the MP3 exists and is newer than the Markdown file, skip processing
     if (mp3Stat.mtime > mdStat.mtime) {
       console.log(`Skipping ${filename} (Audio is up to date)`);
       return;
     }
   } catch (err) {
-    // MP3 doesn't exist, proceed.
+    // If the MP3 doesn't exist, the stat check throws an error. Proceed with generation.
   }
 
   let currentTime = 0.0;
@@ -79,7 +84,7 @@ async function processFile(filePath) {
       
       audioChunks.push(chunkData);
 
-      // Extract the exact raw markdown directly from the original file
+      // Extract the exact raw markdown directly from the original file using AST position offsets
       const rawMarkdown = content.substring(node.position.start.offset, node.position.end.offset);
       
       // Store the replacement to be applied later
@@ -101,14 +106,19 @@ async function processFile(filePath) {
       updatedContent = updatedContent.substring(0, r.start) + r.newText + updatedContent.substring(r.end);
     }
 
+    // Safely inject frontmatter avoiding Windows/Unix line-ending conflicts
     if (!updatedContent.includes('audio: ')) {
       updatedContent = updatedContent.replace(
-        /---\n/, 
-        `---\naudio: /audio/${filename}.mp3\n`
+        /^---\r?\n([\s\S]*?)\r?\n---/, 
+        `---\n$1\naudio: /audio/${filename}.mp3\n---`
       );
     }
 
+    // 2. The Write-Order Fix
+    // Write the Markdown file FIRST
     await fs.writeFile(filePath, updatedContent);
+
+    // Merge and write the MP3 LAST, ensuring the MP3 mtime is definitively newer than the Markdown mtime
     await mergeAudioChunks(audioChunks, finalAudioPath);
 
     for (const chunk of audioChunks) {
