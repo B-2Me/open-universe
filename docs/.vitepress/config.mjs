@@ -4,6 +4,9 @@ export default defineConfig({
   title: "The Open Universe",
   description: "Reality is a live-rendering, zero-storage computational grid.",
   
+  // This forces all assets to load from the correct GitHub Pages subpath
+  base: '/open-universe/',
+  
   cleanUrls: true,
 
   themeConfig: {
@@ -14,7 +17,6 @@ export default defineConfig({
       { text: 'Interference', link: '/interference' },
       { text: 'The Static', link: '/static' }
     ],
-
     sidebar: [
       {
         text: 'The Architecture',
@@ -27,7 +29,6 @@ export default defineConfig({
         ]
       }
     ],
-
     socialLinks: [
       { icon: 'github', link: 'https://github.com/nater0000/Chats' }
     ]
