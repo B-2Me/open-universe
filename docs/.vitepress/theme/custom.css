@@ -16,10 +16,25 @@ html.dark {
   --vp-c-brand-3: #8cd185;
   --vp-c-brand-soft: rgba(95, 158, 88, 0.25);
   
-  /* Overrides the default black with a deep, mossy green-black */
-  --vp-c-bg: #0f140f; 
-  --vp-c-bg-alt: #161c16;
-  --vp-c-bg-soft: #1a221a;
+  /* Semi-transparent backgrounds to let the scenery breathe through */
+  --vp-c-bg: transparent; 
+  --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
+  --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
+}
+
+/* Full-page background scenery with a dark, atmospheric gradient overlay for Dark Mode */
+html.dark body {
+  background-image: linear-gradient(
+      to bottom, 
+      rgba(15, 20, 15, 0.85), 
+      rgba(10, 14, 10, 0.95)
+    ), 
+    url('/images/forest-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  min-height: 100vh;
 }
 
 /* Center-align the VitePress Home Hero section */
@@ -43,6 +58,7 @@ html.dark {
 .VPHomeHero .actions {
   justify-content: center !important;
 }
+
 /* Transform VitePress feature cards into earthy forest nodes */
 .VPHomeFeatures .item {
   background-color: var(--vp-c-bg-soft) !important;
