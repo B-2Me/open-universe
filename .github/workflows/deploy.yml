@@ -3,16 +3,13 @@ name: Deploy Open Universe to GitHub Pages
 on:
   push:
     branches: [main]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment and committing back to the repo
 permissions:
   contents: write
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -34,25 +31,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # Temporarily removed "cache: 'npm'" until the lockfile is committed
 
       - name: Install System Dependencies (FFmpeg)
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install NPM Dependencies
+        # This step will automatically generate the package-lock.json
         run: npm install
 
       - name: Run Kokoro Audio Pipeline
-        # Generates MP3s and mutates the Markdown files with sync spans
         run: npm run generate-audio
 
-      - name: Commit Synced Markdown and Audio
-        # Commits the changes back to the repo so audio isn't re-generated on future runs
+      - name: Commit Synced Markdown, Audio, and Lockfile
+        # We added package-lock.json to the git add command here
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git diff --staged --quiet || git commit -m "chore: auto-generate audio and AST sync [skip ci]"
+          git add docs/ package-lock.json
+          git diff --staged --quiet || git commit -m "chore: auto-generate audio, AST sync, and lockfile [skip ci]"
           git push
 
       - name: Build VitePress Site
