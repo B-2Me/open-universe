@@ -13,6 +13,7 @@ export default defineConfig({
       { text: 'The Local Interface', link: '/interface' },
       { text: 'The Source', link: '/source' },
       { text: 'The Interference', link: '/interference' },
+      { text: 'The Descent', link: '/descent' },
       { text: 'The Static', link: '/static' }
     ],
 
