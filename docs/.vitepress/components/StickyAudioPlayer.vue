@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { withBase } from 'vitepress'
 
 const props = defineProps({
   audioSrc: String
@@ -65,8 +66,9 @@ onMounted(() => {
 
 <template>
   <div class="sticky-audio-wrapper" v-if="audioSrc">
+    <!-- withBase() ensures GitHub Pages resolves the audio path correctly relative to /open-universe/ -->
     <audio ref="audioRef" controls preload="metadata">
-      <source :src="audioSrc" type="audio/mpeg">
+      <source :src="withBase(audioSrc)" type="audio/mpeg">
     </audio>
   </div>
 </template>
