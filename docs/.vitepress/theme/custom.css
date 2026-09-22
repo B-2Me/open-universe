@@ -110,10 +110,18 @@ html.dark body {
 }
 
 /* ---------------------------------------------------
-   Content Padding Adjustments
+   Content Padding & Heading Spacing Adjustments
 --------------------------------------------------- */
 .VPDoc {
-  padding-top: 24px !important;
+  padding-top: 16px !important;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  margin-top: 1.5rem !important;
+  padding-top: 0.2rem !important;
 }
 
 .vp-doc h1:first-child {
