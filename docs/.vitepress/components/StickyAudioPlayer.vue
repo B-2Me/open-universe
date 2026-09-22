@@ -76,8 +76,8 @@ onMounted(() => {
 <style scoped>
 .sticky-audio-wrapper {
   position: sticky;
-  top: 80px; /* Sits cleanly below the VitePress top nav bar */
-  z-index: 50;
+  top: 110px; /* Pushed down from 80px to clear the "On this page" bar */
+  z-index: 10; /* Lowered from 50 so VitePress pop-ups render over it */
   background: var(--vp-c-bg-soft);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
