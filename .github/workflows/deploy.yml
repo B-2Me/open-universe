@@ -31,10 +31,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          # cache: 'npm' removed to prevent the lockfile crash
 
       - name: Install NPM Dependencies
         run: npm install
+
+      - name: Run Kokoro Audio Pipeline
+        run: npm run generate-audio
+
+      - name: Commit Synced Markdown and Audio
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "chore: auto-generate audio and AST sync [skip ci]"
+          git push
 
       - name: Build VitePress Site
         run: npm run docs:build
