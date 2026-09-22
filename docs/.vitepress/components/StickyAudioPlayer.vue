@@ -15,15 +15,24 @@ onMounted(async () => {
   isMounted = true
   if (!audioRef.value || !wrapperRef.value) return
 
-  const localNavContainer = document.querySelector('.VPLocalNav .container')
-  if (localNavContainer) {
-    // Purge any stale audio wrappers left over from previous page navigations
-    const existingWrappers = localNavContainer.querySelectorAll('.embedded-audio-wrapper')
-    existingWrappers.forEach(el => el.remove())
+  // Polling function to wait for VitePress to render the LocalNav across route changes
+  let injectAttempts = 0
+  const injectPlayer = () => {
+    if (!isMounted) return
+    const localNavContainer = document.querySelector('.VPLocalNav .container')
     
-    // Attach the fresh player for the current page
-    localNavContainer.appendChild(wrapperRef.value)
+    if (localNavContainer) {
+      const existingWrappers = localNavContainer.querySelectorAll('.embedded-audio-wrapper')
+      existingWrappers.forEach(el => el.remove())
+      localNavContainer.appendChild(wrapperRef.value)
+    } else if (injectAttempts < 40) {
+      // Retry injection up to 40 times (max 2 seconds) if the nav isn't in the DOM yet
+      injectAttempts++
+      setTimeout(injectPlayer, 50)
+    }
   }
+  
+  injectPlayer()
 
   const pathSegments = window.location.pathname.replace(/^\/open-universe/, '').split('/').filter(Boolean)
   const pageName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/\.html$/, '') : 'clearing'
