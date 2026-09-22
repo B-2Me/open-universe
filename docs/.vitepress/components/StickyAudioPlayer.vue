@@ -7,9 +7,16 @@ const props = defineProps({
 })
 
 const audioRef = ref(null)
+const wrapperRef = ref(null)
 
 onMounted(() => {
-  if (!audioRef.value) return
+  if (!audioRef.value || !wrapperRef.value) return
+
+  // Automatically embed the player into the right side of the "On this page" local nav bar
+  const localNavContainer = document.querySelector('.VPLocalNav .container')
+  if (localNavContainer) {
+    localNavContainer.appendChild(wrapperRef.value)
+  }
 
   // Target the spans injected by the markdown AST pipeline
   const syncSpans = document.querySelectorAll("span.sync-text")
@@ -32,7 +39,6 @@ onMounted(() => {
           span.classList.add('active')
           currentActiveSpan = span
           
-          // Smooth scroll to the active paragraph, leaving room for the VitePress nav and sticky player
           const offsetHeight = 150 
           const elementPosition = span.getBoundingClientRect().top + window.pageYOffset
           window.scrollTo({
@@ -53,7 +59,6 @@ onMounted(() => {
 
   audioRef.value.addEventListener("play", () => requestAnimationFrame(syncText))
   
-  // Click-to-seek functionality
   syncSpans.forEach(span => {
     span.style.cursor = 'pointer'
     span.addEventListener('click', () => {
@@ -65,8 +70,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="sticky-audio-wrapper" v-if="audioSrc">
-    <!-- withBase() ensures GitHub Pages resolves the audio path correctly relative to /open-universe/ -->
+  <div ref="wrapperRef" class="embedded-audio-wrapper" v-if="audioSrc">
     <audio ref="audioRef" controls preload="metadata">
       <source :src="withBase(audioSrc)" type="audio/mpeg">
     </audio>
@@ -74,31 +78,28 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.sticky-audio-wrapper {
-  position: sticky;
-  top: 110px; /* Pushed down from 80px to clear the "On this page" bar */
-  z-index: 10; /* Lowered from 50 so VitePress pop-ups render over it */
-  background: var(--vp-c-bg-soft);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 12px 20px;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  border: 1px solid var(--vp-c-divider);
+.embedded-audio-wrapper {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  margin-left: auto; /* Pushes the player cleanly to the right side of the local nav bar */
+  max-width: 380px;
+  width: 100%;
+  height: 32px;
+  padding: 0 4px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
-.sticky-audio-wrapper audio {
+.embedded-audio-wrapper audio {
   width: 100%;
-  max-width: 800px;
+  height: 28px;
   outline: none;
 }
 </style>
 
 <style>
-/* Unscoped global styles for the spans injected by the markdown pipeline */
+/* Unscoped global styles for the active text highlighting */
 .sync-text {
   transition: background-color 0.3s ease, color 0.3s ease;
   padding: 2px 4px;
