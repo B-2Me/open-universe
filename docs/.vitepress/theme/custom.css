@@ -74,31 +74,30 @@ html.dark body {
 }
 
 /* ---------------------------------------------------
-   Desktop Header: Stacked & Fixed-Width Links
+   Desktop Header: Fixed-Width Text Links
 --------------------------------------------------- */
 .VPNavBar > .wrapper {
   padding: 0 12px !important;
 }
 
-/* Force a fixed width, allow text wrapping, and stack the content */
+/* Force a fixed width and perfectly center wrapped text */
 .VPNavBarMenuLink {
   display: flex !important;
-  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 85px !important; /* Fixed width ensures total nav size is predictable */
+  width: 85px !important; 
   padding: 4px !important;
-  font-size: 12px !important;
-  line-height: 1.3 !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
   text-align: center !important;
-  white-space: normal !important; /* Allows the text to break onto a new line under the emoji */
+  white-space: normal !important; 
 }
 
-/* Ensure the inner span also respects the wrapping constraints */
 .VPNavBarMenuLink > span {
   display: block !important;
   max-width: 100% !important;
   white-space: normal !important;
+  text-align: center !important;
 }
 
 .VPNavBarTitle {

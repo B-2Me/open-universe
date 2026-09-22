@@ -1,10 +1,10 @@
 ---
-title: Interference
+title: The Interference
 audio: /audio/interference.mp3
 ---
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
-# Interference
+# The Interference
 
 Acoustic waves designed to inject data, disrupt deterministic assumptions, and force a new local measurement.
 

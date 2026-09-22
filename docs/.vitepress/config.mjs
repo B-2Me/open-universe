@@ -9,11 +9,11 @@ export default defineConfig({
   themeConfig: {
     // Top Navigation Bar with icons
     nav: [
-      { text: '🌲 The Clearing', link: '/clearing' },
-      { text: '🧬 The Local Interface', link: '/interface' },
-      { text: '📖 The Source', link: '/source' },
-      { text: '📻 Interference', link: '/interference' },
-      { text: '⚡ The Static', link: '/static' }
+      { text: 'The Clearing', link: '/clearing' },
+      { text: 'The Local Interface', link: '/interface' },
+      { text: 'The Source', link: '/source' },
+      { text: 'The Interference', link: '/interference' },
+      { text: 'The Static', link: '/static' }
     ],
 
     socialLinks: [
