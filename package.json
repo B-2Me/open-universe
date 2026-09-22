@@ -1,0 +1,25 @@
+{
+  "name": "open-universe",
+  "version": "1.0.0",
+  "description": "Reality is an open-source, live-rendering computational grid.",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "generate-audio": "node script/kokoro-pipeline.js"
+  },
+  "dependencies": {
+    "vitepress": "latest",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "fluent-ffmpeg": "^2.1.3",
+    "music-metadata": "^10.0.0",
+    "openai": "^4.0.0",
+    "remark": "^15.0.1",
+    "unist-util-visit": "^5.0.0"
+  }
+}
