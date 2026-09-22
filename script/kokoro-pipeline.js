@@ -4,7 +4,6 @@ import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
 
-// Point directly to your private Kokoro-FastAPI instance
 const openai = new OpenAI({
   baseURL: 'https://voice.i.rickey.io/v1',
   apiKey: 'local-key',
@@ -13,7 +12,6 @@ const openai = new OpenAI({
 const CONTENT_DIR = './docs';
 const AUDIO_OUT_DIR = './docs/public/audio';
 
-// Recursively extracts plain text from the AST so bold/italic words aren't lost
 function extractText(node) {
   if (node.value) return node.value;
   if (node.children) return node.children.map(extractText).join('');
@@ -35,7 +33,6 @@ async function generateAudioForChunk(text, index, filepath) {
   return { path: chunkPath, duration: metadata.format.duration };
 }
 
-// Native Node.js MP3 concatenation (No FFmpeg required)
 async function mergeAudioChunks(chunks, outputPath) {
   const buffers = [];
   for (const chunk of chunks) {
@@ -45,28 +42,45 @@ async function mergeAudioChunks(chunks, outputPath) {
 }
 
 async function processFile(filePath) {
-  const content = await fs.readFile(filePath, 'utf-8');
   const filename = path.basename(filePath, '.md');
+  
+  // Skip the hero landing page
+  if (filename === 'index') return;
+
+  const content = await fs.readFile(filePath, 'utf-8');
+  
+  // Prevent double-wrapping if the file was already processed
+  if (content.includes('class="sync-text"')) {
+    console.log(`Skipping ${filename} (Already contains sync tags)`);
+    return;
+  }
+
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
 
-  // 1. Check Modification Times (mtime)
   try {
     const mdStat = await fs.stat(filePath);
     const mp3Stat = await fs.stat(finalAudioPath);
-    
-    // If the MP3 exists and is newer than the Markdown file, skip processing
     if (mp3Stat.mtime > mdStat.mtime) {
       console.log(`Skipping ${filename} (Audio is up to date)`);
       return;
     }
-  } catch (err) {
-    // If the MP3 doesn't exist, the stat check throws an error. Proceed with generation.
+  } catch (err) {}
+
+  // Safely isolate the body content to prevent parsing YAML frontmatter as TTS text
+  let bodyStartIndex = 0;
+  if (content.startsWith('---')) {
+    const endOfFrontmatter = content.indexOf('---', 3);
+    if (endOfFrontmatter !== -1) {
+      bodyStartIndex = endOfFrontmatter + 3;
+    }
   }
+
+  const bodyContent = content.substring(bodyStartIndex);
+  const parsedAST = remark().parse(bodyContent);
 
   let currentTime = 0.0;
   const audioChunks = [];
   const replacements = [];
-  const parsedAST = remark().parse(content);
 
   for (let i = 0; i < parsedAST.children.length; i++) {
     const node = parsedAST.children[i];
@@ -84,13 +98,14 @@ async function processFile(filePath) {
       
       audioChunks.push(chunkData);
 
-      // Extract the exact raw markdown directly from the original file using AST position offsets
-      const rawMarkdown = content.substring(node.position.start.offset, node.position.end.offset);
+      // Offset the replacement index by the length of the frontmatter
+      const absoluteStart = node.position.start.offset + bodyStartIndex;
+      const absoluteEnd = node.position.end.offset + bodyStartIndex;
+      const rawMarkdown = content.substring(absoluteStart, absoluteEnd);
       
-      // Store the replacement to be applied later
       replacements.push({
-        start: node.position.start.offset,
-        end: node.position.end.offset,
+        start: absoluteStart,
+        end: absoluteEnd,
         newText: `<span class="sync-text" data-start="${startTime.toFixed(3)}" data-end="${endTime.toFixed(3)}">${rawMarkdown}</span>`
       });
     }
@@ -99,14 +114,12 @@ async function processFile(filePath) {
   if (audioChunks.length > 0) {
     await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
 
-    // Apply replacements from bottom to top so the character offsets don't shift during injection
     let updatedContent = content;
     for (let i = replacements.length - 1; i >= 0; i--) {
       const r = replacements[i];
       updatedContent = updatedContent.substring(0, r.start) + r.newText + updatedContent.substring(r.end);
     }
 
-    // Safely inject frontmatter avoiding Windows/Unix line-ending conflicts
     if (!updatedContent.includes('audio: ')) {
       updatedContent = updatedContent.replace(
         /^---\r?\n([\s\S]*?)\r?\n---/, 
@@ -114,11 +127,7 @@ async function processFile(filePath) {
       );
     }
 
-    // 2. The Write-Order Fix
-    // Write the Markdown file FIRST
     await fs.writeFile(filePath, updatedContent);
-
-    // Merge and write the MP3 LAST, ensuring the MP3 mtime is definitively newer than the Markdown mtime
     await mergeAudioChunks(audioChunks, finalAudioPath);
 
     for (const chunk of audioChunks) {
