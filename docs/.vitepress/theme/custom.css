@@ -76,14 +76,27 @@ html.dark body {
 /* ---------------------------------------------------
    Desktop Header: Prevent Link Overflow
 --------------------------------------------------- */
-/* Reduce horizontal padding between top navigation items to keep them on one line */
-.VPNavBarMenuLink {
-  padding: 0 10px !important;
+/* Reclaim horizontal space on the outer edges of the header */
+.VPNavBar > .wrapper {
+  padding: 0 12px !important;
 }
 
-/* Shrink the gap between the site title and the navigation links */
-.VPNavBar .title {
-  padding-right: 16px !important;
+/* Shrink the padding, font size, and tracking of the links slightly */
+.VPNavBarMenuLink {
+  padding: 0 8px !important;
+  font-size: 13.5px !important;
+  letter-spacing: -0.2px !important;
+}
+
+/* Shrink the gap after the site title */
+.VPNavBarTitle {
+  padding-right: 12px !important;
+}
+
+/* Compress the space before the dark mode toggle and GitHub icon */
+.VPNavBarAppearance, 
+.VPNavBarSocialLinks {
+  margin-left: 8px !important;
 }
 
 /* ---------------------------------------------------
@@ -155,7 +168,6 @@ html.dark body {
 /* ---------------------------------------------------
    Social Links (GitHub): Mobile Menu & Desktop Overflow
 --------------------------------------------------- */
-/* Target both the mobile hamburger screen and the desktop "..." flyout */
 .VPNavScreen .VPSocialLink, 
 .VPMenu .VPSocialLink {
   width: 100% !important;
@@ -163,18 +175,16 @@ html.dark body {
   background-color: transparent !important;
   display: flex !important;
   align-items: center;
-  justify-content: flex-start !important; /* Left-align like other menu items */
+  justify-content: flex-start !important;
   text-decoration: none !important;
 }
 
-/* Ensure the container forces a full-width column in the mobile menu */
 .VPNavScreen .social-links-list {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-/* Inject the text label next to the icon */
 .VPNavScreen .VPSocialLink::after,
 .VPMenu .VPSocialLink::after {
   content: "Site Sourcecode";
