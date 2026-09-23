@@ -2,86 +2,86 @@
   {
     "text": "The Intent of This Site",
     "start": 1,
-    "end": 2.459
+    "end": 2.456
   },
   {
     "text": "When reading about the fundamental nature of reality, a healthy reader should always ask: \"What is the purpose of this site, and what foundational assumptions drive it?\"",
-    "start": 2.459,
-    "end": 13.176
+    "start": 2.456,
+    "end": 13.158
   },
   {
     "text": "There is a famous saying in science: There is no such thing as philosophy-free physics; there is only physics whose philosophical baggage is taken on board without examination. Philosophy is the high-level architecture we use to make sense of the world, but it only works when it is strictly tethered to reality. When philosophy ignores the material constraints of nature, it devolves into empty abstraction.",
-    "start": 13.176,
-    "end": 39.05
+    "start": 13.158,
+    "end": 38.995
   },
   {
     "text": "I hold a Bachelor of Science in Computer Science from a California university and have spent two decades as a software engineer designing, building, and debugging complex systems. When you spend a lifetime hunting down nanosecond-scale concurrency problems, you learn a hard truth: human intuition is blind to scale. What seems logical at the macro level often completely decoheres when exposed to the micro-scale friction of the underlying substrate.",
-    "start": 39.05,
-    "end": 67.65
+    "start": 38.995,
+    "end": 67.555
   },
   {
     "text": "This site is an audit of our philosophical architecture.",
-    "start": 67.65,
-    "end": 71.202
+    "start": 67.555,
+    "end": 71.101
   },
   {
-    "text": "For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: to take our deepest philosophical assumptions and subject them to gradient descent, stepping them down into measured, natural reality.",
-    "start": 71.202,
-    "end": 99.485
+    "text": "For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: you are doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.",
+    "start": 71.101,
+    "end": 102.194
   },
   {
     "text": "What We Are Auditing",
-    "start": 99.485,
-    "end": 100.754
+    "start": 102.194,
+    "end": 103.46
   },
   {
-    "text": "We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of the Planck Field:",
-    "start": 100.754,
-    "end": 111.09
+    "text": "We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of The Planck Field:",
+    "start": 103.46,
+    "end": 113.782
   },
   {
     "text": "The Block Universe dissipates because a zero-storage physical field cannot cache a pre-computed future. It violates the thermodynamics of time.",
-    "start": 111.09,
-    "end": 120.159
+    "start": 113.782,
+    "end": 122.837
   },
   {
     "text": "Simulation Theory decoheres because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot render uncomputable physics on an algorithmic machine.",
-    "start": 120.159,
-    "end": 131.574
+    "start": 122.837,
+    "end": 134.236
   },
   {
     "text": "Passive Observation fails because biological perception is not a playback mechanism; just staying in the live stream requires continuous thermodynamic work. Without metabolic upkeep, the interface dissolves into background noise.",
-    "start": 131.574,
-    "end": 146.096
+    "start": 134.236,
+    "end": 148.737
   },
   {
     "text": "Navigating Causality",
-    "start": 146.096,
-    "end": 147.364
+    "start": 148.737,
+    "end": 150.004
   },
   {
     "text": "Ultimately, the purpose of compiling this audit is deeply practical. I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.",
-    "start": 147.364,
-    "end": 159.287
+    "start": 150.004,
+    "end": 161.909
   },
   {
     "text": "Causality is not a global blanket covering the universe all at once. It exists at the Planck scale, forged only at the exact boundary where interactions actually occur. Because our legacy philosophies treat us as isolated \"objects\" or \"ghosts in a machine,\" we fail to recognize that our biology is hyper-advanced, wildly under-appreciated technology designed to steer through this localized causality.",
-    "start": 159.287,
-    "end": 184.78
+    "start": 161.909,
+    "end": 187.366
   },
   {
     "text": "As a result, we bump into each other and our environment in awkward, destructive ways that nobody wants. We generate unnecessary relational friction simply because we are using legacy maps to drive the interface.",
-    "start": 184.78,
-    "end": 198.224
+    "start": 187.366,
+    "end": 200.791
   },
   {
     "text": "By fitting our philosophy directly to objective, measured natural constraints, we don't have to guess how the universe operates, and we don't have to drive the hardware blind. We just have to measure the field.",
-    "start": 198.224,
-    "end": 211.542
+    "start": 200.791,
+    "end": 214.089
   },
   {
     "text": "Welcome to the audit.",
-    "start": 211.542,
-    "end": 212.873
+    "start": 214.089,
+    "end": 215.419
   }
 ]
