@@ -14,11 +14,11 @@ I hold a Bachelor of Science in Computer Science from a California university an
 
 This site is an **audit of our philosophical architecture**. 
 
-For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: to take our deepest philosophical assumptions and subject them to gradient descent, stepping them down into measured, natural reality.
+For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: **you are doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
 
 ### What We Are Auditing
 
-We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of the **Planck Field**:
+We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of **The Planck Field**:
 
 * **The Block Universe dissipates** because a zero-storage physical field cannot cache a pre-computed future. It violates the thermodynamics of time.
 * **Simulation Theory decoheres** because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot render uncomputable physics on an algorithmic machine.
