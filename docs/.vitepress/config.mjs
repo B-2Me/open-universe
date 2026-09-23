@@ -10,11 +10,11 @@ export default defineConfig({
     // Top Navigation Bar with icons
     nav: [
       { text: 'The Clearing', link: '/clearing' },
-      { text: 'The Local Interface', link: '/interface' },
+      { text: 'The Interface', link: '/interface' },
       { text: 'The Source', link: '/source' },
       { text: 'The Descent', link: '/descent' },
-      { text: 'The Interference', link: '/interference' },
-      { text: 'The Static', link: '/static' }
+      { text: 'The Interference', link: '/interference' }
+      ///{ text: 'The Static', link: '/static' }
     ],
 
     socialLinks: [
