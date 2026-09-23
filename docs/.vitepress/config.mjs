@@ -9,9 +9,10 @@ export default defineConfig({
   themeConfig: {
     // Top Navigation Bar with icons
     nav: [
-      { text: 'The Clearing', link: '/clearing' },
+      { text: 'The Planck Field', link: '/field' },
       { text: 'The Interface', link: '/interface' },
       { text: 'The Source', link: '/source' },
+      { text: 'The Paradoxes', link: '/paradox' },
       { text: 'The Descent', link: '/descent' },
       { text: 'The Interference', link: '/interference' }
       ///{ text: 'The Static', link: '/static' }
