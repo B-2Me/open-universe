@@ -12,8 +12,8 @@ export default defineConfig({
       { text: 'The Clearing', link: '/clearing' },
       { text: 'The Local Interface', link: '/interface' },
       { text: 'The Source', link: '/source' },
-      { text: 'The Interference', link: '/interference' },
       { text: 'The Descent', link: '/descent' },
+      { text: 'The Interference', link: '/interference' },
       { text: 'The Static', link: '/static' }
     ],
 
