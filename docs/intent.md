@@ -34,4 +34,4 @@ As a result, we bump into each other and our environment in awkward, destructive
 
 By fitting our philosophy directly to objective, measured natural constraints, we don't have to guess how the universe operates, and we don't have to drive the hardware blind. We just have to measure the field. 
 
-Welcome to the audit.
+Welcome to the site.
