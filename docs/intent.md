@@ -2,7 +2,6 @@
 title: The Intent
 audio: /audio/intent.mp3
 ---
-
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # The Intent of This Site
