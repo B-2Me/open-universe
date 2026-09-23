@@ -1,6 +1,7 @@
 ---
 title: The Intent
 audio: /audio/intent.mp3
+next: false
 ---
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
