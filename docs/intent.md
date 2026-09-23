@@ -1,8 +1,10 @@
 ---
-title: Intent & Architecture
+title: The Intent
+audio: /audio/intent.mp3
 ---
+<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
-# Intent: Auditing the Bedrock
+# The Intent of This Site
 
 When reading about the fundamental nature of reality, a healthy reader should always ask: *"What is the purpose of this site, and what foundational assumptions drive it?"*
 
