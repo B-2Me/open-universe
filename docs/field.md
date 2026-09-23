@@ -24,9 +24,9 @@ Reality is a zero-storage substrate. It does not maintain a static archive of th
 ---
 
 ## 2. The Speed of Causality
-Legacy physics frequently refers to $c$ as the "speed of light," a naming convention that has caused a century of philosophical confusion. It implies that the universe is somehow governed by the speed of a photon. But light does not define $c$; rather, $c$ defines light. 
+Legacy physics frequently refers to *c* as the "speed of light," a naming convention that has caused a century of philosophical confusion. It implies that the universe is somehow governed by the speed of a photon. But light does not define *c*; rather, *c* defines light. 
 
-Fundamentally, $c$ is the **speed of causality**. It is the absolute maximum rate at which a relational state change can propagate across the field.
+Fundamentally, *c* is the **speed of causality**. It is the absolute maximum rate at which a relational state change can propagate across the field.
 
 Because the universe is not a mathematical abstraction but an active, natural medium, actualization requires thermodynamic exertion. Resolving relational tension across boundaries is not instantaneous. 
 
@@ -41,7 +41,7 @@ The speed of causality is the fundamental natural constraint that prevents infin
 ## 3. The Architecture of Scale
 Human intuition is blind to scale. What seems logical at the macroscopic level often completely decoheres when exposed to the micro-scale friction of the underlying substrate. 
 
-The field is not infinitely divisible. Zeno's paradoxes and infinite mathematical regressions fail because they confuse abstract geometry with strict material limits. The universe has a hard resolution limit: the **Planck length** ($1.6 \times 10^{-35}$ meters) and **Planck time** ($5.4 \times 10^{-44}$ seconds). 
+The field is not infinitely divisible. Zeno's paradoxes and infinite mathematical regressions fail because they confuse abstract geometry with strict material limits. The universe has a hard resolution limit: the **Planck length** (1.6 &times; 10<sup>-35</sup> meters) and **Planck time** (5.4 &times; 10<sup>-44</sup> seconds). 
 
 You cannot divide space smaller than the fundamental grain of reality, and you cannot divide time faster than the minimum duration of a state change. Motion and causal propagation are not smooth, infinite slides across a continuous void; they are localized sequences of discrete actualizations.
 
