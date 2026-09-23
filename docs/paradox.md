@@ -2,6 +2,7 @@
 title: Observational Paradoxes
 audio: /audio/paradox.mp3
 ---
+<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # Observational Paradoxes: Stress-Testing the Architecture
 
