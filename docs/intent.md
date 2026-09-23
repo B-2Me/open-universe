@@ -16,7 +16,7 @@ This site is an **audit of our philosophical architecture**.
 
 For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: **you are doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
 
-### What We Are Auditing
+## What We Are Auditing
 
 We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of **The Planck Field**:
 
@@ -24,7 +24,7 @@ We are auditing legacy ideas to see which ones hold their boundaries, and which 
 * **Simulation Theory decoheres** because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot render uncomputable physics on an algorithmic machine.
 * **Passive Observation fails** because biological perception is not a playback mechanism; just staying in the live stream requires continuous thermodynamic work. Without metabolic upkeep, the interface dissolves into background noise.
 
-### Navigating Causality
+## Navigating Causality
 
 Ultimately, the purpose of compiling this audit is deeply practical. **I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.**
 
