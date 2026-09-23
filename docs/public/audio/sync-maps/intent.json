@@ -7,81 +7,81 @@
   {
     "text": "When reading about the fundamental nature of reality, a healthy reader should always ask: \"What is the purpose of this site, and what foundational assumptions drive it?\"",
     "start": 2.456,
-    "end": 13.155
+    "end": 13.154
   },
   {
     "text": "There is a famous saying in science: There is no such thing as philosophy-free physics; there is only physics whose philosophical baggage is taken on board without examination. Philosophy is the high-level architecture we use to make sense of the world, but it only works when it is strictly tethered to reality. When philosophy ignores the material constraints of nature, it devolves into empty abstraction.",
-    "start": 13.155,
-    "end": 38.985
+    "start": 13.154,
+    "end": 38.981
   },
   {
     "text": "I hold a Bachelor of Science in Computer Science from a California university and have spent two decades as a software engineer designing, building, and debugging complex systems. When you spend a lifetime hunting down nanosecond-scale concurrency problems, you learn a hard truth: human intuition is blind to scale. What seems logical at the macro level often completely decoheres when exposed to the micro-scale friction of the underlying substrate.",
-    "start": 38.985,
-    "end": 67.537
+    "start": 38.981,
+    "end": 67.53
   },
   {
     "text": "This site is an audit of our philosophical architecture.",
-    "start": 67.537,
-    "end": 71.082
+    "start": 67.53,
+    "end": 71.075
   },
   {
     "text": "For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: you are doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.",
-    "start": 71.082,
-    "end": 102.167
+    "start": 71.075,
+    "end": 102.156
   },
   {
     "text": "What We Are Auditing",
-    "start": 102.167,
-    "end": 103.433
+    "start": 102.156,
+    "end": 103.422
   },
   {
     "text": "We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of The Planck Field:",
-    "start": 103.433,
-    "end": 113.752
+    "start": 103.422,
+    "end": 113.74
   },
   {
     "text": "The Block Universe dissipates because a zero-storage physical field cannot cache a pre-computed future. It violates the thermodynamics of time.",
-    "start": 113.752,
-    "end": 122.805
+    "start": 113.74,
+    "end": 122.792
   },
   {
     "text": "Simulation Theory decoheres because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot render uncomputable physics on an algorithmic machine.",
-    "start": 122.805,
-    "end": 134.201
+    "start": 122.792,
+    "end": 134.186
   },
   {
     "text": "Passive Observation fails because biological perception is not a playback mechanism; just staying in the live stream requires continuous thermodynamic work. Without metabolic upkeep, the interface dissolves into background noise.",
-    "start": 134.201,
-    "end": 148.699
+    "start": 134.186,
+    "end": 148.682
   },
   {
     "text": "Navigating Causality",
-    "start": 148.699,
-    "end": 149.965
+    "start": 148.682,
+    "end": 149.948
   },
   {
     "text": "Ultimately, the purpose of compiling this audit is deeply practical. I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.",
-    "start": 149.965,
-    "end": 161.867
+    "start": 149.948,
+    "end": 161.849
   },
   {
     "text": "Causality is not a global blanket covering the universe all at once. It exists at the Planck scale, forged only at the exact boundary where interactions actually occur. Because our legacy philosophies treat us as isolated \"objects\" or \"ghosts in a machine,\" we fail to recognize that our biology is hyper-advanced, wildly under-appreciated technology designed to steer through this localized causality.",
-    "start": 161.867,
-    "end": 187.317
+    "start": 161.849,
+    "end": 187.296
   },
   {
     "text": "As a result, we bump into each other and our environment in awkward, destructive ways that nobody wants. We generate unnecessary relational friction simply because we are using legacy maps to drive the interface.",
-    "start": 187.317,
-    "end": 200.738
+    "start": 187.296,
+    "end": 200.716
   },
   {
     "text": "By fitting our philosophy directly to objective, measured natural constraints, we don't have to guess how the universe operates, and we don't have to drive the hardware blind. We just have to measure the field.",
-    "start": 200.738,
-    "end": 214.033
+    "start": 200.716,
+    "end": 214.009
   },
   {
     "text": "Welcome to the site.",
-    "start": 214.033,
-    "end": 215.299
+    "start": 214.009,
+    "end": 215.275
   }
 ]
