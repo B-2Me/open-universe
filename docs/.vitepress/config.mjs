@@ -15,7 +15,7 @@ export default defineConfig({
       { text: 'The Paradoxes', link: '/paradox' },
       { text: 'The Descent', link: '/descent' },
       { text: 'The Interference', link: '/interference' }
-      ///{ text: 'The Static', link: '/static' }
+      { text: 'The Intent', link: '/intent' }
     ],
 
     socialLinks: [
