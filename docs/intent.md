@@ -29,7 +29,7 @@ We are auditing legacy ideas to see which ones hold their boundaries, and which 
 
 Ultimately, the purpose of compiling this audit is deeply practical. **I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.**
 
-Causality is not a global blanket covering the universe all at once. It exists at the Planck scale, forged only at the exact boundary where interactions actually occur. Because our legacy philosophies treat us as isolated "objects" or "ghosts in a machine," we fail to recognize that our biology is hyper-advanced, wildly under-appreciated technology designed to steer through this localized causality. 
+Causality is not a global blanket covering the universe all at once. It exists at the Planck scale, forged only at the exact boundary where interactions actually occur. Because our legacy philosophies treat us as isolated "objects" or "ghosts in a machine," we fail to recognize that our biology is hyper-advanced, wildly under-appreciated natural interface evolved to steer through this localized causality.
 
 As a result, we bump into each other and our environment in awkward, destructive ways that nobody wants. We generate unnecessary relational friction simply because we are using legacy maps to drive the interface. 
 
