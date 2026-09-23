@@ -139,8 +139,25 @@ html.dark body {
 }
 
 /* ---------------------------------------------------
-   Hero Section: Title & Layout Centering
+   Hero Section: Title, Layout Centering & Gap Reduction
 --------------------------------------------------- */
+/* Shrink the large default gap above the Home Page Hero title */
+.VPHero {
+  padding-top: 32px !important;
+}
+
+@media (min-width: 768px) {
+  .VPHero {
+    padding-top: 48px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHero {
+    padding-top: 64px !important; 
+  }
+}
+
 .VPHomeHero {
   text-align: center;
 }
