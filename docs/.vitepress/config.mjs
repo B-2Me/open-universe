@@ -14,7 +14,7 @@ export default defineConfig({
       { text: 'The Source', link: '/source' },
       { text: 'The Paradoxes', link: '/paradox' },
       { text: 'The Descent', link: '/descent' },
-      { text: 'The Interference', link: '/interference' }
+      { text: 'The Interference', link: '/interference' },
       { text: 'The Intent', link: '/intent' }
     ],
 
