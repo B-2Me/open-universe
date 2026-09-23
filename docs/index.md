@@ -11,7 +11,7 @@ hero:
       link: /field
     - theme: alt
       text: Stress-Test the Paradoxes
-      link: /paradoxes
+      link: /paradox
 
 features:
   - title: Grounded in Measurement
