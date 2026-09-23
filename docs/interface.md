@@ -2,7 +2,6 @@
 title: The Interface
 audio: /audio/interface.mp3
 ---
-
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # The Interface
