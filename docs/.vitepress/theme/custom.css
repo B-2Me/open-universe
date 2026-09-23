@@ -112,8 +112,16 @@ html.dark body {
 /* ---------------------------------------------------
    Content Padding & Heading Spacing Adjustments
 --------------------------------------------------- */
+/* Mobile / Narrow Layouts: Add comfortable breathing room below sticky nav */
 .VPDoc {
-  padding-top: 16px !important;
+  padding-top: 40px !important;
+}
+
+/* Desktop / Wide Layouts: Remove the massive empty gap injected by VitePress */
+@media (min-width: 960px) {
+  .VPDoc {
+    padding-top: 16px !important;
+  }
 }
 
 .vp-doc h1,
@@ -124,8 +132,10 @@ html.dark body {
   padding-top: 0.2rem !important;
 }
 
+/* Ensure the very first H1 title stays pinned tightly to the padding */
 .vp-doc h1:first-child {
   margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* ---------------------------------------------------
