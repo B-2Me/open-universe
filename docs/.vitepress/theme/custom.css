@@ -139,22 +139,27 @@ html.dark body {
 }
 
 /* ---------------------------------------------------
-   Hero Section: Title, Layout Centering & Gap Reduction
+   Hero Section: Safe Header Clearance & Layout Centering
 --------------------------------------------------- */
-/* Shrink the large default gap above the Home Page Hero title */
+/* Mobile / Narrow: Ensure safe clearance below sticky header to prevent clipping */
 .VPHero {
-  padding-top: 32px !important;
+  padding-top: calc(var(--vp-nav-height, 64px) + 2rem) !important;
+  padding-bottom: 3rem !important;
 }
 
+/* Tablet / Medium viewports */
 @media (min-width: 768px) {
   .VPHero {
-    padding-top: 48px !important;
+    padding-top: calc(var(--vp-nav-height, 64px) + 2.5rem) !important;
+    padding-bottom: 4rem !important;
   }
 }
 
+/* Desktop / Wide viewports: Clean, compact breathing room */
 @media (min-width: 960px) {
   .VPHero {
-    padding-top: 64px !important; 
+    padding-top: calc(var(--vp-nav-height, 64px) + 1.5rem) !important; 
+    padding-bottom: 5rem !important;
   }
 }
 
