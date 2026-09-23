@@ -1,6 +1,8 @@
 ---
 title: The Planck Field
+audio: /audio/field.mp3
 ---
+<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # The Planck Field: Auditing the Bedrock
 
