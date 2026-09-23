@@ -2,7 +2,6 @@
 title: The Interference
 audio: /audio/interference.mp3
 ---
-
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
 # The Interference
