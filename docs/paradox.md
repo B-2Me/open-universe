@@ -247,4 +247,17 @@ This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial
 * The grid possesses a maximum rate of causal actualization (the speed of light, $c$). Any localized system has a finite thermodynamic capacity for actualization. 
 * If an interface is forced to expend massive relational effort on extreme spatial displacement (high velocity) or extreme relational tension (high gravity), it consumes its available actualization budget. 
 * Consequently, the system has less capacity available for *internal* state changes (the ticking of a gear, the aging of a cell). Time didn't "slow down" or "stretch" like a fabric. The internal actualization rate of the object simply dropped because its relational capacity was maxed out navigating the grid.
-  
+
+---
+
+## 19. The Expansion Paradox (Cosmological Redshift)
+
+**The Paradox:** 
+Light arriving from distant galaxies is shifted toward the red end of the spectrum. Standard cosmology interprets this as proof that "space itself is stretching" like an inflating balloon, dragging galaxies apart. Zwicky’s original 1929 "tired light" hypothesis—which suggested photons lose energy by bouncing off dust—was rightly dismissed because dust causes visible optical blurring. To explain redshift without blurring, legacy physics insists that space must be a physical, stretchable fabric (the expanding universe).
+
+**The Active Grid Reconciliation:** 
+The block universe assumes space is a passive geometric container that can stretch and warp. The Planck Field resolves redshift not by stretching the container, but through **cumulative propagation friction**. 
+* A photon is not a static bullet cruising effortlessly through an empty void; it is a propagating wave packet of relational state changes across the field.
+* Over billions of light-years, executing trillions of sequential boundary actualizations extracts a micro-scale thermodynamic toll. 
+* Unlike Zwicky's crude dust-scattering, this is a systemic field-wide propagation cost. It degrades the frequency without scrambling the wavefront, avoiding optical blurring entirely.
+* Space is not stretching like a rubber sheet. Light is simply paying the natural thermodynamic toll of deep-field propagation across the unwritten bedrock.
