@@ -10,11 +10,11 @@ When reading about the fundamental nature of reality, a healthy reader should al
 
 There is a famous saying in science: *There is no such thing as philosophy-free physics; there is only physics whose philosophical baggage is taken on board without examination.* Philosophy is the high-level architecture we use to make sense of the world, but it only works when it is strictly tethered to reality. When philosophy ignores the material constraints of nature, it devolves into empty abstraction.
 
-I hold a Bachelor of Science in Computer Science from a California university and have spent two decades as a software engineer designing, building, and debugging complex systems. When you spend a lifetime hunting down nanosecond-scale concurrency problems, you learn a hard truth: human intuition is blind to scale. What seems logical at the macro level often completely decoheres when exposed to the micro-scale friction of the underlying substrate.
+I hold a Bachelor of Science in Computer Science from a California university and have spent two decades as a software engineer designing, building, and debugging complex systems. Spending a career hunting down nanosecond-scale concurrency problems teaches a hard truth: human intuition is blind to scale. What seems logical at the macro level often completely decoheres when exposed to the micro-scale friction of the underlying substrate.
 
 This site is an **audit of our philosophical architecture**. 
 
-For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator: **you are doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
+For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator. **I am doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
 
 ## What We Are Auditing
 
