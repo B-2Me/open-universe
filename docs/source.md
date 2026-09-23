@@ -31,7 +31,11 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ---
 
-## III. Physics, Spacetime, and Geometry
+## III. Physics, Quantum Limits, and Geometry
+
+### Max Planck: The Quantum of Action & Scale
+* **The Resolution Limit:** Planck discovered that thermodynamic energy exchange is quantized, establishing that reality cannot be infinitely subdivided. He proved the existence of hard natural limits (Planck length, Planck time).
+* **Bridge to Old Constructs:** Classical physics assumed an infinitely smooth, continuous mathematical abstraction. Planck established the literal bedrock of **The Planck Field**, proving that the universe is strictly bound by finite resolution and thermodynamic constraints.
 
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy reshape relational geometry, and objects simply follow natural geodesic paths through a landscape where time flows at varying rates.
@@ -66,6 +70,6 @@ To navigate the site without falling back into mechanistic traps, use the follow
 | **Energy Consumption** | "The system uses power to run." | **Relational Effort / Maintenance:** The active thermodynamic friction required to keep a local window synchronized with the live stream. |
 | **Physical Objects / Matter** | "Solid building blocks of the universe." | **Actual Occasions / Loci of Tension:** Temporary, stable stabilization patterns within an ongoing stream of becoming. |
 | **Forces (Gravity, Electromagnetism)** | "Invisible pushes and pulls across space." | **Relational Geometry:** Dynamic curvature and tension adjustments within an unbroken field of events. |
-| **Information Processing / Simulation** | "The brain/universe computes data." | **Live-Rendering:** The unwritten, non-algorithmic actualization of local experience from bare-metal hardware. |
+| **Information Processing / Simulation** | "The brain/universe computes data." | **Live-Rendering:** The unwritten, non-algorithmic actualization of local experience from The Planck Field. |
 | **Sensory Transduction** | "A sensor measures an external object." | **Boundary Participation:** An active, metabolic bridge allowing a local interface to partake in the external stream. |
 | **Mind vs. Body (Software/Hardware)** | "The mind runs on the brain." | **The Hayles Loop:** Information as a material force; recursive self-simulation actively updating physical actualization. |
