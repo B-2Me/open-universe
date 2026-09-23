@@ -1,6 +1,7 @@
 ---
 title: The Planck Field
 audio: /audio/field.mp3
+prev: false
 ---
 <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 
