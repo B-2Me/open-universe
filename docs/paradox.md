@@ -1,5 +1,6 @@
 ---
 title: Observational Paradoxes
+audio: /audio/paradox.mp3
 ---
 
 # Observational Paradoxes: Stress-Testing the Architecture
