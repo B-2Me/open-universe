@@ -265,6 +265,15 @@ onUnmounted(() => {
   align-items: flex-end;
 }
 
+/* Mobile-specific adjustments for iOS Safari */
+@media (max-width: 768px) {
+  .floating-controls {
+    /* Pushes the buttons up 5rem + the height of the iPhone gesture bar */
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+    right: 1rem; /* Brings it slightly closer to the edge to save horizontal space */
+  }
+}
+
 .fab {
   display: flex;
   align-items: center;
