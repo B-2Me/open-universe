@@ -8,7 +8,7 @@ audio: /audio/interference.mp3
 
 Interference is an intentional intervention with a measurable outcome. 
 
-Not all of nature is intentional; much of the physical universe unfolds along unguided paths of least resistance. But biology introduces a radical divergence: **agency**. Living systems possess the capacity to generate their own internal rhythm—a self-sustaining frequency of coherence that allows them to maintain their local boundaries against the unraveling pressure of the wider field. 
+Not all of nature is intentional; much of the physical universe unfolds along unguided paths of least resistance. But biology introduces a radical divergence: **agency**. Living systems possess the capacity to generate their own internal rhythm—a self-sustaining frequency of coherence that allows them to maintain their local boundaries against the redistributing pressure of the wider field. 
 
 The mind’s actual role is not passive observation. We maintain internal simulations to get in the way of destructive predictions and amplify the vectors we favor. This cycle forms the core of the biological interface: **Predict, Interfere, Measure.**
 
@@ -38,22 +38,22 @@ By running these four theoretical audits, we can physically test the hardware of
 
 ---
 
-## Planned Sessions
+## Planned Audio Sessions
 
-*Note: The following audio discussions are currently in development and have not yet been recorded. They represent the upcoming topics we plan to release on this feed.*
+*Note: The audio roadmap is a living document. The exact themes of the first three episodes are currently placeholders and subject to change as the physical framework evolves, but they will conceptually bridge the theoretical audits above with the biological reality of agency.*
 
-### Episode 01: Why the VHS Tape is a Lie
+### Episode 01: Why the VHS Tape is a Lie (Subject to Change)
 * **Status:** In Development
-* **Focus:** Dismantling the frozen block universe model. We explore the physics of a zero-storage, live-rendered grid and why the future has no pre-written script waiting to be played.
+* **Focus:** Dismantling the frozen block universe model. We explore the physics of a zero-storage, live-rendered grid—the prerequisite for understanding why time dilation (Audit 3) is cycle-stealing rather than time travel.
 
-### Episode 02: Your Memories are Scars, Not Time Machines
+### Episode 02: Your Memories are Scars, Not Time Machines (Subject to Change)
 * **Status:** Planned
 * **Focus:** An examination of how biological systems loop. How touching present-day neural clay creates the illusion of historical time travel, and why this traps consciousness in legacy deterministic habits.
 
-### Episode 03: The Checksum of Language (Packets vs. Streams)
+### Episode 03: The Checksum of Language (Subject to Change)
 * **Status:** Planned
-* **Focus:** The difference between causality and coordination. Causality is the localized hardware "packet"; societal coordination is the emergent "stream." We explore how language and grammar act as a statistical checksum, keeping distributed local interfaces synchronized without a central server.
+* **Focus:** The difference between causality and coordination. We explore how language and grammar act as a statistical checksum, keeping distributed local interfaces synchronized across the field.
 
-### Episode 04: The Latency Buffer
+### Episode 04: The Latency Buffer (The Physics of Free Will)
 * **Status:** Planned
-* **Focus:** Why free will requires lag. A look at how the speed of causality ($c$) and hyper-local actualization provide the physical firewall necessary for agency. Latency provides the thermodynamic breathing room to simulate, predict, and swerve.
+* **Focus:** Directly expanding on **Audit 4 (The Calorimetry of Agency)**. We look at how the absolute speed of causality ($c$) provides the physical firewall necessary for free will. Latency provides the thermodynamic breathing room for a biological interface to simulate, predict, and ultimately swerve.
