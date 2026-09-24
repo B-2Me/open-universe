@@ -61,7 +61,29 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ---
 
-## V. Translation Guide: Substance Ontology to Process Ontology
+## V. Auditing the Vanguard
+
+Institutional physics remains largely trapped in the gravity of legacy architectures, specifically standard General Relativity and String Theory, both of which rely on the continuous, infinitely divisible mathematics of the Block Universe. However, a vanguard of physicists and mathematicians has spent decades independently breaking away from that substance ontology. We do not invent new physics; we act as **systems integrators**, utilizing their mathematical breakthroughs to validate the mechanics of the field while ruthlessly auditing the philosophical dead-ends that occasionally trap them.
+
+### Lee Smolin: The Reality of Time
+* **What We Integrate:** We adopt Smolin’s **Temporal Naturalism**. Smolin forcefully dismantles the Block Universe, arguing that the present moment is thick and real, the past is physically gone, and the future is radically unwritten. Time is a continuous process of becoming, not a 4D landscape you can traverse.
+* **Where We Detach:** Smolin attempts to explain the tuning of physical constants by proposing "Cosmological Natural Selection"—a theory where collapsing black holes spawn baby multiverses with mutated physics. We reject this. The Planck Field does not require cosmic Darwinism; the fundamental constants are simply the baseline thermodynamic friction and relational constraints of the field's zero-storage medium.
+
+### Carlo Rovelli: Relational Actualization
+* **What We Integrate:** We integrate his **Relational Quantum Mechanics (RQM)** and **Loop Quantum Gravity (LQG)**. A locus does not possess a velocity or position in a vacuum; it only actualizes physical properties at the exact moment of interaction with another boundary. Furthermore, his math proves that the Planck length is a hard structural grain, not a smooth continuum.
+* **Where We Detach:** We reject Rovelli's **Thermal Time Hypothesis**. He argues that at the fundamental Planck scale, time does not exist, and that the flow of time is merely a macroscopic illusion born of entropy. If the field is an actively precipitating substrate resolving relational tension, then causal sequence is bedrock. Claiming the Planck scale is timeless simply smuggles the static Block Universe back in through the quantum back door.
+
+### Erik Verlinde: Thermodynamic Gravity
+* **What We Integrate:** We fully integrate Verlinde’s proof of **Entropic Gravity**. He demonstrates that gravity is an emergent thermodynamic phenomenon. When matter interacts, it shifts the entanglement entropy of the surrounding boundary, generating a displacement force. By treating gravity as an entropic consequence of information distribution across the field, Verlinde naturally accounts for galactic rotation curves, rendering invisible "Dark Matter" physically redundant.
+* **Where We Detach:** Verlinde remains intellectually tethered to the formalisms of high-energy string theory—specifically holographic idealized screens. He treats boundary information as an abstract mathematical projection. Per Landauer's Principle, information is not an abstract concept; it is an embodied, material state-change requiring literal energy consumption and thermodynamic dissipation.
+
+### Stephen Wolfram: The Discrete Network
+* **What We Integrate:** Wolfram recognized that differential calculus assumes an infinitely divisible continuum that nature does not physically possess. His hypergraph model replaces continuous space with an actively updating network of discrete relational nodes. Space is just the geometric distance between nodes; causal propagation is the directed chain of localized actualization events. This discrete causal structure perfectly matches the architecture of the Planck Field.
+* **Where We Detach:** We strictly reject Wolfram's **Algorithmic Computationalism**. Wolfram assumes that because the universe can be modeled as a discrete computational network, the universe *is* executing an algorithmic rule. Algorithmic execution is bound by Turing halt states and mathematical incompleteness. The Planck Field is not code running on a cosmic CPU; it is an active natural substrate governed by unwritten thermodynamic friction.
+
+---
+
+## VI. Translation Guide: Substance Ontology to Process Ontology
 
 To navigate the site without falling back into mechanistic traps, use the following translation framework when encountering legacy terminology:
 
