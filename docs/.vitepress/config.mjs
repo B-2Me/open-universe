@@ -12,17 +12,26 @@ const readingOrder = [
 export default defineConfig({
   title: "The Open Universe",
   description: "Reality is a live-rendering, zero-storage computational grid.",
-  
-  // Changed to '/' so it works perfectly on planckfield.site
   base: '/', 
   cleanUrls: true,
 
   themeConfig: {
-    nav: readingOrder,
+    // Top Navigation Bar
+    nav: [
+      ...readingOrder,
+      {
+        text: 'Project', // You can rename this label (e.g., 'Links', 'Connect', 'About')
+        items: [
+          { text: 'Site Sourcecode', link: 'https://github.com/B-2Me/open-universe' },
+          { text: '☕ Buy me a coffee', link: 'https://buymeacoffee.com/nathan_' },
+          { text: 'Contact Me', link: '/interference#contact' }
+        ]
+      }
+    ],
 
-    // Footer with your direct Buy Me a Coffee link
+    // Restored clean footer
     footer: {
-      message: '<a href="https://github.com/B-2Me/open-universe" target="_blank">Site Sourcecode</a><br><a href="https://buymeacoffee.com/nathan_" target="_blank">☕ Buy me a coffee</a><br><a href="/interference#contact">Contact Me</a><br><a href="#">Return to top ⭡</a>',
+      message: '<a href="#">Return to top ⭡</a>',
       copyright: 'The Open Universe Audit'
     },
 
