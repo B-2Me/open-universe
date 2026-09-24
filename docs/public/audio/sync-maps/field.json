@@ -1,127 +1,152 @@
 [
   {
     "text": "The Planck Field",
-    "start": 1,
-    "end": 2.168
+    "start": 0,
+    "end": 1.074
   },
   {
     "text": "100 Years of Burying the Planck",
-    "start": 3.668,
-    "end": 5.931
+    "start": 1.074,
+    "end": 3.154
   },
   {
     "text": "For a century, modern physics has been trapped in a mathematical detour.",
-    "start": 7.431,
-    "end": 12.686
+    "start": 3.154,
+    "end": 7.985
   },
   {
     "text": "The stagnation began the exact moment institutions stripped the thermodynamics out of Max Planck’s foundational discovery. Planck found the quantum of action—the baseline metabolic cost for the universe to execute a state change. It was a purely physical ledger. But instead of treating this as the physical friction of a live-rendered medium, legacy physics abstracted it into a magical, zero-dimensional point.",
-    "start": 13.186,
-    "end": 43.257
+    "start": 7.985,
+    "end": 35.63
   },
   {
     "text": "They abandoned the thermodynamic baseline. And without a way to account for the physical friction of the universe, they had to invent invisible ghosts to balance the equations:",
-    "start": 43.757,
-    "end": 56.604
+    "start": 35.63,
+    "end": 47.44
   },
   {
     "text": "They invented \"expanding space\" to explain the friction of light propagation (Redshift).",
-    "start": 57.104,
-    "end": 63.527
+    "start": 47.44,
+    "end": 53.344
   },
   {
     "text": "They invented a stretchy \"dimension of time\" to explain metabolic cycle-stealing (Time Dilation).",
-    "start": 64.027,
-    "end": 71.107
+    "start": 53.344,
+    "end": 59.853
   },
   {
     "text": "They invented mystical \"conscious observers\" to explain why potential resolves into reality (Quantum Collapse).",
-    "start": 71.607,
-    "end": 79.708
+    "start": 59.853,
+    "end": 67.301
   },
   {
     "text": "The Open Universe is a return to bare-metal thermodynamics. By treating reality as an active, computational grid rather than a pre-rendered block, the paradoxes of the last century dissolve. They were never physical mysteries; they were just the accounting errors of a broken ontology.",
-    "start": 80.208,
-    "end": 101.011
+    "start": 67.301,
+    "end": 86.425
   },
   {
     "text": "The Zero-Storage Substrate",
-    "start": 101.511,
-    "end": 103.408
+    "start": 86.425,
+    "end": 88.169
   },
   {
     "text": "For centuries, legacy philosophy and classical physics relied on a Substance Ontology—the assumption that reality is fundamentally made of independent, static \"things\" moving through an empty 3D container called \"space\" across a 4D highway called \"time.\" This led directly to the concept of the Block Universe: a static, pre-computed timeline where the past, present, and future all exist simultaneously.",
-    "start": 104.908,
-    "end": 134.396
+    "start": 88.169,
+    "end": 115.278
   },
   {
     "text": "Reality, however, is a Process Ontology. It is a Planck Field: a dense, fully saturated thermodynamic substrate.",
-    "start": 134.896,
-    "end": 143.071
+    "start": 115.278,
+    "end": 122.793
   },
   {
     "text": "The universe is not a pre-rendered DVD where the future already exists down the track; it possesses no archival memory. It is a zero-storage, live-rendered grid. To actualize the present moment, the previous relational state must be continuously consumed and overwritten. The universe exists entirely on the razor-thin, active boundary of \"Now.\"",
-    "start": 143.571,
-    "end": 168.752
+    "start": 122.793,
+    "end": 145.942
   },
   {
     "text": "In this framework, space is not an empty vacuum. It is the active relational tension between adjacent nodes in the field. Time is not a dimension you can travel through. It is simply the local clock speed—the sequence of thermodynamic actualizations occurring at any given coordinate. When a photon travels across the universe, it isn't flying through an empty void. It is forcing a trillion sequential state changes across a physical medium. Every time it hands off its relational tension to the next node, it pays a microscopic metabolic tax.",
-    "start": 169.252,
-    "end": 208.959
+    "start": 145.942,
+    "end": 182.445
   },
   {
     "text": "This is the baseline rule of the open universe: Nothing renders for free.",
-    "start": 209.459,
-    "end": 214.787
+    "start": 182.445,
+    "end": 187.343
   },
   {
     "text": "The Limits of Actualization",
-    "start": 215.287,
-    "end": 217.257
+    "start": 187.343,
+    "end": 189.154
   },
   {
     "text": "Human intuition is blind to scale. What seems logical at the macroscopic level decoheres when exposed to the micro-scale friction of the underlying substrate. The field is not infinitely divisible, and motion is not a smooth slide across a continuous void. The universe has a hard resolution limit: the Planck length (1.6 × 10⁻³⁵ meters) and Planck time (5.4 × 10⁻⁴⁴ seconds).",
-    "start": 218.757,
-    "end": 246.202
+    "start": 189.154,
+    "end": 214.384
   },
   {
-    "text": "Because the universe is bound by these material limits, actualization is constrained by strict rules:",
-    "start": 246.702,
-    "end": 254.073
+    "text": "To visualize how macroscopic physical structures span the abyss down to this fundamental limit, consider these proportional steps:",
+    "start": 214.384,
+    "end": 223.107
+  },
+  {
+    "text": "The Electron (~10¹⁷ Planck lengths across): In the Standard Model, electrons behave as point-like excitations without internal substructure down to experimental limits. If a single Planck length were the size of a grain of sand, an electron would span a vast planetary expanse.",
+    "start": 223.107,
+    "end": 241.694
+  },
+  {
+    "text": "The Proton (~5 × 10¹⁹ Planck lengths across): A proton possesses a charge radius of about 0.84 femtometers, making it roughly 100 times larger than the upper bounds of an electron.",
+    "start": 241.694,
+    "end": 253.772
+  },
+  {
+    "text": "The Atomic Nucleus (~10²⁰ Planck lengths across): Ranging from 1 to 7 femtometers depending on mass, the nucleus represents a dense nexus of strong relational binding.",
+    "start": 253.772,
+    "end": 264.977
+  },
+  {
+    "text": "Complex Structures & Human Scale (~10³⁵ Planck lengths across): When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined, or drops of water in all the oceans multiplied exponentially.",
+    "start": 264.977,
+    "end": 291.28
+  },
+  {
+    "text": "Every level of complexity is a nested cascade of relational actualizations. Because the universe is bound by these material limits, actualization is constrained by strict rules:",
+    "start": 291.28,
+    "end": 303.157
   },
   {
     "text": "The Speed of Causality: Legacy physics calls c the \"speed of light,\" but light does not define c; rather, c defines light. Fundamentally, c is the absolute maximum rate at which a relational state change can propagate across the field. Resolving relational tension requires thermodynamic exertion. If the sun suddenly vanished, the Earth would not instantly drift out of orbit. It would take eight minutes for the loss of gravitational tension to propagate across the relational field. For those eight minutes, Earth would orbit a ghost, because the causal ripple of its absence had not yet actualized at our local boundary.",
-    "start": 254.573,
-    "end": 300.119
+    "start": 303.157,
+    "end": 345.027
   },
   {
     "text": "State-Oriented Interactions: When we audit the raw bedrock at the Planck scale, we must abandon the legacy metaphor of \"microscopic billiard balls.\" We only need to look at Feynman diagrams. The vertices in these diagrams represent causal events—virtual photon exchanges, spin flips, phase shifts. These nodes map exact locations where relational tension is resolved. Causality at the fundamental limit is state-oriented, continuously recalculating relational properties at every boundary condition.",
-    "start": 300.619,
-    "end": 337.041
+    "start": 345.027,
+    "end": 378.51
   },
   {
     "text": "Relational Friction and Gradient Descent",
-    "start": 337.541,
-    "end": 340.46
+    "start": 378.51,
+    "end": 381.194
   },
   {
     "text": "Matter is not a solid object inserted into the field; matter is what happens when the field knots itself up. Mass is simply a localized zone of extreme relational tension.",
-    "start": 341.96,
-    "end": 354.442
+    "start": 381.194,
+    "end": 392.668
   },
   {
     "text": "When a system attempts to maintain its boundary against the redistributing pressure of the wider field, it must spend energy. A rock does this passively, relying on deep, stable electromagnetic locks. But a biological system must do it actively. It must pump energy against the gradient just to keep its physical boundary intact. To stay localized, you must cohere.",
-    "start": 354.942,
-    "end": 381.583
+    "start": 392.668,
+    "end": 417.16
   },
   {
     "text": "Legacy physics obscures this friction by relying on pure, abstract mathematics. Abstractions like the Wiener process model random motion as frictionless, infinitely jagged paths. But math lacks mass and thermodynamic cost. To accurately audit reality, we must subject these mathematical abstractions to a process of Gradient Descent into the natural world.",
-    "start": 382.083,
-    "end": 408.067
+    "start": 417.16,
+    "end": 441.047
   },
   {
     "text": "When we step a frictionless mathematical model down into reality, we must apply Langevin dynamics—introducing viscous drag and relational friction. The impossible, infinitely sharp angles of mathematical theory are smoothed out by the literal, natural friction of the fluid medium. Mathematical abstractions are infinitely permissive, but the actual universe is strictly bound.",
-    "start": 408.567,
-    "end": 436.084
+    "start": 441.047,
+    "end": 466.344
   }
 ]
