@@ -82,47 +82,31 @@ async function processFile(filePath) {
     }
   } catch (err) {}
 
-  // --- NEW: Robust Frontmatter Stripping ---
-  // This strips the YAML frontmatter even if there is a hidden BOM or leading space
+  // Strips YAML frontmatter
   const bodyContent = content.replace(/^[\s\uFEFF]*---\r?\n[\s\S]*?\r?\n---/, '');
 
   const parsedAST = remark().parse(bodyContent);
   const rawNodes = getRenderableNodes({ children: parsedAST.children });
   
   const contentNodes = [];
-  const PAGE_START_PAUSE = 1.0;
-  let totalInjectedPauses = PAGE_START_PAUSE;
 
   for (const node of rawNodes) {
     let rawText = extractText(node).replace(/\n/g, ' ');
     let sanitizedText = sanitizeTextForTTS(rawText);
     
     if (sanitizedText) {
-      let addedPause = 0;
-      let ttsString = sanitizedText;
-
-      if (node.type === 'heading') {
-        ttsString += ' [pause: 1.5s]';
-        addedPause = 1.5;
-      } else {
-        ttsString += ' [pause: 0.5s]';
-        addedPause = 0.5;
-      }
-
-      totalInjectedPauses += addedPause;
-
       contentNodes.push({ 
         originalText: sanitizedText, 
-        ttsText: ttsString,          
-        charCount: sanitizedText.length,
-        pauseTime: addedPause
+        ttsText: sanitizedText,          
+        charCount: sanitizedText.length
       });
     }
   }
 
   if (contentNodes.length === 0) return;
 
-  const fullPageText = `[pause:${PAGE_START_PAUSE}s] ` + contentNodes.map(n => n.ttsText).join(' ');
+  // Use natural spacing instead of explicit pause tags
+  const fullPageText = contentNodes.map(n => n.ttsText).join('\n\n');
 
   console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
@@ -139,20 +123,15 @@ async function processFile(filePath) {
 
   const metadata = await mm.parseFile(finalAudioPath);
   const totalDuration = metadata.format.duration;
-
-  let pureSpeechDuration = totalDuration - totalInjectedPauses;
-  if (pureSpeechDuration <= 0) {
-    pureSpeechDuration = totalDuration; 
-    totalInjectedPauses = 0;
-  }
-
   const totalChars = contentNodes.reduce((acc, n) => acc + n.charCount, 0);
-  let currentTime = PAGE_START_PAUSE; 
+  
+  let currentTime = 0; 
   const syncEntries = [];
 
+  // Generate sync map proportionally to actual audio length
   for (const item of contentNodes) {
     const charRatio = item.charCount / totalChars;
-    const speechTimeForNode = pureSpeechDuration * charRatio;
+    const speechTimeForNode = totalDuration * charRatio;
 
     const startTime = currentTime;
     const endTime = currentTime + speechTimeForNode;
@@ -163,7 +142,7 @@ async function processFile(filePath) {
       end: Number(endTime.toFixed(3))
     });
 
-    currentTime = endTime + (totalInjectedPauses > 0 ? item.pauseTime : 0);
+    currentTime = endTime;
   }
 
   await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
