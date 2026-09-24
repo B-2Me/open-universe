@@ -218,30 +218,38 @@ html.dark body {
 /* ---------------------------------------------------
    Social Links: Mobile Menu & Desktop Overflow Stacking
 --------------------------------------------------- */
-/* Force the container to stack vertically inside dropdowns and mobile menus */
-.VPMenu .VPSocialLinks,
+/* Desktop Dropdown: Left-align the container */
+.VPMenu .VPSocialLinks {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 16px;
+  padding: 12px 16px !important;
+}
+
+/* Mobile Menu: Left-align and match standard text link padding */
 .VPNavScreen .VPSocialLinks {
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-start !important;
   gap: 16px;
-  padding: 12px;
+  padding: 12px 32px !important; 
 }
 
-/* Align the icon and text cleanly */
+/* Ensure the icon and dynamically pulled text line up seamlessly */
 .VPMenu .VPSocialLink,
 .VPNavScreen .VPSocialLink {
   width: 100% !important;
-  padding: 12px 16px !important;
+  padding: 0 !important;
   background-color: transparent !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: 12px;
+  gap: 16px !important;
   text-decoration: none !important;
 }
 
-/* Dynamically pull the aria-label text instead of hardcoding it */
+/* Pull the aria-label text from config.mjs */
 .VPNavScreen .VPSocialLink::after,
 .VPMenu .VPSocialLink::after {
   content: attr(aria-label);
@@ -256,8 +264,7 @@ html.dark body {
   color: var(--vp-c-brand);
 }
 
-/* Hide the glitchy repeating text spans injected by VitePress */
-.VPMenu .VPSocialLink > span,
-.VPNavScreen .VPSocialLink > span {
+/* Target ONLY screen-reader text so the GitHub icon span isn't accidentally hidden */
+.VPSocialLink .visually-hidden {
   display: none !important;
 }
