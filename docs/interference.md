@@ -40,20 +40,20 @@ By running these four theoretical audits, we can physically test the hardware of
 
 ## Planned Audio Sessions
 
-*Note: The audio roadmap is a living document. The exact themes of the first three episodes are currently placeholders and subject to change as the physical framework evolves, but they will conceptually bridge the theoretical audits above with the biological reality of agency.*
+*Note: The audio roadmap is a living syllabus. The exact order and topics are tentative, but each episode will be anchored by specific media (films, shows, or lectures) that you can watch beforehand to set the context.*
 
-### Episode 01: Why the VHS Tape is a Lie (Subject to Change)
-* **Status:** In Development
-* **Focus:** Dismantling the frozen block universe model. We explore the physics of a zero-storage, live-rendered grid—the prerequisite for understanding why time dilation (Audit 3) is cycle-stealing rather than time travel.
+### Episode 01: The Myth of the Pre-Rendered DVD
+* **Anchor Media:** *Tenet* (Film)
+* **Focus:** Dismantling the frozen block universe model. Legacy physics treats time like a DVD—where the end of the timeline already exists simultaneously with the beginning, and you are just reading the disc. We explore the physics of a zero-storage, live-rendered grid, and why the future has no pre-written script.
 
-### Episode 02: Your Memories are Scars, Not Time Machines (Subject to Change)
-* **Status:** Planned
-* **Focus:** An examination of how biological systems loop. How touching present-day neural clay creates the illusion of historical time travel, and why this traps consciousness in legacy deterministic habits.
+### Episode 02: The Latency Buffer & The Swerve
+* **Anchor Media:** *Devs* (Mini-series) and lectures by Jenann Ismael (*How Physics Makes Us Free*)
+* **Focus:** Directly expanding on **Audit 4 (The Calorimetry of Agency)**. We look at the thermodynamic cost of breaking the "tramlines" of determinism. We explore how the absolute speed of causality ($c$) provides the physical firewall necessary for free will, giving the biological interface the breathing room to simulate, predict, and ultimately swerve.
 
-### Episode 03: The Checksum of Language (Subject to Change)
-* **Status:** Planned
-* **Focus:** The difference between causality and coordination. We explore how language and grammar act as a statistical checksum, keeping distributed local interfaces synchronized across the field.
+### Episode 03: Your Memories are Scars, Not Time Machines
+* **Anchor Media:** *Memento* (Film)
+* **Focus:** An examination of how biological systems loop. Memory is not accessing a saved file from the past; it is the act of touching present-day physical neural clay. We explore how this mechanism creates the illusion of historical time travel, and why mistaking scars for time machines traps consciousness in deterministic habits.
 
-### Episode 04: The Latency Buffer (The Physics of Free Will)
-* **Status:** Planned
-* **Focus:** Directly expanding on **Audit 4 (The Calorimetry of Agency)**. We look at how the absolute speed of causality ($c$) provides the physical firewall necessary for free will. Latency provides the thermodynamic breathing room for a biological interface to simulate, predict, and ultimately swerve.
+### Episode 04: The Checksum of Language
+* **Anchor Media:** *Arrival* (Film)
+* **Focus:** The difference between causality and coordination. Causality is the localized hardware "packet"; societal coordination is the emergent "stream." We explore how language and grammar act as a statistical checksum, keeping distributed local boundaries synchronized across the field without a central server.
