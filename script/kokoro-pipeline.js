@@ -13,13 +13,14 @@ const CONTENT_DIR = './docs';
 const AUDIO_OUT_DIR = './docs/public/audio';
 const SYNC_MAP_DIR = './docs/public/audio/sync-maps';
 
+// Recursively extract text, deliberately ignoring HTML/Vue component nodes
 function extractText(node) {
+  if (node.type === 'html') return ''; // Prevents reading <StickyAudioPlayer> or <GenerateVideo>
   if (node.value) return node.value;
   if (node.children) return node.children.map(extractText).join('');
   return '';
 }
 
-// Recursively walk the AST to collect all readable content blocks (headings, paragraphs, list items)
 function getRenderableNodes(node, nodes = []) {
   if (!node) return nodes;
 
@@ -43,6 +44,29 @@ function getRenderableNodes(node, nodes = []) {
   return nodes;
 }
 
+function sanitizeTextForTTS(text) {
+  // 1. Convert Roman Numerals at the start of headings (e.g., "VI. Translation Guide" -> "Six. ")
+  const romanMap = {
+    'I': 'One', 'II': 'Two', 'III': 'Three', 'IV': 'Four', 'V': 'Five',
+    'VI': 'Six', 'VII': 'Seven', 'VIII': 'Eight', 'IX': 'Nine', 'X': 'Ten',
+    'XI': 'Eleven', 'XII': 'Twelve', 'XIII': 'Thirteen', 'XIV': 'Fourteen',
+    'XV': 'Fifteen', 'XVI': 'Sixteen', 'XVII': 'Seventeen', 'XVIII': 'Eighteen',
+    'XIX': 'Nineteen', 'XX': 'Twenty'
+  };
+  
+  let sanitized = text.replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\.\s/g, (match, p1) => {
+    return `${romanMap[p1]}. `;
+  });
+
+  // 2. Remove tags so they aren't spoken aloud
+  sanitized = sanitized.replace(/\/g, '');
+
+  // 3. Strip standalone dollar signs for inline math (e.g., $c$ -> c)
+  sanitized = sanitized.replace(/\$/g, '');
+
+  return sanitized.trim();
+}
+
 async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');
   if (filename === 'index') return; // Skip hero landing page
@@ -51,7 +75,7 @@ async function processFile(filePath) {
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
   const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
 
-  // Robust cache check: verify that BOTH the MP3 and the JSON sync map are newer than the Markdown file
+  // Robust cache check
   try {
     const mdStat = await fs.stat(filePath);
     const mp3Stat = await fs.stat(finalAudioPath);
@@ -62,7 +86,7 @@ async function processFile(filePath) {
       return;
     }
   } catch (err) {
-    // If either file is missing or stats fail, it falls through to regenerate both from scratch
+    // Files missing, fall through to generation
   }
 
   let bodyStartIndex = 0;
@@ -75,24 +99,45 @@ async function processFile(filePath) {
 
   const bodyContent = content.substring(bodyStartIndex);
   const parsedAST = remark().parse(bodyContent);
-
   const rawNodes = getRenderableNodes({ children: parsedAST.children });
+  
   const contentNodes = [];
+  const PAGE_START_PAUSE = 1.0;
+  let totalInjectedPauses = PAGE_START_PAUSE;
 
   for (const node of rawNodes) {
-    const textForTTS = extractText(node).replace(/\n/g, ' ');
-    if (textForTTS.trim()) {
-      contentNodes.push({ type: node.type, text: textForTTS });
+    let rawText = extractText(node).replace(/\n/g, ' ');
+    let sanitizedText = sanitizeTextForTTS(rawText);
+    
+    if (sanitizedText) {
+      let addedPause = 0;
+      let ttsString = sanitizedText;
+
+      // Pacing logic: Long pause after headings, short breath after paragraphs
+      if (node.type === 'heading') {
+        ttsString += ' [pause: 1.5s]';
+        addedPause = 1.5;
+      } else {
+        ttsString += ' [pause: 0.5s]';
+        addedPause = 0.5;
+      }
+
+      totalInjectedPauses += addedPause;
+
+      contentNodes.push({ 
+        originalText: sanitizedText, // Cleaned text for the JSON map to display
+        ttsText: ttsString,          // Text + pause tags for the Kokoro API
+        charCount: sanitizedText.length,
+        pauseTime: addedPause
+      });
     }
   }
 
   if (contentNodes.length === 0) return;
 
-  const PAUSE_DURATION = 1.0; 
-  const joinedText = contentNodes.map(n => n.text).join(' ');
-  const fullPageText = `[pause:${PAUSE_DURATION}s] ` + joinedText;
+  const fullPageText = `[pause:${PAGE_START_PAUSE}s] ` + contentNodes.map(n => n.ttsText).join(' ');
 
-  console.log(`Generating continuous MP3 and sync map for ${filename} (${contentNodes.length} nodes)...`);
+  console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
   await fs.mkdir(SYNC_MAP_DIR, { recursive: true });
 
@@ -105,27 +150,37 @@ async function processFile(filePath) {
   const buffer = Buffer.from(await mp3.arrayBuffer());
   await fs.writeFile(finalAudioPath, buffer);
 
+  // Sync Map Generation
   const metadata = await mm.parseFile(finalAudioPath);
   const totalDuration = metadata.format.duration;
 
-  const totalChars = joinedText.length;
-  const speechDuration = totalDuration - PAUSE_DURATION;
-  let currentTime = PAUSE_DURATION; 
+  // Subtract artificial pauses from the duration so text-highlighting math remains accurate
+  let pureSpeechDuration = totalDuration - totalInjectedPauses;
+  if (pureSpeechDuration <= 0) {
+    // Fallback in case the TTS engine ignores the [pause] tags entirely
+    pureSpeechDuration = totalDuration; 
+    totalInjectedPauses = 0;
+  }
+
+  const totalChars = contentNodes.reduce((acc, n) => acc + n.charCount, 0);
+  let currentTime = PAGE_START_PAUSE; 
   const syncEntries = [];
 
   for (const item of contentNodes) {
-    const charRatio = item.text.length / totalChars;
-    const nodeDuration = speechDuration * charRatio;
+    const charRatio = item.charCount / totalChars;
+    const speechTimeForNode = pureSpeechDuration * charRatio;
 
     const startTime = currentTime;
-    const endTime = currentTime + nodeDuration;
-    currentTime = endTime;
+    const endTime = currentTime + speechTimeForNode;
 
     syncEntries.push({
-      text: item.text,
+      text: item.originalText, // Shows the clean, un-tagged text
       start: Number(startTime.toFixed(3)),
       end: Number(endTime.toFixed(3))
     });
+
+    // Advance the playhead by the node's speech time AND its trailing pause
+    currentTime = endTime + (totalInjectedPauses > 0 ? item.pauseTime : 0);
   }
 
   await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
@@ -152,3 +207,4 @@ async function run() {
 }
 
 run().catch(console.error);
+
