@@ -19,19 +19,12 @@ export default defineConfig({
     // Top Navigation Bar
     nav: [
       ...readingOrder,
-      {
-        text: 'Project', // You can rename this label (e.g., 'Links', 'Connect', 'About')
-        items: [
-          { text: 'Site Sourcecode', link: 'https://github.com/B-2Me/open-universe' },
-          { text: '☕ Buy me a coffee', link: 'https://buymeacoffee.com/nathan_' },
-          { text: 'Contact Me', link: '/interference#contact' }
-        ]
-      }
+      { text: '☕ Buy me a coffee', link: 'https://buymeacoffee.com/nathan_' },
+      { text: 'Contact Me', link: '/interference#contact' }
     ],
 
-    // Restored clean footer
+    // Cleaned footer
     footer: {
-      message: '<a href="#">Return to top ⭡</a>',
       copyright: 'The Open Universe Audit'
     },
 
