@@ -2,7 +2,9 @@
 title: The Interference
 audio: /audio/interference.mp3
 ---
-<StickyAudioPlayer :audioSrc="$frontmatter.audio"></StickyAudioPlayer>
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Interference
 
@@ -57,3 +59,65 @@ By running these four theoretical audits, we can physically test the hardware of
 ### Episode 04: The Checksum of Language
 * **Anchor Media:** *Arrival* (Film)
 * **Focus:** The difference between causality and coordination. Causality is the localized hardware "packet"; societal coordination is the emergent "stream." We explore how language and grammar act as a statistical checksum, keeping distributed local boundaries synchronized across the field without a central server.
+
+---
+
+## Contact Me {#contact}
+
+Have thoughts on the framework or want to collaborate on an audit? Send a message below.
+
+<form action="https://api.web3forms.com/submit" method="POST" class="contact-form">
+  <!-- Replace this value with the key Web3Forms emailed you -->
+  <input type="hidden" name="access_key" value="26bfc507-c88b-422c-8366-06792406aef9">
+  
+  <label>
+    Your email:
+    <input type="email" name="email" required>
+  </label>
+  <label>
+    Your message:
+    <textarea name="message" rows="5" required></textarea>
+  </label>
+  
+  <!-- Honeypot to prevent spam -->
+  <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+  <button type="submit">Send</button>
+</form>
+
+<style>
+.contact-form { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1rem; 
+  max-width: 500px; 
+  margin-top: 1rem; 
+}
+.contact-form label { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.5rem; 
+  font-weight: 500; 
+}
+.contact-form input, 
+.contact-form textarea { 
+  padding: 0.5rem; 
+  border: 1px solid var(--vp-c-divider); 
+  border-radius: 4px; 
+  background-color: var(--vp-c-bg-alt); 
+  color: var(--vp-c-text-1); 
+}
+.contact-form button { 
+  padding: 0.5rem 1rem; 
+  background-color: var(--vp-c-brand); 
+  color: white; 
+  border: none; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  align-self: flex-start; 
+}
+.contact-form button:hover { 
+  background-color: var(--vp-c-brand-dark); 
+}
+</style>
