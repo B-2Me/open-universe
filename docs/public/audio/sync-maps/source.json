@@ -1,252 +1,267 @@
 [
   {
     "text": "The Source",
-    "start": 1,
-    "end": 1.676
+    "start": 0,
+    "end": 0.686
   },
   {
     "text": "The conceptual foundation of a live-rendered, open universe draws on physicists, philosophers, and cybernetic theorists who rejected the frozen \"block universe\" in favor of dynamic becoming, relational tensions, and embodied feedback loops.",
-    "start": 1.676,
-    "end": 17.889
+    "start": 0.686,
+    "end": 17.14
   },
   {
-    "text": "I. Philosophical Foundations: Process & Indeterminism",
-    "start": 17.889,
-    "end": 21.469
+    "text": "One. Philosophical Foundations: Process & Indeterminism",
+    "start": 17.14,
+    "end": 20.911
   },
   {
     "text": "Alfred North Whitehead: Process and Reality",
-    "start": 21.469,
-    "end": 24.374
+    "start": 20.911,
+    "end": 23.859
   },
   {
     "text": "The Process View: Whitehead dismantled the classical view of static \"substance,\" replacing it with actual occasions—discrete, perishing drops of experience that are constantly overwritten to construct the present. Reality is not a collection of objects; it is an unbroken stream of qualitative becoming.",
-    "start": 24.374,
-    "end": 44.843
+    "start": 23.859,
+    "end": 44.634
   },
   {
     "text": "Bridge to Old Constructs: Materialists call these \"particles\" or \"matter,\" but these terms are merely frozen abstractions of rapidly perishing relational events.",
-    "start": 44.843,
-    "end": 55.719
+    "start": 44.634,
+    "end": 55.672
   },
   {
     "text": "Karl Popper: The Open Universe",
-    "start": 55.719,
-    "end": 57.746
+    "start": 55.672,
+    "end": 57.729
   },
   {
     "text": "The Indeterministic Cosmos: Popper argued against both scientific and historical determinism, establishing that the future is genuinely unwritten. Even with complete knowledge of a local present, the universe's live-rendering prevents full algorithmic pre-calculation.",
-    "start": 57.746,
-    "end": 75.85
+    "start": 57.729,
+    "end": 76.103
   },
   {
     "text": "Bridge to Old Constructs: Traditional mechanics treats the future as a pre-computed tape waiting to be played; Popper reframes it as an open, creative horizon.",
-    "start": 75.85,
-    "end": 86.591
+    "start": 76.103,
+    "end": 87.005
   },
   {
-    "text": "II. Cybernetics, Embodiment, and Information",
-    "start": 86.591,
-    "end": 89.564
+    "text": "Two. Cybernetics, Embodiment, and Information",
+    "start": 87.005,
+    "end": 90.09
   },
   {
     "text": "N. Katherine Hayles: The Materiality of Information & Recursive Loops",
-    "start": 89.564,
-    "end": 94.225
+    "start": 90.09,
+    "end": 94.821
   },
   {
     "text": "The Disembodiment Fallacy: In How We Became Posthuman (1999), Hayles dismantles the illusion that information is a weightless, disembodied ghost separate from physical reality. Information requires a physical medium to exist and act.",
-    "start": 94.225,
-    "end": 109.965
+    "start": 94.821,
+    "end": 110.796
   },
   {
     "text": "The Cybernetic Feedback Loop: Consciousness is not a passive mirror reflecting a pre-recorded world. It is a recursive feedback loop—we simulate our own simulations, feeding predictions back into the system as fresh physical inputs.",
-    "start": 109.965,
-    "end": 125.638
+    "start": 110.796,
+    "end": 126.702
   },
   {
     "text": "Bridge to Old Constructs: Dualists treat the mind as software floating above hardware. Hayles proves that changing your mind is physics, because every representation is a material event updating the state of the biological browser in real-time.",
-    "start": 125.638,
-    "end": 142.121
+    "start": 126.702,
+    "end": 143.431
   },
   {
-    "text": "III. Physics, Quantum Limits, and Geometry",
-    "start": 142.121,
-    "end": 144.958
+    "text": "Three. Physics, Quantum Limits, and Geometry",
+    "start": 143.431,
+    "end": 146.448
   },
   {
     "text": "Max Planck: The Quantum of Action & Scale",
-    "start": 144.958,
-    "end": 147.728
+    "start": 146.448,
+    "end": 149.259
   },
   {
     "text": "The Resolution Limit: Planck discovered that thermodynamic energy exchange is quantized, establishing that reality cannot be infinitely subdivided. He proved the existence of hard natural limits (Planck length, Planck time).",
-    "start": 147.728,
-    "end": 162.86
+    "start": 149.259,
+    "end": 164.616
   },
   {
     "text": "Bridge to Old Constructs: Classical physics assumed an infinitely smooth, continuous mathematical abstraction. Planck established the literal bedrock of The Planck Field, proving that the universe is strictly bound by finite resolution and thermodynamic constraints.",
-    "start": 162.86,
-    "end": 180.83
+    "start": 164.616,
+    "end": 182.854
   },
   {
     "text": "Richard Feynman & General Relativity: The Dissolution of Force",
-    "start": 180.83,
-    "end": 185.018
+    "start": 182.854,
+    "end": 187.105
   },
   {
     "text": "The Geometric Reality: Gravity is not an invisible force pulling objects across empty space. Mass and energy reshape relational geometry, and objects simply follow natural geodesic paths through a landscape where time flows at varying rates.",
-    "start": 185.018,
-    "end": 201.298
+    "start": 187.105,
+    "end": 203.628
   },
   {
     "text": "Bridge to Old Constructs: We often say \"gravity pulls,\" but this is a macroscopic idiom. There are no invisible tethers—only relational geometry shaping the flow of actualization.",
-    "start": 201.298,
-    "end": 213.391
+    "start": 203.628,
+    "end": 215.9
+  },
+  {
+    "text": "Rolf Landauer: The Thermodynamics of Information",
+    "start": 215.9,
+    "end": 219.191
+  },
+  {
+    "text": "The Physical Cost of Data: In 1961, Landauer proved that information is not an abstract, mathematical ghost. The erasure or manipulation of a single bit of information carries a strict, irreducible thermodynamic cost (heat dissipation). Information is fundamentally physical.",
+    "start": 219.191,
+    "end": 238.046
+  },
+  {
+    "text": "Bridge to Old Constructs: Legacy dualism treats human thought and memory as weightless software running on biological hardware. Landauer establishes that cognitive agency, memory overwrite, and internal simulation are literal thermodynamic exertions. This provides the bedrock physical proof for the \"Calorimetry of Agency\" and metabolic cycle-stealing.",
+    "start": 238.046,
+    "end": 262.248
   },
   {
     "text": "Mir Faizal et al.: Undecidability & The Non-Algorithmic Horizon",
-    "start": 213.391,
-    "end": 217.647
+    "start": 262.248,
+    "end": 266.567
   },
   {
     "text": "The Meta-Theory of Everything: Grounded in Gödel’s incompleteness theorems, Tarski’s undefinability theorem, and Chaitin’s information-theoretic limits, Faizal et al. prove that a wholly algorithmic \"Theory of Everything\" is mathematically impossible. Certain facets of reality are computationally undecidable and require a non-algorithmic meta-layer.",
-    "start": 217.647,
-    "end": 241.358
+    "start": 266.567,
+    "end": 290.633
   },
   {
     "text": "No Simulation: Because any simulation of the universe must be algorithmic, the universe itself cannot be a simulation; it embeds non-computational content actualized directly through nature.",
-    "start": 241.358,
-    "end": 254.193
+    "start": 290.633,
+    "end": 303.659
   },
   {
     "text": "Reference: Consequences of Undecidability in Physics on the Theory of Everything (JHAP, 2025).",
-    "start": 254.193,
-    "end": 260.544
+    "start": 303.659,
+    "end": 310.104
   },
   {
-    "text": "IV. The Hardware of the Local Interface",
-    "start": 260.544,
-    "end": 263.178
+    "text": "Four. The Hardware of the Local Interface",
+    "start": 310.104,
+    "end": 312.915
   },
   {
     "text": "Sathvik Ajay Iyengar et al.: Quantum Orbital Flexoelectricity",
-    "start": 263.178,
-    "end": 267.299
+    "start": 312.915,
+    "end": 317.097
   },
   {
     "text": "Sub-Nanometer Curvature: In two-dimensional systems like graphene nanowrinkles (GNWrs), extreme nanoscale curvature breaks local inversion symmetry, perturbing out-of-plane orbitals to generate intrinsic quantum-mechanical polarization.",
-    "start": 267.299,
-    "end": 283.242
+    "start": 317.097,
+    "end": 333.278
   },
   {
     "text": "Bridge to Old Constructs: This replaces classical electrostatic charge separation with dynamic orbital-level flexion, proving that geometry directly commands electronic potential.",
-    "start": 283.242,
-    "end": 295.334
+    "start": 333.278,
+    "end": 345.55
   },
   {
     "text": "Reference: Sub-Nanometer Curvature Unlocks Quantum Orbital Flexoelectricity in Graphene (Advanced Materials, 2026).",
-    "start": 295.334,
-    "end": 303.103
+    "start": 345.55,
+    "end": 353.435
   },
   {
     "text": "Juan Carlos Fernández del Castillo et al.: Efficient Coding & Sensory Conduits",
-    "start": 303.103,
-    "end": 308.372
+    "start": 353.435,
+    "end": 358.783
   },
   {
     "text": "The Architecture of Perception: Early sensory processing across diverse species converges on optimized motifs (broad receptors, single receptor expression, and glomerular convergence) to maximize mutual information between environmental stimuli and internal representation.",
-    "start": 308.372,
-    "end": 326.814
+    "start": 358.783,
+    "end": 377.5
   },
   {
     "text": "Reference: Convergent Motifs of Early Olfactory Processing are Recapitulated by Layer-Wise Efficient Coding (PNAS, 2026).",
-    "start": 326.814,
-    "end": 334.988
+    "start": 377.5,
+    "end": 385.796
   },
   {
-    "text": "V. Auditing the Vanguard",
-    "start": 334.988,
-    "end": 336.61
+    "text": "Five. Auditing the Vanguard",
+    "start": 385.796,
+    "end": 387.647
   },
   {
     "text": "Institutional physics remains largely trapped in the gravity of legacy architectures, specifically standard General Relativity and String Theory, both of which rely on the continuous, infinitely divisible mathematics of the Block Universe. However, a vanguard of physicists and mathematicians has spent decades independently breaking away from that substance ontology. We do not invent new physics; we act as systems integrators, utilizing their mathematical breakthroughs to validate the mechanics of the field while ruthlessly auditing the philosophical dead-ends that occasionally trap them.",
-    "start": 336.61,
-    "end": 376.737
+    "start": 387.647,
+    "end": 428.373
   },
   {
     "text": "Lee Smolin: The Reality of Time",
-    "start": 376.737,
-    "end": 378.831
+    "start": 428.373,
+    "end": 430.498
   },
   {
     "text": "What We Integrate: We adopt Smolin’s Temporal Naturalism. Smolin forcefully dismantles the Block Universe, arguing that the present moment is thick and real, the past is physically gone, and the future is radically unwritten. Time is a continuous process of becoming, not a 4D landscape you can traverse.",
-    "start": 378.831,
-    "end": 399.368
+    "start": 430.498,
+    "end": 451.341
   },
   {
     "text": "Where We Detach: Smolin attempts to explain the tuning of physical constants by proposing \"Cosmological Natural Selection\"—a theory where collapsing black holes spawn baby multiverses with mutated physics. We reject this. The Planck Field does not require cosmic Darwinism; the fundamental constants are simply the baseline thermodynamic friction and relational constraints of the field's zero-storage medium.",
-    "start": 399.368,
-    "end": 426.997
+    "start": 451.341,
+    "end": 479.383
   },
   {
     "text": "Carlo Rovelli: Relational Actualization",
-    "start": 426.997,
-    "end": 429.632
+    "start": 479.383,
+    "end": 482.057
   },
   {
     "text": "What We Integrate: We integrate his Relational Quantum Mechanics (RQM) and Loop Quantum Gravity (LQG). A locus does not possess a velocity or position in a vacuum; it only actualizes physical properties at the exact moment of interaction with another boundary. Furthermore, his math proves that the Planck length is a hard structural grain, not a smooth continuum.",
-    "start": 429.632,
-    "end": 454.222
+    "start": 482.057,
+    "end": 507.013
   },
   {
     "text": "Where We Detach: We reject Rovelli's Thermal Time Hypothesis. He argues that at the fundamental Planck scale, time does not exist, and that the flow of time is merely a macroscopic illusion born of entropy. If the field is an actively precipitating substrate resolving relational tension, then causal sequence is bedrock. Claiming the Planck scale is timeless simply smuggles the static Block Universe back in through the quantum back door.",
-    "start": 454.222,
-    "end": 483.946
+    "start": 507.013,
+    "end": 537.18
   },
   {
     "text": "Erik Verlinde: Thermodynamic Gravity",
-    "start": 483.946,
-    "end": 486.378
+    "start": 537.18,
+    "end": 539.648
   },
   {
     "text": "What We Integrate: We fully integrate Verlinde’s proof of Entropic Gravity. He demonstrates that gravity is an emergent thermodynamic phenomenon. When matter interacts, it shifts the entanglement entropy of the surrounding boundary, generating a displacement force. By treating gravity as an entropic consequence of information distribution across the field, Verlinde naturally accounts for galactic rotation curves, rendering invisible \"Dark Matter\" physically redundant.",
-    "start": 486.378,
-    "end": 518.263
+    "start": 539.648,
+    "end": 572.009
   },
   {
     "text": "Where We Detach: Verlinde remains intellectually tethered to the formalisms of high-energy string theory—specifically holographic idealized screens. He treats boundary information as an abstract mathematical projection. Per Landauer's Principle, information is not an abstract concept; it is an embodied, material state-change requiring literal energy consumption and thermodynamic dissipation.",
-    "start": 518.263,
-    "end": 544.88
+    "start": 572.009,
+    "end": 599.023
   },
   {
     "text": "Stephen Wolfram: The Discrete Network",
-    "start": 544.88,
-    "end": 547.379
+    "start": 599.023,
+    "end": 601.559
   },
   {
     "text": "What We Integrate: Wolfram recognized that differential calculus assumes an infinitely divisible continuum that nature does not physically possess. His hypergraph model replaces continuous space with an actively updating network of discrete relational nodes. Space is just the geometric distance between nodes; causal propagation is the directed chain of localized actualization events. This discrete causal structure perfectly matches the architecture of the Planck Field.",
-    "start": 547.379,
-    "end": 579.332
+    "start": 601.559,
+    "end": 633.989
   },
   {
     "text": "Where We Detach: We strictly reject Wolfram's Algorithmic Computationalism. Wolfram assumes that because the universe can be modeled as a discrete computational network, the universe is executing an algorithmic rule. Algorithmic execution is bound by Turing halt states and mathematical incompleteness. The Planck Field is not code running on a cosmic CPU; it is an active natural substrate governed by unwritten thermodynamic friction.",
-    "start": 579.332,
-    "end": 608.786
+    "start": 633.989,
+    "end": 663.882
   },
   {
-    "text": "VI. Translation Guide: Substance Ontology to Process Ontology",
-    "start": 608.786,
-    "end": 612.907
+    "text": "Six. Translation Guide: Substance Ontology to Process Ontology",
+    "start": 663.882,
+    "end": 668.133
   },
   {
     "text": "To navigate the site without falling back into mechanistic traps, use the following translation framework when encountering legacy terminology:",
-    "start": 612.907,
-    "end": 622.567
+    "start": 668.133,
+    "end": 677.937
   },
   {
     "text": "| Legacy Term (Substance Ontology) | The Bridge Idiom (Conventional Use) | Correct Process Ontology Framework | | :--- | :--- | :--- | | Energy Consumption | \"The system uses power to run.\" | Relational Effort / Maintenance: The active thermodynamic friction required to keep a local window synchronized with the live stream. | | Physical Objects / Matter | \"Solid building blocks of the universe.\" | Actual Occasions / Loci of Tension: Temporary, stable stabilization patterns within an ongoing stream of becoming. | | Forces (Gravity, Electromagnetism) | \"Invisible pushes and pulls across space.\" | Relational Geometry: Dynamic curvature and tension adjustments within an unbroken field of events. | | Information Processing / Simulation | \"The brain/universe computes data.\" | Live-Rendering: The unwritten, non-algorithmic actualization of local experience from The Planck Field. | | Sensory Transduction | \"A sensor measures an external object.\" | Boundary Participation: An active, metabolic bridge allowing a local interface to partake in the external stream. | | Mind vs. Body (Software/Hardware) | \"The mind runs on the brain.\" | The Hayles Loop: Information as a material force; recursive self-simulation actively updating physical actualization. |",
-    "start": 622.567,
-    "end": 707.618
+    "start": 677.937,
+    "end": 764.256
   }
 ]
