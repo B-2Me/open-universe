@@ -16,6 +16,18 @@ The mind’s actual role is not passive observation. We maintain internal simula
 
 ---
 
+## Escaping the Falling Dominos
+
+To understand how biological interference physically works, we must address the illusion of determinism. Classical physics often relies on the "falling dominos" thought experiment: *If I know the exact position and momentum of every atom in the universe right now, I could perfectly predict the entire future.* 
+
+This assumes a frictionless, perfectly scalable universe. But when we measure physical reality, we discover the **Separation of Scales**, which physically destroys determinism as it moves up to the macroscopic world.
+
+*   **Stochasticity as Ignorance:** There is no actual randomness in a cup of water; every molecule follows strict, deterministic relational actualization. "Noise" is simply a mathematical confession of scale limitation—a bookkeeping blur where we draw a box around the finer layer, ignore its internal details, and label the resulting statistical friction as randomness. Brownian motion is the exact boundary line where the unwritten microscopic stream leaks up and physically nudges the observable world.
+*   **The Memory Wipe:** Microscopic actualizations vibrate billions of times per second (femtoseconds), while macroscopic structures respond on sluggish timescales (milliseconds). Because the lower layer moves millions of times faster, it completely "forgets" its history between each macro-shift. This temporal gap prevents feedback vortices. The universe cannot maintain a perfect chain of dominos because the lower-level table is constantly resetting its own relational geometry.
+*   **The Biological Swerve:** Because the deterministic chain is physically broken by this memory wipe, living organisms have the latency required to utilize recursive feedback loops. By simulating our own futures and feeding those predictions back into our physical hardware as new inputs, we intentionally alter our own trajectories. We are not falling dominos; we are active, metabolic engines constantly swerving against the drift.
+
+---
+
 ## Laboratory Interference: The Theoretical Audits
 
 If interference is the mechanism of human agency, it is also the mechanism of absolute physical proof. A philosophical architecture is only as valid as its physical constraints. Because the Planck Field is a physical, thermodynamic substrate, *every* paradox in legacy physics can be translated into a testable, localized relational friction problem. 
