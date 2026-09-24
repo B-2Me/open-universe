@@ -1,5 +1,15 @@
 import { defineConfig } from 'vitepress'
 
+// 1. Define your global reading order here once.
+const readingOrder = [
+  { text: 'Planck Field', link: '/field' },
+  { text: 'Interface', link: '/interface' },
+  { text: 'Source', link: '/source' },
+  { text: 'Paradoxes', link: '/paradox' },
+  { text: 'Interference', link: '/interference' },
+  { text: 'Intent', link: '/intent' }
+]
+
 export default defineConfig({
   title: "The Open Universe",
   description: "Reality is a live-rendering, zero-storage computational grid.",
@@ -7,32 +17,11 @@ export default defineConfig({
   cleanUrls: true,
 
   themeConfig: {
-    // Top Navigation Bar
-    nav: [
-      { text: 'The Planck Field', link: '/field' },
-      { text: 'The Interface', link: '/interface' },
-      { text: 'The Source', link: '/source' },
-      { text: 'The Paradoxes', link: '/paradox' },
-      { text: 'The Interference', link: '/interference' },
-      { text: 'The Intent', link: '/intent' }
-    ],
+    // 2. Reuse the array for the top nav
+    nav: readingOrder,
 
-    // The Sidebar establishes the reading order for Prev/Next generation
-    sidebar: [
-      {
-        text: 'The Audit',
-        items: [
-          { text: 'The Planck Field', link: '/field' },
-          { text: 'The Interface', link: '/interface' },
-          { text: 'The Source', link: '/source' },
-          { text: 'The Paradoxes', link: '/paradox' },
-          { text: 'The Interference', link: '/interference' },
-          { text: 'The Intent', link: '/intent' }
-        ]
-      }
-    ],
+    // Notice: We completely removed the `sidebar` object.
 
-    // Universal footer (displays on home page and wide-layout pages)
     footer: {
       message: '<a href="#">Return to top ⭡</a>',
       copyright: 'The Open Universe Audit'
@@ -41,5 +30,25 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/B-2Me/open-universe' }
     ]
+  },
+
+  // 3. Dynamically inject Prev/Next links without generating a sidebar
+  transformPageData(pageData) {
+    // Convert VitePress's relativePath (e.g., 'field.md') to your link format ('/field')
+    const route = `/${pageData.relativePath.replace(/\.md$/, '').replace(/\/index$/, '/')}`
+    
+    // Find where the current page sits in your sequence
+    const currentIndex = readingOrder.findIndex(item => item.link === route)
+    
+    if (currentIndex > -1) {
+      // If there's a previous page in the array, inject it
+      if (currentIndex > 0) {
+        pageData.frontmatter.prev = readingOrder[currentIndex - 1]
+      }
+      // If there's a next page in the array, inject it
+      if (currentIndex < readingOrder.length - 1) {
+        pageData.frontmatter.next = readingOrder[currentIndex + 1]
+      }
+    }
   }
 })
