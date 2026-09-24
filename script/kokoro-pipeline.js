@@ -58,8 +58,8 @@ function sanitizeTextForTTS(text) {
     return `${romanMap[p1]}. `;
   });
 
-  // 2. Remove tags so they aren't spoken aloud
-  sanitized = sanitized.replace(/\/g, '');
+  // 2. Remove HTML tags so they aren't spoken aloud
+  sanitized = sanitized.replace(/<[^>]+>/g, '');
 
   // 3. Strip standalone dollar signs for inline math (e.g., $c$ -> c)
   sanitized = sanitized.replace(/\$/g, '');
@@ -207,4 +207,3 @@ async function run() {
 }
 
 run().catch(console.error);
-
