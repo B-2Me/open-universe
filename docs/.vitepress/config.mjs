@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitepress'
 
-// 1. Define your global reading order here once.
 const readingOrder = [
   { text: 'Planck Field', link: '/field' },
   { text: 'Interface', link: '/interface' },
@@ -13,17 +12,17 @@ const readingOrder = [
 export default defineConfig({
   title: "The Open Universe",
   description: "Reality is a live-rendering, zero-storage computational grid.",
-  base: '/open-universe/',
+  
+  // Changed to '/' so it works perfectly on planckfield.site
+  base: '/', 
   cleanUrls: true,
 
   themeConfig: {
-    // 2. Reuse the array for the top nav
     nav: readingOrder,
 
-    // Notice: We completely removed the `sidebar` object.
-
+    // Footer with your direct Buy Me a Coffee link
     footer: {
-      message: '<a href="#">Return to top ⭡</a>',
+      message: '<a href="https://github.com/B-2Me/open-universe" target="_blank">Site Sourcecode</a><br><a href="https://buymeacoffee.com/nathan_" target="_blank">☕ Buy me a coffee</a><br><a href="/interference#contact">Contact Me</a><br><a href="#">Return to top ⭡</a>',
       copyright: 'The Open Universe Audit'
     },
 
@@ -32,20 +31,14 @@ export default defineConfig({
     ]
   },
 
-  // 3. Dynamically inject Prev/Next links without generating a sidebar
   transformPageData(pageData) {
-    // Convert VitePress's relativePath (e.g., 'field.md') to your link format ('/field')
     const route = `/${pageData.relativePath.replace(/\.md$/, '').replace(/\/index$/, '/')}`
-    
-    // Find where the current page sits in your sequence
     const currentIndex = readingOrder.findIndex(item => item.link === route)
     
     if (currentIndex > -1) {
-      // If there's a previous page in the array, inject it
       if (currentIndex > 0) {
         pageData.frontmatter.prev = readingOrder[currentIndex - 1]
       }
-      // If there's a next page in the array, inject it
       if (currentIndex < readingOrder.length - 1) {
         pageData.frontmatter.next = readingOrder[currentIndex + 1]
       }
