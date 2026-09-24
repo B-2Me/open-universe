@@ -117,8 +117,8 @@ html.dark body {
   padding-top: 40px !important;
 }
 
-/* Desktop / Wide Layouts: Remove the massive empty gap injected by VitePress */
-@media (min-width: 960px) {
+/* Tablet and Desktop Layouts: Uniform compact breathing room */
+@media (min-width: 768px) {
   .VPDoc {
     padding-top: 16px !important;
   }
@@ -141,25 +141,17 @@ html.dark body {
 /* ---------------------------------------------------
    Hero Section: Safe Header Clearance & Layout Centering
 --------------------------------------------------- */
-/* Mobile / Narrow: Ensure safe clearance below sticky header to prevent clipping */
+/* Mobile / Narrow */
 .VPHero {
   padding-top: calc(var(--vp-nav-height, 64px) + 2rem) !important;
   padding-bottom: 3rem !important;
 }
 
-/* Tablet / Medium viewports */
+/* Tablet and Desktop viewports (locked to identical padding) */
 @media (min-width: 768px) {
   .VPHero {
     padding-top: calc(var(--vp-nav-height, 64px) + 2.5rem) !important;
     padding-bottom: 4rem !important;
-  }
-}
-
-/* Desktop / Wide viewports: Clean, compact breathing room */
-@media (min-width: 960px) {
-  .VPHero {
-    padding-top: calc(var(--vp-nav-height, 64px) + 1.5rem) !important; 
-    padding-bottom: 5rem !important;
   }
 }
 
