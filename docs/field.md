@@ -45,7 +45,14 @@ This is the baseline rule of the open universe: **Nothing renders for free.**
 
 Human intuition is blind to scale. What seems logical at the macroscopic level decoheres when exposed to the micro-scale friction of the underlying substrate. The field is not infinitely divisible, and motion is not a smooth slide across a continuous void. The universe has a hard resolution limit: the **Planck length** (1.6 × 10⁻³⁵ meters) and **Planck time** (5.4 × 10⁻⁴⁴ seconds). 
 
-Because the universe is bound by these material limits, actualization is constrained by strict rules:
+To visualize how macroscopic physical structures span the abyss down to this fundamental limit, consider these proportional steps:
+
+*   **The Electron (~10¹⁷ Planck lengths across):** In the Standard Model, electrons behave as point-like excitations without internal substructure down to experimental limits. If a single Planck length were the size of a grain of sand, an electron would span a vast planetary expanse.
+*   **The Proton (~5 × 10¹⁹ Planck lengths across):** A proton possesses a charge radius of about 0.84 femtometers, making it roughly 100 times larger than the upper bounds of an electron. 
+*   **The Atomic Nucleus (~10²⁰ Planck lengths across):** Ranging from 1 to 7 femtometers depending on mass, the nucleus represents a dense nexus of strong relational binding. 
+*   **Complex Structures & Human Scale (~10³⁵ Planck lengths across):** When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined, or drops of water in all the oceans multiplied exponentially. 
+
+Every level of complexity is a nested cascade of relational actualizations. Because the universe is bound by these material limits, actualization is constrained by strict rules:
 
 *   **The Speed of Causality:** Legacy physics calls *c* the "speed of light," but light does not define *c*; rather, *c* defines light. Fundamentally, *c* is the absolute maximum rate at which a relational state change can propagate across the field. Resolving relational tension requires thermodynamic exertion. If the sun suddenly vanished, the Earth would not instantly drift out of orbit. It would take eight minutes for the loss of gravitational tension to propagate across the relational field. For those eight minutes, Earth would orbit a ghost, because the causal ripple of its absence had not yet actualized at our local boundary.
 *   **State-Oriented Interactions:** When we audit the raw bedrock at the Planck scale, we must abandon the legacy metaphor of "microscopic billiard balls." We only need to look at Feynman diagrams. The vertices in these diagrams represent causal events—virtual photon exchanges, spin flips, phase shifts. These nodes map exact locations where relational tension is resolved. Causality at the fundamental limit is *state-oriented*, continuously recalculating relational properties at every boundary condition.
