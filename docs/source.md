@@ -2,7 +2,9 @@
 title: The Source
 audio: /audio/source.mp3
 ---
-<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Source
 
@@ -40,6 +42,10 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy reshape relational geometry, and objects simply follow natural geodesic paths through a landscape where time flows at varying rates.
 * **Bridge to Old Constructs:** We often say "gravity pulls," but this is a macroscopic idiom. There are no invisible tethers—only relational geometry shaping the flow of actualization.
+
+### Rolf Landauer: The Thermodynamics of Information
+* **The Physical Cost of Data:** In 1961, Landauer proved that information is not an abstract, mathematical ghost. The erasure or manipulation of a single bit of information carries a strict, irreducible thermodynamic cost (heat dissipation). Information is fundamentally physical.
+* **Bridge to Old Constructs:** Legacy dualism treats human thought and memory as weightless software running on biological hardware. Landauer establishes that cognitive agency, memory overwrite, and internal simulation are literal thermodynamic exertions. This provides the bedrock physical proof for the "Calorimetry of Agency" and metabolic cycle-stealing.
 
 ### Mir Faizal et al.: Undecidability & The Non-Algorithmic Horizon
 * **The Meta-Theory of Everything:** Grounded in Gödel’s incompleteness theorems, Tarski’s undefinability theorem, and Chaitin’s information-theoretic limits, Faizal et al. prove that a wholly algorithmic "Theory of Everything" is mathematically impossible. Certain facets of reality are computationally undecidable and require a non-algorithmic meta-layer.
