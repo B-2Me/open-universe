@@ -1,8 +1,16 @@
 ---
 title: The Interface
 audio: /audio/interface.mp3
+prev:
+  text: 'Planck Field'
+  link: '/field'
+next:
+  text: 'Source'
+  link: '/source'
 ---
-<StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Interface
 
@@ -20,8 +28,9 @@ When we fail to understand the true nature of this hardware, we end up "bumping"
 
 To drive the interface properly, we must understand how causality actually works on the grid:
 
-* **Causality is Not a Global Blanket:** Legacy determinism assumes that causality is a pre-determined chain of dominos spanning the entire block universe. This is false. In a live-rendered grid, causality is strictly localized. It only exists at the absolute lowest resolution of the grid—the Planck scale—and *only* at the exact boundary of a relational collision. Where there is no interaction, there is no causality, only unwritten potential.
-* **The Interface as a Causal Router:** A human being is a macroscopic localized pattern that aggregates trillions of these Planck-scale causal actualizations every microsecond. We are not passively swept along by a global current. We are active causal routers, overlapping our cybernetic boundaries with the environment to co-render the grid in real-time.
+*   **The Dissolution of Force:** Traditional descriptions rely on a vocabulary of "forces" and "pulls." But as classical mechanics demonstrates when traced to its conceptual limits, gravitational "force" acting across empty space is an illusion; mass does not pull on mass via invisible ropes. Instead, dense relational geometry shapes the natural paths of motion through a dynamic field. There are no independent "things" pushing on one another; there are only relational tensions adjusting.
+*   **Causality is Not a Global Blanket:** Legacy determinism assumes that causality is a pre-determined chain of dominos spanning the entire block universe. This is false. In a live-rendered grid, causality is strictly localized. It only exists at the absolute lowest resolution of the grid—the Planck scale—and *only* at the exact boundary of a relational collision. Where there is no interaction, there is no causality, only unwritten potential.
+*   **The Interface as a Causal Router:** A human being is a macroscopic localized pattern that aggregates trillions of these Planck-scale causal actualizations every microsecond. We are not passively swept along by a global current. We are active causal routers, overlapping our cybernetic boundaries with the environment to co-render the grid in real-time.
 
 ---
 
@@ -55,9 +64,10 @@ Legacy dualism looks at a human being and sees a machine possessed by a mind. It
 
 But this assumes "fuel" is a static noun—a substance that exists independently in the dark. In the Active Grid, **there is no objective fuel.** 
 
-* **The Illusion of Inherent Fuel:** A block of wood is not objectively fuel; to a rock, it is just environmental noise. Oxygen is not inherently fuel; to an anaerobic bacterium, it is a toxic constraint that dissolves its structure. Radio waves are not fuel to a human retina. 
-* **Experience Defines the Fuel:** The universe is simply a continuous gradient of relational tension. It is the Local Interface—the active, experiencing biological loop—that determines what is fuel and what isn't. 
-* **The Cybernetic Filter:** By defining its own metabolic boundaries, the interface reaches into the static and actively *structures* specific relational geometries into usable thermodynamic work. 
+*   **The Myth of Energy Consumption:** In a process ontology, there is no physical substance called "energy" that gets "consumed." What classical physics measures as metabolic or mechanical energy is merely a macroscopic abstraction for the rate of actualization, relational transformation, and boundary maintenance. 
+*   **The Illusion of Inherent Fuel:** A block of wood is not objectively fuel; to a rock, it is just environmental noise. Oxygen is not inherently fuel; to an anaerobic bacterium, it is a toxic constraint that dissolves its structure. Radio waves are not fuel to a human retina. 
+*   **Experience Defines the Fuel:** The universe is simply a continuous gradient of relational tension. It is the Local Interface—the active, experiencing biological loop—that determines what is fuel and what isn't. 
+*   **The Cybernetic Filter:** By defining its own metabolic boundaries, the interface reaches into the static and actively *structures* specific relational geometries into usable thermodynamic work. 
 
 You do not experience the universe because you burn fuel. **You have fuel because you are actively experiencing the universe.** The "feeling" of consciousness is the literal, physical friction of the interface drawing its own boundaries and deciding which parts of the grid it will metabolize to sustain itself.
 
