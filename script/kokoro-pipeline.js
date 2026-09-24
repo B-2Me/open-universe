@@ -6,7 +6,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({
   baseURL: 'https://voice.i.rickey.io/v1',
-  apiKey: 'local-key',
+  apiKey: 'open-universe-build',
 });
 
 const CONTENT_DIR = './docs';
@@ -53,8 +53,10 @@ function sanitizeTextForTTS(text) {
     'XIX': 'Nineteen', 'XX': 'Twenty'
   };
   
-  let sanitized = text.replace(/^(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\.\s/g, (match, p1) => {
-    return `${romanMap[p1]}. `;
+  // Captures the start of the string (^), any amount of non-alphanumerics (prefix), 
+  // the Roman numeral, and the period. It preserves the punctuation while swapping the word.
+  let sanitized = text.replace(/^([^a-zA-Z0-9]*)(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\.\s/g, (match, prefix, numeral) => {
+    return `${prefix}${romanMap[numeral]}. `;
   });
 
   sanitized = sanitized.replace(/<[^>]+>/g, '');
@@ -105,8 +107,8 @@ async function processFile(filePath) {
 
   if (contentNodes.length === 0) return;
 
-  // Use natural spacing instead of explicit pause tags
-  const fullPageText = contentNodes.map(n => n.ttsText).join('\n\n');
+  // Inject a hard ellipsis to force Kokoro to take a breath between paragraphs
+  const fullPageText = contentNodes.map(n => n.ttsText).join(' ... ');
 
   console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
@@ -123,12 +125,12 @@ async function processFile(filePath) {
 
   const metadata = await mm.parseFile(finalAudioPath);
   const totalDuration = metadata.format.duration;
+  
   const totalChars = contentNodes.reduce((acc, n) => acc + n.charCount, 0);
   
   let currentTime = 0; 
   const syncEntries = [];
 
-  // Generate sync map proportionally to actual audio length
   for (const item of contentNodes) {
     const charRatio = item.charCount / totalChars;
     const speechTimeForNode = totalDuration * charRatio;
