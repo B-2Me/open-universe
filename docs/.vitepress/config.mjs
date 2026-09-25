@@ -24,7 +24,18 @@ export default defineConfig({
     // Apple Touch Icon for iOS home screens
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/apple-touch-icon.png' }],
     // Optional: Android Chrome theme color (matches your glowing cyan or dark theme)
-    ['meta', { name: 'theme-color', content: '#00e5ff' }] 
+    ['meta', { name: 'theme-color', content: '#00e5ff' }],
+
+    // Analytics
+    [
+      'script',
+      {
+        async: '',
+        defer: '',
+        src: 'https://cloud.umami.is/script.js',
+        'data-website-id': '3532a46b-30cf-4984-ba30-292b1f6ca95e'
+      }
+    ]
   ],
 
   themeConfig: {
