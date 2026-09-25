@@ -35,9 +35,10 @@ The conceptual foundation of a live-rendered, open universe draws on physicists,
 
 ## III. Physics, Quantum Limits, and Geometry
 
-### Max Planck: The Quantum of Action & Scale
+### Max Planck & The Instrumental Turn: The Quantum of Action
 * **The Resolution Limit:** Planck discovered that thermodynamic energy exchange is quantized, establishing that reality cannot be infinitely subdivided. He proved the existence of hard natural limits (Planck length, Planck time).
-* **Bridge to Old Constructs:** Classical physics assumed an infinitely smooth, continuous mathematical abstraction. Planck established the literal bedrock of **The Planck Field**, proving that the universe is strictly bound by finite resolution and thermodynamic constraints.
+* **The Instrumental Error:** Legacy physics did not ignore Planck’s mathematics; they simply stripped it of its physical ontology. Lacking the modern vocabulary of software architecture—recursion, memory allocation, and state-dependent rendering—early 20th-century physicists attempted to map a discrete, live-rendered universe using the continuous, frictionless calculus of the 19th century. They turned his thermodynamic reality into a weightless probability tool, calculating outcomes while ignoring the physical rendering cost of the substrate.
+* **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be pre-calculated without processing friction. Planck established the literal bedrock of **The Planck Field**, proving the universe is bound by finite resolution and metabolic constraints.
 
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy reshape relational geometry, and objects simply follow natural geodesic paths through a landscape where time flows at varying rates.
