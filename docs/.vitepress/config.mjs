@@ -14,6 +14,18 @@ export default defineConfig({
   description: "Reality is a live-rendering, zero-storage computational grid.",
   base: '/', 
   cleanUrls: true,
+  
+  head: [
+    // Legacy fallback
+    ['link', { rel: 'icon', href: '/images/favicon.ico' }],
+    // Modern scalable icons
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/images/favicon-32x32.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/images/favicon-16x16.png' }],
+    // Apple Touch Icon for iOS home screens
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/apple-touch-icon.png' }],
+    // Optional: Android Chrome theme color (matches your glowing cyan or dark theme)
+    ['meta', { name: 'theme-color', content: '#00e5ff' }] 
+  ],
 
   themeConfig: {
     // 1. Text Nav is now perfectly clean and won't run off the screen
