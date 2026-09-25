@@ -61,11 +61,11 @@ The block universe treats time as a spatial dimension—a highway you can drive 
 In medicine, a patient who firmly believes they are receiving a cure will often show measurable, physical biological healing, even if given a sugar pill. Conversely, a patient told a drug will cause severe side effects will physically manifest those symptoms (the Nocebo effect). Traditional dualism treats this as a glitch where the "ghost" of the mind somehow tricks the physical body.
 
 **The Planck Field Reconciliation:** 
-This is **The Hayles Loop** functioning as an evolved, natural feedback mechanism.
+This is the biological interface functioning as a **Cybernetic Steering Wheel**.
 *   Information is not a disembodied ghost; it is a physical, material force. 
 *   A biological entity is an active interface that survives by running internal models of the future to anticipate environmental threats. 
-*   When you introduce a strong prediction ("this pill will heal me" or "this pill will hurt me"), you are not just having a weightless "thought." You are writing new physical constraints into your neural architecture. Because the organism is a recursive feedback loop, that future-model is fed back into the biological network as a physical input, which immediately alters the actualization of the endocrine and immune systems. 
-*   The placebo effect isn't a glitch; it is the biological swerve in action. It is physical proof that we possess the agency to influence our own material trajectory.
+*   When you introduce a strong prediction ("this pill will heal me" or "this pill will hurt me"), you are not just having a weightless "thought." You are engaging the **Interference Engine**. Because the organism is a recursive feedback loop, you simulate your own simulation, feeding that future-model back into the biological network as a physical input, which immediately alters the actualization of the endocrine and immune systems. 
+*   The placebo effect isn't a glitch; it is the biological swerve in action. It is physical proof that we possess the agency to dynamically alter our own material trajectory.
 
 ---
 
@@ -218,10 +218,10 @@ The paradox assumes that "measurement" requires a human mind. The Planck Field p
 Descartes famously split the universe into two domains: physical matter (the body) and immaterial thought (the mind). But this creates an impossible paradox: If the mind is made of weightless, non-physical "nothing," how can it physically push biological neurons to move your arm? How does a ghost push a physical lever?
 
 **The Planck Field Reconciliation:** 
-There is no ghost. Information is not an abstract, weightless phenomenon; it is an objective, thermodynamic force.
+There is no ghost. This paradox is resolved by **The Navigator Inversion**: you don't have a mind separate from the universe observing a fixed path; you are a physical feedback loop *inside* the universe, actively updating the code of reality in real-time.
 *   As Landauer's Principle proves, the erasure or manipulation of a single bit of information requires a measurable physical exertion of heat. 
 *   A thought is not an immaterial ghost floating above the brain; it is the physical restructuring of relational constraints within a biological interface. 
-*   The mind moves the body because the mind *is* the body operating as a cybernetic feedback loop (The Hayles Loop). Simulating a future outcome writes new physical constraints into the neural architecture, which immediately alters the trajectory of the organism. 
+*   The mind moves the body because the mind *is* the body operating as a recursive self-simulation (**The Hayles Loop**). Simulating a future outcome writes new physical constraints into the neural architecture, which immediately alters the trajectory of the organism. 
 
 ---
 
