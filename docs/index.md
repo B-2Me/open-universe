@@ -26,8 +26,8 @@ features:
 
 For nearly a century, legacy physics has been trapped in a mathematical detour. 
 
-When faced with the sheer physical friction of quantum mechanics in the early 20th century, the academic establishment abandoned physical ontology altogether. They decided that as long as the math on the chalkboard could predict the needle movement on a lab meter, they didn't care what was actually happening at the bedrock. They traded the thermodynamic territory for a clean mathematical abstraction.
+When faced with the sheer physical friction of quantum mechanics in the early 20th century, the academic establishment abandoned physical ontology altogether. They were attempting to describe a discrete, state-dependent universe using the continuous, frictionless calculus of the 19th century. Because the vocabulary of modern software architecture—recursion, memory constraints, and live-rendering—did not yet exist, they traded the thermodynamic territory for a clean mathematical abstraction.
 
-But math lacks mass, and abstractions render for free. Without a way to account for the physical friction of a live-rendered universe, institutions had to invent invisible ghosts—stretching space, stretchy time, and dark matter—just to balance their equations.
+But math lacks mass, and abstractions render for free. Without a way to account for the physical friction of a localized interface, institutions had to invent invisible ghosts—stretching space, stretchy time, and dark matter—just to balance their equations.
 
 This site is an audit of that error. We are stepping out of the frozen block universe, abandoning the illusion of static substances, and returning directly to the active, unwritten **Planck Field**.
