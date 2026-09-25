@@ -66,7 +66,34 @@ export default defineConfig({
         ariaLabel: 'Contact Me'
       },
       {
-        icon: { svg: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><image href="/images/btwo-favicon.png" width="24" height="24" /></svg>' },
+        icon: {
+          // Use backticks (`) to wrap the multi-line SVG
+          svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <defs>
+              <filter id="heavyGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur2" />
+                <feMerge>
+                  <feMergeNode in="blur2" />
+                  <feMergeNode in="blur1" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <rect width="100" height="100" fill="#050014" rx="15"/>
+          
+            <path d="M 15.36 30 A 40 40 0 1 0 84.64 30" fill="none" stroke="#1A0033" stroke-width="12" stroke-linecap="round" />
+            
+            <g filter="url(#heavyGlow)">
+              <path d="M 15.36 30 A 40 40 0 0 1 84.64 30" fill="none" stroke="#00FFFF" stroke-width="12" stroke-linecap="round" />
+              <path d="M 50 50 L 15.36 30 M 50 50 L 84.64 30 M 50 50 L 84.64 70 M 50 50 L 50 90" fill="none" stroke="#00FFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+            
+            <path d="M 15.36 30 A 40 40 0 0 1 84.64 30" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+            <path d="M 50 50 L 15.36 30 M 50 50 L 84.64 30 M 50 50 L 84.64 70 M 50 50 L 50 90" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>`
+        },
         link: 'https://btwo.me',
         ariaLabel: 'Published by btwo.me'
       }
