@@ -19,14 +19,22 @@
         <div id="sidebar">
             
             <div class="panel-section">
-                <h3>Thermodynamic Biome</h3>
+                <h3>Environment</h3>
+                
+                <label style="font-size: 12px; color: var(--pf-text-muted); display: block; margin-bottom: 6px;">Thermodynamic Biome</label>
                 <select id="biome_selector">
                     <option value="0">Deep Space (Vacuum)</option>
                     <option value="1">Stellar Core (Furnace)</option>
                     <option value="2">Solid Lattice (Crust)</option>
                 </select>
                 
-                <div class="telemetry-row">
+                <label style="font-size: 12px; color: var(--pf-text-muted); display: block; margin-bottom: 6px; margin-top: 12px;">Optical Filter</label>
+                <select id="layer_selector">
+                    <option value="0">Macro (Spatial Illusion)</option>
+                    <option value="1">Metabolic (Thermal Exhaust)</option>
+                </select>
+
+                <div class="telemetry-row" style="margin-top: 16px;">
                     <span class="telemetry-label">Entropy Rate (Loss/Tick):</span>
                     <span class="telemetry-value" id="math_dissipation">15</span>
                 </div>
@@ -37,7 +45,26 @@
             </div>
 
             <div class="panel-section">
-                <h3>Intervention</h3>
+                <h3>Intervention Palette</h3>
+                
+                <select id="tool_selector">
+                    <option value="dot">Draw: Single Node</option>
+                    <option value="glider">Draw: Glider (Photon)</option>
+                    <option value="lwss">Draw: LWSS (Electron)</option>
+                    <option value="sampler">Tool: Sample Region</option>
+                    <option value="custom" id="opt_custom" disabled>Draw: Custom Stamp (Empty)</option>
+                </select>
+
+                <!-- Hidden by default, appears when 'Sample Region' is selected -->
+                <div class="slider-group" id="sampler_controls" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--pf-brand-soft);">
+                    <label>Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span> px</label>
+                    <input type="range" id="slider_radius" min="1" max="50" value="10">
+                    <button id="btn_copy_stamp" style="font-size: 12px; padding: 6px; margin-top: 10px; margin-bottom: 0;">Copy JSON to Clipboard</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Simulation Controls</h3>
                 <button id="btn_play">Pause / Play</button>
                 <button id="btn_step">Tick (Frame Advance)</button>
                 <button id="btn_soup">Inject Thermal Soup</button>
