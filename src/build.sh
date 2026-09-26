@@ -7,6 +7,8 @@ mkdir -p ../docs/public/wasm/wake/
 emcc planck.c \
   -O3 \
   -s WASM=1 \
+  -s MODULARIZE=1 \
+  -s EXPORT_NAME="'createPlanck'" \
   -s EXPORTED_FUNCTIONS="[
     '_init_grid', 
     '_tick', 
