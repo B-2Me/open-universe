@@ -185,7 +185,6 @@ function startEngine() {
         
         customStamp = newStamp;
         
-        // Auto-switch to the new custom tool
         const optCustom = document.getElementById('opt_custom');
         optCustom.disabled = false;
         optCustom.innerText = `Draw: Custom Stamp (${radius*2+1}x${radius*2+1})`;
@@ -196,7 +195,7 @@ function startEngine() {
     }
 
     // ---------------------------------------------------------
-    // Mouse Mapping 
+    // Mouse & Touch Mapping 
     // ---------------------------------------------------------
     let isDrawing = false;
 
@@ -218,8 +217,6 @@ function startEngine() {
             return;
         }
 
-        // Limit complex structures to click-only to prevent smearing, 
-        // but allow continuous dragging for the single dot pen.
         if (!isClick && activeTool !== 'dot') return;
 
         if (activeTool === 'custom') {
@@ -229,6 +226,7 @@ function startEngine() {
         }
     }
 
+    // Standard Mouse Events
     canvas.addEventListener('mousedown', (e) => { 
         isDrawing = true; 
         handleInput(e, true); 
@@ -236,6 +234,21 @@ function startEngine() {
     canvas.addEventListener('mousemove', (e) => handleInput(e, false));
     canvas.addEventListener('mouseup', () => { isDrawing = false; });
     canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+    // iOS Safari / Mobile Touch Events
+    canvas.addEventListener('touchstart', (e) => { 
+        isDrawing = true; 
+        e.preventDefault(); 
+        if(e.touches.length > 0) handleInput(e.touches[0], true); 
+    }, { passive: false });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); 
+        if(e.touches.length > 0) handleInput(e.touches[0], false);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchend', () => { isDrawing = false; });
+    canvas.addEventListener('touchcancel', () => { isDrawing = false; });
 
     // Ignite the grid
     Module._randomize_grid(); 
