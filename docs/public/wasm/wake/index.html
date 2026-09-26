@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
     
@@ -12,6 +12,14 @@
         <!-- The Bare-Metal Grid -->
         <div id="canvas-container">
             <div id="error-banner"></div>
+            
+            <!-- Floating Zoom Controls (Fallback) -->
+            <div class="zoom-controls">
+                <button id="btn_zoom_out" title="Zoom Out">−</button>
+                <button id="btn_zoom_reset" title="Reset Zoom">Reset</button>
+                <button id="btn_zoom_in" title="Zoom In">+</button>
+            </div>
+
             <canvas id="universe_canvas" width="400" height="400"></canvas>
         </div>
 
@@ -19,44 +27,28 @@
         <div id="sidebar">
             
             <div class="panel-section">
-                <h3>Environment</h3>
+                <h3>Intervention Mode</h3>
                 
-                <label style="font-size: 12px; color: var(--pf-text-muted); display: block; margin-bottom: 6px;">Thermodynamic Biome</label>
-                <select id="biome_selector">
-                    <option value="0">Deep Space (Vacuum)</option>
-                    <option value="1">Stellar Core (Furnace)</option>
-                    <option value="2">Solid Lattice (Crust)</option>
-                </select>
-                
-                <label style="font-size: 12px; color: var(--pf-text-muted); display: block; margin-bottom: 6px; margin-top: 12px;">Optical Filter</label>
-                <select id="layer_selector">
-                    <option value="0">Macro (Spatial Illusion)</option>
-                    <option value="1">Metabolic (Thermal Exhaust)</option>
-                </select>
-
-                <div class="telemetry-row" style="margin-top: 16px;">
-                    <span class="telemetry-label">Entropy Rate (Loss/Tick):</span>
-                    <span class="telemetry-value" id="math_dissipation">15</span>
+                <!-- NEW: Mutually Exclusive Segmented Control -->
+                <div class="segment-control">
+                    <button class="segment-btn active" data-mode="move">Move</button>
+                    <button class="segment-btn" data-mode="place">Place</button>
+                    <button class="segment-btn" data-mode="sample">Sample</button>
                 </div>
-                <div class="telemetry-row">
-                    <span class="telemetry-label">c² Limit (Max Heat):</span>
-                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
+
+                <!-- Context: Place Mode -->
+                <div id="context_place" class="context-panel" style="display: none;">
+                    <label>Brush Type</label>
+                    <select id="brush_selector">
+                        <option value="dot">Single Node</option>
+                        <option value="glider">Glider (Photon)</option>
+                        <option value="lwss">LWSS (Electron)</option>
+                        <option value="custom" id="opt_custom" disabled>Custom Stamp (Empty)</option>
+                    </select>
                 </div>
-            </div>
 
-            <div class="panel-section">
-                <h3>Intervention Palette</h3>
-                
-                <select id="tool_selector">
-                    <option value="dot">Draw: Single Node</option>
-                    <option value="glider">Draw: Glider (Photon)</option>
-                    <option value="lwss">Draw: LWSS (Electron)</option>
-                    <option value="sampler">Tool: Sample Region</option>
-                    <option value="custom" id="opt_custom" disabled>Draw: Custom Stamp (Empty)</option>
-                </select>
-
-                <!-- Hidden by default, appears when 'Sample Region' is selected -->
-                <div class="slider-group" id="sampler_controls" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--pf-brand-soft);">
+                <!-- Context: Sample Mode -->
+                <div id="context_sample" class="context-panel" style="display: none;">
                     <label>Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span> px</label>
                     <input type="range" id="slider_radius" min="1" max="50" value="10">
                     <button id="btn_copy_stamp" style="font-size: 12px; padding: 6px; margin-top: 10px; margin-bottom: 0;">Copy JSON to Clipboard</button>
@@ -64,7 +56,33 @@
             </div>
 
             <div class="panel-section">
-                <h3>Simulation Controls</h3>
+                <h3>Environment</h3>
+                
+                <label>Thermodynamic Biome</label>
+                <select id="biome_selector">
+                    <option value="0">Deep Space (Vacuum)</option>
+                    <option value="1">Stellar Core (Furnace)</option>
+                    <option value="2">Solid Lattice (Crust)</option>
+                </select>
+                
+                <label style="margin-top: 12px;">Optical Filter</label>
+                <select id="layer_selector">
+                    <option value="0">Macro (Spatial Illusion)</option>
+                    <option value="1">Metabolic (Thermal Exhaust)</option>
+                </select>
+
+                <div class="telemetry-row" style="margin-top: 16px;">
+                    <span class="telemetry-label">Entropy Rate:</span>
+                    <span class="telemetry-value" id="math_dissipation">15</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">c² Limit:</span>
+                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Simulation</h3>
                 <button id="btn_play">Pause / Play</button>
                 <button id="btn_step">Tick (Frame Advance)</button>
                 <button id="btn_soup">Inject Thermal Soup</button>
@@ -74,19 +92,11 @@
             <div class="panel-section">
                 <h3>System Diagnostics</h3>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">Engine Version:</span>
-                    <span class="telemetry-value" id="diag_version">Loading...</span>
-                </div>
-                <div class="telemetry-row">
                     <span class="telemetry-label">Wasm Status:</span>
                     <span class="telemetry-value" id="diag_status" style="color: #888;">Booting</span>
                 </div>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">Grid Resolution:</span>
-                    <span class="telemetry-value" id="diag_res">--</span>
-                </div>
-                <div class="telemetry-row">
-                    <span class="telemetry-label">Active Nodes:</span>
+                    <span class="telemetry-label">Nodes:</span>
                     <span class="telemetry-value" id="diag_nodes">--</span>
                 </div>
             </div>
@@ -94,8 +104,7 @@
         </div>
     </div>
 
-    <script src="planck.js?v=1" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
-    <script src="app.js?v=1"></script>
-
+    <script src="planck.js?v=5" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
