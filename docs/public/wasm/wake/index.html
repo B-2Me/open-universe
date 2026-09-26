@@ -4,30 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
     
     <div id="app">
-        <div id="canvas-container">
-            <div id="error-banner"></div>
-            <canvas id="universe_canvas" width="400" height="400"></canvas>
-        </div>
-
-        <div id="sidebar">
+        <!-- Main Viewport Area -->
+        <div id="left-pane">
             
-            <div class="panel-section">
-                <h3>Intervention Mode</h3>
+            <!-- The Bare-Metal Grid -->
+            <div id="canvas-container">
+                <div id="error-banner"></div>
+                <canvas id="universe_canvas" width="400" height="400"></canvas>
+            </div>
+
+            <!-- The Control Deck (Immediately under canvas) -->
+            <div id="control-deck">
                 
+                <!-- Interaction Row -->
                 <div class="segment-control">
                     <button class="segment-btn active" data-mode="move">✋ Pan</button>
                     <button class="segment-btn" data-mode="place">🪄 Paste</button>
                     <button class="segment-btn" data-mode="sample">⛶ Copy</button>
                 </div>
 
+                <!-- Context: Place Mode -->
                 <div id="context_place" class="context-panel" style="display: none;">
-                    <label>Brush Palette</label>
-                    <div class="button-group" id="brush_selector">
+                    <div class="button-group" id="brush_selector" style="margin: 0;">
                         <button class="group-btn active" data-val="dot">Node</button>
                         <button class="group-btn" data-val="glider">Glider</button>
                         <button class="group-btn" data-val="lwss">LWSS</button>
@@ -35,27 +38,54 @@
                     </div>
                 </div>
 
+                <!-- Context: Sample Mode -->
                 <div id="context_sample" class="context-panel" style="display: none;">
                     <label>Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span> px</label>
                     <input type="range" id="slider_radius" min="1" max="50" value="10">
-                    <button id="btn_copy_stamp" style="font-size: 12px; padding: 6px; margin-top: 10px; margin-bottom: 0;">Copy JSON to Clipboard</button>
+                    <button id="btn_copy_stamp" class="action-btn" style="margin-top: 10px;">Copy JSON</button>
                 </div>
-            </div>
 
-            <div class="panel-section">
-                <h3>Environment</h3>
+                <!-- Optics & Zoom Row -->
+                <div class="deck-row" style="margin-top: 8px;">
+                    <div class="button-group" id="layer_selector" style="flex: 1; margin: 0;">
+                        <button class="group-btn active" data-val="0">Macro</button>
+                        <button class="group-btn" data-val="1">Metabolic</button>
+                    </div>
+                    <div class="button-group" style="flex: 1; margin: 0;">
+                        <button class="group-btn" id="btn_zoom_out">−</button>
+                        <button class="group-btn" id="btn_zoom_reset">Zoom</button>
+                        <button class="group-btn" id="btn_zoom_in">+</button>
+                    </div>
+                </div>
+
+                <!-- Playback Row -->
+                <div class="deck-row" style="margin-top: 8px;">
+                    <button id="btn_play" class="action-btn">⏯ Play/Pause</button>
+                    <button id="btn_step" class="action-btn">⏭ Step</button>
+                    <button id="btn_soup" class="action-btn">🍲 Soup</button>
+                    <button id="btn_clear" class="action-btn danger">❌ Clear</button>
+                </div>
                 
-                <label>Thermodynamic Biome</label>
+                <!-- iOS Cheat Sheet Legend -->
+                <div class="legend-panel">
+                    <div class="legend-item"><span>✋ Pan:</span> Drag to move camera</div>
+                    <div class="legend-item"><span>🪄 Paste:</span> Tap to draw pattern</div>
+                    <div class="legend-item"><span>⛶ Copy:</span> Drag to capture area</div>
+                    <div class="legend-item"><span>Macro:</span> Physical nodes</div>
+                    <div class="legend-item"><span>Metabolic:</span> Thermal exhaust view</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- The Obscure Settings Sidebar -->
+        <div id="sidebar">
+            <div class="panel-section">
+                <h3>Environment Biome</h3>
                 <div class="button-group" id="biome_selector">
                     <button class="group-btn active" data-val="0">Vacuum</button>
                     <button class="group-btn" data-val="1">Furnace</button>
                     <button class="group-btn" data-val="2">Crust</button>
-                </div>
-                
-                <label style="margin-top: 12px;">Optical Filter</label>
-                <div class="button-group" id="layer_selector">
-                    <button class="group-btn active" data-val="0">Macro</button>
-                    <button class="group-btn" data-val="1">Metabolic</button>
                 </div>
 
                 <div class="telemetry-row" style="margin-top: 16px;">
@@ -69,26 +99,9 @@
             </div>
 
             <div class="panel-section">
-                <h3>Camera / View</h3>
-                <div class="button-group">
-                    <button class="group-btn" id="btn_zoom_out">−</button>
-                    <button class="group-btn" id="btn_zoom_reset">Reset Zoom</button>
-                    <button class="group-btn" id="btn_zoom_in">+</button>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <h3>Simulation</h3>
-                <button id="btn_play">Pause / Play</button>
-                <button id="btn_step">Tick (Frame Advance)</button>
-                <button id="btn_soup">Inject Thermal Soup</button>
-                <button id="btn_clear" style="border-color: #666; color: #aaa; background: transparent;">Absolute Zero (Clear)</button>
-            </div>
-
-            <div class="panel-section">
-                <h3>System Diagnostics</h3>
+                <h3>Diagnostics</h3>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">Wasm Status:</span>
+                    <span class="telemetry-label">Status:</span>
                     <span class="telemetry-value" id="diag_status" style="color: #888;">Booting</span>
                 </div>
                 <div class="telemetry-row">
@@ -96,11 +109,10 @@
                     <span class="telemetry-value" id="diag_nodes">--</span>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <script src="planck.js?v=6" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
-    <script src="app.js?v=6"></script>
+    <script src="planck.js?v=10" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=10"></script>
 </body>
 </html>
