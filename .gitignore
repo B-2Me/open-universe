@@ -1,0 +1,3 @@
+# Ignore compiled WebAssembly binaries
+docs/public/wasm/wake/planck.js
+docs/public/wasm/wake/planck.wasm
