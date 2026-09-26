@@ -49,6 +49,40 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: auto-generate audio, AST sync, and lockfile [skip ci]"
           git push
 
+      # ========================================================
+      # PLANCK FIELD BARE-METAL ENGINE (WASM)
+      # ========================================================
+      
+      - name: Cache Planck Field Binary
+        id: cache-wasm
+        uses: actions/cache@v4
+        with:
+          path: docs/public/wasm/wake/
+          # Hashes all C, header, and shell script files in /src recursively
+          key: planck-wasm-${{ hashFiles('src/**/*.c', 'src/**/*.h', 'src/**/*.sh') }}
+
+      - name: Setup Emscripten
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        uses: mymindstorm/setup-emsdk@v14
+        continue-on-error: true # Fails gracefully without breaking VitePress
+        with:
+          version: latest
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Compile Planck Field Engine
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        continue-on-error: true # Fails gracefully without breaking VitePress
+        run: |
+          # Ensure destination exists
+          mkdir -p docs/public/wasm/wake/
+          cd src
+          chmod +x build.sh
+          ./build.sh
+
+      # ========================================================
+      # VITEPRESS SITE DEPLOYMENT
+      # ========================================================
+
       - name: Build VitePress Site
         run: npm run docs:build
 
