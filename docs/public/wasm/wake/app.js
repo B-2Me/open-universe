@@ -140,16 +140,17 @@ function startEngine(Module) {
             for (let dx = -radius; dx <= radius; dx++) row.push(Module._get_node(centerX + dx, centerY + dy));
             newStamp.push(row);
         }
-        customStamp = newStamp;
+        customStamp = newStamp; // Overwrite the Scratch buffer
         
-        const optCustom = document.getElementById('opt_custom');
-        optCustom.disabled = false;
-        optCustom.innerText = `Custom (${radius*2+1}x)`;
+        // Update the Scratch box label to show the captured dimension
+        document.getElementById('scratch_label').innerText = `[${radius*2+1}px]`;
         
-        // Auto-select custom brush
-        document.querySelectorAll('#brush_selector .group-btn').forEach(b => b.classList.remove('active'));
-        optCustom.classList.add('active');
+        // Auto-select the Scratch box in the palette
+        document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('opt_custom').classList.add('active');
         currentBrush = 'custom';
+        
+        // Throw the user directly into Paste mode so they can use it instantly
         setMode('place');
     }
 
