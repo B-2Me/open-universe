@@ -3,7 +3,30 @@ let isPlaying = true;
 let gridWidth = 400;
 let gridHeight = 400;
 
-// 1. Define the Emscripten lifecycle hooks BEFORE planck.js loads
+// ---------------------------------------------------------
+// The JavaScript Pattern Palette
+// ---------------------------------------------------------
+const patternPalette = {
+    "dot": [[1]],
+    "glider": [
+        [0, 1, 0],
+        [0, 0, 1],
+        [1, 1, 1]
+    ],
+    "lwss": [
+        [0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1],
+        [1, 0, 0, 1, 0]
+    ]
+};
+
+let activeTool = "dot";
+let customStamp = [];
+
+// ---------------------------------------------------------
+// Emscripten Lifecycle
+// ---------------------------------------------------------
 var Module = {
     onRuntimeInitialized: function() {
         console.log("Planck Field binary loaded.");
@@ -33,7 +56,7 @@ function triggerErrorState(message) {
 
 function startEngine() {
     const canvas = document.getElementById('universe_canvas');
-    const ctx = canvas.getContext('2d', { alpha: false }); // Optimize for no transparency
+    const ctx = canvas.getContext('2d', { alpha: false });
 
     // Fetch diagnostics directly from the Wasm binary
     const versionInt = Module._get_engine_version();
@@ -54,7 +77,7 @@ function startEngine() {
 
     // Setup the Zero-Copy Memory Bridge
     const bufferPointer = Module._get_pixel_buffer_pointer();
-    const bufferLength = gridWidth * gridHeight * 4; // RGBA
+    const bufferLength = gridWidth * gridHeight * 4; 
     const pixelArray = new Uint8ClampedArray(Module.HEAPU8.buffer, bufferPointer, bufferLength);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
@@ -66,11 +89,7 @@ function startEngine() {
             if (isPlaying) {
                 Module._tick();
             }
-            
-            // Blast the shared Wasm memory directly to the HTML canvas
             ctx.putImageData(imgData, 0, 0);
-            
-            // Loop at monitor refresh rate
             animationId = requestAnimationFrame(renderFrame);
         } catch (error) {
             triggerErrorState("Runtime exception during frame calculation.");
@@ -79,78 +98,146 @@ function startEngine() {
     }
 
     // ---------------------------------------------------------
-    // UI Event Listeners
+    // Environment & Simulation UI
     // ---------------------------------------------------------
-    
-    // Biome Settings
-    const biomeSelector = document.getElementById('biome_selector');
-    const displayDissipation = document.getElementById('math_dissipation');
-    const displayLimit = document.getElementById('math_thermal_limit');
-
     const biomes = {
-        "0": { dissipation: 15, limit: 1200 }, // Deep Space
-        "1": { dissipation: 2, limit: 300 },   // Stellar Core
-        "2": { dissipation: 10, limit: 2000 }  // Solid Lattice
+        "0": { dissipation: 15, limit: 1200 }, 
+        "1": { dissipation: 2,  limit: 300 },   
+        "2": { dissipation: 10, limit: 2000 }  
     };
 
-    biomeSelector.addEventListener('change', (e) => {
+    document.getElementById('biome_selector').addEventListener('change', (e) => {
         const settings = biomes[e.target.value];
         Module._set_dissipation(settings.dissipation);
         Module._set_thermal_limit(settings.limit);
-        
-        displayDissipation.innerText = settings.dissipation;
-        displayLimit.innerText = settings.limit;
+        document.getElementById('math_dissipation').innerText = settings.dissipation;
+        document.getElementById('math_thermal_limit').innerText = settings.limit;
     });
 
-    // Playback Controls
-    document.getElementById('btn_play').addEventListener('click', () => {
-        isPlaying = !isPlaying;
+    document.getElementById('layer_selector').addEventListener('change', (e) => {
+        Module._set_render_layer(parseInt(e.target.value));
     });
 
-    document.getElementById('btn_step').addEventListener('click', () => {
-        isPlaying = false; // Pause standard playback
-        Module._tick();    // Force one exact physics calculation
+    document.getElementById('btn_play').addEventListener('click', () => { isPlaying = !isPlaying; });
+    document.getElementById('btn_step').addEventListener('click', () => { isPlaying = false; Module._tick(); });
+    document.getElementById('btn_clear').addEventListener('click', () => { Module._clear_grid(); });
+    document.getElementById('btn_soup').addEventListener('click', () => { Module._randomize_grid(); });
+
+    // ---------------------------------------------------------
+    // Intervention Palette UI
+    // ---------------------------------------------------------
+    const toolSelector = document.getElementById('tool_selector');
+    const samplerControls = document.getElementById('sampler_controls');
+    const radiusSlider = document.getElementById('slider_radius');
+    const radiusDisplay = document.getElementById('val_radius');
+
+    toolSelector.addEventListener('change', (e) => {
+        activeTool = e.target.value;
+        samplerControls.style.display = (activeTool === 'sampler') ? 'block' : 'none';
     });
 
-    document.getElementById('btn_clear').addEventListener('click', () => {
-        if (Module._clear_grid) Module._clear_grid();
+    radiusSlider.addEventListener('input', (e) => {
+        radiusDisplay.innerText = e.target.value;
     });
 
-    document.getElementById('btn_soup').addEventListener('click', () => {
-        if (Module._randomize_grid) Module._randomize_grid();
+    document.getElementById('btn_copy_stamp').addEventListener('click', () => {
+        if (customStamp.length === 0) return;
+        const jsonStr = JSON.stringify(customStamp);
+        navigator.clipboard.writeText(jsonStr).then(() => {
+            const btn = document.getElementById('btn_copy_stamp');
+            btn.innerText = "Copied!";
+            setTimeout(() => btn.innerText = "Copy JSON to Clipboard", 2000);
+        });
     });
 
     // ---------------------------------------------------------
-    // Mouse Interaction (Safe Wasm Coordinate Mapping)
+    // JavaScript Tool Logic (Inject & Sample)
+    // ---------------------------------------------------------
+    function injectPatternToWasm(centerX, centerY, patternArray) {
+        const height = patternArray.length;
+        if (height === 0) return;
+        const width = patternArray[0].length;
+        
+        const startX = centerX - Math.floor(width / 2);
+        const startY = centerY - Math.floor(height / 2);
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (patternArray[y][x] === 1) {
+                    Module._set_node(startX + x, startY + y);
+                }
+            }
+        }
+    }
+
+    function sampleRegionFromWasm(centerX, centerY, radius) {
+        let newStamp = [];
+        for (let dy = -radius; dy <= radius; dy++) {
+            let row = [];
+            for (let dx = -radius; dx <= radius; dx++) {
+                let x = centerX + dx;
+                let y = centerY + dy;
+                let isAlive = Module._get_node(x, y);
+                row.push(isAlive);
+            }
+            newStamp.push(row);
+        }
+        
+        customStamp = newStamp;
+        
+        // Auto-switch to the new custom tool
+        const optCustom = document.getElementById('opt_custom');
+        optCustom.disabled = false;
+        optCustom.innerText = `Draw: Custom Stamp (${radius*2+1}x${radius*2+1})`;
+        
+        toolSelector.value = 'custom';
+        activeTool = 'custom';
+        samplerControls.style.display = 'none';
+    }
+
+    // ---------------------------------------------------------
+    // Mouse Mapping 
     // ---------------------------------------------------------
     let isDrawing = false;
 
-    function handleInput(e) {
-        if (!isDrawing) return;
+    function handleInput(e, isClick = false) {
+        if (!isDrawing && !isClick) return;
         
         const rect = canvas.getBoundingClientRect();
-        
-        // Calculate ratio between CSS size and internal memory size
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         
         const x = Math.floor((e.clientX - rect.left) * scaleX);
         const y = Math.floor((e.clientY - rect.top) * scaleY);
 
-        // Prevent Wasm Segfaults by strictly clamping coordinates
-        if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
-            if (Module._inject_node) {
-                Module._inject_node(x, y);
+        if (activeTool === 'sampler') {
+            if (isClick) {
+                const radius = parseInt(radiusSlider.value, 10);
+                sampleRegionFromWasm(x, y, radius);
             }
+            return;
+        }
+
+        // Limit complex structures to click-only to prevent smearing, 
+        // but allow continuous dragging for the single dot pen.
+        if (!isClick && activeTool !== 'dot') return;
+
+        if (activeTool === 'custom') {
+            injectPatternToWasm(x, y, customStamp);
+        } else if (patternPalette[activeTool]) {
+            injectPatternToWasm(x, y, patternPalette[activeTool]);
         }
     }
 
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; handleInput(e); });
-    canvas.addEventListener('mousemove', handleInput);
+    canvas.addEventListener('mousedown', (e) => { 
+        isDrawing = true; 
+        handleInput(e, true); 
+    });
+    canvas.addEventListener('mousemove', (e) => handleInput(e, false));
     canvas.addEventListener('mouseup', () => { isDrawing = false; });
     canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
     // Ignite the grid
-    if (Module._randomize_grid) Module._randomize_grid(); // Start with something to look at
+    Module._randomize_grid(); 
     renderFrame();
 }
