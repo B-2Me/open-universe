@@ -3,240 +3,249 @@ let isPlaying = true;
 let gridWidth = 400;
 let gridHeight = 400;
 
-// ---------------------------------------------------------
-// The JavaScript Pattern Palette
-// ---------------------------------------------------------
-const patternPalette = {
-    "dot": [[1]],
-    "glider": [
-        [0, 1, 0],
-        [0, 0, 1],
-        [1, 1, 1]
-    ],
-    "lwss": [
-        [0, 1, 1, 1, 1],
-        [1, 0, 0, 0, 1],
-        [0, 0, 0, 0, 1],
-        [1, 0, 0, 1, 0]
-    ]
-};
-
-let activeTool = "dot";
+// --- UX State ---
+let currentZoom = 1;
+let panX = 0;
+let panY = 0;
+let currentMode = "move"; // 'move', 'place', 'sample'
+let currentBrush = "dot";
+let isSpaceDown = false;
 let customStamp = [];
 
+const patternPalette = {
+    "dot": [[1]],
+    "glider": [[0, 1, 0], [0, 0, 1], [1, 1, 1]],
+    "lwss": [[0, 1, 1, 1, 1], [1, 0, 0, 0, 1], [0, 0, 0, 0, 1], [1, 0, 0, 1, 0]]
+};
+
 function triggerErrorState(message) {
-    const errorBanner = document.getElementById('error-banner');
-    errorBanner.innerText = message;
-    errorBanner.style.display = 'block';
+    const banner = document.getElementById('error-banner');
+    banner.innerText = message;
+    banner.style.display = 'block';
     document.getElementById('universe_canvas').style.opacity = '0.3';
 }
 
-// ---------------------------------------------------------
-// Modern Emscripten Promise Initialization
-// ---------------------------------------------------------
 if (typeof createPlanck !== 'undefined') {
-    // createPlanck accepts a configuration object where we can safely attach our crash handler
     createPlanck({
-        onAbort: function(reason) {
-            triggerErrorState("Fatal Error: The Planck Field collapsed (Segfault).");
+        onAbort: function() {
+            triggerErrorState("Fatal Error: The Planck Field collapsed.");
             document.getElementById('diag_status').innerText = "PANIC";
             document.getElementById('diag_status').style.color = "var(--pf-danger)";
             if (animationId) cancelAnimationFrame(animationId);
         }
     }).then((wasmModule) => {
-        console.log("Planck Field binary loaded.");
         document.getElementById('diag_status').innerText = "ONLINE";
         document.getElementById('diag_status').style.color = "var(--pf-brand-hover)";
-        
-        // Pass the fully initialized Module into the engine
         startEngine(wasmModule);
-    }).catch((error) => {
-        triggerErrorState("Engine failed to initialize: " + error);
-    });
-} else {
-    triggerErrorState("Wasm payload completely failed to load from the network.");
+    }).catch((error) => triggerErrorState("Engine failed to initialize: " + error));
 }
 
-
-// ---------------------------------------------------------
-// The Bridge (Module is passed in securely)
-// ---------------------------------------------------------
 function startEngine(Module) {
     const canvas = document.getElementById('universe_canvas');
     const ctx = canvas.getContext('2d', { alpha: false });
 
-    const versionInt = Module._get_engine_version();
-    const vMajor = Math.floor(versionInt / 100);
-    const vMinor = Math.floor((versionInt % 100) / 10);
-    const vPatch = versionInt % 10;
-    document.getElementById('diag_version').innerText = `v${vMajor}.${vMinor}.${vPatch}`;
-
     gridWidth = Module._get_grid_width();
     gridHeight = Module._get_grid_height();
-    document.getElementById('diag_res').innerText = `${gridWidth}x${gridHeight}`;
     document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
 
     Module._init_grid();
-
-    // Setup the Zero-Copy Memory Bridge securely
     const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    const bufferPointer = Module._get_pixel_buffer_pointer();
-    const bufferLength = gridWidth * gridHeight * 4; 
-    const pixelArray = new Uint8ClampedArray(buffer, bufferPointer, bufferLength);
+    const pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
     function renderFrame() {
-        try {
-            if (isPlaying) {
-                Module._tick();
-            }
-            ctx.putImageData(imgData, 0, 0);
-            animationId = requestAnimationFrame(renderFrame);
-        } catch (error) {
-            triggerErrorState("Runtime exception during frame calculation.");
-            cancelAnimationFrame(animationId);
-        }
+        if (isPlaying) Module._tick();
+        ctx.putImageData(imgData, 0, 0);
+        animationId = requestAnimationFrame(renderFrame);
     }
 
-    // --- Environment UI ---
-    const biomes = {
-        "0": { dissipation: 15, limit: 1200 }, 
-        "1": { dissipation: 2,  limit: 300 },   
-        "2": { dissipation: 10, limit: 2000 }  
-    };
+    // --- Transform Engine ---
+    function applyTransform() {
+        currentZoom = Math.max(0.5, Math.min(currentZoom, 10)); // Clamp zoom 0.5x to 10x
+        canvas.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
+    }
 
-    document.getElementById('biome_selector').addEventListener('change', (e) => {
-        const settings = biomes[e.target.value];
-        Module._set_dissipation(settings.dissipation);
-        Module._set_thermal_limit(settings.limit);
-        document.getElementById('math_dissipation').innerText = settings.dissipation;
-        document.getElementById('math_thermal_limit').innerText = settings.limit;
-    });
+    function resetView() {
+        currentZoom = window.innerWidth <= 768 ? 2.5 : 1; // Auto-zoom for mobile
+        panX = 0;
+        panY = 0;
+        applyTransform();
+    }
+    resetView();
 
-    document.getElementById('layer_selector').addEventListener('change', (e) => {
-        Module._set_render_layer(parseInt(e.target.value));
-    });
-
-    document.getElementById('btn_play').addEventListener('click', () => { isPlaying = !isPlaying; });
-    document.getElementById('btn_step').addEventListener('click', () => { isPlaying = false; Module._tick(); });
-    document.getElementById('btn_clear').addEventListener('click', () => { Module._clear_grid(); });
-    document.getElementById('btn_soup').addEventListener('click', () => { Module._randomize_grid(); });
-
-    // --- Intervention UI ---
-    const toolSelector = document.getElementById('tool_selector');
-    const samplerControls = document.getElementById('sampler_controls');
-    const radiusSlider = document.getElementById('slider_radius');
-    const radiusDisplay = document.getElementById('val_radius');
-
-    toolSelector.addEventListener('change', (e) => {
-        activeTool = e.target.value;
-        samplerControls.style.display = (activeTool === 'sampler') ? 'block' : 'none';
-    });
-
-    radiusSlider.addEventListener('input', (e) => {
-        radiusDisplay.innerText = e.target.value;
-    });
-
-    document.getElementById('btn_copy_stamp').addEventListener('click', () => {
-        if (customStamp.length === 0) return;
-        const jsonStr = JSON.stringify(customStamp);
-        navigator.clipboard.writeText(jsonStr).then(() => {
-            const btn = document.getElementById('btn_copy_stamp');
-            btn.innerText = "Copied!";
-            setTimeout(() => btn.innerText = "Copy JSON to Clipboard", 2000);
+    // --- UI Logic ---
+    function setMode(mode) {
+        currentMode = mode;
+        // Update Buttons
+        document.querySelectorAll('.segment-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
         });
+        // Update Context Panels
+        document.getElementById('context_place').style.display = mode === 'place' ? 'block' : 'none';
+        document.getElementById('context_sample').style.display = mode === 'sample' ? 'block' : 'none';
+        // Update Cursor
+        canvas.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
+    }
+
+    document.querySelectorAll('.segment-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => setMode(e.target.dataset.mode));
     });
 
-    function injectPatternToWasm(centerX, centerY, patternArray) {
-        const height = patternArray.length;
-        if (height === 0) return;
-        const width = patternArray[0].length;
-        
-        const startX = centerX - Math.floor(width / 2);
-        const startY = centerY - Math.floor(height / 2);
+    document.getElementById('brush_selector').addEventListener('change', e => currentBrush = e.target.value);
+    
+    // Zoom Controls
+    document.getElementById('btn_zoom_in').addEventListener('click', () => { currentZoom += 0.5; applyTransform(); });
+    document.getElementById('btn_zoom_out').addEventListener('click', () => { currentZoom -= 0.5; applyTransform(); });
+    document.getElementById('btn_zoom_reset').addEventListener('click', resetView);
 
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                if (patternArray[y][x] === 1) {
-                    Module._set_node(startX + x, startY + y);
-                }
+    // Simulation Controls
+    document.getElementById('btn_play').addEventListener('click', () => isPlaying = !isPlaying);
+    document.getElementById('btn_step').addEventListener('click', () => { isPlaying = false; Module._tick(); });
+    document.getElementById('btn_clear').addEventListener('click', () => Module._clear_grid());
+    document.getElementById('btn_soup').addEventListener('click', () => Module._randomize_grid());
+    
+    // Environment
+    const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
+    document.getElementById('biome_selector').addEventListener('change', (e) => {
+        Module._set_dissipation(biomes[e.target.value][0]);
+        Module._set_thermal_limit(biomes[e.target.value][1]);
+    });
+    document.getElementById('layer_selector').addEventListener('change', (e) => Module._set_render_layer(parseInt(e.target.value)));
+
+    // Sampler
+    document.getElementById('slider_radius').addEventListener('input', e => document.getElementById('val_radius').innerText = e.target.value);
+    document.getElementById('btn_copy_stamp').addEventListener('click', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
+
+    // --- Wasm Bridge ---
+    function injectPattern(centerX, centerY, pattern) {
+        if (!pattern.length) return;
+        const startX = centerX - Math.floor(pattern[0].length / 2);
+        const startY = centerY - Math.floor(pattern.length / 2);
+        for (let y = 0; y < pattern.length; y++) {
+            for (let x = 0; x < pattern[0].length; x++) {
+                if (pattern[y][x]) Module._set_node(startX + x, startY + y);
             }
         }
     }
 
-    function sampleRegionFromWasm(centerX, centerY, radius) {
+    function sampleRegion(centerX, centerY, radius) {
         let newStamp = [];
         for (let dy = -radius; dy <= radius; dy++) {
             let row = [];
-            for (let dx = -radius; dx <= radius; dx++) {
-                let x = centerX + dx;
-                let y = centerY + dy;
-                let isAlive = Module._get_node(x, y);
-                row.push(isAlive);
-            }
+            for (let dx = -radius; dx <= radius; dx++) row.push(Module._get_node(centerX + dx, centerY + dy));
             newStamp.push(row);
         }
-        
         customStamp = newStamp;
-        
-        const optCustom = document.getElementById('opt_custom');
-        optCustom.disabled = false;
-        optCustom.innerText = `Draw: Custom Stamp (${radius*2+1}x${radius*2+1})`;
-        
-        toolSelector.value = 'custom';
-        activeTool = 'custom';
-        samplerControls.style.display = 'none';
+        document.getElementById('opt_custom').disabled = false;
+        document.getElementById('opt_custom').innerText = `Custom Stamp (${radius*2+1}x${radius*2+1})`;
+        document.getElementById('brush_selector').value = 'custom';
+        currentBrush = 'custom';
+        setMode('place');
     }
 
-    let isDrawing = false;
+    // --- Desktop Comforts ---
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !isSpaceDown) { isSpaceDown = true; canvas.className = 'mode-move'; }
+    });
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') { isSpaceDown = false; canvas.className = currentMode === 'move' ? 'mode-move' : ''; }
+    });
 
-    function handleInput(e, isClick = false) {
-        if (!isDrawing && !isClick) return;
-        
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        
-        const x = Math.floor((e.clientX - rect.left) * scaleX);
-        const y = Math.floor((e.clientY - rect.top) * scaleY);
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
+        currentZoom += zoomDelta;
+        applyTransform();
+    }, { passive: false });
 
-        if (activeTool === 'sampler') {
-            if (isClick) {
-                const radius = parseInt(radiusSlider.value, 10);
-                sampleRegionFromWasm(x, y, radius);
-            }
+    canvas.addEventListener('dblclick', resetView);
+
+    // --- Universal Input Handler ---
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
+    let initialPinchDist = 0;
+    let initialPinchZoom = 1;
+    let lastTapTime = 0;
+
+    function getTouchDist(touches) {
+        return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    }
+
+    function processInput(clientX, clientY, isClick) {
+        const activeAction = isSpaceDown ? 'move' : currentMode;
+
+        if (activeAction === 'move') {
+            if (isClick) { lastX = clientX; lastY = clientY; return; }
+            panX += (clientX - lastX) / currentZoom;
+            panY += (clientY - lastY) / currentZoom;
+            lastX = clientX; lastY = clientY;
+            applyTransform();
             return;
         }
 
-        if (!isClick && activeTool !== 'dot') return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = Math.floor((clientX - rect.left) * scaleX);
+        const y = Math.floor((clientY - rect.top) * scaleY);
 
-        if (activeTool === 'custom') {
-            injectPatternToWasm(x, y, customStamp);
-        } else if (patternPalette[activeTool]) {
-            injectPatternToWasm(x, y, patternPalette[activeTool]);
+        if (activeAction === 'sample' && isClick) {
+            sampleRegion(x, y, parseInt(document.getElementById('slider_radius').value, 10));
+        } else if (activeAction === 'place' && (isClick || currentBrush === 'dot')) {
+            injectPattern(x, y, currentBrush === 'custom' ? customStamp : patternPalette[currentBrush]);
         }
     }
 
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; handleInput(e, true); });
-    canvas.addEventListener('mousemove', (e) => handleInput(e, false));
-    canvas.addEventListener('mouseup', () => { isDrawing = false; });
-    canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+    // Mouse
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; processInput(e.clientX, e.clientY, true); });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) processInput(e.clientX, e.clientY, false); });
+    window.addEventListener('mouseup', () => isDragging = false);
 
-    canvas.addEventListener('touchstart', (e) => { 
-        isDrawing = true; 
-        e.preventDefault(); 
-        if(e.touches.length > 0) handleInput(e.touches[0], true); 
+    // Touch
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        
+        // Double Tap detection
+        if (e.touches.length === 1) {
+            const now = Date.now();
+            if (now - lastTapTime < 300) resetView();
+            lastTapTime = now;
+            processInput(e.touches[0].clientX, e.touches[0].clientY, true);
+        } else if (e.touches.length === 2) {
+            // Initiate pinch/two-finger pan
+            initialPinchDist = getTouchDist(e.touches);
+            initialPinchZoom = currentZoom;
+            lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            lastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        }
     }, { passive: false });
-    
+
     canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault(); 
-        if(e.touches.length > 0) handleInput(e.touches[0], false);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', () => { isDrawing = false; });
-    canvas.addEventListener('touchcancel', () => { isDrawing = false; });
+        e.preventDefault();
+        if (!isDragging) return;
 
-    // Ignite the grid
+        if (e.touches.length === 1) {
+            processInput(e.touches[0].clientX, e.touches[0].clientY, false);
+        } else if (e.touches.length === 2) {
+            // Multi-touch overrides active mode -> force pan & zoom
+            const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            
+            // Zoom
+            currentZoom = initialPinchZoom * (getTouchDist(e.touches) / initialPinchDist);
+            
+            // Pan
+            panX += (midX - lastX) / currentZoom;
+            panY += (midY - lastY) / currentZoom;
+            lastX = midX; lastY = midY;
+            
+            applyTransform();
+        }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => isDragging = false);
+
     Module._randomize_grid(); 
     renderFrame();
 }
