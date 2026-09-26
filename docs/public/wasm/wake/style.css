@@ -15,7 +15,9 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -23,7 +25,7 @@ body {
   background-color: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: var(--font-sans);
-  /* UNLOCKED: Allowed body to expand naturally vertically */
+  /* UNLOCKED: Allowed body to expand naturally vertically for the iframe */
 }
 
 #app {
@@ -50,6 +52,7 @@ canvas {
   border-radius: 8px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   
+  /* Force razor-sharp Wasm pixels on Retina displays */
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -58,6 +61,7 @@ canvas {
   max-width: 100%;
   max-height: 100%;
   
+  /* iOS Safari Touch Locks */
   touch-action: none;           
   -webkit-touch-callout: none;  
   -webkit-user-select: none;    
@@ -67,6 +71,7 @@ canvas {
   transition: transform 0.05s linear; 
 }
 
+/* Dynamic Cursors */
 canvas.mode-move { cursor: grab; }
 canvas.mode-move:active { cursor: grabbing; }
 
@@ -78,7 +83,7 @@ canvas.mode-move:active { cursor: grabbing; }
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* UNLOCKED: Removed overflow-y constraints */
+  /* UNLOCKED: Removed overflow-y constraints so VitePress handles the scroll */
 }
 
 .panel-section {
@@ -117,6 +122,7 @@ label {
   margin-bottom: 8px;
 }
 
+/* Reusable Flattened Button Groups */
 .button-group, .segment-control {
   display: flex;
   background: var(--pf-bg-input);
@@ -161,6 +167,7 @@ label {
   font-weight: bold;
 }
 
+/* Contextual Tool Settings */
 .context-panel {
   background: rgba(0,0,0,0.2);
   padding: 12px;
@@ -218,14 +225,17 @@ button {
   text-align: center;
 }
 
+/* Mobile Layout Override */
 @media (max-width: 768px) {
   #app {
     flex-direction: column;
+    min-height: auto; /* Unlocks the body height so it wraps content tightly */
   }
   
   #canvas-container {
-    padding: 10px;
-    min-height: 450px; /* Forces canvas to retain size before panels load */
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Forces a perfect square so it never gets massive */
+    padding: 15px;
     flex: none;
   }
 
