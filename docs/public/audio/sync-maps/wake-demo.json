@@ -7,86 +7,76 @@
   {
     "text": "The Planck Field bare-metal simulation engine.",
     "start": 1.031,
-    "end": 4.191
+    "end": 4.192
   },
   {
     "text": "Welcome to the sandbox. What you are looking at is not a standard web canvas drawing shapes—it is a 160,000-node physics grid running purely in C, directly mapped to your graphics hardware via a zero-copy WebAssembly memory bridge.",
-    "start": 4.191,
-    "end": 20.063
+    "start": 4.192,
+    "end": 20.068
   },
   {
     "text": "::: details ⚙️ Under the Hood: How the Engine Actually Works",
-    "start": 20.063,
-    "end": 24.185
+    "start": 20.068,
+    "end": 24.192
   },
   {
     "text": "The Architecture",
-    "start": 24.185,
-    "end": 25.284
+    "start": 24.192,
+    "end": 25.291
   },
   {
     "text": "Most web-based grid simulations (like Conway's Game of Life) are written in JavaScript and use ctx.fillRect() to draw squares on a canvas. This causes severe bottlenecks; browsers drop frames if you try to draw more than a few thousand shapes per second.",
-    "start": 25.284,
-    "end": 42.736
+    "start": 25.291,
+    "end": 42.748
   },
   {
     "text": "Planck Field bypasses the browser's drawing engine almost entirely. The physics loop is written in bare-metal C, compiled to WebAssembly (Wasm) with maximum hardware optimizations (-O3). The C engine allocates a continuous block of physical memory (a Uint8ClampedArray). When the simulation ticks, C mathematically calculates the RGBA pixel values for all 160,000 nodes simultaneously and writes them directly into this memory block.",
-    "start": 42.736,
-    "end": 72.487
+    "start": 42.748,
+    "end": 72.506
   },
   {
     "text": "JavaScript simply grabs that memory block and blasts it to the screen in a single operation. The result is a rock-solid 60 frames per second.",
-    "start": 72.487,
-    "end": 82.175
+    "start": 72.506,
+    "end": 82.196
   },
   {
     "text": "Thermodynamic Rules (Modified Game of Life)",
-    "start": 82.175,
-    "end": 85.129
+    "start": 82.196,
+    "end": 85.151
   },
   {
     "text": "Planck Field is built on top of Conway's cellular automata, but introduces two distinct physical constraints that mimic real-world thermodynamics:",
-    "start": 85.129,
-    "end": 95.16
+    "start": 85.151,
+    "end": 95.185
   },
   {
     "text": "Bandwidth Collapse (The c² Limit): Standard Game of Life grids can grow infinitely. In Planck Field, a localized cluster of nodes cannot exceed a maximum temperature threshold. If too much activity happens in one place, the \"bandwidth\" of the field collapses, and the nodes instantly die off.",
-    "start": 95.16,
-    "end": 115.223
+    "start": 95.185,
+    "end": 115.253
   },
   {
     "text": "Entropy (Dissipation): When a node dies, it doesn't just disappear—it leaves behind a thermal exhaust footprint that slowly cools down. This exhaust interferes with future generations, meaning structures must constantly navigate the thermal wakes of their ancestors.",
-    "start": 115.223,
-    "end": 133.499
+    "start": 115.253,
+    "end": 133.535
   },
   {
     "text": "The JavaScript UI Boundary",
-    "start": 133.499,
-    "end": 135.286
+    "start": 133.535,
+    "end": 135.321
   },
   {
     "text": "While the relentless physics loop happens in C, the geometry is purely controlled by the browser.",
-    "start": 135.286,
-    "end": 141.95
+    "start": 135.321,
+    "end": 141.988
   },
   {
     "text": "The Sampler Tool demonstrates this boundary beautifully: when you click and drag over the canvas, JavaScript queries the Wasm memory block pixel-by-pixel, extracts the spatial data into a JSON array, and saves it to your clipboard. When you select a tool to draw, JavaScript fires a _set_node command directly into the C memory loop, allowing you to seamlessly inject structures into the chaos.",
-    "start": 141.95,
-    "end": 169.021
+    "start": 141.988,
+    "end": 169.066
   },
   {
     "text": ":::",
-    "start": 169.021,
-    "end": 169.227
-  },
-  {
-    "text": "Next Steps",
-    "start": 169.227,
-    "end": 169.914
-  },
-  {
-    "text": "Try switching the Optical Filter to Metabolic to view the hidden thermal exhaust, or select the Sampler Tool, grab a chunk of the grid, and copy it to your clipboard.",
-    "start": 169.914,
-    "end": 181.32
+    "start": 169.066,
+    "end": 169.272
   }
 ]
