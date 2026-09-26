@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1">
 </head>
 <body>
     
@@ -94,10 +94,8 @@
         </div>
     </div>
 
-    <!-- Load the Emscripten output FIRST -->
-    <script src="planck.js" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
-    
-    <!-- Load our bridge logic SECOND -->
-    <script src="app.js"></script>
+    <script src="planck.js?v=1" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
+    <script src="app.js?v=1"></script>
+
 </body>
 </html>
