@@ -73,9 +73,10 @@ function startEngine(Module) {
     resetView();
 
     // --- Flattened UI Logic Helper ---
-    function setupButtonGroup(containerId, callback) {
+    // Now accepts an optional class parameter so it works for both groups and palettes
+    function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
-        const buttons = container.querySelectorAll('.group-btn');
+        const buttons = container.querySelectorAll(btnClass);
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
                 if (btn.disabled) return;
@@ -85,6 +86,9 @@ function startEngine(Module) {
             });
         });
     }
+
+    // Wiring UI (Notice the updated class targeting for the palette)
+    setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
 
     // Modes
     function setMode(mode) {
