@@ -94,10 +94,10 @@
         </div>
     </div>
 
-    <!-- Load the hardened JS bridge first -->
-    <script src="app.js"></script>
+    <!-- Load the Emscripten output FIRST -->
+    <script src="planck.js" onerror="document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner').innerText='Failed to load planck.js binary.';"></script>
     
-    <!-- Load the Emscripten output last -->
-    <script src="planck.js" onerror="triggerErrorState('Failed to load planck.js binary.')"></script>
+    <!-- Load our bridge logic SECOND -->
+    <script src="app.js"></script>
 </body>
 </html>
