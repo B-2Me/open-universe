@@ -81,18 +81,17 @@ function startEngine(Module) {
     }
     resetView();
 
-    function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
-        const container = document.getElementById(containerId);
-        const buttons = container.querySelectorAll(btnClass);
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (btn.disabled) return;
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                callback(btn.dataset.val);
-            });
-        });
-    }
+    setupButtonGroup('biome_selector', val => {
+        // [Dissipation, Thermal Limit]
+        // Vacuum (0): Fast bleed, high ceiling. Smooth orbits.
+        // Furnace (1): Slow bleed, low ceiling. Immediate supernovas.
+        // Crust (2): Violent bleed, mid ceiling. Extreme drag, forces clustering.
+        const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
+        Module._set_dissipation(biomes[val][0]);
+        Module._set_thermal_limit(biomes[val][1]);
+        document.getElementById('math_dissipation').innerText = biomes[val][0];
+        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
+    });
 
     setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
 
