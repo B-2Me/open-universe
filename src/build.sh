@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ensure the output directory exists
-mkdir -p ../docs/public/wake/
+mkdir -p ../docs/public/wasm/wake/
 
 # Compile the C engine to WebAssembly
 emcc planck.c \
@@ -9,6 +9,6 @@ emcc planck.c \
   -s WASM=1 \
   -s EXPORTED_FUNCTIONS="['_init_grid', '_tick', '_get_pixel_buffer_pointer', '_set_dissipation', '_set_thermal_limit', '_set_render_layer']" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" \
-  -o ../docs/public/wake/planck.js
+  -o ../docs/public/wasm/wake/planck.js
 
-echo "Planck Field compiled successfully to /docs/public/wake/"
+echo "Planck Field compiled successfully to /docs/public/wasm/wake/"
