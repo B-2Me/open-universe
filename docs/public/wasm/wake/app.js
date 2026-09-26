@@ -24,29 +24,6 @@ const patternPalette = {
 let activeTool = "dot";
 let customStamp = [];
 
-// ---------------------------------------------------------
-// Emscripten Lifecycle
-// ---------------------------------------------------------
-var Module = {
-    onRuntimeInitialized: function() {
-        console.log("Planck Field binary loaded.");
-        document.getElementById('diag_status').innerText = "ONLINE";
-        document.getElementById('diag_status').style.color = "var(--pf-brand-hover)";
-        
-        try {
-            startEngine();
-        } catch (error) {
-            triggerErrorState("Engine failed to initialize: " + error.message);
-        }
-    },
-    onAbort: function(reason) {
-        triggerErrorState("Fatal Error: The Planck Field collapsed (Segfault).");
-        document.getElementById('diag_status').innerText = "PANIC";
-        document.getElementById('diag_status').style.color = "var(--pf-danger)";
-        if (animationId) cancelAnimationFrame(animationId);
-    }
-};
-
 function triggerErrorState(message) {
     const errorBanner = document.getElementById('error-banner');
     errorBanner.innerText = message;
@@ -54,11 +31,40 @@ function triggerErrorState(message) {
     document.getElementById('universe_canvas').style.opacity = '0.3';
 }
 
-function startEngine() {
+// ---------------------------------------------------------
+// Modern Emscripten Promise Initialization
+// ---------------------------------------------------------
+if (typeof createPlanck !== 'undefined') {
+    // createPlanck accepts a configuration object where we can safely attach our crash handler
+    createPlanck({
+        onAbort: function(reason) {
+            triggerErrorState("Fatal Error: The Planck Field collapsed (Segfault).");
+            document.getElementById('diag_status').innerText = "PANIC";
+            document.getElementById('diag_status').style.color = "var(--pf-danger)";
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+    }).then((wasmModule) => {
+        console.log("Planck Field binary loaded.");
+        document.getElementById('diag_status').innerText = "ONLINE";
+        document.getElementById('diag_status').style.color = "var(--pf-brand-hover)";
+        
+        // Pass the fully initialized Module into the engine
+        startEngine(wasmModule);
+    }).catch((error) => {
+        triggerErrorState("Engine failed to initialize: " + error);
+    });
+} else {
+    triggerErrorState("Wasm payload completely failed to load from the network.");
+}
+
+
+// ---------------------------------------------------------
+// The Bridge (Module is passed in securely)
+// ---------------------------------------------------------
+function startEngine(Module) {
     const canvas = document.getElementById('universe_canvas');
     const ctx = canvas.getContext('2d', { alpha: false });
 
-    // Fetch diagnostics directly from the Wasm binary
     const versionInt = Module._get_engine_version();
     const vMajor = Math.floor(versionInt / 100);
     const vMinor = Math.floor((versionInt % 100) / 10);
@@ -67,23 +73,17 @@ function startEngine() {
 
     gridWidth = Module._get_grid_width();
     gridHeight = Module._get_grid_height();
-    const totalNodes = gridWidth * gridHeight;
-
     document.getElementById('diag_res').innerText = `${gridWidth}x${gridHeight}`;
-    document.getElementById('diag_nodes').innerText = totalNodes.toLocaleString();
+    document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
 
-    // Initialize the C memory grids
     Module._init_grid();
 
-    // Setup the Zero-Copy Memory Bridge
+    // HEAPU8 is now 100% guaranteed to exist
     const bufferPointer = Module._get_pixel_buffer_pointer();
     const bufferLength = gridWidth * gridHeight * 4; 
     const pixelArray = new Uint8ClampedArray(Module.HEAPU8.buffer, bufferPointer, bufferLength);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
-    // ---------------------------------------------------------
-    // The Render Loop
-    // ---------------------------------------------------------
     function renderFrame() {
         try {
             if (isPlaying) {
@@ -97,9 +97,7 @@ function startEngine() {
         }
     }
 
-    // ---------------------------------------------------------
-    // Environment & Simulation UI
-    // ---------------------------------------------------------
+    // --- Environment UI ---
     const biomes = {
         "0": { dissipation: 15, limit: 1200 }, 
         "1": { dissipation: 2,  limit: 300 },   
@@ -123,9 +121,7 @@ function startEngine() {
     document.getElementById('btn_clear').addEventListener('click', () => { Module._clear_grid(); });
     document.getElementById('btn_soup').addEventListener('click', () => { Module._randomize_grid(); });
 
-    // ---------------------------------------------------------
-    // Intervention Palette UI
-    // ---------------------------------------------------------
+    // --- Intervention UI ---
     const toolSelector = document.getElementById('tool_selector');
     const samplerControls = document.getElementById('sampler_controls');
     const radiusSlider = document.getElementById('slider_radius');
@@ -150,9 +146,6 @@ function startEngine() {
         });
     });
 
-    // ---------------------------------------------------------
-    // JavaScript Tool Logic (Inject & Sample)
-    // ---------------------------------------------------------
     function injectPatternToWasm(centerX, centerY, patternArray) {
         const height = patternArray.length;
         if (height === 0) return;
@@ -194,9 +187,6 @@ function startEngine() {
         samplerControls.style.display = 'none';
     }
 
-    // ---------------------------------------------------------
-    // Mouse & Touch Mapping 
-    // ---------------------------------------------------------
     let isDrawing = false;
 
     function handleInput(e, isClick = false) {
@@ -226,16 +216,11 @@ function startEngine() {
         }
     }
 
-    // Standard Mouse Events
-    canvas.addEventListener('mousedown', (e) => { 
-        isDrawing = true; 
-        handleInput(e, true); 
-    });
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; handleInput(e, true); });
     canvas.addEventListener('mousemove', (e) => handleInput(e, false));
     canvas.addEventListener('mouseup', () => { isDrawing = false; });
     canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-    // iOS Safari / Mobile Touch Events
     canvas.addEventListener('touchstart', (e) => { 
         isDrawing = true; 
         e.preventDefault(); 
