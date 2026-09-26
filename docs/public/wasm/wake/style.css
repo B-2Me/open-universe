@@ -102,3 +102,52 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
   #control-deck { padding: 0 15px 15px 15px; }
   #sidebar { width: 100%; border-left: none; border-top: 1px solid var(--pf-brand-soft); }
 }
+
+/* Visual Brush Palette */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.palette-btn {
+  background: var(--pf-bg-main);
+  border: 1px solid var(--pf-brand-soft);
+  border-radius: 8px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.palette-btn:hover {
+  background: rgba(95, 158, 88, 0.1);
+}
+
+.palette-btn.active {
+  background: var(--pf-brand-soft);
+  border-color: var(--pf-brand-main);
+  box-shadow: inset 0 0 0 1px var(--pf-brand-main);
+}
+
+.p-icon {
+  font-size: 20px;
+  color: var(--pf-text);
+  line-height: 1;
+}
+
+.p-label {
+  font-size: 11px;
+  color: var(--pf-text-muted);
+  font-weight: bold;
+}
+
+.palette-btn.active .p-icon,
+.palette-btn.active .p-label {
+  color: #fff;
+}
