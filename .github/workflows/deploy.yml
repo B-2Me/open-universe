@@ -53,16 +53,7 @@ jobs:
       # PLANCK FIELD BARE-METAL ENGINE (WASM)
       # ========================================================
       
-      - name: Cache Planck Field Binary
-        id: cache-wasm
-        uses: actions/cache@v4
-        with:
-          path: docs/public/wasm/wake/
-          # Hashes all C, header, and shell script files in /src recursively
-          key: planck-wasm-${{ hashFiles('src/**/*.c', 'src/**/*.h', 'src/**/*.sh') }}
-
       - name: Setup Emscripten
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: mymindstorm/setup-emsdk@v14
         continue-on-error: true # Fails gracefully without breaking VitePress
         with:
@@ -70,7 +61,6 @@ jobs:
           actions-cache-folder: 'emsdk-cache'
 
       - name: Compile Planck Field Engine
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
         continue-on-error: true # Fails gracefully without breaking VitePress
         run: |
           # Ensure destination exists
