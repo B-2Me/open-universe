@@ -7,23 +7,23 @@ let currentZoom = 1;
 let panX = 0;
 let panY = 0;
 let currentMode = "move"; 
-let currentBrush = "electron"; // Updated default
+let currentBrush = "electron"; 
 let isSpaceDown = false;
 let customStamp = [];
 
-// NEW: Quantum Particle Ensembles
+// NEW: Quantum Particle Ensembles with specific mass values
 const patternPalette = {
-    "electron": [[1]],
+    "electron": [[20]],
     "quark": [
-        [1, 0, 1], 
+        [20, 0, 20], 
         [0, 0, 0], 
-        [0, 1, 0]
+        [0, 20, 0]
     ],
     "vortex": [
-        [0, 1, 1, 0], 
-        [1, 0, 0, 1], 
-        [1, 0, 0, 1], 
-        [0, 1, 1, 0]
+        [0, 20, 20, 0], 
+        [20, 0, 0, 20], 
+        [20, 0, 0, 20], 
+        [0, 20, 20, 0]
     ]
 };
 
@@ -127,13 +127,16 @@ function startEngine(Module) {
     document.getElementById('slider_radius').addEventListener('input', e => document.getElementById('val_radius').innerText = e.target.value);
     document.getElementById('btn_copy_stamp').addEventListener('click', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
 
+    // Wasm Bridge Update: Pass the specific pattern mass back to C
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern.length) return;
         const startX = centerX - Math.floor(pattern[0].length / 2);
         const startY = centerY - Math.floor(pattern.length / 2);
         for (let y = 0; y < pattern.length; y++) {
             for (let x = 0; x < pattern[0].length; x++) {
-                if (pattern[y][x]) Module._set_node(startX + x, startY + y);
+                if (pattern[y][x] > 0) {
+                    Module._set_node(startX + x, startY + y, pattern[y][x]);
+                }
             }
         }
     }
