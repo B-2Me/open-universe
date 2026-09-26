@@ -78,10 +78,11 @@ function startEngine(Module) {
 
     Module._init_grid();
 
-    // HEAPU8 is now 100% guaranteed to exist
+    // Setup the Zero-Copy Memory Bridge securely
+    const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
     const bufferPointer = Module._get_pixel_buffer_pointer();
     const bufferLength = gridWidth * gridHeight * 4; 
-    const pixelArray = new Uint8ClampedArray(Module.HEAPU8.buffer, bufferPointer, bufferLength);
+    const pixelArray = new Uint8ClampedArray(buffer, bufferPointer, bufferLength);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
     function renderFrame() {
