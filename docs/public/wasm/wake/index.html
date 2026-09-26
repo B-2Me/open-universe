@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
     
@@ -28,13 +28,25 @@
                     <button class="segment-btn" data-mode="sample">⛶ Copy</button>
                 </div>
 
-                <!-- Context: Place Mode -->
+                <!-- NEW: Context: Visual Brush Palette -->
                 <div id="context_place" class="context-panel" style="display: none;">
-                    <div class="button-group" id="brush_selector" style="margin: 0;">
-                        <button class="group-btn active" data-val="dot">Node</button>
-                        <button class="group-btn" data-val="glider">Glider</button>
-                        <button class="group-btn" data-val="lwss">LWSS</button>
-                        <button class="group-btn" data-val="custom" id="opt_custom" disabled>Custom</button>
+                    <div class="palette-grid" id="brush_selector">
+                        <button class="palette-btn active" data-val="dot">
+                            <span class="p-icon">■</span>
+                            <span class="p-label">Node</span>
+                        </button>
+                        <button class="palette-btn" data-val="glider">
+                            <span class="p-icon">◰</span>
+                            <span class="p-label">Glider</span>
+                        </button>
+                        <button class="palette-btn" data-val="lwss">
+                            <span class="p-icon">⤞</span>
+                            <span class="p-label">LWSS</span>
+                        </button>
+                        <button class="palette-btn" data-val="custom" id="opt_custom">
+                            <span class="p-icon">⬚</span>
+                            <span class="p-label" id="scratch_label">Scratch</span>
+                        </button>
                     </div>
                 </div>
 
@@ -42,7 +54,7 @@
                 <div id="context_sample" class="context-panel" style="display: none;">
                     <label>Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span> px</label>
                     <input type="range" id="slider_radius" min="1" max="50" value="10">
-                    <button id="btn_copy_stamp" class="action-btn" style="margin-top: 10px;">Copy JSON</button>
+                    <button id="btn_copy_stamp" class="action-btn" style="margin-top: 10px; width: 100%;">Copy JSON</button>
                 </div>
 
                 <!-- Optics & Zoom Row -->
@@ -112,7 +124,7 @@
         </div>
     </div>
 
-    <script src="planck.js?v=10" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=10"></script>
+    <script src="planck.js?v=11" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=11"></script>
 </body>
 </html>
