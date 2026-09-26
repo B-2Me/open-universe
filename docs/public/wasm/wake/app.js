@@ -7,14 +7,24 @@ let currentZoom = 1;
 let panX = 0;
 let panY = 0;
 let currentMode = "move"; 
-let currentBrush = "dot";
+let currentBrush = "electron"; // Updated default
 let isSpaceDown = false;
 let customStamp = [];
 
+// NEW: Quantum Particle Ensembles
 const patternPalette = {
-    "dot": [[1]],
-    "glider": [[0, 1, 0], [0, 0, 1], [1, 1, 1]],
-    "lwss": [[0, 1, 1, 1, 1], [1, 0, 0, 0, 1], [0, 0, 0, 0, 1], [1, 0, 0, 1, 0]]
+    "electron": [[1]],
+    "quark": [
+        [1, 0, 1], 
+        [0, 0, 0], 
+        [0, 1, 0]
+    ],
+    "vortex": [
+        [0, 1, 1, 0], 
+        [1, 0, 0, 1], 
+        [1, 0, 0, 1], 
+        [0, 1, 1, 0]
+    ]
 };
 
 function triggerErrorState(message) {
@@ -58,7 +68,6 @@ function startEngine(Module) {
         animationId = requestAnimationFrame(renderFrame);
     }
 
-    // --- Transform Engine ---
     function applyTransform() {
         currentZoom = Math.max(0.5, Math.min(currentZoom, 10)); 
         canvas.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
@@ -72,8 +81,6 @@ function startEngine(Module) {
     }
     resetView();
 
-    // --- Flattened UI Logic Helper ---
-    // Now accepts an optional class parameter so it works for both groups and palettes
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
         const buttons = container.querySelectorAll(btnClass);
@@ -87,10 +94,8 @@ function startEngine(Module) {
         });
     }
 
-    // Wiring UI (Notice the updated class targeting for the palette)
     setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
 
-    // Modes
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
@@ -100,11 +105,8 @@ function startEngine(Module) {
     }
     document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
 
-    // Wiring UI
-    setupButtonGroup('brush_selector', val => currentBrush = val);
-    
-    const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
     setupButtonGroup('biome_selector', val => {
+        const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
         Module._set_dissipation(biomes[val][0]);
         Module._set_thermal_limit(biomes[val][1]);
         document.getElementById('math_dissipation').innerText = biomes[val][0];
@@ -125,7 +127,6 @@ function startEngine(Module) {
     document.getElementById('slider_radius').addEventListener('input', e => document.getElementById('val_radius').innerText = e.target.value);
     document.getElementById('btn_copy_stamp').addEventListener('click', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
 
-    // --- Wasm Bridge ---
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern.length) return;
         const startX = centerX - Math.floor(pattern[0].length / 2);
@@ -144,21 +145,17 @@ function startEngine(Module) {
             for (let dx = -radius; dx <= radius; dx++) row.push(Module._get_node(centerX + dx, centerY + dy));
             newStamp.push(row);
         }
-        customStamp = newStamp; // Overwrite the Scratch buffer
+        customStamp = newStamp;
         
-        // Update the Scratch box label to show the captured dimension
         document.getElementById('scratch_label').innerText = `[${radius*2+1}px]`;
         
-        // Auto-select the Scratch box in the palette
         document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('opt_custom').classList.add('active');
         currentBrush = 'custom';
         
-        // Throw the user directly into Paste mode so they can use it instantly
         setMode('place');
     }
 
-    // --- Inputs ---
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && !isSpaceDown) { isSpaceDown = true; canvas.className = 'mode-move'; }
     });
@@ -203,7 +200,7 @@ function startEngine(Module) {
 
         if (activeAction === 'sample' && isClick) {
             sampleRegion(x, y, parseInt(document.getElementById('slider_radius').value, 10));
-        } else if (activeAction === 'place' && (isClick || currentBrush === 'dot')) {
+        } else if (activeAction === 'place' && (isClick || currentBrush === 'electron')) {
             injectPattern(x, y, currentBrush === 'custom' ? customStamp : patternPalette[currentBrush]);
         }
     }
@@ -248,14 +245,11 @@ function startEngine(Module) {
     Module._randomize_grid(); 
     renderFrame();
 }
-// --- Seamless Iframe Integration ---
+
 function reportHeight() {
-    // Calculate the exact pixel height of the internal layout
     const height = document.documentElement.scrollHeight;
-    // Send it securely to the parent VitePress window
     window.parent.postMessage({ type: 'RESIZE_IFRAME', height: height }, '*');
 }
 
-// Report height on load, and auto-update if the screen rotates or resizes
 window.addEventListener('load', reportHeight);
 new ResizeObserver(reportHeight).observe(document.body);
