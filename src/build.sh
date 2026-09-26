@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Ensure the output directory exists
 mkdir -p ../docs/public/wasm/wake/
 
 # Compile the C engine to WebAssembly
@@ -24,7 +23,7 @@ emcc planck.c \
     '_get_grid_width', 
     '_get_grid_height'
   ]" \
-  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" \
+  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/wake/planck.js
 
-echo "Planck Field compiled successfully to /docs/public/wasm/wake/"
+echo "Planck Field compiled successfully."
