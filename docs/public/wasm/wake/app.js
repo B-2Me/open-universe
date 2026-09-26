@@ -11,7 +11,7 @@ let currentBrush = "electron";
 let isSpaceDown = false;
 let customStamp = [];
 
-// NEW: Quantum Particle Ensembles with specific mass values
+// Quantum Particle Ensembles with specific mass values
 const patternPalette = {
     "electron": [[20]],
     "quark": [
@@ -29,33 +29,45 @@ const patternPalette = {
 
 function triggerErrorState(message) {
     const banner = document.getElementById('error-banner');
-    banner.innerText = message;
-    banner.style.display = 'block';
-    document.getElementById('universe_canvas').style.opacity = '0.3';
+    if (banner) {
+        banner.innerText = message;
+        banner.style.display = 'block';
+    }
+    const canvas = document.getElementById('universe_canvas');
+    if (canvas) canvas.style.opacity = '0.3';
 }
 
 if (typeof createPlanck !== 'undefined') {
     createPlanck({
         onAbort: function() {
             triggerErrorState("Fatal Error: The Planck Field collapsed.");
-            document.getElementById('diag_status').innerText = "PANIC";
-            document.getElementById('diag_status').style.color = "var(--pf-danger)";
+            const diag = document.getElementById('diag_status');
+            if (diag) {
+                diag.innerText = "PANIC";
+                diag.style.color = "var(--pf-danger)";
+            }
             if (animationId) cancelAnimationFrame(animationId);
         }
     }).then((wasmModule) => {
-        document.getElementById('diag_status').innerText = "ONLINE";
-        document.getElementById('diag_status').style.color = "var(--pf-brand-hover)";
+        const diag = document.getElementById('diag_status');
+        if (diag) {
+            diag.innerText = "ONLINE";
+            diag.style.color = "var(--pf-brand-hover)";
+        }
         startEngine(wasmModule);
     }).catch((error) => triggerErrorState("Engine failed to initialize: " + error));
 }
 
 function startEngine(Module) {
     const canvas = document.getElementById('universe_canvas');
+    if (!canvas) return; // Prevent crashes if HTML isn't ready
+    
     const ctx = canvas.getContext('2d', { alpha: false });
 
     gridWidth = Module._get_grid_width();
     gridHeight = Module._get_grid_height();
-    document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
+    const diagNodes = document.getElementById('diag_nodes');
+    if (diagNodes) diagNodes.innerText = (gridWidth * gridHeight).toLocaleString();
 
     Module._init_grid();
     const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
@@ -81,6 +93,42 @@ function startEngine(Module) {
     }
     resetView();
 
+    // Robust setup function to prevent null reference crashes
+    function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.warn(`UI Element missing: ${containerId}`);
+            return; 
+        }
+        const buttons = container.querySelectorAll(btnClass);
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                callback(btn.dataset.val);
+            });
+        });
+    }
+
+    setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+        
+        const ctxPlace = document.getElementById('context_place');
+        const ctxSample = document.getElementById('context_sample');
+        
+        if (ctxPlace) ctxPlace.style.display = mode === 'place' ? 'block' : 'none';
+        if (ctxSample) ctxSample.style.display = mode === 'sample' ? 'block' : 'none';
+        
+        canvas.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
+    }
+    
+    document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
+
+    // Only ONE biome_selector binding!
     setupButtonGroup('biome_selector', val => {
         // [Dissipation, Thermal Limit]
         // Vacuum (0): Fast bleed, high ceiling. Smooth orbits.
@@ -89,44 +137,37 @@ function startEngine(Module) {
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
         Module._set_dissipation(biomes[val][0]);
         Module._set_thermal_limit(biomes[val][1]);
-        document.getElementById('math_dissipation').innerText = biomes[val][0];
-        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
-    });
-
-    setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
-
-    function setMode(mode) {
-        currentMode = mode;
-        document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
-        document.getElementById('context_place').style.display = mode === 'place' ? 'block' : 'none';
-        document.getElementById('context_sample').style.display = mode === 'sample' ? 'block' : 'none';
-        canvas.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
-    }
-    document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
-
-    setupButtonGroup('biome_selector', val => {
-        const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
-        Module._set_dissipation(biomes[val][0]);
-        Module._set_thermal_limit(biomes[val][1]);
-        document.getElementById('math_dissipation').innerText = biomes[val][0];
-        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
+        
+        const d_label = document.getElementById('math_dissipation');
+        const t_label = document.getElementById('math_thermal_limit');
+        if (d_label) d_label.innerText = biomes[val][0];
+        if (t_label) t_label.innerText = biomes[val][1];
     });
     
     setupButtonGroup('layer_selector', val => Module._set_render_layer(parseInt(val)));
 
-    document.getElementById('btn_zoom_in').addEventListener('click', () => { currentZoom += 0.5; applyTransform(); });
-    document.getElementById('btn_zoom_out').addEventListener('click', () => { currentZoom -= 0.5; applyTransform(); });
-    document.getElementById('btn_zoom_reset').addEventListener('click', resetView);
-
-    document.getElementById('btn_play').addEventListener('click', () => isPlaying = !isPlaying);
-    document.getElementById('btn_step').addEventListener('click', () => { isPlaying = false; Module._tick(); });
-    document.getElementById('btn_clear').addEventListener('click', () => Module._clear_grid());
-    document.getElementById('btn_soup').addEventListener('click', () => Module._randomize_grid());
+    // Safely bind action buttons
+    const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
     
-    document.getElementById('slider_radius').addEventListener('input', e => document.getElementById('val_radius').innerText = e.target.value);
-    document.getElementById('btn_copy_stamp').addEventListener('click', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
+    bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); });
+    bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); });
+    bindBtn('btn_zoom_reset', resetView);
 
-    // Wasm Bridge Update: Pass the specific pattern mass back to C
+    bindBtn('btn_play', () => isPlaying = !isPlaying);
+    bindBtn('btn_step', () => { isPlaying = false; Module._tick(); });
+    bindBtn('btn_clear', () => Module._clear_grid());
+    bindBtn('btn_soup', () => Module._randomize_grid());
+    bindBtn('btn_copy_stamp', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
+    
+    const radiusSlider = document.getElementById('slider_radius');
+    if (radiusSlider) {
+        radiusSlider.addEventListener('input', e => {
+            const valLabel = document.getElementById('val_radius');
+            if (valLabel) valLabel.innerText = e.target.value;
+        });
+    }
+
+    // Wasm Bridge: Pass the specific pattern mass back to C
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern.length) return;
         const startX = centerX - Math.floor(pattern[0].length / 2);
@@ -149,12 +190,14 @@ function startEngine(Module) {
         }
         customStamp = newStamp;
         
-        document.getElementById('scratch_label').innerText = `[${radius*2+1}px]`;
+        const scratchLabel = document.getElementById('scratch_label');
+        if (scratchLabel) scratchLabel.innerText = `[${radius*2+1}px]`;
         
         document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('opt_custom').classList.add('active');
-        currentBrush = 'custom';
+        const optCustom = document.getElementById('opt_custom');
+        if (optCustom) optCustom.classList.add('active');
         
+        currentBrush = 'custom';
         setMode('place');
     }
 
@@ -201,7 +244,8 @@ function startEngine(Module) {
         const y = Math.floor((clientY - rect.top) * scaleY);
 
         if (activeAction === 'sample' && isClick) {
-            sampleRegion(x, y, parseInt(document.getElementById('slider_radius').value, 10));
+            const radius = radiusSlider ? parseInt(radiusSlider.value, 10) : 10;
+            sampleRegion(x, y, radius);
         } else if (activeAction === 'place' && (isClick || currentBrush === 'electron')) {
             injectPattern(x, y, currentBrush === 'custom' ? customStamp : patternPalette[currentBrush]);
         }
