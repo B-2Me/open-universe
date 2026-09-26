@@ -243,3 +243,14 @@ function startEngine(Module) {
     Module._randomize_grid(); 
     renderFrame();
 }
+// --- Seamless Iframe Integration ---
+function reportHeight() {
+    // Calculate the exact pixel height of the internal layout
+    const height = document.documentElement.scrollHeight;
+    // Send it securely to the parent VitePress window
+    window.parent.postMessage({ type: 'RESIZE_IFRAME', height: height }, '*');
+}
+
+// Report height on load, and auto-update if the screen rotates or resizes
+window.addEventListener('load', reportHeight);
+new ResizeObserver(reportHeight).observe(document.body);
