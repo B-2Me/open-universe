@@ -2,27 +2,25 @@
 title: Langevin's Wake
 description: A bare-metal WebAssembly thermodynamic cellular automata engine.
 outline: deep
-audio: /audio/wake-demo.mp3
 ---
 
-<style>
-  .engine-frame {
-    width: 100%;
-    height: 700px; /* Desktop Height */
-    border: none;
-    display: block;
-    background: #0a0e0a;
-  }
-  
-  @media (max-width: 768px) {
-    .engine-frame {
-      height: 1350px; /* Mobile Height: Expands to fit the stacked UI */
+<script setup>
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "RESIZE_IFRAME") {
+      const iframe = document.getElementById("wake-iframe");
+      if (iframe) {
+        iframe.style.height = event.data.height + "px";
+      }
     }
-  }
-</style>
+  });
+})
+</script>
 
 <div style="margin-top: 0; margin-bottom: 2rem; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
-  <iframe src="/wasm/wake/index.html?v=7" class="engine-frame" scrolling="no"></iframe>
+  <iframe id="wake-iframe" src="/wasm/wake/index.html?v=8" width="100%" style="border: none; display: block; background: #0a0e0a; height: 700px; transition: height 0.1s ease-out;" scrolling="no"></iframe>
 </div>
 
 # Langevin's Wake
@@ -49,6 +47,6 @@ Planck Field is built on top of Conway's cellular automata, but introduces two d
 ### The JavaScript UI Boundary
 While the relentless physics loop happens in C, the geometry is purely controlled by the browser. 
 
-The **Sampler Tool** demonstrates this boundary beautifully: when you click and drag over the canvas, JavaScript queries the Wasm memory block pixel-by-pixel, extracts the spatial data into a JSON array, and saves it to your clipboard. When you select a tool to draw, JavaScript fires a `_set_node` command directly into the C memory loop, allowing you to seamlessly inject structures into the chaos.
+The **Copy Tool** demonstrates this boundary beautifully: when you tap and drag over the canvas, JavaScript queries the Wasm memory block pixel-by-pixel, extracts the spatial data into a JSON array, and saves it to your clipboard. When you select a tool to draw, JavaScript fires a `_set_node` command directly into the C memory loop, allowing you to seamlessly inject structures into the chaos.
 
 :::
