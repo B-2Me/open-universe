@@ -218,39 +218,82 @@ input[type=range] {
     max-height: 250px; /* Keep canvas visible on mobile */
   }
 }
+
 /* Ensure zoomed canvas doesn't break out of the container */
 #canvas-container {
   overflow: hidden; 
   position: relative;
 }
 
-/* Floating Zoom Controls */
-.zoom-controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+/* Reusable Flattened Button Groups */
+.button-group, .segment-control {
   display: flex;
-  gap: 8px;
-  z-index: 10;
-  background: var(--pf-bg-panel);
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid var(--pf-brand-soft);
-  backdrop-filter: blur(8px);
-}
-
-.zoom-controls button {
-  margin: 0;
-  padding: 4px 12px;
-  width: auto;
-  font-size: 14px;
   background: var(--pf-bg-input);
-  border-color: var(--pf-brand-soft);
+  border: 1px solid var(--pf-brand-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
 }
 
-.zoom-controls button:hover {
-  background: var(--pf-brand-main);
+.group-btn, .segment-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--pf-brand-soft);
+  border-radius: 0;
+  margin: 0;
+  color: var(--pf-text-muted);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  padding: 8px 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: center;
 }
+
+.group-btn:last-child, .segment-btn:last-child {
+  border-right: none;
+}
+
+.group-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.group-btn:hover:not(:disabled), .segment-btn:hover {
+  background: rgba(95, 158, 88, 0.15);
+}
+
+.group-btn.active, .segment-btn.active {
+  background: var(--pf-brand-main);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Contextual Tool Settings */
+.context-panel {
+  background: rgba(0,0,0,0.2);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--pf-brand-soft);
+  margin-top: 12px;
+}
+
+.context-panel label {
+  display: block;
+  font-size: 12px;
+  color: var(--pf-text-muted);
+  margin-bottom: 8px;
+}
+
+/* Dynamic Cursors */
+canvas {
+  cursor: crosshair;
+  transition: transform 0.05s linear; 
+}
+canvas.mode-move { cursor: grab; }
+canvas.mode-move:active { cursor: grabbing; }
+
 
 /* Segmented Control Mode Buttons */
 .segment-control {
