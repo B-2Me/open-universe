@@ -3,11 +3,10 @@ let isPlaying = true;
 let gridWidth = 400;
 let gridHeight = 400;
 
-// --- UX State ---
 let currentZoom = 1;
 let panX = 0;
 let panY = 0;
-let currentMode = "move"; // 'move', 'place', 'sample'
+let currentMode = "move"; 
 let currentBrush = "dot";
 let isSpaceDown = false;
 let customStamp = [];
@@ -61,58 +60,64 @@ function startEngine(Module) {
 
     // --- Transform Engine ---
     function applyTransform() {
-        currentZoom = Math.max(0.5, Math.min(currentZoom, 10)); // Clamp zoom 0.5x to 10x
+        currentZoom = Math.max(0.5, Math.min(currentZoom, 10)); 
         canvas.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
     }
 
     function resetView() {
-        currentZoom = window.innerWidth <= 768 ? 2.5 : 1; // Auto-zoom for mobile
+        currentZoom = window.innerWidth <= 768 ? 2.5 : 1; 
         panX = 0;
         panY = 0;
         applyTransform();
     }
     resetView();
 
-    // --- UI Logic ---
-    function setMode(mode) {
-        currentMode = mode;
-        // Update Buttons
-        document.querySelectorAll('.segment-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.mode === mode);
+    // --- Flattened UI Logic Helper ---
+    function setupButtonGroup(containerId, callback) {
+        const container = document.getElementById(containerId);
+        const buttons = container.querySelectorAll('.group-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                callback(btn.dataset.val);
+            });
         });
-        // Update Context Panels
-        document.getElementById('context_place').style.display = mode === 'place' ? 'block' : 'none';
-        document.getElementById('context_sample').style.display = mode === 'sample' ? 'block' : 'none';
-        // Update Cursor
-        canvas.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
     }
 
-    document.querySelectorAll('.segment-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => setMode(e.target.dataset.mode));
-    });
+    // Modes
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+        document.getElementById('context_place').style.display = mode === 'place' ? 'block' : 'none';
+        document.getElementById('context_sample').style.display = mode === 'sample' ? 'block' : 'none';
+        canvas.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
+    }
+    document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
 
-    document.getElementById('brush_selector').addEventListener('change', e => currentBrush = e.target.value);
+    // Wiring UI
+    setupButtonGroup('brush_selector', val => currentBrush = val);
     
-    // Zoom Controls
+    const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
+    setupButtonGroup('biome_selector', val => {
+        Module._set_dissipation(biomes[val][0]);
+        Module._set_thermal_limit(biomes[val][1]);
+        document.getElementById('math_dissipation').innerText = biomes[val][0];
+        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
+    });
+    
+    setupButtonGroup('layer_selector', val => Module._set_render_layer(parseInt(val)));
+
     document.getElementById('btn_zoom_in').addEventListener('click', () => { currentZoom += 0.5; applyTransform(); });
     document.getElementById('btn_zoom_out').addEventListener('click', () => { currentZoom -= 0.5; applyTransform(); });
     document.getElementById('btn_zoom_reset').addEventListener('click', resetView);
 
-    // Simulation Controls
     document.getElementById('btn_play').addEventListener('click', () => isPlaying = !isPlaying);
     document.getElementById('btn_step').addEventListener('click', () => { isPlaying = false; Module._tick(); });
     document.getElementById('btn_clear').addEventListener('click', () => Module._clear_grid());
     document.getElementById('btn_soup').addEventListener('click', () => Module._randomize_grid());
     
-    // Environment
-    const biomes = { "0": [15, 1200], "1": [2, 300], "2": [10, 2000] };
-    document.getElementById('biome_selector').addEventListener('change', (e) => {
-        Module._set_dissipation(biomes[e.target.value][0]);
-        Module._set_thermal_limit(biomes[e.target.value][1]);
-    });
-    document.getElementById('layer_selector').addEventListener('change', (e) => Module._set_render_layer(parseInt(e.target.value)));
-
-    // Sampler
     document.getElementById('slider_radius').addEventListener('input', e => document.getElementById('val_radius').innerText = e.target.value);
     document.getElementById('btn_copy_stamp').addEventListener('click', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
 
@@ -136,14 +141,19 @@ function startEngine(Module) {
             newStamp.push(row);
         }
         customStamp = newStamp;
-        document.getElementById('opt_custom').disabled = false;
-        document.getElementById('opt_custom').innerText = `Custom Stamp (${radius*2+1}x${radius*2+1})`;
-        document.getElementById('brush_selector').value = 'custom';
+        
+        const optCustom = document.getElementById('opt_custom');
+        optCustom.disabled = false;
+        optCustom.innerText = `Custom (${radius*2+1}x)`;
+        
+        // Auto-select custom brush
+        document.querySelectorAll('#brush_selector .group-btn').forEach(b => b.classList.remove('active'));
+        optCustom.classList.add('active');
         currentBrush = 'custom';
         setMode('place');
     }
 
-    // --- Desktop Comforts ---
+    // --- Inputs ---
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && !isSpaceDown) { isSpaceDown = true; canvas.className = 'mode-move'; }
     });
@@ -153,18 +163,15 @@ function startEngine(Module) {
 
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
-        const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
-        currentZoom += zoomDelta;
+        currentZoom += e.deltaY > 0 ? -0.1 : 0.1;
         applyTransform();
     }, { passive: false });
 
     canvas.addEventListener('dblclick', resetView);
 
-    // --- Universal Input Handler ---
     let isDragging = false;
     let lastX = 0, lastY = 0;
-    let initialPinchDist = 0;
-    let initialPinchZoom = 1;
+    let initialPinchDist = 0, initialPinchZoom = 1;
     let lastTapTime = 0;
 
     function getTouchDist(touches) {
@@ -196,24 +203,19 @@ function startEngine(Module) {
         }
     }
 
-    // Mouse
     canvas.addEventListener('mousedown', (e) => { isDragging = true; processInput(e.clientX, e.clientY, true); });
     canvas.addEventListener('mousemove', (e) => { if (isDragging) processInput(e.clientX, e.clientY, false); });
     window.addEventListener('mouseup', () => isDragging = false);
 
-    // Touch
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isDragging = true;
-        
-        // Double Tap detection
         if (e.touches.length === 1) {
             const now = Date.now();
             if (now - lastTapTime < 300) resetView();
             lastTapTime = now;
             processInput(e.touches[0].clientX, e.touches[0].clientY, true);
         } else if (e.touches.length === 2) {
-            // Initiate pinch/two-finger pan
             initialPinchDist = getTouchDist(e.touches);
             initialPinchZoom = currentZoom;
             lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -224,26 +226,18 @@ function startEngine(Module) {
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (!isDragging) return;
-
         if (e.touches.length === 1) {
             processInput(e.touches[0].clientX, e.touches[0].clientY, false);
         } else if (e.touches.length === 2) {
-            // Multi-touch overrides active mode -> force pan & zoom
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            
-            // Zoom
             currentZoom = initialPinchZoom * (getTouchDist(e.touches) / initialPinchDist);
-            
-            // Pan
             panX += (midX - lastX) / currentZoom;
             panY += (midY - lastY) / currentZoom;
             lastX = midX; lastY = midY;
-            
             applyTransform();
         }
     }, { passive: false });
-
     window.addEventListener('touchend', () => isDragging = false);
 
     Module._randomize_grid(); 
