@@ -2,32 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planck Field Engine</title>
-    <style>
-        body { background-color: #111; color: #eee; font-family: monospace; text-align: center; margin: 0; padding: 20px; }
-        #canvas-container { position: relative; display: inline-block; }
-        canvas { background-color: #000; border: 1px solid #333; image-rendering: pixelated; }
-        
-        /* The Error Banner */
-        #error-banner {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(200, 0, 0, 0.9);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            z-index: 10;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
-    <div id="canvas-container">
-        <div id="error-banner"></div>
-        <canvas id="universe_canvas" width="400" height="400"></canvas>
+    <div id="app">
+        <!-- The Bare-Metal Grid -->
+        <div id="canvas-container">
+            <div id="error-banner"></div>
+            <canvas id="universe_canvas" width="400" height="400"></canvas>
+        </div>
+
+        <!-- The Diagnostic Dashboard -->
+        <div id="sidebar">
+            
+            <div class="panel-section">
+                <h3>Thermodynamic Biome</h3>
+                <select id="biome_selector">
+                    <option value="0">Deep Space (Vacuum)</option>
+                    <option value="1">Stellar Core (Furnace)</option>
+                    <option value="2">Solid Lattice (Crust)</option>
+                </select>
+                
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Entropy Rate (Loss/Tick):</span>
+                    <span class="telemetry-value" id="math_dissipation">15</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">c² Limit (Max Heat):</span>
+                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>Intervention</h3>
+                <button id="btn_play">Pause / Play</button>
+                <button id="btn_step">Tick (Frame Advance)</button>
+                <button id="btn_soup">Inject Thermal Soup</button>
+                <button id="btn_clear" style="border-color: #666; color: #aaa; background: transparent;">Absolute Zero (Clear)</button>
+            </div>
+
+            <div class="panel-section">
+                <h3>System Diagnostics</h3>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Engine Version:</span>
+                    <span class="telemetry-value" id="diag_version">Loading...</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Wasm Status:</span>
+                    <span class="telemetry-value" id="diag_status" style="color: #888;">Booting</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Grid Resolution:</span>
+                    <span class="telemetry-value" id="diag_res">--</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Active Nodes:</span>
+                    <span class="telemetry-value" id="diag_nodes">--</span>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- Load the hardened JS bridge first -->
