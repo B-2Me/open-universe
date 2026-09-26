@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <emscripten.h>
 
-#define BUILD_VERSION 108 
+#define BUILD_VERSION 109 
 #define WIDTH 400
 #define HEIGHT 400
 #define PIXEL_COUNT (WIDTH * HEIGHT)
@@ -128,11 +128,11 @@ void tick() {
                     // Perfect Integer Diffusion
                     heat_sum += neighbor.heat / 9;
 
-                    // Relational Mass Transfer
+                    // THE FIX: True Relational Mass Transfer (p = mv)
                     if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
-                        incoming_quanta++;
-                        mom_x -= dx; 
-                        mom_y -= dy;
+                        incoming_quanta += neighbor.quanta; // Receive ALL quanta
+                        mom_x -= (dx * neighbor.quanta);    // Scale vector by mass
+                        mom_y -= (dy * neighbor.quanta);
                     }
 
                     // Gravity
@@ -151,7 +151,7 @@ void tick() {
             // 2. Process Mass (Quanta)
             int next_quanta = current.quanta;
             if (current.quanta > 0 && current.spin != 0) {
-                next_quanta--; 
+                next_quanta = 0; // THE FIX: All quanta vacate the cell instantly
             }
             next_quanta += incoming_quanta; 
             if (next_quanta > 255) next_quanta = 255; 
@@ -163,14 +163,14 @@ void tick() {
             
             int kinetic_heat = 0;
             if (incoming_quanta > 0 && dominant_spin == 0) {
-                kinetic_heat = incoming_quanta * 50; // Collision converts momentum to heat
+                kinetic_heat = incoming_quanta * 10; // True head-on collision
             }
 
             // 4. Process Thermodynamics
             int kept_heat = current.heat - 8 * (current.heat / 9);
             int next_heat = kept_heat + heat_sum + kinetic_heat;
             
-            // THE FIX: Mass inherently warps the field (radiates tension)
+            // Mass inherently warps the field (radiates tension)
             next_heat += (next_quanta * 15); 
             
             next_heat -= KNOB_DISSIPATION;
