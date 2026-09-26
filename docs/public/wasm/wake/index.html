@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
     
@@ -12,36 +12,34 @@
         <!-- Main Viewport Area -->
         <div id="left-pane">
             
-            <!-- The Bare-Metal Grid -->
             <div id="canvas-container">
                 <div id="error-banner"></div>
                 <canvas id="universe_canvas" width="400" height="400"></canvas>
             </div>
 
-            <!-- The Control Deck (Immediately under canvas) -->
+            <!-- The Control Deck -->
             <div id="control-deck">
                 
-                <!-- Interaction Row -->
                 <div class="segment-control">
                     <button class="segment-btn active" data-mode="move">✋ Pan</button>
                     <button class="segment-btn" data-mode="place">🪄 Paste</button>
                     <button class="segment-btn" data-mode="sample">⛶ Copy</button>
                 </div>
 
-                <!-- NEW: Context: Visual Brush Palette -->
+                <!-- UPDATED: Quantum Brush Palette -->
                 <div id="context_place" class="context-panel" style="display: none;">
                     <div class="palette-grid" id="brush_selector">
-                        <button class="palette-btn active" data-val="dot">
-                            <span class="p-icon">■</span>
-                            <span class="p-label">Node</span>
+                        <button class="palette-btn active" data-val="electron">
+                            <span class="p-icon">●</span>
+                            <span class="p-label">Electron</span>
                         </button>
-                        <button class="palette-btn" data-val="glider">
-                            <span class="p-icon">◰</span>
-                            <span class="p-label">Glider</span>
+                        <button class="palette-btn" data-val="quark">
+                            <span class="p-icon">∴</span>
+                            <span class="p-label">Quarks</span>
                         </button>
-                        <button class="palette-btn" data-val="lwss">
-                            <span class="p-icon">⤞</span>
-                            <span class="p-label">LWSS</span>
+                        <button class="palette-btn" data-val="vortex">
+                            <span class="p-icon">✺</span>
+                            <span class="p-label">Vortex</span>
                         </button>
                         <button class="palette-btn" data-val="custom" id="opt_custom">
                             <span class="p-icon">⬚</span>
@@ -50,14 +48,12 @@
                     </div>
                 </div>
 
-                <!-- Context: Sample Mode -->
                 <div id="context_sample" class="context-panel" style="display: none;">
                     <label>Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span> px</label>
                     <input type="range" id="slider_radius" min="1" max="50" value="10">
                     <button id="btn_copy_stamp" class="action-btn" style="margin-top: 10px; width: 100%;">Copy JSON</button>
                 </div>
 
-                <!-- Optics & Zoom Row -->
                 <div class="deck-row" style="margin-top: 8px;">
                     <div class="button-group" id="layer_selector" style="flex: 1; margin: 0;">
                         <button class="group-btn active" data-val="0">Macro</button>
@@ -70,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Playback Row -->
                 <div class="deck-row" style="margin-top: 8px;">
                     <button id="btn_play" class="action-btn">⏯ Play/Pause</button>
                     <button id="btn_step" class="action-btn">⏭ Step</button>
@@ -78,7 +73,6 @@
                     <button id="btn_clear" class="action-btn danger">❌ Clear</button>
                 </div>
                 
-                <!-- iOS Cheat Sheet Legend -->
                 <div class="legend-panel">
                     <div class="legend-item"><span>✋ Pan:</span> Drag to move camera</div>
                     <div class="legend-item"><span>🪄 Paste:</span> Tap to draw pattern</div>
@@ -90,7 +84,6 @@
             </div>
         </div>
 
-        <!-- The Obscure Settings Sidebar -->
         <div id="sidebar">
             <div class="panel-section">
                 <h3>Environment Biome</h3>
@@ -124,7 +117,7 @@
         </div>
     </div>
 
-    <script src="planck.js?v=11" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=11"></script>
+    <script src="planck.js?v=12" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>
