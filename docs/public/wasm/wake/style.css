@@ -1,5 +1,4 @@
 :root {
-  /* Inherited from your VitePress Dark Mode */
   --pf-brand-main: #5f9e58; 
   --pf-brand-hover: #75b86e;
   --pf-brand-soft: rgba(95, 158, 88, 0.25);
@@ -9,19 +8,14 @@
   --pf-bg-input: rgba(26, 34, 26, 0.85);
   
   --pf-text: #eee;
-  --pf-text-muted: #8cd185; /* Using vp-c-brand-3 for subtle highlights */
+  --pf-text-muted: #8cd185; 
   --pf-danger: rgba(200, 50, 50, 0.9);
 
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* ---------------------------------------------------
-   Base Layout (The Iframe Sandbox)
---------------------------------------------------- */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -29,19 +23,13 @@ body {
   background-color: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: var(--font-sans);
-  overflow: hidden; /* Prevent iframe scrollbars */
-  display: flex;
-  height: 100vh;
-  width: 100vw;
+  /* UNLOCKED: Allowed body to expand naturally vertically */
 }
 
-/* ---------------------------------------------------
-   App Grid: Canvas on Left, Controls on Right
---------------------------------------------------- */
 #app {
   display: flex;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   flex-direction: row;
 }
 
@@ -53,6 +41,7 @@ body {
   position: relative;
   padding: 20px;
   background: radial-gradient(circle at center, rgba(95, 158, 88, 0.05) 0%, transparent 70%);
+  overflow: hidden; 
 }
 
 canvas {
@@ -60,15 +49,27 @@ canvas {
   border: 1px solid var(--pf-brand-soft);
   border-radius: 8px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-  image-rendering: pixelated; /* Crucial for razor-sharp Planck nodes */
+  
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated; 
+  
   max-width: 100%;
   max-height: 100%;
+  
+  touch-action: none;           
+  -webkit-touch-callout: none;  
+  -webkit-user-select: none;    
+  user-select: none;
+
   cursor: crosshair;
+  transition: transform 0.05s linear; 
 }
 
-/* ---------------------------------------------------
-   The Diagnostic Control Panel
---------------------------------------------------- */
+canvas.mode-move { cursor: grab; }
+canvas.mode-move:active { cursor: grabbing; }
+
 #sidebar {
   width: 340px;
   background-color: var(--pf-bg-panel);
@@ -77,9 +78,7 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* UNLOCKED: Removed overflow-y constraints */
 }
 
 .panel-section {
@@ -97,9 +96,6 @@ canvas {
   color: var(--pf-brand-main);
 }
 
-/* ---------------------------------------------------
-   Telemetry Readouts (Math)
---------------------------------------------------- */
 .telemetry-row {
   display: flex;
   justify-content: space-between;
@@ -107,125 +103,20 @@ canvas {
   font-size: 13px;
 }
 
-.telemetry-label {
-  color: #aaa;
-}
-
+.telemetry-label { color: #aaa; }
 .telemetry-value {
   font-family: var(--font-mono);
   color: var(--pf-brand-hover);
   font-weight: bold;
 }
 
-/* ---------------------------------------------------
-   Inputs & Controls
---------------------------------------------------- */
-select, button {
-  width: 100%;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  outline: none;
-}
-
-select {
-  background-color: #000;
-  color: var(--pf-text);
-  border: 1px solid var(--pf-brand-soft);
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-bottom: 12px;
-}
-
-select:focus {
-  border-color: var(--pf-brand-hover);
-}
-
-/* Emulate VitePress VPButton.brand organic pulse */
-button {
-  background-color: var(--pf-brand-soft);
-  color: var(--pf-brand-hover);
-  border: 1px solid var(--pf-brand-main);
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  margin-bottom: 8px;
-}
-
-button:hover {
-  background-color: var(--pf-brand-main);
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--pf-brand-soft);
-}
-
-/* Sleek HTML5 Range Sliders */
-.slider-group {
-  margin-bottom: 16px;
-}
-
-.slider-group label {
+label {
   display: block;
   font-size: 12px;
   color: var(--pf-text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
-input[type=range] {
-  width: 100%;
-  accent-color: var(--pf-brand-main);
-  cursor: pointer;
-}
-
-/* ---------------------------------------------------
-   Graceful Degradation Banner
---------------------------------------------------- */
-#error-banner {
-  display: none;
-  position: absolute;
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--pf-danger);
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-family: var(--font-mono);
-  z-index: 10;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-  text-align: center;
-}
-
-/* ---------------------------------------------------
-   Mobile Responsiveness
---------------------------------------------------- */
-@media (max-width: 768px) {
-  #app {
-    flex-direction: column;
-  }
-  
-  #canvas-container {
-    padding: 10px;
-  }
-
-  #sidebar {
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid var(--pf-brand-soft);
-    max-height: 250px; /* Keep canvas visible on mobile */
-  }
-}
-
-/* Ensure zoomed canvas doesn't break out of the container */
-#canvas-container {
-  overflow: hidden; 
-  position: relative;
-}
-
-/* Reusable Flattened Button Groups */
 .button-group, .segment-control {
   display: flex;
   background: var(--pf-bg-input);
@@ -270,7 +161,6 @@ input[type=range] {
   font-weight: bold;
 }
 
-/* Contextual Tool Settings */
 .context-panel {
   background: rgba(0,0,0,0.2);
   padding: 12px;
@@ -279,75 +169,69 @@ input[type=range] {
   margin-top: 12px;
 }
 
-.context-panel label {
-  display: block;
-  font-size: 12px;
-  color: var(--pf-text-muted);
-  margin-bottom: 8px;
+input[type=range] {
+  width: 100%;
+  accent-color: var(--pf-brand-main);
+  cursor: pointer;
 }
 
-/* Dynamic Cursors */
-canvas {
-  cursor: crosshair;
-  transition: transform 0.05s linear; 
+button {
+  outline: none;
 }
-canvas.mode-move { cursor: grab; }
-canvas.mode-move:active { cursor: grabbing; }
 
-
-/* Segmented Control Mode Buttons */
-.segment-control {
-  display: flex;
-  background: var(--pf-bg-input);
-  border: 1px solid var(--pf-brand-soft);
+#btn_play, #btn_step, #btn_soup, #btn_clear, #btn_copy_stamp {
+  width: 100%;
+  background-color: var(--pf-brand-soft);
+  color: var(--pf-brand-hover);
+  border: 1px solid var(--pf-brand-main);
+  padding: 10px;
   border-radius: 8px;
-  overflow: hidden;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  transition: transform 0.2s ease, background-color 0.2s ease;
   margin-bottom: 8px;
 }
 
-.segment-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-right: 1px solid var(--pf-brand-soft);
-  border-radius: 0;
-  margin: 0;
-  color: var(--pf-text-muted);
-  font-weight: normal;
-  padding: 8px 4px;
-  transition: all 0.2s ease;
-}
-
-.segment-btn:last-child {
-  border-right: none;
-}
-
-.segment-btn.active {
-  background: var(--pf-brand-main);
+#btn_play:hover, #btn_step:hover, #btn_soup:hover, #btn_clear:hover, #btn_copy_stamp:hover {
+  background-color: var(--pf-brand-main);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--pf-brand-soft);
+}
+
+#error-banner {
+  display: none;
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--pf-danger);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
   font-weight: bold;
+  font-family: var(--font-mono);
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+  text-align: center;
 }
 
-/* Contextual Tool Settings */
-.context-panel {
-  background: rgba(0,0,0,0.2);
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid var(--pf-brand-soft);
-  margin-top: 12px;
-}
+@media (max-width: 768px) {
+  #app {
+    flex-direction: column;
+  }
+  
+  #canvas-container {
+    padding: 10px;
+    min-height: 450px; /* Forces canvas to retain size before panels load */
+    flex: none;
+  }
 
-.context-panel label {
-  display: block;
-  font-size: 12px;
-  color: var(--pf-text-muted);
-  margin-bottom: 6px;
+  #sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--pf-brand-soft);
+  }
 }
-
-/* Dynamic Cursors */
-canvas {
-  cursor: crosshair; /* Default for Place/Sample */
-  transition: transform 0.05s linear; /* Smooth scaling */
-}
-canvas.mode-move { cursor: grab; }
-canvas.mode-move:active { cursor: grabbing; }
