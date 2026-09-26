@@ -20,8 +20,22 @@ onMounted(() => {
 })
 </script>
 
+<style>
+  .engine-frame {
+    width: 100%;
+    height: 800px; 
+    border: none;
+    display: block;
+    background: #0a0e0a;
+    transition: height 0.1s ease-out;
+  }
+  @media (max-width: 768px) {
+    .engine-frame { height: 90vh; } /* Ensures the engine claims exactly one screen height */
+  }
+</style>
+
 <div style="margin-top: 0; margin-bottom: 2rem; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
-  <iframe id="wake-iframe" src="/wasm/wake/index.html?v=8" width="100%" style="border: none; display: block; background: #0a0e0a; height: 700px; transition: height 0.1s ease-out;" scrolling="no"></iframe>
+  <iframe id="wake-iframe" src="/wasm/wake/index.html?v=10" class="engine-frame" scrolling="no"></iframe>
 </div>
 
 # Langevin's Wake
