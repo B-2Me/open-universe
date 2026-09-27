@@ -41,7 +41,7 @@ onMounted(() => {
 # Langevin's Wake
 *The Planck Field bare-metal simulation engine.*
 
-Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating bare-metal relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge. 
+Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge. 
 
 ::: details ⚙️ Under the Hood: The Hardware Metaphor
 
@@ -69,11 +69,11 @@ Gravity is not an invisible geometric curve; it is the entropic gradient of the 
 $$F = T \frac{\Delta S}{\Delta x}$$
 
 **4. Propagation Friction (Cosmological Redshift)**
-Motion incurs a thermodynamic toll. Every time a quanta packet is handed off to an adjacent Planck node, it pays a baseline action tax. Light frequency degrades logarithmically across the active medium:
+Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium:
 $$E_{received} = E_{emitted} e^{-\mu d}$$
 
 **5. Stefan-Boltzmann Dissipation**
-The substrate must constantly dissipate relational friction to avoid total saturation. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint).
+Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint).
 
 ### The Biological Swerve
 While the grid is perfectly deterministic, **you** are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations. 
