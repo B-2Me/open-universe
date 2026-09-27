@@ -211,10 +211,30 @@ void tick() {
                     pixel_buffer[px_idx + 0] = color; pixel_buffer[px_idx + 1] = color; pixel_buffer[px_idx + 2] = color;
                 }
                 pixel_buffer[px_idx + 3] = 255;
-            } else { 
-                uint8_t r = (next_heat > 255) ? 255 : next_heat;
-                uint8_t g = (next_heat > 512) ? 255 : (next_heat / 2);
-                pixel_buffer[px_idx + 0] = r; pixel_buffer[px_idx + 1] = g; pixel_buffer[px_idx + 2] = 0;
+                } else { 
+                // Organic Blackbody Radiation Math
+                uint8_t r = 0, g = 0, b = 0;
+                
+                if (next_heat < 100) {
+                    // Cold vacuum: Deep Purple/Blue
+                    r = next_heat;
+                    b = (next_heat * 2 > 255) ? 255 : next_heat * 2;
+                } else if (next_heat < 400) {
+                    // Warming up: Red to Orange
+                    r = (next_heat > 255) ? 255 : next_heat;
+                    g = (next_heat - 100) / 2;
+                } else {
+                    // Supernova: Yellow to Blinding White
+                    r = 255;
+                    g = 150 + (next_heat - 400) / 4;
+                    if (g > 255) g = 255;
+                    b = (next_heat - 400) / 2;
+                    if (b > 255) b = 255;
+                }
+                
+                pixel_buffer[px_idx + 0] = r; 
+                pixel_buffer[px_idx + 1] = g; 
+                pixel_buffer[px_idx + 2] = b;
                 pixel_buffer[px_idx + 3] = 255;
             }
         }
