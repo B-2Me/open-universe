@@ -7,12 +7,9 @@ let currentZoom = 1;
 let panX = 0;
 let panY = 0;
 let currentMode = "move"; 
-let currentBrush = "electron"; 
+let currentBrush = "A"; 
 let isSpaceDown = false;
 let customStamp = [];
-
-// Quantum Particle Ensembles with specific mass values
-let currentBrush = "A"; 
 
 // Abstract Structural Ensembles
 const patternPalette = {
@@ -31,7 +28,6 @@ const patternPalette = {
     "D": [[255]], 
     "E": [[10, 10, 10, 10]] 
 };
-
 
 function triggerErrorState(message) {
     const banner = document.getElementById('error-banner');
@@ -280,7 +276,7 @@ function startEngine(Module) {
         if (activeAction === 'sample' && isClick) {
             const radius = radiusSlider ? parseInt(radiusSlider.value, 10) : 10;
             sampleRegion(x, y, radius);
-        } else if (activeAction === 'place' && (isClick || currentBrush === 'electron')) {
+        } else if (activeAction === 'place' && (isClick || currentBrush === 'A')) {
             injectPattern(x, y, currentBrush === 'custom' ? customStamp : patternPalette[currentBrush]);
         }
     }
