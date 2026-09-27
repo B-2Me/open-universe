@@ -173,10 +173,19 @@ void tick() {
             // Mass inherently warps the field (radiates tension)
             next_heat += (next_quanta * 15); 
             
-            next_heat -= KNOB_DISSIPATION;
+            // --- THE PLANCK THERMODYNAMIC UPGRADE ---
+            // Stefan-Boltzmann / Planck radiation approximation.
+            // Radiation scales non-linearly with temperature, and escapes 
+            // strictly in quantized packets of size (KNOB_DISSIPATION).
+            
+            int temp_scalar = next_heat / 200; 
+            int quantum_packets_emitted = 1 + (temp_scalar * temp_scalar); 
+            int heat_loss = quantum_packets_emitted * KNOB_DISSIPATION;
+            
+            next_heat -= heat_loss;
             if (next_heat < 0) next_heat = 0;
             
-            // E = mc^2
+            // E = mc^2 (Thermal Limit Annihilation)
             if (next_heat > KNOB_THERMAL_LIMIT && next_quanta > 0) {
                 next_heat += (next_quanta * 80); 
                 next_quanta = 0;
