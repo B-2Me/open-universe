@@ -102,7 +102,7 @@ int get_node(int x, int y) {
 }
 
 // ---------------------------------------------------------
-// The Planck Field Physics Engine (Strictly Deterministic)
+// The Planck Field Physics Engine (Bare-Metal Thermodynamic Resolution)
 // ---------------------------------------------------------
 
 EMSCRIPTEN_KEEPALIVE
@@ -152,7 +152,7 @@ void tick() {
                     // Incoming State Updates
                     if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
                         
-                        // Redshift Tax: The transaction fee paid to the substrate for propagation
+                        // Redshift: The inevitable propagation friction incurred across the active substrate
                         kinetic_heat += (neighbor.quanta * 1);
                         
                         // Phase Friction Matrix (Electromagnetism)
@@ -221,7 +221,7 @@ void tick() {
             next_heat -= heat_loss;
             if (next_heat < 1) next_heat = 1; // The Cosmic Microwave Background minimum
             
-            // E = mc^2 (Bandwidth Collapse)
+            // E = mc^2 (Topological Unwinding / Thermal Saturation Limit)
             if (next_heat > KNOB_THERMAL_LIMIT && next_quanta > 0) {
                 next_heat += (next_quanta * 80); // Unspool topological tension into thermal exhaust
                 next_quanta = 0;
