@@ -36,10 +36,32 @@ body {
   flex: none; /* Stops it from stealing all space */
 }
 
+/* Error Banner Modal */
+#error-banner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--pf-bg-panel);
+  color: var(--pf-danger);
+  border: 1px solid var(--pf-danger);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 100;
+  max-width: 80%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
 canvas {
   background-color: #000; border: 1px solid var(--pf-brand-soft); border-radius: 8px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   image-rendering: pixelated; 
+  filter: contrast(1.2) brightness(1.1) drop-shadow(0 0 8px rgba(0, 255, 255, 0.15));
   max-width: 100%; max-height: 100%;
   touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
   cursor: crosshair; transition: transform 0.05s linear; 
@@ -71,6 +93,19 @@ canvas.mode-move:active { cursor: grabbing; }
 }
 .action-btn.danger { border-color: #666; color: #aaa; background: transparent; }
 
+/* Primary Action Button (Reset) */
+.action-btn.primary {
+  background-color: var(--pf-brand-main);
+  color: #fff;
+  border-color: var(--pf-brand-hover);
+  box-shadow: 0 4px 12px var(--pf-brand-soft);
+}
+
+.action-btn.primary:hover {
+  background-color: var(--pf-brand-hover);
+  transform: translateY(-1px);
+}
+
 /* Context & Legend */
 .context-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--pf-brand-soft); margin-bottom: 8px; }
 .legend-panel { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; margin-top: 12px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid #333; font-size: 11px; color: #aaa; }
@@ -92,7 +127,7 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
   #app { flex-direction: column; min-height: auto; }
   #left-pane { width: 100%; }
   
-  /* Shrines canvas so controls stay visible without scrolling */
+  /* Shrinks canvas so controls stay visible without scrolling */
   #canvas-container { 
     height: 40vh; /* Limits canvas height */
     aspect-ratio: 1 / 1; 
