@@ -179,7 +179,7 @@ Classical neuroscience can map exactly how a brain processes a signal from the o
 **The Planck Field Reconciliation:** 
 Both materialist and dualist camps fail because they assume the universe is made of dead matter processing abstract data. 
 *   In a process ontology, the brain is not a machine processing static files. It is an active, metabolic boundary continuously fighting to stay synchronized with the flow of becoming.
-*   Information is a physical force. Simulating the future and forcing biological architecture to alter its trajectory requires intense thermodynamic dissipation.
+*   Information is a physical constraint. Simulating the future and forcing biological architecture to alter its trajectory requires intense thermodynamic dissipation.
 *   The "feeling" of consciousness—the qualia of the color red, the sensation of pain, the experience of a thought—is not a magical ghost. **It is the literal thermodynamic friction of actualization.** You don't *have* an experience; you *are* the physical friction of the interface sustaining its own recursive loop.
 
 ---
@@ -249,7 +249,46 @@ The paradox assumes that "measurement" requires a human mind. The Planck Field p
 
 ---
 
-## 19. The Interaction Paradox (Mind-Body Dualism)
+## 19. The Freezing Paradox (The Quantum Zeno Effect)
+
+**The Paradox:** 
+In quantum physics, if you observe an unstable, decaying radioactive particle continuously, it will *never decay*. The act of rapid, continuous measurement literally freezes the particle's evolution in place. Legacy physics treats this like a glitch in the probability math.
+
+**The Planck Field Reconciliation:** 
+This is a perfect demonstration of actualization capacity limits. 
+* Measurement is not passive looking; it is a physical collision causing relational friction. 
+* If you continuously bombard a local system with measurement collisions, the system is forced to expend its finite actualization capacity entirely on resolving the external measurement tension. 
+* Because its thermodynamic capacity is saturated dealing with the external environment, it has zero capacity left over for internal state updates (decaying). You aren't freezing a probability wave; you are just maximizing its relational drag so it cannot tick forward.
+
+---
+
+## 20. The Retrocausality Paradox (Wheeler’s Delayed-Choice)
+
+**The Paradox:** 
+In advanced variations of the double-slit experiment, physicists can measure a photon *after* it has already passed through the slits. The measurement seems to reach back in time and change how the photon behaved in the past. This leads to wild legacy claims of "retrocausality" (the future altering the past).
+
+**The Planck Field Reconciliation:** 
+Retrocausality is a map-reading error caused by the illusion of the block universe.
+* The universe is a **zero-storage substrate**. There is no "past" to reach back and change.
+* The photon never "decided" to be a particle or a wave in the past; it propagated purely as un-actualized relational potential. 
+* Because the photon remained un-actualized, the timeline wasn't altered. The detector simply forced the actualization of the entire relational event *in the present moment*. You didn't change history; you just forced the field to resolve a pending tension right now.
+
+---
+
+## 21. The Subjectivity Paradox (Wigner’s Friend)
+
+**The Paradox:** 
+Eugene Wigner proposed a thought experiment: A scientist in a sealed lab measures a particle, getting a definite result. But Wigner is standing *outside* the lab. According to standard quantum mechanics, until Wigner opens the door and asks his friend for the result, the entire lab, the scientist, and the particle are mathematically in a giant superposition. Whose reality is the "real" one?
+
+**The Planck Field Reconciliation:** 
+This paradox assumes that the universe waits for a macroscopic human mind to synchronize reality. 
+* Actualization is hyper-local and continuous. The field doesn't care about human scientists. 
+* The exact moment the friend's equipment interacted with the particle, the relational friction forced an actualization. The event was resolved.
+* The fact that Wigner doesn't know the result yet doesn't mean the lab is hovering in multiple realities; it simply means the causal sequence hasn't propagated across the boundary to his local interface yet. Ignorance of data does not equal physical superposition.
+
+---
+
+## 22. The Interaction Paradox (Mind-Body Dualism)
 
 **The Paradox:** 
 Descartes famously split the universe into physical matter (the body) and immaterial thought (the mind). But this creates an impossible paradox: If the mind is made of weightless, non-physical "nothing," how can it physically push biological neurons to move your arm? 
@@ -262,7 +301,7 @@ There is no ghost. This paradox is resolved by **The Navigator Inversion**: you 
 
 ---
 
-## 20. The Volume Paradox (The Holographic Principle)
+## 23. The Volume Paradox (The Holographic Principle)
 
 **The Paradox:** 
 When physicists study black holes, they discovered that the total amount of information (entropy) you can fit inside a 3D space does not depend on the *volume* of the space, but on the 2D *surface area* bounding it. This shatters the classical assumption that space is an empty 3D box you can pack full of stuff.
@@ -274,7 +313,7 @@ Space is not an empty container you fill with objects. Space is a relational net
 
 ---
 
-## 21. The Tuning Paradox (The Anthropic Principle)
+## 24. The Tuning Paradox (The Anthropic Principle)
 
 **The Paradox:** 
 The fundamental constants of the universe seem perfectly, miraculously tuned to allow biological life to exist. Materialists shrug and propose infinite unseen multiverses. Dualists say a Creator perfectly tuned the dials for us. 
@@ -287,7 +326,7 @@ Both camps fail because they treat the universe as a pre-built house, and biolog
 
 ---
 
-## 22. The Dilation Paradox (Relativistic Time)
+## 25. The Dilation Paradox (Relativistic Time)
 
 **The Paradox:** 
 Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
@@ -300,7 +339,7 @@ This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial
 
 ---
 
-## 23. The Expansion Paradox (Cosmological Redshift)
+## 26. The Expansion Paradox (Cosmological Redshift)
 
 **The Paradox:** 
 Light arriving from distant galaxies is shifted toward the red end of the spectrum. Standard cosmology interprets this as proof that "space itself is stretching" like an inflating balloon, dragging galaxies apart. To explain redshift without blurring, legacy physics insists that space must be a physical, stretchable fabric.
