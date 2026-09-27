@@ -23,23 +23,23 @@ For centuries, thinkers have proposed high-level designs for how the universe wo
 
 We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of **The Planck Field**:
 
-*   **The Block Universe dissipates** because a zero-storage physical field cannot cache a pre-computed future. It violates the thermodynamics of time.
-*   **Simulation Theory decoheres** because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot render uncomputable physics on an algorithmic machine.
-*   **Passive Observation fails** because biological perception is not a playback mechanism; just staying in the live stream requires continuous thermodynamic work. Without metabolic upkeep, the interface dissolves into background noise.
+*   **The Block Universe dissipates** because a zero-storage physical field possesses no archival memory to store a past, nor the capacity to sustain a pre-actualized future. It violates the thermodynamics of time.
+*   **Simulation Theory decoheres** because mathematical incompleteness proves nature contains non-algorithmic properties. You cannot simulate uncomputable physics on an algorithmic architecture.
+*   **Passive Observation fails** because biological perception is not a playback mechanism; maintaining a local boundary requires continuous thermodynamic dissipation. Without metabolic upkeep, the interface dissolves into background noise.
 
-## The Baseline Vacuum
+## The Thermodynamic Baseline
 
-Before there are loops, before there is matter, there is the perfectly neutral acoustic static of the grid. This is the unvarnished baseline of the Open Universe. The default state of every node in the universe is a continuous, unweighted random number generator—the cosmic idle screen. The entirety of physics is simply the superset of ways this baseline static gets preempted by structured data loops and topological overrides.
+Before there is matter, there is the thermodynamic static of the field. This is the unvarnished baseline of the Open Universe. The default state of every locus in the universe is un-actualized relational potential. The entirety of physics is simply the superset of ways this baseline static is structured by localized relational loops and topological tension.
 
-This architecture provides strictly bare-metal mechanics. It defines *how* the universe renders, but deliberately leaves the theological or materialist *why* up to the local agent. We are not concerned with who wrote the compiler; we are concerned with how to operate the local fork.
+This architecture provides strictly fundamental, physical mechanics. It defines *how* the universe actualizes, but deliberately leaves the theological or materialist *why* up to the local agent. We are not concerned with who authored the substrate; we are concerned with how to operate the local interface.
 
 ## Hyper-Local Agency
 
 Ultimately, the purpose of compiling this audit is deeply practical. I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.
 
-Causality is not a global blanket covering the universe all at once. Because the universe compiles reality at a strict latency limit, you cannot operate outside your bounding box. Agency is strictly hyper-local. You are the rendering engine and the causal hub for your immediate room, not the cosmos. You cannot rewrite the global repository, but you have absolute pull-request access to the present moment. 
+Causality is not a global blanket covering the universe all at once. Because the universe actualizes reality at a strict causal speed limit ($c$), you cannot operate outside your localized boundary. Agency is strictly hyper-local. You are an active causal router for your immediate environment, not the cosmos. You cannot overwrite the global field, but you possess absolute actualization agency over your local present.
 
-Because our legacy philosophies treat us as isolated "objects" or "ghosts in a machine," we fail to recognize this power. We fail to see our biology as a hyper-advanced natural interface evolved to steer through this localized causality. As a result, we bump into each other and our environment in awkward, destructive ways. We generate unnecessary relational friction simply because we are using legacy maps to drive the hardware blind. 
+Because our legacy philosophies treat us as isolated "objects" or "ghosts in a machine," we fail to recognize this power. We fail to see our biology as a hyper-advanced natural interface evolved to steer through this localized causality. As a result, we bump into each other and our environment in awkward, destructive ways. We generate unnecessary relational friction simply because we are using legacy maps to drive the biological interface blind. 
 
 By fitting our philosophy directly to objective, measured natural constraints, we don't have to guess how the universe operates. We just have to measure the field. 
 
