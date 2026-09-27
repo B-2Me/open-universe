@@ -19,6 +19,8 @@ body {
   background-color: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: var(--font-sans);
+  /* iOS safe areas */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 #app {
@@ -33,10 +35,9 @@ body {
 #canvas-container {
   display: flex; align-items: center; justify-content: center;
   position: relative; padding: 20px; overflow: hidden; 
-  flex: none; /* Stops it from stealing all space */
+  flex: none; 
 }
 
-/* Error Banner Modal */
 #error-banner {
   display: none;
   position: absolute;
@@ -70,30 +71,40 @@ canvas {
 canvas.mode-move { cursor: grab; }
 canvas.mode-move:active { cursor: grabbing; }
 
-/* Control Deck */
 #control-deck { padding: 0 20px 20px 20px; }
-.deck-row { display: flex; gap: 8px; width: 100%; }
+.deck-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
-/* Buttons & Segments */
+button {
+  /* Kills iOS 300ms double-tap delay */
+  touch-action: manipulation; 
+}
+
 .button-group, .segment-control {
   display: flex; background: var(--pf-bg-input); border: 1px solid var(--pf-brand-soft);
-  border-radius: 8px; overflow: hidden; margin-bottom: 8px; width: 100%;
+  border-radius: 8px; overflow: hidden; width: 100%;
 }
+
 .group-btn, .segment-btn {
   flex: 1; background: transparent; border: none; border-right: 1px solid var(--pf-brand-soft);
-  color: var(--pf-text-muted); font-size: 13px; padding: 10px 4px; cursor: pointer; text-align: center;
+  color: var(--pf-text-muted); font-size: 13px; cursor: pointer; text-align: center;
+  /* iOS Standard Touch Target */
+  min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
 }
+
 .group-btn:last-child, .segment-btn:last-child { border-right: none; }
 .group-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .group-btn.active, .segment-btn.active { background: var(--pf-brand-main); color: #fff; font-weight: bold; }
 
 .action-btn {
   flex: 1; background-color: var(--pf-brand-soft); color: var(--pf-text); border: 1px solid var(--pf-brand-main);
-  padding: 10px 4px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; margin: 0;
+  border-radius: 8px; cursor: pointer; font-weight: bold; margin: 0;
+  /* iOS Standard Touch Target */
+  min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
 }
 .action-btn.danger { border-color: #666; color: #aaa; background: transparent; }
 
-/* Primary Action Button (Reset) */
 .action-btn.primary {
   background-color: var(--pf-brand-main);
   color: #fff;
@@ -106,13 +117,11 @@ canvas.mode-move:active { cursor: grabbing; }
   transform: translateY(-1px);
 }
 
-/* Context & Legend */
-.context-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--pf-brand-soft); margin-bottom: 8px; }
+.context-panel { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--pf-brand-soft); margin-bottom: 12px; }
 .legend-panel { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; margin-top: 12px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid #333; font-size: 11px; color: #aaa; }
 .legend-item { flex: 1 1 45%; }
 .legend-item span { color: var(--pf-text); font-weight: bold; }
 
-/* Sidebar */
 #sidebar { width: 340px; background-color: var(--pf-bg-panel); border-left: 1px solid var(--pf-brand-soft); padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 .panel-section { background-color: var(--pf-bg-input); border: 1px solid var(--pf-brand-soft); border-radius: 12px; padding: 16px; }
 .panel-section h3 { margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; color: var(--pf-brand-main); }
@@ -120,16 +129,14 @@ canvas.mode-move:active { cursor: grabbing; }
 .telemetry-label { color: #aaa; }
 .telemetry-value { font-family: var(--font-mono); color: var(--pf-brand-hover); font-weight: bold; }
 
-input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: pointer; }
+input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: pointer; min-height: 44px; }
 
-/* Mobile Strict Fit */
 @media (max-width: 768px) {
   #app { flex-direction: column; min-height: auto; }
   #left-pane { width: 100%; }
   
-  /* Shrinks canvas so controls stay visible without scrolling */
   #canvas-container { 
-    height: 40vh; /* Limits canvas height */
+    height: 40vh; 
     aspect-ratio: 1 / 1; 
     padding: 15px; 
     margin: 0 auto;
@@ -138,10 +145,9 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
   #sidebar { width: 100%; border-left: none; border-top: 1px solid var(--pf-brand-soft); }
 }
 
-/* Visual Brush Palette */
 .palette-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* Slightly wider buttons on mobile */
   gap: 8px;
   margin: 0;
 }
@@ -150,39 +156,24 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
   background: var(--pf-bg-main);
   border: 1px solid var(--pf-brand-soft);
   border-radius: 8px;
-  padding: 10px 4px;
+  padding: 8px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 50px;
 }
 
-.palette-btn:hover {
-  background: rgba(95, 158, 88, 0.1);
-}
-
+.palette-btn:hover { background: rgba(95, 158, 88, 0.1); }
 .palette-btn.active {
   background: var(--pf-brand-soft);
   border-color: var(--pf-brand-main);
   box-shadow: inset 0 0 0 1px var(--pf-brand-main);
 }
 
-.p-icon {
-  font-size: 20px;
-  color: var(--pf-text);
-  line-height: 1;
-}
-
-.p-label {
-  font-size: 11px;
-  color: var(--pf-text-muted);
-  font-weight: bold;
-}
-
-.palette-btn.active .p-icon,
-.palette-btn.active .p-label {
-  color: #fff;
-}
+.p-icon { font-size: 20px; color: var(--pf-text); line-height: 1; }
+.p-label { font-size: 11px; color: var(--pf-text-muted); font-weight: bold; }
+.palette-btn.active .p-icon, .palette-btn.active .p-label { color: #fff; }
