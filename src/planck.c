@@ -32,6 +32,15 @@ const uint8_t DIR_MAP[3][3] = {
 const uint8_t INV_DIR[9] = {0, 5, 6, 7, 8, 1, 2, 3, 4};
 
 // ---------------------------------------------------------
+// Observable Telemetry
+// ---------------------------------------------------------
+double obs_total_quanta = 0;
+double obs_total_heat = 0;
+
+EMSCRIPTEN_KEEPALIVE double get_total_quanta() { return obs_total_quanta; }
+EMSCRIPTEN_KEEPALIVE double get_total_heat() { return obs_total_heat; }
+
+// ---------------------------------------------------------
 // Engine Diagnostics & Environment Setters
 // ---------------------------------------------------------
 
@@ -99,6 +108,9 @@ int get_node(int x, int y) {
 
 EMSCRIPTEN_KEEPALIVE
 void tick() {
+    double frame_quanta = 0;
+    double frame_heat = 0;
+
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
             int idx = y * WIDTH + x;
@@ -128,7 +140,7 @@ void tick() {
                     // Perfect Integer Diffusion
                     heat_sum += neighbor.heat / 9;
 
-                    // THE FIX: True Relational Mass Transfer (p = mv)
+                    // True Relational Mass Transfer (p = mv)
                     if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
                         incoming_quanta += neighbor.quanta; // Receive ALL quanta
                         mom_x -= (dx * neighbor.quanta);    // Scale vector by mass
@@ -151,7 +163,7 @@ void tick() {
             // 2. Process Mass (Quanta)
             int next_quanta = current.quanta;
             if (current.quanta > 0 && current.spin != 0) {
-                next_quanta = 0; // THE FIX: All quanta vacate the cell instantly
+                next_quanta = 0; // All quanta vacate the cell instantly
             }
             next_quanta += incoming_quanta; 
             if (next_quanta > 255) next_quanta = 255; 
@@ -209,6 +221,10 @@ void tick() {
             grid_write[idx].quanta = next_quanta;
             grid_write[idx].heat = next_heat;
             grid_write[idx].spin = next_spin;
+            
+            // Log Telemetry
+            frame_quanta += next_quanta;
+            frame_heat += next_heat;
 
             // 7. Optical Rendering
             int px_idx = idx * 4;
@@ -220,7 +236,7 @@ void tick() {
                     pixel_buffer[px_idx + 0] = color; pixel_buffer[px_idx + 1] = color; pixel_buffer[px_idx + 2] = color;
                 }
                 pixel_buffer[px_idx + 3] = 255;
-                } else { 
+            } else { 
                 // Organic Blackbody Radiation Math
                 uint8_t r = 0, g = 0, b = 0;
                 
@@ -248,6 +264,9 @@ void tick() {
             }
         }
     }
+
+    obs_total_quanta = frame_quanta;
+    obs_total_heat = frame_heat;
 
     PlanckNode* temp = grid_read;
     grid_read = grid_write;
