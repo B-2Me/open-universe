@@ -110,10 +110,8 @@ function startEngine(Module) {
     }
     resetView();
 
-    // Mathematically perfect rubber banding based on current scale
     function constrainView() {
         const rect = canvasContainer.getBoundingClientRect();
-        // Max pan is half the width/height of the overflow created by scaling
         const maxPanX = (rect.width * (currentZoom - 1)) / (2 * currentZoom);
         const maxPanY = (rect.height * (currentZoom - 1)) / (2 * currentZoom);
 
@@ -138,25 +136,23 @@ function startEngine(Module) {
         }
     }
 
-    // Handles Coordinate Translation for Mouse/Touch clicks
     function getGridCoords(clientX, clientY) {
         const rect = canvasContainer.getBoundingClientRect();
         const cx = rect.width / 2;
         const cy = rect.height / 2;
-        
-        // Offset from center of screen
         const dx = (clientX - rect.left) - cx;
         const dy = (clientY - rect.top) - cy;
-        
-        // Unscale and unpan
         const unscaled_dx = (dx / currentZoom) - panX;
         const unscaled_dy = (dy / currentZoom) - panY;
-        
-        // Map back to Wasm grid bounds
         const gridX = Math.floor((cx + unscaled_dx) * (gridWidth / rect.width));
         const gridY = Math.floor((cy + unscaled_dy) * (gridHeight / rect.height));
-        
         return { x: gridX, y: gridY };
+    }
+
+    // UTILITY: Hide all popups
+    function hidePopups() {
+        document.getElementById('context_place').classList.remove('show');
+        document.getElementById('context_sample').classList.remove('show');
     }
 
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
@@ -173,18 +169,36 @@ function startEngine(Module) {
         });
     }
 
-    setupButtonGroup('brush_selector', val => currentBrush = val, '.palette-btn');
+    setupButtonGroup('brush_selector', val => {
+        currentBrush = val;
+        const labels = { "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "custom": "Scratch" };
+        const placeBtn = document.querySelector('.segment-btn[data-mode="place"]');
+        if (placeBtn) placeBtn.innerText = `🪄 Inject (${labels[val]})`;
+        hidePopups(); // Close popup when brush is picked
+    }, '.palette-btn');
 
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
         
+        hidePopups();
         document.getElementById('context_place').classList.toggle('show', mode === 'place');
         document.getElementById('context_sample').classList.toggle('show', mode === 'sample');
         canvasContainer.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
     }
     
-    document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
+    document.querySelectorAll('.segment-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.currentTarget.dataset.mode;
+            if (currentMode === mode) {
+                // Toggle popup if clicking the already active mode
+                if (mode === 'place') document.getElementById('context_place').classList.toggle('show');
+                if (mode === 'sample') document.getElementById('context_sample').classList.toggle('show');
+            } else {
+                setMode(mode);
+            }
+        });
+    });
 
     setupButtonGroup('biome_selector', val => {
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
@@ -235,7 +249,10 @@ function startEngine(Module) {
         document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('opt_custom').classList.add('active');
         currentBrush = 'custom';
+        
+        // Switch to place mode and instantly hide popup
         setMode('place');
+        hidePopups();
     }
 
     window.addEventListener('keydown', (e) => {
@@ -298,6 +315,7 @@ function startEngine(Module) {
     }
 
     canvasContainer.addEventListener('mousedown', (e) => { 
+        hidePopups(); // Hide popups on canvas interaction
         isDragging = true; 
         tWrapper.style.transition = 'none'; 
         processInput(e.clientX, e.clientY, true); 
@@ -309,6 +327,7 @@ function startEngine(Module) {
 
     canvasContainer.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        hidePopups(); // Hide popups on canvas interaction
         isDragging = true;
         tWrapper.style.transition = 'none';
         if (e.touches.length === 1) {
@@ -348,8 +367,6 @@ function startEngine(Module) {
     renderFrame();
 }
 
-// --- REPLACE THE BOTTOM OF app.js WITH THIS ---
-
 function reportHeight() {
     const height = document.documentElement.scrollHeight;
     window.parent.postMessage({ type: 'RESIZE_IFRAME', height: height }, '*');
@@ -357,4 +374,3 @@ function reportHeight() {
 
 window.addEventListener('load', reportHeight);
 new ResizeObserver(reportHeight).observe(document.body);
-
