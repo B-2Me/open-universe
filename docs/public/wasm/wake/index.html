@@ -114,14 +114,23 @@
             </div>
 
             <div class="panel-section">
-                <h3>Diagnostics</h3>
+                <h3>Diagnostics & Telemetry</h3>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">Status:</span>
+                    <span class="telemetry-label">Engine Status:</span>
                     <span class="telemetry-value" id="diag_status" style="color: #888;">Booting</span>
                 </div>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">Nodes:</span>
+                    <span class="telemetry-label">Grid Nodes:</span>
                     <span class="telemetry-value" id="diag_nodes">--</span>
+                </div>
+                <!-- NEW OBSERVABLE METRICS -->
+                <div class="telemetry-row" style="margin-top: 12px; border-top: 1px solid #333; padding-top: 8px;">
+                    <span class="telemetry-label">Total Mass (Q):</span>
+                    <span class="telemetry-value" id="diag_quanta">0</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">System Heat (E):</span>
+                    <span class="telemetry-value" id="diag_heat">0</span>
                 </div>
             </div>
         </div>
