@@ -2,86 +2,86 @@
   {
     "text": "Langevin's Wake",
     "start": 0,
-    "end": 1.061
+    "end": 1.059
   },
   {
     "text": "The Planck Field bare-metal simulation engine.",
-    "start": 1.061,
-    "end": 4.316
+    "start": 1.059,
+    "end": 4.307
   },
   {
-    "text": "Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating bare-metal relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge.",
-    "start": 4.316,
-    "end": 26.813
+    "text": "Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge.",
+    "start": 4.307,
+    "end": 26.831
   },
   {
     "text": "::: details ⚙️ Under the Hood: The Hardware Metaphor",
-    "start": 26.813,
-    "end": 30.492
+    "start": 26.831,
+    "end": 30.503
   },
   {
     "text": "External Depth vs. Internal Depth",
-    "start": 30.492,
-    "end": 32.827
+    "start": 30.503,
+    "end": 32.833
   },
   {
     "text": "This sandbox is a literal manifestation of the Planck Field philosophy.",
-    "start": 32.827,
-    "end": 37.85
+    "start": 32.833,
+    "end": 37.846
   },
   {
     "text": "The C Engine (External Depth): The physics loop is written in bare-metal C, compiled to WebAssembly with maximum hardware optimizations. The C code knows nothing about geometry, shapes, or user input. It exclusively calculates the relentless, microscopic accounting of thermodynamic friction, phase spins, and integer limits for all 160,000 nodes simultaneously.",
-    "start": 37.85,
-    "end": 63.461
+    "start": 37.846,
+    "end": 63.406
   },
   {
     "text": "The JavaScript UI (Internal Depth): The browser interface acts as the biological dashboard. JavaScript queries the chaotic thermal data from the Wasm memory block and compresses it into a clean, geometric visual matrix (the Macro layer). When you use the \"Capture\" tool, JavaScript is filtering the static, extracting relational boundaries, and defining it as \"useful\" geometry. The grid doesn't know it's a shape; only the UI does.",
-    "start": 63.461,
-    "end": 94.024
+    "start": 63.406,
+    "end": 93.909
   },
   {
     "text": "The Objective Constraints",
-    "start": 94.024,
-    "end": 95.792
+    "start": 93.909,
+    "end": 95.674
   },
   {
     "text": "Unlike traditional cellular automata which rely on arbitrary \"rules\" of birth and death, this engine is strictly deterministic and rooted in physical constraints. It continuously calculates the following mechanics:",
-    "start": 95.792,
-    "end": 110.932
+    "start": 95.674,
+    "end": 110.784
   },
   {
     "text": "1. Topological Unwinding (E=mc^2) Mass is a deadlocked knot of relational tension. When the localized heat of a node exceeds its structural capacity (Thermal Saturation), the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust: Y_{act} = (N_{nodes} \\cdot \\tau_{knot}) \\times \\Omega_{max}",
-    "start": 110.932,
-    "end": 136.967
+    "start": 110.784,
+    "end": 136.768
   },
   {
     "text": "2. Phase Friction (Electromagnetism) Nodes possess a topological spin (chirality). When nodes interact, their Phase Friction (\\Phi) is calculated based on their discrete spin angles (\\theta): \\Phi = \\tau(1 + \\cos(\\Delta \\theta)) Opposite spins mesh perfectly, dropping friction to zero. Identical spins clash, generating a massive spike in metabolic dissipation. This tension naturally resolves down the path of least resistance, driving physical repulsion.",
-    "start": 136.967,
-    "end": 169.299
+    "start": 136.768,
+    "end": 169.036
   },
   {
     "text": "3. Entropic Gravity Gravity is not an invisible geometric curve; it is the entropic gradient of the substrate. When local momentum is shunted by a deadlocked boundary, the grid resolves the tension by routing the quanta into the coolest adjacent locus: F = T \\frac{\\Delta S}{\\Delta x}",
-    "start": 169.299,
-    "end": 189.391
+    "start": 169.036,
+    "end": 189.089
   },
   {
-    "text": "4. Propagation Friction (Cosmological Redshift) Motion incurs a thermodynamic toll. Every time a quanta packet is handed off to an adjacent Planck node, it pays a baseline action tax. Light frequency degrades logarithmically across the active medium: E_{received} = E_{emitted} e^{-\\mu d}",
-    "start": 189.391,
-    "end": 209.767
+    "text": "4. Propagation Friction (Cosmological Redshift) Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium: E_{received} = E_{emitted} e^{-\\mu d}",
+    "start": 189.089,
+    "end": 212.107
   },
   {
-    "text": "5. Stefan-Boltzmann Dissipation The substrate must constantly dissipate relational friction to avoid total saturation. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint).",
-    "start": 209.767,
-    "end": 229.859
+    "text": "5. Stefan-Boltzmann Dissipation Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint).",
+    "start": 212.107,
+    "end": 231.807
   },
   {
     "text": "The Biological Swerve",
-    "start": 229.859,
-    "end": 231.345
+    "start": 231.807,
+    "end": 233.29
   },
   {
     "text": "While the grid is perfectly deterministic, you are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations. :::",
-    "start": 231.345,
-    "end": 256.248
+    "start": 233.29,
+    "end": 258.144
   }
 ]
