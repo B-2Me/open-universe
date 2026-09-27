@@ -4,127 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
     
     <div id="app">
-        <!-- Main Viewport Area -->
         <div id="left-pane">
             
-            <div id="canvas-container">
-                <div id="error-banner"></div>
-                <canvas id="universe_canvas" width="400" height="400"></canvas>
+            <!-- NEW: Top Biome Selector -->
+            <div style="padding: 12px 16px 0 16px;">
+                <div class="button-group" id="biome_selector" style="margin-bottom: 8px;">
+                    <button class="group-btn active" data-val="0">Vacuum</button>
+                    <button class="group-btn" data-val="1">Furnace</button>
+                    <button class="group-btn" data-val="2">Crust</button>
+                </div>
+                
+                <!-- NEW: Split Canvas Toggles -->
+                <div class="deck-row" style="margin-bottom: -4px;">
+                    <button id="btn_toggle_left" class="action-btn" style="border-radius: 8px 0 0 0; background: var(--pf-bg-input); border-right: none; font-size: 11px;">👁 Macro</button>
+                    <button id="btn_toggle_right" class="action-btn" style="border-radius: 0 8px 0 0; background: var(--pf-bg-input); font-size: 11px;">♨ Metabolic</button>
+                </div>
             </div>
 
-            <!-- The Control Deck -->
+            <!-- NEW: Split Viewport Canvas Container -->
+            <div id="canvas-container">
+                <div id="error-banner"></div>
+                <div id="transform-wrapper">
+                    <div class="split-half">
+                        <canvas id="canvas_left" width="400" height="400"></canvas>
+                    </div>
+                    <div class="split-half" style="border-left: 1px dashed rgba(255,255,255,0.15);">
+                        <canvas id="canvas_right" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div id="control-deck">
                 
-                <!-- TIER 1: Core Engine Controls -->
-                <div class="deck-row" style="margin-bottom: 12px; gap: 10px;">
-                    <button id="btn_soup" class="action-btn primary" style="flex: 2; font-size: 15px; padding: 12px;">
-                        ⟳ Reset Field
-                    </button>
-                    <button id="btn_play" class="action-btn" style="flex: 1.5; font-size: 14px;">
-                        ⏯ Play
-                    </button>
-                    <button id="btn_clear" class="action-btn danger" style="flex: 1; font-size: 14px;">
-                        ⎚ Clear
-                    </button>
-                </div>
-
-                <!-- TIER 2: Interaction Modes -->
-                <div class="segment-control" style="margin-bottom: 12px;">
-                    <button class="segment-btn active" data-mode="move">✋ Pan View</button>
-                    <button class="segment-btn" data-mode="place">🪄 Inject Matter</button>
-                    <button class="segment-btn" data-mode="sample">⛶ Capture Region</button>
-                </div>
-
-                <!-- Context: Inject Matter (Palette) -->
-                <div id="context_place" class="context-panel" style="display: none;">
-                    <div class="palette-grid" id="brush_selector">
-                        <button class="palette-btn active" data-val="A">
-                            <span class="p-icon">●</span><span class="p-label">Type A</span>
-                        </button>
-                        <button class="palette-btn" data-val="B">
-                            <span class="p-icon">∴</span><span class="p-label">Type B</span>
-                        </button>
-                        <button class="palette-btn" data-val="C">
-                            <span class="p-icon">✺</span><span class="p-label">Type C</span>
-                        </button>
-                        <button class="palette-btn" data-val="D">
-                            <span class="p-icon">❂</span><span class="p-label">Type D</span>
-                        </button>
-                        <button class="palette-btn" data-val="E">
-                            <span class="p-icon">〰</span><span class="p-label">Type E</span>
-                        </button>
-                        <button class="palette-btn" data-val="custom" id="opt_custom">
-                            <span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Scratch</span>
-                        </button>
+                <!-- Floating Tool Popups -->
+                <div style="position: relative; width: 100%;">
+                    <div id="context_place" class="floating-popup">
+                        <div class="palette-grid" id="brush_selector">
+                            <button class="palette-btn active" data-val="A"><span class="p-icon">●</span><span class="p-label">Type A</span></button>
+                            <button class="palette-btn" data-val="B"><span class="p-icon">∴</span><span class="p-label">Type B</span></button>
+                            <button class="palette-btn" data-val="C"><span class="p-icon">✺</span><span class="p-label">Type C</span></button>
+                            <button class="palette-btn" data-val="D"><span class="p-icon">❂</span><span class="p-label">Type D</span></button>
+                            <button class="palette-btn" data-val="E"><span class="p-icon">〰</span><span class="p-label">Type E</span></button>
+                            <button class="palette-btn" data-val="custom" id="opt_custom"><span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Scratch</span></button>
+                        </div>
+                    </div>
+                    
+                    <div id="context_sample" class="floating-popup">
+                        <label style="font-size: 12px; display: block; text-align: center; margin-bottom: 8px;">Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover);">10</span>px</label>
+                        <input type="range" id="slider_radius" min="1" max="50" value="10">
+                        <button id="btn_copy_stamp" class="action-btn" style="width: 100%; margin-top: 8px;">📋 Copy JSON Array</button>
                     </div>
                 </div>
 
-                <!-- Context: Capture Region -->
-                <div id="context_sample" class="context-panel" style="display: none;">
-                    <label style="font-size: 12px;">Capture Radius: <span id="val_radius" style="color: var(--pf-brand-hover); font-weight: bold;">10</span> px</label>
-                    <input type="range" id="slider_radius" min="1" max="50" value="10" style="margin: 8px 0;">
-                    <button id="btn_copy_stamp" class="action-btn" style="width: 100%;">📋 Copy JSON Array</button>
+                <div class="segment-control" style="margin-top: 12px;">
+                    <button class="segment-btn active" data-mode="move">✋ Pan</button>
+                    <button class="segment-btn" data-mode="place">🪄 Inject</button>
+                    <button class="segment-btn" data-mode="sample">⛶ Capture</button>
                 </div>
 
-                <!-- TIER 3: Rendering & Camera -->
-                <div class="deck-row" style="margin-top: 12px;">
-                    <div class="button-group" id="layer_selector" style="flex: 1.5; margin: 0;">
-                        <button class="group-btn active" data-val="0">👁 Macro</button>
-                        <button class="group-btn" data-val="1">♨ Metabolic</button>
-                    </div>
-                    <button id="btn_step" class="action-btn" style="flex: 1; margin-left: 8px;">⏭ Step</button>
-                    <div class="button-group" style="flex: 1.5; margin: 0; margin-left: 8px;">
+                <div class="deck-row" style="margin-top: 8px;">
+                    <button id="btn_soup" class="action-btn primary" style="flex: 2;">⟳ Reset</button>
+                    <button id="btn_play" class="action-btn" style="flex: 1.5;">⏯ Play</button>
+                    <button id="btn_step" class="action-btn" style="flex: 1;">⏭ Step</button>
+                    <button id="btn_clear" class="action-btn danger" style="flex: 1;">❌ Clear</button>
+                </div>
+                
+                <div class="deck-row" style="margin-top: 8px; justify-content: center;">
+                    <div class="button-group" style="width: auto; margin: 0;">
                         <button class="group-btn" id="btn_zoom_out">🔍−</button>
-                        <button class="group-btn" id="btn_zoom_reset">1x</button>
+                        <button class="group-btn" id="btn_zoom_reset">Zoom 1x</button>
                         <button class="group-btn" id="btn_zoom_in">🔍+</button>
                     </div>
                 </div>
                 
-                <!-- Legend -->
-                <div class="legend-panel" style="justify-content: center; text-align: center;">
-                    <div class="legend-item" style="flex-basis: 100%;">
-                        <span style="color: var(--pf-text-muted);">Shortcuts:</span> <b>[P]</b> Play/Pause &nbsp;•&nbsp; <b>[R]</b> Reset &nbsp;•&nbsp; <b>[C]</b> Clear &nbsp;•&nbsp; <b>[M]</b> Toggle Layer &nbsp;•&nbsp; <b>[Space]</b> Hold to Pan
+                <div class="legend-panel">
+                    <div class="legend-item" style="flex-basis: 100%; text-align: center;">
+                        <span style="color: var(--pf-text-muted);">Shortcuts:</span> <b>[P]</b> Play, <b>[R]</b> Reset, <b>[C]</b> Clear, <b>[Space]</b> Pan
                     </div>
                 </div>
+
             </div>
         </div>
 
         <div id="sidebar">
             <div class="panel-section">
-                <h3>Environment Biome</h3>
-                <div class="button-group" id="biome_selector">
-                    <button class="group-btn active" data-val="0">Vacuum</button>
-                    <button class="group-btn" data-val="1">Furnace</button>
-                    <button class="group-btn" data-val="2">Crust</button>
-                </div>
-
-                <div class="telemetry-row" style="margin-top: 16px;">
-                    <span class="telemetry-label">Entropy Rate:</span>
-                    <span class="telemetry-value" id="math_dissipation">15</span>
-                </div>
+                <h3>Telemetry</h3>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">c² Limit:</span>
-                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <h3>Diagnostics & Telemetry</h3>
-                <div class="telemetry-row">
-                    <span class="telemetry-label">Engine Status:</span>
+                    <span class="telemetry-label">Status:</span>
                     <span class="telemetry-value" id="diag_status" style="color: #888;">Booting</span>
                 </div>
                 <div class="telemetry-row">
                     <span class="telemetry-label">Grid Nodes:</span>
                     <span class="telemetry-value" id="diag_nodes">--</span>
                 </div>
-                <!-- NEW OBSERVABLE METRICS -->
-                <div class="telemetry-row" style="margin-top: 12px; border-top: 1px solid #333; padding-top: 8px;">
+                <div class="telemetry-row" style="margin-top: 12px; border-top: 1px solid var(--pf-brand-soft); padding-top: 8px;">
                     <span class="telemetry-label">Total Mass (Q):</span>
                     <span class="telemetry-value" id="diag_quanta">0</span>
                 </div>
@@ -133,10 +111,22 @@
                     <span class="telemetry-value" id="diag_heat">0</span>
                 </div>
             </div>
+            
+            <div class="panel-section" style="opacity: 0.6;">
+                <h3>Active Rules</h3>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Entropy Rate:</span>
+                    <span class="telemetry-value" id="math_dissipation">15</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">c² Limit:</span>
+                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="planck.js?v=13" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=13"></script>
+    <script src="planck.js?v=14" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=14"></script>
 </body>
 </html>
