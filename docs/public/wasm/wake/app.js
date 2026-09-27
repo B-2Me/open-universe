@@ -155,17 +155,15 @@ function startEngine(Module) {
         document.getElementById('context_sample').classList.remove('show');
     }
 
-    // NEW: Aggressive Global Dismissal for iOS
+    // NEW: Aggressive Global Dismissal for iOS (FIXED)
     window.addEventListener('pointerdown', (e) => {
         // If they click the main segment toggles, ignore it (the toggle logic handles it)
         if (e.target.closest('.segment-btn')) return;
         
-        // If they click INSIDE a popup, keep it open UNLESS they picked a brush
+        // If they click INSIDE a popup, do absolutely nothing right now.
+        // The actual 'click' event on the button will handle the selection and close it!
         if (e.target.closest('.floating-popup')) {
-            if (e.target.closest('.palette-btn')) {
-                hidePopups(); // They picked a brush, snap it closed
-            }
-            return;
+            return; 
         }
         
         // If they clicked literally anywhere else on the screen, shut the popups
