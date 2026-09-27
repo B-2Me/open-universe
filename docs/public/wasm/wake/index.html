@@ -26,7 +26,7 @@
                     <button class="segment-btn" data-mode="sample">⛶ Copy</button>
                 </div>
 
-                <!-- UPDATED: Quantum Brush Palette -->
+                <!-- UPDATED: Quantum Brush Palette with Icons -->
                 <div id="context_place" class="context-panel" style="display: none;">
                     <div class="palette-grid" id="brush_selector">
                         <button class="palette-btn active" data-val="electron">
@@ -40,6 +40,14 @@
                         <button class="palette-btn" data-val="vortex">
                             <span class="p-icon">✺</span>
                             <span class="p-label">Vortex</span>
+                        </button>
+                        <button class="palette-btn" data-val="singularity">
+                            <span class="p-icon">❂</span>
+                            <span class="p-label">Singular</span>
+                        </button>
+                        <button class="palette-btn" data-val="photon">
+                            <span class="p-icon">〰</span>
+                            <span class="p-label">Photon</span>
                         </button>
                         <button class="palette-btn" data-val="custom" id="opt_custom">
                             <span class="p-icon">⬚</span>
@@ -66,19 +74,23 @@
                     </div>
                 </div>
 
+                <!-- UPDATED: Primary Reset Button -->
                 <div class="deck-row" style="margin-top: 8px;">
+                    <button id="btn_soup" class="action-btn primary">⟳ Reset</button>
                     <button id="btn_play" class="action-btn">⏯ Play/Pause</button>
                     <button id="btn_step" class="action-btn">⏭ Step</button>
-                    <button id="btn_soup" class="action-btn">🍲 Soup</button>
                     <button id="btn_clear" class="action-btn danger">❌ Clear</button>
                 </div>
                 
+                <!-- UPDATED: Legend with Hotkeys -->
                 <div class="legend-panel">
-                    <div class="legend-item"><span>✋ Pan:</span> Drag to move camera</div>
-                    <div class="legend-item"><span>🪄 Paste:</span> Tap to draw pattern</div>
-                    <div class="legend-item"><span>⛶ Copy:</span> Drag to capture area</div>
+                    <div class="legend-item"><span>✋ Pan:</span> Drag to move</div>
+                    <div class="legend-item"><span>🪄 Paste:</span> Tap to draw</div>
+                    <div class="legend-item"><span>⛶ Copy:</span> Drag to capture</div>
                     <div class="legend-item"><span>Macro:</span> Physical nodes</div>
-                    <div class="legend-item"><span>Metabolic:</span> Thermal exhaust view</div>
+                    <div class="legend-item" style="flex-basis: 100%; border-top: 1px solid #333; padding-top: 8px; margin-top: 4px;">
+                        <span>Hotkeys:</span> <b>[P]</b> Play/Pause, <b>[R]</b> Reset, <b>[C]</b> Clear, <b>[M]</b> Layer, <b>[Space]</b> Pan
+                    </div>
                 </div>
 
             </div>
