@@ -78,11 +78,18 @@ function startEngine(Module) {
         e.target.innerText = LAYER_LABELS[rightLayer];
     });
 
+    let frameCount = 0;
+
     function renderFrame() {
         if (isPlaying) {
             Module._tick();
-            document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
-            document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
+            frameCount++;
+            
+            // Throttled DOM updates (only update every 10 frames)
+            if (frameCount % 10 === 0) {
+                document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
+                document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
+            }
         }
         
         // Render Left Canvas
@@ -136,6 +143,11 @@ function startEngine(Module) {
         }
     }
 
+    // Ensure camera stays bounded if the user resizes or rotates their device
+    window.addEventListener('resize', () => {
+        setTimeout(constrainView, 50); 
+    });
+
     function getGridCoords(clientX, clientY) {
         const rect = canvasContainer.getBoundingClientRect();
         const cx = rect.width / 2;
@@ -154,21 +166,6 @@ function startEngine(Module) {
         document.getElementById('context_place').classList.remove('show');
         document.getElementById('context_sample').classList.remove('show');
     }
-
-    // NEW: Aggressive Global Dismissal for iOS (FIXED)
-    window.addEventListener('pointerdown', (e) => {
-        // If they click the main segment toggles, ignore it (the toggle logic handles it)
-        if (e.target.closest('.segment-btn')) return;
-        
-        // If they click INSIDE a popup, do absolutely nothing right now.
-        // The actual 'click' event on the button will handle the selection and close it!
-        if (e.target.closest('.floating-popup')) {
-            return; 
-        }
-        
-        // If they clicked literally anywhere else on the screen, shut the popups
-        hidePopups();
-    });
 
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
@@ -273,9 +270,12 @@ function startEngine(Module) {
     }
 
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !isSpaceDown) { 
-            isSpaceDown = true; 
-            canvasContainer.className = 'mode-move'; 
+        if (e.code === 'Space') { 
+            e.preventDefault(); // Stop page from scrolling
+            if (!isSpaceDown) { 
+                isSpaceDown = true; 
+                canvasContainer.className = 'mode-move'; 
+            }
         }
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.code === 'KeyP') isPlaying = !isPlaying;
@@ -288,6 +288,13 @@ function startEngine(Module) {
             isSpaceDown = false; 
             canvasContainer.className = currentMode === 'move' ? 'mode-move' : ''; 
         }
+    });
+
+    // Clear state if the window loses focus while interacting
+    window.addEventListener('blur', () => {
+        isSpaceDown = false;
+        isDragging = false;
+        canvasContainer.className = currentMode === 'move' ? 'mode-move' : '';
     });
 
     canvasContainer.addEventListener('wheel', (e) => {
@@ -332,6 +339,7 @@ function startEngine(Module) {
     }
 
     canvasContainer.addEventListener('mousedown', (e) => { 
+        hidePopups(); // Ensures popups vanish upon touching the grid
         isDragging = true; 
         tWrapper.style.transition = 'none'; 
         processInput(e.clientX, e.clientY, true); 
@@ -342,6 +350,7 @@ function startEngine(Module) {
     });
 
     canvasContainer.addEventListener('touchstart', (e) => {
+        hidePopups(); // Ensures popups vanish upon touching the grid on iOS/Android
         e.preventDefault();
         isDragging = true;
         tWrapper.style.transition = 'none';
