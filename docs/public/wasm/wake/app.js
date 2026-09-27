@@ -95,13 +95,9 @@ function startEngine(Module) {
     }
     resetView();
 
-    // Robust setup function to prevent null reference crashes
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
-        if (!container) {
-            console.warn(`UI Element missing: ${containerId}`);
-            return; 
-        }
+        if (!container) return; 
         const buttons = container.querySelectorAll(btnClass);
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -130,12 +126,7 @@ function startEngine(Module) {
     
     document.querySelectorAll('.segment-btn').forEach(btn => btn.addEventListener('click', (e) => setMode(e.target.dataset.mode)));
 
-    // Only ONE biome_selector binding!
     setupButtonGroup('biome_selector', val => {
-        // [Dissipation, Thermal Limit]
-        // Vacuum (0): Fast bleed, high ceiling. Smooth orbits.
-        // Furnace (1): Slow bleed, low ceiling. Immediate supernovas.
-        // Crust (2): Violent bleed, mid ceiling. Extreme drag, forces clustering.
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
         Module._set_dissipation(biomes[val][0]);
         Module._set_thermal_limit(biomes[val][1]);
@@ -152,7 +143,6 @@ function startEngine(Module) {
         Module._set_render_layer(currentLayer);
     });
 
-    // Safely bind action buttons
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
     
     bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); });
@@ -173,7 +163,6 @@ function startEngine(Module) {
         });
     }
 
-    // Wasm Bridge: Pass the specific pattern mass back to C
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern.length) return;
         const startX = centerX - Math.floor(pattern[0].length / 2);
@@ -207,19 +196,14 @@ function startEngine(Module) {
         setMode('place');
     }
 
-    // Pro Sandbox Hotkeys & Spacebar pan toggle
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && !isSpaceDown) { 
             isSpaceDown = true; 
             canvas.className = 'mode-move'; 
         }
-        
-        // Disable hotkeys if user is holding modifier keys to prevent interfering with normal browser shortcuts
         if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-        if (e.code === 'KeyP') {
-            isPlaying = !isPlaying;
-        }
+        if (e.code === 'KeyP') isPlaying = !isPlaying;
         if (e.code === 'KeyR') Module._randomize_grid();
         if (e.code === 'KeyC') Module._clear_grid();
         if (e.code === 'KeyM') {
