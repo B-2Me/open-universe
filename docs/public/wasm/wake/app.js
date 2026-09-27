@@ -84,7 +84,17 @@ function startEngine(Module) {
     });
 
     function renderFrame() {
-        if (isPlaying) Module._tick();
+        if (isPlaying) {
+            Module._tick();
+            
+            // Poll Observable Measurements from C
+            const totalQuanta = Module._get_total_quanta();
+            const totalHeat = Module._get_total_heat();
+            
+            // Update UI 
+            document.getElementById('diag_quanta').innerText = totalQuanta.toLocaleString();
+            document.getElementById('diag_heat').innerText = totalHeat.toLocaleString();
+        }
         ctx.putImageData(imgData, 0, 0);
         animationId = requestAnimationFrame(renderFrame);
     }
