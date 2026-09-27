@@ -189,6 +189,9 @@ function startEngine(Module) {
         const labels = { "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "custom": "Scratch" };
         const placeBtn = document.querySelector('.segment-btn[data-mode="place"]');
         if (placeBtn) placeBtn.innerText = `🪄 Inject (${labels[val]})`;
+        
+        // Close popup SAFELY after the click registers
+        hidePopups(); 
     }, '.palette-btn');
 
     function setMode(mode) {
