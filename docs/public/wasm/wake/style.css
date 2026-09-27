@@ -122,6 +122,15 @@ body {
 button {
   /* Kills iOS 300ms double-tap delay */
   touch-action: manipulation; 
+  /* Kills double-click text highlighting */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Redundant protection for our custom classes */
+.group-btn, .segment-btn, .action-btn, .palette-btn {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .button-group, .segment-control {
