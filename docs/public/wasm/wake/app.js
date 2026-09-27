@@ -348,4 +348,13 @@ function startEngine(Module) {
     renderFrame();
 }
 
-window.addEventListener('load', () => window.parent.postMessage({ type: 'RESIZE_IFRAME', height: document.documentElement.scrollHeight }, '*'));
+// --- REPLACE THE BOTTOM OF app.js WITH THIS ---
+
+function reportHeight() {
+    const height = document.documentElement.scrollHeight;
+    window.parent.postMessage({ type: 'RESIZE_IFRAME', height: height }, '*');
+}
+
+window.addEventListener('load', reportHeight);
+new ResizeObserver(reportHeight).observe(document.body);
+
