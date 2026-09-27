@@ -12,22 +12,26 @@ let isSpaceDown = false;
 let customStamp = [];
 
 // Quantum Particle Ensembles with specific mass values
+let currentBrush = "A"; 
+
+// Abstract Structural Ensembles
 const patternPalette = {
-    "electron": [[20]],
-    "quark": [
+    "A": [[20]],
+    "B": [
         [20, 0, 20], 
         [0, 0, 0], 
         [0, 20, 0]
     ],
-    "vortex": [
+    "C": [
         [0, 20, 20, 0], 
         [20, 0, 0, 20], 
         [20, 0, 0, 20], 
         [0, 20, 20, 0]
     ],
-    "singularity": [[255]], // Maximum Pauli Mass
-    "photon": [[10, 10, 10, 10]] // High-speed string
+    "D": [[255]], 
+    "E": [[10, 10, 10, 10]] 
 };
+
 
 function triggerErrorState(message) {
     const banner = document.getElementById('error-banner');
