@@ -10,8 +10,8 @@ let currentMode = "move";
 let currentBrush = "A"; 
 let isSpaceDown = false;
 let customStamp = [];
+let scrollTimeout = null;
 
-// Abstract Structural Ensembles
 const patternPalette = {
     "A": [[20]],
     "B": [
@@ -62,7 +62,7 @@ if (typeof createPlanck !== 'undefined') {
 
 function startEngine(Module) {
     const canvas = document.getElementById('universe_canvas');
-    if (!canvas) return; // Prevent crashes if HTML isn't ready
+    if (!canvas) return; 
     
     const ctx = canvas.getContext('2d', { alpha: false });
 
@@ -75,6 +75,13 @@ function startEngine(Module) {
     const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
     const pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+
+    // Boot directly into Metabolic View
+    let currentLayer = 1; 
+    Module._set_render_layer(currentLayer);
+    document.querySelectorAll('#layer_selector .group-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.val) === currentLayer);
+    });
 
     function renderFrame() {
         if (isPlaying) Module._tick();
@@ -94,6 +101,32 @@ function startEngine(Module) {
         applyTransform();
     }
     resetView();
+
+    // Rubber Band Constraints
+    function constrainView() {
+        const maxPanX = gridWidth / 1.5; 
+        const maxPanY = gridHeight / 1.5; 
+
+        let targetX = panX;
+        let targetY = panY;
+
+        if (panX > maxPanX) targetX = maxPanX;
+        if (panX < -maxPanX) targetX = -maxPanX;
+        if (panY > maxPanY) targetY = maxPanY;
+        if (panY < -maxPanY) targetY = -maxPanY;
+
+        // If out of bounds, snap it back with a springy CSS transition
+        if (targetX !== panX || targetY !== panY) {
+            canvas.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            panX = targetX;
+            panY = targetY;
+            applyTransform();
+
+            setTimeout(() => {
+                if (!isDragging) canvas.style.transition = 'transform 0.05s linear';
+            }, 400);
+        }
+    }
 
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
@@ -137,7 +170,6 @@ function startEngine(Module) {
         if (t_label) t_label.innerText = biomes[val][1];
     });
     
-    let currentLayer = 0;
     setupButtonGroup('layer_selector', val => {
         currentLayer = parseInt(val);
         Module._set_render_layer(currentLayer);
@@ -145,8 +177,8 @@ function startEngine(Module) {
 
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
     
-    bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); });
-    bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); });
+    bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); constrainView(); });
+    bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_reset', resetView);
 
     bindBtn('btn_play', () => isPlaying = !isPlaying);
@@ -226,6 +258,10 @@ function startEngine(Module) {
         e.preventDefault();
         currentZoom += e.deltaY > 0 ? -0.1 : 0.1;
         applyTransform();
+        
+        // Constrain after wheel stops
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(constrainView, 150);
     }, { passive: false });
 
     canvas.addEventListener('dblclick', resetView);
@@ -265,13 +301,21 @@ function startEngine(Module) {
         }
     }
 
-    canvas.addEventListener('mousedown', (e) => { isDragging = true; processInput(e.clientX, e.clientY, true); });
+    canvas.addEventListener('mousedown', (e) => { 
+        isDragging = true; 
+        canvas.style.transition = 'transform 0.05s linear'; // Kill spring when grabbing
+        processInput(e.clientX, e.clientY, true); 
+    });
     canvas.addEventListener('mousemove', (e) => { if (isDragging) processInput(e.clientX, e.clientY, false); });
-    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mouseup', () => { 
+        isDragging = false; 
+        constrainView(); // Rubber band when released
+    });
 
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         isDragging = true;
+        canvas.style.transition = 'transform 0.05s linear';
         if (e.touches.length === 1) {
             const now = Date.now();
             if (now - lastTapTime < 300) resetView();
@@ -300,7 +344,11 @@ function startEngine(Module) {
             applyTransform();
         }
     }, { passive: false });
-    window.addEventListener('touchend', () => isDragging = false);
+    
+    window.addEventListener('touchend', () => { 
+        isDragging = false; 
+        constrainView(); // Rubber band when released
+    });
 
     Module._randomize_grid(); 
     renderFrame();
