@@ -24,7 +24,9 @@ const patternPalette = {
         [20, 0, 0, 20], 
         [20, 0, 0, 20], 
         [0, 20, 20, 0]
-    ]
+    ],
+    "singularity": [[255]], // Maximum Pauli Mass
+    "photon": [[10, 10, 10, 10]] // High-speed string
 };
 
 function triggerErrorState(message) {
@@ -144,7 +146,11 @@ function startEngine(Module) {
         if (t_label) t_label.innerText = biomes[val][1];
     });
     
-    setupButtonGroup('layer_selector', val => Module._set_render_layer(parseInt(val)));
+    let currentLayer = 0;
+    setupButtonGroup('layer_selector', val => {
+        currentLayer = parseInt(val);
+        Module._set_render_layer(currentLayer);
+    });
 
     // Safely bind action buttons
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
@@ -201,11 +207,35 @@ function startEngine(Module) {
         setMode('place');
     }
 
+    // Pro Sandbox Hotkeys & Spacebar pan toggle
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !isSpaceDown) { isSpaceDown = true; canvas.className = 'mode-move'; }
+        if (e.code === 'Space' && !isSpaceDown) { 
+            isSpaceDown = true; 
+            canvas.className = 'mode-move'; 
+        }
+        
+        // Disable hotkeys if user is holding modifier keys to prevent interfering with normal browser shortcuts
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        if (e.code === 'KeyP') {
+            isPlaying = !isPlaying;
+        }
+        if (e.code === 'KeyR') Module._randomize_grid();
+        if (e.code === 'KeyC') Module._clear_grid();
+        if (e.code === 'KeyM') {
+            currentLayer = currentLayer === 0 ? 1 : 0;
+            Module._set_render_layer(currentLayer);
+            document.querySelectorAll('#layer_selector .group-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.val) === currentLayer);
+            });
+        }
     });
+    
     window.addEventListener('keyup', (e) => {
-        if (e.code === 'Space') { isSpaceDown = false; canvas.className = currentMode === 'move' ? 'mode-move' : ''; }
+        if (e.code === 'Space') { 
+            isSpaceDown = false; 
+            canvas.className = currentMode === 'move' ? 'mode-move' : ''; 
+        }
     });
 
     canvas.addEventListener('wheel', (e) => {
