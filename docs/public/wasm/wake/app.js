@@ -155,6 +155,23 @@ function startEngine(Module) {
         document.getElementById('context_sample').classList.remove('show');
     }
 
+    // NEW: Aggressive Global Dismissal for iOS
+    window.addEventListener('pointerdown', (e) => {
+        // If they click the main segment toggles, ignore it (the toggle logic handles it)
+        if (e.target.closest('.segment-btn')) return;
+        
+        // If they click INSIDE a popup, keep it open UNLESS they picked a brush
+        if (e.target.closest('.floating-popup')) {
+            if (e.target.closest('.palette-btn')) {
+                hidePopups(); // They picked a brush, snap it closed
+            }
+            return;
+        }
+        
+        // If they clicked literally anywhere else on the screen, shut the popups
+        hidePopups();
+    });
+
     function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
         const container = document.getElementById(containerId);
         if (!container) return; 
@@ -174,7 +191,6 @@ function startEngine(Module) {
         const labels = { "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "custom": "Scratch" };
         const placeBtn = document.querySelector('.segment-btn[data-mode="place"]');
         if (placeBtn) placeBtn.innerText = `🪄 Inject (${labels[val]})`;
-        hidePopups(); // Close popup when brush is picked
     }, '.palette-btn');
 
     function setMode(mode) {
@@ -182,8 +198,8 @@ function startEngine(Module) {
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
         
         hidePopups();
-        document.getElementById('context_place').classList.toggle('show', mode === 'place');
-        document.getElementById('context_sample').classList.toggle('show', mode === 'sample');
+        if (mode === 'place') document.getElementById('context_place').classList.add('show');
+        if (mode === 'sample') document.getElementById('context_sample').classList.add('show');
         canvasContainer.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
     }
     
@@ -191,7 +207,7 @@ function startEngine(Module) {
         btn.addEventListener('click', (e) => {
             const mode = e.currentTarget.dataset.mode;
             if (currentMode === mode) {
-                // Toggle popup if clicking the already active mode
+                // Toggle popup open/closed if clicking the already active mode
                 if (mode === 'place') document.getElementById('context_place').classList.toggle('show');
                 if (mode === 'sample') document.getElementById('context_sample').classList.toggle('show');
             } else {
@@ -250,7 +266,7 @@ function startEngine(Module) {
         document.getElementById('opt_custom').classList.add('active');
         currentBrush = 'custom';
         
-        // Switch to place mode and instantly hide popup
+        // Switch back to place mode and instantly hide popup
         setMode('place');
         hidePopups();
     }
@@ -315,7 +331,6 @@ function startEngine(Module) {
     }
 
     canvasContainer.addEventListener('mousedown', (e) => { 
-        hidePopups(); // Hide popups on canvas interaction
         isDragging = true; 
         tWrapper.style.transition = 'none'; 
         processInput(e.clientX, e.clientY, true); 
@@ -327,7 +342,6 @@ function startEngine(Module) {
 
     canvasContainer.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        hidePopups(); // Hide popups on canvas interaction
         isDragging = true;
         tWrapper.style.transition = 'none';
         if (e.touches.length === 1) {
