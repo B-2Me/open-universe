@@ -22,27 +22,27 @@ Because the universe has a hard physical resolution limit (the Planck scale), it
 
 ### 1. Entropic Gravity (The Path of Least Resistance)
 Gravity is not an invisible geometric curve pulling objects across a void. We define it as an entropic thermodynamic equation of state:
-$F = T \frac{\Delta S}{\Delta x}$
+$$F = T \frac{\Delta S}{\Delta x}$$
 Gravity is simply the Unruh temperature ($T$) of the local field multiplied by the change in relational entropy ($\Delta S$) over a discrete, fixed Planck-length step ($\Delta x$). Matter does not pull; local tension naturally resolves down the path of least thermodynamic resistance.
 
 ### 2. Time Dilation (Actualization Capacity)
 Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The fundamental substrate acts as the absolute preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
-$C_{max}^2 = C_s^2 + C_i^2$
+$$C_{max}^2 = C_s^2 + C_i^2$$
 A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity (data routing) or gravitational resistance (environmental tension) approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
 ### 3. Cosmological Redshift (Propagation Friction)
 Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
-$E_{received} = E_{emitted} e^{-\mu d}$
+$$E_{received} = E_{emitted} e^{-\mu d}$$
 Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades logarithmically due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
 
 ### 4. Electromagnetism (Phase Friction)
 Charge is not a continuous geometric wave; it is the discrete topological state ($s$) of a locus. The Phase Friction ($\Phi$) between any two boundaries is calculated through discrete modular distance across finite states ($N$), not continuous trigonometric angles:
-$\Phi = \tau \cdot \Delta_{mod}(s_1, s_2)$
+$$\Phi = \tau \cdot \Delta_{mod}(s_1, s_2)$$
 Opposite states (maximum modular distance) mesh perfectly, dropping friction to zero (attraction). Identical states (zero distance) clash, generating a massive spike in metabolic dissipation. The localized tension naturally resolves down the path of least thermodynamic resistance, which emerges macroscopically as physical repulsion.
 
 ### 5. Mass-Energy Equivalence (Actualization Yield)
 $E=mc^2$ is not a conversion spell between two different substances. It is the mathematical boundary of Topological Unwinding:
-$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$
+$$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$$
 When the localized heat exceeds the structural threshold of a tension knot (mass), the topological deadlock unwinds. The total actualization yield ($Y_{act}$) is the exact thermodynamic tension stored in the knot, flooding the local field and instantly saturating its maximum actualization throughput ($\Omega_{max}$). It is a localized thunderstorm of state updates.
 
 ---
