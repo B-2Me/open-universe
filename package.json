@@ -10,6 +10,7 @@
     "generate-audio": "node script/kokoro-pipeline.js"
   },
   "dependencies": {
+    "markdown-it-mathjax3": "latest",
     "vitepress": "latest",
     "vue": "latest"
   },
