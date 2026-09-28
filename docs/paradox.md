@@ -119,16 +119,17 @@ This is the biological interface functioning as a **Recursive Feedback Loop**.
 
 ---
 
-## 9. The Locality Paradox (Quantum Entanglement)
+## 9. The Locality Paradox (Quantum Entanglement & Bell's Theorem)
 
 **The Paradox:** 
-If two particles become entangled, measuring one instantly determines the state of the other, even if they are light-years apart. Legacy physics assumes reality is made of isolated *substances* separated by an empty container called *space*, and nothing can travel across that container faster than light.
+If two particles become entangled, measuring one instantly determines the state of the other, even if they are light-years apart. In 1964, Bell's Theorem mathematically proved that no "local" hidden variables could explain this. Legacy physics assumes this means we must accept "spooky action at a distance"—invisible forces traveling faster than light across an empty container.
 
 **The Planck Field Reconciliation:** 
-The paradox only exists because of the "empty container" illusion. 
-*   In the Planck Field, space is not an empty box; it is a web of relational geometry. 
-*   Entangled events are not two separate, static objects shouting at each other across a void. They are a single, undivided relational state in absolute anti-symmetry (perfect discrete state alignment).
-*   Because their Phase Friction is zero, their Relational Distance is zero (*See Phase Friction in The Source*). When you measure one, you aren't sending a faster-than-light signal; you are forcing the field to actualize that single relational state in the present moment. The tension resolves simultaneously without violating the speed of causality.
+A local grid of definite classical states has only one valid exit from Bell's Theorem without resorting to superdeterminism: it must give up locality. The Planck Field explicitly gives up locality, but it does not give up locality for "spooky magic." It gives up *geometric* locality in favor of *topological network* locality.
+*   In the Planck Field, space is not an empty box; it is a web of relational phase friction. Distance is measured by network routing cost, not geometric rulers.
+*   Entangled events are a single, undivided relational state in absolute anti-symmetry (perfect discrete state alignment). 
+*   Because their Phase Friction is zero, their Relational Distance is zero. In a network graph, if the friction between two nodes is zero, they are topologically adjacent. 
+*   We don't need to send faster-than-light signals across a spatial container. On the fundamental discrete substrate, the two nodes share a direct network edge. The Planck Field satisfies Bell's non-locality condition because emergent 3D spatial separation does not dictate fundamental network adjacency.
 
 ---
 
