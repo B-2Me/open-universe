@@ -37,7 +37,7 @@ This isn't magic; it is relational friction. Legacy thinking traps us in the **"
 **The Planck Field Reconciliation:** 
 Simulation theory is a modern resurgence of deterministic, block-universe thinking. It assumes a higher-level "server" is rendering our reality using algorithmic software. When grounded in physical thermodynamics, the math prohibits this:
 *   **The Hardware Limit:** Any computer, no matter how advanced, operates on algorithms (step-by-step syntactic rules). 
-*   **The Uncomputable Horizon:** As proven by mathematical incompleteness (Gödel, Turing, Chaitin), physical reality contains non-computational, undecidable properties. At the sub-nanometer scale, reality does not follow a closed algorithmic loop.
+*   **The Uncomputable Horizon:** As proven by mathematical incompleteness (Gödel, Turing, Chaitin), physical reality contains non-computational, undecidable properties. At the Planck scale, reality does not follow a closed algorithmic loop.
 *   **The Verdict:** You cannot simulate non-algorithmic physics on algorithmic architecture. Therefore, the universe cannot be a simulation. We are not running on a virtual machine; we are plugged directly into the fundamental, uncomputable substrate of nature.
 
 ---
@@ -63,7 +63,7 @@ If you measure the coastline of an island with a kilometer-long ruler, you get o
 **The Planck Field Reconciliation:** 
 This is another failure of projecting infinitely scalable math onto a finite physical substrate. 
 * In reality, measurement is a localized sequence of discrete actualizations. 
-* Once the measurement scale reaches the sub-nanometer level, it ceases to map static macroscopic geometry and intersects with active relational friction. The coastline perimeter stops increasing exactly where the resolution of the thermodynamic substrate bottoms out.
+* Once the measurement scale reaches the Planck limit, it ceases to map static macroscopic geometry and intersects with active relational friction. The coastline perimeter stops increasing exactly where the resolution of the thermodynamic substrate bottoms out.
 
 ---
 
@@ -100,7 +100,7 @@ Almost all the fundamental equations of classical physics and relativity are "ti
 **The Planck Field Reconciliation:** 
 The block universe treats time as a spatial dimension—a highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
 *   But the universe is a **zero-storage active field**. There is no static archive holding the "past." 
-*   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the sub-nanometer scale by the actualization of the shattered pieces. 
+*   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the fundamental sub-atomic limit by the actualization of the shattered pieces. 
 *   The arrow of time is not a mysterious force; it is the inevitable thermodynamic friction of an active substrate that possesses no archival memory.
 
 ---
@@ -332,20 +332,23 @@ Both camps fail because they treat the universe as a pre-built house, and biolog
 Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
 
 **The Planck Field Reconciliation:** 
-This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations (*See Time Dilation in The Source*). 
-*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite thermodynamic capacity. 
-*   If an interface is subjected to extreme spatial displacement (high velocity) or extreme relational tension (high gravity), it saturates its available actualization capacity. 
-*   Consequently, the system has less capacity available for *internal* state changes (the ticking of a gear, the aging of a cell). Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its relational capacity was maxed out navigating the field.
+This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations. 
+*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite thermodynamic capacity, which acts as a vector budget ($C_{max}^2 = C_s^2 + C_i^2$). 
+*   If an interface is subjected to extreme spatial displacement (velocity) or extreme relational tension (gravity), it saturates its available actualization capacity along the spatial axis. 
+*   Consequently, the system has less capacity available for *internal* state changes (the ticking of a gear, the aging of a cell). Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its relational bandwidth was maxed out navigating the field.
 
 ---
 
-## 26. The Expansion Paradox (Cosmological Redshift)
+## 26. The Expansion Paradox (Cosmological Redshift & Supernovae)
 
 **The Paradox:** 
-Light arriving from distant galaxies is shifted toward the red end of the spectrum. Standard cosmology interprets this as proof that "space itself is stretching" like an inflating balloon, dragging galaxies apart. To explain redshift without blurring, legacy physics insists that space must be a physical, stretchable fabric.
+Light arriving from distant galaxies is shifted toward the red end of the spectrum, and distant events (like supernovae) appear to play out in slow motion. Standard cosmology interprets this as proof that "space itself is stretching" like an inflating balloon, stretching both the light waves and the timing of the events.
 
 **The Planck Field Reconciliation:** 
-The block universe assumes space is a passive geometric container. The Planck Field resolves redshift not by stretching a container, but through **cumulative propagation friction** (*See Cosmological Redshift in The Source*). 
-*   A photon is a propagating wave packet of relational state changes across the field.
-*   Over billions of light-years, executing trillions of sequential boundary actualizations subjects the photon to inevitable thermodynamic dissipation. 
-*   This is a systemic field-wide propagation friction. It degrades the frequency without scrambling the wavefront, avoiding optical blurring entirely. Space is not stretching; light is simply undergoing the inevitable thermodynamic dissipation of deep-field propagation.
+The block universe assumes space is a passive, stretchable geometric container. The Planck Field resolves both redshift and time-stretching through **Accumulated Processing Latency** across a discrete, finite-bandwidth network.
+*   A photon is a propagating wave packet of relational state changes. A supernova is a massive data spike of thermodynamic tension overwhelming the local grid.
+*   The substrate nodes have a finite processing bandwidth. When the leading edge of a massive data pulse hits the deep field, the nodes saturate their capacity. 
+*   Because the nodes are busy, the *trailing* edge of the pulse encounters a saturated network and experiences microscopic queuing delay (latency). 
+*   Over billions of light-years and trillions of discrete actualizations, this latency compounds. The wave loses energy to thermodynamic friction (redshift), and the physical distance between the front and back of the pulse physically widens due to network drag. 
+*   We aren't watching expanding space; we are watching a macroscopic video buffer. The event arrives in slow motion because it was spooled through the finite bandwidth of a discrete substrate.
+
