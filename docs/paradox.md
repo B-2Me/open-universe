@@ -100,8 +100,9 @@ Almost all the fundamental equations of classical physics and relativity are "ti
 **The Planck Field Reconciliation:** 
 The block universe treats time as a spatial dimension—a highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
 *   But the universe is a **zero-storage active field**. There is no static archive holding the "past." 
-*   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the fundamental sub-atomic limit by the actualization of the shattered pieces. 
-*   The arrow of time is not a mysterious force; it is the inevitable thermodynamic friction of an active substrate that possesses no archival memory.
+*   To actualize the present, the previous relational state must be continuously dissipated and scrambled into the entanglement of the local environment. 
+*   Information is conserved globally, but locally, the past is mathematically encrypted. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently scrambled into the substrate's background noise at the sub-atomic limit. 
+*   The arrow of time is not a mysterious force; it is the inevitable, one-way thermodynamic encryption of an active substrate that possesses no accessible archive.
 
 ---
 
@@ -205,9 +206,9 @@ If you travel back in time and prevent your grandfather from meeting your grandm
 
 **The Planck Field Reconciliation:** 
 The block universe treats time as a landscape you can traverse. The Planck Field proves this physically impossible.
-*   The universe is a **zero-storage substrate**. It does not maintain a cached backup of the year 1920. 
-*   "The past" is not a physical place located behind us; it is the dissipated potential that was physically overwritten to actualize the present moment. 
-*   You cannot travel to the past because the physical geometry of the past no longer exists. 
+*   The universe is a **zero-storage substrate**. It does not maintain a cached, geometric backup of the year 1920. 
+*   "The past" is not a physical place located behind us; it is the dissipated potential that was structurally scrambled (entangled) into the substrate to actualize the present moment. 
+*   You cannot travel to the past because the physical geometry of the past no longer exists; it has been permanently encrypted into the relational tension of the present. 
 
 ---
 
@@ -310,7 +311,8 @@ When physicists study black holes, they discovered that the total amount of info
 **The Planck Field Reconciliation:** 
 Space is not an empty container you fill with objects. Space is a relational network.
 *   In the Planck Field, actualization only occurs where two boundaries meet (relational friction). 
-*   Because events only happen at the boundary of interaction, the total relational capacity of any localized region is strictly limited by its surface area—the physical boundary where it touches the rest of the field.
+*   As established by the Ryu-Takayanagi formula in modern physics, macroscopic geometry is simply a "dashboard readout" of underlying quantum entanglement.
+*   Because physical events only happen at the boundary of interaction, the total relational capacity of any localized region is strictly limited by its surface area—the physical boundary where its entangled nodes touch the rest of the field.
 
 ---
 
@@ -334,9 +336,10 @@ Einstein’s relativity proves that time "slows down" for objects moving at extr
 
 **The Planck Field Reconciliation:** 
 This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations. 
-*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite thermodynamic capacity, which acts as a vector budget ($C_{max}^2 = C_s^2 + C_i^2$). 
+*   The field possesses an absolute maximum rate of causal actualization. As proven by the **Margolus-Levitin theorem** in quantum thermodynamics, any localized system has a finite state-change capacity strictly bounded by its energy. 
+*   This capacity acts as a vector budget ($C_{max}^2 = C_s^2 + C_i^2$). 
 *   If an interface is subjected to extreme spatial displacement (velocity) or extreme relational tension (gravity), it saturates its available actualization capacity along the spatial axis. 
-*   Consequently, the system has less capacity available for *internal* state changes (the ticking of a gear, the aging of a cell). Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its relational bandwidth was maxed out navigating the field.
+*   Consequently, the system has less capacity available for *internal* state changes (the ticking of a gear, the aging of a cell). Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its finite processing bandwidth was maxed out navigating the field.
 
 ---
 
