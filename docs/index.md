@@ -42,3 +42,4 @@ We are stepping out of the frozen block universe, abandoning the illusion of sta
 The universe does not calculate geometry; it resolves thermodynamic gradients. There are no objects; there are only relational boundaries. There is no empty space; there is only the active, zero-storage substrate.
 
 Welcome to thermodynamic reality.
+
