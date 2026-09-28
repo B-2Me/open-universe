@@ -26,7 +26,7 @@ $F = T \frac{\Delta S}{\Delta x}$
 Gravity is simply the Unruh temperature ($T$) of the local field multiplied by the change in relational entropy ($\Delta S$) over a discrete, fixed Planck-length step ($\Delta x$). Matter does not pull; local tension naturally resolves down the path of least thermodynamic resistance.
 
 ### 2. Time Dilation (Actualization Capacity)
-Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
+Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The fundamental substrate acts as the absolute preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
 $C_{max}^2 = C_s^2 + C_i^2$
 A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity or gravitational resistance approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
@@ -108,7 +108,7 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 Institutional physics remains largely trapped in the gravity of legacy architectures, specifically standard General Relativity and String Theory, both of which rely on the continuous, infinitely divisible mathematics of the Block Universe. However, a vanguard of physicists and mathematicians has spent decades independently breaking away from that substance ontology. We do not invent new physics; we act as **systems integrators**, utilizing their mathematical breakthroughs to validate the mechanics of the field while ruthlessly auditing the philosophical dead-ends that occasionally trap them.
 
 ### Giacomo Mauro D'Ariano et al.: Quantum Cellular Automata
-* **What We Integrate:** D’Ariano, Perinotti, and Bisio successfully derived Dirac and Maxwell’s equations from a **Quantum Cellular Automaton (QCA)**. They proved mathematically that you can generate the speed of light, electromagnetism, and Lorentz invariance entirely from discrete local update rules on a lattice, with zero spacetime geometry assumed as an input. 
+* **What We Integrate:** D’Ariano, Perinotti, and Bisio successfully derived Dirac and Maxwell’s equations from a **Quantum Cellular Automaton (QCA)**. They proved mathematically that you can generate the speed of light, electromagnetism, and Lorentz invariance entirely from discrete local update rules on a lattice, with zero spacetime geometry assumed as an input. Crucially, their math proves that Lorentz invariance is not a fundamental bedrock law; it is an emergent, macroscopic illusion that breaks down at extreme Planck-scale energies.
 * **Where We Detach:** D'Ariano’s rules operate on unitary quantum states (amplitudes/superposition). The Planck Field operates one layer deeper, on definitive classical actualizations, pushing the QCA model down to the ontological bedrock.
 
 ### Gerard 't Hooft: The Cellular Automaton Interpretation
