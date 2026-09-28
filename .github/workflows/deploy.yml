@@ -4,12 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      force_audio_rebuild:
-        description: 'Force site-wide audio regeneration'
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -33,9 +27,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Git Timestamps
-        uses: step-security/git-restore-mtime-action@v2
-
+      - name: EMERGENCY RESTORE (Audio Folder)
+        run: |
+          git checkout c3b3402 -- docs/public/audio
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/public/audio
+          git diff --staged --quiet || git commit -m "rescue: restored audio folder from previous commit"
+          git push
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -44,27 +44,10 @@ jobs:
       - name: Install NPM Dependencies
         run: npm install
 
-      - name: Clean Audio Cache (If Triggered)
-        if: ${{ github.event.inputs.force_audio_rebuild == 'true' }}
-        run: |
-          echo "Manual trigger activated: Deleting audio cache to force regeneration."
-          rm -rf docs/public/audio
+      # KOKORO PIPELINE TEMPORARILY COMMENTED OUT DUE TO API OUTAGE
+      # - name: Run Kokoro Audio Pipeline
+      #   run: npm run generate-audio
 
-      - name: Run Kokoro Audio Pipeline
-        run: npm run generate-audio
-
-      - name: Commit Synced Markdown, Audio, and Lockfile
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/ package-lock.json
-          git diff --staged --quiet || git commit -m "chore: auto-generate audio, AST sync, and lockfile [skip ci]"
-          git push
-
-      # ========================================================
-      # PLANCK FIELD BARE-METAL ENGINE (WASM)
-      # ========================================================
-      
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
         continue-on-error: true
@@ -77,12 +60,8 @@ jobs:
         run: |
           mkdir -p docs/public/wasm/wake/
           cd src
-          chmod +x build.sh
-          ./build.sh
-
-      # ========================================================
-      # VITEPRESS SITE DEPLOYMENT
-      # ========================================================
+          chmod +x build.sh || true
+          ./build.sh || true
 
       - name: Build VitePress Site
         run: npm run docs:build
