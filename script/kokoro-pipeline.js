@@ -45,6 +45,33 @@ function getRenderableNodes(node, nodes = []) {
 }
 
 function sanitizeTextForTTS(text) {
+  let sanitized = text;
+
+  // 1. Translate LaTeX Formulas to Phonetic English
+  const mathMap = {
+    'F = T \\frac{\\Delta S}{\\Delta x}': 'F equals T times the change in S over the change in X',
+    'C_{max}^2 = C_s^2 + C_i^2': 'C max squared equals C S squared plus C I squared',
+    'E_{received} = E_{emitted} e^{-\\mu d}': 'E received equals E emitted, times E to the negative mu D',
+    '\\Phi = \\tau \\cdot \\Delta_{mod}(s_1, s_2)': 'Phi equals tau times the modular change between S one and S two',
+    'Y_{act} = (N_{nodes} \\cdot \\tau_{knot}) \\times \\Omega_{max}': 'Y act equals N nodes times tau knot, multiplied by Omega max',
+    'E=mc^2': 'E equals M C squared',
+    'C_{max}': 'C max',
+    'C_s': 'C S',
+    'C_i': 'C I',
+    '\\Delta S': 'delta S',
+    '\\Delta x': 'delta X',
+    '\\Omega_{max}': 'Omega max'
+  };
+
+  for (const [formula, spoken] of Object.entries(mathMap)) {
+    // Escape regex characters in the formula
+    const escapedFormula = formula.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    // Match the formula whether it is wrapped in inline $or block$$
+    const regex = new RegExp(`\\$*${escapedFormula}\\$*`, 'g');
+    sanitized = sanitized.replace(regex, spoken);
+  }
+
+  // 2. Translate Roman Numerals
   const romanMap = {
     'I': 'One', 'II': 'Two', 'III': 'Three', 'IV': 'Four', 'V': 'Five',
     'VI': 'Six', 'VII': 'Seven', 'VIII': 'Eight', 'IX': 'Nine', 'X': 'Ten',
@@ -53,13 +80,14 @@ function sanitizeTextForTTS(text) {
     'XIX': 'Nineteen', 'XX': 'Twenty'
   };
   
-  // Captures the start of the string (^), any amount of non-alphanumerics (prefix), 
-  // the Roman numeral, and the period. It preserves the punctuation while swapping the word.
-  let sanitized = text.replace(/^([^a-zA-Z0-9]*)(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\.\s/g, (match, prefix, numeral) => {
+  sanitized = sanitized.replace(/^([^a-zA-Z0-9]*)(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\.\s/g, (match, prefix, numeral) => {
     return `${prefix}${romanMap[numeral]}. `;
   });
 
+  // 3. Strip HTML Tags
   sanitized = sanitized.replace(/<[^>]+>/g, '');
+  
+  // 4. Clean up any remaining isolated dollar signs (e.g. inline variables like $c$)
   sanitized = sanitized.replace(/\$/g, '');
 
   return sanitized.trim();
@@ -78,6 +106,7 @@ async function processFile(filePath) {
     const mp3Stat = await fs.stat(finalAudioPath);
     const syncMapStat = await fs.stat(syncMapPath);
     
+    // Check modification dates to skip unmodified files
     if (mp3Stat.mtime > mdStat.mtime && syncMapStat.mtime > mdStat.mtime) {
       console.log(`Skipping ${filename} (Audio and sync map are up to date)`);
       return;
