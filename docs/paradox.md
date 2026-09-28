@@ -330,14 +330,14 @@ Both camps fail because they treat the universe as a pre-built house, and biolog
 ## 25. The Dilation Paradox (Relativistic Time)
 
 **The Paradox:** 
-Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity[span_0](start_span)[span_0](end_span). Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends[span_1](start_span)[span_1](end_span).
+Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
 
 **The Planck Field Reconciliation:** 
-This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension[span_2](start_span)[span_2](end_span). Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations[span_3](start_span)[span_3](end_span). In a topological network, time dilation is simply localized network lag.
-*   The field possesses an absolute maximum rate of causal actualization[span_4](start_span)[span_4](end_span). Any localized system has a finite computational vector budget ($C_{max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$)[span_5](start_span)[span_5](end_span).
+This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
+*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite computational vector budget ($C_{max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$).
 *   **Velocity (Special Relativity):** Movement requires actively routing data from one node to the next. As a system approaches the absolute routing speed limit of the grid ($c$), nearly 100% of its vector budget is consumed by spatial hand-offs, leaving 0% for internal ticking. A photon does not experience time because all of its bandwidth is spent propagating.
-*   **Gravity (General Relativity):** A massive body is a dense tension knot[span_6](start_span)[span_6](end_span). A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.
-*   Time didn't "stretch" like a fabric[span_7](start_span)[span_7](end_span). The internal actualization rate of the object simply dropped because its finite processing bandwidth was maxed out fighting gravity or routing data[span_8](start_span)[span_8](end_span).
+*   **Gravity (General Relativity):** A massive body is a dense tension knot. A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.
+*   Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its finite processing bandwidth was maxed out fighting gravity or routing data.
 
 ---
 
