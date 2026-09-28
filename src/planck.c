@@ -1,6 +1,6 @@
 /*
  * The Planck Field Engine (Langevin's Wake)
- * Copyright (c) 2026 Nathan
+ * Copyright (c) 2026 Nathan / btwo.me
  * 
  * A bare-metal thermodynamic cellular automata simulation engine.
  * Part of The Open Universe framework: https://planckfield.site
