@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      force_audio_rebuild:
+        description: 'Force site-wide audio regeneration'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -38,6 +44,12 @@ jobs:
       - name: Install NPM Dependencies
         run: npm install
 
+      - name: Clean Audio Cache (If Triggered)
+        if: ${{ github.event.inputs.force_audio_rebuild == 'true' }}
+        run: |
+          echo "Manual trigger activated: Deleting audio cache to force regeneration."
+          rm -rf docs/public/audio
+
       - name: Run Kokoro Audio Pipeline
         run: npm run generate-audio
 
@@ -55,15 +67,14 @@ jobs:
       
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
-        continue-on-error: true # Fails gracefully without breaking VitePress
+        continue-on-error: true
         with:
           version: latest
           actions-cache-folder: 'emsdk-cache'
 
       - name: Compile Planck Field Engine
-        continue-on-error: true # Fails gracefully without breaking VitePress
+        continue-on-error: true
         run: |
-          # Ensure destination exists
           mkdir -p docs/public/wasm/wake/
           cd src
           chmod +x build.sh
