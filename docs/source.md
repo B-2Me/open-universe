@@ -27,18 +27,18 @@ Gravity is simply the Unruh temperature ($T$) of the local field multiplied by t
 
 ### 2. Time Dilation (Actualization Capacity)
 Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
-$C_{max} = C_s + C_i$
-A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity or gravitational resistance approaches the absolute structural limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
+$C_{max}^2 = C_s^2 + C_i^2$
+A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity or gravitational resistance approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
 ### 3. Cosmological Redshift (Propagation Friction)
-Space is not stretching. Light loses frequency as a direct consequence of propagation across an active medium.
+Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
 $E_{received} = E_{emitted} e^{-\mu d}$
-Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades logarithmically due to the baseline thermodynamic friction ($\mu$) of the resting field.
+Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades logarithmically due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
 
 ### 4. Electromagnetism (Phase Friction)
-Charge is not a noun; it is the topological spin of a locus. Magnetism is the synchronized alignment of these spins creating a low-friction routing channel. The Phase Friction ($\Phi$) between any two boundaries is based on their discrete spin angles ($\theta$):
-$\Phi = \tau(1 + \cos(\Delta \theta))$
-Opposite spins ($\Delta \theta = \pi$) mesh perfectly, dropping friction to zero (attraction). Identical spins ($\Delta \theta = 0$) clash, generating a massive spike in metabolic dissipation. The localized tension naturally resolves down the path of least thermodynamic resistance, which emerges macroscopically as physical repulsion.
+Charge is not a continuous geometric wave; it is the discrete topological state ($s$) of a locus. The Phase Friction ($\Phi$) between any two boundaries is calculated through discrete modular distance across finite states ($N$), not continuous trigonometric angles:
+$\Phi = \tau \cdot \Delta_{mod}(s_1, s_2)$
+Opposite states (maximum modular distance) mesh perfectly, dropping friction to zero (attraction). Identical states (zero distance) clash, generating a massive spike in metabolic dissipation. The localized tension naturally resolves down the path of least thermodynamic resistance, which emerges macroscopically as physical repulsion.
 
 ### 5. Mass-Energy Equivalence (Actualization Yield)
 $E=mc^2$ is not a conversion spell between two different substances. It is the mathematical boundary of Topological Unwinding:
@@ -85,7 +85,7 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 
 ### Mir Faizal et al.: Undecidability & The Non-Algorithmic Horizon
 * **The Meta-Theory of Everything:** Grounded in Gödel’s incompleteness theorems, Tarski’s undefinability theorem, and Chaitin’s information-theoretic limits, Faizal et al. prove that a wholly algorithmic "Theory of Everything" is mathematically impossible. Certain facets of reality are computationally undecidable and require a non-algorithmic meta-layer.
-* **No Simulation:** Because any simulation of the universe must be algorithmic, the universe itself *cannot* be a simulation; it embeds non-computational content actualized directly through nature.
+* **No Simulation:** Because any simulation of the universe must be algorithmic, the universe itself *cannot* be a simulation; it embeds non-computational content actualized directly through nature. At the fundamental Planck scale, reality does not follow a closed algorithmic loop.
 * **Reference:** [Consequences of Undecidability in Physics on the Theory of Everything (JHAP, 2025)](/library/JHAP_Volume_5_Issue_2_Pages_10-21.pdf).
 
 ---
@@ -106,6 +106,18 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 ## VI. Auditing the Vanguard
 
 Institutional physics remains largely trapped in the gravity of legacy architectures, specifically standard General Relativity and String Theory, both of which rely on the continuous, infinitely divisible mathematics of the Block Universe. However, a vanguard of physicists and mathematicians has spent decades independently breaking away from that substance ontology. We do not invent new physics; we act as **systems integrators**, utilizing their mathematical breakthroughs to validate the mechanics of the field while ruthlessly auditing the philosophical dead-ends that occasionally trap them.
+
+### Xiao-Gang Wen: String-Net Condensation & Topological Order
+* **What We Integrate:** We fully integrate Wen’s **String-Net Condensation**. Wen’s mathematics dismantled the geometric vacuum, proving that space is a discrete, dynamic lattice of quantum spins. He proved that particles and photons are not fundamental objects, but simply emergent topological excitations (friction) moving across this network. This is the exact mathematical proof for the Planck Field's discrete array and Phase Friction.
+* **Where We Detach:** We do not detach from his math; we simply provide the **Process-Ontology Translation Layer**. Wen’s rigorous tensor category theory proves *that* light emerges from a discrete substrate. The Planck Field provides the *mechanical vocabulary*—finite bandwidth, queuing latency, and thermodynamic capacity limits—to translate his algebraic physics into a legible cybernetic reality.
+
+### Giacomo Mauro D'Ariano et al.: Quantum Cellular Automata
+* **What We Integrate:** D’Ariano, Perinotti, and Bisio successfully derived Dirac and Maxwell’s equations from a **Quantum Cellular Automaton (QCA)**. They proved mathematically that you can generate the speed of light, electromagnetism, and Lorentz invariance entirely from discrete local update rules on a lattice, with zero spacetime geometry assumed as an input. 
+* **Where We Detach:** D'Ariano’s rules operate on unitary quantum states (amplitudes/superposition). The Planck Field operates one layer deeper, on definitive classical actualizations, pushing the QCA model down to the ontological bedrock.
+
+### Gerard 't Hooft: The Cellular Automaton Interpretation
+* **What We Integrate:** Nobel Laureate Gerard 't Hooft argues that beneath the probabilistic blur of quantum mechanics lies a discrete, classical, deterministic machine—a cellular automaton. He completely aligns with our stance: the universe operates on definite, single-configuration local states at the Planck scale, not smeared-out probability waves.
+* **Where We Detach:** To survive Bell's Theorem, 't Hooft accepts "Superdeterminism"—the idea that the entire future of the universe was fixed at the Big Bang. We reject this. As established by Faizal et al. and Landauer, the substrate contains uncomputable, non-algorithmic properties. The cellular grid is discrete and classical at the moment of actualization, but because it is uncomputable, it remains radically open. It is a machine writing itself in real-time, not a pre-recorded tape playing out a predetermined destiny.
 
 ### Lee Smolin: The Reality of Time
 * **What We Integrate:** We adopt Smolin’s **Temporal Naturalism**. Smolin forcefully dismantles the Block Universe, arguing that the present moment is thick and real, the past is physically gone, and the future is radically unwritten. Time is a continuous process of becoming, not a 4D landscape you can traverse.
@@ -137,3 +149,4 @@ To navigate the site without falling back into mechanistic traps, use the follow
 | **Information Processing** | "The brain computes data." | **Continuous Actualization:** The unwritten, non-algorithmic precipitation of local experience from the Planck Field. |
 | **Sensory Transduction** | "A sensor measures an external object." | **Boundary Participation:** An active, metabolic bridge allowing a local interface to partake in the external stream. |
 | **Mind vs. Body** | "The mind runs on the brain." | **The Hayles Loop:** Information as a material force; recursive self-simulation actively updating physical actualization. |
+
