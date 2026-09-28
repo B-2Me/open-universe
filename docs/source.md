@@ -90,7 +90,25 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 
 ---
 
-## V. The Material Architecture of the Local Interface
+## V. The Computational & Mathematical Rebels
+
+The friction between a discrete physical reality and continuous, frictionless mathematics is not a new discovery. For a century, a minority lineage of mathematicians and computer scientists has actively rejected the Platonic illusion of the infinitely divisible continuum, demanding that mathematics answer to physical and computational constraints.
+
+### L.E.J. Brouwer & Doron Zeilberger: Constructivism and Ultrafinitism
+*   **The Rejection of the Continuum:** Brouwer pioneered Intuitionism, arguing that mathematical objects do not passively exist in an abstract void; they must be mechanically constructed step-by-step. Zeilberger, a modern ultrafinitist, takes this further, explicitly declaring that the continuous "real number line" is a macroscopic delusion and that calculus is merely a fuzzy approximation of a fundamentally discrete reality.
+*   **Bridge to Old Constructs:** Mainstream mathematics assumes space and time can be divided infinitely, allowing for zero-friction abstractions. Brouwer and Zeilberger validate the Planck Field’s core axiom: reality has a hard resolution limit, and frictionless infinities do not physically exist. 
+
+### Edward Fredkin & Seth Lloyd: Digital Physics 
+*   **The Universe as a Processor:** Fredkin, a pioneer of digital physics, argued that the universe is literally a cellular automaton—a discrete computational substrate where fundamental physics is just the processing of information. Seth Lloyd expanded this by calculating the absolute thermodynamic computational capacity of the universe, proving that physical laws are bound by the limits of processing bandwidth.
+*   **Bridge to Old Constructs:** Legacy physics treats the universe as a geometric container where objects move. Digital physics aligns perfectly with the Planck Field, recognizing that the universe is a finite processing engine where spatial translation and causal actualization are literal computational events.
+
+### Gregory Chaitin: Algorithmic Information Theory
+*   **The Uncomputable Substrate:** Chaitin proved that mathematics is fundamentally limited by uncomputability and algorithmic randomness. He demonstrated that nature isn't running a neat, closed algebraic equation; the bedrock contains irreducible, non-algorithmic noise. 
+*   **Bridge to Old Constructs:** Simulation theorists assume a higher-level server is running the universe on standard code. Chaitin’s work mathematically proves that you cannot simulate the raw, uncomputable friction of the physical substrate on an algorithmic architecture.
+
+---
+
+## VI. The Material Architecture of the Local Interface
 
 ### Sathvik Ajay Iyengar et al.: Quantum Orbital Flexoelectricity
 * **Sub-Nanometer Curvature:** In two-dimensional systems like graphene nanowrinkles (GNWrs), extreme nanoscale curvature breaks local inversion symmetry, perturbing out-of-plane orbitals to generate intrinsic quantum-mechanical polarization.
@@ -103,7 +121,7 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 
 ---
 
-## VI. Auditing the Vanguard
+## VII. Auditing the Vanguard
 
 Institutional physics remains largely trapped in the gravity of legacy architectures, specifically standard General Relativity and String Theory, both of which rely on the continuous, infinitely divisible mathematics of the Block Universe. However, a vanguard of physicists and mathematicians has spent decades independently breaking away from that substance ontology. We do not invent new physics; we act as **systems integrators**, utilizing their mathematical breakthroughs to validate the mechanics of the field while ruthlessly auditing the philosophical dead-ends that occasionally trap them.
 
@@ -133,7 +151,7 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 
 ---
 
-## VII. Translation Guide: Substance Ontology to Process Ontology
+## VIII. Translation Guide: Substance Ontology to Process Ontology
 
 To navigate the site without falling back into mechanistic traps, use the following translation framework when encountering legacy terminology:
 
