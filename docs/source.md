@@ -28,7 +28,7 @@ Gravity is simply the Unruh temperature ($T$) of the local field multiplied by t
 ### 2. Time Dilation (Actualization Capacity)
 Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The fundamental substrate acts as the absolute preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
 $C_{max}^2 = C_s^2 + C_i^2$
-A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity or gravitational resistance approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
+A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity (data routing) or gravitational resistance (environmental tension) approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
 ### 3. Cosmological Redshift (Propagation Friction)
 Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
