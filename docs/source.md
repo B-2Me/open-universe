@@ -26,7 +26,7 @@ $F = T \frac{\Delta S}{\Delta x}$
 Gravity is simply the Unruh temperature ($T$) of the local field multiplied by the change in relational entropy ($\Delta S$) over a discrete, fixed Planck-length step ($\Delta x$). Matter does not pull; local tension naturally resolves down the path of least thermodynamic resistance.
 
 ### 2. Time Dilation (Actualization Capacity)
-Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. As formalized by the **Margolus-Levitin theorem** in quantum thermodynamics, a system's maximum rate of state change is strictly proportional to its energy ($2E/\pi\hbar$). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
+Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
 $C_{max}^2 = C_s^2 + C_i^2$
 A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity or gravitational resistance approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
@@ -50,7 +50,7 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 ## II. Philosophical Foundations: Process & Indeterminism
 
 ### Alfred North Whitehead: Process and Reality
-* **The Process View:** Whitehead dismantled the classical view of static "substance," replacing it with **actual occasions**—discrete, perishing drops of experience that are constantly encrypted and scrambled into the entanglement of the environment to construct the present. Reality is not a collection of objects; it is an unbroken stream of qualitative becoming.
+* **The Process View:** Whitehead dismantled the classical view of static "substance," replacing it with **actual occasions**—discrete, perishing drops of experience that are constantly overwritten to construct the present. Reality is not a collection of objects; it is an unbroken stream of qualitative becoming.
 * **Bridge to Old Constructs:** Materialists call these "particles" or "matter," but these terms are merely frozen abstractions of rapidly perishing relational events.
 
 ### Karl Popper: The Open Universe
@@ -75,18 +75,13 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 * **The Instrumental Error:** Legacy physics did not ignore Planck’s mathematics; they simply stripped it of its physical ontology. Lacking the vocabulary of complex dynamic networks, early 20th-century physicists attempted to map a discrete, actively actualizing universe using the continuous, frictionless calculus of the 19th century. They turned his thermodynamic reality into a weightless probability tool, calculating outcomes while ignoring the absolute thermodynamic dissipation limits of the substrate.
 * **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be calculated without physical friction. Planck established the literal bedrock of **The Planck Field**, proving the universe is bound by finite resolution and metabolic constraints.
 
-### Quantum Thermodynamics & Holographic Entanglement
-* **The Internal Bath:** Legacy physics assumes dissipation requires an external void or classical bath. As proven by **Popescu, Short, and Winter (2006)**, a closed quantum system thermalizes because its subsystems entangle with the rest of the field; the substrate *is* the bath. Information isn't destroyed; it is encrypted into inaccessible correlations (Unitary Evolution).
-* **The Cost of Time:** As demonstrated by **Erker et al. (2017)** with autonomous quantum clocks, the accuracy and flow of time itself is bounded by the entropy dissipated per tick. Time is not a passive dimension; actualization requires literal thermodynamic friction.
-* **Geometry as a Dashboard:** Grounded in the **Ryu-Takayanagi** formula, space is not a fundamental container. Macroscopic geometry is simply a holographic "dashboard readout" of the underlying network's entanglement structure.
-
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy shape relational geometry, and objects simply follow natural geodesic paths through a landscape where actualization flows at varying rates.
 * **Bridge to Old Constructs:** We often say "gravity pulls," but this is a macroscopic idiom. There are no invisible tethers—only relational geometry shaping the path of least resistance.
 
 ### Rolf Landauer: The Thermodynamics of Information
-* **The Physical Dissipation of Data:** In 1961, Landauer proved that information is not an abstract, mathematical ghost. The erasure, manipulation, or measurement of a single bit of information carries a strict, irreducible thermodynamic dissipation requirement (heat). Information is fundamentally physical.
-* **Bridge to Old Constructs:** Legacy dualism treats human thought and memory as weightless logic running on biological architecture. Landauer establishes that cognitive agency, memory encryption, and internal simulation are literal thermodynamic exertions. This provides the physical proof for metabolic cycle-stealing.
+* **The Physical Dissipation of Data:** In 1961, Landauer proved that information is not an abstract, mathematical ghost. The erasure or manipulation of a single bit of information carries a strict, irreducible thermodynamic dissipation requirement (heat). Information is fundamentally physical.
+* **Bridge to Old Constructs:** Legacy dualism treats human thought and memory as weightless logic running on biological architecture. Landauer establishes that cognitive agency, memory overwrite, and internal simulation are literal thermodynamic exertions. This provides the physical proof for metabolic cycle-stealing.
 
 ### Mir Faizal et al.: Undecidability & The Non-Algorithmic Horizon
 * **The Meta-Theory of Everything:** Grounded in Gödel’s incompleteness theorems, Tarski’s undefinability theorem, and Chaitin’s information-theoretic limits, Faizal et al. prove that a wholly algorithmic "Theory of Everything" is mathematically impossible. Certain facets of reality are computationally undecidable and require a non-algorithmic meta-layer.
