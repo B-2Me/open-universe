@@ -27,15 +27,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: EMERGENCY RESTORE (Audio Folder)
-        run: |
-          git checkout c3b3402 -- docs/public/audio
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/public/audio
-          git diff --staged --quiet || git commit -m "rescue: restored audio folder from previous commit"
-          git push
-          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -44,9 +35,8 @@ jobs:
       - name: Install NPM Dependencies
         run: npm install
 
-      # KOKORO PIPELINE TEMPORARILY COMMENTED OUT DUE TO API OUTAGE
-      # - name: Run Kokoro Audio Pipeline
-      #   run: npm run generate-audio
+      - name: Run Kokoro Audio Pipeline
+        run: npm run generate-audio
 
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
