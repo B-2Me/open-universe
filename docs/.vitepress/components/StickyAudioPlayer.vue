@@ -67,8 +67,8 @@ onMounted(async () => {
       const existingWrappers = localNavContainer.querySelectorAll('.embedded-audio-wrapper')
       existingWrappers.forEach(el => el.remove())
       localNavContainer.appendChild(wrapperRef.value)
-    } else if (injectAttempts < 40) {
-      // Retry injection up to 40 times (max 2 seconds) if the nav isn't in the DOM yet
+    } else if (injectAttempts < 100) {
+      // Retry injection up to 100 times (max 5 seconds) if the nav isn't in the DOM yet
       injectAttempts++
       setTimeout(injectPlayer, 50)
     }
