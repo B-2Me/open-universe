@@ -317,16 +317,3 @@ onUnmounted(() => {
   transform: translateY(15px);
 }
 </style>
-
-<style>
-/* Original Global Styles */
-.sync-text {
-  transition: background-color 0.3s ease, color 0.3s ease;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-.sync-text.active {
-  background-color: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
-}
-</style>
