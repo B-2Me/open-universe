@@ -80,3 +80,15 @@ These are not solid objects moving through the void, nor are they temporary ther
 *   **The Deadlock (Mass):** The localized nodes possess enough thermodynamic pressure to push back against the redistributing pressure of the surrounding field, establishing a distinct, self-sustaining boundary.
 *   **The Phase Alignment (Charge):** The discrete topological states (spin) of this massive ensemble synchronize perfectly. By dropping internal phase friction to zero, the structure stops bleeding heat internally, allowing it to sustain its boundary indefinitely.
 *   **The Baseline Equilibrium:** These knots are the lowest energy states a charged region can hold without completely collapsing. They represent the substrate's most thermodynamically efficient configuration for storing a localized spike of tension.
+
+### The Evidence of Hydrodynamic Structure
+
+Mainstream physics has looked for structure in fundamental particles for decades, but they have always looked for **mechanical compositeness**—smaller constituent sub-particles (like quarks inside a proton, or hypothetical "preons" inside leptons). Every time high-precision experiments show no sub-particles down to $10^{-20}$ meters, physics concludes the electron must be a structureless, zero-dimensional point.
+
+But the thermodynamic framework argues that structure is not made of smaller bricks; it is the **hydrodynamic integrity of the medium itself**. 
+
+When colliders interact with an electron, the data already captures this structural response. Physics simply labels it under different names:
+
+*   **Vacuum Polarization & Running Couplings:** In Quantum Electrodynamics (QED), the measured charge of an electron actually changes depending on how close you probe it. Mainstream theory explains this by claiming the point electron is shrouded in a cloud of "virtual electron-positron pairs" popping in and out of the vacuum to screen its bare charge. In a discrete grid, that "screening cloud" is not a cloud of phantom particles; it is the physical gradient of the localized knot itself. You are measuring the density profile of the hurricane as you push inward toward its eye.
+*   **Electron Self-Energy & Mass Renormalization:** Standard QFT is forced to perform "renormalization" because calculating the energy of a zero-dimensional point particle yields an infinite self-energy catastrophe. To fix this, theorists manually subtract the infinities. Those infinities are mathematical proof that treating the electron as a point with zero radius is physically broken. The finite, real mass left over is the net thermodynamic tension required to sustain the localized vortex.
+*   **Radiative Corrections & Bremsstrahlung:** When you accelerate or deflect an electron in a collider, it radiates photons (braking radiation). Standard theory models this using perturbation theory. In the grid, that radiation is simply shedding localized shockwaves when the boundary is subjected to external shear forces.
