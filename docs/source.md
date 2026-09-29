@@ -112,7 +112,7 @@ The friction between a discrete physical reality and continuous, frictionless ma
 
 ### Sathvik Ajay Iyengar et al.: Quantum Orbital Flexoelectricity
 * **Sub-Nanometer Curvature:** In two-dimensional systems like graphene nanowrinkles (GNWrs), extreme nanoscale curvature breaks local inversion symmetry, perturbing out-of-plane orbitals to generate intrinsic quantum-mechanical polarization.
-* **Bridge to Old Constructs:** This replaces classical electrostatic charge separation with dynamic orbital-level flexion, proving that geometry directly commands electronic potential.
+* **Bridge to Old Constructs:** This replaces classical electrostatic charge separation with dynamic orbital-level flexion, proving that geometry directly commands electronic potential. More importantly, it provides a flawless 2D macroscopic analogue for fundamental 3D matter. The localized, asymmetric strain gradients generating electrostatic resistance in these graphene nanowrinkles are the exact hydrodynamic mechanics that stabilize the topological knots we call the electron and the "Particle Zoo."
 * **Reference:** [Sub-Nanometer Curvature Unlocks Quantum Orbital Flexoelectricity in Graphene (Advanced Materials, 2026)](/library/Advanced-Materials-2026-Iyengar_Sub‐Nanometer_Curvature_Unlocks_Quantum_Orbital_Flexoelectricity_in_Graphene.pdf).
 
 ### Juan Carlos Fernández del Castillo et al.: Efficient Coding & Sensory Conduits
