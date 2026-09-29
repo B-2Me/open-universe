@@ -7,22 +7,25 @@ let currentZoom = 1;
 let panX = 0;
 let panY = 0;
 let currentMode = "move"; 
-let currentBrush = "A"; 
 let isSpaceDown = false;
-let customStamp = [];
 let scrollTimeout = null;
 
 let leftLayer = 0;  // 0 = Macro
-let rightLayer = 1; // 1 = Metabolic
-const LAYER_LABELS = ["👁 Macro", "♨ Metabolic"];
+let rightLayer = 1; // 1 = Metabolic, 2 = Phase
+const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase"];
 
-const patternPalette = {
-    "A": [[20]],
-    "B": [[20, 0, 20], [0, 0, 0], [0, 20, 0]],
-    "C": [[0, 20, 20, 0], [20, 0, 0, 20], [20, 0, 0, 20], [0, 20, 20, 0]],
-    "D": [[255]], 
-    "E": [[10, 10, 10, 10]] 
+// --- DYNAMIC PALETTE MANAGER ---
+const defaultPalette = {
+    "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
+    "B": { icon: "∴", label: "Triangle", data: [[(20<<24)|100, 0, (20<<24)|100], [0, 0, 0], [0, (20<<24)|100, 0]] },
+    "C": { icon: "〰", label: "Wall", data: [[(255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500]] }
 };
+
+let userPalette = JSON.parse(localStorage.getItem('planck_palette')) || {};
+let fullPalette = { ...defaultPalette, ...userPalette };
+let currentBrush = "A";
+let currentInjectionMode = "clone";
+let customStamp = [];
 
 function triggerErrorState(message) {
     const banner = document.getElementById('error-banner');
@@ -42,6 +45,45 @@ if (typeof createPlanck !== 'undefined') {
         document.getElementById('diag_status').style.color = "var(--pf-brand-hover)";
         startEngine(wasmModule);
     }).catch((error) => triggerErrorState("Engine failed to initialize: " + error));
+}
+
+function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
+    const container = document.getElementById(containerId);
+    if (!container) return; 
+    const buttons = container.querySelectorAll(btnClass);
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            callback(btn.dataset.val);
+        });
+    });
+}
+
+function renderPaletteUI() {
+    const container = document.getElementById('brush_selector');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    for (const [key, brush] of Object.entries(fullPalette)) {
+        const btn = document.createElement('button');
+        btn.className = `palette-btn ${currentBrush === key ? 'active' : ''}`;
+        btn.dataset.val = key;
+        btn.innerHTML = `<span class="p-icon">${brush.icon}</span><span class="p-label">${brush.label}</span>`;
+        container.appendChild(btn);
+    }
+    
+    const scratchBtn = document.createElement('button');
+    scratchBtn.className = `palette-btn ${currentBrush === 'custom' ? 'active' : ''}`;
+    scratchBtn.dataset.val = 'custom';
+    scratchBtn.id = 'opt_custom';
+    scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Scratch</span>`;
+    container.appendChild(scratchBtn);
+
+    setupButtonGroup('brush_selector', val => {
+        currentBrush = val;
+    }, '.palette-btn');
 }
 
 function startEngine(Module) {
@@ -64,17 +106,16 @@ function startEngine(Module) {
     const pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
     const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
-    // Initial Button Labels
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
 
     document.getElementById('btn_toggle_left').addEventListener('click', (e) => {
-        leftLayer = 1 - leftLayer;
+        leftLayer = (leftLayer + 1) % 3;
         e.target.innerText = LAYER_LABELS[leftLayer];
     });
     
     document.getElementById('btn_toggle_right').addEventListener('click', (e) => {
-        rightLayer = 1 - rightLayer;
+        rightLayer = (rightLayer + 1) % 3;
         e.target.innerText = LAYER_LABELS[rightLayer];
     });
 
@@ -84,19 +125,16 @@ function startEngine(Module) {
         if (isPlaying) {
             Module._tick();
             frameCount++;
-            
-            // Throttled DOM updates (only update every 10 frames)
             if (frameCount % 10 === 0) {
                 document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
                 document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
+                document.getElementById('diag_phase').innerText = Module._get_phase_alignment().toFixed(1) + "%";
             }
         }
         
-        // Render Left Canvas
         Module._render_frame(leftLayer);
         ctxLeft.putImageData(imgData, 0, 0);
 
-        // Render Right Canvas
         Module._render_frame(rightLayer);
         ctxRight.putImageData(imgData, 0, 0);
         
@@ -121,7 +159,6 @@ function startEngine(Module) {
         const rect = canvasContainer.getBoundingClientRect();
         const maxPanX = (rect.width * (currentZoom - 1)) / (2 * currentZoom);
         const maxPanY = (rect.height * (currentZoom - 1)) / (2 * currentZoom);
-
         let targetX = panX;
         let targetY = panY;
 
@@ -136,17 +173,12 @@ function startEngine(Module) {
 
         if (targetX !== panX || targetY !== panY) {
             tWrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2)';
-            panX = targetX;
-            panY = targetY;
+            panX = targetX; panY = targetY;
             applyTransform();
             setTimeout(() => { if (!isDragging) tWrapper.style.transition = 'none'; }, 300);
         }
     }
-
-    // Ensure camera stays bounded if the user resizes or rotates their device
-    window.addEventListener('resize', () => {
-        setTimeout(constrainView, 50); 
-    });
+    window.addEventListener('resize', () => { setTimeout(constrainView, 50); });
 
     function getGridCoords(clientX, clientY) {
         const rect = canvasContainer.getBoundingClientRect();
@@ -161,40 +193,20 @@ function startEngine(Module) {
         return { x: gridX, y: gridY };
     }
 
-    // UTILITY: Hide all popups
     function hidePopups() {
         document.getElementById('context_place').classList.remove('show');
         document.getElementById('context_sample').classList.remove('show');
     }
 
-    function setupButtonGroup(containerId, callback, btnClass = '.group-btn') {
-        const container = document.getElementById(containerId);
-        if (!container) return; 
-        const buttons = container.querySelectorAll(btnClass);
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (btn.disabled) return;
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                callback(btn.dataset.val);
-            });
-        });
-    }
-
-    setupButtonGroup('brush_selector', val => {
-        currentBrush = val;
-        const labels = { "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "custom": "Scratch" };
-        const placeBtn = document.querySelector('.segment-btn[data-mode="place"]');
-        if (placeBtn) placeBtn.innerText = `🪄 Inject (${labels[val]})`;
-        
-        // Close popup SAFELY after the click registers
-        hidePopups(); 
-    }, '.palette-btn');
+    renderPaletteUI();
+    
+    setupButtonGroup('injection_mode_selector', val => {
+        currentInjectionMode = val;
+    });
 
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
-        
         hidePopups();
         if (mode === 'place') document.getElementById('context_place').classList.add('show');
         if (mode === 'sample') document.getElementById('context_sample').classList.add('show');
@@ -205,12 +217,9 @@ function startEngine(Module) {
         btn.addEventListener('click', (e) => {
             const mode = e.currentTarget.dataset.mode;
             if (currentMode === mode) {
-                // Toggle popup open/closed if clicking the already active mode
                 if (mode === 'place') document.getElementById('context_place').classList.toggle('show');
                 if (mode === 'sample') document.getElementById('context_sample').classList.toggle('show');
-            } else {
-                setMode(mode);
-            }
+            } else setMode(mode);
         });
     });
 
@@ -218,7 +227,6 @@ function startEngine(Module) {
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
         Module._set_dissipation(biomes[val][0]);
         Module._set_thermal_limit(biomes[val][1]);
-        
         document.getElementById('math_dissipation').innerText = biomes[val][0];
         document.getElementById('math_thermal_limit').innerText = biomes[val][1];
     });
@@ -228,54 +236,122 @@ function startEngine(Module) {
     bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_reset', resetView);
-
     bindBtn('btn_play', () => isPlaying = !isPlaying);
     bindBtn('btn_step', () => { isPlaying = false; Module._tick(); });
     bindBtn('btn_clear', () => Module._clear_grid());
     bindBtn('btn_soup', () => Module._randomize_grid());
-    bindBtn('btn_copy_stamp', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
     
+    // Palette Management Buttons
+    bindBtn('btn_save_scratch', () => {
+        if (!customStamp || customStamp.length === 0) return;
+        const customCount = Object.keys(userPalette).length + 1;
+        const newId = 'U' + Date.now().toString().slice(-6);
+        userPalette[newId] = { icon: "⚙", label: "Cstm " + customCount, data: customStamp };
+        fullPalette = { ...defaultPalette, ...userPalette };
+        localStorage.setItem('planck_palette', JSON.stringify(userPalette));
+        currentBrush = newId; 
+        renderPaletteUI();
+        document.getElementById('btn_save_scratch').disabled = true;
+    });
+
+    bindBtn('btn_export_palette', () => {
+        if (Object.keys(userPalette).length === 0) { alert("No custom stamps to export yet!"); return; }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userPalette));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "planck_custom_palette.json");
+        dlAnchorElem.click();
+    });
+
+    document.getElementById('import_palette_input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                userPalette = { ...userPalette, ...imported };
+                fullPalette = { ...defaultPalette, ...userPalette };
+                localStorage.setItem('planck_palette', JSON.stringify(userPalette));
+                renderPaletteUI();
+            } catch (err) { alert("Invalid palette file."); }
+        };
+        reader.readAsText(file);
+    });
+
+    bindBtn('btn_reset_palette', () => {
+        if (confirm("Delete all custom stamps? This cannot be undone.")) {
+            userPalette = {};
+            fullPalette = { ...defaultPalette };
+            localStorage.removeItem('planck_palette');
+            currentBrush = 'A';
+            renderPaletteUI();
+        }
+    });
+    
+    bindBtn('btn_copy_stamp', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
     document.getElementById('slider_radius').addEventListener('input', e => {
         document.getElementById('val_radius').innerText = e.target.value;
     });
-
-    function injectPattern(centerX, centerY, pattern) {
-        if (!pattern.length) return;
-        const startX = centerX - Math.floor(pattern[0].length / 2);
-        const startY = centerY - Math.floor(pattern.length / 2);
-        for (let y = 0; y < pattern.length; y++) {
-            for (let x = 0; x < pattern[0].length; x++) {
-                if (pattern[y][x] > 0) Module._set_node(startX + x, startY + y, pattern[y][x]);
-            }
-        }
-    }
 
     function sampleRegion(centerX, centerY, radius) {
         let newStamp = [];
         for (let dy = -radius; dy <= radius; dy++) {
             let row = [];
-            for (let dx = -radius; dx <= radius; dx++) row.push(Module._get_node(centerX + dx, centerY + dy));
+            for (let dx = -radius; dx <= radius; dx++) {
+                row.push(Module._get_node_state(centerX + dx, centerY + dy));
+            }
             newStamp.push(row);
         }
         customStamp = newStamp;
         document.getElementById('scratch_label').innerText = `[${radius*2+1}px]`;
         
+        const saveBtn = document.getElementById('btn_save_scratch');
+        if (saveBtn) saveBtn.disabled = false;
+        
         document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('opt_custom').classList.add('active');
         currentBrush = 'custom';
         
-        // Switch back to place mode and instantly hide popup
         setMode('place');
         hidePopups();
     }
 
+    function injectPattern(centerX, centerY, pattern) {
+        if (!pattern.length) return;
+        const startX = centerX - Math.floor(pattern[0].length / 2);
+        const startY = centerY - Math.floor(pattern.length / 2);
+        
+        for (let y = 0; y < pattern.length; y++) {
+            for (let x = 0; x < pattern[0].length; x++) {
+                const val = pattern[y][x];
+                
+                // Extract Quanta safely
+                const quanta = (val >>> 24) & 0xFF;
+                
+                if (val !== 0 && quanta > 0) {
+                    if (currentInjectionMode === 'clone') {
+                        Module._set_node_state(startX + x, startY + y, val);
+                    } else if (currentInjectionMode === 'quanta') {
+                        Module._add_quanta(startX + x, startY + y, quanta);
+                    } else if (currentInjectionMode === 'heat') {
+                        // Extract original heat from the stamp to use as injection magnitude
+                        const heat = val & 0xFFFF;
+                        Module._add_heat(startX + x, startY + y, heat > 0 ? heat : 500);
+                    } else if (currentInjectionMode === 'spin') {
+                        // Force a spin (extract from stamp, or default to 1)
+                        const spin = (val >>> 16) & 0xFF;
+                        Module._set_spin(startX + x, startY + y, spin > 0 ? spin : 1);
+                    }
+                }
+            }
+        }
+    }
+
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space') { 
-            e.preventDefault(); // Stop page from scrolling
-            if (!isSpaceDown) { 
-                isSpaceDown = true; 
-                canvasContainer.className = 'mode-move'; 
-            }
+            e.preventDefault(); 
+            if (!isSpaceDown) { isSpaceDown = true; canvasContainer.className = 'mode-move'; }
         }
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.code === 'KeyP') isPlaying = !isPlaying;
@@ -284,17 +360,10 @@ function startEngine(Module) {
     });
     
     window.addEventListener('keyup', (e) => {
-        if (e.code === 'Space') { 
-            isSpaceDown = false; 
-            canvasContainer.className = currentMode === 'move' ? 'mode-move' : ''; 
-        }
+        if (e.code === 'Space') { isSpaceDown = false; canvasContainer.className = currentMode === 'move' ? 'mode-move' : ''; }
     });
-
-    // Clear state if the window loses focus while interacting
     window.addEventListener('blur', () => {
-        isSpaceDown = false;
-        isDragging = false;
-        canvasContainer.className = currentMode === 'move' ? 'mode-move' : '';
+        isSpaceDown = false; isDragging = false; canvasContainer.className = currentMode === 'move' ? 'mode-move' : '';
     });
 
     canvasContainer.addEventListener('wheel', (e) => {
@@ -312,13 +381,10 @@ function startEngine(Module) {
     let initialPinchDist = 0, initialPinchZoom = 1;
     let lastTapTime = 0;
 
-    function getTouchDist(touches) {
-        return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
-    }
+    function getTouchDist(touches) { return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); }
 
     function processInput(clientX, clientY, isClick) {
         const activeAction = isSpaceDown ? 'move' : currentMode;
-
         if (activeAction === 'move') {
             if (isClick) { lastX = clientX; lastY = clientY; return; }
             panX += (clientX - lastX) / currentZoom;
@@ -329,31 +395,21 @@ function startEngine(Module) {
         }
 
         const coords = getGridCoords(clientX, clientY);
-
         if (activeAction === 'sample' && isClick) {
             const radius = parseInt(document.getElementById('slider_radius').value, 10);
             sampleRegion(coords.x, coords.y, radius);
         } else if (activeAction === 'place' && (isClick || currentBrush === 'A')) {
-            injectPattern(coords.x, coords.y, currentBrush === 'custom' ? customStamp : patternPalette[currentBrush]);
+            const patternData = currentBrush === 'custom' ? customStamp : fullPalette[currentBrush].data;
+            injectPattern(coords.x, coords.y, patternData);
         }
     }
 
-    canvasContainer.addEventListener('mousedown', (e) => { 
-        hidePopups(); // Ensures popups vanish upon touching the grid
-        isDragging = true; 
-        tWrapper.style.transition = 'none'; 
-        processInput(e.clientX, e.clientY, true); 
-    });
+    canvasContainer.addEventListener('mousedown', (e) => { hidePopups(); isDragging = true; tWrapper.style.transition = 'none'; processInput(e.clientX, e.clientY, true); });
     canvasContainer.addEventListener('mousemove', (e) => { if (isDragging) processInput(e.clientX, e.clientY, false); });
-    window.addEventListener('mouseup', () => { 
-        if(isDragging) { isDragging = false; constrainView(); }
-    });
+    window.addEventListener('mouseup', () => { if(isDragging) { isDragging = false; constrainView(); } });
 
     canvasContainer.addEventListener('touchstart', (e) => {
-        hidePopups(); // Ensures popups vanish upon touching the grid on iOS/Android
-        e.preventDefault();
-        isDragging = true;
-        tWrapper.style.transition = 'none';
+        hidePopups(); e.preventDefault(); isDragging = true; tWrapper.style.transition = 'none';
         if (e.touches.length === 1) {
             const now = Date.now();
             if (now - lastTapTime < 300) resetView();
@@ -368,33 +424,25 @@ function startEngine(Module) {
     }, { passive: false });
 
     canvasContainer.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (!isDragging) return;
+        e.preventDefault(); if (!isDragging) return;
         if (e.touches.length === 1) {
             processInput(e.touches[0].clientX, e.touches[0].clientY, false);
         } else if (e.touches.length === 2) {
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
             currentZoom = initialPinchZoom * (getTouchDist(e.touches) / initialPinchDist);
-            panX += (midX - lastX) / currentZoom;
-            panY += (midY - lastY) / currentZoom;
+            panX += (midX - lastX) / currentZoom; panY += (midY - lastY) / currentZoom;
             lastX = midX; lastY = midY;
             applyTransform();
         }
     }, { passive: false });
     
-    window.addEventListener('touchend', () => { 
-        if(isDragging) { isDragging = false; constrainView(); }
-    });
+    window.addEventListener('touchend', () => { if(isDragging) { isDragging = false; constrainView(); } });
 
     Module._randomize_grid(); 
     renderFrame();
 }
 
-function reportHeight() {
-    const height = document.documentElement.scrollHeight;
-    window.parent.postMessage({ type: 'RESIZE_IFRAME', height: height }, '*');
-}
-
+function reportHeight() { window.parent.postMessage({ type: 'RESIZE_IFRAME', height: document.documentElement.scrollHeight }, '*'); }
 window.addEventListener('load', reportHeight);
 new ResizeObserver(reportHeight).observe(document.body);
