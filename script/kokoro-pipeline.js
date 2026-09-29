@@ -3,6 +3,7 @@ import path from 'path';
 import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
+import { execSync } from 'child_process';
 
 const openai = new OpenAI({
   baseURL: 'https://voice.i.rickey.io/v1',
@@ -12,6 +13,16 @@ const openai = new OpenAI({
 const CONTENT_DIR = './docs';
 const AUDIO_OUT_DIR = './docs/public/audio';
 const SYNC_MAP_DIR = './docs/public/audio/sync-maps';
+
+// Helper to get the actual Git commit time (returns milliseconds)
+function getGitCommitTimeMs(filePath) {
+  try {
+    const result = execSync(`git log -1 --format=%ct -- "${filePath}"`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
+    return result ? parseInt(result, 10) * 1000 : null;
+  } catch (e) {
+    return null; // Fails gracefully if the file isn't in git yet
+  }
+}
 
 // Recursively extract text, deliberately ignoring HTML/Vue component nodes
 function extractText(node) {
@@ -64,9 +75,7 @@ function sanitizeTextForTTS(text) {
   };
 
   for (const [formula, spoken] of Object.entries(mathMap)) {
-    // Escape regex characters in the formula
     const escapedFormula = formula.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    // Match the formula whether it is wrapped in inline $or block$$
     const regex = new RegExp(`\\$*${escapedFormula}\\$*`, 'g');
     sanitized = sanitized.replace(regex, spoken);
   }
@@ -87,7 +96,7 @@ function sanitizeTextForTTS(text) {
   // 3. Strip HTML Tags
   sanitized = sanitized.replace(/<[^>]+>/g, '');
   
-  // 4. Clean up any remaining isolated dollar signs (e.g. inline variables like $c$)
+  // 4. Clean up any remaining isolated dollar signs
   sanitized = sanitized.replace(/\$/g, '');
 
   return sanitized.trim();
@@ -97,7 +106,6 @@ async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');
   if (filename === 'index') return; 
 
-  const content = await fs.readFile(filePath, 'utf-8');
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
   const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
 
@@ -106,14 +114,21 @@ async function processFile(filePath) {
     const mp3Stat = await fs.stat(finalAudioPath);
     const syncMapStat = await fs.stat(syncMapPath);
     
-    // Check modification dates to skip unmodified files
-    if (mp3Stat.mtime > mdStat.mtime && syncMapStat.mtime > mdStat.mtime) {
+    // Check Git commit time to bypass the GitHub Actions bulk-download timestamp issue.
+    // Fallback to local file system time if the file isn't tracked in git yet.
+    const mdTime = getGitCommitTimeMs(filePath) ?? mdStat.mtimeMs;
+    const mp3Time = getGitCommitTimeMs(finalAudioPath) ?? mp3Stat.mtimeMs;
+    const syncMapTime = getGitCommitTimeMs(syncMapPath) ?? syncMapStat.mtimeMs;
+    
+    if (mp3Time >= mdTime && syncMapTime >= mdTime) {
       console.log(`Skipping ${filename} (Audio and sync map are up to date)`);
       return;
     }
-  } catch (err) {}
+  } catch (err) {
+    // If the mp3 or sync map doesn't exist at all, fs.stat throws, and we proceed to generate.
+  }
 
-  // Strips YAML frontmatter
+  const content = await fs.readFile(filePath, 'utf-8');
   const bodyContent = content.replace(/^[\s\uFEFF]*---\r?\n[\s\S]*?\r?\n---/, '');
 
   const parsedAST = remark().parse(bodyContent);
@@ -136,7 +151,6 @@ async function processFile(filePath) {
 
   if (contentNodes.length === 0) return;
 
-  // Inject a hard ellipsis to force Kokoro to take a breath between paragraphs
   const fullPageText = contentNodes.map(n => n.ttsText).join(' ... ');
 
   console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
