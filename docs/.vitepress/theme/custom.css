@@ -326,3 +326,24 @@ html.dark body {
   position: relative;
   z-index: 1;
 }
+
+/* ---------------------------------------------------
+   Audio Sync Highlighting
+--------------------------------------------------- */
+.sync-text {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Light Mode Default: Frosted white pill */
+.sync-text.active {
+  background-color: rgba(255, 255, 255, 0.85); 
+  color: var(--vp-c-brand-1); 
+}
+
+/* Dark Mode Overrides: Frosted black pill */
+html.dark .sync-text.active {
+  background-color: rgba(0, 0, 0, 0.7); 
+  color: var(--vp-c-brand-3); 
+}
