@@ -33,7 +33,7 @@ For nearly a century, legacy physics has been trapped in a mathematical detour. 
 
 Because the vocabulary of complex dynamic networks—recursive feedback, structural capacity, and continuous state actualization—was not yet integrated into fundamental physics, they traded the thermodynamic territory for a clean geometric abstraction.
 
-But math lacks mass, and abstractions manifest without friction. When you apply frictionless mathematics to a physical universe, you generate paradoxes. Without a way to account for the physical dissipation of localized actualization, institutions had to invent invisible ghosts—stretching space, stretchable time, and dark matter—just to balance their equations. They became trapped in "substance ontology," assuming the universe is a passive geometric container (space) filled with distinct static objects (matter).
+But math lacks mass, and abstractions manifest without friction. When you apply frictionless mathematics to a physical universe, you generate paradoxes. Without a way to account for the physical dissipation of localized actualization, institutions had to invent invisible ghosts—stretching space, stretchable time, dark matter, and a bloated zoo of structureless point-particles—just to balance their equations. They became trapped in "substance ontology," assuming the universe is a passive geometric container (space) filled with distinct static objects (matter).
 
 This site is an audit of that error. 
 
