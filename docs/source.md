@@ -57,6 +57,10 @@ When the localized heat exceeds the structural threshold of a tension knot (mass
 * **The Indeterministic Cosmos:** Popper argued against both scientific and historical determinism, establishing that the future is genuinely unwritten. Even with complete knowledge of a local present, the universe's continuous actualization prevents full mechanistic pre-calculation.
 * **Bridge to Old Constructs:** Traditional mechanics treats the future as a pre-computed tape waiting to be played; Popper reframes it as an open, creative horizon.
 
+### Ilya Prigogine: Dissipative Structures & Non-Equilibrium
+* **The Thermodynamic Persistence of Form:** Classical thermodynamics focused almost exclusively on closed systems decaying into equilibrium. Prigogine (Nobel Prize in Chemistry, 1977) proved that in open systems far from equilibrium, the continuous flow of energy actually creates and maintains highly ordered, complex forms. He called these "dissipative structures." A tornado, a chemical clock, or a biological cell is not a static object; it is a form that only exists because it is actively consuming and routing thermodynamic energy.
+* **Bridge to Old Constructs:** Legacy physics treats fundamental particles as static, isolated objects. In the Planck Field, every "particle" or "molecule" is the ultimate subatomic dissipative structure. They only maintain their physical boundary through the continuous, unbroken exertion of the grid's actualization capacity. Prigogine proves that structure and thermodynamics are not separate fields—the structure *is* the thermodynamic routing.
+
 ---
 
 ## III. Cybernetics, Embodiment, and Information

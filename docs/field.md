@@ -63,7 +63,7 @@ Every level of complexity is a nested cascade of relational actualizations. Beca
 
 Matter is not a solid object inserted into the field; matter is what happens when the field knots itself up. Mass is simply a localized zone of extreme relational tension. 
 
-When a system attempts to maintain its boundary against the redistributing pressure of the wider field, it requires thermodynamic effort. A rock does this passively, relying on deep, stable electromagnetic locks. But a biological system must do it actively. It must pump energy against the gradient just to keep its physical boundary intact. To stay localized, you must cohere. 
+In the language of Nobel laureate Ilya Prigogine, these localized boundaries are **dissipative structures**. When a system attempts to maintain its boundary against the redistributing pressure of the wider field, it requires continuous thermodynamic effort. A rock does this passively, relying on deep, stable electromagnetic locks. But a biological system must do it actively. It must continuously pump energy against the entropic gradient just to keep its physical boundary intact. To stay localized, you must cohere. 
 
 Legacy physics obscures this friction by relying on pure, abstract mathematics. Abstractions like the Wiener process model random motion as frictionless, infinitely jagged paths. But math lacks mass and thermodynamic dissipation. To accurately map these processes, we must subject these mathematical abstractions to a process of **Gradient Descent** into the natural world. 
 

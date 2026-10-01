@@ -1,12 +1,6 @@
 ---
 title: The Interface
 audio: /audio/interface.mp3
-prev:
-  text: 'Planck Field'
-  link: '/field'
-next:
-  text: 'Source'
-  link: '/source'
 ---
 <ClientOnly>
   <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
@@ -117,8 +111,6 @@ If reality were a pre-recorded block universe or a static script, a feedback loo
 
 The necessity of constant upkeep—such as an insect meticulously cleaning its antennal pores to preserve its chemical sensitivity, or a human maintaining cellular homeostasis—reveals that a local interface is always tending toward decoherence against environmental noise.
 
-If physical upkeep ceases, the structural clarity of the interface collapses back into the static. 
+The Local Interface is the ultimate macroscopic dissipative structure. If physical upkeep ceases, the structural clarity of the interface collapses back into the static. 
 
-In a process ontology, this metabolic maintenance is the active, continuous expenditure of relational effort required to keep a localized window open to the broader stream of becoming. A static, block universe would require no maintenance; a pre-recorded world requires only a passive recording medium. 
-
-The absolute requirement of thermodynamic upkeep proves that perception is not a playback. The metabolic effort of your biology is the friction of holding open a local window into the unwritten future—living proof that we are active participants in a continuously actualizing universe.
+In a process ontology, this metabolic maintenance is the active, continuous expenditure of relational effort required to keep a localized window open to the broader stream of becoming. A static, block universe would require no maintenance; a pre-recorded world requires only a passive recording medium. The absolute requirement of thermodynamic upkeep proves that perception is not a playback. The metabolic effort of your biology is the literal friction of holding open a local window into the unwritten future.
