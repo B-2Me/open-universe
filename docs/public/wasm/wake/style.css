@@ -19,8 +19,10 @@ body {
   background-color: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: var(--font-sans);
-  /* Preserved: iOS Safe Area support */
+  /* iOS Safe Area & Pull-to-Refresh Prevention */
   padding-bottom: env(safe-area-inset-bottom);
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 #app {
@@ -57,10 +59,10 @@ body {
   flex: 1; overflow: hidden; position: relative;
 }
 
+/* Performance Optimized: Heavy per-frame CSS filters removed */
 #canvas_left, #canvas_right {
   position: absolute; top: 0; height: 100%; width: 200%;
   image-rendering: pixelated; pointer-events: none;
-  filter: contrast(1.2) brightness(1.1) drop-shadow(0 0 8px rgba(0, 255, 255, 0.15));
 }
 #canvas_left { left: 0; }
 #canvas_right { right: 0; }
@@ -120,14 +122,11 @@ body {
 .deck-row { display: flex; gap: 8px; width: 100%; align-items: center; }
 
 button {
-  /* Kills iOS 300ms double-tap delay */
   touch-action: manipulation; 
-  /* Kills double-click text highlighting */
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Redundant protection for our custom classes */
 .group-btn, .segment-btn, .action-btn, .palette-btn {
   user-select: none;
   -webkit-user-select: none;

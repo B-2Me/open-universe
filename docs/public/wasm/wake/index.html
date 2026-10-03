@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Planck Field Engine</title>
-    <link rel="stylesheet" href="style.css?v=16">
+    <title>Planck Field Engine (Bridge Simulator)</title>
+    <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
     
@@ -12,10 +12,11 @@
         <div id="left-pane">
             
             <div style="padding: 12px 16px 0 16px;">
-                <div class="button-group" id="biome_selector" style="margin-bottom: 8px;">
-                    <button class="group-btn active" data-val="0">Vacuum</button>
-                    <button class="group-btn" data-val="1">Furnace</button>
-                    <button class="group-btn" data-val="2">Crust</button>
+                <div class="button-group" id="scenario_selector" style="margin-bottom: 8px;">
+                    <button class="group-btn active" data-val="vacuum">Vacuum</button>
+                    <button class="group-btn" data-val="atmosphere">Atmosphere</button>
+                    <button class="group-btn" data-val="nozzle">Engine Bell</button>
+                    <button class="group-btn" data-val="ocean">Ocean</button>
                 </div>
                 
                 <div class="deck-row" style="margin-bottom: -4px;">
@@ -43,12 +44,17 @@
                     <div id="context_place" class="floating-popup">
                         <div class="palette-grid" id="brush_selector"></div>
                         
-                        <!-- Injection Mode Toggles -->
+                        <!-- Injection Mode & Impedance Toggles -->
                         <div class="button-group" id="injection_mode_selector" style="margin-top: 12px; margin-bottom: 8px;">
                             <button class="group-btn active" data-val="clone" style="font-size: 11px;">🧱 Clone</button>
                             <button class="group-btn" data-val="quanta" style="font-size: 11px;">🟢 Mass</button>
                             <button class="group-btn" data-val="heat" style="font-size: 11px;">♨️ Heat</button>
                             <button class="group-btn" data-val="spin" style="font-size: 11px;">🧲 Spin</button>
+                        </div>
+                        
+                        <div class="button-group" id="impedance_mode_selector" style="margin-bottom: 8px;">
+                            <button class="group-btn active" data-val="1" style="font-size: 11px;">🌊 Refractive (Impedance)</button>
+                            <button class="group-btn" data-val="0" style="font-size: 11px;">⚡ Raw Override</button>
                         </div>
                         
                         <!-- Palette Manager Actions -->
@@ -79,7 +85,14 @@
                     <button id="btn_soup" class="action-btn primary" style="flex: 2;">⟳ Reset</button>
                     <button id="btn_play" class="action-btn" style="flex: 1.5;">⏯ Play</button>
                     <button id="btn_step" class="action-btn" style="flex: 1;">⏭ Step</button>
+                    <button id="btn_undo" class="action-btn" style="flex: 1;" title="Undo (Ctrl+Z)">↩ Undo</button>
                     <button id="btn_clear" class="action-btn danger" style="flex: 1;">❌ Clear</button>
+                </div>
+                
+                <div class="deck-row" style="margin-top: 8px; gap: 6px;">
+                    <button id="btn_export_vtk" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📥 VTK</button>
+                    <button id="btn_export_png" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📷 PNG</button>
+                    <button id="btn_share" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📤 Share</button>
                 </div>
                 
                 <div class="deck-row" style="margin-top: 8px; justify-content: center;">
@@ -116,23 +129,33 @@
                     <span class="telemetry-label">Phase Alignment:</span>
                     <span class="telemetry-value" id="diag_phase">0.0%</span>
                 </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">Actualization Yield (Y_act):</span>
+                    <span class="telemetry-value" id="diag_yield">0</span>
+                </div>
             </div>
             
-            <div class="panel-section" style="opacity: 0.6;">
+            <div class="panel-section" style="opacity: 0.9;">
                 <h3>Active Constraints</h3>
-                <div class="telemetry-row">
-                    <span class="telemetry-label">Dissipation Rate:</span>
-                    <span class="telemetry-value" id="math_dissipation">15</span>
+                <div class="telemetry-row" style="flex-direction: column; gap: 4px; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="telemetry-label">Dissipation Rate:</span>
+                        <span class="telemetry-value" id="math_dissipation">15</span>
+                    </div>
+                    <input type="range" id="slider_dissipation" min="1" max="50" value="15">
                 </div>
-                <div class="telemetry-row">
-                    <span class="telemetry-label">Thermal Saturation:</span>
-                    <span class="telemetry-value" id="math_thermal_limit">1200</span>
+                <div class="telemetry-row" style="flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="telemetry-label">Thermal Saturation:</span>
+                        <span class="telemetry-value" id="math_thermal_limit">1200</span>
+                    </div>
+                    <input type="range" id="slider_thermal" min="100" max="100000" step="100" value="1200">
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="planck.js?v=16" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=16"></script>
+    <script src="planck.js?v=18" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=18"></script>
 </body>
 </html>

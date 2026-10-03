@@ -11,14 +11,40 @@ let isSpaceDown = false;
 let scrollTimeout = null;
 
 let leftLayer = 0;  // 0 = Macro
-let rightLayer = 1; // 1 = Metabolic, 2 = Phase
-const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase"];
+let rightLayer = 1; // 1 = Metabolic, 2 = Phase, 3 = Entropic
+const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropic"];
 
 // --- DYNAMIC PALETTE MANAGER ---
 const defaultPalette = {
     "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
-    "B": { icon: "∴", label: "Triangle", data: [[(20<<24)|100, 0, (20<<24)|100], [0, 0, 0], [0, (20<<24)|100, 0]] },
-    "C": { icon: "〰", label: "Wall", data: [[(255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500]] }
+    "B": { icon: "〰", label: "Wall", data: [
+        [(255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500]
+    ]},
+    "C": { icon: "🕳", label: "Erase", data: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
+    ]},
+    "D": { icon: "🔥", label: "Igniter", data: [
+        [(255<<24)|(4<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(6<<16)|60000],
+        [(255<<24)|(3<<16)|60000, (255<<24)|(0<<16)|60000, (255<<24)|(7<<16)|60000],
+        [(255<<24)|(2<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(8<<16)|60000]
+    ]},
+    "E": { icon: "🧊", label: "Cryo", data: [
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1]
+    ]},
+    "F": { icon: "🛡️", label: "Baffle", data: [
+        [(255<<24)|(1<<16)|500, 0, (255<<24)|(1<<16)|500],
+        [0, (255<<24)|(1<<16)|500, 0],
+        [(255<<24)|(1<<16)|500, 0, (255<<24)|(1<<16)|500]
+    ]},
+    "G": { icon: "⚙️", label: "Rotor", data: [
+        [0, (255<<24)|(1<<16)|500, (255<<24)|(2<<16)|500],
+        [(255<<24)|(8<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(4<<16)|500],
+        [(255<<24)|(7<<16)|500, (255<<24)|(6<<16)|500, 0]
+    ]}
 };
 
 let userPalette = JSON.parse(localStorage.getItem('planck_palette')) || {};
@@ -102,41 +128,93 @@ function startEngine(Module) {
     document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
 
     Module._init_grid();
-    const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    const pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-    const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+    
+    let buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+    let pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
+    let imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
 
     document.getElementById('btn_toggle_left').addEventListener('click', (e) => {
-        leftLayer = (leftLayer + 1) % 3;
+        leftLayer = (leftLayer + 1) % 4;
         e.target.innerText = LAYER_LABELS[leftLayer];
+        forceRedraw = true;
     });
     
     document.getElementById('btn_toggle_right').addEventListener('click', (e) => {
-        rightLayer = (rightLayer + 1) % 3;
+        rightLayer = (rightLayer + 1) % 4;
         e.target.innerText = LAYER_LABELS[rightLayer];
+        forceRedraw = true;
     });
 
-    let frameCount = 0;
-
-    function renderFrame() {
-        if (isPlaying) {
-            Module._tick();
-            frameCount++;
-            if (frameCount % 10 === 0) {
-                document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
-                document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
-                document.getElementById('diag_phase').innerText = Module._get_phase_alignment().toFixed(1) + "%";
+    // Screen Wake Lock
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                const wakeLock = await navigator.wakeLock.request('screen');
+                document.addEventListener('visibilitychange', async () => {
+                    if (wakeLock !== null && document.visibilityState === 'visible') {
+                        await navigator.wakeLock.request('screen');
+                    }
+                });
+            } catch (err) {
+                console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
             }
         }
-        
-        Module._render_frame(leftLayer);
-        ctxLeft.putImageData(imgData, 0, 0);
+    }
+    requestWakeLock();
 
-        Module._render_frame(rightLayer);
-        ctxRight.putImageData(imgData, 0, 0);
+    // Fixed Timestep Accumulator Loop
+    const TARGET_TPS = 60;
+    const FRAME_TIME = 1000 / TARGET_TPS;
+    let accumulator = 0;
+    let lastTimestamp = performance.now();
+    let frameCount = 0;
+    let lastRenderedLeftLayer = -1;
+    let lastRenderedRightLayer = -1;
+    let forceRedraw = true;
+
+    function renderFrame(timestamp) {
+        const delta = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+
+        let ticked = false;
+        if (isPlaying) {
+            accumulator += delta;
+            let ticksThisFrame = 0;
+            while (accumulator >= FRAME_TIME && ticksThisFrame < 5) {
+                Module._tick();
+                accumulator -= FRAME_TIME;
+                ticked = true;
+                ticksThisFrame++;
+                frameCount++;
+                if (frameCount % 10 === 0) {
+                    document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
+                    document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
+                    
+                    const phaseEl = document.getElementById('diag_phase');
+                    if (phaseEl) phaseEl.innerText = Module._get_phase_alignment().toFixed(1) + "%";
+                    
+                    const yieldEl = document.getElementById('diag_yield');
+                    if (yieldEl) yieldEl.innerText = typeof Module._get_yield === 'function' ? Module._get_yield().toLocaleString() : '0';
+                }
+            }
+        } else {
+            accumulator = 0;
+        }
+        
+        if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
+            Module._render_frame(leftLayer);
+            ctxLeft.putImageData(imgData, 0, 0);
+
+            Module._render_frame(rightLayer);
+            ctxRight.putImageData(imgData, 0, 0);
+
+            lastRenderedLeftLayer = leftLayer;
+            lastRenderedRightLayer = rightLayer;
+            forceRedraw = false;
+        }
         
         animationId = requestAnimationFrame(renderFrame);
     }
@@ -194,8 +272,10 @@ function startEngine(Module) {
     }
 
     function hidePopups() {
-        document.getElementById('context_place').classList.remove('show');
-        document.getElementById('context_sample').classList.remove('show');
+        const p1 = document.getElementById('context_place');
+        const p2 = document.getElementById('context_sample');
+        if (p1) p1.classList.remove('show');
+        if (p2) p2.classList.remove('show');
     }
 
     renderPaletteUI();
@@ -204,12 +284,20 @@ function startEngine(Module) {
         currentInjectionMode = val;
     });
 
+    setupButtonGroup('impedance_mode_selector', val => {
+        if (typeof Module._set_impedance_mode === 'function') {
+            Module._set_impedance_mode(parseInt(val, 10));
+        }
+    });
+
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
         hidePopups();
-        if (mode === 'place') document.getElementById('context_place').classList.add('show');
-        if (mode === 'sample') document.getElementById('context_sample').classList.add('show');
+        const p1 = document.getElementById('context_place');
+        const p2 = document.getElementById('context_sample');
+        if (mode === 'place' && p1) p1.classList.add('show');
+        if (mode === 'sample' && p2) p2.classList.add('show');
         canvasContainer.className = (mode === 'move' || isSpaceDown) ? 'mode-move' : '';
     }
     
@@ -217,18 +305,61 @@ function startEngine(Module) {
         btn.addEventListener('click', (e) => {
             const mode = e.currentTarget.dataset.mode;
             if (currentMode === mode) {
-                if (mode === 'place') document.getElementById('context_place').classList.toggle('show');
-                if (mode === 'sample') document.getElementById('context_sample').classList.toggle('show');
+                const p1 = document.getElementById('context_place');
+                const p2 = document.getElementById('context_sample');
+                if (mode === 'place' && p1) p1.classList.toggle('show');
+                if (mode === 'sample' && p2) p2.classList.toggle('show');
             } else setMode(mode);
         });
     });
 
+    setupButtonGroup('scenario_selector', val => {
+        if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+        
+        if (val === "vacuum") {
+            Module._clear_grid();
+            Module._set_dissipation(15);
+            Module._set_thermal_limit(50000);
+            
+            const md = document.getElementById('math_dissipation');
+            const mt = document.getElementById('math_thermal_limit');
+            const sd = document.getElementById('slider_dissipation');
+            const st = document.getElementById('slider_thermal');
+            
+            if (md) md.innerText = "15";
+            if (mt) mt.innerText = "50000";
+            if (sd) sd.value = 15;
+            if (st) st.value = 50000;
+        } else if (val === "atmosphere") {
+            // Simplified scenario emulation handling
+            const biomes = { "atmosphere": [2, 300], "nozzle": [45, 600], "ocean": [5, 100] };
+            if (biomes[val]) {
+                Module._set_dissipation(biomes[val][0]);
+                Module._set_thermal_limit(biomes[val][1]);
+                
+                const md = document.getElementById('math_dissipation');
+                const mt = document.getElementById('math_thermal_limit');
+                if (md) md.innerText = biomes[val][0];
+                if (mt) mt.innerText = biomes[val][1];
+            }
+        } else {
+            // Check for previous loadScenario mapping
+            if (typeof loadScenario === 'function') {
+                loadScenario(val, Module);
+            }
+        }
+        forceRedraw = true;
+    });
+    
+    // Fallback UI selector
     setupButtonGroup('biome_selector', val => {
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
         Module._set_dissipation(biomes[val][0]);
         Module._set_thermal_limit(biomes[val][1]);
-        document.getElementById('math_dissipation').innerText = biomes[val][0];
-        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
+        const md = document.getElementById('math_dissipation');
+        const mt = document.getElementById('math_thermal_limit');
+        if (md) md.innerText = biomes[val][0];
+        if (mt) mt.innerText = biomes[val][1];
     });
     
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
@@ -236,12 +367,125 @@ function startEngine(Module) {
     bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_reset', resetView);
-    bindBtn('btn_play', () => isPlaying = !isPlaying);
-    bindBtn('btn_step', () => { isPlaying = false; Module._tick(); });
-    bindBtn('btn_clear', () => Module._clear_grid());
-    bindBtn('btn_soup', () => Module._randomize_grid());
     
-    // Palette Management Buttons
+    bindBtn('btn_play', () => {
+        isPlaying = !isPlaying;
+        const btn = document.getElementById('btn_play');
+        if (btn) btn.innerText = isPlaying ? "⏯ Play" : "▶ Resume";
+    });
+
+    bindBtn('btn_step', () => { 
+        isPlaying = false; 
+        Module._tick(); 
+        const btn = document.getElementById('btn_play');
+        if (btn) btn.innerText = "▶ Resume"; 
+        forceRedraw = true; 
+    });
+    
+    bindBtn('btn_clear', () => {
+        if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+        Module._clear_grid();
+        forceRedraw = true;
+    });
+    
+    bindBtn('btn_soup', () => {
+        if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+        Module._randomize_grid();
+        forceRedraw = true;
+    });
+
+    bindBtn('btn_undo', () => {
+        if (typeof Module._restore_grid_snapshot === 'function') {
+            Module._restore_grid_snapshot();
+            forceRedraw = true;
+        }
+    });
+    
+    bindBtn('btn_export_vtk', () => {
+        const wasPlaying = isPlaying;
+        isPlaying = false; 
+        if (typeof Module._generate_vtk === 'function') {
+            const vtkPtr = Module._generate_vtk();
+            
+            if (vtkPtr === 0) {
+                alert("Error: VTK buffer generation failed due to a memory allocation limit.");
+                if (wasPlaying) isPlaying = true;
+                return;
+            }
+
+            const vtkString = UTF8ToString(vtkPtr);
+            const blob = new Blob([vtkString], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `planck_frame_${Date.now()}.vtk`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            if (typeof Module._free_vtk === 'function') {
+                Module._free_vtk();
+            }
+
+            buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+            pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
+            imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+        } else {
+            alert("VTK Export requires the updated C-engine functions to be compiled.");
+        }
+        if (wasPlaying) isPlaying = true;
+    });
+
+    bindBtn('btn_export_png', () => {
+        canvasLeft.toBlob(blob => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `planck_field_${Date.now()}.png`;
+            link.click();
+        }, 'image/png');
+    });
+
+    bindBtn('btn_share', async () => {
+        canvasLeft.toBlob(async blob => {
+            const file = new File([blob], `planck_field_${Date.now()}.png`, { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Planck Field Simulation',
+                        text: 'Check out this thermodynamic simulation state from Langevin\'s Wake.',
+                        files: [file]
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.error(err);
+                }
+            } else {
+                alert('Web Share API with files is not supported on this browser/device.');
+            }
+        }, 'image/png');
+    });
+
+    const sliderDissipation = document.getElementById('slider_dissipation');
+    const sliderThermal = document.getElementById('slider_thermal');
+
+    if (sliderDissipation) {
+        sliderDissipation.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            Module._set_dissipation(val);
+            const md = document.getElementById('math_dissipation');
+            if (md) md.innerText = val;
+            forceRedraw = true;
+        });
+    }
+
+    if (sliderThermal) {
+        sliderThermal.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            Module._set_thermal_limit(val);
+            const mt = document.getElementById('math_thermal_limit');
+            if (mt) mt.innerText = val;
+            forceRedraw = true;
+        });
+    }
+
     bindBtn('btn_save_scratch', () => {
         if (!customStamp || customStamp.length === 0) return;
         const customCount = Object.keys(userPalette).length + 1;
@@ -251,7 +495,8 @@ function startEngine(Module) {
         localStorage.setItem('planck_palette', JSON.stringify(userPalette));
         currentBrush = newId; 
         renderPaletteUI();
-        document.getElementById('btn_save_scratch').disabled = true;
+        const btn = document.getElementById('btn_save_scratch');
+        if (btn) btn.disabled = true;
     });
 
     bindBtn('btn_export_palette', () => {
@@ -263,21 +508,24 @@ function startEngine(Module) {
         dlAnchorElem.click();
     });
 
-    document.getElementById('import_palette_input').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                userPalette = { ...userPalette, ...imported };
-                fullPalette = { ...defaultPalette, ...userPalette };
-                localStorage.setItem('planck_palette', JSON.stringify(userPalette));
-                renderPaletteUI();
-            } catch (err) { alert("Invalid palette file."); }
-        };
-        reader.readAsText(file);
-    });
+    const importInput = document.getElementById('import_palette_input');
+    if (importInput) {
+        importInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    userPalette = { ...userPalette, ...imported };
+                    fullPalette = { ...defaultPalette, ...userPalette };
+                    localStorage.setItem('planck_palette', JSON.stringify(userPalette));
+                    renderPaletteUI();
+                } catch (err) { alert("Invalid palette file."); }
+            };
+            reader.readAsText(file);
+        });
+    }
 
     bindBtn('btn_reset_palette', () => {
         if (confirm("Delete all custom stamps? This cannot be undone.")) {
@@ -290,9 +538,14 @@ function startEngine(Module) {
     });
     
     bindBtn('btn_copy_stamp', () => navigator.clipboard.writeText(JSON.stringify(customStamp)));
-    document.getElementById('slider_radius').addEventListener('input', e => {
-        document.getElementById('val_radius').innerText = e.target.value;
-    });
+    
+    const sliderRad = document.getElementById('slider_radius');
+    if (sliderRad) {
+        sliderRad.addEventListener('input', e => {
+            const vr = document.getElementById('val_radius');
+            if (vr) vr.innerText = e.target.value;
+        });
+    }
 
     function sampleRegion(centerX, centerY, radius) {
         let newStamp = [];
@@ -304,13 +557,15 @@ function startEngine(Module) {
             newStamp.push(row);
         }
         customStamp = newStamp;
-        document.getElementById('scratch_label').innerText = `[${radius*2+1}px]`;
+        const sl = document.getElementById('scratch_label');
+        if (sl) sl.innerText = `[${radius*2+1}px]`;
         
         const saveBtn = document.getElementById('btn_save_scratch');
         if (saveBtn) saveBtn.disabled = false;
         
         document.querySelectorAll('#brush_selector .palette-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('opt_custom').classList.add('active');
+        const opt = document.getElementById('opt_custom');
+        if (opt) opt.classList.add('active');
         currentBrush = 'custom';
         
         setMode('place');
@@ -318,34 +573,42 @@ function startEngine(Module) {
     }
 
     function injectPattern(centerX, centerY, pattern) {
-        if (!pattern.length) return;
+        if (!pattern || !pattern.length) return;
+        
+        // Haptic feedback
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+
         const startX = centerX - Math.floor(pattern[0].length / 2);
         const startY = centerY - Math.floor(pattern.length / 2);
         
         for (let y = 0; y < pattern.length; y++) {
             for (let x = 0; x < pattern[0].length; x++) {
                 const val = pattern[y][x];
-                
-                // Extract Quanta safely
                 const quanta = (val >>> 24) & 0xFF;
                 
-                if (val !== 0 && quanta > 0) {
-                    if (currentInjectionMode === 'clone') {
-                        Module._set_node_state(startX + x, startY + y, val);
-                    } else if (currentInjectionMode === 'quanta') {
-                        Module._add_quanta(startX + x, startY + y, quanta);
+                // Allow direct cloning of 0 (Erase), or targeted channel injections
+                if (currentInjectionMode === 'clone') {
+                    Module._set_node_state(startX + x, startY + y, val);
+                } else if (val !== 0 && quanta > 0) {
+                    if (currentInjectionMode === 'quanta') {
+                        if (typeof Module._add_quanta_impedance === 'function') {
+                            Module._add_quanta(startX + x, startY + y, quanta); 
+                        } else {
+                            Module._add_quanta(startX + x, startY + y, quanta);
+                        }
                     } else if (currentInjectionMode === 'heat') {
-                        // Extract original heat from the stamp to use as injection magnitude
                         const heat = val & 0xFFFF;
                         Module._add_heat(startX + x, startY + y, heat > 0 ? heat : 500);
                     } else if (currentInjectionMode === 'spin') {
-                        // Force a spin (extract from stamp, or default to 1)
                         const spin = (val >>> 16) & 0xFF;
                         Module._set_spin(startX + x, startY + y, spin > 0 ? spin : 1);
                     }
                 }
             }
         }
+        forceRedraw = true;
     }
 
     window.addEventListener('keydown', (e) => {
@@ -353,10 +616,29 @@ function startEngine(Module) {
             e.preventDefault(); 
             if (!isSpaceDown) { isSpaceDown = true; canvasContainer.className = 'mode-move'; }
         }
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-        if (e.code === 'KeyP') isPlaying = !isPlaying;
-        if (e.code === 'KeyR') Module._randomize_grid();
-        if (e.code === 'KeyC') Module._clear_grid();
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+            if (e.code === 'KeyZ' && typeof Module._restore_grid_snapshot === 'function') {
+                e.preventDefault();
+                Module._restore_grid_snapshot();
+                forceRedraw = true;
+            }
+            return;
+        }
+        if (e.code === 'KeyP') {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('btn_play');
+            if (btn) btn.innerText = isPlaying ? "⏯ Play" : "▶ Resume";
+        }
+        if (e.code === 'KeyR') {
+            if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+            Module._randomize_grid();
+            forceRedraw = true;
+        }
+        if (e.code === 'KeyC') {
+            if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+            Module._clear_grid();
+            forceRedraw = true;
+        }
     });
     
     window.addEventListener('keyup', (e) => {
@@ -374,17 +656,26 @@ function startEngine(Module) {
         scrollTimeout = setTimeout(constrainView, 150);
     }, { passive: false });
 
-    canvasContainer.addEventListener('dblclick', resetView);
+    canvasContainer.addEventListener('dblclick', () => {
+        if (currentMode === 'move' || isSpaceDown) resetView();
+    });
 
     let isDragging = false;
     let lastX = 0, lastY = 0;
     let initialPinchDist = 0, initialPinchZoom = 1;
     let lastTapTime = 0;
 
+    // Tiling state trackers
+    let lastInjectGridX = null;
+    let lastInjectGridY = null;
+    let dragDirX = 0;
+    let dragDirY = 0;
+
     function getTouchDist(touches) { return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); }
 
     function processInput(clientX, clientY, isClick) {
         const activeAction = isSpaceDown ? 'move' : currentMode;
+        
         if (activeAction === 'move') {
             if (isClick) { lastX = clientX; lastY = clientY; return; }
             panX += (clientX - lastX) / currentZoom;
@@ -395,54 +686,129 @@ function startEngine(Module) {
         }
 
         const coords = getGridCoords(clientX, clientY);
+
         if (activeAction === 'sample' && isClick) {
             const radius = parseInt(document.getElementById('slider_radius').value, 10);
             sampleRegion(coords.x, coords.y, radius);
-        } else if (activeAction === 'place' && (isClick || currentBrush === 'A')) {
+        } 
+        else if (activeAction === 'place') {
             const patternData = currentBrush === 'custom' ? customStamp : fullPalette[currentBrush].data;
-            injectPattern(coords.x, coords.y, patternData);
+            const stampW = patternData[0].length;
+            const stampH = patternData.length;
+            
+            if (isClick) {
+                if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+                
+                injectPattern(coords.x, coords.y, patternData);
+                lastInjectGridX = coords.x;
+                lastInjectGridY = coords.y;
+                dragDirX = 0;
+                dragDirY = 0;
+            } 
+            else if (lastInjectGridX !== null && lastInjectGridY !== null) {
+                const dx = coords.x - lastInjectGridX;
+                const dy = coords.y - lastInjectGridY;
+                
+                const currentDirX = Math.sign(dx);
+                const currentDirY = Math.sign(dy);
+
+                let directionChanged = false;
+                if ((currentDirX !== 0 && dragDirX !== 0 && currentDirX !== dragDirX) || 
+                    (currentDirY !== 0 && dragDirY !== 0 && currentDirY !== dragDirY)) {
+                    directionChanged = true;
+                }
+
+                if (directionChanged) {
+                    injectPattern(coords.x, coords.y, patternData);
+                    lastInjectGridX = coords.x;
+                    lastInjectGridY = coords.y;
+                    dragDirX = currentDirX;
+                    dragDirY = currentDirY;
+                } else {
+                    if (Math.abs(dx) >= stampW || Math.abs(dy) >= stampH) {
+                        
+                        let tileX = lastInjectGridX;
+                        let tileY = lastInjectGridY;
+                        
+                        if (Math.abs(dx) >= stampW) tileX += currentDirX * stampW * Math.floor(Math.abs(dx) / stampW);
+                        if (Math.abs(dy) >= stampH) tileY += currentDirY * stampH * Math.floor(Math.abs(dy) / stampH);
+                        
+                        injectPattern(tileX, tileY, patternData);
+                        
+                        lastInjectGridX = tileX;
+                        lastInjectGridY = tileY;
+                        
+                        if (currentDirX !== 0) dragDirX = currentDirX;
+                        if (currentDirY !== 0) dragDirY = currentDirY;
+                    }
+                }
+            }
         }
     }
 
-    canvasContainer.addEventListener('mousedown', (e) => { hidePopups(); isDragging = true; tWrapper.style.transition = 'none'; processInput(e.clientX, e.clientY, true); });
-    canvasContainer.addEventListener('mousemove', (e) => { if (isDragging) processInput(e.clientX, e.clientY, false); });
-    window.addEventListener('mouseup', () => { if(isDragging) { isDragging = false; constrainView(); } });
+    canvasContainer.addEventListener('mousedown', (e) => { 
+        hidePopups(); 
+        isDragging = true; 
+        tWrapper.style.transition = 'none'; 
+        processInput(e.clientX, e.clientY, true); 
+    });
+    canvasContainer.addEventListener('mousemove', (e) => { 
+        if (isDragging) processInput(e.clientX, e.clientY, false); 
+    });
+    window.addEventListener('mouseup', () => { 
+        if(isDragging) { isDragging = false; constrainView(); } 
+    });
 
     canvasContainer.addEventListener('touchstart', (e) => {
-        hidePopups(); e.preventDefault(); isDragging = true; tWrapper.style.transition = 'none';
-        if (e.touches.length === 1) {
-            const now = Date.now();
-            if (now - lastTapTime < 300) resetView();
-            lastTapTime = now;
-            processInput(e.touches[0].clientX, e.touches[0].clientY, true);
-        } else if (e.touches.length === 2) {
+        hidePopups(); 
+        e.preventDefault(); 
+        isDragging = true; 
+        tWrapper.style.transition = 'none';
+        
+        if (e.touches.length === 2) {
             initialPinchDist = getTouchDist(e.touches);
             initialPinchZoom = currentZoom;
             lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             lastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        } else if (e.touches.length === 1) {
+            const now = Date.now();
+            if (now - lastTapTime < 300 && (currentMode === 'move' || isSpaceDown)) resetView();
+            lastTapTime = now;
+            processInput(e.touches[0].clientX, e.touches[0].clientY, true);
         }
     }, { passive: false });
 
     canvasContainer.addEventListener('touchmove', (e) => {
-        e.preventDefault(); if (!isDragging) return;
+        e.preventDefault(); 
+        if (!isDragging) return;
+        
         if (e.touches.length === 1) {
             processInput(e.touches[0].clientX, e.touches[0].clientY, false);
         } else if (e.touches.length === 2) {
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
             currentZoom = initialPinchZoom * (getTouchDist(e.touches) / initialPinchDist);
-            panX += (midX - lastX) / currentZoom; panY += (midY - lastY) / currentZoom;
-            lastX = midX; lastY = midY;
+            panX += (midX - lastX) / currentZoom; 
+            panY += (midY - lastY) / currentZoom;
+            lastX = midX; 
+            lastY = midY;
             applyTransform();
         }
     }, { passive: false });
     
-    window.addEventListener('touchend', () => { if(isDragging) { isDragging = false; constrainView(); } });
+    window.addEventListener('touchend', () => { 
+        if(isDragging) { isDragging = false; constrainView(); } 
+    });
+    window.addEventListener('touchcancel', () => { 
+        if(isDragging) { isDragging = false; constrainView(); } 
+    });
 
-    Module._randomize_grid(); 
-    renderFrame();
+    Module._clear_grid(); 
+    animationId = requestAnimationFrame(renderFrame);
 }
 
-function reportHeight() { window.parent.postMessage({ type: 'RESIZE_IFRAME', height: document.documentElement.scrollHeight }, '*'); }
+function reportHeight() { 
+    window.parent.postMessage({ type: 'RESIZE_IFRAME', height: document.documentElement.scrollHeight }, '*'); 
+}
 window.addEventListener('load', reportHeight);
 new ResizeObserver(reportHeight).observe(document.body);
