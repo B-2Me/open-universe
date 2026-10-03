@@ -20,14 +20,14 @@ onUnmounted(() => {
       <div id="left-pane">
         <div style="padding: 12px 16px 0 16px;">
           <div class="button-group" id="scenario_selector" style="margin-bottom: 8px;">
-            <button class="group-btn active" data-val="vacuum">Vacuum</button>
-            <button class="group-btn" data-val="atmosphere">Atmosphere</button>
-            <button class="group-btn" data-val="nozzle">Engine Bell</button>
-            <button class="group-btn" data-val="ocean">Ocean</button>
+            <button class="group-btn active" data-val="vacuum">🌌 Vacuum</button>
+            <button class="group-btn" data-val="atmosphere">🪐 Atmosphere</button>
+            <button class="group-btn" data-val="nozzle">🚀 Engine Bell</button>
+            <button class="group-btn" data-val="ocean">🌊 Ocean</button>
           </div>
           <div class="deck-row" style="margin-bottom: -4px;">
-            <button id="btn_toggle_left" class="action-btn" style="border-radius: 8px 0 0 0; background: var(--pf-bg-input); border-right: none; font-size: 11px;">👁 Macro</button>
-            <button id="btn_toggle_right" class="action-btn" style="border-radius: 0 8px 0 0; background: var(--pf-bg-input); font-size: 11px;">🕳 Entropic</button>
+            <button id="btn_toggle_left" class="action-btn">👁 Macro</button>
+            <button id="btn_toggle_right" class="action-btn">🕳 Entropic</button>
           </div>
         </div>
 
@@ -45,25 +45,33 @@ onUnmounted(() => {
 
         <!-- Control Deck UI -->
         <div id="control-deck">
+          <!-- MOVED: Action bar directly under canvas -->
+          <div class="button-group" style="margin-bottom: 8px;">
+            <button id="btn_reset" class="group-btn">🔄 Reset</button>
+            <button id="btn_soup" class="group-btn">🎲 Random</button>
+            <button id="btn_clear" class="group-btn">🧹 Clear</button>
+            <button id="btn_undo" class="group-btn">↩️ Undo</button>
+          </div>
+
           <div class="segment-container">
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
-            <button class="segment-btn" data-mode="place">✏️ Place</button>
+            <button class="segment-btn" data-mode="place">✏️️ Place</button>
             <button class="segment-btn" data-mode="sample">🔍 Sample</button>
           </div>
 
           <!-- Place Context Menu -->
           <div id="context_place" class="context-popup">
-            <div class="deck-row">
-              <span class="sub-label">Tool Mode:</span>
+            <div class="context-group">
+              <div class="context-label">Tool Mode</div>
               <div class="button-group" id="injection_mode_selector">
-                <button class="group-btn active" data-val="clone">Clone</button>
-                <button class="group-btn" data-val="quanta">Density</button>
-                <button class="group-btn" data-val="heat">Heat</button>
-                <button class="group-btn" data-val="spin">Momentum</button>
+                <button class="group-btn active" data-val="clone">📋 Clone</button>
+                <button class="group-btn" data-val="quanta">🧱 Density</button>
+                <button class="group-btn" data-val="heat">🔥 Heat</button>
+                <button class="group-btn" data-val="spin">🔄 Spin</button>
               </div>
             </div>
-            <div class="deck-row" style="margin-top: 6px;">
-              <span class="sub-label">Palette:</span>
+            <div class="context-group" style="margin-top: 4px;">
+              <div class="context-label">Palette</div>
               <div id="brush_selector" class="palette-grid"></div>
             </div>
           </div>
@@ -76,7 +84,7 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Sliders and Core Buttons -->
+          <!-- Sliders -->
           <div class="deck-row">
             <div class="slider-group">
               <span class="sub-label">Speed: <span id="val_speed">60 TPS</span></span>
@@ -97,13 +105,6 @@ onUnmounted(() => {
               <span class="sub-label">Thermal Limit: <span id="math_thermal_limit">50000</span></span>
               <input type="range" id="slider_thermal" min="1000" max="65000" step="1000" value="50000" class="slider-fill">
             </div>
-          </div>
-
-          <div class="button-group" style="margin-top: 8px;">
-            <button id="btn_reset" class="group-btn">Reset</button>
-            <button id="btn_soup" class="group-btn">Randomize</button>
-            <button id="btn_clear" class="group-btn">Clear</button>
-            <button id="btn_undo" class="group-btn">Undo</button>
           </div>
         </div>
       </div>
