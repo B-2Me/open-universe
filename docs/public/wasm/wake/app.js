@@ -146,19 +146,19 @@ function loadScenario(type, Module) {
             let depthRatio = y / gridHeight;
             let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
-                // FIX 1: Absolute Zero Space Wall at the ceiling to block wrap-around
+                // Perfect frictionless checkerboard spin
+                let s = ((x + y) % 2 === 0) ? 3 : 7; 
+                
                 if (y < 5) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
+                    // Absolute Zero Space Wall (blocks the toroidal top-down wrap-around)
+                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 0); 
                 } 
-                // Geothermal floor at the bottom
                 else if (y > gridHeight - 5) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
+                    // Geothermal Floor
+                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 35000); 
                 } 
-                // Atmospheric Gas
                 else if (Math.random() * 100 < prob) { 
                     let q = 10 + Math.floor(Math.random() * 30); 
-                    // FIX 2: Lateral spins (East/West) to drift without boiling
-                    let s = (Math.random() > 0.5) ? 3 : 7; 
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -173,7 +173,8 @@ function loadScenario(type, Module) {
             let spread = 15 + Math.floor((depth * depth) / 250); 
             for (let x = 0; x < gridWidth; x++) {
                 if (x < cx - spread || x > cx + spread) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
+                    let s = ((x + y) % 2 === 0) ? 3 : 7;
+                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 500);
                 }
             }
         }
@@ -183,11 +184,14 @@ function loadScenario(type, Module) {
         targetThermal = 20000; 
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
+                // Perfect frictionless checkerboard spin
+                let s = ((x + y) % 2 === 0) ? 3 : 7; 
+                
                 if (y > gridHeight - 10) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); // Seabed
+                    // Solid Seabed
+                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 500); 
                 } else if (y > gridHeight - 150) { 
-                    // FIX 3: 100% density with lateral complementary spins
-                    let s = (Math.random() > 0.5) ? 3 : 7; 
+                    // 100% Dense Water (Removed the random gap generation completely)
                     Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); 
                 }
             }
