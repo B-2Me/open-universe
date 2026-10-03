@@ -217,6 +217,18 @@ function startEngine(Module) {
     const ctxLeft = canvasLeft.getContext('2d', { alpha: false });
     const ctxRight = canvasRight.getContext('2d', { alpha: false });
 
+const appScript = document.querySelector('script[src*="app.js"]');
+if (appScript) {
+    const versionMatch = appScript.getAttribute('src').match(/v=(\d+)/);
+    const buildVersion = versionMatch ? `v${versionMatch[1]}` : "Live";
+    
+    // Replace 'status_element_id' with whatever ID holds your "Status: Online" text
+    const statusEl = document.getElementById('status_element_id'); 
+    if (statusEl) {
+        statusEl.innerText = `Build: ${buildVersion}`;
+    }
+}
+
     gridWidth = Module._get_grid_width();
     gridHeight = Module._get_grid_height();
     document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
