@@ -116,8 +116,8 @@ function renderPaletteUI() {
 function loadScenario(type, Module) {
     Module._clear_grid(); 
     
-    let targetDissipation = 8;
-    let targetThermal = 45000; // Raised slightly to safely accommodate geothermal plumes
+    let targetDissipation = 15;
+    let targetThermal = 50000;
 
     const cx = Math.floor(gridWidth / 2);
     const cy = Math.floor(gridHeight / 2);
@@ -144,15 +144,15 @@ function loadScenario(type, Module) {
         targetThermal = 45000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
-            let prob = depthRatio * depthRatio * depthRatio * 80; 
+            let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 5) {
-                    // Geothermal Core: Solid crust wall radiating intense heat (35000)
+                    // Geothermal floor radiating heat
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
-                } else if (Math.random() * 100 < prob) {
-                    let q = 10 + Math.floor(Math.random() * 40); 
+                } else if (y > 5 && Math.random() * 100 < prob) { // FIX: Kept away from absolute top edge
+                    let q = 10 + Math.floor(Math.random() * 30); 
                     let s = Math.floor(Math.random() * 8) + 1; 
-                    let h = q * 3;
+                    let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
             }
@@ -164,14 +164,6 @@ function loadScenario(type, Module) {
         for (let y = 50; y < gridHeight; y++) {
             let depth = y - 50;
             let spread = 15 + Math.floor((depth * depth) / 250); 
-            for (let x = cmd_width = 400; x < gridWidth; x++) { // standard width check
-                // ( keeping nozzle math identical )
-            }
-        }
-        // Retaining standard nozzle layout:
-        for (let y = 50; y < gridHeight; y++) {
-            let depth = y - 50;
-            let spread = 15 + Math.floor((depth * depth) / 250); 
             for (let x = 0; x < gridWidth; x++) {
                 if (x < cx - spread || x > cx + spread) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
@@ -180,16 +172,16 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "ocean") {
-        targetDissipation = 15;
-        targetThermal = 15000; 
+        targetDissipation = 10;
+        targetThermal = 20000; 
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
-                } else if (y > gridHeight - 150) { 
-                    if (Math.random() * 100 > 2) { 
-                        let s = Math.floor(Math.random() * 8) + 1; 
-                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); // Seabed floor
+                } else if (y > gridHeight - 320) { // FIX: Filled much higher up to eliminate empty air gap
+                    if (Math.random() * 100 > 0.5) { // 99.5% density
+                        let s = 5; // Perfectly stable downward settling vector
+                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); // FIX: Low initial heat prevents boiling/churning
                     }
                 }
             }
