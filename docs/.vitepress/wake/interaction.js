@@ -1,12 +1,12 @@
 import { GRID_WIDTH, GRID_HEIGHT, unpackNode, packNode } from './constants.js';
 
-export class InteractionController {
-    constructor({ container, bridge, palette, getState }) {
-        this.container = container;
+export class InteractionManager {
+    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId }) {
+        this.container = document.getElementById(canvasContainerId);
+        this.tWrapper = document.getElementById(transformWrapperId);
         this.bridge = bridge;
         this.palette = palette;
-        this.getState = getState;
-        this.tWrapper = document.getElementById('transform-wrapper');
+        this.state = state;
 
         this.zoom = 1;
         this.panX = 0;
@@ -27,6 +27,11 @@ export class InteractionController {
         this.initialPinchDistance = null;
         this.initialZoom = 1;
 
+        this.init();
+    }
+
+    init() {
+        if (!this.container) return;
         this.bindEvents();
         window.addEventListener('resize', () => { setTimeout(() => this.constrainView(), 50); });
     }
@@ -42,20 +47,21 @@ export class InteractionController {
         }, { passive: false });
 
         this.container.addEventListener('dblclick', () => {
-            const state = this.getState();
-            if (state.currentMode === 'move' || state.isSpaceDown) {
+            if (this.state.currentMode === 'move' || this.state.isSpaceDown) {
                 this.resetView();
             }
         });
 
         this.container.addEventListener('pointerdown', (e) => {
+            // Prevent multi-touch interference for standard drawing
+            if (e.pointerType !== 'mouse' && !e.isPrimary && this.activePointers.size === 0) return;
+
             this.container.setPointerCapture(e.pointerId);
             this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             if (this.activePointers.size === 1) {
                 const now = Date.now();
-                const state = this.getState();
-                if (now - this.lastTapTime < 300 && (state.currentMode === 'move' || state.isSpaceDown)) {
+                if (now - this.lastTapTime < 300 && (this.state.currentMode === 'move' || this.state.isSpaceDown)) {
                     this.resetView();
                 }
                 this.lastTapTime = now;
@@ -121,8 +127,13 @@ export class InteractionController {
     }
 
     processInput(clientX, clientY, isClick) {
-        const state = this.getState();
-        const activeAction = state.isSpaceDown ? 'move' : state.currentMode;
+        let activeAction = this.state.isSpaceDown ? 'move' : this.state.currentMode;
+
+        // Config mode always acts as move
+        if (activeAction === 'config') activeAction = 'move';
+        
+        // Sample mode acts as move if dragging, but executes sample if tapped
+        if (activeAction === 'sample' && !isClick) activeAction = 'move';
 
         if (activeAction === 'move') {
             if (isClick) {
@@ -150,12 +161,12 @@ export class InteractionController {
 
             if (isClick) {
                 this.bridge.saveSnapshot();
-                this.injectPattern(coords.x, coords.y, pattern, state.injectionMode);
+                this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
                 this.lastInjectGridX = coords.x;
                 this.lastInjectGridY = coords.y;
                 this.dragDirX = 0;
                 this.dragDirY = 0;
-                state.forceRedraw = true;
+                this.state.forceRedraw = true;
             } else if (this.lastInjectGridX !== null && this.lastInjectGridY !== null) {
                 const dx = coords.x - this.lastInjectGridX;
                 const dy = coords.y - this.lastInjectGridY;
@@ -169,12 +180,12 @@ export class InteractionController {
                 }
 
                 if (directionChanged) {
-                    this.injectPattern(coords.x, coords.y, pattern, state.injectionMode);
+                    this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
                     this.lastInjectGridX = coords.x;
                     this.lastInjectGridY = coords.y;
                     this.dragDirX = currentDirX;
                     this.dragDirY = currentDirY;
-                    state.forceRedraw = true;
+                    this.state.forceRedraw = true;
                 } else if (Math.abs(dx) >= stampW || Math.abs(dy) >= stampH) {
                     let tileX = this.lastInjectGridX;
                     let tileY = this.lastInjectGridY;
@@ -182,12 +193,12 @@ export class InteractionController {
                     if (Math.abs(dx) >= stampW) tileX += currentDirX * stampW * Math.floor(Math.abs(dx) / stampW);
                     if (Math.abs(dy) >= stampH) tileY += currentDirY * stampH * Math.floor(Math.abs(dy) / stampH);
 
-                    this.injectPattern(tileX, tileY, pattern, state.injectionMode);
+                    this.injectPattern(tileX, tileY, pattern, this.state.injectionMode);
                     this.lastInjectGridX = tileX;
                     this.lastInjectGridY = tileY;
                     if (currentDirX !== 0) this.dragDirX = currentDirX;
                     if (currentDirY !== 0) this.dragDirY = currentDirY;
-                    state.forceRedraw = true;
+                    this.state.forceRedraw = true;
                 }
             }
         }
@@ -239,19 +250,43 @@ export class InteractionController {
         for (let dy = -radius; dy <= radius; dy++) {
             const row = [];
             for (let dx = -radius; dx <= radius; dx++) {
-                row.push(this.bridge.getNodeState(centerX + dx, centerY + dy));
+                if (centerX + dx >= 0 && centerX + dx < GRID_WIDTH && centerY + dy >= 0 && centerY + dy < GRID_HEIGHT) {
+                    row.push(this.bridge.getNodeState(centerX + dx, centerY + dy));
+                } else {
+                    row.push(0);
+                }
             }
             stamp.push(row);
         }
+        
         this.palette.setCopy(stamp);
+        
         const btnSave = document.getElementById('btn_save_scratch');
         if (btnSave) btnSave.disabled = false;
-        const lbl = document.getElementById('scratch_label');
-        if (lbl) lbl.innerText = `[${radius * 2 + 1}px]`;
+        
+        // Auto-switch back to Place mode and equip custom brush
+        this.state.currentMode = 'place';
+        this.state.injectionMode = 'clone';
+        
+        document.querySelectorAll('.segment-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.mode === 'place');
+        });
+        
+        const placeDrawer = document.getElementById('context_place');
+        const sampleDrawer = document.getElementById('context_sample');
+        
+        if (sampleDrawer) sampleDrawer.classList.remove('show');
+        if (placeDrawer) placeDrawer.classList.add('show');
+        
+        document.getElementById('opt_custom')?.click();
     }
 
     applyTransform() {
         if (!this.tWrapper) return;
+        // Keep zoom scale and pans synced with the UI component state
+        this.state.zoom = this.zoom;
+        this.state.panX = this.panX;
+        this.state.panY = this.panY;
         this.tWrapper.style.transform = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
     }
 
@@ -260,6 +295,7 @@ export class InteractionController {
         const sz = document.getElementById('slider_zoom');
         if (vz) vz.innerText = this.zoom.toFixed(1) + "x";
         if (sz) sz.value = this.zoom;
+        this.state.zoom = this.zoom;
     }
 
     resetView() {
@@ -275,6 +311,7 @@ export class InteractionController {
     }
 
     constrainView() {
+        if (!this.container) return;
         const rect = this.container.getBoundingClientRect();
         const maxPanX = (rect.width * (this.zoom - 1)) / (2 * this.zoom);
         const maxPanY = (rect.height * (this.zoom - 1)) / (2 * this.zoom);
@@ -301,5 +338,9 @@ export class InteractionController {
                 setTimeout(() => { if (!this.isDragging && this.tWrapper) this.tWrapper.style.transition = 'none'; }, 300);
             }
         }
+    }
+
+    destroy() {
+        // Handled securely when the Vue component unmounts
     }
 }

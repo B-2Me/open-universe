@@ -18,16 +18,51 @@ onUnmounted(() => {
   <div class="wake-sandbox">
     <div id="wake-app">
       <div id="left-pane">
-        <div style="padding: 12px 16px 0 16px;">
-          <div class="button-group" id="scenario_selector" style="margin-bottom: 8px;">
-            <button class="group-btn active" data-val="vacuum">🌌 Vacuum</button>
-            <button class="group-btn" data-val="atmosphere">🪐 Atmosphere</button>
-            <button class="group-btn" data-val="nozzle">🚀 Engine Bell</button>
-            <button class="group-btn" data-val="ocean">🌊 Ocean</button>
-          </div>
-          <div class="deck-row" style="margin-bottom: -4px;">
+        <!-- Compact Scenario Bar & Dossier Modal -->
+        <div style="padding: 8px 16px 0 16px; position: relative;">
+          <div class="deck-row scenario-nav-bar" style="margin-bottom: 6px;">
+            <select id="scenario_dropdown" class="scenario-select">
+              <option value="vacuum">🌌 Vacuum</option>
+              <option value="atmosphere">🪐 Atmosphere</option>
+              <option value="nozzle">🚀 Engine Bell (Global)</option>
+              <option value="boundary">🔬 Nozzle Wall (Micro-Patch)</option>
+              <option value="ocean">🌊 Ocean</option>
+            </select>
+            <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
             <button id="btn_toggle_left" class="action-btn">👁 Macro</button>
             <button id="btn_toggle_right" class="action-btn">🕳 Entropic</button>
+          </div>
+
+          <!-- Slide-down Scenario Info Dossier Modal -->
+          <div id="modal_scenario_info" class="dossier-modal">
+            <div class="dossier-content">
+              <div class="dossier-header">
+                <span id="dossier_title" class="dossier-title">Scenario Dossier</span>
+                <button id="btn_close_dossier" class="dossier-close-btn">✕</button>
+              </div>
+              <div class="dossier-body">
+                <div class="dossier-item">
+                  <span class="dossier-label">Objective</span>
+                  <span id="dossier_objective" class="dossier-text"></span>
+                </div>
+                <div class="dossier-item">
+                  <span class="dossier-label">Physics Mechanisms</span>
+                  <span id="dossier_mechanisms" class="dossier-text"></span>
+                </div>
+                <div class="dossier-item">
+                  <span class="dossier-label">Recommended Brushes</span>
+                  <span id="dossier_brushes" class="dossier-text"></span>
+                </div>
+                <div class="dossier-item">
+                  <span class="dossier-label">Best Layers</span>
+                  <span id="dossier_layers" class="dossier-text"></span>
+                </div>
+                <div class="dossier-item">
+                  <span class="dossier-label">Tactical Tip</span>
+                  <span id="dossier_tips" class="dossier-text highlight"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -95,9 +130,23 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Restored: System & Capture Context Drawer -->
+          <!-- System & Capture Context Drawer -->
           <div id="context_config" class="context-popup">
+            
+            <!-- NEW: WebGL Lattice Projection -->
             <div class="context-group">
+              <div class="context-header">
+                <span class="context-label">Lattice Projection</span>
+                <span class="context-hint" id="gpu_status_badge">WebGL Active</span>
+              </div>
+              <div class="button-group" id="projection_mode_selector">
+                <button class="group-btn active" data-val="quad">⏹️ Quad</button>
+                <button class="group-btn" data-val="hex">⬡ Hex</button>
+                <button class="group-btn" data-val="oct">🛑 Oct</button>
+              </div>
+            </div>
+
+            <div class="context-group" style="margin-top: 6px;">
               <div class="context-header">
                 <span class="context-label">Frame Capture</span>
                 <span class="context-hint">Direct canvas export</span>

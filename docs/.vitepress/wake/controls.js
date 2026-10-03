@@ -1,12 +1,14 @@
 import { LAYER_LABELS } from './constants.js';
-import { loadScenario, randomizeScenarioSoup } from './scenarios.js';
+import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 
 export class ControlsManager {
-    constructor({ bridge, palette, loop, state }) {
+    constructor({ bridge, palette, loop, state, rendererLeft, rendererRight }) {
         this.bridge = bridge;
         this.palette = palette;
         this.loop = loop;
         this.state = state;
+        this.rendererLeft = rendererLeft;
+        this.rendererRight = rendererRight;
 
         this.init();
     }
@@ -14,11 +16,30 @@ export class ControlsManager {
     init() {
         this.renderPalette();
         this.bindLayerButtons();
-        this.bindScenarioButtons();
+        this.bindScenarioDropdown();
         this.bindSegmentButtons();
         this.bindSliders();
         this.bindActionButtons();
+        this.bindProjectionSelector();
         this.bindOutsideDismiss();
+        this.updateDossierContent(this.state.currentScenario);
+        this.updateGpuBadge();
+    }
+
+    updateGpuBadge() {
+        const badge = document.getElementById('gpu_status_badge');
+        if (!badge) return;
+        const active = (this.rendererLeft?.isWebGL || this.rendererRight?.isWebGL);
+        badge.innerText = active ? "WebGL Active" : "2D Fallback";
+        badge.style.color = active ? "var(--pf-brand-hover)" : "#888";
+    }
+
+    bindProjectionSelector() {
+        this.setupGroup('projection_mode_selector', (mode) => {
+            if (this.rendererLeft) this.rendererLeft.setProjectionMode(mode);
+            if (this.rendererRight) this.rendererRight.setProjectionMode(mode);
+            this.state.forceRedraw = true;
+        });
     }
 
     renderPalette() {
@@ -26,11 +47,30 @@ export class ControlsManager {
         if (!container) return;
         container.innerHTML = '';
 
+        const stamp = this.palette.customStamp;
+        const hasStamp = stamp && stamp.length > 0;
+
         const scratchBtn = document.createElement('button');
         scratchBtn.className = `palette-btn ${this.palette.currentBrush === 'custom' ? 'active' : ''}`;
         scratchBtn.id = 'opt_custom';
-        scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Copy</span>`;
-        scratchBtn.onclick = () => { this.palette.currentBrush = 'custom'; this.renderPalette(); };
+
+        // Intelligent Cloned Tool logic
+        if (hasStamp) {
+            const h = stamp.length;
+            const w = stamp[0].length;
+            scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label">${w}x${h}</span>`;
+            scratchBtn.onclick = () => { 
+                this.palette.currentBrush = 'custom'; 
+                this.renderPalette(); 
+            };
+        } else {
+            scratchBtn.innerHTML = `<span class="p-icon">🔍</span><span class="p-label">Sample</span>`;
+            scratchBtn.onclick = () => {
+                // If empty, trigger the sample mode and close the place drawer
+                const sampleBtn = document.querySelector('.segment-btn[data-mode="sample"]');
+                if (sampleBtn) sampleBtn.click();
+            };
+        }
         container.appendChild(scratchBtn);
 
         for (const [key, brush] of Object.entries(this.palette.fullPalette)) {
@@ -63,24 +103,56 @@ export class ControlsManager {
         }
     }
 
-    bindScenarioButtons() {
-        this.setupGroup('scenario_selector', (val) => {
-            this.bridge.saveSnapshot();
-            this.state.currentScenario = val;
-            const res = loadScenario(val, this.bridge);
-            
-            const md = document.getElementById('math_dissipation');
-            const mt = document.getElementById('math_thermal_limit');
-            if (md) md.innerText = res.targetDissipation;
-            if (mt) mt.innerText = res.targetThermal;
+    bindScenarioDropdown() {
+        const select = document.getElementById('scenario_dropdown');
+        if (select) {
+            select.value = this.state.currentScenario;
+            select.onchange = (e) => {
+                const val = e.target.value;
+                this.bridge.saveSnapshot();
+                this.state.currentScenario = val;
+                const res = loadScenario(val, this.bridge);
+                
+                const md = document.getElementById('math_dissipation');
+                const mt = document.getElementById('math_thermal_limit');
+                if (md) md.innerText = res.targetDissipation;
+                if (mt) mt.innerText = res.targetThermal;
 
-            const sd = document.getElementById('slider_dissipation');
-            const st = document.getElementById('slider_thermal');
-            if (sd) sd.value = res.targetDissipation;
-            if (st) st.value = res.targetThermal;
+                const sd = document.getElementById('slider_dissipation');
+                const st = document.getElementById('slider_thermal');
+                if (sd) sd.value = res.targetDissipation;
+                if (st) st.value = res.targetThermal;
 
-            this.state.forceRedraw = true;
-        });
+                this.updateDossierContent(val);
+                this.state.forceRedraw = true;
+            };
+        }
+
+        const infoBtn = document.getElementById('btn_scenario_info');
+        const modal = document.getElementById('modal_scenario_info');
+        const closeBtn = document.getElementById('btn_close_dossier');
+
+        if (infoBtn && modal) {
+            infoBtn.onclick = () => {
+                this.updateDossierContent(this.state.currentScenario);
+                modal.classList.toggle('show');
+            };
+        }
+        if (closeBtn && modal) {
+            closeBtn.onclick = () => modal.classList.remove('show');
+        }
+    }
+
+    updateDossierContent(type) {
+        const data = SCENARIO_DOSSIERS[type];
+        if (!data) return;
+        const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+        setTxt('dossier_title', data.title);
+        setTxt('dossier_objective', data.objective);
+        setTxt('dossier_mechanisms', data.mechanisms);
+        setTxt('dossier_brushes', data.recommendedBrushes.join(', '));
+        setTxt('dossier_layers', data.bestLayers);
+        setTxt('dossier_tips', data.tips);
     }
 
     bindSegmentButtons() {
@@ -89,13 +161,9 @@ export class ControlsManager {
                 const mode = e.currentTarget.dataset.mode;
                 
                 if (this.state.currentMode === mode) {
-                    if (mode === 'place') {
-                        document.getElementById('context_place')?.classList.toggle('show');
-                    } else if (mode === 'sample') {
-                        document.getElementById('context_sample')?.classList.toggle('show');
-                    } else if (mode === 'config') {
-                        document.getElementById('context_config')?.classList.toggle('show');
-                    }
+                    if (mode === 'place') document.getElementById('context_place')?.classList.toggle('show');
+                    else if (mode === 'sample') document.getElementById('context_sample')?.classList.toggle('show');
+                    else if (mode === 'config') document.getElementById('context_config')?.classList.toggle('show');
                     return;
                 }
 
@@ -109,8 +177,11 @@ export class ControlsManager {
             };
         });
 
-        this.setupGroup('injection_mode_selector', (val) => { this.state.injectionMode = val; });
-        this.setupGroup('impedance_mode_selector', (val) => { this.bridge.setImpedanceMode(parseInt(val, 10)); });
+        this.setupGroup('injection_mode_selector', (val) => { 
+            this.state.injectionMode = val;
+            const hint = document.getElementById('hint_injection_mode');
+            if (hint) hint.innerText = val.toUpperCase();
+        });
     }
 
     bindOutsideDismiss() {
@@ -120,6 +191,12 @@ export class ControlsManager {
             const contextConfig = document.getElementById('context_config');
             const canvasContainer = document.getElementById('canvas-container');
             const segmentContainer = document.querySelector('.segment-container');
+            const modal = document.getElementById('modal_scenario_info');
+            const infoBtn = document.getElementById('btn_scenario_info');
+
+            if (modal && modal.classList.contains('show') && !modal.contains(e.target) && !infoBtn?.contains(e.target)) {
+                modal.classList.remove('show');
+            }
 
             const isPlaceOpen = contextPlace?.classList.contains('show');
             const isSampleOpen = contextSample?.classList.contains('show');
@@ -130,9 +207,16 @@ export class ControlsManager {
             if (canvasContainer?.contains(e.target)) return;
             if (segmentContainer?.contains(e.target)) return;
 
+            // Close all drawers
             contextPlace?.classList.remove('show');
             contextSample?.classList.remove('show');
             contextConfig?.classList.remove('show');
+
+            // Revert state to Move on menu dismissal
+            this.state.currentMode = 'move';
+            document.querySelectorAll('.segment-btn').forEach(b => 
+                b.classList.toggle('active', b.dataset.mode === 'move')
+            );
         });
     }
 
@@ -146,6 +230,24 @@ export class ControlsManager {
                 document.getElementById('val_speed').innerText = v === 0 ? "Paused" : `${v} TPS`;
             };
         }
+
+        const zoom = document.getElementById('slider_zoom');
+        if (zoom) {
+            zoom.oninput = (e) => {
+                const v = parseFloat(e.target.value);
+                this.state.zoom = v;
+                document.getElementById('val_zoom').innerText = v.toFixed(1) + 'x';
+                
+                // Immediately apply to canvas wrapper
+                const wrapper = document.getElementById('transform-wrapper');
+                if (wrapper) {
+                    const px = this.state.panX || 0;
+                    const py = this.state.panY || 0;
+                    wrapper.style.transform = `scale(${v}) translate(${px}px, ${py}px)`;
+                }
+            };
+        }
+
         const diss = document.getElementById('slider_dissipation');
         if (diss) {
             diss.oninput = (e) => {
@@ -195,7 +297,6 @@ export class ControlsManager {
             if (btn) btn.disabled = true;
         });
 
-        // Frame Capture Actions
         bind('btn_export_png', () => {
             const canvasLeft = document.getElementById('canvas_left');
             if (!canvasLeft) return;
@@ -249,7 +350,6 @@ export class ControlsManager {
             this.state.isPlaying = wasPlaying;
         });
 
-        // Palette Import / Export
         bind('btn_copy_stamp', () => {
             const stamp = this.palette.customStamp;
             if (!stamp || !stamp.length) {
