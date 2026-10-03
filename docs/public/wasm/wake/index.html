@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine (Bridge Simulator)</title>
-    <!-- Cache bust bumped to v=19 -->
-    <link rel="stylesheet" href="style.css?v=19">
+    <!-- Cache bust bumped to v=20 -->
+    <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
     
@@ -22,7 +22,7 @@
                 
                 <div class="deck-row" style="margin-bottom: -4px;">
                     <button id="btn_toggle_left" class="action-btn" style="border-radius: 8px 0 0 0; background: var(--pf-bg-input); border-right: none; font-size: 11px;">👁 Macro</button>
-                    <button id="btn_toggle_right" class="action-btn" style="border-radius: 0 8px 0 0; background: var(--pf-bg-input); font-size: 11px;">♨ Metabolic</button>
+                    <button id="btn_toggle_right" class="action-btn" style="border-radius: 0 8px 0 0; background: var(--pf-bg-input); font-size: 11px;">🕳 Entropic</button>
                 </div>
             </div>
 
@@ -82,31 +82,29 @@
                     <button class="segment-btn" data-mode="sample">⛶ Capture</button>
                 </div>
 
-                <!-- Split to prevent fat-finger mistakes on mobile -->
                 <div class="deck-row" style="margin-top: 8px;">
-                    <button id="btn_play" class="action-btn primary" style="flex: 2;">⏯ Play</button>
-                    <button id="btn_step" class="action-btn" style="flex: 1;">⏭ Step</button>
+                    <button id="btn_reset" class="action-btn primary" style="flex: 1;">⟳ Reset</button>
+                    <button id="btn_soup" class="action-btn" style="flex: 1;">🎲 Soup</button>
                     <button id="btn_undo" class="action-btn" style="flex: 1;" title="Undo (Ctrl+Z)">↩ Undo</button>
+                    <button id="btn_clear" class="action-btn danger" style="flex: 1;">❌ Clear</button>
                 </div>
 
-                <div class="deck-row" style="margin-top: 8px;">
-                    <button id="btn_reset" class="action-btn" style="flex: 1;">⟳ Reset</button>
-                    <button id="btn_soup" class="action-btn" style="flex: 1;">🎲 Soup</button>
-                    <button id="btn_clear" class="action-btn danger" style="flex: 1;">❌ Clear</button>
+                <!-- NEW: Precision Slider Controls -->
+                <div class="deck-row" style="margin-top: 12px; background: var(--pf-bg-input); border: 1px solid var(--pf-brand-soft); border-radius: 8px; padding: 8px;">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding-right: 8px; border-right: 1px solid var(--pf-brand-soft);">
+                        <label style="font-size: 11px; color: var(--pf-text-muted); text-align: center; font-weight: bold;">Speed: <span id="val_speed" style="color: var(--pf-text);">60 TPS</span></label>
+                        <input type="range" id="slider_speed" min="0" max="120" value="60" style="min-height: 30px;">
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding-left: 8px;">
+                        <label style="font-size: 11px; color: var(--pf-text-muted); text-align: center; font-weight: bold;">Zoom: <span id="val_zoom" style="color: var(--pf-text);">1.0x</span></label>
+                        <input type="range" id="slider_zoom" min="1" max="10" step="0.1" value="1" style="min-height: 30px;">
+                    </div>
                 </div>
                 
                 <div class="deck-row" style="margin-top: 8px; gap: 6px;">
                     <button id="btn_export_vtk" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📥 VTK</button>
                     <button id="btn_export_png" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📷 PNG</button>
                     <button id="btn_share" class="action-btn" style="flex: 1; font-size: 11px; border-color: var(--pf-brand-soft);">📤 Share</button>
-                </div>
-                
-                <div class="deck-row" style="margin-top: 8px; justify-content: center;">
-                    <div class="button-group" style="width: auto; margin: 0;">
-                        <button class="group-btn" id="btn_zoom_out">🔍−</button>
-                        <button class="group-btn" id="btn_zoom_reset">Zoom 1x</button>
-                        <button class="group-btn" id="btn_zoom_in">🔍+</button>
-                    </div>
                 </div>
 
             </div>
@@ -161,8 +159,7 @@
         </div>
     </div>
 
-    <!-- Cache bust bumped to v=19 -->
-    <script src="planck.js?v=19" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=19"></script>
+    <script src="planck.js?v=20" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
