@@ -140,25 +140,25 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 10; 
+        targetDissipation = 15; // Keeps the upper sky cold
         targetThermal = 50000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
-            // Lowered max probability to 40% to allow thermal expansion room
-            let prob = depthRatio * depthRatio * depthRatio * 40; 
+            let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y < 5) {
                     // Absolute Zero Space Wall
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
-                    // Geothermal Floor
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
+                    // FIX: 15,000 Heat. Triggers downward Entropic Gravity ( > 12,500 ) without vaporizing the gas!
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 15000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
-                    let q = 5 + Math.floor(Math.random() * 15); // Lighter gas mass
-                    let s = 0; // FIX: Absolute rest. Floor heat will drive convection.
-                    let h = 10; // Cold start
+                    // FIX: Ultralight gas (Quanta 2-5). Prevents kinetic friction buildup.
+                    let q = 2 + Math.floor(Math.random() * 4); 
+                    let s = Math.floor(Math.random() * 8) + 1; // Natural Brownian motion
+                    let h = 100;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
             }
