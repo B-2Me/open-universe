@@ -16,7 +16,7 @@ onUnmounted(() => {
 
 <template>
   <div class="wake-sandbox">
-    <div id="app">
+    <div id="wake-app">
       <div id="left-pane">
         <div style="padding: 12px 16px 0 16px;">
           <div class="button-group" id="scenario_selector" style="margin-bottom: 8px;">
