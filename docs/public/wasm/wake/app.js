@@ -29,9 +29,10 @@ const defaultPalette = {
         [0, 0, 0]
     ]},
     "D": { icon: "🔥", label: "Igniter", data: [
-        [(255<<24)|(4<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(6<<16)|60000],
-        [(255<<24)|(3<<16)|60000, (255<<24)|(0<<16)|60000, (255<<24)|(7<<16)|60000],
-        [(255<<24)|(2<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(8<<16)|60000]
+        // FIX: Vectors inverted to push OUTWARD (Explosion) instead of inward
+        [(255<<24)|(8<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(2<<16)|60000],
+        [(255<<24)|(7<<16)|60000, (255<<24)|(0<<16)|60000, (255<<24)|(3<<16)|60000],
+        [(255<<24)|(6<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(4<<16)|60000]
     ]},
     "E": { icon: "🧊", label: "Cryo", data: [
         [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
@@ -44,9 +45,10 @@ const defaultPalette = {
         [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500]
     ]},
     "G": { icon: "⚙️", label: "Rotor", data: [
-        [0, (255<<24)|(1<<16)|500, (255<<24)|(2<<16)|500],
-        [(255<<24)|(8<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(4<<16)|500],
-        [(255<<24)|(7<<16)|500, (255<<24)|(6<<16)|500, 0]
+        // FIX: Adjusted to a perfect clockwise momentum vortex
+        [(255<<24)|(3<<16)|500, (255<<24)|(3<<16)|500, (255<<24)|(5<<16)|500],
+        [(255<<24)|(1<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(5<<16)|500],
+        [(255<<24)|(1<<16)|500, (255<<24)|(7<<16)|500, (255<<24)|(7<<16)|500]
     ]}
 };
 
@@ -128,16 +130,15 @@ function loadScenario(type, Module) {
         targetDissipation = 15;
         targetThermal = 50000;
         
-        // Draw a central glowing singularity/star (Spin 0 anchor)
+        // FIX: Star heat lowered to 48000 to remain safely under the 50000 thermal unwinding limit
         for (let y = cy - 10; y <= cy + 10; y++) {
             for (let x = cx - 10; x <= cx + 10; x++) {
                 if (Math.hypot(x - cx, y - cy) <= 8) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 65000);
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 48000);
                 }
             }
         }
         
-        // Scatter some dynamic cosmic dust
         for (let i = 0; i < 200; i++) {
             let rx = Math.floor(Math.random() * gridWidth);
             let ry = Math.floor(Math.random() * gridHeight);
@@ -146,18 +147,17 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 2;
-        targetThermal = 300;
+        targetDissipation = 15;
+        targetThermal = 40000; 
         for (let y = 100; y < gridHeight; y++) {
             let depthRatio = (y - 100) / (gridHeight - 100);
             let prob = depthRatio * depthRatio * 100; 
             for (let x = 0; x < gridWidth; x++) {
-                // Draw a solid planet crust at the bottom
                 if (y > gridHeight - 5) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
                 } else if (Math.random() * 100 < prob) {
                     let q = 50 + Math.floor(Math.random() * 50); 
-                    let s = Math.floor(Math.random() * 8) + 1;  
+                    let s = 5; // Uniform Gravity
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -178,15 +178,14 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "ocean") {
-        targetDissipation = 5;
-        targetThermal = 100;
+        targetDissipation = 25;
+        targetThermal = 60000; 
         for (let y = cy; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
-                // Draw a solid seabed basin
                 if (y > gridHeight - 10) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
                 } else if (Math.random() * 100 > 5) {
-                    let s = (Math.random() > 0.5) ? 3 : 7; 
+                    let s = 5; // Uniform Gravity
                     Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
                 }
             }
