@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planck Field Engine (Bridge Simulator)</title>
-    <link rel="stylesheet" href="style.css?v=18">
+    <!-- Cache bust bumped to v=19 -->
+    <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
     
@@ -81,12 +82,16 @@
                     <button class="segment-btn" data-mode="sample">⛶ Capture</button>
                 </div>
 
+                <!-- Split to prevent fat-finger mistakes on mobile -->
                 <div class="deck-row" style="margin-top: 8px;">
-                    <button id="btn_reset" class="action-btn primary" style="flex: 1.2;">⟳ Reset</button>
-                    <button id="btn_soup" class="action-btn" style="flex: 1.2;">🎲 Soup</button>
-                    <button id="btn_play" class="action-btn" style="flex: 1.2;">⏯ Play</button>
+                    <button id="btn_play" class="action-btn primary" style="flex: 2;">⏯ Play</button>
                     <button id="btn_step" class="action-btn" style="flex: 1;">⏭ Step</button>
                     <button id="btn_undo" class="action-btn" style="flex: 1;" title="Undo (Ctrl+Z)">↩ Undo</button>
+                </div>
+
+                <div class="deck-row" style="margin-top: 8px;">
+                    <button id="btn_reset" class="action-btn" style="flex: 1;">⟳ Reset</button>
+                    <button id="btn_soup" class="action-btn" style="flex: 1;">🎲 Soup</button>
                     <button id="btn_clear" class="action-btn danger" style="flex: 1;">❌ Clear</button>
                 </div>
                 
@@ -156,7 +161,8 @@
         </div>
     </div>
 
-    <script src="planck.js?v=18" onerror="document.getElementById('error-banner').style.display='block';"></script>
-    <script src="app.js?v=18"></script>
+    <!-- Cache bust bumped to v=19 -->
+    <script src="planck.js?v=19" onerror="document.getElementById('error-banner').style.display='block';"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>
