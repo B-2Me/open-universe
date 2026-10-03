@@ -17,8 +17,8 @@ const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropi
 // --- DYNAMIC PALETTE MANAGER ---
 const defaultPalette = {
     "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
-    "B": { icon: "〰", label: "Wall", data: [
-        [(255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500]
+    "B": { icon: "🧱", label: "Wall", data: [
+        [(255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500]
     ]},
     "C": { icon: "🕳", label: "Erase", data: [
         [0, 0, 0],
@@ -36,9 +36,9 @@ const defaultPalette = {
         [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1]
     ]},
     "F": { icon: "🛡️", label: "Baffle", data: [
-        [(255<<24)|(1<<16)|500, 0, (255<<24)|(1<<16)|500],
-        [0, (255<<24)|(1<<16)|500, 0],
-        [(255<<24)|(1<<16)|500, 0, (255<<24)|(1<<16)|500]
+        [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500],
+        [0, (255<<24)|(0<<16)|500, 0],
+        [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500]
     ]},
     "G": { icon: "⚙️", label: "Rotor", data: [
         [0, (255<<24)|(1<<16)|500, (255<<24)|(2<<16)|500],
@@ -112,6 +112,71 @@ function renderPaletteUI() {
     }, '.palette-btn');
 }
 
+function loadScenario(type, Module) {
+    Module._clear_grid(); 
+    
+    let targetDissipation = 15;
+    let targetThermal = 50000;
+
+    const cx = gridWidth / 2;
+    const cy = gridHeight / 2;
+
+    if (type === "atmosphere") {
+        targetDissipation = 2;
+        targetThermal = 300;
+        for (let y = 100; y < gridHeight; y++) {
+            let depthRatio = (y - 100) / (gridHeight - 100);
+            let prob = depthRatio * depthRatio * 100; 
+            for (let x = 0; x < gridWidth; x++) {
+                if (Math.random() * 100 < prob) {
+                    let q = 50 + Math.floor(Math.random() * 50); 
+                    let s = Math.floor(Math.random() * 8) + 1;  
+                    let h = q * 2;
+                    Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
+                }
+            }
+        }
+    } 
+    else if (type === "nozzle") {
+        targetDissipation = 45;
+        targetThermal = 60000;
+        for (let y = 50; y < gridHeight; y++) {
+            let depth = y - 50;
+            let spread = 15 + Math.floor((depth * depth) / 250); 
+            for (let x = 0; x < gridWidth; x++) {
+                if (x < cx - spread || x > cx + spread) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
+                }
+            }
+        }
+    }
+    else if (type === "ocean") {
+        targetDissipation = 5;
+        targetThermal = 100;
+        for (let y = cy; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                if (Math.random() * 100 > 5) {
+                    let s = (Math.random() > 0.5) ? 3 : 7; 
+                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
+                }
+            }
+        }
+    }
+    
+    Module._set_dissipation(targetDissipation);
+    Module._set_thermal_limit(targetThermal);
+    
+    const md = document.getElementById('math_dissipation');
+    const mt = document.getElementById('math_thermal_limit');
+    const sd = document.getElementById('slider_dissipation');
+    const st = document.getElementById('slider_thermal');
+    
+    if (md) md.innerText = targetDissipation;
+    if (mt) mt.innerText = targetThermal;
+    if (sd) sd.value = targetDissipation;
+    if (st) st.value = targetThermal;
+}
+
 function startEngine(Module) {
     const canvasContainer = document.getElementById('canvas-container');
     const tWrapper = document.getElementById('transform-wrapper');
@@ -148,7 +213,6 @@ function startEngine(Module) {
         forceRedraw = true;
     });
 
-    // Screen Wake Lock
     async function requestWakeLock() {
         if ('wakeLock' in navigator) {
             try {
@@ -165,7 +229,6 @@ function startEngine(Module) {
     }
     requestWakeLock();
 
-    // Fixed Timestep Accumulator Loop
     const TARGET_TPS = 60;
     const FRAME_TIME = 1000 / TARGET_TPS;
     let accumulator = 0;
@@ -330,20 +393,7 @@ function startEngine(Module) {
             if (mt) mt.innerText = "50000";
             if (sd) sd.value = 15;
             if (st) st.value = 50000;
-        } else if (val === "atmosphere") {
-            // Simplified scenario emulation handling
-            const biomes = { "atmosphere": [2, 300], "nozzle": [45, 600], "ocean": [5, 100] };
-            if (biomes[val]) {
-                Module._set_dissipation(biomes[val][0]);
-                Module._set_thermal_limit(biomes[val][1]);
-                
-                const md = document.getElementById('math_dissipation');
-                const mt = document.getElementById('math_thermal_limit');
-                if (md) md.innerText = biomes[val][0];
-                if (mt) mt.innerText = biomes[val][1];
-            }
         } else {
-            // Check for previous loadScenario mapping
             if (typeof loadScenario === 'function') {
                 loadScenario(val, Module);
             }
@@ -351,7 +401,6 @@ function startEngine(Module) {
         forceRedraw = true;
     });
     
-    // Fallback UI selector
     setupButtonGroup('biome_selector', val => {
         const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
         Module._set_dissipation(biomes[val][0]);
@@ -575,7 +624,6 @@ function startEngine(Module) {
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern || !pattern.length) return;
         
-        // Haptic feedback
         if ('vibrate' in navigator) {
             navigator.vibrate(10);
         }
@@ -588,7 +636,6 @@ function startEngine(Module) {
                 const val = pattern[y][x];
                 const quanta = (val >>> 24) & 0xFF;
                 
-                // Allow direct cloning of 0 (Erase), or targeted channel injections
                 if (currentInjectionMode === 'clone') {
                     Module._set_node_state(startX + x, startY + y, val);
                 } else if (val !== 0 && quanta > 0) {
@@ -665,7 +712,6 @@ function startEngine(Module) {
     let initialPinchDist = 0, initialPinchZoom = 1;
     let lastTapTime = 0;
 
-    // Tiling state trackers
     let lastInjectGridX = null;
     let lastInjectGridY = null;
     let dragDirX = 0;
