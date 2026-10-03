@@ -139,10 +139,10 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped>
-/* Scoped isolation wrapper */
-/* Import your existing style.css rules directly here or via relative import */
+<style>
+/* Unscoped so imported rules apply to all children */
 @import '../wake/style.css';
+
 .wake-sandbox {
   margin: 1.5rem 0;
   border-radius: 12px;
