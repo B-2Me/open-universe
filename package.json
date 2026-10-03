@@ -4,7 +4,7 @@
   "description": "Reality is an open-source, live-rendering computational grid.",
   "type": "module",
   "scripts": {
-    "wasm:build": "mkdir -p docs/public/wasm/wake && cd src && ./build.sh",
+    "wasm:build": "mkdir -p docs/public/wasm/wake && cd src && bash build.sh",
     "wasm:check": "test -f docs/public/wasm/wake/planck.wasm || (command -v emcc >/dev/null 2>&1 && npm run wasm:build) || echo '⚠️ Notice: planck.wasm not found. If testing simulator locally, build src/ with emsdk.'",
     "docs:dev": "npm run wasm:check && vitepress dev docs",
     "docs:build": "npm run wasm:build && vitepress build docs",
