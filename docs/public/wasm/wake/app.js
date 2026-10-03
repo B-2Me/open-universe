@@ -212,6 +212,10 @@ function startEngine(Module) {
     
     if (!canvasContainer || !canvasLeft || !canvasRight) return; 
 
+    // RESTORED: Context definitions
+    const ctxLeft = canvasLeft.getContext('2d', { alpha: false });
+    const ctxRight = canvasRight.getContext('2d', { alpha: false });
+
     const appScript = document.querySelector('script[src*="app.js"]');
     if (appScript) {
         const versionMatch = appScript.getAttribute('src').match(/v=(\d+)/);
@@ -229,9 +233,8 @@ function startEngine(Module) {
 
     Module._init_grid();
     
-    // Standalone buffer with 32-bit pixel view
+    // Standalone image buffer decoupled from raw WASM heap reallocations
     const imgData = new ImageData(gridWidth, gridHeight);
-    const pixelU32 = new Uint32Array(imgData.data.buffer);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
@@ -309,22 +312,16 @@ function startEngine(Module) {
         if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
             const ptr = Module._get_pixel_buffer_pointer();
             const wasmBuf = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-            const wasmU32 = new Uint32Array(wasmBuf, ptr, gridWidth * gridHeight);
+            const wasmPixels = new Uint8ClampedArray(wasmBuf, ptr, gridWidth * gridHeight * 4);
 
-            // Left Canvas (Macro)
+            // Left Canvas
             Module._render_frame(leftLayer);
-            pixelU32.set(wasmU32);
-            for (let i = 3; i < imgData.data.length; i += 4) {
-                imgData.data[i] = 255;
-            }
+            imgData.data.set(wasmPixels);
             ctxLeft.putImageData(imgData, 0, 0);
 
-            // Right Canvas (Entropic)
+            // Right Canvas
             Module._render_frame(rightLayer);
-            pixelU32.set(wasmU32);
-            for (let i = 3; i < imgData.data.length; i += 4) {
-                imgData.data[i] = 255;
-            }
+            imgData.data.set(wasmPixels);
             ctxRight.putImageData(imgData, 0, 0);
 
             lastRenderedLeftLayer = leftLayer;
