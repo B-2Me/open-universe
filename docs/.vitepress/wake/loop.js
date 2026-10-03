@@ -28,7 +28,8 @@ export class EngineLoop {
 
             let ticked = false;
             if (state.isPlaying && this.frameTime > 0) {
-                this.accumulator += delta;
+                const safeDelta = Math.min(delta, 100);⁠
+                this.accumulator += safeDelta;
                 let steps = 0;
                 while (this.accumulator >= this.frameTime && steps < 5) {
                     this.bridge.tick();
