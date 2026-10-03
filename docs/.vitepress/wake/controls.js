@@ -69,13 +69,11 @@ export class ControlsManager {
             this.state.currentScenario = val;
             const res = loadScenario(val, this.bridge);
             
-            // Labels
             const md = document.getElementById('math_dissipation');
             const mt = document.getElementById('math_thermal_limit');
             if (md) md.innerText = res.targetDissipation;
             if (mt) mt.innerText = res.targetThermal;
 
-            // Slider positions
             const sd = document.getElementById('slider_dissipation');
             const st = document.getElementById('slider_thermal');
             if (sd) sd.value = res.targetDissipation;
@@ -90,7 +88,6 @@ export class ControlsManager {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
                 
-                // Clicking an already-active button toggles drawer visibility while keeping mode engaged
                 if (this.state.currentMode === mode) {
                     if (mode === 'place') {
                         document.getElementById('context_place')?.classList.toggle('show');
@@ -102,7 +99,6 @@ export class ControlsManager {
                     return;
                 }
 
-                // Switching to a new mode
                 this.state.currentMode = mode;
                 document.querySelectorAll('.segment-btn').forEach(b => 
                     b.classList.toggle('active', b.dataset.mode === mode)
@@ -130,12 +126,10 @@ export class ControlsManager {
             const isConfigOpen = contextConfig?.classList.contains('show');
             if (!isPlaceOpen && !isSampleOpen && !isConfigOpen) return;
 
-            // Don't close if clicking inside drawers, on the canvas, or on segment buttons
             if (contextPlace?.contains(e.target) || contextSample?.contains(e.target) || contextConfig?.contains(e.target)) return;
             if (canvasContainer?.contains(e.target)) return;
             if (segmentContainer?.contains(e.target)) return;
 
-            // Collapse drawers while keeping the current mode active
             contextPlace?.classList.remove('show');
             contextSample?.classList.remove('show');
             contextConfig?.classList.remove('show');
