@@ -1,6 +1,5 @@
 import {
     QUANTA_ANCHOR_WALL,
-    QUANTA_OCEAN_WATER,
     SPIN_STATIONARY,
     SPIN_UP,
     SPIN_UP_RIGHT,
@@ -10,13 +9,10 @@ import {
     SPIN_DOWN_LEFT,
     SPIN_LEFT,
     SPIN_UP_LEFT,
-    SPIN_FLUID_A,
-    SPIN_FLUID_B,
     HEAT_CRYO,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
     HEAT_ATMOSPHERE_GAS,
-    HEAT_IGNITER_PLASMA,
     packNode
 } from './constants.js';
 
@@ -28,8 +24,8 @@ export const DEFAULT_PALETTE = {
     "B": {
         icon: "💧", label: "Fluid",
         data: [
-            [packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_A, HEAT_COLD_WATER), packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_B, HEAT_COLD_WATER), packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_A, HEAT_COLD_WATER)],
-            [packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_B, HEAT_COLD_WATER), packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_A, HEAT_COLD_WATER), packNode(QUANTA_OCEAN_WATER, SPIN_FLUID_B, HEAT_COLD_WATER)]
+            [packNode(120, SPIN_DOWN_RIGHT, HEAT_COLD_WATER), packNode(120, SPIN_DOWN, HEAT_COLD_WATER), packNode(120, SPIN_DOWN_LEFT, HEAT_COLD_WATER)],
+            [packNode(120, SPIN_DOWN_LEFT, HEAT_COLD_WATER), packNode(120, SPIN_DOWN, HEAT_COLD_WATER), packNode(120, SPIN_DOWN_RIGHT, HEAT_COLD_WATER)]
         ]
     },
     "C": {
@@ -41,10 +37,11 @@ export const DEFAULT_PALETTE = {
     },
     "D": {
         icon: "🔥", label: "Igniter",
+        // Switched from Anchor Wall (255) to Heavy Plasma (180) and max heat (65000) so it violently blasts outward
         data: [
-            [packNode(QUANTA_ANCHOR_WALL, SPIN_UP_LEFT, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_UP, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_UP_RIGHT, HEAT_IGNITER_PLASMA)],
-            [packNode(QUANTA_ANCHOR_WALL, SPIN_LEFT, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_RIGHT, HEAT_IGNITER_PLASMA)],
-            [packNode(QUANTA_ANCHOR_WALL, SPIN_DOWN_LEFT, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_DOWN, HEAT_IGNITER_PLASMA), packNode(QUANTA_ANCHOR_WALL, SPIN_DOWN_RIGHT, HEAT_IGNITER_PLASMA)]
+            [packNode(180, SPIN_UP_LEFT, 65000), packNode(180, SPIN_UP, 65000), packNode(180, SPIN_UP_RIGHT, 65000)],
+            [packNode(180, SPIN_LEFT, 65000), packNode(180, SPIN_STATIONARY, 65000), packNode(180, SPIN_RIGHT, 65000)],
+            [packNode(180, SPIN_DOWN_LEFT, 65000), packNode(180, SPIN_DOWN, 65000), packNode(180, SPIN_DOWN_RIGHT, 65000)]
         ]
     },
     "E": {

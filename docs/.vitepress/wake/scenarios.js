@@ -6,17 +6,13 @@ import {
     THERMAL_LIMIT_DEFAULT,
     THERMAL_LIMIT_ENGINE_BELL,
     QUANTA_ANCHOR_WALL,
-    QUANTA_OCEAN_WATER,
-    QUANTA_COSMIC_DUST,
-    QUANTA_GAS_MIN,
-    QUANTA_GAS_VARIANCE,
     SPIN_STATIONARY,
+    SPIN_UP,
     SPIN_DOWN,
-    SPIN_FLUID_A,
-    SPIN_FLUID_B,
+    SPIN_RIGHT,
+    SPIN_LEFT,
     HEAT_ABSOLUTE_ZERO,
     HEAT_COLD_WATER,
-    HEAT_GEOTHERMAL_CRUST,
     HEAT_ROOM_AMBIENT,
     HEAT_VACUUM_CORE,
     packNode
@@ -45,7 +41,7 @@ export function loadScenario(type, bridge) {
                 const rx = Math.floor(Math.random() * GRID_WIDTH);
                 const ry = Math.floor(Math.random() * GRID_HEIGHT);
                 const spin = Math.floor(Math.random() * 8) + 1;
-                bridge.setNodeState(rx, ry, packNode(QUANTA_COSMIC_DUST, spin, 1000));
+                bridge.setNodeState(rx, ry, packNode(80, spin, 1000));
             }
             break;
         }
@@ -54,19 +50,19 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
             for (let y = 0; y < GRID_HEIGHT; y++) {
-                const depthRatio = y / GRID_HEIGHT;
-                const prob = Math.pow(depthRatio, 2.5) * 25;
-                const localHeat = Math.floor(50 + Math.pow(depthRatio, 2) * 14000);
+                const depth = y / GRID_HEIGHT;
+                const densityProb = Math.pow(depth, 2.2) * 55;
+                const airQuanta = Math.min(80, 2 + Math.floor(depth * 30));
+                const localHeat = Math.floor(20 + Math.pow(depth, 1.8) * 600);
 
                 for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (y < 4) {
+                    if (y < 3) {
                         bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ABSOLUTE_ZERO));
-                    } else if (y >= GRID_HEIGHT - 4) {
-                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_GEOTHERMAL_CRUST));
-                    } else if (Math.random() * 100 < prob) {
-                        const q = QUANTA_GAS_MIN + Math.floor(Math.random() * QUANTA_GAS_VARIANCE);
-                        const s = ((x + y) % 2 === 0) ? SPIN_FLUID_A : SPIN_FLUID_B;
-                        bridge.setNodeState(x, y, packNode(q, s, localHeat));
+                    } else if (y >= GRID_HEIGHT - 3) {
+                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT));
+                    } else if (Math.random() * 100 < densityProb) {
+                        const spin = ((x + y) % 3 === 0) ? SPIN_STATIONARY : ((x % 2 === 0) ? SPIN_RIGHT : SPIN_LEFT);
+                        bridge.setNodeState(x, y, packNode(airQuanta, spin, localHeat));
                     }
                 }
             }
@@ -78,11 +74,11 @@ export function loadScenario(type, bridge) {
             targetThermal = THERMAL_LIMIT_DEFAULT;
             for (let y = 0; y < GRID_HEIGHT; y++) {
                 for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (y > GRID_HEIGHT - 10) {
+                    if (y >= GRID_HEIGHT - 4) {
                         bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT));
-                    } else if (y > GRID_HEIGHT - 150) {
-                        const s = ((x + y) % 2 === 0) ? SPIN_FLUID_A : SPIN_FLUID_B;
-                        bridge.setNodeState(x, y, packNode(QUANTA_OCEAN_WATER, s, HEAT_COLD_WATER));
+                    } else if (y > GRID_HEIGHT - 160) {
+                        const s = ((x + y) % 2 === 0) ? SPIN_RIGHT : SPIN_LEFT;
+                        bridge.setNodeState(x, y, packNode(110, s, HEAT_COLD_WATER));
                     }
                 }
             }
@@ -113,33 +109,66 @@ export function loadScenario(type, bridge) {
 export function randomizeScenarioSoup(type, bridge) {
     bridge.clearGrid();
     const cx = Math.floor(GRID_WIDTH / 2);
+    const flavor = Math.floor(Math.random() * 3); // Picks 0, 1, or 2
 
     switch (type) {
         case "vacuum": {
-            for (let i = 0; i < 350; i++) {
-                const rx = Math.floor(Math.random() * GRID_WIDTH);
-                const ry = Math.floor(Math.random() * GRID_HEIGHT);
-                const spin = Math.floor(Math.random() * 8) + 1;
-                const heat = 800 + Math.floor(Math.random() * 20000);
-                bridge.setNodeState(rx, ry, packNode(QUANTA_COSMIC_DUST, spin, heat));
+            if (flavor === 0) {
+                // Flavor 0: Nebula Clusters (Dense explosive pockets)
+                for (let c = 0; c < 3; c++) {
+                    let nx = 50 + Math.random() * (GRID_WIDTH - 100);
+                    let ny = 50 + Math.random() * (GRID_HEIGHT - 100);
+                    for (let i = 0; i < 150; i++) {
+                        let rx = nx + (Math.random() * 40 - 20);
+                        let ry = ny + (Math.random() * 40 - 20);
+                        bridge.setNodeState(rx, ry, packNode(90, Math.floor(Math.random() * 8) + 1, 15000));
+                    }
+                }
+            } else if (flavor === 1) {
+                // Flavor 1: Asteroid Field (Floating deadlocked rocks)
+                for (let c = 0; c < 15; c++) {
+                    let nx = Math.floor(Math.random() * GRID_WIDTH);
+                    let ny = Math.floor(Math.random() * GRID_HEIGHT);
+                    bridge.setNodeState(nx, ny, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 10));
+                    bridge.setNodeState(nx + 1, ny, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 10));
+                    bridge.setNodeState(nx, ny + 1, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 10));
+                }
+            } else {
+                // Flavor 2: Uniform Cosmic Dust Storm
+                for (let i = 0; i < 500; i++) {
+                    let rx = Math.random() * GRID_WIDTH;
+                    let ry = Math.random() * GRID_HEIGHT;
+                    bridge.setNodeState(rx, ry, packNode(60, SPIN_RIGHT, 5000));
+                }
             }
             break;
         }
 
         case "atmosphere": {
-            for (let y = 0; y < GRID_HEIGHT; y++) {
-                const depth = y / GRID_HEIGHT;
-                for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (y < 4) {
-                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ABSOLUTE_ZERO));
-                    } else if (y >= GRID_HEIGHT - 4) {
-                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_GEOTHERMAL_CRUST));
-                    } else if (Math.random() * 100 < (depth * 35)) {
-                        const q = QUANTA_GAS_MIN + Math.floor(Math.random() * 8);
-                        const spin = Math.floor(Math.random() * 8) + 1;
-                        const heat = Math.floor(1000 + depth * 18000 + (Math.random() * 4000));
-                        bridge.setNodeState(x, y, packNode(q, spin, heat));
+            loadScenario("atmosphere", bridge);
+            if (flavor === 0) {
+                // Flavor 0: Massive Thermal Updraft Column
+                for (let y = GRID_HEIGHT - 5; y > 20; y--) {
+                    for (let x = cx - 10; x < cx + 10; x++) {
+                        if (Math.random() > 0.3) bridge.setNodeState(x, y, packNode(10, SPIN_UP, 45000));
                     }
+                }
+            } else if (flavor === 1) {
+                // Flavor 1: Severe Horizontal Microbursts
+                for (let y = 10; y < GRID_HEIGHT - 10; y++) {
+                    let dir = (y % 40 < 20) ? SPIN_RIGHT : SPIN_LEFT;
+                    if (Math.random() < 0.2) {
+                        for (let x = 0; x < GRID_WIDTH; x++) {
+                            if (Math.random() > 0.5) bridge.setNodeState(x, y, packNode(20, dir, 2000));
+                        }
+                    }
+                }
+            } else {
+                // Flavor 2: Scattered Hot Air Pockets
+                for (let i = 0; i < 20; i++) {
+                    let rx = Math.random() * GRID_WIDTH;
+                    let ry = Math.random() * GRID_HEIGHT;
+                    bridge.setNodeState(rx, ry, packNode(30, Math.floor(Math.random() * 8) + 1, 30000));
                 }
             }
             break;
@@ -147,15 +176,25 @@ export function randomizeScenarioSoup(type, bridge) {
 
         case "nozzle": {
             loadScenario("nozzle", bridge);
-            for (let y = 60; y < GRID_HEIGHT - 10; y++) {
-                const depth = y - 50;
-                const spread = 12 + Math.floor((depth * depth) / 260);
-                for (let x = cx - spread + 2; x < cx + spread - 2; x++) {
-                    if (Math.random() * 100 < 30) {
-                        const spin = (Math.random() * 100 < 70) ? SPIN_DOWN : (Math.floor(Math.random() * 8) + 1);
-                        const heat = 30000 + Math.floor(Math.random() * 32000);
-                        bridge.setNodeState(x, y, packNode(120, spin, heat));
+            if (flavor === 0) {
+                // Flavor 0: Smooth Steady Burn
+                for (let y = 50; y < GRID_HEIGHT - 10; y++) {
+                    for (let x = cx - 5; x <= cx + 5; x++) {
+                        bridge.setNodeState(x, y, packNode(150, SPIN_DOWN, 60000));
                     }
+                }
+            } else if (flavor === 1) {
+                // Flavor 1: Cold Start (Scattered explosive sparks)
+                for (let i = 0; i < 50; i++) {
+                    let rx = cx + (Math.random() * 20 - 10);
+                    let ry = 60 + Math.random() * 50;
+                    bridge.setNodeState(rx, ry, packNode(180, Math.floor(Math.random() * 8) + 1, 65000));
+                }
+            } else {
+                // Flavor 2: Chamber Instability (Asymmetric wall strike)
+                let side = Math.random() > 0.5 ? cx - 12 : cx + 12;
+                for (let y = 60; y < 100; y++) {
+                    bridge.setNodeState(side, y, packNode(200, SPIN_DOWN, 65000));
                 }
             }
             break;
@@ -163,12 +202,27 @@ export function randomizeScenarioSoup(type, bridge) {
 
         case "ocean": {
             loadScenario("ocean", bridge);
-            for (let y = GRID_HEIGHT - 140; y < GRID_HEIGHT - 10; y++) {
-                for (let x = 0; x < GRID_WIDTH; x++) {
-                    if (Math.random() * 100 < 15) {
-                        const spin = ((x + y) % 2 === 0) ? SPIN_FLUID_A : SPIN_FLUID_B;
-                        const heat = (Math.random() * 100 < 5) ? 15000 : HEAT_COLD_WATER;
-                        bridge.setNodeState(x, y, packNode(QUANTA_OCEAN_WATER, spin, heat));
+            if (flavor === 0) {
+                // Flavor 0: Thermal Seafloor Vents
+                let vent1 = cx - 50;
+                let vent2 = cx + 50;
+                for (let y = GRID_HEIGHT - 5; y > GRID_HEIGHT - 60; y--) {
+                    if (Math.random() > 0.2) bridge.setNodeState(vent1 + (Math.random() * 4 - 2), y, packNode(120, SPIN_UP, 45000));
+                    if (Math.random() > 0.2) bridge.setNodeState(vent2 + (Math.random() * 4 - 2), y, packNode(120, SPIN_UP, 45000));
+                }
+            } else if (flavor === 1) {
+                // Flavor 1: Massive Deep Shearing Currents
+                for (let y = GRID_HEIGHT - 120; y < GRID_HEIGHT - 20; y++) {
+                    let dir = (y % 60 < 30) ? SPIN_RIGHT : SPIN_LEFT;
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        if (Math.random() < 0.3) bridge.setNodeState(x, y, packNode(140, dir, HEAT_COLD_WATER));
+                    }
+                }
+            } else {
+                // Flavor 2: High Surface Churn
+                for (let y = GRID_HEIGHT - 160; y < GRID_HEIGHT - 130; y++) {
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        if (Math.random() < 0.4) bridge.setNodeState(x, y, packNode(110, Math.floor(Math.random() * 8) + 1, 5000));
                     }
                 }
             }
