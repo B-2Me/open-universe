@@ -55,11 +55,12 @@ export async function initWakeSimulator() {
         
         const statusEl = document.getElementById('diag_status');
         if (statusEl) {
-            statusEl.innerText = "ONLINE";
+            const version = bridge.getEngineVersion();
+            statusEl.innerText = `v${version}`;
             statusEl.style.color = "var(--pf-brand-hover)";
         }
 
-        // --- Fix iOS Safari hyper-speed resume glitch ---
+        // Fix iOS Safari hyper-speed resume glitch
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 loop.lastTimestamp = performance.now();
@@ -68,33 +69,11 @@ export async function initWakeSimulator() {
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        // Optional screen wake lock
-        let wakeLock = null;
-        if ('wakeLock' in navigator) {
-            const requestLock = async () => {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                } catch (e) {
-                    // Fail silently on battery saver or unsupported contexts
-                }
-            };
-            requestLock();
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible' && wakeLock !== null) {
-                    requestLock();
-                }
-            });
-        }
-
         loop.start();
 
-        // Teardown hook for Vue component unmount
         return () => {
             loop.stop();
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            if (wakeLock) {
-                wakeLock.release().catch(() => {});
-            }
         };
     } catch (err) {
         const banner = document.getElementById('error-banner');

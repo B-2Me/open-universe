@@ -11,6 +11,7 @@ import {
     QUANTA_GAS_MIN,
     QUANTA_GAS_VARIANCE,
     SPIN_STATIONARY,
+    SPIN_DOWN,
     SPIN_FLUID_A,
     SPIN_FLUID_B,
     HEAT_ABSOLUTE_ZERO,
@@ -107,4 +108,71 @@ export function loadScenario(type, bridge) {
     bridge.setDissipation(targetDissipation);
     bridge.setThermalLimit(targetThermal);
     return { targetDissipation, targetThermal };
+}
+
+export function randomizeScenarioSoup(type, bridge) {
+    bridge.clearGrid();
+    const cx = Math.floor(GRID_WIDTH / 2);
+
+    switch (type) {
+        case "vacuum": {
+            for (let i = 0; i < 350; i++) {
+                const rx = Math.floor(Math.random() * GRID_WIDTH);
+                const ry = Math.floor(Math.random() * GRID_HEIGHT);
+                const spin = Math.floor(Math.random() * 8) + 1;
+                const heat = 800 + Math.floor(Math.random() * 20000);
+                bridge.setNodeState(rx, ry, packNode(QUANTA_COSMIC_DUST, spin, heat));
+            }
+            break;
+        }
+
+        case "atmosphere": {
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                const depth = y / GRID_HEIGHT;
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (y < 4) {
+                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ABSOLUTE_ZERO));
+                    } else if (y >= GRID_HEIGHT - 4) {
+                        bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_GEOTHERMAL_CRUST));
+                    } else if (Math.random() * 100 < (depth * 35)) {
+                        const q = QUANTA_GAS_MIN + Math.floor(Math.random() * 8);
+                        const spin = Math.floor(Math.random() * 8) + 1;
+                        const heat = Math.floor(1000 + depth * 18000 + (Math.random() * 4000));
+                        bridge.setNodeState(x, y, packNode(q, spin, heat));
+                    }
+                }
+            }
+            break;
+        }
+
+        case "nozzle": {
+            loadScenario("nozzle", bridge);
+            for (let y = 60; y < GRID_HEIGHT - 10; y++) {
+                const depth = y - 50;
+                const spread = 12 + Math.floor((depth * depth) / 260);
+                for (let x = cx - spread + 2; x < cx + spread - 2; x++) {
+                    if (Math.random() * 100 < 30) {
+                        const spin = (Math.random() * 100 < 70) ? SPIN_DOWN : (Math.floor(Math.random() * 8) + 1);
+                        const heat = 30000 + Math.floor(Math.random() * 32000);
+                        bridge.setNodeState(x, y, packNode(120, spin, heat));
+                    }
+                }
+            }
+            break;
+        }
+
+        case "ocean": {
+            loadScenario("ocean", bridge);
+            for (let y = GRID_HEIGHT - 140; y < GRID_HEIGHT - 10; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (Math.random() * 100 < 15) {
+                        const spin = ((x + y) % 2 === 0) ? SPIN_FLUID_A : SPIN_FLUID_B;
+                        const heat = (Math.random() * 100 < 5) ? 15000 : HEAT_COLD_WATER;
+                        bridge.setNodeState(x, y, packNode(QUANTA_OCEAN_WATER, spin, heat));
+                    }
+                }
+            }
+            break;
+        }
+    }
 }

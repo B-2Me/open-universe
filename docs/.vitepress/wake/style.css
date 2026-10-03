@@ -38,7 +38,7 @@
   width: calc(100% - 32px);
   max-width: 600px;
   aspect-ratio: 1 / 1;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 8px auto;
   overflow: hidden;
   border-left: 2px solid var(--pf-bevel-dark);
   border-top: 2px solid var(--pf-bevel-dark);
@@ -115,14 +115,14 @@
   font-weight: 600;
 }
 
-/* Tool Context Area - Clean Stacked Layout */
+/* Tool Context Area - Positioned Directly Under Canvas */
 .context-popup {
   display: none;
   background: var(--pf-bg-input);
   border: 1px solid var(--pf-bevel-light);
   border-radius: 4px;
   padding: 8px 10px;
-  margin: 6px 0;
+  margin: 0 16px 8px 16px;
 }
 .context-popup.show {
   display: flex;
@@ -145,7 +145,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Tactical Beveled Buttons (Zero Blur / Pure 1px Inset Geometry) */
+/* Tactical Beveled Buttons */
 .button-group, .segment-container {
   display: flex;
   background: var(--pf-bg-main);
@@ -192,6 +192,27 @@
   border-right: 1px solid #182e15;
   color: #ffffff;
   font-weight: 700;
+}
+
+/* High-Visibility Amber Reset Button */
+#btn_reset {
+  background: #2b210c;
+  border-top: 1px solid #7c6225;
+  border-left: 1px solid #7c6225;
+  border-bottom: 1px solid #140f06;
+  border-right: 1px solid #140f06;
+  color: #f0c354;
+  font-weight: 700;
+}
+#btn_reset:hover {
+  background: #3a2d10;
+  color: #ffe685;
+}
+#btn_reset:active {
+  border-top: 1px solid #140f06;
+  border-left: 1px solid #140f06;
+  border-bottom: 1px solid #7c6225;
+  border-right: 1px solid #7c6225;
 }
 
 /* Layer Toggle Buttons */
@@ -314,6 +335,9 @@ input[type=range] {
   #canvas-container {
     max-height: 48vh;
     margin: 0 auto 8px auto;
+  }
+  .context-popup {
+    margin: 0 12px 8px 12px;
   }
   #sidebar {
     width: 100%;

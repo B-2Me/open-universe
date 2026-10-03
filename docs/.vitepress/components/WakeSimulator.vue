@@ -43,9 +43,32 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <!-- Tool Popups Placed Directly Under Canvas -->
+        <div id="context_place" class="context-popup">
+          <div class="context-group">
+            <div class="context-label">Tool Mode</div>
+            <div class="button-group" id="injection_mode_selector">
+              <button class="group-btn active" data-val="clone">📋 Clone</button>
+              <button class="group-btn" data-val="quanta">🧱 Density</button>
+              <button class="group-btn" data-val="heat">🔥 Heat</button>
+              <button class="group-btn" data-val="spin">🔄 Spin</button>
+            </div>
+          </div>
+          <div class="context-group" style="margin-top: 4px;">
+            <div class="context-label">Palette</div>
+            <div id="brush_selector" class="palette-grid"></div>
+          </div>
+        </div>
+
+        <div id="context_sample" class="context-popup">
+          <div class="deck-row">
+            <span class="sub-label">Radius: <span id="val_radius">10</span>px</span>
+            <input type="range" id="slider_radius" min="1" max="50" value="10" class="slider-fill">
+          </div>
+        </div>
+
         <!-- Control Deck UI -->
         <div id="control-deck">
-          <!-- MOVED: Action bar directly under canvas -->
           <div class="button-group" style="margin-bottom: 8px;">
             <button id="btn_reset" class="group-btn">🔄 Reset</button>
             <button id="btn_soup" class="group-btn">🎲 Random</button>
@@ -55,33 +78,8 @@ onUnmounted(() => {
 
           <div class="segment-container">
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
-            <button class="segment-btn" data-mode="place">✏️️ Place</button>
+            <button class="segment-btn" data-mode="place">✏️ Place</button>
             <button class="segment-btn" data-mode="sample">🔍 Sample</button>
-          </div>
-
-          <!-- Place Context Menu -->
-          <div id="context_place" class="context-popup">
-            <div class="context-group">
-              <div class="context-label">Tool Mode</div>
-              <div class="button-group" id="injection_mode_selector">
-                <button class="group-btn active" data-val="clone">📋 Clone</button>
-                <button class="group-btn" data-val="quanta">🧱 Density</button>
-                <button class="group-btn" data-val="heat">🔥 Heat</button>
-                <button class="group-btn" data-val="spin">🔄 Spin</button>
-              </div>
-            </div>
-            <div class="context-group" style="margin-top: 4px;">
-              <div class="context-label">Palette</div>
-              <div id="brush_selector" class="palette-grid"></div>
-            </div>
-          </div>
-
-          <!-- Sample Context Menu -->
-          <div id="context_sample" class="context-popup">
-            <div class="deck-row">
-              <span class="sub-label">Radius: <span id="val_radius">10</span>px</span>
-              <input type="range" id="slider_radius" min="1" max="50" value="10" class="slider-fill">
-            </div>
           </div>
 
           <!-- Sliders -->
@@ -112,7 +110,7 @@ onUnmounted(() => {
       <!-- Telemetry Sidebar -->
       <div id="sidebar">
         <div class="telemetry-box">
-          <div class="telemetry-label">Status</div>
+          <div class="telemetry-label">Build</div>
           <div id="diag_status" class="telemetry-value">BOOTING</div>
         </div>
         <div class="telemetry-box">
@@ -146,7 +144,7 @@ onUnmounted(() => {
 
 .wake-sandbox {
   margin: 1.5rem 0;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   background: #0a0e0a;
