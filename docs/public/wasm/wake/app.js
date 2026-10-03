@@ -128,7 +128,6 @@ function loadScenario(type, Module) {
         for (let y = cy - 10; y <= cy + 10; y++) {
             for (let x = cx - 10; x <= cx + 10; x++) {
                 if (Math.hypot(x - cx, y - cy) <= 8) {
-                    // FIX: Anchored star core (Spin 0)
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 48000);
                 }
             }
@@ -141,23 +140,22 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 8;
-        targetThermal = 45000; 
+        targetDissipation = 10; // Raised slightly to handle baseline heat
+        targetThermal = 50000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
             let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y < 5) {
-                    // FIX: True Vacuum Ceiling. 0 Mass, 0 Spin. Blocks wrap-around safely.
-                    Module._set_node_state(x, y, (0 << 24) | (0 << 16) | 0); 
+                    // ACTUAL WALL: Quanta 255 triggers target_deadlocked. Blocks wrap-around.
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
-                    // FIX: Anchored Geothermal Floor (Spin 0)
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
                     let q = 10 + Math.floor(Math.random() * 30); 
-                    let s = Math.floor(Math.random() * 8) + 1; // Natural gas motion
+                    let s = Math.floor(Math.random() * 8) + 1; 
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -172,7 +170,6 @@ function loadScenario(type, Module) {
             let spread = 15 + Math.floor((depth * depth) / 250); 
             for (let x = 0; x < gridWidth; x++) {
                 if (x < cx - spread || x > cx + spread) {
-                    // FIX: Anchored structural nozzle wall (Spin 0)
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
                 }
             }
@@ -180,18 +177,17 @@ function loadScenario(type, Module) {
     }
     else if (type === "ocean") {
         targetDissipation = 15;
-        targetThermal = 45000; // Raised limit to survive initial fluid settling
+        targetThermal = 50000; 
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
-                    // FIX: Anchored Seabed (Spin 0)
+                    // ACTUAL WALL: Quanta 255. Spin 0.
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
                 } else if (y > gridHeight - 150) { 
-                    // FIX: 85% Density so it can flow. Random natural spins. Low initial heat.
-                    if (Math.random() * 100 < 85) { 
-                        let s = Math.floor(Math.random() * 8) + 1; 
-                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 10); 
-                    }
+                    // ACTUAL FLUID: Quanta 200 (renders cyan). 
+                    // Opposite horizontal spins calculate kinetic_heat += 0. Never collides with seabed.
+                    let s = ((x + y) % 2 === 0) ? 3 : 7; 
+                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); 
                 }
             }
         }
