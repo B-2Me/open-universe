@@ -31,10 +31,15 @@ export async function initWakeSimulator() {
         };
 
         const onTelemetry = (b) => {
-            document.getElementById('diag_quanta').innerText = b.getTotalQuanta().toLocaleString();
-            document.getElementById('diag_heat').innerText = b.getTotalHeat().toLocaleString();
-            document.getElementById('diag_phase').innerText = b.getPhaseAlignment().toFixed(1) + "%";
-            document.getElementById('diag_yield').innerText = b.getYield().toLocaleString();
+            const dq = document.getElementById('diag_quanta');
+            const dh = document.getElementById('diag_heat');
+            const dp = document.getElementById('diag_phase');
+            const dy = document.getElementById('diag_yield');
+
+            if (dq) dq.innerText = b.getTotalQuanta().toLocaleString();
+            if (dh) dh.innerText = b.getTotalHeat().toLocaleString();
+            if (dp) dp.innerText = b.getPhaseAlignment().toFixed(1) + "%";
+            if (dy) dy.innerText = b.getYield().toLocaleString();
         };
 
         const loop = new EngineLoop({ bridge, renderer, getState: () => state, onTelemetry });
@@ -42,7 +47,11 @@ export async function initWakeSimulator() {
         new ControlsManager({ bridge, palette, loop, state });
 
         loadScenario(state.currentScenario, bridge);
-        document.getElementById('diag_nodes').innerText = (GRID_WIDTH * GRID_HEIGHT).toLocaleString();
+
+        const diagNodes = document.getElementById('diag_nodes');
+        if (diagNodes) {
+            diagNodes.innerText = (GRID_WIDTH * GRID_HEIGHT).toLocaleString();
+        }
         
         const statusEl = document.getElementById('diag_status');
         if (statusEl) {
@@ -50,22 +59,49 @@ export async function initWakeSimulator() {
             statusEl.style.color = "var(--pf-brand-hover)";
         }
 
+        // --- Fix iOS Safari hyper-speed resume glitch ---
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                loop.lastTimestamp = performance.now();
+                loop.accumulator = 0;
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Optional screen wake lock
+        let wakeLock = null;
+        if ('wakeLock' in navigator) {
+            const requestLock = async () => {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (e) {
+                    // Fail silently on battery saver or unsupported contexts
+                }
+            };
+            requestLock();
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && wakeLock !== null) {
+                    requestLock();
+                }
+            });
+        }
+
         loop.start();
 
+        // Teardown hook for Vue component unmount
         return () => {
             loop.stop();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (wakeLock) {
+                wakeLock.release().catch(() => {});
+            }
         };
     } catch (err) {
         const banner = document.getElementById('error-banner');
-        if (banner) { banner.innerText = err.message; banner.style.display = 'block'; }
-        console.error(err);
-    }
-}
-
-if (typeof window !== 'undefined') {
-    if (document.readyState === 'loading') {
-        window.addEventListener('DOMContentLoaded', initWakeSimulator);
-    } else {
-        initWakeSimulator();
+        if (banner) { 
+            banner.innerText = err.message; 
+            banner.style.display = 'block'; 
+        }
+        console.error("Planck Simulator initialization error:", err);
     }
 }
