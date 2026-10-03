@@ -141,6 +141,8 @@ onUnmounted(() => {
 
 <style scoped>
 /* Scoped isolation wrapper */
+/* Import your existing style.css rules directly here or via relative import */
+@import '../wake/style.css';
 .wake-sandbox {
   margin: 1.5rem 0;
   border-radius: 12px;
@@ -150,7 +152,4 @@ onUnmounted(() => {
   color: #e0e0e0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
 }
-
-/* Import your existing style.css rules directly here or via relative import */
-@import '../wake/style.css';
 </style>
