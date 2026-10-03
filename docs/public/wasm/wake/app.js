@@ -146,12 +146,19 @@ function loadScenario(type, Module) {
             let depthRatio = y / gridHeight;
             let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
-                if (y > gridHeight - 5) {
-                    // Geothermal Floor
+                // FIX 1: Absolute Zero Space Wall at the ceiling to block wrap-around
+                if (y < 5) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
+                } 
+                // Geothermal floor at the bottom
+                else if (y > gridHeight - 5) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
-                } else if (y > 50 && Math.random() * 100 < prob) { 
+                } 
+                // Atmospheric Gas
+                else if (Math.random() * 100 < prob) { 
                     let q = 10 + Math.floor(Math.random() * 30); 
-                    let s = 0; // FIX: Perfectly still air. Heat will drive convection naturally.
+                    // FIX 2: Lateral spins (East/West) to drift without boiling
+                    let s = (Math.random() > 0.5) ? 3 : 7; 
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -177,10 +184,11 @@ function loadScenario(type, Module) {
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
-                } else if (y > gridHeight - 150) { // FIX: Reduced volume to a proportional basin
-                    // FIX: 100% density (no rifts) and 0 spin (perfect rest)
-                    Module._set_node_state(x, y, (200 << 24) | (0 << 16) | 20); 
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); // Seabed
+                } else if (y > gridHeight - 150) { 
+                    // FIX 3: 100% density with lateral complementary spins
+                    let s = (Math.random() > 0.5) ? 3 : 7; 
+                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); 
                 }
             }
         }
