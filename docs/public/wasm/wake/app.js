@@ -14,6 +14,9 @@ let leftLayer = 0;  // 0 = Macro
 let rightLayer = 1; // 1 = Metabolic, 2 = Phase, 3 = Entropic
 const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropic"];
 
+// State tracker for biome resets
+let currentScenario = "vacuum";
+
 // --- DYNAMIC PALETTE MANAGER ---
 const defaultPalette = {
     "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
@@ -121,7 +124,28 @@ function loadScenario(type, Module) {
     const cx = Math.floor(gridWidth / 2);
     const cy = Math.floor(gridHeight / 2);
 
-    if (type === "atmosphere") {
+    if (type === "vacuum") {
+        targetDissipation = 15;
+        targetThermal = 50000;
+        
+        // Draw a central glowing singularity/star (Spin 0 anchor)
+        for (let y = cy - 10; y <= cy + 10; y++) {
+            for (let x = cx - 10; x <= cx + 10; x++) {
+                if (Math.hypot(x - cx, y - cy) <= 8) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 65000);
+                }
+            }
+        }
+        
+        // Scatter some dynamic cosmic dust
+        for (let i = 0; i < 200; i++) {
+            let rx = Math.floor(Math.random() * gridWidth);
+            let ry = Math.floor(Math.random() * gridHeight);
+            let spin = Math.floor(Math.random() * 8) + 1;
+            Module._set_node_state(rx, ry, (80 << 24) | (spin << 16) | 1000);
+        }
+    }
+    else if (type === "atmosphere") {
         targetDissipation = 2;
         targetThermal = 300;
         for (let y = 100; y < gridHeight; y++) {
@@ -384,37 +408,9 @@ function startEngine(Module) {
 
     setupButtonGroup('scenario_selector', val => {
         if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
-        
-        if (val === "vacuum") {
-            Module._clear_grid();
-            Module._set_dissipation(15);
-            Module._set_thermal_limit(50000);
-            
-            const md = document.getElementById('math_dissipation');
-            const mt = document.getElementById('math_thermal_limit');
-            const sd = document.getElementById('slider_dissipation');
-            const st = document.getElementById('slider_thermal');
-            
-            if (md) md.innerText = "15";
-            if (mt) mt.innerText = "50000";
-            if (sd) sd.value = 15;
-            if (st) st.value = 50000;
-        } else {
-            if (typeof loadScenario === 'function') {
-                loadScenario(val, Module);
-            }
-        }
+        currentScenario = val;
+        loadScenario(currentScenario, Module);
         forceRedraw = true;
-    });
-    
-    setupButtonGroup('biome_selector', val => {
-        const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
-        Module._set_dissipation(biomes[val][0]);
-        Module._set_thermal_limit(biomes[val][1]);
-        const md = document.getElementById('math_dissipation');
-        const mt = document.getElementById('math_thermal_limit');
-        if (md) md.innerText = biomes[val][0];
-        if (mt) mt.innerText = biomes[val][1];
     });
     
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
@@ -437,15 +433,21 @@ function startEngine(Module) {
         forceRedraw = true; 
     });
     
-    bindBtn('btn_clear', () => {
+    bindBtn('btn_reset', () => {
         if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
-        Module._clear_grid();
+        loadScenario(currentScenario, Module);
         forceRedraw = true;
     });
-    
+
     bindBtn('btn_soup', () => {
         if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
         Module._randomize_grid();
+        forceRedraw = true;
+    });
+    
+    bindBtn('btn_clear', () => {
+        if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
+        Module._clear_grid();
         forceRedraw = true;
     });
 
@@ -855,7 +857,8 @@ function startEngine(Module) {
         if(isDragging) { isDragging = false; constrainView(); } 
     });
 
-    Module._clear_grid(); 
+    // Initialize the default biome
+    loadScenario(currentScenario, Module); 
     animationId = requestAnimationFrame(renderFrame);
 }
 
