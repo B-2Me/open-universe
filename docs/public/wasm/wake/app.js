@@ -128,6 +128,7 @@ function loadScenario(type, Module) {
         for (let y = cy - 10; y <= cy + 10; y++) {
             for (let x = cx - 10; x <= cx + 10; x++) {
                 if (Math.hypot(x - cx, y - cy) <= 8) {
+                    // FIX: Anchored star core (Spin 0)
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 48000);
                 }
             }
@@ -146,19 +147,17 @@ function loadScenario(type, Module) {
             let depthRatio = y / gridHeight;
             let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
-                // Perfect frictionless checkerboard spin
-                let s = ((x + y) % 2 === 0) ? 3 : 7; 
-                
                 if (y < 5) {
-                    // Absolute Zero Space Wall (blocks the toroidal top-down wrap-around)
-                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 0); 
+                    // FIX: True Vacuum Ceiling. 0 Mass, 0 Spin. Blocks wrap-around safely.
+                    Module._set_node_state(x, y, (0 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
-                    // Geothermal Floor
-                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 35000); 
+                    // FIX: Anchored Geothermal Floor (Spin 0)
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
                     let q = 10 + Math.floor(Math.random() * 30); 
+                    let s = Math.floor(Math.random() * 8) + 1; // Natural gas motion
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -173,26 +172,26 @@ function loadScenario(type, Module) {
             let spread = 15 + Math.floor((depth * depth) / 250); 
             for (let x = 0; x < gridWidth; x++) {
                 if (x < cx - spread || x > cx + spread) {
-                    let s = ((x + y) % 2 === 0) ? 3 : 7;
-                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 500);
+                    // FIX: Anchored structural nozzle wall (Spin 0)
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
                 }
             }
         }
     }
     else if (type === "ocean") {
-        targetDissipation = 10;
-        targetThermal = 20000; 
+        targetDissipation = 15;
+        targetThermal = 45000; // Raised limit to survive initial fluid settling
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
-                // Perfect frictionless checkerboard spin
-                let s = ((x + y) % 2 === 0) ? 3 : 7; 
-                
                 if (y > gridHeight - 10) {
-                    // Solid Seabed
-                    Module._set_node_state(x, y, (255 << 24) | (s << 16) | 500); 
+                    // FIX: Anchored Seabed (Spin 0)
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
                 } else if (y > gridHeight - 150) { 
-                    // 100% Dense Water (Removed the random gap generation completely)
-                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); 
+                    // FIX: 85% Density so it can flow. Random natural spins. Low initial heat.
+                    if (Math.random() * 100 < 85) { 
+                        let s = Math.floor(Math.random() * 8) + 1; 
+                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 10); 
+                    }
                 }
             }
         }
