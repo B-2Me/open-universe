@@ -229,9 +229,8 @@ function startEngine(Module) {
 
     Module._init_grid();
     
-    let buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    let pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-    let imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+    // Dedicated buffer decoupled from direct WASM memory
+    const imgData = new ImageData(gridWidth, gridHeight);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
@@ -307,10 +306,16 @@ function startEngine(Module) {
         }
         
         if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
+            const ptr = Module._get_pixel_buffer_pointer();
+            const wasmBuf = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+            const wasmPixels = new Uint8ClampedArray(wasmBuf, ptr, gridWidth * gridHeight * 4);
+
             Module._render_frame(leftLayer);
+            imgData.data.set(wasmPixels);
             ctxLeft.putImageData(imgData, 0, 0);
 
             Module._render_frame(rightLayer);
+            imgData.data.set(wasmPixels);
             ctxRight.putImageData(imgData, 0, 0);
 
             lastRenderedLeftLayer = leftLayer;
@@ -508,10 +513,6 @@ function startEngine(Module) {
             if (typeof Module._free_vtk === 'function') {
                 Module._free_vtk();
             }
-
-            buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-            pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-            imgData = new ImageData(pixelArray, gridWidth, gridHeight);
         } else {
             alert("VTK Export requires the updated C-engine functions to be compiled.");
         }
@@ -674,11 +675,7 @@ function startEngine(Module) {
                     Module._set_node_state(startX + x, startY + y, val);
                 } else if (val !== 0 && quanta > 0) {
                     if (currentInjectionMode === 'quanta') {
-                        if (typeof Module._add_quanta_impedance === 'function') {
-                            Module._add_quanta(startX + x, startY + y, quanta); 
-                        } else {
-                            Module._add_quanta(startX + x, startY + y, quanta);
-                        }
+                        Module._add_quanta(startX + x, startY + y, quanta); 
                     } else if (currentInjectionMode === 'heat') {
                         const heat = val & 0xFFFF;
                         Module._add_heat(startX + x, startY + y, heat > 0 ? heat : 500);
