@@ -229,8 +229,9 @@ function startEngine(Module) {
 
     Module._init_grid();
     
-    // Dedicated buffer decoupled from direct WASM memory
+    // Standalone buffer with 32-bit pixel view
     const imgData = new ImageData(gridWidth, gridHeight);
+    const pixelU32 = new Uint32Array(imgData.data.buffer);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
@@ -308,14 +309,22 @@ function startEngine(Module) {
         if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
             const ptr = Module._get_pixel_buffer_pointer();
             const wasmBuf = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-            const wasmPixels = new Uint8ClampedArray(wasmBuf, ptr, gridWidth * gridHeight * 4);
+            const wasmU32 = new Uint32Array(wasmBuf, ptr, gridWidth * gridHeight);
 
+            // Left Canvas (Macro)
             Module._render_frame(leftLayer);
-            imgData.data.set(wasmPixels);
+            pixelU32.set(wasmU32);
+            for (let i = 3; i < imgData.data.length; i += 4) {
+                imgData.data[i] = 255;
+            }
             ctxLeft.putImageData(imgData, 0, 0);
 
+            // Right Canvas (Entropic)
             Module._render_frame(rightLayer);
-            imgData.data.set(wasmPixels);
+            pixelU32.set(wasmU32);
+            for (let i = 3; i < imgData.data.length; i += 4) {
+                imgData.data[i] = 255;
+            }
             ctxRight.putImageData(imgData, 0, 0);
 
             lastRenderedLeftLayer = leftLayer;
