@@ -11,20 +11,22 @@ let isSpaceDown = false;
 let scrollTimeout = null;
 
 let leftLayer = 0;  // 0 = Macro
-let rightLayer = 3; // FIX: Defaulting to Entropic View
+let rightLayer = 3; // 3 = Entropic
 const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropic"];
 
 let currentScenario = "vacuum";
 
 const defaultPalette = {
-    "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
-    "B": { icon: "🧱", label: "Wall", data: [
+    "A": { icon: "🧱", label: "Wall", data: [
         [(255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500]
     ]},
-    "C": { icon: "🕳", label: "Erase", data: [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0]
+    "B": { icon: "💧", label: "Fluid", data: [
+        [(200<<24)|(3<<16)|20, (200<<24)|(7<<16)|20, (200<<24)|(3<<16)|20],
+        [(200<<24)|(7<<16)|20, (200<<24)|(3<<16)|20, (200<<24)|(7<<16)|20]
+    ]},
+    "C": { icon: "💨", label: "Gas", data: [
+        [(5<<24)|(8<<16)|10000, 0, (5<<24)|(2<<16)|10000],
+        [0, (5<<24)|(1<<16)|10000, 0]
     ]},
     "D": { icon: "🔥", label: "Igniter", data: [
         [(255<<24)|(8<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(2<<16)|60000],
@@ -32,19 +34,18 @@ const defaultPalette = {
         [(255<<24)|(6<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(4<<16)|60000]
     ]},
     "E": { icon: "🧊", label: "Cryo", data: [
-        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
-        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
-        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1]
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1],
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1]
     ]},
-    "F": { icon: "🛡️", label: "Baffle", data: [
-        [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500],
-        [0, (255<<24)|(0<<16)|500, 0],
-        [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500]
-    ]},
-    "G": { icon: "⚙️", label: "Rotor", data: [
+    "F": { icon: "⚙️", label: "Rotor", data: [
         [(255<<24)|(3<<16)|500, (255<<24)|(3<<16)|500, (255<<24)|(5<<16)|500],
         [(255<<24)|(1<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(5<<16)|500],
         [(255<<24)|(1<<16)|500, (255<<24)|(7<<16)|500, (255<<24)|(7<<16)|500]
+    ]},
+    "G": { icon: "🕳", label: "Erase", data: [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
     ]}
 };
 
@@ -93,6 +94,13 @@ function renderPaletteUI() {
     if (!container) return;
     container.innerHTML = '';
     
+    const scratchBtn = document.createElement('button');
+    scratchBtn.className = `palette-btn ${currentBrush === 'custom' ? 'active' : ''}`;
+    scratchBtn.dataset.val = 'custom';
+    scratchBtn.id = 'opt_custom';
+    scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Copy</span>`;
+    container.appendChild(scratchBtn);
+
     for (const [key, brush] of Object.entries(fullPalette)) {
         const btn = document.createElement('button');
         btn.className = `palette-btn ${currentBrush === key ? 'active' : ''}`;
@@ -101,13 +109,6 @@ function renderPaletteUI() {
         container.appendChild(btn);
     }
     
-    const scratchBtn = document.createElement('button');
-    scratchBtn.className = `palette-btn ${currentBrush === 'custom' ? 'active' : ''}`;
-    scratchBtn.dataset.val = 'custom';
-    scratchBtn.id = 'opt_custom';
-    scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label" id="scratch_label">Scratch</span>`;
-    container.appendChild(scratchBtn);
-
     setupButtonGroup('brush_selector', val => {
         currentBrush = val;
     }, '.palette-btn');
@@ -147,15 +148,12 @@ function loadScenario(type, Module) {
             let prob = depthRatio * depthRatio * depthRatio * 20; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y < 5) {
-                    // Absolute Zero Space Wall
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
-                    // Geothermal Floor
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 15000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
-                    // Ultralight gas to prevent kinetic friction buildup, spawned hot to prevent thermal shock
                     let q = 2 + Math.floor(Math.random() * 4); 
                     let s = Math.floor(Math.random() * 8) + 1; 
                     let h = 10000;
@@ -214,7 +212,6 @@ function startEngine(Module) {
     
     if (!canvasContainer || !canvasLeft || !canvasRight) return; 
 
-    // Version Telemetry Update
     const appScript = document.querySelector('script[src*="app.js"]');
     if (appScript) {
         const versionMatch = appScript.getAttribute('src').match(/v=(\d+)/);
@@ -232,9 +229,10 @@ function startEngine(Module) {
 
     Module._init_grid();
     
+    let ptr = Module._get_pixel_buffer_pointer();
     let buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    let pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-    let imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+    let pixelArray = new Uint8ClampedArray(buffer, ptr, gridWidth * gridHeight * 4);
+    let imgData = new ImageData(gridWidth, gridHeight);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
@@ -310,10 +308,17 @@ function startEngine(Module) {
         }
         
         if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
+            if (buffer.byteLength === 0) {
+                buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+                pixelArray = new Uint8ClampedArray(buffer, ptr, gridWidth * gridHeight * 4);
+            }
+
             Module._render_frame(leftLayer);
+            imgData.data.set(pixelArray);
             ctxLeft.putImageData(imgData, 0, 0);
 
             Module._render_frame(rightLayer);
+            imgData.data.set(pixelArray);
             ctxRight.putImageData(imgData, 0, 0);
 
             lastRenderedLeftLayer = leftLayer;
@@ -514,7 +519,7 @@ function startEngine(Module) {
 
             buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
             pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-            imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+            imgData = new ImageData(gridWidth, gridHeight);
         } else {
             alert("VTK Export requires the updated C-engine functions to be compiled.");
         }
