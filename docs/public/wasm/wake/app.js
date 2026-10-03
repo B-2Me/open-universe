@@ -118,8 +118,8 @@ function loadScenario(type, Module) {
     let targetDissipation = 15;
     let targetThermal = 50000;
 
-    const cx = gridWidth / 2;
-    const cy = gridHeight / 2;
+    const cx = Math.floor(gridWidth / 2);
+    const cy = Math.floor(gridHeight / 2);
 
     if (type === "atmosphere") {
         targetDissipation = 2;
@@ -128,7 +128,10 @@ function loadScenario(type, Module) {
             let depthRatio = (y - 100) / (gridHeight - 100);
             let prob = depthRatio * depthRatio * 100; 
             for (let x = 0; x < gridWidth; x++) {
-                if (Math.random() * 100 < prob) {
+                // Draw a solid planet crust at the bottom
+                if (y > gridHeight - 5) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
+                } else if (Math.random() * 100 < prob) {
                     let q = 50 + Math.floor(Math.random() * 50); 
                     let s = Math.floor(Math.random() * 8) + 1;  
                     let h = q * 2;
@@ -155,7 +158,10 @@ function loadScenario(type, Module) {
         targetThermal = 100;
         for (let y = cy; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
-                if (Math.random() * 100 > 5) {
+                // Draw a solid seabed basin
+                if (y > gridHeight - 10) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
+                } else if (Math.random() * 100 > 5) {
                     let s = (Math.random() > 0.5) ? 3 : 7; 
                     Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
                 }
