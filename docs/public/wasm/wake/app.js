@@ -11,13 +11,11 @@ let isSpaceDown = false;
 let scrollTimeout = null;
 
 let leftLayer = 0;  // 0 = Macro
-let rightLayer = 1; // 1 = Metabolic, 2 = Phase, 3 = Entropic
+let rightLayer = 3; // FIX: Defaulting to Entropic View
 const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropic"];
 
-// State tracker for biome resets
 let currentScenario = "vacuum";
 
-// --- DYNAMIC PALETTE MANAGER ---
 const defaultPalette = {
     "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
     "B": { icon: "🧱", label: "Wall", data: [
@@ -29,7 +27,6 @@ const defaultPalette = {
         [0, 0, 0]
     ]},
     "D": { icon: "🔥", label: "Igniter", data: [
-        // FIX: Vectors inverted to push OUTWARD (Explosion) instead of inward
         [(255<<24)|(8<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(2<<16)|60000],
         [(255<<24)|(7<<16)|60000, (255<<24)|(0<<16)|60000, (255<<24)|(3<<16)|60000],
         [(255<<24)|(6<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(4<<16)|60000]
@@ -45,7 +42,6 @@ const defaultPalette = {
         [(255<<24)|(0<<16)|500, 0, (255<<24)|(0<<16)|500]
     ]},
     "G": { icon: "⚙️", label: "Rotor", data: [
-        // FIX: Adjusted to a perfect clockwise momentum vortex
         [(255<<24)|(3<<16)|500, (255<<24)|(3<<16)|500, (255<<24)|(5<<16)|500],
         [(255<<24)|(1<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(5<<16)|500],
         [(255<<24)|(1<<16)|500, (255<<24)|(7<<16)|500, (255<<24)|(7<<16)|500]
@@ -129,8 +125,6 @@ function loadScenario(type, Module) {
     if (type === "vacuum") {
         targetDissipation = 15;
         targetThermal = 50000;
-        
-        // FIX: Star heat lowered to 48000 to remain safely under the 50000 thermal unwinding limit
         for (let y = cy - 10; y <= cy + 10; y++) {
             for (let x = cx - 10; x <= cx + 10; x++) {
                 if (Math.hypot(x - cx, y - cy) <= 8) {
@@ -138,7 +132,6 @@ function loadScenario(type, Module) {
                 }
             }
         }
-        
         for (let i = 0; i < 200; i++) {
             let rx = Math.floor(Math.random() * gridWidth);
             let ry = Math.floor(Math.random() * gridHeight);
@@ -147,18 +140,18 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 15;
-        targetThermal = 40000; 
-        for (let y = 100; y < gridHeight; y++) {
-            let depthRatio = (y - 100) / (gridHeight - 100);
-            let prob = depthRatio * depthRatio * 100; 
+        targetDissipation = 8;
+        targetThermal = 1000; 
+        for (let y = 0; y < gridHeight; y++) {
+            let depthRatio = y / gridHeight;
+            let prob = depthRatio * depthRatio * depthRatio * 80; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 5) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
                 } else if (Math.random() * 100 < prob) {
-                    let q = 50 + Math.floor(Math.random() * 50); 
-                    let s = 5; // Uniform Gravity
-                    let h = q * 2;
+                    let q = 10 + Math.floor(Math.random() * 40); 
+                    let s = Math.floor(Math.random() * 8) + 1; 
+                    let h = q * 3;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
             }
@@ -178,15 +171,17 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "ocean") {
-        targetDissipation = 25;
-        targetThermal = 60000; 
-        for (let y = cy; y < gridHeight; y++) {
+        targetDissipation = 15;
+        targetThermal = 15000; 
+        for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
-                } else if (Math.random() * 100 > 5) {
-                    let s = 5; // Uniform Gravity
-                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
+                } else if (y > gridHeight - 150) { 
+                    if (Math.random() * 100 > 2) { 
+                        let s = Math.floor(Math.random() * 8) + 1; 
+                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
+                    }
                 }
             }
         }
@@ -258,8 +253,8 @@ function startEngine(Module) {
     }
     requestWakeLock();
 
-    const TARGET_TPS = 60;
-    const FRAME_TIME = 1000 / TARGET_TPS;
+    let TARGET_TPS = 60;
+    let FRAME_TIME = 1000 / TARGET_TPS;
     let accumulator = 0;
     let lastTimestamp = performance.now();
     let frameCount = 0;
@@ -312,15 +307,24 @@ function startEngine(Module) {
     }
 
     function applyTransform() {
-        currentZoom = Math.max(0.5, Math.min(currentZoom, 10)); 
+        // FIX: Hard constraint preventing zoom from ever shrinking smaller than the frame
+        currentZoom = Math.max(1, Math.min(currentZoom, 10)); 
         tWrapper.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
     }
 
+    function updateZoomUI() {
+        const sz = document.getElementById('slider_zoom');
+        const vz = document.getElementById('val_zoom');
+        if (sz) sz.value = currentZoom;
+        if (vz) vz.innerText = currentZoom.toFixed(1) + "x";
+    }
+
     function resetView() {
-        currentZoom = window.innerWidth <= 768 ? 2.5 : 1; 
+        currentZoom = 1; 
         panX = 0; panY = 0;
         tWrapper.style.transition = 'transform 0.2s ease-out';
         applyTransform();
+        updateZoomUI();
         setTimeout(() => { tWrapper.style.transition = 'none'; }, 200);
     }
     resetView();
@@ -414,23 +418,33 @@ function startEngine(Module) {
     
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
     
-    bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); constrainView(); });
-    bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); constrainView(); });
-    bindBtn('btn_zoom_reset', resetView);
-    
-    bindBtn('btn_play', () => {
-        isPlaying = !isPlaying;
-        const btn = document.getElementById('btn_play');
-        if (btn) btn.innerText = isPlaying ? "⏯ Play" : "▶ Resume";
-    });
+    // NEW: Slider Handlers
+    const sliderSpeed = document.getElementById('slider_speed');
+    if (sliderSpeed) {
+        sliderSpeed.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            const vs = document.getElementById('val_speed');
+            if (val === 0) {
+                isPlaying = false;
+                if (vs) vs.innerText = "Paused";
+            } else {
+                isPlaying = true;
+                TARGET_TPS = val;
+                FRAME_TIME = 1000 / TARGET_TPS;
+                if (vs) vs.innerText = val + " TPS";
+            }
+        });
+    }
 
-    bindBtn('btn_step', () => { 
-        isPlaying = false; 
-        Module._tick(); 
-        const btn = document.getElementById('btn_play');
-        if (btn) btn.innerText = "▶ Resume"; 
-        forceRedraw = true; 
-    });
+    const sliderZoom = document.getElementById('slider_zoom');
+    if (sliderZoom) {
+        sliderZoom.addEventListener('input', (e) => {
+            currentZoom = parseFloat(e.target.value);
+            updateZoomUI();
+            applyTransform();
+            constrainView();
+        });
+    }
     
     bindBtn('btn_reset', () => {
         if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
@@ -678,11 +692,6 @@ function startEngine(Module) {
             }
             return;
         }
-        if (e.code === 'KeyP') {
-            isPlaying = !isPlaying;
-            const btn = document.getElementById('btn_play');
-            if (btn) btn.innerText = isPlaying ? "⏯ Play" : "▶ Resume";
-        }
         if (e.code === 'KeyR') {
             if (typeof Module._save_grid_snapshot === 'function') Module._save_grid_snapshot();
             Module._randomize_grid();
@@ -705,6 +714,7 @@ function startEngine(Module) {
     canvasContainer.addEventListener('wheel', (e) => {
         e.preventDefault();
         currentZoom += e.deltaY > 0 ? -0.1 : 0.1;
+        updateZoomUI();
         applyTransform();
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(constrainView, 150);
@@ -841,6 +851,7 @@ function startEngine(Module) {
             const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
             currentZoom = initialPinchZoom * (getTouchDist(e.touches) / initialPinchDist);
+            updateZoomUI();
             panX += (midX - lastX) / currentZoom; 
             panY += (midY - lastY) / currentZoom;
             lastX = midX; 
@@ -856,7 +867,6 @@ function startEngine(Module) {
         if(isDragging) { isDragging = false; constrainView(); } 
     });
 
-    // Initialize the default biome
     loadScenario(currentScenario, Module); 
     animationId = requestAnimationFrame(renderFrame);
 }
