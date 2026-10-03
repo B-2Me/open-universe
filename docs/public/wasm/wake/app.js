@@ -11,14 +11,25 @@ let isSpaceDown = false;
 let scrollTimeout = null;
 
 let leftLayer = 0;  // 0 = Macro
-let rightLayer = 1; // 1 = Metabolic, 2 = Phase
-const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase"];
+let rightLayer = 1; // 1 = Metabolic, 2 = Phase, 3 = Entropic
+const LAYER_LABELS = ["👁 Macro", "♨ Metabolic", "🧲 Phase", "🕳 Entropic"];
 
 // --- DYNAMIC PALETTE MANAGER ---
 const defaultPalette = {
-    "A": { icon: "●", label: "Point", data: [[(255 << 24) | (1 << 16) | 100]] },
-    "B": { icon: "∴", label: "Triangle", data: [[(20<<24)|100, 0, (20<<24)|100], [0, 0, 0], [0, (20<<24)|100, 0]] },
-    "C": { icon: "〰", label: "Wall", data: [[(255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500, (255<<24)|(2<<16)|500]] }
+    "A": { icon: "🧱", label: "Wall", data: [[(255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500, (255<<24)|(0<<16)|500]] },
+    "B": { icon: "🔥", label: "Fuel", data: [
+        [(255<<24)|(4<<16)|60000, (255<<24)|(5<<16)|60000, (255<<24)|(6<<16)|60000],
+        [(255<<24)|(3<<16)|60000, (255<<24)|(0<<16)|60000, (255<<24)|(7<<16)|60000],
+        [(255<<24)|(2<<16)|60000, (255<<24)|(1<<16)|60000, (255<<24)|(8<<16)|60000]
+    ]},
+    "C": { icon: "❄️", label: "Cryo", data: [
+        [(255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1, (255<<24)|(5<<16)|1]
+    ]},
+    "D": { icon: "🕳", label: "Erase", data: [
+        [(0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1],
+        [(0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1],
+        [(0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1, (0<<24)|(0<<16)|1]
+    ]}
 };
 
 let userPalette = JSON.parse(localStorage.getItem('planck_palette')) || {};
@@ -86,6 +97,58 @@ function renderPaletteUI() {
     }, '.palette-btn');
 }
 
+function loadScenario(type, Module) {
+    Module._clear_grid(); 
+    Module._set_dissipation(15);
+    Module._set_thermal_limit(50000); 
+
+    const cx = gridWidth / 2;
+    const cy = gridHeight / 2;
+
+    if (type === "atmosphere") {
+        for (let y = 100; y < gridHeight; y++) {
+            let depthRatio = (y - 100) / (gridHeight - 100);
+            let prob = depthRatio * depthRatio * 100; 
+            for (let x = 0; x < gridWidth; x++) {
+                if (Math.random() * 100 < prob) {
+                    let q = 50 + Math.floor(Math.random() * 50); 
+                    let s = Math.floor(Math.random() * 8) + 1;  
+                    let h = q * 2;
+                    Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
+                }
+            }
+        }
+    } 
+    else if (type === "nozzle") {
+        for (let y = 50; y < gridHeight; y++) {
+            let depth = y - 50;
+            let spread = 15 + Math.floor((depth * depth) / 250); 
+            for (let x = 0; x < gridWidth; x++) {
+                if (x < cx - spread || x > cx + spread) {
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500);
+                }
+            }
+        }
+    }
+    else if (type === "ocean") {
+        for (let y = cy; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                if (Math.random() * 100 > 5) {
+                    let s = (Math.random() > 0.5) ? 3 : 7; 
+                    Module._set_node_state(x, y, (200 << 24) | (s << 16) | 50);
+                }
+            }
+        }
+    }
+    
+    document.getElementById('math_dissipation').innerText = "15";
+    document.getElementById('math_thermal_limit').innerText = "50000";
+    const sliderD = document.getElementById('slider_dissipation');
+    const sliderT = document.getElementById('slider_thermal');
+    if (sliderD) sliderD.value = 15;
+    if (sliderT) sliderT.value = 50000;
+}
+
 function startEngine(Module) {
     const canvasContainer = document.getElementById('canvas-container');
     const tWrapper = document.getElementById('transform-wrapper');
@@ -102,41 +165,87 @@ function startEngine(Module) {
     document.getElementById('diag_nodes').innerText = (gridWidth * gridHeight).toLocaleString();
 
     Module._init_grid();
-    const buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    const pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-    const imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+    
+    let buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+    let pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
+    let imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
 
     document.getElementById('btn_toggle_left').addEventListener('click', (e) => {
-        leftLayer = (leftLayer + 1) % 3;
+        leftLayer = (leftLayer + 1) % 4;
         e.target.innerText = LAYER_LABELS[leftLayer];
     });
     
     document.getElementById('btn_toggle_right').addEventListener('click', (e) => {
-        rightLayer = (rightLayer + 1) % 3;
+        rightLayer = (rightLayer + 1) % 4;
         e.target.innerText = LAYER_LABELS[rightLayer];
     });
 
-    let frameCount = 0;
-
-    function renderFrame() {
-        if (isPlaying) {
-            Module._tick();
-            frameCount++;
-            if (frameCount % 10 === 0) {
-                document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
-                document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
-                document.getElementById('diag_phase').innerText = Module._get_phase_alignment().toFixed(1) + "%";
+    // Screen Wake Lock
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                const wakeLock = await navigator.wakeLock.request('screen');
+                document.addEventListener('visibilitychange', async () => {
+                    if (wakeLock !== null && document.visibilityState === 'visible') {
+                        await navigator.wakeLock.request('screen');
+                    }
+                });
+            } catch (err) {
+                console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
             }
         }
-        
-        Module._render_frame(leftLayer);
-        ctxLeft.putImageData(imgData, 0, 0);
+    }
+    requestWakeLock();
 
-        Module._render_frame(rightLayer);
-        ctxRight.putImageData(imgData, 0, 0);
+    // Fixed Timestep Accumulator Loop
+    const TARGET_TPS = 60;
+    const FRAME_TIME = 1000 / TARGET_TPS;
+    let accumulator = 0;
+    let lastTimestamp = performance.now();
+    let frameCount = 0;
+    let lastRenderedLeftLayer = -1;
+    let lastRenderedRightLayer = -1;
+    let forceRedraw = true;
+
+    function renderFrame(timestamp) {
+        const delta = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+
+        let ticked = false;
+        if (isPlaying) {
+            accumulator += delta;
+            let ticksThisFrame = 0;
+            while (accumulator >= FRAME_TIME && ticksThisFrame < 5) {
+                Module._tick();
+                accumulator -= FRAME_TIME;
+                ticked = true;
+                ticksThisFrame++;
+                frameCount++;
+                if (frameCount % 10 === 0) {
+                    document.getElementById('diag_quanta').innerText = Module._get_total_quanta().toLocaleString();
+                    document.getElementById('diag_heat').innerText = Module._get_total_heat().toLocaleString();
+                    document.getElementById('diag_phase').innerText = Module._get_phase_alignment().toFixed(1) + "%";
+                    document.getElementById('diag_yield').innerText = Module._get_yield().toLocaleString();
+                }
+            }
+        } else {
+            accumulator = 0;
+        }
+        
+        if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
+            Module._render_frame(leftLayer);
+            ctxLeft.putImageData(imgData, 0, 0);
+
+            Module._render_frame(rightLayer);
+            ctxRight.putImageData(imgData, 0, 0);
+
+            lastRenderedLeftLayer = leftLayer;
+            lastRenderedRightLayer = rightLayer;
+            forceRedraw = false;
+        }
         
         animationId = requestAnimationFrame(renderFrame);
     }
@@ -204,6 +313,10 @@ function startEngine(Module) {
         currentInjectionMode = val;
     });
 
+    setupButtonGroup('impedance_mode_selector', val => {
+        Module._set_impedance_mode(parseInt(val, 10));
+    });
+
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
@@ -223,12 +336,20 @@ function startEngine(Module) {
         });
     });
 
-    setupButtonGroup('biome_selector', val => {
-        const biomes = { "0": [15, 1200], "1": [2, 300], "2": [45, 600] };
-        Module._set_dissipation(biomes[val][0]);
-        Module._set_thermal_limit(biomes[val][1]);
-        document.getElementById('math_dissipation').innerText = biomes[val][0];
-        document.getElementById('math_thermal_limit').innerText = biomes[val][1];
+    setupButtonGroup('scenario_selector', val => {
+        Module._save_grid_snapshot();
+        if (val === "vacuum") {
+            Module._clear_grid();
+            Module._set_dissipation(15);
+            Module._set_thermal_limit(50000);
+            document.getElementById('math_dissipation').innerText = "15";
+            document.getElementById('math_thermal_limit').innerText = "50000";
+            document.getElementById('slider_dissipation').value = 15;
+            document.getElementById('slider_thermal').value = 50000;
+        } else {
+            loadScenario(val, Module);
+        }
+        forceRedraw = true;
     });
     
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
@@ -236,11 +357,115 @@ function startEngine(Module) {
     bindBtn('btn_zoom_in', () => { currentZoom += 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_out', () => { currentZoom -= 0.5; applyTransform(); constrainView(); });
     bindBtn('btn_zoom_reset', resetView);
-    bindBtn('btn_play', () => isPlaying = !isPlaying);
-    bindBtn('btn_step', () => { isPlaying = false; Module._tick(); });
-    bindBtn('btn_clear', () => Module._clear_grid());
-    bindBtn('btn_soup', () => Module._randomize_grid());
     
+    bindBtn('btn_play', () => {
+        isPlaying = !isPlaying;
+        document.getElementById('btn_play').innerText = isPlaying ? "⏯ Play" : "▶ Resume";
+    });
+
+    bindBtn('btn_step', () => { isPlaying = false; Module._tick(); document.getElementById('btn_play').innerText = "▶ Resume"; forceRedraw = true; });
+    
+    bindBtn('btn_clear', () => {
+        Module._save_grid_snapshot();
+        Module._clear_grid();
+        forceRedraw = true;
+    });
+    
+    bindBtn('btn_soup', () => {
+        Module._save_grid_snapshot();
+        Module._randomize_grid();
+        forceRedraw = true;
+    });
+
+    bindBtn('btn_undo', () => {
+        Module._restore_grid_snapshot();
+        forceRedraw = true;
+    });
+    
+    bindBtn('btn_export_vtk', () => {
+        const wasPlaying = isPlaying;
+        isPlaying = false; 
+        if (typeof Module._generate_vtk === 'function') {
+            const vtkPtr = Module._generate_vtk();
+            
+            if (vtkPtr === 0) {
+                alert("Error: VTK buffer generation failed due to a memory allocation limit or bounds protection check.");
+                if (wasPlaying) isPlaying = true;
+                return;
+            }
+
+            const vtkString = UTF8ToString(vtkPtr);
+            const blob = new Blob([vtkString], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `planck_frame_${Date.now()}.vtk`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            if (typeof Module._free_vtk === 'function') {
+                Module._free_vtk();
+            }
+
+            buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
+            pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
+            imgData = new ImageData(pixelArray, gridWidth, gridHeight);
+        } else {
+            alert("VTK Export requires the updated C-engine functions to be compiled.");
+        }
+        if (wasPlaying) isPlaying = true;
+    });
+
+    bindBtn('btn_export_png', () => {
+        canvasLeft.toBlob(blob => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `planck_field_${Date.now()}.png`;
+            link.click();
+        }, 'image/png');
+    });
+
+    bindBtn('btn_share', async () => {
+        canvasLeft.toBlob(async blob => {
+            const file = new File([blob], `planck_field_${Date.now()}.png`, { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Planck Field Simulation',
+                        text: 'Check out this thermodynamic simulation state from Langevin\'s Wake.',
+                        files: [file]
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.error(err);
+                }
+            } else {
+                alert('Web Share API with files is not supported on this browser/device.');
+            }
+        }, 'image/png');
+    });
+
+    // Interactive Constraint Sliders
+    const sliderDissipation = document.getElementById('slider_dissipation');
+    const sliderThermal = document.getElementById('slider_thermal');
+
+    if (sliderDissipation) {
+        sliderDissipation.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            Module._set_dissipation(val);
+            document.getElementById('math_dissipation').innerText = val;
+            forceRedraw = true;
+        });
+    }
+
+    if (sliderThermal) {
+        sliderThermal.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            Module._set_thermal_limit(val);
+            document.getElementById('math_thermal_limit').innerText = val;
+            forceRedraw = true;
+        });
+    }
+
     // Palette Management Buttons
     bindBtn('btn_save_scratch', () => {
         if (!customStamp || customStamp.length === 0) return;
@@ -319,33 +544,38 @@ function startEngine(Module) {
 
     function injectPattern(centerX, centerY, pattern) {
         if (!pattern.length) return;
+        Module._save_grid_snapshot(); // Snapshot before injection for undo support
+
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+
         const startX = centerX - Math.floor(pattern[0].length / 2);
         const startY = centerY - Math.floor(pattern.length / 2);
         
         for (let y = 0; y < pattern.length; y++) {
             for (let x = 0; x < pattern[0].length; x++) {
                 const val = pattern[y][x];
-                
-                // Extract Quanta safely
                 const quanta = (val >>> 24) & 0xFF;
                 
-                if (val !== 0 && quanta > 0) {
+                if (val !== 0) {
                     if (currentInjectionMode === 'clone') {
                         Module._set_node_state(startX + x, startY + y, val);
-                    } else if (currentInjectionMode === 'quanta') {
-                        Module._add_quanta(startX + x, startY + y, quanta);
-                    } else if (currentInjectionMode === 'heat') {
-                        // Extract original heat from the stamp to use as injection magnitude
-                        const heat = val & 0xFFFF;
-                        Module._add_heat(startX + x, startY + y, heat > 0 ? heat : 500);
-                    } else if (currentInjectionMode === 'spin') {
-                        // Force a spin (extract from stamp, or default to 1)
-                        const spin = (val >>> 16) & 0xFF;
-                        Module._set_spin(startX + x, startY + y, spin > 0 ? spin : 1);
+                    } else if (quanta > 0) {
+                        if (currentInjectionMode === 'quanta') {
+                            Module._add_quanta(startX + x, startY + y, quanta);
+                        } else if (currentInjectionMode === 'heat') {
+                            const heat = val & 0xFFFF;
+                            Module._add_heat(startX + x, startY + y, heat > 0 ? heat : 500);
+                        } else if (currentInjectionMode === 'spin') {
+                            const spin = (val >>> 16) & 0xFF;
+                            Module._set_spin(startX + x, startY + y, spin > 0 ? spin : 1);
+                        }
                     }
                 }
             }
         }
+        forceRedraw = true;
     }
 
     window.addEventListener('keydown', (e) => {
@@ -353,10 +583,28 @@ function startEngine(Module) {
             e.preventDefault(); 
             if (!isSpaceDown) { isSpaceDown = true; canvasContainer.className = 'mode-move'; }
         }
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-        if (e.code === 'KeyP') isPlaying = !isPlaying;
-        if (e.code === 'KeyR') Module._randomize_grid();
-        if (e.code === 'KeyC') Module._clear_grid();
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+            if (e.code === 'KeyZ') {
+                e.preventDefault();
+                Module._restore_grid_snapshot();
+                forceRedraw = true;
+            }
+            return;
+        }
+        if (e.code === 'KeyP') {
+            isPlaying = !isPlaying;
+            document.getElementById('btn_play').innerText = isPlaying ? "⏯ Play" : "▶ Resume";
+        }
+        if (e.code === 'KeyR') {
+            Module._save_grid_snapshot();
+            Module._randomize_grid();
+            forceRedraw = true;
+        }
+        if (e.code === 'KeyC') {
+            Module._save_grid_snapshot();
+            Module._clear_grid();
+            forceRedraw = true;
+        }
     });
     
     window.addEventListener('keyup', (e) => {
@@ -374,7 +622,9 @@ function startEngine(Module) {
         scrollTimeout = setTimeout(constrainView, 150);
     }, { passive: false });
 
-    canvasContainer.addEventListener('dblclick', resetView);
+    canvasContainer.addEventListener('dblclick', () => {
+        if (currentMode === 'move' || isSpaceDown) resetView();
+    });
 
     let isDragging = false;
     let lastX = 0, lastY = 0;
@@ -410,16 +660,16 @@ function startEngine(Module) {
 
     canvasContainer.addEventListener('touchstart', (e) => {
         hidePopups(); e.preventDefault(); isDragging = true; tWrapper.style.transition = 'none';
-        if (e.touches.length === 1) {
-            const now = Date.now();
-            if (now - lastTapTime < 300) resetView();
-            lastTapTime = now;
-            processInput(e.touches[0].clientX, e.touches[0].clientY, true);
-        } else if (e.touches.length === 2) {
+        if (e.touches.length === 2) {
             initialPinchDist = getTouchDist(e.touches);
             initialPinchZoom = currentZoom;
             lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             lastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        } else if (e.touches.length === 1) {
+            const now = Date.now();
+            if (now - lastTapTime < 300 && (currentMode === 'move' || isSpaceDown)) resetView();
+            lastTapTime = now;
+            processInput(e.touches[0].clientX, e.touches[0].clientY, true);
         }
     }, { passive: false });
 
@@ -438,9 +688,10 @@ function startEngine(Module) {
     }, { passive: false });
     
     window.addEventListener('touchend', () => { if(isDragging) { isDragging = false; constrainView(); } });
+    window.addEventListener('touchcancel', () => { if(isDragging) { isDragging = false; constrainView(); } });
 
-    Module._randomize_grid(); 
-    renderFrame();
+    Module._clear_grid(); 
+    animationId = requestAnimationFrame(renderFrame);
 }
 
 function reportHeight() { window.parent.postMessage({ type: 'RESIZE_IFRAME', height: document.documentElement.scrollHeight }, '*'); }
