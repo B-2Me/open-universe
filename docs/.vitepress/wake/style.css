@@ -115,14 +115,14 @@
   font-weight: 600;
 }
 
-/* Tool Context Area - Positioned Directly Under Canvas */
+/* Tool Context Drawer - Positioned Directly Under the Segment Bar */
 .context-popup {
   display: none;
   background: var(--pf-bg-input);
   border: 1px solid var(--pf-bevel-light);
   border-radius: 4px;
   padding: 8px 10px;
-  margin: 0 16px 8px 16px;
+  margin: 6px 0;
 }
 .context-popup.show {
   display: flex;
@@ -335,9 +335,6 @@ input[type=range] {
   #canvas-container {
     max-height: 48vh;
     margin: 0 auto 8px auto;
-  }
-  .context-popup {
-    margin: 0 12px 8px 12px;
   }
   #sidebar {
     width: 100%;

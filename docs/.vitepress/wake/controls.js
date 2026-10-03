@@ -90,17 +90,21 @@ export class ControlsManager {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
                 
-                // Clicking active button toggles it off back to 'move'
-                if (this.state.currentMode === mode && mode !== 'move') {
-                    this.state.currentMode = 'move';
-                    document.querySelectorAll('.segment-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'move'));
-                    document.getElementById('context_place')?.classList.remove('show');
-                    document.getElementById('context_sample')?.classList.remove('show');
+                // Clicking an already-active button: toggles drawer visibility while keeping mode engaged
+                if (this.state.currentMode === mode) {
+                    if (mode === 'place') {
+                        document.getElementById('context_place')?.classList.toggle('show');
+                    } else if (mode === 'sample') {
+                        document.getElementById('context_sample')?.classList.toggle('show');
+                    }
                     return;
                 }
 
+                // Switching to a new mode
                 this.state.currentMode = mode;
-                document.querySelectorAll('.segment-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+                document.querySelectorAll('.segment-btn').forEach(b => 
+                    b.classList.toggle('active', b.dataset.mode === mode)
+                );
                 document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
                 document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
             };
@@ -121,16 +125,12 @@ export class ControlsManager {
             const isSampleOpen = contextSample?.classList.contains('show');
             if (!isPlaceOpen && !isSampleOpen) return;
 
-            // Don't close if tapping inside popups, on canvas, or on segment buttons
+            // Don't close if tapping inside the popups, on the canvas, or on segment buttons
             if (contextPlace?.contains(e.target) || contextSample?.contains(e.target)) return;
             if (canvasContainer?.contains(e.target)) return;
             if (segmentContainer?.contains(e.target)) return;
 
-            // Otherwise, close tray and return to 'move'
-            this.state.currentMode = 'move';
-            document.querySelectorAll('.segment-btn').forEach(b => 
-                b.classList.toggle('active', b.dataset.mode === 'move')
-            );
+            // Tapping outside collapses the popup, but leaves current mode (Place/Sample) active and highlighted
             contextPlace?.classList.remove('show');
             contextSample?.classList.remove('show');
         });
