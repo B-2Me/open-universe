@@ -58,12 +58,16 @@ onUnmounted(() => {
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
             <button class="segment-btn" data-mode="place">✏️ Place</button>
             <button class="segment-btn" data-mode="sample">🔍 Sample</button>
+            <button class="segment-btn" data-mode="config">⚙️ System</button>
           </div>
 
           <!-- Tool Popups Open Directly Under the Segment Bar -->
           <div id="context_place" class="context-popup">
             <div class="context-group">
-              <div class="context-label">Tool Mode</div>
+              <div class="context-header">
+                <span class="context-label">Tool Mode</span>
+                <span class="context-hint" id="hint_injection_mode">Active Mode</span>
+              </div>
               <div class="button-group" id="injection_mode_selector">
                 <button class="group-btn active" data-val="clone">📋 Clone</button>
                 <button class="group-btn" data-val="quanta">🧱 Density</button>
@@ -71,8 +75,11 @@ onUnmounted(() => {
                 <button class="group-btn" data-val="spin">🔄 Spin</button>
               </div>
             </div>
-            <div class="context-group" style="margin-top: 4px;">
-              <div class="context-label">Palette</div>
+            <div class="context-group" style="margin-top: 6px;">
+              <div class="context-header">
+                <span class="context-label">Palette</span>
+                <span class="context-hint">Tap brush to equip</span>
+              </div>
               <div id="brush_selector" class="palette-grid"></div>
             </div>
           </div>
@@ -81,6 +88,40 @@ onUnmounted(() => {
             <div class="deck-row">
               <span class="sub-label">Radius: <span id="val_radius">10</span>px</span>
               <input type="range" id="slider_radius" min="1" max="50" value="10" class="slider-fill">
+            </div>
+            <div class="button-group" style="margin-top: 6px;">
+              <button id="btn_save_scratch" class="group-btn" disabled>💾 Save Custom Stamp</button>
+              <button id="btn_copy_stamp" class="group-btn">📋 Copy JSON</button>
+            </div>
+          </div>
+
+          <!-- Restored: System & Capture Context Drawer -->
+          <div id="context_config" class="context-popup">
+            <div class="context-group">
+              <div class="context-header">
+                <span class="context-label">Frame Capture</span>
+                <span class="context-hint">Direct canvas export</span>
+              </div>
+              <div class="button-group">
+                <button id="btn_export_png" class="group-btn">📸 Save PNG</button>
+                <button id="btn_share" class="group-btn">📤 Share</button>
+                <button id="btn_export_vtk" class="group-btn">🧊 3D VTK</button>
+              </div>
+            </div>
+
+            <div class="context-group" style="margin-top: 6px;">
+              <div class="context-header">
+                <span class="context-label">Palette Presets</span>
+                <span class="context-hint">Import / Export stamps</span>
+              </div>
+              <div class="button-group">
+                <button id="btn_export_palette" class="group-btn">💾 Backup JSON</button>
+                <label class="group-btn" style="cursor: pointer; margin: 0;">
+                  📂 Restore JSON
+                  <input type="file" id="import_palette_input" accept=".json" style="display: none;">
+                </label>
+                <button id="btn_reset_palette" class="group-btn" style="color: #ff8888;">🗑️ Reset</button>
+              </div>
             </div>
           </div>
 
@@ -145,7 +186,7 @@ onUnmounted(() => {
 @import '../wake/style.css';
 
 .wake-sandbox {
-  margin: 1.5rem 0;
+  margin: 0.25rem 0 1rem 0 !important;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
