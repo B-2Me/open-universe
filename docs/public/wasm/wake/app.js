@@ -147,11 +147,11 @@ function loadScenario(type, Module) {
             let prob = depthRatio * depthRatio * depthRatio * 60; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 5) {
-                    // Geothermal floor radiating heat
+                    // Geothermal Floor
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
-                } else if (y > 5 && Math.random() * 100 < prob) { // FIX: Kept away from absolute top edge
+                } else if (y > 50 && Math.random() * 100 < prob) { 
                     let q = 10 + Math.floor(Math.random() * 30); 
-                    let s = Math.floor(Math.random() * 8) + 1; 
+                    let s = 0; // FIX: Perfectly still air. Heat will drive convection naturally.
                     let h = q * 2;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
@@ -177,12 +177,10 @@ function loadScenario(type, Module) {
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); // Seabed floor
-                } else if (y > gridHeight - 320) { // FIX: Filled much higher up to eliminate empty air gap
-                    if (Math.random() * 100 > 0.5) { // 99.5% density
-                        let s = 5; // Perfectly stable downward settling vector
-                        Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); // FIX: Low initial heat prevents boiling/churning
-                    }
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
+                } else if (y > gridHeight - 150) { // FIX: Reduced volume to a proportional basin
+                    // FIX: 100% density (no rifts) and 0 spin (perfect rest)
+                    Module._set_node_state(x, y, (200 << 24) | (0 << 16) | 20); 
                 }
             }
         }
