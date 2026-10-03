@@ -229,10 +229,9 @@ function startEngine(Module) {
 
     Module._init_grid();
     
-    let ptr = Module._get_pixel_buffer_pointer();
     let buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-    let pixelArray = new Uint8ClampedArray(buffer, ptr, gridWidth * gridHeight * 4);
-    let imgData = new ImageData(gridWidth, gridHeight);
+    let pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
+    let imgData = new ImageData(pixelArray, gridWidth, gridHeight);
 
     document.getElementById('btn_toggle_left').innerText = LAYER_LABELS[leftLayer];
     document.getElementById('btn_toggle_right').innerText = LAYER_LABELS[rightLayer];
@@ -308,17 +307,10 @@ function startEngine(Module) {
         }
         
         if (ticked || leftLayer !== lastRenderedLeftLayer || rightLayer !== lastRenderedRightLayer || forceRedraw) {
-            if (buffer.byteLength === 0) {
-                buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
-                pixelArray = new Uint8ClampedArray(buffer, ptr, gridWidth * gridHeight * 4);
-            }
-
             Module._render_frame(leftLayer);
-            imgData.data.set(pixelArray);
             ctxLeft.putImageData(imgData, 0, 0);
 
             Module._render_frame(rightLayer);
-            imgData.data.set(pixelArray);
             ctxRight.putImageData(imgData, 0, 0);
 
             lastRenderedLeftLayer = leftLayer;
@@ -519,7 +511,7 @@ function startEngine(Module) {
 
             buffer = Module.HEAPU8 ? Module.HEAPU8.buffer : Module.wasmMemory.buffer;
             pixelArray = new Uint8ClampedArray(buffer, Module._get_pixel_buffer_pointer(), gridWidth * gridHeight * 4);
-            imgData = new ImageData(gridWidth, gridHeight);
+            imgData = new ImageData(pixelArray, gridWidth, gridHeight);
         } else {
             alert("VTK Export requires the updated C-engine functions to be compiled.");
         }
