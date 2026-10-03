@@ -23,9 +23,10 @@ export const DEFAULT_PALETTE = {
     },
     "B": {
         icon: "💧", label: "Fluid",
+        // Quanta = 35: Soft fluid density that falls under gravity and merges calmly on impact
         data: [
-            [packNode(120, SPIN_DOWN_RIGHT, HEAT_COLD_WATER), packNode(120, SPIN_DOWN, HEAT_COLD_WATER), packNode(120, SPIN_DOWN_LEFT, HEAT_COLD_WATER)],
-            [packNode(120, SPIN_DOWN_LEFT, HEAT_COLD_WATER), packNode(120, SPIN_DOWN, HEAT_COLD_WATER), packNode(120, SPIN_DOWN_RIGHT, HEAT_COLD_WATER)]
+            [packNode(35, SPIN_DOWN_RIGHT, HEAT_COLD_WATER), packNode(35, SPIN_DOWN, HEAT_COLD_WATER), packNode(35, SPIN_DOWN_LEFT, HEAT_COLD_WATER)],
+            [packNode(35, SPIN_DOWN_LEFT, HEAT_COLD_WATER), packNode(35, SPIN_DOWN, HEAT_COLD_WATER), packNode(35, SPIN_DOWN_RIGHT, HEAT_COLD_WATER)]
         ]
     },
     "C": {
@@ -37,7 +38,7 @@ export const DEFAULT_PALETTE = {
     },
     "D": {
         icon: "🔥", label: "Igniter",
-        // Switched from Anchor Wall (255) to Heavy Plasma (180) and max heat (65000) so it violently blasts outward
+        // Quanta = 180, Heat = 65000: Intentional thermal unwinding blast
         data: [
             [packNode(180, SPIN_UP_LEFT, 65000), packNode(180, SPIN_UP, 65000), packNode(180, SPIN_UP_RIGHT, 65000)],
             [packNode(180, SPIN_LEFT, 65000), packNode(180, SPIN_STATIONARY, 65000), packNode(180, SPIN_RIGHT, 65000)],
