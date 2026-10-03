@@ -1,5 +1,5 @@
 import { LAYER_LABELS } from './constants.js';
-import { loadScenario } from './scenarios.js';
+import { loadScenario, randomizeScenarioSoup } from './scenarios.js';
 
 export class ControlsManager {
     constructor({ bridge, palette, loop, state }) {
@@ -18,6 +18,7 @@ export class ControlsManager {
         this.bindSegmentButtons();
         this.bindSliders();
         this.bindActionButtons();
+        this.bindOutsideDismiss();
     }
 
     renderPalette() {
@@ -68,13 +69,13 @@ export class ControlsManager {
             this.state.currentScenario = val;
             const res = loadScenario(val, this.bridge);
             
-            // Sync text readouts
+            // Labels
             const md = document.getElementById('math_dissipation');
             const mt = document.getElementById('math_thermal_limit');
             if (md) md.innerText = res.targetDissipation;
             if (mt) mt.innerText = res.targetThermal;
 
-            // Sync slider inputs
+            // Slider positions
             const sd = document.getElementById('slider_dissipation');
             const st = document.getElementById('slider_thermal');
             if (sd) sd.value = res.targetDissipation;
@@ -88,6 +89,16 @@ export class ControlsManager {
         document.querySelectorAll('.segment-btn').forEach(btn => {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
+                
+                // Clicking active button toggles it off back to 'move'
+                if (this.state.currentMode === mode && mode !== 'move') {
+                    this.state.currentMode = 'move';
+                    document.querySelectorAll('.segment-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'move'));
+                    document.getElementById('context_place')?.classList.remove('show');
+                    document.getElementById('context_sample')?.classList.remove('show');
+                    return;
+                }
+
                 this.state.currentMode = mode;
                 document.querySelectorAll('.segment-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
                 document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
@@ -97,6 +108,32 @@ export class ControlsManager {
 
         this.setupGroup('injection_mode_selector', (val) => { this.state.injectionMode = val; });
         this.setupGroup('impedance_mode_selector', (val) => { this.bridge.setImpedanceMode(parseInt(val, 10)); });
+    }
+
+    bindOutsideDismiss() {
+        document.addEventListener('pointerdown', (e) => {
+            const contextPlace = document.getElementById('context_place');
+            const contextSample = document.getElementById('context_sample');
+            const canvasContainer = document.getElementById('canvas-container');
+            const segmentContainer = document.querySelector('.segment-container');
+
+            const isPlaceOpen = contextPlace?.classList.contains('show');
+            const isSampleOpen = contextSample?.classList.contains('show');
+            if (!isPlaceOpen && !isSampleOpen) return;
+
+            // Don't close if tapping inside popups, on canvas, or on segment buttons
+            if (contextPlace?.contains(e.target) || contextSample?.contains(e.target)) return;
+            if (canvasContainer?.contains(e.target)) return;
+            if (segmentContainer?.contains(e.target)) return;
+
+            // Otherwise, close tray and return to 'move'
+            this.state.currentMode = 'move';
+            document.querySelectorAll('.segment-btn').forEach(b => 
+                b.classList.toggle('active', b.dataset.mode === 'move')
+            );
+            contextPlace?.classList.remove('show');
+            contextSample?.classList.remove('show');
+        });
     }
 
     bindSliders() {
@@ -131,11 +168,29 @@ export class ControlsManager {
 
     bindActionButtons() {
         const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-        bind('btn_reset', () => { this.bridge.saveSnapshot(); loadScenario(this.state.currentScenario, this.bridge); this.state.forceRedraw = true; });
-        bind('btn_soup', () => { this.bridge.saveSnapshot(); this.bridge.randomizeGrid(); this.state.forceRedraw = true; });
-        bind('btn_clear', () => { this.bridge.saveSnapshot(); this.bridge.clearGrid(); this.state.forceRedraw = true; });
-        bind('btn_undo', () => { this.bridge.restoreSnapshot(); this.state.forceRedraw = true; });
-        bind('btn_save_scratch', () => { this.palette.saveCurrentCopy(); this.renderPalette(); });
+        bind('btn_reset', () => { 
+            this.bridge.saveSnapshot(); 
+            loadScenario(this.state.currentScenario, this.bridge); 
+            this.state.forceRedraw = true; 
+        });
+        bind('btn_soup', () => { 
+            this.bridge.saveSnapshot(); 
+            randomizeScenarioSoup(this.state.currentScenario, this.bridge); 
+            this.state.forceRedraw = true; 
+        });
+        bind('btn_clear', () => { 
+            this.bridge.saveSnapshot(); 
+            this.bridge.clearGrid(); 
+            this.state.forceRedraw = true; 
+        });
+        bind('btn_undo', () => { 
+            this.bridge.restoreSnapshot(); 
+            this.state.forceRedraw = true; 
+        });
+        bind('btn_save_scratch', () => { 
+            this.palette.saveCurrentCopy(); 
+            this.renderPalette(); 
+        });
     }
 
     setupGroup(containerId, callback) {
