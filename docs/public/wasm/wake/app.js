@@ -116,8 +116,8 @@ function renderPaletteUI() {
 function loadScenario(type, Module) {
     Module._clear_grid(); 
     
-    let targetDissipation = 15;
-    let targetThermal = 50000;
+    let targetDissipation = 8;
+    let targetThermal = 45000; // Raised slightly to safely accommodate geothermal plumes
 
     const cx = Math.floor(gridWidth / 2);
     const cy = Math.floor(gridHeight / 2);
@@ -141,13 +141,14 @@ function loadScenario(type, Module) {
     }
     else if (type === "atmosphere") {
         targetDissipation = 8;
-        targetThermal = 1000; 
+        targetThermal = 45000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
             let prob = depthRatio * depthRatio * depthRatio * 80; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 5) {
-                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
+                    // Geothermal Core: Solid crust wall radiating intense heat (35000)
+                    Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
                 } else if (Math.random() * 100 < prob) {
                     let q = 10 + Math.floor(Math.random() * 40); 
                     let s = Math.floor(Math.random() * 8) + 1; 
@@ -160,6 +161,14 @@ function loadScenario(type, Module) {
     else if (type === "nozzle") {
         targetDissipation = 45;
         targetThermal = 60000;
+        for (let y = 50; y < gridHeight; y++) {
+            let depth = y - 50;
+            let spread = 15 + Math.floor((depth * depth) / 250); 
+            for (let x = cmd_width = 400; x < gridWidth; x++) { // standard width check
+                // ( keeping nozzle math identical )
+            }
+        }
+        // Retaining standard nozzle layout:
         for (let y = 50; y < gridHeight; y++) {
             let depth = y - 50;
             let spread = 15 + Math.floor((depth * depth) / 250); 
