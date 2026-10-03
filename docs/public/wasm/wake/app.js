@@ -140,23 +140,25 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 10; // Raised slightly to handle baseline heat
+        targetDissipation = 10; 
         targetThermal = 50000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
-            let prob = depthRatio * depthRatio * depthRatio * 60; 
+            // Lowered max probability to 40% to allow thermal expansion room
+            let prob = depthRatio * depthRatio * depthRatio * 40; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y < 5) {
-                    // ACTUAL WALL: Quanta 255 triggers target_deadlocked. Blocks wrap-around.
+                    // Absolute Zero Space Wall
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
+                    // Geothermal Floor
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 35000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
-                    let q = 10 + Math.floor(Math.random() * 30); 
-                    let s = Math.floor(Math.random() * 8) + 1; 
-                    let h = q * 2;
+                    let q = 5 + Math.floor(Math.random() * 15); // Lighter gas mass
+                    let s = 0; // FIX: Absolute rest. Floor heat will drive convection.
+                    let h = 10; // Cold start
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
             }
@@ -181,11 +183,8 @@ function loadScenario(type, Module) {
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
                 if (y > gridHeight - 10) {
-                    // ACTUAL WALL: Quanta 255. Spin 0.
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 500); 
                 } else if (y > gridHeight - 150) { 
-                    // ACTUAL FLUID: Quanta 200 (renders cyan). 
-                    // Opposite horizontal spins calculate kinetic_heat += 0. Never collides with seabed.
                     let s = ((x + y) % 2 === 0) ? 3 : 7; 
                     Module._set_node_state(x, y, (200 << 24) | (s << 16) | 20); 
                 }
