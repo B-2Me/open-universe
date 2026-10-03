@@ -253,8 +253,13 @@ function startEngine(Module) {
             try {
                 const wakeLock = await navigator.wakeLock.request('screen');
                 document.addEventListener('visibilitychange', async () => {
-                    if (wakeLock !== null && document.visibilityState === 'visible') {
-                        await navigator.wakeLock.request('screen');
+                    if (document.visibilityState === 'visible') {
+                        if (wakeLock !== null) {
+                            await navigator.wakeLock.request('screen');
+                        }
+                        // FIX: Reset clock and accumulator when returning to the tab
+                        lastTimestamp = performance.now();
+                        accumulator = 0;
                     }
                 });
             } catch (err) {
