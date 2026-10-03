@@ -4,38 +4,9 @@ description: A bare-metal WebAssembly thermodynamic cellular automata engine.
 outline: false
 ---
 
-<script setup>
-import { onMounted } from 'vue'
-
-onMounted(() => {
-  window.addEventListener("message", (event) => {
-    if (event.data && event.data.type === "RESIZE_IFRAME") {
-      const iframe = document.getElementById("wake-iframe");
-      if (iframe) {
-        iframe.style.height = event.data.height + "px";
-      }
-    }
-  });
-})
-</script>
-
-<style>
-  .engine-frame {
-    width: 100%;
-    height: 800px; 
-    border: none;
-    display: block;
-    background: #0a0e0a;
-    transition: height 0.1s ease-out;
-  }
-  @media (max-width: 768px) {
-    .engine-frame { height: 90vh; } 
-  }
-</style>
-
-<div style="margin-top: 0; margin-bottom: 2rem; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
-  <iframe id="wake-iframe" src="/wasm/wake/index.html?v=15" class="engine-frame" scrolling="no"></iframe>
-</div>
+<ClientOnly>
+  <WakeSimulator />
+</ClientOnly>
 
 # Langevin's Wake
 *The Planck Field bare-metal simulation engine.*
