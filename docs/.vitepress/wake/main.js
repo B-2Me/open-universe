@@ -51,6 +51,10 @@ export async function initWakeSimulator() {
         }
 
         loop.start();
+
+        return () => {
+            loop.stop();
+        };
     } catch (err) {
         const banner = document.getElementById('error-banner');
         if (banner) { banner.innerText = err.message; banner.style.display = 'block'; }
