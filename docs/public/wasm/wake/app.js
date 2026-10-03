@@ -140,25 +140,25 @@ function loadScenario(type, Module) {
         }
     }
     else if (type === "atmosphere") {
-        targetDissipation = 15; // Keeps the upper sky cold
+        targetDissipation = 15; 
         targetThermal = 50000; 
         for (let y = 0; y < gridHeight; y++) {
             let depthRatio = y / gridHeight;
-            let prob = depthRatio * depthRatio * depthRatio * 60; 
+            let prob = depthRatio * depthRatio * depthRatio * 20; 
             for (let x = 0; x < gridWidth; x++) {
                 if (y < 5) {
                     // Absolute Zero Space Wall
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 0); 
                 } 
                 else if (y > gridHeight - 5) {
-                    // FIX: 15,000 Heat. Triggers downward Entropic Gravity ( > 12,500 ) without vaporizing the gas!
+                    // Geothermal Floor
                     Module._set_node_state(x, y, (255 << 24) | (0 << 16) | 15000); 
                 } 
                 else if (Math.random() * 100 < prob) { 
-                    // FIX: Ultralight gas (Quanta 2-5). Prevents kinetic friction buildup.
+                    // Ultralight gas to prevent kinetic friction buildup, spawned hot to prevent thermal shock
                     let q = 2 + Math.floor(Math.random() * 4); 
-                    let s = Math.floor(Math.random() * 8) + 1; // Natural Brownian motion
-                    let h = 100;
+                    let s = Math.floor(Math.random() * 8) + 1; 
+                    let h = 10000;
                     Module._set_node_state(x, y, (q << 24) | (s << 16) | h);
                 }
             }
@@ -213,21 +213,18 @@ function startEngine(Module) {
     const canvasRight = document.getElementById('canvas_right');
     
     if (!canvasContainer || !canvasLeft || !canvasRight) return; 
-    
-    const ctxLeft = canvasLeft.getContext('2d', { alpha: false });
-    const ctxRight = canvasRight.getContext('2d', { alpha: false });
 
-const appScript = document.querySelector('script[src*="app.js"]');
-if (appScript) {
-    const versionMatch = appScript.getAttribute('src').match(/v=(\d+)/);
-    const buildVersion = versionMatch ? `v${versionMatch[1]}` : "Live";
-    
-    // Replace 'status_element_id' with whatever ID holds your "Status: Online" text
-    const statusEl = document.getElementById('status_element_id'); 
-    if (statusEl) {
-        statusEl.innerText = `Build: ${buildVersion}`;
+    // Version Telemetry Update
+    const appScript = document.querySelector('script[src*="app.js"]');
+    if (appScript) {
+        const versionMatch = appScript.getAttribute('src').match(/v=(\d+)/);
+        const buildVersion = versionMatch ? `v${versionMatch[1]}` : "Live";
+        const statusEl = document.getElementById('diag_status'); 
+        if (statusEl) {
+            statusEl.innerText = `Build: ${buildVersion}`;
+            statusEl.style.color = "var(--pf-brand-hover)";
+        }
     }
-}
 
     gridWidth = Module._get_grid_width();
     gridHeight = Module._get_grid_height();
@@ -263,7 +260,6 @@ if (appScript) {
                         if (wakeLock !== null) {
                             await navigator.wakeLock.request('screen');
                         }
-                        // FIX: Reset clock and accumulator when returning to the tab
                         lastTimestamp = performance.now();
                         accumulator = 0;
                     }
@@ -329,7 +325,6 @@ if (appScript) {
     }
 
     function applyTransform() {
-        // FIX: Hard constraint preventing zoom from ever shrinking smaller than the frame
         currentZoom = Math.max(1, Math.min(currentZoom, 10)); 
         tWrapper.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
     }
@@ -440,7 +435,6 @@ if (appScript) {
     
     const bindBtn = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
     
-    // NEW: Slider Handlers
     const sliderSpeed = document.getElementById('slider_speed');
     if (sliderSpeed) {
         sliderSpeed.addEventListener('input', (e) => {
