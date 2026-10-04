@@ -33,9 +33,9 @@ Mass is a deadlocked knot of relational tension. When the localized heat of a no
 $$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$$
 
 **2. Phase Friction (Electromagnetism)**
-Nodes possess a topological spin (chirality). When nodes interact, their Phase Friction ($\Phi$) is calculated based on their discrete spin angles ($\theta$):
+Nodes possess a topological spin (chirality). When nodes interact, their Phase Friction ($\Phi$) is dictated by momentum alignment:
 $$\Phi = \tau(1 + \cos(\Delta \theta))$$
-Opposite spins mesh perfectly, dropping friction to zero. Identical spins clash, generating a massive spike in metabolic dissipation. This tension naturally resolves down the path of least resistance, driving physical repulsion.
+Aligned spins mesh into coherent flow, allowing relational momentum to pass smoothly. Opposite spins crash head-on, triggering immediate momentum cancellation and generating a massive spike in metabolic dissipation (a heavy heat penalty). This tension naturally resolves down the path of least resistance, driving physical repulsion or shaping structures into stable circulating vortices.
 
 **3. Entropic Gravity**
 Gravity is not an invisible geometric curve; it is the entropic gradient of the substrate. When local momentum is shunted by a deadlocked boundary, the grid resolves the tension by routing the quanta into the coolest adjacent locus:

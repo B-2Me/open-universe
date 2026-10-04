@@ -38,12 +38,12 @@ Every time a photon's wavefront advances to the next Planck locus, it undergoes 
 ### 4. Electromagnetism (Phase Friction)
 Charge is not a continuous geometric wave; it is the discrete topological state ($s$) of a locus. The Phase Friction ($\Phi$) between any two boundaries is calculated through discrete modular distance across finite states ($N$), not continuous trigonometric angles:
 $$\Phi = \tau \cdot \Delta_{mod}(s_1, s_2)$$
-Opposite states (maximum modular distance) mesh perfectly, dropping friction to zero (attraction). Identical states (zero distance) clash, generating a massive spike in metabolic dissipation. The localized tension naturally resolves down the path of least thermodynamic resistance, which emerges macroscopically as physical repulsion.
+Aligned states (zero modular distance) mesh into coherent flow, allowing relational momentum to pass smoothly. Opposite states (maximum modular distance) crash head-on, triggering immediate momentum cancellation and generating a massive spike in metabolic dissipation. The localized tension naturally resolves down the path of least thermodynamic resistance, which emerges macroscopically as physical repulsion or shapes structures into stable circulating vortices.
 
 ### 5. Mass-Energy Equivalence (Actualization Yield)
 $E=mc^2$ is not a conversion spell between two different substances. It is the mathematical boundary of Topological Unwinding:
 $$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$$
-When the localized heat exceeds the structural threshold of a tension knot (mass), the topological deadlock unwinds. The total actualization yield ($Y_{act}$) is the exact thermodynamic tension stored in the knot, flooding the local field and instantly saturating its maximum actualization throughput ($\Omega_{max}$). It is a localized thunderstorm of state updates.
+Mass is relational inertia—a deadlocked knot of tension dense enough to completely block incoming traffic, forcing the surrounding field to route momentum around it. When the localized heat exceeds the structural threshold of this knot, the topological deadlock unwinds. The total actualization yield ($Y_{act}$) is the exact thermodynamic tension stored in the knot, flooding the local field and instantly saturating its maximum actualization throughput ($\Omega_{max}$). It is a localized thunderstorm of state updates.
 
 ---
 
