@@ -1,5 +1,5 @@
 import { PlanckBridge } from './bridge.js';
-import { SimulationRenderer } from './renderer.js';
+import { DualRenderer } from './renderer.js';
 import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
 import { EngineLoop } from './loop.js';
@@ -36,20 +36,10 @@ export async function initWakeSimulator() {
             sampleRadius: 10
         };
 
-        // 3. Hardware / Fallback Renderers for Split Screen
-        const rendererLeft = new SimulationRenderer('canvas_left');
-        const rendererRight = new SimulationRenderer('canvas_right');
-
-        // Renderer adapter matching loop.js's renderer.draw() interface
-        const compositeRenderer = {
-            draw(leftLayer, rightLayer, activeBridge) {
-                activeBridge.renderLayer(leftLayer, 0);
-                rendererLeft.render(activeBridge.getPixelBuffer());
-
-                activeBridge.renderLayer(rightLayer, 1);
-                rendererRight.render(activeBridge.getPixelBuffer());
-            }
-        };
+        // 3. Mount Dual Canvas Renderer
+        const canvasLeft = document.getElementById('canvas_left');
+        const canvasRight = document.getElementById('canvas_right');
+        const renderer = new DualRenderer(canvasLeft, canvasRight);
 
         // 4. Palette System
         const palette = new PaletteManager();
@@ -57,20 +47,19 @@ export async function initWakeSimulator() {
         // 5. Engine Loop Coordinator
         const loop = new EngineLoop({
             bridge,
-            renderer: compositeRenderer,
+            renderer,
             getState: () => state,
             onTelemetry: updateTelemetry
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
 
-        // 6. Mount UI Controls & Pass WebGL Renderers for Live Projection Toggling
+        // 6. Mount UI Controls
         const controls = new ControlsManager({
             bridge,
             palette,
             loop,
             state,
-            rendererLeft,
-            rendererRight
+            renderer
         });
 
         // 7. Mount Pointer / Touch Interaction Manager
