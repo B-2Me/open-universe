@@ -23,8 +23,8 @@ export async function initWakeSimulator() {
         const wasm = await loadPlanckWasm();
         const bridge = new PlanckBridge(wasm);
 
-        const version = bridge.getEngineVersion();
-        if (diagStatus) diagStatus.innerText = `v${version} ONLINE`;
+        const build = bridge.getEngineBuild();
+        if (diagStatus) diagStatus.innerText = `ONLINE · ${build}`;
 
         const diagNodes = document.getElementById('diag_nodes');
         if (diagNodes) diagNodes.innerText = `${TOTAL_NODES.toLocaleString()} Nodes`;

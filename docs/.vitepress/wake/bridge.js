@@ -36,7 +36,11 @@ export class PlanckBridge {
     getTotalHeat() { return this.wasm._get_total_heat(); }
     getPhaseAlignment() { return this.wasm._get_phase_alignment(); }
     getYield() { return typeof this.wasm._get_yield === 'function' ? this.wasm._get_yield() : 0; }
-    getEngineVersion() { return typeof this.wasm._get_engine_version === 'function' ? this.wasm._get_engine_version() : 119; }
+    getEngineBuild() {
+        return typeof this.wasm._get_engine_build === 'function'
+            ? this.wasm.UTF8ToString(this.wasm._get_engine_build())
+            : 'unknown build';
+    }
     generateVTK() { return this.wasm._generate_vtk(); }
     freeVTK() { this.wasm._free_vtk(); }
 }

@@ -10,7 +10,6 @@
 #include <string.h>
 #include <emscripten.h>
 
-#define BUILD_VERSION (121)
 #define WIDTH (400)
 #define HEIGHT (400)
 #define PIXEL_COUNT (WIDTH * HEIGHT)
@@ -37,6 +36,11 @@
 
 // --- Undo Snapshot Ring ---
 #define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
+
+// Git revision injected by build.sh; falls back when built outside a repo.
+#ifndef GIT_REV
+#define GIT_REV "nogit"
+#endif
 
 typedef struct {
     uint8_t quanta;  
@@ -71,7 +75,13 @@ EMSCRIPTEN_KEEPALIVE double get_total_heat() { return obs_total_heat; }
 EMSCRIPTEN_KEEPALIVE double get_phase_alignment() { return obs_phase_alignment; }
 EMSCRIPTEN_KEEPALIVE double get_yield() { return obs_actualization_yield; }
 
-EMSCRIPTEN_KEEPALIVE int get_engine_version() { return BUILD_VERSION; }
+// Build provenance: compile date + the git revision build.sh injected.
+EMSCRIPTEN_KEEPALIVE
+const char* get_engine_build() {
+    static char build_str[80];
+    snprintf(build_str, sizeof(build_str), "%s · %s", __DATE__, GIT_REV);
+    return build_str;
+}
 EMSCRIPTEN_KEEPALIVE int get_grid_width() { return WIDTH; }
 EMSCRIPTEN_KEEPALIVE int get_grid_height() { return HEIGHT; }
 EMSCRIPTEN_KEEPALIVE uint8_t* get_pixel_buffer_pointer() { return pixel_buffer; }

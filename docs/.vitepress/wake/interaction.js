@@ -52,6 +52,14 @@ export class InteractionManager {
         this.preview.className = 'brush-preview';
         this.preview.style.display = 'none';
         this.tWrapper?.appendChild(this.preview);
+
+        // Keyboard cursor visibility follows canvas focus
+        this._onCanvasFocus = () => {
+            const box = this.cursorBox();
+            if (box) this.positionPreview(this.kbdX, this.kbdY, box.w, box.h);
+        };
+        this.container.addEventListener('focus', this._onCanvasFocus);
+        this.container.addEventListener('blur', () => this.hideBrushPreview());
     }
 
     hideBrushPreview() {
@@ -309,6 +317,11 @@ export class InteractionManager {
         // stamp/sample actually lands (mirrored by updateBrushPreview).
         const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
         const coords = this.getGridCoords(clientX, ly);
+
+        // Keep the keyboard cursor unified with pointer position so swapping
+        // between mouse/touch and arrows continues from the same cell.
+        this.kbdX = Math.max(0, Math.min(GRID_WIDTH - 1, coords.x));
+        this.kbdY = Math.max(0, Math.min(GRID_HEIGHT - 1, coords.y));
 
         if (activeAction === 'sample' && isClick) {
             this.sampleRegion(coords.x, coords.y);
