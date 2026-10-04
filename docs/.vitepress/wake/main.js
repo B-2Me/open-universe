@@ -12,6 +12,8 @@ import {
     SAMPLE_RADIUS_DEFAULT
 } from './constants.js';
 
+let cumulativeYield = 0;
+
 export async function initWakeSimulator() {
     const errorBanner = document.getElementById('error-banner');
     const diagStatus = document.getElementById('diag_status');
@@ -25,7 +27,9 @@ export async function initWakeSimulator() {
         // 2. Initialize Bare-Metal WASM Bridge with the module
         const bridge = new PlanckBridge(wasm);
 
-        if (diagStatus) diagStatus.innerText = "ONLINE";
+        // Display actual engine build version from WASM
+        const version = bridge.getEngineVersion();
+        if (diagStatus) diagStatus.innerText = `v${version} ONLINE`;
 
         // 3. State Container
         const state = {
@@ -82,6 +86,9 @@ export async function initWakeSimulator() {
         if (md) md.innerText = initialParams.targetDissipation;
         if (mt) mt.innerText = initialParams.targetThermal;
 
+        // Reset cumulative yield on scenario boot
+        cumulativeYield = 0;
+
         // Start Physics & Render Loop
         loop.start();
 
@@ -113,8 +120,16 @@ function updateTelemetry(bridge) {
     const tPhase = document.getElementById('diag_phase');
     const tYield = document.getElementById('diag_yield');
 
+    const tickYield = bridge.getYield();
+    if (tickYield > 0) {
+        cumulativeYield += tickYield;
+    }
+
     if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
     if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
     if (tPhase) tPhase.innerText = (bridge.getPhaseAlignment() * 100).toFixed(1) + "%";
-    if (tYield) tYield.innerText = bridge.getYield().toFixed(2);
+    // Show either active frame yield or cumulative yield when topological unwinding occurs
+    if (tYield) {
+        tYield.innerText = tickYield > 0 ? tickYield.toFixed(2) : cumulativeYield.toFixed(0);
+    }
 }
