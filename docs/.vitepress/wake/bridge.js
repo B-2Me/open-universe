@@ -18,6 +18,8 @@ export class PlanckBridge {
     randomizeGrid() { this.wasm._randomize_grid(); }
     saveSnapshot() { this.wasm._save_grid_snapshot(); }
     restoreSnapshot() { this.wasm._restore_grid_snapshot(); }
+    getSnapshotCount() { return typeof this.wasm._get_snapshot_count === 'function' ? this.wasm._get_snapshot_count() : -1; }
+    getGridPointer() { return this.wasm._get_grid_pointer(); }
 
     getNodeState(x, y) { return this.wasm._get_node_state(x, y); }
     setNodeState(x, y, state) { this.wasm._set_node_state(x, y, state); }

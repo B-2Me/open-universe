@@ -10,7 +10,7 @@
 #include <string.h>
 #include <emscripten.h>
 
-#define BUILD_VERSION (120)
+#define BUILD_VERSION (121)
 #define WIDTH (400)
 #define HEIGHT (400)
 #define PIXEL_COUNT (WIDTH * HEIGHT)
@@ -35,6 +35,9 @@
 #define THERMAL_NORM (1200.0)    // Baseline for environment-normalized scaling
 #define DISSIPATION_SCALE (0.1)  // Dissipation dampening factor in impedance injector
 
+// --- Undo Snapshot Ring ---
+#define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
+
 typedef struct {
     uint8_t quanta;  
     uint8_t spin;    
@@ -43,8 +46,9 @@ typedef struct {
 
 PlanckNode* grid_read = NULL;
 PlanckNode* grid_write = NULL;
-PlanckNode* grid_snapshot = NULL;
-PlanckNode* grid_snapshot_prev = NULL;
+PlanckNode* grid_snapshots[SNAPSHOT_DEPTH] = {NULL};
+int snap_head = -1;  // Ring index of the newest checkpoint; -1 when empty
+int snap_count = 0;  // Valid checkpoints in the ring
 uint8_t pixel_buffer[PIXEL_COUNT * 4];
 
 uint8_t KNOB_DISSIPATION = 15; 
@@ -80,38 +84,51 @@ EMSCRIPTEN_KEEPALIVE
 void init_grid() {
     if (grid_read != NULL) { free(grid_read); grid_read = NULL; }
     if (grid_write != NULL) { free(grid_write); grid_write = NULL; }
-    if (grid_snapshot != NULL) { free(grid_snapshot); grid_snapshot = NULL; }
-    if (grid_snapshot_prev != NULL) { free(grid_snapshot_prev); grid_snapshot_prev = NULL; }
+    for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+        if (grid_snapshots[i] != NULL) { free(grid_snapshots[i]); grid_snapshots[i] = NULL; }
+    }
+    snap_head = -1;
+    snap_count = 0;
 
     grid_read = calloc(PIXEL_COUNT, sizeof(PlanckNode));
     grid_write = calloc(PIXEL_COUNT, sizeof(PlanckNode));
-    grid_snapshot = calloc(PIXEL_COUNT, sizeof(PlanckNode));
-    grid_snapshot_prev = calloc(PIXEL_COUNT, sizeof(PlanckNode));
+    for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+        grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
+    }
 }
 
 EMSCRIPTEN_KEEPALIVE
 void free_grid() {
     if (grid_read != NULL) { free(grid_read); grid_read = NULL; }
     if (grid_write != NULL) { free(grid_write); grid_write = NULL; }
-    if (grid_snapshot != NULL) { free(grid_snapshot); grid_snapshot = NULL; }
-    if (grid_snapshot_prev != NULL) { free(grid_snapshot_prev); grid_snapshot_prev = NULL; }
+    for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+        if (grid_snapshots[i] != NULL) { free(grid_snapshots[i]); grid_snapshots[i] = NULL; }
+    }
+    snap_head = -1;
+    snap_count = 0;
 }
 
-// 2-slot undo ring: save pushes current state onto the ring,
-// restore pops it and demotes so a second undo reaches deeper.
+// Undo ring: save pushes the current state as the newest checkpoint,
+// restore pops it so the next undo reaches deeper. The engine tracks
+// snap_count itself so a JS-side counter bug can never restore garbage.
 EMSCRIPTEN_KEEPALIVE
 void save_grid_snapshot() {
-    if (!grid_read || !grid_snapshot || !grid_snapshot_prev) return;
-    memcpy(grid_snapshot_prev, grid_snapshot, PIXEL_COUNT * sizeof(PlanckNode));
-    memcpy(grid_snapshot, grid_read, PIXEL_COUNT * sizeof(PlanckNode));
+    if (!grid_read || !grid_snapshots[0]) return;
+    snap_head = (snap_head + 1) % SNAPSHOT_DEPTH;
+    memcpy(grid_snapshots[snap_head], grid_read, PIXEL_COUNT * sizeof(PlanckNode));
+    if (snap_count < SNAPSHOT_DEPTH) snap_count++;
 }
 
 EMSCRIPTEN_KEEPALIVE
 void restore_grid_snapshot() {
-    if (!grid_read || !grid_snapshot || !grid_snapshot_prev) return;
-    memcpy(grid_read, grid_snapshot, PIXEL_COUNT * sizeof(PlanckNode));
-    memcpy(grid_snapshot, grid_snapshot_prev, PIXEL_COUNT * sizeof(PlanckNode));
+    if (!grid_read || snap_count <= 0 || snap_head < 0) return;
+    memcpy(grid_read, grid_snapshots[snap_head], PIXEL_COUNT * sizeof(PlanckNode));
+    snap_head = (snap_head - 1 + SNAPSHOT_DEPTH) % SNAPSHOT_DEPTH;
+    snap_count--;
 }
+
+EMSCRIPTEN_KEEPALIVE int get_snapshot_count() { return snap_count; }
+EMSCRIPTEN_KEEPALIVE uint8_t* get_grid_pointer() { return (uint8_t*)grid_read; }
 
 EMSCRIPTEN_KEEPALIVE
 void clear_grid() {

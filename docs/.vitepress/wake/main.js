@@ -4,7 +4,8 @@ import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
 import { EngineLoop } from './loop.js';
 import { InteractionManager } from './interaction.js';
-import { loadScenario } from './scenarios.js';
+import { loadScenario, SCENARIO_DOSSIERS } from './scenarios.js';
+import { loadSimState, restoreSimState } from './persist.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
@@ -95,6 +96,20 @@ export async function initWakeSimulator() {
         controlsRef = controls;
 
         const initialParams = loadScenario(state.currentScenario, bridge);
+
+        // Resume a previous session if an autosave exists (grid bytes override
+        // the default scenario seed; the saved scenario name is restored too).
+        const saved = await loadSimState();
+        if (saved && saved.grid) {
+            restoreSimState(bridge, saved);
+            if (saved.scenario && SCENARIO_DOSSIERS[saved.scenario]) {
+                state.currentScenario = saved.scenario;
+                const dd = document.getElementById('scenario_dropdown');
+                if (dd) dd.value = saved.scenario;
+                controls.updateDossierContent(saved.scenario);
+            }
+        }
+
         const md = document.getElementById('math_dissipation');
         const mt = document.getElementById('math_thermal_limit');
         if (md) md.innerText = initialParams.targetDissipation;

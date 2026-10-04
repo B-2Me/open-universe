@@ -31,6 +31,8 @@ if emcc planck.c \
     '_set_impedance_mode',
     '_save_grid_snapshot',
     '_restore_grid_snapshot',
+    '_get_snapshot_count',
+    '_get_grid_pointer',
     '_get_engine_version', 
     '_get_grid_width', 
     '_get_grid_height',

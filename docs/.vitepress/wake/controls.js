@@ -1,5 +1,7 @@
-import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS, UNDO_MAX_DEPTH, UNDO_WINDOW_TICKS } from './constants.js';
+import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS, UNDO_MAX_DEPTH, UNDO_WINDOW_TICKS, AUTOSAVE_INTERVAL_MS } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
+import { WakeLockManager } from './wakelock.js';
+import { saveSimState } from './persist.js';
 
 export class ControlsManager {
     constructor({ bridge, palette, loop, state, rendererLeft, rendererRight, interaction }) {
@@ -12,9 +14,14 @@ export class ControlsManager {
         this.interaction = interaction;
         this.lastTPS = SPEED_DEFAULT_TPS;
 
-        // Undo buffer depth (mirrors the C-side 2-slot snapshot ring)
+        // Undo buffer depth (display mirrors the engine's own snap_count)
         this.undoDepth = 0;
         this.lastCheckpointTick = 0;
+
+        // Screen wake lock: held while the sim plays (see wakelock.js)
+        this.wakeLock = new WakeLockManager();
+
+        this._onPageHide = () => saveSimState(this.bridge, this.state.currentScenario);
 
         this.init();
     }
@@ -32,6 +39,13 @@ export class ControlsManager {
         this.updateDossierContent(this.state.currentScenario);
         this.updateGpuBadge();
         this.updateUndoFill();
+
+        // Periodic autosave + a final flush when the page is hidden/closed
+        this._autosaveInterval = setInterval(
+            () => saveSimState(this.bridge, this.state.currentScenario),
+            AUTOSAVE_INTERVAL_MS
+        );
+        window.addEventListener('pagehide', this._onPageHide);
     }
 
     // Single source of truth for run/pause so the slider, button, and
@@ -43,6 +57,7 @@ export class ControlsManager {
         if (v > 0) this.lastTPS = v;
         this.state.isPlaying = v > 0;
         this.loop.setTPS(v);
+        this.wakeLock.setActive(v > 0);
         if (speedVal) speedVal.innerText = v === 0 ? "Paused" : `${v} TPS`;
         if (speedSlider && parseInt(speedSlider.value, 10) !== v) speedSlider.value = v;
         if (playBtn) playBtn.innerText = v > 0 ? '⏸ Pause' : '▶ Play';
@@ -58,7 +73,17 @@ export class ControlsManager {
         this.pushUndoDepth();
         const result = fn();
         this.state.forceRedraw = true;
+        this.scheduleAutosave();
         return result;
+    }
+
+    // Debounced autosave after user mutations (the interval handles play).
+    scheduleAutosave() {
+        clearTimeout(this._autosaveTimer);
+        this._autosaveTimer = setTimeout(
+            () => saveSimState(this.bridge, this.state.currentScenario),
+            1500
+        );
     }
 
     // --- Undo Buffer ---
@@ -98,6 +123,10 @@ export class ControlsManager {
     }
 
     updateUndoFill() {
+        // The engine tracks its own ring depth — prefer it over the JS mirror.
+        const engineDepth = this.bridge.getSnapshotCount();
+        if (engineDepth >= 0) this.undoDepth = Math.min(UNDO_MAX_DEPTH, engineDepth);
+
         const btn = document.getElementById('btn_undo');
         if (!btn) return;
         const pct = (this.undoDepth / UNDO_MAX_DEPTH) * 100;
@@ -230,13 +259,30 @@ export class ControlsManager {
 
         if (infoBtn && modal) {
             infoBtn.onclick = () => {
-                this.updateDossierContent(this.state.currentScenario);
-                modal.classList.toggle('show');
+                if (modal.classList.contains('show')) this.closeDossier();
+                else this.openDossier();
             };
         }
         if (closeBtn && modal) {
-            closeBtn.onclick = () => modal.classList.remove('show');
+            closeBtn.onclick = () => this.closeDossier();
         }
+    }
+
+    openDossier() {
+        const modal = document.getElementById('modal_scenario_info');
+        if (!modal) return;
+        this.updateDossierContent(this.state.currentScenario);
+        this._prevFocus = document.activeElement;
+        modal.classList.add('show');
+        document.getElementById('btn_close_dossier')?.focus();
+    }
+
+    closeDossier() {
+        const modal = document.getElementById('modal_scenario_info');
+        if (!modal || !modal.classList.contains('show')) return;
+        modal.classList.remove('show');
+        if (this._prevFocus && typeof this._prevFocus.focus === 'function') this._prevFocus.focus();
+        this._prevFocus = null;
     }
 
     updateDossierContent(type) {
@@ -277,6 +323,8 @@ export class ControlsManager {
             container.classList.toggle('mode-place', mode === 'place');
             container.classList.toggle('mode-sample', mode === 'sample');
         }
+
+        this.interaction?.hideBrushPreview();
     }
 
     bindSegmentButtons() {
@@ -318,7 +366,7 @@ export class ControlsManager {
 
             // Only the Scenario Dossier pop-over is dismissed on outside clicks.
             if (modal && modal.classList.contains('show') && !modal.contains(e.target) && !infoBtn?.contains(e.target)) {
-                modal.classList.remove('show');
+                this.closeDossier();
             }
         };
         document.addEventListener('pointerdown', this._onDocPointerDown);
@@ -328,9 +376,23 @@ export class ControlsManager {
         this._onKeyDown = (e) => {
             const tag = e.target?.tagName;
             const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable;
+            const modal = document.getElementById('modal_scenario_info');
+            const modalOpen = modal?.classList.contains('show');
 
             if (e.code === 'Escape') {
-                document.getElementById('modal_scenario_info')?.classList.remove('show');
+                if (modalOpen) this.closeDossier();
+                return;
+            }
+
+            // Focus trap: keep Tab cycling inside the open dossier modal
+            if (modalOpen && e.code === 'Tab') {
+                const focusables = modal.querySelectorAll('button, [href], input, select, [tabindex]:not([tabindex="-1"])');
+                if (focusables.length) {
+                    const first = focusables[0];
+                    const last = focusables[focusables.length - 1];
+                    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
                 return;
             }
             if (typing) return;
@@ -383,6 +445,10 @@ export class ControlsManager {
         if (this._onKeyDown) window.removeEventListener('keydown', this._onKeyDown);
         if (this._onKeyUp) window.removeEventListener('keyup', this._onKeyUp);
         if (this._onBlur) window.removeEventListener('blur', this._onBlur);
+        this.wakeLock.destroy();
+        clearInterval(this._autosaveInterval);
+        clearTimeout(this._autosaveTimer);
+        window.removeEventListener('pagehide', this._onPageHide);
     }
 
     bindSliders() {

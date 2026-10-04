@@ -5,8 +5,14 @@ export const ZOOM_MIN = 1.0;
 export const ZOOM_MAX = 10.0;
 
 // --- Undo Buffer ---
-export const UNDO_MAX_DEPTH = 2;       // Matches the C-side 2-slot snapshot ring
+export const UNDO_MAX_DEPTH = 4;       // Matches SNAPSHOT_DEPTH in planck.c
 export const UNDO_WINDOW_TICKS = 120;  // Play ticks between auto-checkpoints (~2s @ 60 TPS)
+
+// --- Touch Ergonomics ---
+export const TOUCH_STAMP_OFFSET_PX = 56; // Lift touch paints/samples above the fingertip
+
+// --- Persistence ---
+export const AUTOSAVE_INTERVAL_MS = 10000; // Periodic grid autosave to IndexedDB
 
 // --- Grid Dimensions ---
 export const GRID_WIDTH = 400;
@@ -14,6 +20,10 @@ export const GRID_HEIGHT = 400;
 export const TOTAL_NODES = GRID_WIDTH * GRID_HEIGHT;
 export const RGBA_CHANNELS = 4;
 export const PIXEL_BUFFER_SIZE = TOTAL_NODES * RGBA_CHANNELS;
+
+// --- Node Layout ---
+export const NODE_SIZE_BYTES = 4;      // sizeof(PlanckNode): u8 quanta + u8 spin + u16 heat
+export const GRID_BYTE_SIZE = TOTAL_NODES * NODE_SIZE_BYTES;
 
 // --- Bitfield Offsets and Masks ---
 // Format: [Quanta: 8 bits][Spin: 8 bits][Heat: 16 bits]

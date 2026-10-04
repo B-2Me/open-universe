@@ -1,4 +1,4 @@
-import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, unpackNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, unpackNode } from './constants.js';
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
@@ -40,6 +40,51 @@ export class InteractionManager {
         if (!this.container) return;
         this.bindEvents();
         window.addEventListener('resize', this._onResize);
+
+        // Stamp footprint preview: lives inside the transformed wrapper so it
+        // tracks zoom/pan automatically; positioned in full-field pixel units
+        // (the two canvases form one continuous 400-wide view).
+        this.preview = document.createElement('div');
+        this.preview.className = 'brush-preview';
+        this.preview.style.display = 'none';
+        this.tWrapper?.appendChild(this.preview);
+    }
+
+    hideBrushPreview() {
+        if (this.preview) this.preview.style.display = 'none';
+    }
+
+    // Places the footprint box at the grid anchor matching injectPattern's
+    // centering (startX = centerX - floor(w/2)).
+    positionPreview(centerX, centerY, boxW, boxH) {
+        if (!this.preview || !this.tWrapper) return;
+        const cellPxX = this.tWrapper.clientWidth / GRID_WIDTH;
+        const cellPxY = this.tWrapper.clientHeight / GRID_HEIGHT;
+        this.preview.style.display = 'block';
+        this.preview.style.left = ((centerX - Math.floor(boxW / 2)) * cellPxX) + 'px';
+        this.preview.style.top = ((centerY - Math.floor(boxH / 2)) * cellPxY) + 'px';
+        this.preview.style.width = (boxW * cellPxX) + 'px';
+        this.preview.style.height = (boxH * cellPxY) + 'px';
+    }
+
+    // Shows the footprint for the current mode/tool at the pointer's target
+    // (touch input is lifted above the fingertip — same math as processInput).
+    updateBrushPreview(clientX, clientY, pointerType) {
+        if (!this.preview) return;
+        const mode = this.state.isSpaceDown ? 'move' : this.state.currentMode;
+        let box = null;
+        if (mode === 'place') {
+            const pattern = this.palette.getPattern();
+            if (pattern && pattern.length) box = { w: pattern[0].length, h: pattern.length };
+        } else if (mode === 'sample') {
+            const r = parseInt(document.getElementById('slider_radius')?.value, 10) || 10;
+            box = { w: 2 * r + 1, h: 2 * r + 1 };
+        }
+        if (!box) { this.hideBrushPreview(); return; }
+
+        const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
+        const coords = this.getGridCoords(clientX, ly);
+        this.positionPreview(coords.x, coords.y, box.w, box.h);
     }
 
     clampZoom(z) {
@@ -96,9 +141,10 @@ export class InteractionManager {
                 if (this.tWrapper) this.tWrapper.style.transition = 'none';
                 this.lastX = e.clientX;
                 this.lastY = e.clientY;
-                this.processInput(e.clientX, e.clientY, true);
+                this.processInput(e.clientX, e.clientY, true, e.pointerType);
             } else if (this.activePointers.size === 2) {
                 // Second finger arrived: this is a pinch, not a stroke.
+                this.hideBrushPreview();
                 // Revert the stamp finger 1 may have just injected.
                 if (this.strokeInjected) {
                     this.bridge.restoreSnapshot();
@@ -117,7 +163,11 @@ export class InteractionManager {
         });
 
         this.container.addEventListener('pointermove', (e) => {
-            if (!this.activePointers.has(e.pointerId)) return;
+            if (!this.activePointers.has(e.pointerId)) {
+                // Mouse hover: keep the footprint preview tracking the cursor
+                if (e.pointerType === 'mouse') this.updateBrushPreview(e.clientX, e.clientY, e.pointerType);
+                return;
+            }
             this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             if (this.activePointers.size === 2 && this.initialPinchDistance) {
@@ -140,12 +190,13 @@ export class InteractionManager {
             }
 
             if (this.isDragging && this.activePointers.size === 1) {
-                this.processInput(e.clientX, e.clientY, false);
+                this.processInput(e.clientX, e.clientY, false, e.pointerType);
             }
         });
 
         const endPointer = (e) => {
             this.activePointers.delete(e.pointerId);
+            if (e.pointerType === 'touch') this.hideBrushPreview();
             if (this.activePointers.size < 2) {
                 this.initialPinchDistance = null;
                 this.lastPinchMid = null;
@@ -161,6 +212,7 @@ export class InteractionManager {
 
         this.container.addEventListener('pointerup', endPointer);
         this.container.addEventListener('pointercancel', endPointer);
+        this.container.addEventListener('pointerleave', () => this.hideBrushPreview());
     }
 
     getGridCoords(clientX, clientY) {
@@ -177,16 +229,17 @@ export class InteractionManager {
         };
     }
 
-    processInput(clientX, clientY, isClick) {
+    processInput(clientX, clientY, isClick, pointerType) {
         let activeAction = this.state.isSpaceDown ? 'move' : this.state.currentMode;
 
         // Config mode always acts as move
         if (activeAction === 'config') activeAction = 'move';
-        
+
         // Sample mode acts as move if dragging, but executes sample if tapped
         if (activeAction === 'sample' && !isClick) activeAction = 'move';
 
         if (activeAction === 'move') {
+            this.hideBrushPreview();
             if (isClick) {
                 this.lastX = clientX;
                 this.lastY = clientY;
@@ -200,7 +253,12 @@ export class InteractionManager {
             return;
         }
 
-        const coords = this.getGridCoords(clientX, clientY);
+        this.updateBrushPreview(clientX, clientY, pointerType);
+
+        // Lift touch input above the fingertip so the user can see where the
+        // stamp/sample actually lands (mirrored by updateBrushPreview).
+        const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
+        const coords = this.getGridCoords(clientX, ly);
 
         if (activeAction === 'sample' && isClick) {
             this.sampleRegion(coords.x, coords.y);
@@ -380,5 +438,6 @@ export class InteractionManager {
         window.removeEventListener('resize', this._onResize);
         this.activePointers.clear();
         this.isDragging = false;
+        this.preview?.remove();
     }
 }

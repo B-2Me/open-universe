@@ -28,10 +28,12 @@ The frontend is plain ES modules composed by `main.js` — no framework inside t
 | `bridge.js` | The WASM boundary — pixel views, node state packing, snapshots, VTK |
 | `loop.js` | Fixed-timestep engine loop (accumulator, telemetry cadence, tick hooks) |
 | `renderer.js` | Dual-canvas WebGL renderer (lattice projections) + 2D fallback |
-| `interaction.js` | Pointer Events input — paint strokes, pan/zoom, pinch gestures, sampling |
-| `controls.js` | All DOM controls — modes, drawers, sliders, exports, keyboard, undo depth |
+| `interaction.js` | Pointer Events input — paint strokes, pan/zoom, pinch gestures, sampling, brush preview |
+| `controls.js` | All DOM controls — modes, drawers, sliders, exports, keyboard, undo depth, autosave |
 | `scenarios.js` | Declarative scenario composers + dossier copy |
 | `palette.js` | Brush palette + sampled stamps (localStorage persistence) |
+| `wakelock.js` | Screen Wake Lock lifecycle (iOS gesture/visibility quirks) |
+| `persist.js` | IndexedDB autosave — raw grid bytes + scenario, restore on boot |
 | `constants.js` | Grid/layer/speed/zoom/undo constants and bitfield packers |
 
 ## The Planck Field Engine (`planck.c`)
@@ -45,10 +47,14 @@ All physics constants are named `#define`s at the top of the file — tunable kn
 - **Four layers** per half of the split view: Macro, Metabolic, Phase, Entropic — independently toggled.
 - **Scenarios** (Vacuum, Stellar Core, Atmosphere, Engine Bell, Nozzle Wall, Ocean) with dossiers, composited via declarative grid writers.
 - **Modes**: Move (pan/zoom/dbl-click reset), Place (brush stamps + 4 injection modes: Clone/Density/Heat/Spin), Sample (probe a region into a reusable stamp), System (settings drawer).
-- **Undo buffer**: a 2-slot snapshot ring in the engine; every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth.
+- **Undo buffer**: a 4-slot snapshot ring in the engine; every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth.
 - **Physics live-tuning**: dissipation, thermal limit, and refractive impedance toggles; sim speed slider (fixed timestep — consistent across refresh rates).
 - **Export**: composited PNG snapshot, Web Share, and ASCII VTK for ParaView.
 - **Mobile-first input**: unified Pointer Events, pinch-focal zoom, stray-stamp pinch revert, 44px targets, `dvh` layout, haptics on Android.
+- **Brush footprint preview + touch lift**: the stamp/sample outline is drawn on the field (it follows zoom/pan), and touch input lands ~56px above the fingertip so painting isn't blind.
+- **Screen wake lock** while playing (iOS 16.4+ / Chrome) — re-acquires after tab switches and gestures.
+- **IndexedDB autosave**: the 640KB grid + scenario are saved every 10s and on page hide; reloads resume where you left off.
+- **PWA shell**: web manifest + a stale-while-revalidate service worker for offline use.
 - **Keyboard**: Space pan · P play · R randomize · C clear · Ctrl+Z undo · Esc close.
 
 ## Building & Local Development
@@ -73,12 +79,12 @@ So: no emsdk locally? `docs:dev` still works — the site builds, the simulator 
 
 Ideas under consideration for the simulator, roughly in priority order:
 
-- **Brush footprint preview / loupe** — show the stamp outline (or a magnifier offset above the finger) so mobile painting isn't blind.
-- **Wake lock** while playing, so the screen doesn't dim mid-simulation.
-- **IndexedDB autosave** — persist grid + palette across reloads, with resume-on-load.
-- **PWA shell** — manifest + service worker for "Add to Home Screen" and offline use.
-- **Deeper undo ring** — buffer depth is compile-time configurable (currently 2 slots).
-- **Accessibility** — focus trap + focus restore in the dossier modal; canvas keyboard painting.
+- **Accessibility** — dossier modal has a focus trap + restore; canvas keyboard painting is still open.
+- **Deeper undo ring** — `SNAPSHOT_DEPTH` is compile-time configurable (currently 4 slots).
+- **Loupe magnification** — the footprint preview covers placement; a zoomed preview inset would help fine-detail work on phones.
+- **Replay/timelapse export** — the autosave machinery makes periodic frame capture cheap.
+
+Shipped from the previous list: brush footprint preview, wake lock, IndexedDB autosave, PWA shell, modal focus trap, and the configurable undo ring.
 
 ## License
 

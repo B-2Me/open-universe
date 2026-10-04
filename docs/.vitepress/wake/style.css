@@ -122,7 +122,20 @@ html:has(.wake-sandbox) body {
 #transform-wrapper {
   width: 100%;
   height: 100%;
-  display: flex; 
+  display: flex;
+  position: relative;
+}
+
+/* Brush footprint preview — positioned in full-field pixel units inside the
+   transformed wrapper, so it tracks zoom/pan and spans both lens halves. */
+.brush-preview {
+  position: absolute;
+  border: 1px dashed rgba(140, 209, 133, 0.9);
+  background: rgba(140, 209, 133, 0.12);
+  box-shadow: 0 0 6px rgba(140, 209, 133, 0.35);
+  pointer-events: none;
+  z-index: 3;
+  box-sizing: border-box;
 }
 
 .split-half {

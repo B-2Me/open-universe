@@ -4,6 +4,10 @@ import { onMounted, onUnmounted } from 'vue'
 let cleanup = null
 
 onMounted(async () => {
+  // PWA shell: offline cache for the site + wasm (prod builds only)
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
   const { initWakeSimulator } = await import('../wake/main.js')
   cleanup = await initWakeSimulator()
 })
