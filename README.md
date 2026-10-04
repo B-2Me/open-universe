@@ -53,8 +53,11 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 
 - **Four layers** per half of the split view: Macro, Metabolic, Phase, Entropic — independently toggled.
 - **Scenarios** (Vacuum, Stellar Core, Atmosphere, Engine Bell, Nozzle Wall, Ocean) with dossiers, composited via declarative grid writers.
-- **Modes**: Move (pan/zoom/dbl-click reset), Place (brush stamps + 4 injection modes: Clone/Density/Heat/Spin), Sample (probe a region into a reusable stamp), System (settings drawer).
-- **Undo buffer**: a `SNAPSHOT_DEPTH`-slot ring in the engine (currently 4); every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth.
+- **Modes**: Move (pan/zoom/dbl-click reset), Place (brush stamps through the injection matrix), Sample (probe a region into a reusable stamp), System (settings drawer).
+- **Injection matrix**: Density/Heat/Spin are independent channel toggles — each injects only its component, with a per-channel dose slider (% of the stamp's stored value; Spin's slider is an entrainment↔imposition dial that blends stored direction against ambient flow). All three enabled is a verbatim Clone write; doses are ignored during clone.
+- **Undo buffer**: a `SNAPSHOT_DEPTH`-slot ring in the engine (currently 4); every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth. Snapshots hold field bytes only — cumulative stats (Yield) persist through undo by design.
+- **Lattice projections**: Quad / Hex (staggered rows) / Oct (chamfered cells with interstitial voids) via a fragment-shader pass — requires WebGL, so the buttons disable on the 2D-canvas fallback.
+- **Telemetry**: live Quanta / Heat / Phase-alignment / Yield readouts. Yield counts topological-unwinding events and resets with the field (scenario load, Clear, Random).
 - **Physics live-tuning**: dissipation, thermal limit, and refractive impedance toggles; sim speed slider (fixed timestep — consistent across refresh rates).
 - **Export**: WYSIWYG PNG snapshot of the split view, Web Share, and ASCII VTK for ParaView.
 - **Mobile-first input**: unified Pointer Events, pinch-focal zoom, stray-stamp pinch revert, 44px targets, `dvh` layout, haptics on Android.
@@ -103,7 +106,7 @@ The framework work is the discovery process; the instrument work exists to serve
 - **Timelapse video export** — deferred: `compositeCanvas()` already produces a WYSIWYG split-view frame ready for a `captureStream()` + `MediaRecorder` pump; mime sniffing (webm vs mp4 on iOS) is the remaining work.
 - **Deeper undo ring** — `SNAPSHOT_DEPTH` is compile-time configurable (currently 4 slots).
 
-Shipped: brush footprint preview + touch lift, wake lock, IndexedDB autosave, PWA shell, modal focus trap, keyboard brush cursor, configurable undo ring, compile-time build provenance.
+Shipped: brush footprint preview + touch lift, wake lock, IndexedDB autosave, PWA shell, modal focus trap, keyboard brush cursor, configurable undo ring, compile-time build provenance, injection channel matrix + dose sliders, per-field yield telemetry.
 
 ## License
 
