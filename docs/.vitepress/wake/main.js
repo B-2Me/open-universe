@@ -3,7 +3,7 @@ import { DualRenderer } from './renderer.js';
 import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
 import { EngineLoop } from './loop.js';
-import { InteractionController } from './interaction.js';
+import { InteractionManager } from './interaction.js';
 import { loadScenario } from './scenarios.js';
 import {
     LAYER_MACRO,
@@ -63,13 +63,13 @@ export async function initWakeSimulator() {
             renderer
         });
 
-        // 7. Mount Pointer / Touch Interaction Controller
-        const container = document.getElementById('canvas-container');
-        const interaction = new InteractionController({
-            container,
+        // 7. Mount Pointer / Touch Interaction Manager
+        const interaction = new InteractionManager({
             bridge,
             palette,
-            getState: () => state
+            state,
+            canvasContainerId: 'canvas-container',
+            transformWrapperId: 'transform-wrapper'
         });
 
         // 8. Load Initial Scenario
