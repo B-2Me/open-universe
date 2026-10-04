@@ -55,6 +55,13 @@ export const SPIN_DOWN_LEFT = 6;
 export const SPIN_LEFT = 7;
 export const SPIN_UP_LEFT = 8;
 
+// Engine spin-direction tables — mirrors SPIN_DX/SPIN_DY/DIR_MAP in
+// planck.c. Indexed by spin value 0-8 (0 = stationary, no vector).
+export const SPIN_DX = [0, 0, 1, 1, 1, 0, -1, -1, -1];
+export const SPIN_DY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
+// Maps signed (dy, dx) vector sums back to a spin id: DIR_MAP[dy+1][dx+1].
+export const DIR_MAP = [[8, 1, 2], [7, 0, 3], [6, 5, 4]];
+
 // --- Heat Presets ---
 // Shared field vocabulary used by both the brush palette and the
 // scenario composers — palette-only and scenario-only presets live in

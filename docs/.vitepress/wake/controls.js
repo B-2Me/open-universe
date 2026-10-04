@@ -585,7 +585,7 @@ export class ControlsManager {
         const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
         
         bind('btn_injection_info', () => {
-            alert("INJECTION MATRIX\n\nChannels toggle independently — combine them freely. Each slider sets that channel's dose (% of the stamp's stored value per node); sliders are ignored during a verbatim Clone write.\n\nCLONE (all channels on):\nOverwrites reality verbatim. Punches rigid holes through matter (and empty cells erase).\n\nDENSITY:\nFluid displacement only. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass. Its slider is the per-node application probability — lower values produce sparse directional drift.");
+            alert("INJECTION MATRIX\n\nChannels toggle independently — combine them freely. Each slider sets that channel's dose (% of the stamp's stored value per node); sliders are ignored during a verbatim Clone write.\n\nCLONE (all channels on):\nOverwrites reality verbatim. Punches rigid holes through matter (and empty cells erase).\n\nDENSITY:\nFluid displacement only. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass. Its slider is an imposition dial — 100% forces the stamp's direction, 0% entrains nodes to the dominant ambient flow, and values between blend the two per node.");
         });
         
         bind('btn_reset', () =>

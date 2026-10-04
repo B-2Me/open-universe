@@ -70,7 +70,7 @@ onUnmounted(() => {
               </div>
               <div class="dose-row">
                 <span class="dose-label">Spin</span>
-                <input type="range" id="dose_spin" min="1" max="100" value="100" class="slider-fill">
+                <input type="range" id="dose_spin" min="0" max="100" value="100" class="slider-fill" title="0% entrain to ambient flow — 100% impose stamp direction">
                 <span class="dose-val" id="val_dose_spin">100%</span>
               </div>
             </div>

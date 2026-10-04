@@ -1,4 +1,4 @@
-import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, unpackNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, SPIN_DX, SPIN_DY, DIR_MAP, unpackNode } from './constants.js';
 
 // --- Interaction-local tuning ---
 const DOUBLE_TAP_MS = 300;          // Pointer-tap window that triggers resetView
@@ -397,7 +397,7 @@ export class InteractionManager {
         const startX = centerX - Math.floor(pWidth / 2);
         const startY = centerY - Math.floor(pHeight / 2);
         // Per-channel dose: % of the stamp's stored value injected per node.
-        // Spin's dose is a per-node probability — a direction has no magnitude.
+        // Spin's dose is imposition strength — see the channel branch below.
         const dose = this.state.injectionDose || { quanta: 25, heat: 5, spin: 100 };
 
         for (let py = 0; py < pHeight; py++) {
@@ -424,12 +424,39 @@ export class InteractionManager {
                         const deltaHeat = Math.floor(b.heat * dose.heat / 100);
                         if (deltaHeat > 0) this.bridge.addHeat(tx, ty, deltaHeat);
                     }
-                    if (channels.spin && b.spin > 0 && Math.random() * 100 < dose.spin) {
-                        this.bridge.setSpin(tx, ty, b.spin);
+                    if (channels.spin && b.spin > 0) {
+                        // Spin dose is a momentum-imposition dial, not a
+                        // probability: 100% forces the stamp's direction,
+                        // 0% entrains the node to the dominant ambient spin,
+                        // values between blend the two per node.
+                        const imposed = Math.random() * 100 < dose.spin;
+                        const spin = imposed ? b.spin : this.dominantNeighborSpin(tx, ty);
+                        if (spin > 0) this.bridge.setSpin(tx, ty, spin);
                     }
                 }
             }
         }
+    }
+
+    // Dominant spin among the 8 neighbors (same vector-sum rule as the
+    // engine's refractive momentum inheritance). Returns 0 when there's
+    // no net ambient momentum — callers treat that as "no write".
+    dominantNeighborSpin(x, y) {
+        let sumDx = 0, sumDy = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = (x + dx + GRID_WIDTH) % GRID_WIDTH;
+                const ny = (y + dy + GRID_HEIGHT) % GRID_HEIGHT;
+                const s = unpackNode(this.bridge.getNodeState(nx, ny)).spin;
+                if (s > 0 && s <= 8) {
+                    sumDx += SPIN_DX[s];
+                    sumDy += SPIN_DY[s];
+                }
+            }
+        }
+        if (sumDx === 0 && sumDy === 0) return 0;
+        return DIR_MAP[Math.sign(sumDy) + 1][Math.sign(sumDx) + 1];
     }
 
     sampleRegion(centerX, centerY) {
