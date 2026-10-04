@@ -1,13 +1,15 @@
 import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, unpackNode } from './constants.js';
 
 export class InteractionManager {
-    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample }) {
+    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
         this.container = document.getElementById(canvasContainerId);
         this.tWrapper = document.getElementById(transformWrapperId);
         this.bridge = bridge;
         this.palette = palette;
         this.state = state;
         this.onSample = onSample;
+        this.onUndoPush = onUndoPush;
+        this.onUndoPop = onUndoPop;
 
         this.zoom = 1;
         this.panX = 0;
@@ -100,6 +102,7 @@ export class InteractionManager {
                 // Revert the stamp finger 1 may have just injected.
                 if (this.strokeInjected) {
                     this.bridge.restoreSnapshot();
+                    if (this.onUndoPop) this.onUndoPop();
                     this.strokeInjected = false;
                     this.state.forceRedraw = true;
                 }
@@ -209,6 +212,7 @@ export class InteractionManager {
 
             if (isClick) {
                 this.bridge.saveSnapshot();
+                if (this.onUndoPush) this.onUndoPush();
                 this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
                 this.strokeInjected = true;
                 this.lastInjectGridX = coords.x;

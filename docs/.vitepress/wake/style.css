@@ -282,6 +282,15 @@ html:has(.wake-sandbox) body {
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 0 6px rgba(117, 184, 110, 0.25);
 }
 
+/* Undo: horizontal fill mirrors buffered checkpoint depth (--undo-fill is
+   driven by JS; background-size animates the sweep smoothly). */
+#btn_undo {
+  background:
+    linear-gradient(90deg, rgba(140, 209, 133, 0.40), rgba(140, 209, 133, 0.12)) left / var(--undo-fill, 0%) 100% no-repeat,
+    #141c14;
+  transition: background-size 0.35s ease;
+}
+
 /* Reset Amber Button */
 #btn_reset {
   background: #2b210c; border-top: 1px solid #9c7b2e; border-left: 1px solid #9c7b2e;

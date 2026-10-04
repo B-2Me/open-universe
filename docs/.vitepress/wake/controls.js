@@ -1,4 +1,4 @@
-import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS } from './constants.js';
+import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS, UNDO_MAX_DEPTH, UNDO_WINDOW_TICKS } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 
 export class ControlsManager {
@@ -11,6 +11,10 @@ export class ControlsManager {
         this.rendererRight = rendererRight;
         this.interaction = interaction;
         this.lastTPS = SPEED_DEFAULT_TPS;
+
+        // Undo buffer depth (mirrors the C-side 2-slot snapshot ring)
+        this.undoDepth = 0;
+        this.lastCheckpointTick = 0;
 
         this.init();
     }
@@ -27,6 +31,7 @@ export class ControlsManager {
         this.bindKeyboard();
         this.updateDossierContent(this.state.currentScenario);
         this.updateGpuBadge();
+        this.updateUndoFill();
     }
 
     // Single source of truth for run/pause so the slider, button, and
@@ -50,9 +55,54 @@ export class ControlsManager {
     // Undo-aware mutation wrapper: snapshot the grid, run the change, flag redraw.
     mutate(fn) {
         this.bridge.saveSnapshot();
+        this.pushUndoDepth();
         const result = fn();
         this.state.forceRedraw = true;
         return result;
+    }
+
+    // --- Undo Buffer ---
+    // The engine holds a small ring of snapshots. Every mutation pushes a
+    // checkpoint; while the sim plays, a roller pushes one every
+    // UNDO_WINDOW_TICKS so "letting it run" gradually refills the buffer.
+    // Undo pops the newest checkpoint and the button's fill gradient shows
+    // how much depth remains.
+
+    pushUndoDepth() {
+        this.undoDepth = Math.min(UNDO_MAX_DEPTH, this.undoDepth + 1);
+        this.updateUndoFill();
+    }
+
+    // Called by InteractionManager when a stroke-start checkpoint is consumed
+    // by the pinch stray-stamp revert (net effect: checkpoint spent, no undo).
+    popUndoDepth() {
+        this.undoDepth = Math.max(0, this.undoDepth - 1);
+        this.updateUndoFill();
+    }
+
+    // Called once per engine tick via EngineLoop.onTick.
+    onEngineTick(frameCount) {
+        if (frameCount - this.lastCheckpointTick >= UNDO_WINDOW_TICKS) {
+            this.lastCheckpointTick = frameCount;
+            this.bridge.saveSnapshot();
+            this.pushUndoDepth();
+        }
+    }
+
+    undo() {
+        if (this.undoDepth <= 0) return;
+        this.bridge.restoreSnapshot();
+        this.undoDepth--;
+        this.updateUndoFill();
+        this.state.forceRedraw = true;
+    }
+
+    updateUndoFill() {
+        const btn = document.getElementById('btn_undo');
+        if (!btn) return;
+        const pct = (this.undoDepth / UNDO_MAX_DEPTH) * 100;
+        btn.style.setProperty('--undo-fill', pct + '%');
+        btn.title = `Undo (${this.undoDepth}/${UNDO_MAX_DEPTH}) — Ctrl+Z`;
     }
 
     downloadBlob(blob, filename) {
@@ -287,8 +337,7 @@ export class ControlsManager {
 
             if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
                 e.preventDefault();
-                this.bridge.restoreSnapshot();
-                this.state.forceRedraw = true;
+                this.undo();
                 return;
             }
             if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -403,10 +452,7 @@ export class ControlsManager {
             this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge)));
         bind('btn_clear', () =>
             this.mutate(() => this.bridge.clearGrid()));
-        bind('btn_undo', () => { 
-            this.bridge.restoreSnapshot(); 
-            this.state.forceRedraw = true; 
-        });
+        bind('btn_undo', () => this.undo());
         bind('btn_play', () => this.setPlaying(!this.state.isPlaying));
         bind('btn_step', () => {
             this.setPlaying(false);

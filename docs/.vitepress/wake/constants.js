@@ -4,6 +4,10 @@ export const SPEED_MAX_TPS = 120;
 export const ZOOM_MIN = 1.0;
 export const ZOOM_MAX = 10.0;
 
+// --- Undo Buffer ---
+export const UNDO_MAX_DEPTH = 2;       // Matches the C-side 2-slot snapshot ring
+export const UNDO_WINDOW_TICKS = 120;  // Play ticks between auto-checkpoints (~2s @ 60 TPS)
+
 // --- Grid Dimensions ---
 export const GRID_WIDTH = 400;
 export const GRID_HEIGHT = 400;

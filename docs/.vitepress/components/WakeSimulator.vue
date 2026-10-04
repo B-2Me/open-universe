@@ -114,6 +114,16 @@ onUnmounted(() => {
               <button id="btn_reset_palette" class="group-btn" style="color: #ff8888;">🗑️ Reset</button>
             </div>
           </div>
+          <div class="context-group" style="margin-top: 6px;">
+            <div class="context-header">
+              <span class="context-label">Keyboard Shortcuts</span>
+              <span class="context-hint">Desktop</span>
+            </div>
+            <span class="context-hint" style="text-transform: none; line-height: 1.8;">
+              <b>Space</b> pan · <b>P</b> play/pause · <b>R</b> randomize · <b>C</b> clear<br>
+              <b>Ctrl+Z</b> undo · <b>Esc</b> close dialogs · <b>Dbl-click</b> reset view (Move mode)
+            </span>
+          </div>
         </div>
 
         <!-- Quick Actions -->

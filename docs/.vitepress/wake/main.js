@@ -8,7 +8,8 @@ import { loadScenario } from './scenarios.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
-    SPEED_DEFAULT_TPS
+    SPEED_DEFAULT_TPS,
+    TOTAL_NODES
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -23,6 +24,9 @@ export async function initWakeSimulator() {
 
         const version = bridge.getEngineVersion();
         if (diagStatus) diagStatus.innerText = `v${version} ONLINE`;
+
+        const diagNodes = document.getElementById('diag_nodes');
+        if (diagNodes) diagNodes.innerText = `${TOTAL_NODES.toLocaleString()} Nodes`;
 
         const state = {
             isPlaying: true,
@@ -45,15 +49,15 @@ export async function initWakeSimulator() {
             phase: document.getElementById('diag_phase'),
             yield: document.getElementById('diag_yield')
         };
+        let controlsRef = null;
         const loop = new EngineLoop({
             bridge,
             renderer,
             getState: () => state,
-            onTelemetry: (b) => updateTelemetry(telemetryEls, b)
+            onTelemetry: (b) => updateTelemetry(telemetryEls, b),
+            onTick: (frameCount) => controlsRef?.onEngineTick(frameCount)
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
-
-        let controlsRef = null;
 
         const interaction = new InteractionManager({
             bridge,
@@ -61,6 +65,8 @@ export async function initWakeSimulator() {
             state,
             canvasContainerId: 'canvas-container',
             transformWrapperId: 'transform-wrapper',
+            onUndoPush: () => controlsRef?.pushUndoDepth(),
+            onUndoPop: () => controlsRef?.popUndoDepth(),
             onSample: (stamp) => {
                 if (controlsRef) {
                     // Rebuild the palette grid with the new custom brush equipped

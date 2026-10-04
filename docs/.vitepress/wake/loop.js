@@ -1,9 +1,10 @@
 export class EngineLoop {
-    constructor({ bridge, renderer, getState, onTelemetry }) {
+    constructor({ bridge, renderer, getState, onTelemetry, onTick }) {
         this.bridge = bridge;
         this.renderer = renderer;
         this.getState = getState;
         this.onTelemetry = onTelemetry;
+        this.onTick = onTick;
 
         this.targetTPS = 60;
         this.frameTime = 1000 / this.targetTPS;
@@ -37,6 +38,7 @@ export class EngineLoop {
                     ticked = true;
                     steps++;
                     this.frameCount++;
+                    if (this.onTick) this.onTick(this.frameCount);
                     if (this.frameCount % 10 === 0 && this.onTelemetry) {
                         this.onTelemetry(this.bridge);
                     }
