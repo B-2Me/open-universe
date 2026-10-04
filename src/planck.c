@@ -353,19 +353,22 @@ void tick() {
 
             next_heat += (next_quanta * QUANTA_HEAT_GEN);
 
-            int temp_scalar = next_heat / TEMP_SCALAR_DIV;
-            int heat_loss = (1 + (temp_scalar * temp_scalar)) * KNOB_DISSIPATION;
-            next_heat -= heat_loss;
-
-            if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
-
-            // Topological Unwinding
+            // Topological Unwinding — the knot fails when its pre-dissipation
+            // tension exceeds what the environment can carry. The check reads
+            // tension before the field drains it: dissipation rate decides how
+            // fast heat escapes, not whether the knot survives.
             if (next_heat > KNOB_THERMAL_LIMIT && next_quanta > 0) {
                 next_heat = HEAT_MAX;
                 next_quanta = 0;   
                 dominant_spin = 0; 
                 shunting = 1;      
                 frame_yield += 1.0; 
+            } else {
+                int temp_scalar = next_heat / TEMP_SCALAR_DIV;
+                int heat_loss = (1 + (temp_scalar * temp_scalar)) * KNOB_DISSIPATION;
+                next_heat -= heat_loss;
+
+                if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
             }
 
             uint8_t next_spin = dominant_spin; 

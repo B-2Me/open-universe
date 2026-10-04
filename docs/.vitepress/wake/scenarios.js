@@ -26,7 +26,6 @@ const THERMAL_LIMIT_SATURATED = 65000; // Stellar + ocean headroom above plasma
 const THERMAL_LIMIT_ENGINE_BELL = 60000;
 
 const HEAT_ABSOLUTE_ZERO = 0;
-const HEAT_VACUUM_CORE = 48000;
 const HEAT_IGNITER_PLASMA = 60000;
 const HEAT_SATURATION = 65000;       // Soup blasts: near-max unwinding heat
 
@@ -92,7 +91,7 @@ export const SCENARIO_DOSSIERS = {
         mechanisms: "CMB floor dissipation, zero-friction dispersion, and topological unwinding.",
         recommendedBrushes: ["🔥 Igniter", "⚙️ Rotor"],
         bestLayers: "👁 Macro + 🕳 Entropic",
-        tips: "Drop an Igniter adjacent to the central knot to trigger a topological yield cascade."
+        tips: "Hold an Igniter against the central knot — or drag Thermal Limit under ~4k — to unwind the deadlock and spike the Yield counter."
     },
     stellar: {
         title: "☀️ Stellar Core",
@@ -148,9 +147,13 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
             
-            // Central core knot (Radial mapping)
+            // Central core knot (Radial mapping) — a cold deadlock anchor.
+            // Painted heat would only be transient initialization noise; the
+            // knot earns its own metabolic temperature from quanta flux. Its
+            // pre-dissipation tension (~3.9k) is the highest organic tension
+            // in the field — crush the thermal limit under it to unwind it.
             composer.apply((x, y, nx, ny, dist) => {
-                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_VACUUM_CORE);
+                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 return null;
             });
             // Ambient dust (Random distribution)
