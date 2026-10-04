@@ -220,6 +220,7 @@ onUnmounted(() => {
               <option value="nozzle">🚀 Engine Bell (Global)</option>
               <option value="boundary">🔬 Nozzle Wall (Micro-Patch)</option>
               <option value="ocean">🌊 Ocean</option>
+              <option value="electron">⚛️ Synthetic Electron</option>
             </select>
             <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
           </div>

@@ -11,6 +11,8 @@ import {
     SPIN_LEFT,
     SPIN_UP_RIGHT,
     SPIN_DOWN_LEFT,
+    SPIN_DOWN_RIGHT,
+    DIR_MAP,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
     packNode
@@ -26,7 +28,6 @@ const THERMAL_LIMIT_SATURATED = 65000; // Stellar + ocean headroom above plasma
 const THERMAL_LIMIT_ENGINE_BELL = 60000;
 
 const HEAT_ABSOLUTE_ZERO = 0;
-const HEAT_VACUUM_CORE = 48000;
 const HEAT_IGNITER_PLASMA = 60000;
 const HEAT_SATURATION = 65000;       // Soup blasts: near-max unwinding heat
 
@@ -42,6 +43,28 @@ const BOUNDARY_FLOW_QUANTA = 25;
 const BOUNDARY_FLOW_HEAT_MIN = 5000;
 const BOUNDARY_FLOW_HEAT_SPAN = 8000;
 const ATMOS_BEDROCK_HEAT = 800;
+
+// Synthetic Electron — the dissipative torus. Stability comes from the
+// physics, not painted heat: the shell's mass is capped at half the
+// deadlock ceiling so any pairwise merge lands at exactly 200 (deadlock
+// is strictly >200) and flow can never stall.
+const ELECTRON_CORE_RADIUS = 8;
+const ELECTRON_MOAT_RADIUS = 20;
+const ELECTRON_SHELL_RADIUS = 80;
+const ELECTRON_SHELL_QUANTA = 100;
+const ELECTRON_MOAT_QUANTA = 4;
+const ELECTRON_FOAM_QUANTA = 5;
+const ELECTRON_FOAM_PROBABILITY = 0.05;
+
+// Maps a center-relative offset to tangent momentum via the engine's own
+// DIR_MAP quantization — the exact inverse of how tick() derives
+// dominant_spin, so the painted vortex is self-consistent on tick 1.
+// chirality +1/-1 picks the rotation sense (binary-pair soup uses both).
+const vortexSpin = (dx, dy, chirality = 1) => {
+    const tx = -dy * chirality;
+    const ty = dx * chirality;
+    return DIR_MAP[Math.sign(ty) + 1][Math.sign(tx) + 1];
+};
 
 // --- Grid Composer Utility ---
 // Eliminates magic-number loops by applying declarative, math-based gradients 
@@ -92,7 +115,7 @@ export const SCENARIO_DOSSIERS = {
         mechanisms: "CMB floor dissipation, zero-friction dispersion, and topological unwinding.",
         recommendedBrushes: ["🔥 Igniter", "⚙️ Rotor"],
         bestLayers: "👁 Macro + 🕳 Entropic",
-        tips: "Drop an Igniter adjacent to the central knot to trigger a topological yield cascade."
+        tips: "Hold an Igniter against the central knot — or drag Thermal Limit under ~4k — to unwind the deadlock and spike the Yield counter."
     },
     stellar: {
         title: "☀️ Stellar Core",
@@ -126,6 +149,14 @@ export const SCENARIO_DOSSIERS = {
         bestLayers: "♨ Metabolic + 🧲 Phase",
         tips: "Watch supersonic flow scrape along the vertical solid wall on the left. Cryo coolants reveal thermal quenching."
     },
+    electron: {
+        title: "⚛️ Synthetic Electron",
+        objective: "Architect stable matter: a dissipative torus held together by coherent circulation, thermal equilibrium, and deadlock avoidance.",
+        mechanisms: "Aligned tangent flow avoids head-on cancellation; uniform ~100-quanta shell keeps pairwise merges under the 200 deadlock threshold; the cold anchor core sits safely below the gravity override.",
+        recommendedBrushes: ["💧 Fluid", "🔥 Igniter", "⚙️ Rotor"],
+        bestLayers: "🧲 Phase + ♨ Metabolic",
+        tips: "Watch the relaxation phase as the shell condenses and locks. Then crush Thermal Limit under ~4k to unwind the core — the densest knots fail first."
+    },
     ocean: {
         title: "🌊 Deep Ocean",
         objective: "Resting incompressible fluid dynamics, wave propagation, and thermohaline convection.",
@@ -148,9 +179,13 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
             
-            // Central core knot (Radial mapping)
+            // Central core knot (Radial mapping) — a cold deadlock anchor.
+            // Painted heat would only be transient initialization noise; the
+            // knot earns its own metabolic temperature from quanta flux. Its
+            // pre-dissipation tension (~3.9k) is the highest organic tension
+            // in the field — crush the thermal limit under it to unwind it.
             composer.apply((x, y, nx, ny, dist) => {
-                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_VACUUM_CORE);
+                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 return null;
             });
             // Ambient dust (Random distribution)
@@ -204,6 +239,31 @@ export function loadScenario(type, bridge) {
                     const localHeat = Math.floor(30 + Math.pow(ny, 2) * 1200);
                     const spin = Math.floor(Math.random() * 8) + 1;
                     return packNode(airQuanta, spin, localHeat);
+                }
+                return null;
+            });
+            break;
+        }
+
+        case "electron": {
+            targetDissipation = DISSIPATION_DEFAULT;
+            targetThermal = THERMAL_LIMIT_DEFAULT;
+
+            composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                // Core anchor: permanent deadlock, boots cold and earns its
+                // own metabolic temperature — the densest matter is the coldest.
+                if (dist <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                // Accretion moat: low-density gap isolating the anchor from
+                // the shell's circulation. Transient by design — leaked mass
+                // self-organizes into a grinding boundary layer at the core edge.
+                if (dist <= ELECTRON_MOAT_RADIUS) return packNode(ELECTRON_MOAT_QUANTA, SPIN_STATIONARY, 1);
+                // Vortex shell: uniform mass at exactly half the deadlock
+                // ceiling — a worst-case two-into-one merge sums to 200,
+                // not past it, so circulation can never stall into beads.
+                if (dist <= ELECTRON_SHELL_RADIUS) return packNode(ELECTRON_SHELL_QUANTA, vortexSpin(dx, dy), HEAT_ROOM_AMBIENT);
+                // Quantum foam: the active vacuum scraping the outer boundary.
+                if (Math.random() < ELECTRON_FOAM_PROBABILITY) {
+                    return packNode(ELECTRON_FOAM_QUANTA, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
                 }
                 return null;
             });
@@ -445,6 +505,42 @@ export function randomizeScenarioSoup(type, bridge) {
                     if (y >= GRID_HEIGHT - 160 && y < GRID_HEIGHT - 145 && Math.random() < 0.3) {
                         return packNode(45, (x % 4 < 2) ? SPIN_RIGHT : SPIN_LEFT, 800);
                     }
+                    return null;
+                });
+            }
+            break;
+        }
+
+        case "electron": {
+            loadScenario("electron", bridge);
+            if (flavor === 0) {
+                // Counter-rotating binary pair — the positron analogue.
+                // Where the two shells meet, contra-rotating tangents run
+                // parallel, so the seam meshes instead of clashing.
+                const bx = composer.cx + 130;
+                const by = composer.cy;
+                composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                    const d2 = Math.hypot(x - bx, y - by);
+                    if (d2 <= 6) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                    if (d2 <= 14) return packNode(ELECTRON_MOAT_QUANTA, SPIN_STATIONARY, 1);
+                    if (d2 <= 60) return packNode(ELECTRON_SHELL_QUANTA, vortexSpin(x - bx, y - by, -1), HEAT_ROOM_AMBIENT);
+                    return null;
+                });
+            } else if (flavor === 1) {
+                // Transverse shear wall — a "magnetic sweep" bisecting the
+                // torus. One hemisphere entrains, the other clashes.
+                composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                    if (Math.abs(dy) < 3 && dist > 15 && dist < 130) {
+                        return packNode(30, SPIN_RIGHT, HEAT_ROOM_AMBIENT);
+                    }
+                    return null;
+                });
+            } else {
+                // Incoming projectile — a dense clump aimed at the shell to
+                // watch the vortex catch and shred foreign mass.
+                composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                    const d2 = Math.hypot(x - (composer.cx - 120), y - (composer.cy - 60));
+                    if (d2 < 15) return packNode(150, SPIN_DOWN_RIGHT, 800);
                     return null;
                 });
             }

@@ -52,7 +52,7 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 ### What the instrument does
 
 - **Four layers** per half of the split view: Macro, Metabolic, Phase, Entropic — independently toggled.
-- **Scenarios** (Vacuum, Stellar Core, Atmosphere, Engine Bell, Nozzle Wall, Ocean) with dossiers, composited via declarative grid writers.
+- **Scenarios** (Vacuum, Stellar Core, Atmosphere, Engine Bell, Nozzle Wall, Ocean, Synthetic Electron) with dossiers, composited via declarative grid writers.
 - **Modes**: Move (pan/zoom/dbl-click reset), Place (brush stamps through the injection matrix), Sample (probe a region into a reusable stamp), System (settings drawer).
 - **Injection matrix**: Density/Heat/Spin are independent channel toggles — each injects only its component, with a per-channel dose slider (% of the stamp's stored value; Spin's slider is an entrainment↔imposition dial that blends stored direction against ambient flow). All three enabled is a verbatim Clone write; doses are ignored during clone.
 - **Undo buffer**: a `SNAPSHOT_DEPTH`-slot ring in the engine (currently 4); every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth. Snapshots hold field bytes only — cumulative stats (Yield) persist through undo by design.
