@@ -316,10 +316,21 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 .dossier-text.highlight { color: #f0c354; }
 
 #error-banner {
-  display: previously; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background-color: var(--pf-bg-panel); color: var(--pf-danger); border: 1px solid var(--pf-danger);
-  padding: 1rem 1.5rem; border-radius: 4px; text-align: center; z-index: 100; max-width: 80%;
-  font-family: var(--font-mono); font-size: 14px;
+  display: none !important; /* Forces it hidden by default */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--pf-bg-panel);
+  color: var(--pf-danger);
+  border: 1px solid var(--pf-danger);
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  text-align: center;
+  z-index: 100;
+  max-width: 80%;
+  font-family: var(--font-mono);
+  font-size: 14px;
 }
 
 /* Mobile Responsive Stacked Layout (Canvas on top, Controls below) */
