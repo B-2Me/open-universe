@@ -148,18 +148,20 @@ export class ControlsManager {
         const active = (this.rendererLeft?.isWebGL || this.rendererRight?.isWebGL);
         badge.innerText = active ? "WebGL Active" : "2D Fallback";
         badge.style.color = active ? "var(--pf-brand-hover)" : "#888";
+
+        // Hex/oct projections are shader effects — the 2D fallback blits
+        // raw pixels and can't honor them, so the buttons must not lie.
+        document.querySelectorAll('#projection_mode_selector .group-btn').forEach(btn => {
+            const needsGl = btn.dataset.val !== 'quad';
+            btn.disabled = needsGl && !active;
+            btn.title = btn.disabled ? 'Requires WebGL' : '';
+        });
     }
 
     bindProjectionSelector() {
         this.setupGroup('projection_mode_selector', (mode) => {
-            if (this.rendererLeft) {
-                if (typeof this.rendererLeft.setProjectionMode === 'function') this.rendererLeft.setProjectionMode(mode);
-                else if (typeof this.rendererLeft.setMode === 'function') this.rendererLeft.setMode(mode);
-            }
-            if (this.rendererRight) {
-                if (typeof this.rendererRight.setProjectionMode === 'function') this.rendererRight.setProjectionMode(mode);
-                else if (typeof this.rendererRight.setMode === 'function') this.rendererRight.setMode(mode);
-            }
+            this.rendererLeft?.setMode(mode);
+            this.rendererRight?.setMode(mode);
             this.state.forceRedraw = true;
         });
     }

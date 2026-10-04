@@ -166,11 +166,6 @@ export class DualRenderer {
         this.isWebGL = this.left.isWebGL || this.right.isWebGL;
     }
 
-    setProjectionMode(mode) {
-        this.left.setMode(mode);
-        this.right.setMode(mode);
-    }
-
     draw(leftLayer, rightLayer, bridge) {
         // Fresh view each draw: safe if wasm memory grows (old buffer detaches)
         const wasmPixels = bridge.getPixelView();
