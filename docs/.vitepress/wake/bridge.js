@@ -22,6 +22,10 @@ export class PlanckBridge {
     getNodeState(x, y) { return this.wasm._get_node_state(x, y); }
     setNodeState(x, y, state) { this.wasm._set_node_state(x, y, state); }
 
+    addQuanta(x, y, amount) { this.wasm._add_quanta(x, y, amount); }
+    addHeat(x, y, amount) { this.wasm._add_heat(x, y, amount); }
+    setSpin(x, y, dir) { this.wasm._set_spin(x, y, dir); }
+
     setDissipation(rate) { this.wasm._set_dissipation(rate); }
     setThermalLimit(limit) { this.wasm._set_thermal_limit(limit); }
     setImpedanceMode(mode) { this.wasm._set_impedance_mode(mode); }

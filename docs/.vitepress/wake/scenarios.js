@@ -136,18 +136,18 @@ export function loadScenario(type, bridge) {
         }
 
         case "stellar": {
-            targetDissipation = 35;
-            targetThermal = 60000;
+            targetDissipation = 45; // Increased dissipation keeps the star from achieving thermal runaway
+            targetThermal = 65000;
             
             // Seamless Radial Layers
             composer.apply((x, y, nx, ny, dist) => {
                 // Core: Extreme heat, dense, stationary deadlock
                 if (dist < 15) {
-                    return packNode(250, SPIN_STATIONARY, 55000);
+                    return packNode(250, SPIN_STATIONARY, 45000); // Safely below the 60,000 threshold
                 }
                 // Radiative Zone: High heat, turbulent sub-spins
                 else if (dist < 50) {
-                    const heat = 55000 - ((dist - 15) / 35) * 40000;
+                    const heat = 45000 - ((dist - 15) / 35) * 30000;
                     const spin = Math.random() > 0.5 ? SPIN_UP_RIGHT : SPIN_DOWN_LEFT;
                     return packNode(150, spin, Math.floor(heat));
                 }
@@ -159,7 +159,7 @@ export function loadScenario(type, bridge) {
                 }
                 // Corona / Vacuum
                 else {
-                    if (Math.random() < 0.05) return packNode(5, SPIN_UP, 5000);
+                    if (Math.random() < 0.02) return packNode(2, SPIN_UP, 1000);
                 }
                 return null;
             });
@@ -191,6 +191,7 @@ export function loadScenario(type, bridge) {
             targetDissipation = 45; 
             targetThermal = 65000;  
             
+            // Stratified fluid basin
             composer.apply((x, y) => {
                 if (y >= GRID_HEIGHT - 4) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT);
                 if (y > GRID_HEIGHT - 160) return packNode(40, SPIN_STATIONARY, HEAT_COLD_WATER);

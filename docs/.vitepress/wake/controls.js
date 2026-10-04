@@ -2,13 +2,14 @@ import { LAYER_LABELS } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 
 export class ControlsManager {
-    constructor({ bridge, palette, loop, state, rendererLeft, rendererRight }) {
+    constructor({ bridge, palette, loop, state, rendererLeft, rendererRight, interaction }) {
         this.bridge = bridge;
         this.palette = palette;
         this.loop = loop;
         this.state = state;
         this.rendererLeft = rendererLeft;
         this.rendererRight = rendererRight;
+        this.interaction = interaction;
 
         this.init();
     }
@@ -54,32 +55,31 @@ export class ControlsManager {
         scratchBtn.className = `palette-btn ${this.palette.currentBrush === 'custom' ? 'active' : ''}`;
         scratchBtn.id = 'opt_custom';
 
-        // Intelligent Cloned Tool logic
         if (hasStamp) {
             const h = stamp.length;
             const w = stamp[0].length;
             scratchBtn.innerHTML = `<span class="p-icon">⬚</span><span class="p-label">${w}x${h}</span>`;
-            scratchBtn.onclick = () => { 
-                this.palette.currentBrush = 'custom'; 
-                this.renderPalette(); 
-            };
+            scratchBtn.onclick = () => { this.palette.currentBrush = 'custom'; this.renderPalette(); };
         } else {
             scratchBtn.innerHTML = `<span class="p-icon">🔍</span><span class="p-label">Sample</span>`;
             scratchBtn.onclick = () => {
-                // If empty, trigger the sample mode and close the place drawer
                 const sampleBtn = document.querySelector('.segment-btn[data-mode="sample"]');
                 if (sampleBtn) sampleBtn.click();
             };
         }
-        container.appendChild(scratchBtn);
 
+        const elements = [];
         for (const [key, brush] of Object.entries(this.palette.fullPalette)) {
             const btn = document.createElement('button');
             btn.className = `palette-btn ${this.palette.currentBrush === key ? 'active' : ''}`;
             btn.innerHTML = `<span class="p-icon">${brush.icon}</span><span class="p-label">${brush.label}</span>`;
             btn.onclick = () => { this.palette.currentBrush = key; this.renderPalette(); };
-            container.appendChild(btn);
+            elements.push(btn);
         }
+
+        // Insert the Sample/Custom brush at index 3 (Top Right of the 4-column grid)
+        elements.splice(3, 0, scratchBtn);
+        elements.forEach(el => container.appendChild(el));
     }
 
     bindLayerButtons() {
@@ -238,12 +238,9 @@ export class ControlsManager {
                 this.state.zoom = v;
                 document.getElementById('val_zoom').innerText = v.toFixed(1) + 'x';
                 
-                // Immediately apply to canvas wrapper
-                const wrapper = document.getElementById('transform-wrapper');
-                if (wrapper) {
-                    const px = this.state.panX || 0;
-                    const py = this.state.panY || 0;
-                    wrapper.style.transform = `scale(${v}) translate(${px}px, ${py}px)`;
+                if (this.interaction) {
+                    this.interaction.zoom = v;
+                    this.interaction.applyTransform();
                 }
             };
         }
@@ -270,6 +267,10 @@ export class ControlsManager {
 
     bindActionButtons() {
         const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+        
+        bind('btn_injection_info', () => {
+            alert("INJECTION MATRIX\n\nCLONE (Default):\nOverwrites reality. Punches rigid holes through matter.\n\nDENSITY:\nFluid displacement. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass.");
+        });
         
         bind('btn_reset', () => { 
             this.bridge.saveSnapshot(); 
