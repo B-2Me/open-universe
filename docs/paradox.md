@@ -166,9 +166,9 @@ If you take two uncharged metal plates, place them in a perfect vacuum, and move
 
 **The Planck Field Reconciliation:** 
 The block universe assumes space is a passive, empty container where objects sit. 
-*   There is no such thing as "empty space." The void is not a container; it is the substrate itself, constantly simmering with relational tension and un-actualized probability. 
-*   When you place two plates that close together, you restrict the wavelengths of the field's baseline tension between them. Because the tension outside the plates is stronger than the constrained tension inside, the plates are pushed together. 
-*   The Casimir Effect is the smoking gun that the universe is not an empty stage. It is an active, vibrating medium.
+*   There is no such thing as "empty space." The void is not a cold, dead container; it is a boiling, infinitely dense sea of zero-point energy, vibrating at a high ambient thermodynamic temperature. 
+*   When you place two plates that close together, you restrict the wavelengths of the field's baseline tension between them. Because the hot ambient tension outside the plates is stronger than the constrained tension inside, the plates are pushed together. 
+*   The Casimir Effect is the smoking gun that the universe is not an empty stage. It is an active, hot, vibrating medium.
 
 ---
 
@@ -362,7 +362,7 @@ The block universe assumes space is a passive, stretchable geometric container. 
 High-energy particle colliders (like the LHC) smash subatomic structures together. The resulting high-energy debris flashes in and out of existence in fractions of a nanosecond, yet legacy physics catalogs these invariant mass peaks as brand new, fundamental "particles" to add to the Standard Model zoo. 
 
 **The Planck Field Reconciliation:** 
-Particle colliders are not discovering solid objects; they are mapping the fluid dynamic responses of the Planck Field. The "particle zoo" is actually a thermodynamic phase diagram. What legacy physics catalogs as a new fundamental object is simply a localized thermal resonance (a splash in the substrate). Its mathematically calculated "mean lifetime" is simply a standard thermodynamic cooling curve measuring exactly how long the local grid nodes can sustain that extreme pressure before rupturing and dissipating the heat back into the field.
+Particle colliders are not discovering solid objects; they are mapping the fluid dynamic responses of the Planck Field. The "particle zoo" is actually a thermodynamic phase diagram. What legacy physics catalogs as a new fundamental object is simply a localized thermal resonance (a splash in the substrate). Its mathematically calculated "mean lifetime" is simply a standard thermodynamic decay curve measuring exactly how long the local grid nodes can sustain that specific coherent flow before the environment crushes the boundary and dissipates the inertia back into the field.
 
 ---
 

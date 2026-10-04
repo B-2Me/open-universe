@@ -29,7 +29,7 @@ This sandbox is a literal manifestation of the Planck Field philosophy.
 Unlike traditional cellular automata which rely on arbitrary "rules" of birth and death, this engine is strictly deterministic and rooted in physical constraints. It continuously calculates the following mechanics:
 
 **1. Topological Unwinding ($E=mc^2$)**
-Mass is a deadlocked knot of relational tension. When the localized heat of a node exceeds its structural capacity (`Thermal Saturation`), the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust:
+Mass is a deadlocked knot of relational tension. When the environmental thermal limit drops below the localized heat of a node, the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust:
 $$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$$
 
 **2. Phase Friction (Electromagnetism)**
@@ -45,8 +45,8 @@ $$F = T \frac{\Delta S}{\Delta x}$$
 Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium:
 $$E_{received} = E_{emitted} e^{-\mu d}$$
 
-**5. Stefan-Boltzmann Dissipation**
-Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint).
+**5. The Cold Matter Inversion (Stefan-Boltzmann Dissipation)**
+Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint). Because of this, heat has a hard mathematical ceiling. If a node must spend massive computational bandwidth maintaining a dense topological deadlock (mass > 200), it experiences extreme metabolic drag, over-dissipates its heat, and collapses to the stochastic floor (~2 heat). Conversely, the empty quantum foam easily sustains an ambient vibration of ~325 heat. **The vacuum is hot. Matter is freezing.**
 
 ### The Biological Swerve
 While the grid is perfectly deterministic, **you** are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations.
