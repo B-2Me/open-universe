@@ -1,3 +1,4 @@
+//[span_0](start_span)[span_0](end_span)
 import {
     GRID_WIDTH,
     GRID_HEIGHT,
@@ -12,6 +13,7 @@ import {
     SPIN_UP_RIGHT,
     SPIN_DOWN_LEFT,
     SPIN_DOWN_RIGHT,
+    SPIN_UP_LEFT,
     DIR_MAP,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
@@ -56,14 +58,28 @@ const ELECTRON_MOAT_QUANTA = 4;
 const ELECTRON_FOAM_QUANTA = 5;
 const ELECTRON_FOAM_PROBABILITY = 0.05;
 
-// Maps a center-relative offset to tangent momentum via the engine's own
-// DIR_MAP quantization — the exact inverse of how tick() derives
-// dominant_spin, so the painted vortex is self-consistent on tick 1.
-// chirality +1/-1 picks the rotation sense (binary-pair soup uses both).
+// Maps a center-relative offset to tangent momentum via 8-octant quantization (45° sectors).
+// Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so the shell
+// circulates as a continuous closed loop rather than shearing into 4 linear quadrant slabs.
+const OCTANT_SPIN_MAP = [
+    SPIN_RIGHT,       // 0: ~0° (East)
+    SPIN_DOWN_RIGHT,  // 1: ~45° (SE)
+    SPIN_DOWN,        // 2: ~90° (South)
+    SPIN_DOWN_LEFT,   // 3: ~135° (SW)
+    SPIN_LEFT,        // 4: ~180° (West)
+    SPIN_UP_LEFT,     // 5: ~225° (NW)
+    SPIN_UP,          // 6: ~270° (North)
+    SPIN_UP_RIGHT     // 7: ~315° (NE)
+];
+
 const vortexSpin = (dx, dy, chirality = 1) => {
+    if (dx === 0 && dy === 0) return SPIN_STATIONARY;
     const tx = -dy * chirality;
     const ty = dx * chirality;
-    return DIR_MAP[Math.sign(ty) + 1][Math.sign(tx) + 1];
+    let angle = Math.atan2(ty, tx); // -PI to +PI
+    if (angle < 0) angle += Math.PI * 2; // Normalize to [0, 2*PI)
+    const octant = Math.floor((angle + Math.PI / 8) / (Math.PI / 4)) % 8;
+    return OCTANT_SPIN_MAP[octant];
 };
 
 // --- Grid Composer Utility ---
