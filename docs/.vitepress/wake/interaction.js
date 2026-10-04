@@ -26,6 +26,10 @@ export class InteractionManager {
         this.strokeInjected = false;
         this.lastVibrate = 0;
 
+        // Keyboard brush cursor (arrow-key painting when the canvas is focused)
+        this.kbdX = Math.floor(GRID_WIDTH / 2);
+        this.kbdY = Math.floor(GRID_HEIGHT / 2);
+
         this.activePointers = new Map();
         this.initialPinchDistance = null;
         this.initialZoom = 1;
@@ -67,24 +71,66 @@ export class InteractionManager {
         this.preview.style.height = (boxH * cellPxY) + 'px';
     }
 
+    // Footprint dimensions for the active tool, or null for move/config.
+    cursorBox() {
+        const mode = this.state.isSpaceDown ? 'move' : this.state.currentMode;
+        if (mode === 'place') {
+            const pattern = this.palette.getPattern();
+            if (pattern && pattern.length) return { w: pattern[0].length, h: pattern.length };
+        } else if (mode === 'sample') {
+            const r = parseInt(document.getElementById('slider_radius')?.value, 10) || 10;
+            return { w: 2 * r + 1, h: 2 * r + 1 };
+        }
+        return null;
+    }
+
     // Shows the footprint for the current mode/tool at the pointer's target
     // (touch input is lifted above the fingertip — same math as processInput).
     updateBrushPreview(clientX, clientY, pointerType) {
         if (!this.preview) return;
-        const mode = this.state.isSpaceDown ? 'move' : this.state.currentMode;
-        let box = null;
-        if (mode === 'place') {
-            const pattern = this.palette.getPattern();
-            if (pattern && pattern.length) box = { w: pattern[0].length, h: pattern.length };
-        } else if (mode === 'sample') {
-            const r = parseInt(document.getElementById('slider_radius')?.value, 10) || 10;
-            box = { w: 2 * r + 1, h: 2 * r + 1 };
-        }
+        const box = this.cursorBox();
         if (!box) { this.hideBrushPreview(); return; }
 
         const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
         const coords = this.getGridCoords(clientX, ly);
         this.positionPreview(coords.x, coords.y, box.w, box.h);
+    }
+
+    // --- Keyboard brush cursor (canvas container must be focused) ---
+
+    moveBrushCursor(dx, dy) {
+        this.kbdX = Math.max(0, Math.min(GRID_WIDTH - 1, this.kbdX + dx));
+        this.kbdY = Math.max(0, Math.min(GRID_HEIGHT - 1, this.kbdY + dy));
+        const status = document.getElementById('kbd_cursor_status');
+        if (status) status.textContent = `Cursor ${this.kbdX}, ${this.kbdY}`;
+        const box = this.cursorBox();
+        if (box) this.positionPreview(this.kbdX, this.kbdY, box.w, box.h);
+        else this.hideBrushPreview();
+    }
+
+    stampAtCursor() {
+        const mode = this.state.isSpaceDown ? 'move' : this.state.currentMode;
+        if (mode === 'place') {
+            const pattern = this.palette.getPattern();
+            if (!pattern || !pattern.length) return;
+            this.bridge.saveSnapshot();
+            if (this.onUndoPush) this.onUndoPush();
+            this.injectPattern(this.kbdX, this.kbdY, pattern, this.state.injectionMode);
+            this.state.forceRedraw = true;
+        } else if (mode === 'sample') {
+            this.sampleRegion(this.kbdX, this.kbdY);
+        }
+    }
+
+    // Arrow-key pan in move/config mode (screen-px per press, clamped inline
+    // so held-down keys don't stack constrainView transitions).
+    panBy(dxPx, dyPx) {
+        const rect = this.container.getBoundingClientRect();
+        const maxX = (rect.width * (this.zoom - 1)) / (2 * this.zoom);
+        const maxY = (rect.height * (this.zoom - 1)) / (2 * this.zoom);
+        this.panX = Math.max(-maxX, Math.min(maxX, this.panX + dxPx / this.zoom));
+        this.panY = Math.max(-maxY, Math.min(maxY, this.panY + dyPx / this.zoom));
+        this.applyTransform();
     }
 
     clampZoom(z) {
@@ -127,6 +173,10 @@ export class InteractionManager {
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             if (e.pointerType !== 'mouse' && !e.isPrimary && this.activePointers.size === 0) return;
 
+            // Grab keyboard focus so arrow-key painting works after a tap/click
+            if (document.activeElement !== this.container) {
+                this.container.focus({ preventScroll: true });
+            }
             this.container.setPointerCapture(e.pointerId);
             this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 

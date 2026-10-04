@@ -125,7 +125,8 @@ onUnmounted(() => {
             </div>
             <span class="context-hint" style="text-transform: none; line-height: 1.8;">
               <b>Space</b> pan · <b>P</b> play/pause · <b>R</b> randomize · <b>C</b> clear<br>
-              <b>Ctrl+Z</b> undo · <b>Esc</b> close dialogs · <b>Dbl-click</b> reset view (Move mode)
+              <b>Ctrl+Z</b> undo · <b>Esc</b> close/unfocus · <b>Dbl-click</b> reset view (Move)<br>
+              <b>Arrows</b> move brush cursor / pan · <b>Shift+Arrows</b> ×10 · <b>Enter</b> stamp (canvas focused)
             </span>
           </div>
         </div>
@@ -212,8 +213,10 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div id="canvas-container">
+        <div id="canvas-container" tabindex="0" role="application"
+             aria-label="Simulation field. Arrow keys move the brush cursor or pan the view, Enter stamps the brush, Escape removes focus.">
           <div id="error-banner"></div>
+          <span id="kbd_cursor_status" class="sr-only" aria-live="polite"></span>
           <div id="transform-wrapper">
             <div class="split-half">
               <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>

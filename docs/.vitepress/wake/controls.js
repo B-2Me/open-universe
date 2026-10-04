@@ -378,9 +378,12 @@ export class ControlsManager {
             const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable;
             const modal = document.getElementById('modal_scenario_info');
             const modalOpen = modal?.classList.contains('show');
+            const canvasEl = document.getElementById('canvas-container');
+            const canvasFocused = document.activeElement === canvasEl;
 
             if (e.code === 'Escape') {
                 if (modalOpen) this.closeDossier();
+                else if (canvasFocused) canvasEl.blur(); // release arrow keys
                 return;
             }
 
@@ -396,6 +399,23 @@ export class ControlsManager {
                 return;
             }
             if (typing) return;
+
+            // Keyboard brush cursor — only when the canvas itself holds focus,
+            // so arrows keep their normal scrolling behavior elsewhere.
+            if (canvasFocused && (e.code === 'Enter' || e.code === 'NumpadEnter')) {
+                e.preventDefault();
+                this.interaction?.stampAtCursor();
+                return;
+            }
+            if (canvasFocused && e.code.startsWith('Arrow')) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                const d = { ArrowUp: [0, -step], ArrowDown: [0, step], ArrowLeft: [-step, 0], ArrowRight: [step, 0] }[e.code];
+                const mode = this.state.currentMode;
+                if (mode === 'place' || mode === 'sample') this.interaction?.moveBrushCursor(d[0], d[1]);
+                else this.interaction?.panBy(d[0] * -20, d[1] * -20);
+                return;
+            }
 
             if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
                 e.preventDefault();
@@ -634,19 +654,20 @@ export class ControlsManager {
         });
     }
 
-    // Renders both layer views side-by-side into a single exportable canvas.
+    // Renders the on-screen split field (left half of L + right half of R)
+    // into a single exportable canvas — this is also the source a future
+    // captureStream()/timelapse pump would draw each frame.
     compositeCanvas() {
         const l = document.getElementById('canvas_left');
         const r = document.getElementById('canvas_right');
         if (!l || !r) return null;
         const c = document.createElement('canvas');
-        c.width = l.width + r.width;
-        c.height = Math.max(l.height, r.height);
+        const hw = l.width / 2;
+        c.width = hw * 2;
+        c.height = l.height;
         const ctx = c.getContext('2d');
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, c.width, c.height);
-        ctx.drawImage(l, 0, 0);
-        ctx.drawImage(r, l.width, 0);
+        ctx.drawImage(l, 0, 0, hw, l.height, 0, 0, hw, l.height);
+        ctx.drawImage(r, hw, 0, hw, r.height, hw, 0, hw, r.height);
         return c;
     }
 

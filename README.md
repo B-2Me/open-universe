@@ -55,7 +55,7 @@ All physics constants are named `#define`s at the top of the file — tunable kn
 - **Screen wake lock** while playing (iOS 16.4+ / Chrome) — re-acquires after tab switches and gestures.
 - **IndexedDB autosave**: the 640KB grid + scenario are saved every 10s and on page hide; reloads resume where you left off.
 - **PWA shell**: web manifest + a stale-while-revalidate service worker for offline use.
-- **Keyboard**: Space pan · P play · R randomize · C clear · Ctrl+Z undo · Esc close.
+- **Keyboard**: Space pan · P play · R randomize · C clear · Ctrl+Z undo · Esc close/unfocus — plus a full keyboard brush cursor (canvas focus + arrows move, Shift+arrows ×10, Enter stamps/samples).
 
 ## Building & Local Development
 
@@ -77,14 +77,13 @@ So: no emsdk locally? `docs:dev` still works — the site builds, the simulator 
 
 ## Roadmap
 
-Ideas under consideration for the simulator, roughly in priority order:
+Deferred features whose plumbing is verified and ready:
 
-- **Accessibility** — dossier modal has a focus trap + restore; canvas keyboard painting is still open.
+- **Loupe magnification** — deprioritized: the touch lift + footprint preview already cover blind painting. If added, `drawImage` from the live canvas (WebGL runs with `preserveDrawingBuffer`) crops a magnified region cheaply.
+- **Timelapse video export** — deferred: `compositeCanvas()` already produces a WYSIWYG side-by-side frame ready for a `captureStream()` + `MediaRecorder` pump; mime sniffing (webm vs mp4 on iOS) is the remaining work.
 - **Deeper undo ring** — `SNAPSHOT_DEPTH` is compile-time configurable (currently 4 slots).
-- **Loupe magnification** — the footprint preview covers placement; a zoomed preview inset would help fine-detail work on phones.
-- **Replay/timelapse export** — the autosave machinery makes periodic frame capture cheap.
 
-Shipped from the previous list: brush footprint preview, wake lock, IndexedDB autosave, PWA shell, modal focus trap, and the configurable undo ring.
+Shipped: brush footprint preview + touch lift, wake lock, IndexedDB autosave, PWA shell, modal focus trap, keyboard brush cursor, configurable undo ring.
 
 ## License
 
