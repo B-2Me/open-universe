@@ -49,12 +49,35 @@ export async function initWakeSimulator() {
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
 
+        let controlsRef = null;
+
         const interaction = new InteractionManager({
             bridge,
             palette,
             state,
             canvasContainerId: 'canvas-container',
-            transformWrapperId: 'transform-wrapper'
+            transformWrapperId: 'transform-wrapper',
+            onSample: (stamp) => {
+                if (controlsRef) {
+                    // Rebuild the palette grid with the new custom brush equipped
+                    controlsRef.renderPalette();
+                    
+                    // Switch the entire UI segment to Place mode immediately
+                    controlsRef.setMode('place');
+                    
+                    // Force the Injection mode to Clone
+                    state.injectionMode = 'clone';
+                    document.querySelectorAll('#injection_mode_selector .group-btn').forEach(b => {
+                        b.classList.toggle('active', b.dataset.val === 'clone');
+                    });
+                    const hint = document.getElementById('hint_injection_mode');
+                    if (hint) hint.innerText = 'CLONE';
+                    
+                    // Allow the user to save the new brush
+                    const btnSave = document.getElementById('btn_save_scratch');
+                    if (btnSave) btnSave.disabled = false;
+                }
+            }
         });
 
         const controls = new ControlsManager({
@@ -66,6 +89,7 @@ export async function initWakeSimulator() {
             rendererRight: renderer.right,
             interaction
         });
+        controlsRef = controls;
 
         const initialParams = loadScenario(state.currentScenario, bridge);
         const md = document.getElementById('math_dissipation');
@@ -103,7 +127,5 @@ function updateTelemetry(bridge) {
     if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
     if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
     if (tPhase) tPhase.innerText = (bridge.getPhaseAlignment() * 100).toFixed(1) + "%";
-    
-    // Engine now permanently accumulates topological unwinding yield directly in C
     if (tYield) tYield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
 }

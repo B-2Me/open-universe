@@ -1,12 +1,13 @@
 import { GRID_WIDTH, GRID_HEIGHT, unpackNode, packNode } from './constants.js';
 
 export class InteractionManager {
-    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId }) {
+    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample }) {
         this.container = document.getElementById(canvasContainerId);
         this.tWrapper = document.getElementById(transformWrapperId);
         this.bridge = bridge;
         this.palette = palette;
         this.state = state;
+        this.onSample = onSample;
 
         this.zoom = 1;
         this.panX = 0;
@@ -16,13 +17,11 @@ export class InteractionManager {
         this.lastY = 0;
         this.lastTapTime = 0;
 
-        // Stamp drag tiling trackers
         this.lastInjectGridX = null;
         this.lastInjectGridY = null;
         this.dragDirX = 0;
         this.dragDirY = 0;
 
-        // Multi-touch pinch tracking
         this.activePointers = new Map();
         this.initialPinchDistance = null;
         this.initialZoom = 1;
@@ -47,13 +46,13 @@ export class InteractionManager {
         }, { passive: false });
 
         this.container.addEventListener('dblclick', () => {
-            if (this.state.currentMode === 'move' || this.state.isSpaceDown) {
+            // Config/System mode behaves exactly like Move mode on the canvas
+            if (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown) {
                 this.resetView();
             }
         });
 
         this.container.addEventListener('pointerdown', (e) => {
-            // Prevent multi-touch interference for standard drawing
             if (e.pointerType !== 'mouse' && !e.isPrimary && this.activePointers.size === 0) return;
 
             this.container.setPointerCapture(e.pointerId);
@@ -61,7 +60,7 @@ export class InteractionManager {
 
             if (this.activePointers.size === 1) {
                 const now = Date.now();
-                if (now - this.lastTapTime < 300 && (this.state.currentMode === 'move' || this.state.isSpaceDown)) {
+                if (now - this.lastTapTime < 300 && (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown)) {
                     this.resetView();
                 }
                 this.lastTapTime = now;
@@ -223,12 +222,10 @@ export class InteractionManager {
                 if (tx < 0 || tx >= GRID_WIDTH || ty < 0 || ty >= GRID_HEIGHT) continue;
 
                 if (mode === 'clone') {
-                    // Clone punches rigid holes (overwrites reality)
                     this.bridge.setNodeState(tx, ty, brushNode);
                 } else {
                     const b = unpackNode(brushNode);
                     if (mode === 'quanta') {
-                        // Density routes through the engine's fluid displacement logic
                         if (b.quanta > 0) this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / 4)));
                         if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / 10)); 
                         if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
@@ -260,29 +257,14 @@ export class InteractionManager {
         
         this.palette.setCopy(stamp);
         
-        const btnSave = document.getElementById('btn_save_scratch');
-        if (btnSave) btnSave.disabled = false;
-        
-        // Auto-switch back to Place mode and equip custom brush
-        this.state.currentMode = 'place';
-        this.state.injectionMode = 'clone';
-        
-        document.querySelectorAll('.segment-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.mode === 'place');
-        });
-        
-        const placeDrawer = document.getElementById('context_place');
-        const sampleDrawer = document.getElementById('context_sample');
-        
-        if (sampleDrawer) sampleDrawer.classList.remove('show');
-        if (placeDrawer) placeDrawer.classList.add('show');
-        
-        document.getElementById('opt_custom')?.click();
+        // Hand off entirely to the UI orchestrator
+        if (typeof this.onSample === 'function') {
+            this.onSample(stamp);
+        }
     }
 
     applyTransform() {
         if (!this.tWrapper) return;
-        // Keep zoom scale and pans synced with the UI component state
         this.state.zoom = this.zoom;
         this.state.panX = this.panX;
         this.state.panY = this.panY;
@@ -339,7 +321,5 @@ export class InteractionManager {
         }
     }
 
-    destroy() {
-        // Handled securely when the Vue component unmounts
-    }
+    destroy() {}
 }

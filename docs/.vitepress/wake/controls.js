@@ -37,8 +37,14 @@ export class ControlsManager {
 
     bindProjectionSelector() {
         this.setupGroup('projection_mode_selector', (mode) => {
-            if (this.rendererLeft) this.rendererLeft.setProjectionMode(mode);
-            if (this.rendererRight) this.rendererRight.setProjectionMode(mode);
+            if (this.rendererLeft) {
+                if (typeof this.rendererLeft.setProjectionMode === 'function') this.rendererLeft.setProjectionMode(mode);
+                else if (typeof this.rendererLeft.setMode === 'function') this.rendererLeft.setMode(mode);
+            }
+            if (this.rendererRight) {
+                if (typeof this.rendererRight.setProjectionMode === 'function') this.rendererRight.setProjectionMode(mode);
+                else if (typeof this.rendererRight.setMode === 'function') this.rendererRight.setMode(mode);
+            }
             this.state.forceRedraw = true;
         });
     }
@@ -77,7 +83,6 @@ export class ControlsManager {
             elements.push(btn);
         }
 
-        // Insert the Sample/Custom brush at index 3 (Top Right of the 4-column grid)
         elements.splice(3, 0, scratchBtn);
         elements.forEach(el => container.appendChild(el));
     }
@@ -85,19 +90,25 @@ export class ControlsManager {
     bindLayerButtons() {
         const btnL = document.getElementById('btn_toggle_left');
         const btnR = document.getElementById('btn_toggle_right');
+        
+        const updateBtn = (btn, layer) => {
+            if (!btn) return;
+            btn.innerHTML = `<span class="lens-tag">VIEW</span><span class="lens-label">${LAYER_LABELS[layer]}</span>`;
+        };
+
         if (btnL) {
-            btnL.innerText = LAYER_LABELS[this.state.leftLayer];
+            updateBtn(btnL, this.state.leftLayer);
             btnL.onclick = () => {
                 this.state.leftLayer = (this.state.leftLayer + 1) % 4;
-                btnL.innerText = LAYER_LABELS[this.state.leftLayer];
+                updateBtn(btnL, this.state.leftLayer);
                 this.state.forceRedraw = true;
             };
         }
         if (btnR) {
-            btnR.innerText = LAYER_LABELS[this.state.rightLayer];
+            updateBtn(btnR, this.state.rightLayer);
             btnR.onclick = () => {
                 this.state.rightLayer = (this.state.rightLayer + 1) % 4;
-                btnR.innerText = LAYER_LABELS[this.state.rightLayer];
+                updateBtn(btnR, this.state.rightLayer);
                 this.state.forceRedraw = true;
             };
         }
@@ -155,25 +166,34 @@ export class ControlsManager {
         setTxt('dossier_tips', data.tips);
     }
 
+    // Handles the rigorous switching of UI mode tabs and drawers
+    setMode(mode) {
+        this.state.currentMode = mode;
+        
+        document.querySelectorAll('.segment-btn').forEach(b => 
+            b.classList.toggle('active', b.dataset.mode === mode)
+        );
+        
+        document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
+        document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
+        document.getElementById('context_config')?.classList.toggle('show', mode === 'config');
+    }
+
     bindSegmentButtons() {
         document.querySelectorAll('.segment-btn').forEach(btn => {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
                 
+                // If clicking an already active button, toggle it off and fallback to 'move'
                 if (this.state.currentMode === mode) {
-                    if (mode === 'place') document.getElementById('context_place')?.classList.toggle('show');
-                    else if (mode === 'sample') document.getElementById('context_sample')?.classList.toggle('show');
-                    else if (mode === 'config') document.getElementById('context_config')?.classList.toggle('show');
+                    if (mode !== 'move') {
+                        this.setMode('move');
+                    }
                     return;
                 }
 
-                this.state.currentMode = mode;
-                document.querySelectorAll('.segment-btn').forEach(b => 
-                    b.classList.toggle('active', b.dataset.mode === mode)
-                );
-                document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
-                document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
-                document.getElementById('context_config')?.classList.toggle('show', mode === 'config');
+                // Otherwise, switch to the requested mode and leave the drawer open
+                this.setMode(mode);
             };
         });
 
@@ -184,39 +204,17 @@ export class ControlsManager {
         });
     }
 
+    // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas. 
+    // They are completely persistent until the user explicitly toggles the segment button.
     bindOutsideDismiss() {
         document.addEventListener('pointerdown', (e) => {
-            const contextPlace = document.getElementById('context_place');
-            const contextSample = document.getElementById('context_sample');
-            const contextConfig = document.getElementById('context_config');
-            const canvasContainer = document.getElementById('canvas-container');
-            const segmentContainer = document.querySelector('.segment-container');
             const modal = document.getElementById('modal_scenario_info');
             const infoBtn = document.getElementById('btn_scenario_info');
 
+            // Only the Scenario Dossier pop-over is dismissed on outside clicks.
             if (modal && modal.classList.contains('show') && !modal.contains(e.target) && !infoBtn?.contains(e.target)) {
                 modal.classList.remove('show');
             }
-
-            const isPlaceOpen = contextPlace?.classList.contains('show');
-            const isSampleOpen = contextSample?.classList.contains('show');
-            const isConfigOpen = contextConfig?.classList.contains('show');
-            if (!isPlaceOpen && !isSampleOpen && !isConfigOpen) return;
-
-            if (contextPlace?.contains(e.target) || contextSample?.contains(e.target) || contextConfig?.contains(e.target)) return;
-            if (canvasContainer?.contains(e.target)) return;
-            if (segmentContainer?.contains(e.target)) return;
-
-            // Close all drawers
-            contextPlace?.classList.remove('show');
-            contextSample?.classList.remove('show');
-            contextConfig?.classList.remove('show');
-
-            // Revert state to Move on menu dismissal
-            this.state.currentMode = 'move';
-            document.querySelectorAll('.segment-btn').forEach(b => 
-                b.classList.toggle('active', b.dataset.mode === 'move')
-            );
         });
     }
 
@@ -240,6 +238,7 @@ export class ControlsManager {
                 
                 if (this.interaction) {
                     this.interaction.zoom = v;
+                    this.interaction.constrainView();
                     this.interaction.applyTransform();
                 }
             };
@@ -301,33 +300,33 @@ export class ControlsManager {
         bind('btn_export_png', () => {
             const canvasLeft = document.getElementById('canvas_left');
             if (!canvasLeft) return;
-            canvasLeft.toBlob(blob => {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `planck_field_${Date.now()}.png`;
-                link.click();
-            }, 'image/png');
+            const dataUrl = canvasLeft.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `planck_field_${Date.now()}.png`;
+            link.click();
         });
 
         bind('btn_share', async () => {
             const canvasLeft = document.getElementById('canvas_left');
             if (!canvasLeft) return;
-            canvasLeft.toBlob(async blob => {
+            try {
+                const dataUrl = canvasLeft.toDataURL('image/png');
+                const blob = await (await fetch(dataUrl)).blob();
                 const file = new File([blob], `planck_field_${Date.now()}.png`, { type: 'image/png' });
+                
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            title: 'Planck Field Simulation',
-                            text: 'Check out this thermodynamic simulation state from Langevin\'s Wake.',
-                            files: [file]
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.error(err);
-                    }
+                    await navigator.share({
+                        title: 'Planck Field Simulation',
+                        text: 'Check out this thermodynamic simulation state from Langevin\'s Wake.',
+                        files: [file]
+                    });
                 } else {
                     alert('Web Share with files is not supported on this browser/device.');
                 }
-            }, 'image/png');
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error("Share failed:", err);
+            }
         });
 
         bind('btn_export_vtk', () => {
