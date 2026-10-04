@@ -57,6 +57,23 @@ onUnmounted(() => {
               <button class="group-btn" data-val="heat">🔥 Heat</button>
               <button class="group-btn" data-val="spin">🔄 Spin</button>
             </div>
+            <div class="dose-rows">
+              <div class="dose-row">
+                <span class="dose-label">Density</span>
+                <input type="range" id="dose_quanta" min="1" max="100" value="25" class="slider-fill">
+                <span class="dose-val" id="val_dose_quanta">25%</span>
+              </div>
+              <div class="dose-row">
+                <span class="dose-label">Heat</span>
+                <input type="range" id="dose_heat" min="1" max="100" value="5" class="slider-fill">
+                <span class="dose-val" id="val_dose_heat">5%</span>
+              </div>
+              <div class="dose-row">
+                <span class="dose-label">Spin</span>
+                <input type="range" id="dose_spin" min="1" max="100" value="100" class="slider-fill">
+                <span class="dose-val" id="val_dose_spin">100%</span>
+              </div>
+            </div>
           </div>
         </div>
 

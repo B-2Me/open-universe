@@ -327,6 +327,15 @@ html:has(.wake-sandbox) body {
   border: 1px solid var(--pf-bevel-dark); border-radius: 4px; padding: 6px 8px;
 }
 .sub-label { font-size: 11px; color: var(--pf-text-muted); font-weight: 600; }
+
+/* Injection channel dose sliders */
+.dose-rows { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
+.dose-row { display: flex; align-items: center; gap: 8px; }
+.dose-label { font-size: 10px; color: var(--pf-text-muted); font-weight: 600; width: 52px; flex-shrink: 0; }
+.dose-val { font-size: 10px; font-family: var(--font-mono); color: var(--pf-brand-main); width: 36px; text-align: right; flex-shrink: 0; }
+.dose-row input[type=range]:disabled { opacity: 0.35; cursor: not-allowed; }
+.dose-row input[type=range]:disabled ~ .dose-val { color: var(--pf-text-muted); }
+
 input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: pointer; touch-action: none; }
 input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
 

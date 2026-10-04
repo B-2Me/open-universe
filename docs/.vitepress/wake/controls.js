@@ -350,6 +350,7 @@ export class ControlsManager {
         });
 
         this.bindInjectionToggles();
+        this.bindDoseSliders();
     }
 
     // Injection channels are independent toggles, not a radio group —
@@ -381,12 +382,31 @@ export class ControlsManager {
             b.classList.toggle('active', active);
             b.setAttribute('aria-pressed', String(active));
         });
+        // Dose sliders only mean something when their channel is active and
+        // the write isn't a verbatim clone — gray them out honestly otherwise.
+        ['quanta', 'heat', 'spin'].forEach(k => {
+            const s = document.getElementById(`dose_${k}`);
+            if (s) s.disabled = allOn || !ch[k];
+        });
+
         const hint = document.getElementById('hint_injection_mode');
         if (hint) {
             const CHANNEL_LABELS = { quanta: 'DENSITY', heat: 'HEAT', spin: 'SPIN' };
             hint.innerText = allOn ? 'CLONE'
                 : Object.keys(CHANNEL_LABELS).filter(k => ch[k]).map(k => CHANNEL_LABELS[k]).join(' + ');
         }
+    }
+
+    bindDoseSliders() {
+        ['quanta', 'heat', 'spin'].forEach(k => {
+            const s = document.getElementById(`dose_${k}`);
+            if (s) s.oninput = (e) => {
+                const v = parseInt(e.target.value, 10);
+                this.state.injectionDose[k] = v;
+                const label = document.getElementById(`val_dose_${k}`);
+                if (label) label.innerText = v + '%';
+            };
+        });
     }
 
     // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas.
@@ -565,7 +585,7 @@ export class ControlsManager {
         const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
         
         bind('btn_injection_info', () => {
-            alert("INJECTION MATRIX\n\nChannels toggle independently — combine them freely.\n\nCLONE (all channels on):\nOverwrites reality verbatim. Punches rigid holes through matter (and empty cells erase).\n\nDENSITY:\nFluid displacement only. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass.");
+            alert("INJECTION MATRIX\n\nChannels toggle independently — combine them freely. Each slider sets that channel's dose (% of the stamp's stored value per node); sliders are ignored during a verbatim Clone write.\n\nCLONE (all channels on):\nOverwrites reality verbatim. Punches rigid holes through matter (and empty cells erase).\n\nDENSITY:\nFluid displacement only. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass. Its slider is the per-node application probability — lower values produce sparse directional drift.");
         });
         
         bind('btn_reset', () =>

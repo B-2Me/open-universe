@@ -1,14 +1,10 @@
-import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, THERMAL_LIMIT_DEFAULT, unpackNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, unpackNode } from './constants.js';
 
 // --- Interaction-local tuning ---
 const DOUBLE_TAP_MS = 300;          // Pointer-tap window that triggers resetView
 const VIBRATE_THROTTLE_MS = 120;    // Min spacing between haptic ticks while painting
 const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
 const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
-const QUANTA_INJECT_DIV = 4;        // Density stamps inject 1/4 of stored quanta per node
-const HEAT_INJECT_DIV = 10;         // ...and 1/10 of stored heat
-const STAMP_HEAT_NORM = 60000;      // Stamp heat normalizes against this ceiling
-const HEAT_INJECT_FRACTION = 0.05;  // Heat stamps add 5% of the live thermal limit per node
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
@@ -400,7 +396,9 @@ export class InteractionManager {
         const pWidth = pattern[0].length;
         const startX = centerX - Math.floor(pWidth / 2);
         const startY = centerY - Math.floor(pHeight / 2);
-        const thermLimit = parseInt(document.getElementById('slider_thermal')?.value, 10) || THERMAL_LIMIT_DEFAULT;
+        // Per-channel dose: % of the stamp's stored value injected per node.
+        // Spin's dose is a per-node probability — a direction has no magnitude.
+        const dose = this.state.injectionDose || { quanta: 25, heat: 5, spin: 100 };
 
         for (let py = 0; py < pHeight; py++) {
             for (let px = 0; px < pWidth; px++) {
@@ -419,14 +417,16 @@ export class InteractionManager {
                 } else {
                     const b = unpackNode(brushNode);
                     if (channels.quanta && b.quanta > 0) {
-                        this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / QUANTA_INJECT_DIV)));
-                        if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / HEAT_INJECT_DIV));
+                        const q = Math.floor(b.quanta * dose.quanta / 100);
+                        if (q > 0) this.bridge.addQuanta(tx, ty, q);
                     }
                     if (channels.heat) {
-                        const deltaHeat = Math.floor((b.heat / STAMP_HEAT_NORM) * (thermLimit * HEAT_INJECT_FRACTION));
+                        const deltaHeat = Math.floor(b.heat * dose.heat / 100);
                         if (deltaHeat > 0) this.bridge.addHeat(tx, ty, deltaHeat);
                     }
-                    if (channels.spin && b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
+                    if (channels.spin && b.spin > 0 && Math.random() * 100 < dose.spin) {
+                        this.bridge.setSpin(tx, ty, b.spin);
+                    }
                 }
             }
         }

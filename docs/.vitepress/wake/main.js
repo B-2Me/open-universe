@@ -45,8 +45,11 @@ export async function initWakeSimulator() {
             isPlaying: true,
             currentScenario: 'vacuum',
             currentMode: 'move',
-            // Injection channels — all three on is a verbatim Clone write
+            // Injection channels — all three on is a verbatim Clone write.
+            // Per-channel dose % (spin = per-node application probability);
+            // ignored while all three are on since clone writes verbatim.
             injectionChannels: { quanta: true, heat: true, spin: true },
+            injectionDose: { quanta: 25, heat: 5, spin: 100 },
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
             forceRedraw: true
