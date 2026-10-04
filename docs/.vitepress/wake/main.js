@@ -44,8 +44,9 @@ export async function initWakeSimulator() {
         const state = {
             isPlaying: true,
             currentScenario: 'vacuum',
-            currentMode: 'move', 
-            injectionMode: 'clone', 
+            currentMode: 'move',
+            // Injection channels — all three on is a verbatim Clone write
+            injectionChannels: { quanta: true, heat: true, spin: true },
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
             forceRedraw: true
@@ -85,9 +86,9 @@ export async function initWakeSimulator() {
                     // Rebuild the palette grid with the new custom brush equipped
                     controlsRef.renderPalette();
 
-                    // Switch to Place mode with Clone injection so the stamp lands intact
+                    // Switch to Place mode with all channels on so the stamp lands intact
                     controlsRef.setMode('place');
-                    controlsRef.setInjectionMode('clone');
+                    controlsRef.setInjectionChannels({ quanta: true, heat: true, spin: true });
 
                     // Allow the user to save the new brush
                     const btnSave = document.getElementById('btn_save_scratch');

@@ -133,7 +133,7 @@ export class InteractionManager {
             if (!pattern || !pattern.length) return;
             this.bridge.saveSnapshot();
             if (this.onUndoPush) this.onUndoPush();
-            this.injectPattern(this.kbdX, this.kbdY, pattern, this.state.injectionMode);
+            this.injectPattern(this.kbdX, this.kbdY, pattern, this.state.injectionChannels);
             this.state.forceRedraw = true;
         } else if (mode === 'sample') {
             this.sampleRegion(this.kbdX, this.kbdY);
@@ -344,7 +344,7 @@ export class InteractionManager {
             if (isClick) {
                 this.bridge.saveSnapshot();
                 if (this.onUndoPush) this.onUndoPush();
-                this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
+                this.injectPattern(coords.x, coords.y, pattern, this.state.injectionChannels);
                 this.strokeInjected = true;
                 this.lastInjectGridX = coords.x;
                 this.lastInjectGridY = coords.y;
@@ -364,7 +364,7 @@ export class InteractionManager {
                 }
 
                 if (directionChanged) {
-                    this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
+                    this.injectPattern(coords.x, coords.y, pattern, this.state.injectionChannels);
                     this.lastInjectGridX = coords.x;
                     this.lastInjectGridY = coords.y;
                     this.dragDirX = currentDirX;
@@ -377,7 +377,7 @@ export class InteractionManager {
                     if (Math.abs(dx) >= stampW) tileX += currentDirX * stampW * Math.floor(Math.abs(dx) / stampW);
                     if (Math.abs(dy) >= stampH) tileY += currentDirY * stampH * Math.floor(Math.abs(dy) / stampH);
 
-                    this.injectPattern(tileX, tileY, pattern, this.state.injectionMode);
+                    this.injectPattern(tileX, tileY, pattern, this.state.injectionChannels);
                     this.lastInjectGridX = tileX;
                     this.lastInjectGridY = tileY;
                     if (currentDirX !== 0) this.dragDirX = currentDirX;
@@ -388,7 +388,7 @@ export class InteractionManager {
         }
     }
 
-    injectPattern(centerX, centerY, pattern, mode) {
+    injectPattern(centerX, centerY, pattern, channels) {
         // Throttle haptics so drag-painting is a tick, not a continuous buzz
         const now = Date.now();
         if ('vibrate' in navigator && now - this.lastVibrate > VIBRATE_THROTTLE_MS) {
@@ -405,26 +405,28 @@ export class InteractionManager {
         for (let py = 0; py < pHeight; py++) {
             for (let px = 0; px < pWidth; px++) {
                 const brushNode = pattern[py][px];
-                if (brushNode === 0 && mode !== 'clone') continue;
+                // All channels on = verbatim write (clone); empty stamp cells
+                // only write zeros in clone (that's what makes Erase work).
+                const isClone = channels.quanta && channels.heat && channels.spin;
+                if (brushNode === 0 && !isClone) continue;
 
                 const tx = startX + px;
                 const ty = startY + py;
                 if (tx < 0 || tx >= GRID_WIDTH || ty < 0 || ty >= GRID_HEIGHT) continue;
 
-                if (mode === 'clone') {
+                if (isClone) {
                     this.bridge.setNodeState(tx, ty, brushNode);
                 } else {
                     const b = unpackNode(brushNode);
-                    if (mode === 'quanta') {
-                        if (b.quanta > 0) this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / QUANTA_INJECT_DIV)));
+                    if (channels.quanta && b.quanta > 0) {
+                        this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / QUANTA_INJECT_DIV)));
                         if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / HEAT_INJECT_DIV));
-                        if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
-                    } else if (mode === 'heat') {
-                        const deltaHeat = Math.floor((b.heat / STAMP_HEAT_NORM) * (thermLimit * HEAT_INJECT_FRACTION));
-                        this.bridge.addHeat(tx, ty, deltaHeat);
-                    } else if (mode === 'spin') {
-                        if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
                     }
+                    if (channels.heat) {
+                        const deltaHeat = Math.floor((b.heat / STAMP_HEAT_NORM) * (thermLimit * HEAT_INJECT_FRACTION));
+                        if (deltaHeat > 0) this.bridge.addHeat(tx, ty, deltaHeat);
+                    }
+                    if (channels.spin && b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
                 }
             }
         }

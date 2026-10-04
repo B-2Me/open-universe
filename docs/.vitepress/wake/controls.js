@@ -349,16 +349,44 @@ export class ControlsManager {
             };
         });
 
-        this.setupGroup('injection_mode_selector', (val) => this.setInjectionMode(val));
+        this.bindInjectionToggles();
     }
 
-    setInjectionMode(val) {
-        this.state.injectionMode = val;
+    // Injection channels are independent toggles, not a radio group —
+    // Density/Heat/Spin each inject only their own component, and all
+    // three enabled is a verbatim Clone write. The last enabled channel
+    // can't be toggled off (a stamp with no channels would inject nothing).
+    bindInjectionToggles() {
+        document.querySelectorAll('#injection_mode_selector .group-btn').forEach(btn => {
+            btn.onclick = () => {
+                const val = btn.dataset.val;
+                if (val === 'clone') {
+                    this.setInjectionChannels({ quanta: true, heat: true, spin: true });
+                    return;
+                }
+                const next = { ...this.state.injectionChannels, [val]: !this.state.injectionChannels[val] };
+                if (!next.quanta && !next.heat && !next.spin) next[val] = true;
+                this.setInjectionChannels(next);
+            };
+        });
+        // Sync active classes, aria-pressed, and the hint to initial state
+        this.setInjectionChannels(this.state.injectionChannels);
+    }
+
+    setInjectionChannels(ch) {
+        this.state.injectionChannels = { ...ch };
+        const allOn = ch.quanta && ch.heat && ch.spin;
         document.querySelectorAll('#injection_mode_selector .group-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.val === val);
+            const active = b.dataset.val === 'clone' ? allOn : !!ch[b.dataset.val];
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-pressed', String(active));
         });
         const hint = document.getElementById('hint_injection_mode');
-        if (hint) hint.innerText = val.toUpperCase();
+        if (hint) {
+            const CHANNEL_LABELS = { quanta: 'DENSITY', heat: 'HEAT', spin: 'SPIN' };
+            hint.innerText = allOn ? 'CLONE'
+                : Object.keys(CHANNEL_LABELS).filter(k => ch[k]).map(k => CHANNEL_LABELS[k]).join(' + ');
+        }
     }
 
     // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas.
@@ -537,7 +565,7 @@ export class ControlsManager {
         const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
         
         bind('btn_injection_info', () => {
-            alert("INJECTION MATRIX\n\nCLONE (Default):\nOverwrites reality. Punches rigid holes through matter.\n\nDENSITY:\nFluid displacement. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass.");
+            alert("INJECTION MATRIX\n\nChannels toggle independently — combine them freely.\n\nCLONE (all channels on):\nOverwrites reality verbatim. Punches rigid holes through matter (and empty cells erase).\n\nDENSITY:\nFluid displacement only. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass.");
         });
         
         bind('btn_reset', () =>
