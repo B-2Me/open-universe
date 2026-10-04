@@ -1,9 +1,18 @@
 // --- Engine & Interaction Defaults ---
 export const SPEED_DEFAULT_TPS = 60;
 export const SPEED_MAX_TPS = 120;
-export const SAMPLE_RADIUS_DEFAULT = 10;
 export const ZOOM_MIN = 1.0;
 export const ZOOM_MAX = 10.0;
+
+// --- Undo Buffer ---
+export const UNDO_MAX_DEPTH = 4;       // Matches SNAPSHOT_DEPTH in planck.c
+export const UNDO_WINDOW_TICKS = 120;  // Play ticks between auto-checkpoints (~2s @ 60 TPS)
+
+// --- Touch Ergonomics ---
+export const TOUCH_STAMP_OFFSET_PX = 56; // Lift touch paints/samples above the fingertip
+
+// --- Persistence ---
+export const AUTOSAVE_INTERVAL_MS = 10000; // Periodic grid autosave to IndexedDB
 
 // --- Grid Dimensions ---
 export const GRID_WIDTH = 400;
@@ -11,6 +20,10 @@ export const GRID_HEIGHT = 400;
 export const TOTAL_NODES = GRID_WIDTH * GRID_HEIGHT;
 export const RGBA_CHANNELS = 4;
 export const PIXEL_BUFFER_SIZE = TOTAL_NODES * RGBA_CHANNELS;
+
+// --- Node Layout ---
+export const NODE_SIZE_BYTES = 4;      // sizeof(PlanckNode): u8 quanta + u8 spin + u16 heat
+export const GRID_BYTE_SIZE = TOTAL_NODES * NODE_SIZE_BYTES;
 
 // --- Bitfield Offsets and Masks ---
 // Format: [Quanta: 8 bits][Spin: 8 bits][Heat: 16 bits]
@@ -23,17 +36,13 @@ export const SPIN_MASK = 0xFF;
 export const HEAT_MASK = 0xFFFF;
 
 // --- Physics Defaults ---
+// Engine/app defaults — these also define the slider initial values in
+// the template, so they belong to the app, not to any one scenario.
 export const THERMAL_LIMIT_DEFAULT = 50000;
-export const THERMAL_LIMIT_ENGINE_BELL = 60000;
 export const DISSIPATION_DEFAULT = 15;
-export const DISSIPATION_NOZZLE = 45;
 
 // --- Quanta Presets ---
 export const QUANTA_ANCHOR_WALL = 255;
-export const QUANTA_OCEAN_WATER = 200;
-export const QUANTA_COSMIC_DUST = 80;
-export const QUANTA_GAS_MIN = 2;
-export const QUANTA_GAS_VARIANCE = 3;
 
 // --- Directional Spin Presets ---
 export const SPIN_STATIONARY = 0;
@@ -46,18 +55,19 @@ export const SPIN_DOWN_LEFT = 6;
 export const SPIN_LEFT = 7;
 export const SPIN_UP_LEFT = 8;
 
-export const SPIN_FLUID_A = SPIN_RIGHT; // 3
-export const SPIN_FLUID_B = SPIN_LEFT;  // 7
+// Engine spin-direction tables — mirrors SPIN_DX/SPIN_DY/DIR_MAP in
+// planck.c. Indexed by spin value 0-8 (0 = stationary, no vector).
+export const SPIN_DX = [0, 0, 1, 1, 1, 0, -1, -1, -1];
+export const SPIN_DY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
+// Maps signed (dy, dx) vector sums back to a spin id: DIR_MAP[dy+1][dx+1].
+export const DIR_MAP = [[8, 1, 2], [7, 0, 3], [6, 5, 4]];
 
 // --- Heat Presets ---
-export const HEAT_ABSOLUTE_ZERO = 0;
-export const HEAT_CRYO = 1;
+// Shared field vocabulary used by both the brush palette and the
+// scenario composers — palette-only and scenario-only presets live in
+// their own files instead.
 export const HEAT_COLD_WATER = 20;
 export const HEAT_ROOM_AMBIENT = 500;
-export const HEAT_ATMOSPHERE_GAS = 10000;
-export const HEAT_GEOTHERMAL_CRUST = 15000;
-export const HEAT_VACUUM_CORE = 48000;
-export const HEAT_IGNITER_PLASMA = 60000;
 
 // --- Layers ---
 export const LAYER_MACRO = 0;

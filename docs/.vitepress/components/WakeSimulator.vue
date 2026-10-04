@@ -4,6 +4,10 @@ import { onMounted, onUnmounted } from 'vue'
 let cleanup = null
 
 onMounted(async () => {
+  // PWA shell: offline cache for the site + wasm (prod builds only)
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
   const { initWakeSimulator } = await import('../wake/main.js')
   cleanup = await initWakeSimulator()
 })
@@ -53,6 +57,23 @@ onUnmounted(() => {
               <button class="group-btn" data-val="heat">🔥 Heat</button>
               <button class="group-btn" data-val="spin">🔄 Spin</button>
             </div>
+            <div class="dose-rows">
+              <div class="dose-row">
+                <span class="dose-label">Density</span>
+                <input type="range" id="dose_quanta" min="1" max="100" value="25" class="slider-fill">
+                <span class="dose-val" id="val_dose_quanta">25%</span>
+              </div>
+              <div class="dose-row">
+                <span class="dose-label">Heat</span>
+                <input type="range" id="dose_heat" min="1" max="100" value="5" class="slider-fill">
+                <span class="dose-val" id="val_dose_heat">5%</span>
+              </div>
+              <div class="dose-row">
+                <span class="dose-label">Spin</span>
+                <input type="range" id="dose_spin" min="0" max="100" value="100" class="slider-fill" title="0% entrain to ambient flow — 100% impose stamp direction">
+                <span class="dose-val" id="val_dose_spin">100%</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -92,6 +113,16 @@ onUnmounted(() => {
           </div>
           <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">
+              <span class="context-label">Engine Flags</span>
+              <span class="context-hint">Physics injection model</span>
+            </div>
+            <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
+              <input type="checkbox" id="chk_impedance" checked>
+              Refractive Impedance (acoustic backscatter)
+            </label>
+          </div>
+          <div class="context-group" style="margin-top: 6px;">
+            <div class="context-header">
               <span class="context-label">Palette Presets</span>
               <span class="context-hint">Import / Export stamps</span>
             </div>
@@ -104,6 +135,17 @@ onUnmounted(() => {
               <button id="btn_reset_palette" class="group-btn" style="color: #ff8888;">🗑️ Reset</button>
             </div>
           </div>
+          <div class="context-group" style="margin-top: 6px;">
+            <div class="context-header">
+              <span class="context-label">Keyboard Shortcuts</span>
+              <span class="context-hint">Desktop</span>
+            </div>
+            <span class="context-hint" style="text-transform: none; line-height: 1.8;">
+              <b>Space</b> pan · <b>P</b> play/pause · <b>R</b> randomize · <b>C</b> clear<br>
+              <b>Ctrl+Z</b> undo · <b>Esc</b> close/unfocus · <b>Dbl-click</b> reset view (Move)<br>
+              <b>Arrows</b> move brush cursor / pan · <b>Shift+Arrows</b> ×10 · <b>Enter</b> stamp (canvas focused)
+            </span>
+          </div>
         </div>
 
         <!-- Quick Actions -->
@@ -113,6 +155,10 @@ onUnmounted(() => {
             <button id="btn_soup" class="group-btn">🎲 Random</button>
             <button id="btn_clear" class="group-btn">🧹 Clear</button>
             <button id="btn_undo" class="group-btn">↩️ Undo</button>
+          </div>
+          <div class="button-group" style="margin-top: 6px;">
+            <button id="btn_play" class="group-btn" title="Play/Pause (P)">⏸ Pause</button>
+            <button id="btn_step" class="group-btn" title="Advance one tick">⏭ Step</button>
           </div>
         </div>
 
@@ -184,21 +230,23 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div id="canvas-container">
+        <div id="canvas-container" tabindex="0" role="application"
+             aria-label="Simulation field. Arrow keys move the brush cursor or pan the view, Enter stamps the brush, Escape removes focus.">
           <div id="error-banner"></div>
+          <span id="kbd_cursor_status" class="sr-only" aria-live="polite"></span>
           <div id="transform-wrapper">
             <div class="split-half">
-              <canvas id="canvas_left" width="400" height="400"></canvas>
+              <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>
             </div>
             <div class="split-half" style="border-left: 1px dashed rgba(255,255,255,0.15);">
-              <canvas id="canvas_right" width="400" height="400"></canvas>
+              <canvas id="canvas_right" width="400" height="400" aria-label="Secondary visualization layer"></canvas>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Dossier Modal -->
-      <div id="modal_scenario_info" class="dossier-modal">
+      <div id="modal_scenario_info" class="dossier-modal" role="dialog" aria-modal="true" aria-labelledby="dossier_title">
         <div class="dossier-content">
           <div class="dossier-header">
             <span id="dossier_title" class="dossier-title">Scenario Dossier</span>

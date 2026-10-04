@@ -9,12 +9,15 @@ import {
     SPIN_DOWN_LEFT,
     SPIN_LEFT,
     SPIN_UP_LEFT,
-    HEAT_CRYO,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
-    HEAT_ATMOSPHERE_GAS,
     packNode
 } from './constants.js';
+
+// Palette-local presets — brush tuning belongs to the palette, not the
+// app's shared constant pool.
+const HEAT_CRYO = 1;
+const HEAT_ATMOSPHERE_GAS = 10000;
 
 export const DEFAULT_PALETTE = {
     "A": {

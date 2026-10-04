@@ -4,7 +4,11 @@ mkdir -p ../docs/public/wasm/wake/
 
 echo "Compiling Planck Field engine (Production Bridge Simulator Edition)..."
 
+# Stamp the engine with the repo revision it was built from
+GIT_REV=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
+
 if emcc planck.c \
+  -DGIT_REV=\"$GIT_REV\" \
   -O3 \
   -s WASM=1 \
   -s MODULARIZE=1 \
@@ -18,20 +22,18 @@ if emcc planck.c \
     '_get_pixel_buffer_pointer', 
     '_set_dissipation', 
     '_set_thermal_limit', 
-    '_clear_grid', 
-    '_randomize_grid', 
-    '_set_node', 
-    '_get_node', 
+    '_clear_grid',
     '_get_node_state',
     '_set_node_state',
     '_add_heat',
     '_set_spin',
     '_add_quanta',
-    '_add_quanta_impedance',
     '_set_impedance_mode',
     '_save_grid_snapshot',
     '_restore_grid_snapshot',
-    '_get_engine_version', 
+    '_get_snapshot_count',
+    '_get_grid_pointer',
+    '_get_engine_build', 
     '_get_grid_width', 
     '_get_grid_height',
     '_get_total_quanta',

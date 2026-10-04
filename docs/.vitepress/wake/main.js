@@ -4,12 +4,15 @@ import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
 import { EngineLoop } from './loop.js';
 import { InteractionManager } from './interaction.js';
-import { loadScenario } from './scenarios.js';
+import { loadScenario, SCENARIO_DOSSIERS } from './scenarios.js';
+import { loadSimState, restoreSimState } from './persist.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
     SPEED_DEFAULT_TPS,
-    SAMPLE_RADIUS_DEFAULT
+    TOTAL_NODES,
+    GRID_WIDTH,
+    GRID_HEIGHT
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -22,18 +25,34 @@ export async function initWakeSimulator() {
         const wasm = await loadPlanckWasm();
         const bridge = new PlanckBridge(wasm);
 
-        const version = bridge.getEngineVersion();
-        if (diagStatus) diagStatus.innerText = `v${version} ONLINE`;
+        // The engine reports its compiled grid dimensions — if constants.js
+        // ever drifts from planck.c's WIDTH/HEIGHT, every coordinate write
+        // would silently corrupt state. Fail loudly at boot instead.
+        if (bridge.getGridWidth() !== GRID_WIDTH || bridge.getGridHeight() !== GRID_HEIGHT) {
+            throw new Error(
+                `Grid mismatch: engine is ${bridge.getGridWidth()}x${bridge.getGridHeight()}, ` +
+                `constants.js expects ${GRID_WIDTH}x${GRID_HEIGHT}`
+            );
+        }
+
+        const build = bridge.getEngineBuild();
+        if (diagStatus) diagStatus.innerText = build;
+
+        const diagNodes = document.getElementById('diag_nodes');
+        if (diagNodes) diagNodes.innerText = `${TOTAL_NODES.toLocaleString()} Nodes`;
 
         const state = {
             isPlaying: true,
             currentScenario: 'vacuum',
-            currentMode: 'move', 
-            injectionMode: 'clone', 
+            currentMode: 'move',
+            // Injection channels — all three on is a verbatim Clone write.
+            // Per-channel dose % (spin = per-node application probability);
+            // ignored while all three are on since clone writes verbatim.
+            injectionChannels: { quanta: true, heat: true, spin: true },
+            injectionDose: { quanta: 25, heat: 5, spin: 100 },
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
-            forceRedraw: true,
-            sampleRadius: SAMPLE_RADIUS_DEFAULT
+            forceRedraw: true
         };
 
         const canvasLeft = document.getElementById('canvas_left');
@@ -41,15 +60,21 @@ export async function initWakeSimulator() {
         const renderer = new DualRenderer(canvasLeft, canvasRight);
         const palette = new PaletteManager();
 
+        const telemetryEls = {
+            quanta: document.getElementById('diag_quanta'),
+            heat: document.getElementById('diag_heat'),
+            phase: document.getElementById('diag_phase'),
+            yield: document.getElementById('diag_yield')
+        };
+        let controlsRef = null;
         const loop = new EngineLoop({
             bridge,
             renderer,
             getState: () => state,
-            onTelemetry: updateTelemetry
+            onTelemetry: (b) => updateTelemetry(telemetryEls, b),
+            onTick: (frameCount) => controlsRef?.onEngineTick(frameCount)
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
-
-        let controlsRef = null;
 
         const interaction = new InteractionManager({
             bridge,
@@ -57,22 +82,17 @@ export async function initWakeSimulator() {
             state,
             canvasContainerId: 'canvas-container',
             transformWrapperId: 'transform-wrapper',
+            onUndoPush: () => controlsRef?.pushUndoDepth(),
+            onUndoPop: () => controlsRef?.popUndoDepth(),
             onSample: (stamp) => {
                 if (controlsRef) {
                     // Rebuild the palette grid with the new custom brush equipped
                     controlsRef.renderPalette();
-                    
-                    // Switch the entire UI segment to Place mode immediately
+
+                    // Switch to Place mode with all channels on so the stamp lands intact
                     controlsRef.setMode('place');
-                    
-                    // Force the Injection mode to Clone
-                    state.injectionMode = 'clone';
-                    document.querySelectorAll('#injection_mode_selector .group-btn').forEach(b => {
-                        b.classList.toggle('active', b.dataset.val === 'clone');
-                    });
-                    const hint = document.getElementById('hint_injection_mode');
-                    if (hint) hint.innerText = 'CLONE';
-                    
+                    controlsRef.setInjectionChannels({ quanta: true, heat: true, spin: true });
+
                     // Allow the user to save the new brush
                     const btnSave = document.getElementById('btn_save_scratch');
                     if (btnSave) btnSave.disabled = false;
@@ -92,6 +112,20 @@ export async function initWakeSimulator() {
         controlsRef = controls;
 
         const initialParams = loadScenario(state.currentScenario, bridge);
+
+        // Resume a previous session if an autosave exists (grid bytes override
+        // the default scenario seed; the saved scenario name is restored too).
+        const saved = await loadSimState();
+        if (saved && saved.grid) {
+            restoreSimState(bridge, saved);
+            if (saved.scenario && SCENARIO_DOSSIERS[saved.scenario]) {
+                state.currentScenario = saved.scenario;
+                const dd = document.getElementById('scenario_dropdown');
+                if (dd) dd.value = saved.scenario;
+                controls.updateDossierContent(saved.scenario);
+            }
+        }
+
         const md = document.getElementById('math_dissipation');
         const mt = document.getElementById('math_thermal_limit');
         if (md) md.innerText = initialParams.targetDissipation;
@@ -102,6 +136,8 @@ export async function initWakeSimulator() {
         return () => {
             loop.stop();
             if (typeof interaction.destroy === 'function') interaction.destroy();
+            if (typeof controls.destroy === 'function') controls.destroy();
+            bridge.destroy();
         };
 
     } catch (err) {
@@ -118,14 +154,9 @@ export async function initWakeSimulator() {
     }
 }
 
-function updateTelemetry(bridge) {
-    const tQuanta = document.getElementById('diag_quanta');
-    const tHeat = document.getElementById('diag_heat');
-    const tPhase = document.getElementById('diag_phase');
-    const tYield = document.getElementById('diag_yield');
-
-    if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
-    if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
-    if (tPhase) tPhase.innerText = (bridge.getPhaseAlignment() * 100).toFixed(1) + "%";
-    if (tYield) tYield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
+function updateTelemetry(els, bridge) {
+    if (els.quanta) els.quanta.innerText = bridge.getTotalQuanta().toLocaleString();
+    if (els.heat) els.heat.innerText = bridge.getTotalHeat().toLocaleString();
+    if (els.phase) els.phase.innerText = bridge.getPhaseAlignment().toFixed(1) + "%";
+    if (els.yield) els.yield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
 }

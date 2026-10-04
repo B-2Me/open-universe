@@ -21,18 +21,18 @@ const FS_SOURCE = `
 
         if (u_projection_mode == 1) {
             // Hexagonal Staggered Lattice (Odd-row +0.5 shift)
-            float row = floor(coord.y * 400.0);
+            float row = floor(coord.y * ${GRID_HEIGHT.toFixed(1)});
             if (mod(row, 2.0) == 1.0) {
-                coord.x += (0.5 / 400.0);
+                coord.x += (0.5 / ${GRID_WIDTH.toFixed(1)});
             }
             if (coord.x > 1.0) {
                 gl_FragColor = vec4(0.04, 0.06, 0.04, 1.0);
                 return;
             }
-        } 
+        }
         else if (u_projection_mode == 2) {
             // Octagonal Lattice (Chamfered corners with interstitial voids)
-            vec2 cell = fract(coord * 400.0) - 0.5;
+            vec2 cell = fract(coord * vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)})) - 0.5;
             if (abs(cell.x) + abs(cell.y) > 0.70) {
                 gl_FragColor = vec4(0.02, 0.04, 0.02, 1.0);
                 return;
@@ -166,30 +166,14 @@ export class DualRenderer {
         this.isWebGL = this.left.isWebGL || this.right.isWebGL;
     }
 
-    setProjectionMode(mode) {
-        this.left.setMode(mode);
-        this.right.setMode(mode);
-    }
-
     draw(leftLayer, rightLayer, bridge) {
-        const wasmPixels = typeof bridge.getPixelView === 'function' 
-            ? bridge.getPixelView() 
-            : bridge.getPixelBuffer();
+        // Fresh view each draw: safe if wasm memory grows (old buffer detaches)
+        const wasmPixels = bridge.getPixelView();
 
-        // Render Left Canvas
-        if (typeof bridge.renderFrame === 'function') {
-            bridge.renderFrame(leftLayer);
-        } else {
-            bridge.renderLayer(leftLayer, 0);
-        }
+        bridge.renderFrame(leftLayer);
         this.left.render(wasmPixels);
 
-        // Render Right Canvas
-        if (typeof bridge.renderFrame === 'function') {
-            bridge.renderFrame(rightLayer);
-        } else {
-            bridge.renderLayer(rightLayer, 1);
-        }
+        bridge.renderFrame(rightLayer);
         this.right.render(wasmPixels);
     }
 }

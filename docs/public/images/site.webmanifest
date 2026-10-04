@@ -1,21 +1,24 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "The Open Universe",
+  "short_name": "Open Universe",
+  "description": "Reality is a continuously actualizing, zero-storage substrate. Includes the Langevin's Wake Planck Field simulator.",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
-      "src": "/\\public\\images/web-app-manifest-192x192.png",
+      "src": "/images/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/\\public\\images/web-app-manifest-512x512.png",
+      "src": "/images/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#00e5ff",
+  "background_color": "#0a0f0a",
   "display": "standalone"
 }
