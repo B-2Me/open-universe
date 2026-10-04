@@ -23,6 +23,7 @@ onUnmounted(() => {
           <div class="deck-row scenario-nav-bar" style="margin-bottom: 6px;">
             <select id="scenario_dropdown" class="scenario-select">
               <option value="vacuum">🌌 Vacuum</option>
+              <option value="stellar">☀️ Stellar Core</option>
               <option value="atmosphere">🪐 Atmosphere</option>
               <option value="nozzle">🚀 Engine Bell (Global)</option>
               <option value="boundary">🔬 Nozzle Wall (Micro-Patch)</option>
