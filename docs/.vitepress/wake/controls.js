@@ -116,6 +116,8 @@ export class ControlsManager {
 
     undo() {
         if (this.undoDepth <= 0) return;
+        // Snapshots capture raw field bytes only — cumulative engine stats
+        // (yield) aren't rolled back, so they drift from the restored state.
         this.bridge.restoreSnapshot();
         this.undoDepth--;
         this.updateUndoFill();
@@ -131,7 +133,7 @@ export class ControlsManager {
         if (!btn) return;
         const pct = (this.undoDepth / UNDO_MAX_DEPTH) * 100;
         btn.style.setProperty('--undo-fill', pct + '%');
-        btn.title = `Undo (${this.undoDepth}/${UNDO_MAX_DEPTH}) — Ctrl+Z`;
+        btn.title = `Undo (${this.undoDepth}/${UNDO_MAX_DEPTH}) — Ctrl+Z · restores field only, stats persist`;
     }
 
     downloadBlob(blob, filename) {

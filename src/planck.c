@@ -105,6 +105,7 @@ void init_grid() {
     for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
         grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
     }
+    obs_actualization_yield = 0;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -146,6 +147,7 @@ void clear_grid() {
     for (int i = 0; i < PIXEL_COUNT; i++) {
         grid_read[i].quanta = 0; grid_read[i].spin = 0; grid_read[i].heat = 1;
     }
+    obs_actualization_yield = 0;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -157,6 +159,7 @@ void randomize_grid() {
         grid_read[i].heat = grid_read[i].quanta * 100;
         if (grid_read[i].heat == 0) grid_read[i].heat = 1;
     }
+    obs_actualization_yield = 0;
 }
 
 // ---------------------------------------------------------
@@ -412,8 +415,11 @@ void tick() {
 
     obs_total_quanta = frame_quanta;
     obs_total_heat = frame_heat;
-    // THIS LINE IS THE FIX: Permanently accumulates the yield across all frames
-    obs_actualization_yield += frame_yield; 
+    // Yield accumulates over the lifetime of the current field — reset by
+    // clear/randomize/scenario load. CAVEAT: it lives outside the undo
+    // snapshot ring, so an undo restores field bytes but leaves this
+    // counter inflated relative to the restored state (cosmetic drift).
+    obs_actualization_yield += frame_yield;
     obs_phase_alignment = (active_nodes > 0) ? ((double)aligned_nodes / active_nodes) * 100.0 : 0.0;
 
     PlanckNode* temp = grid_read;
