@@ -43,6 +43,15 @@ export class PlanckBridge {
     }
     generateVTK() { return this.wasm._generate_vtk(); }
     freeVTK() { this.wasm._free_vtk(); }
+
+    // Engine-side truth for the grid dimensions; constants.js must agree
+    // or every pointer-offset calculation in JS silently corrupts state.
+    getGridWidth() { return this.wasm._get_grid_width(); }
+    getGridHeight() { return this.wasm._get_grid_height(); }
+
+    destroy() {
+        if (typeof this.wasm._free_grid === 'function') this.wasm._free_grid();
+    }
 }
 
 export async function loadPlanckWasm() {

@@ -178,7 +178,7 @@ void set_node_state(int x, int y, int state) {
     grid_read[idx].heat = state & 0xFFFF;
 }
 
-EMSCRIPTEN_KEEPALIVE 
+// Internal-only: reached via add_quanta when IMPEDANCE_MODE_ACTIVE is set.
 void add_quanta_impedance(int x, int y, int amount) {
     if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT || amount <= 0) return;
     int idx = y * WIDTH + x;
@@ -257,11 +257,6 @@ EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
     grid_read[y * WIDTH + x].spin = dir;
 }
 
-EMSCRIPTEN_KEEPALIVE void set_node(int x, int y, int amount) { add_quanta(x, y, amount); }
-EMSCRIPTEN_KEEPALIVE int get_node(int x, int y) { 
-    if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return 0;
-    return grid_read[y * WIDTH + x].quanta; 
-}
 
 // ---------------------------------------------------------
 // PHYSICS ENGINE

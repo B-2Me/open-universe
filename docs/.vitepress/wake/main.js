@@ -10,7 +10,9 @@ import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
     SPEED_DEFAULT_TPS,
-    TOTAL_NODES
+    TOTAL_NODES,
+    GRID_WIDTH,
+    GRID_HEIGHT
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -22,6 +24,16 @@ export async function initWakeSimulator() {
 
         const wasm = await loadPlanckWasm();
         const bridge = new PlanckBridge(wasm);
+
+        // The engine reports its compiled grid dimensions — if constants.js
+        // ever drifts from planck.c's WIDTH/HEIGHT, every coordinate write
+        // would silently corrupt state. Fail loudly at boot instead.
+        if (bridge.getGridWidth() !== GRID_WIDTH || bridge.getGridHeight() !== GRID_HEIGHT) {
+            throw new Error(
+                `Grid mismatch: engine is ${bridge.getGridWidth()}x${bridge.getGridHeight()}, ` +
+                `constants.js expects ${GRID_WIDTH}x${GRID_HEIGHT}`
+            );
+        }
 
         const build = bridge.getEngineBuild();
         if (diagStatus) diagStatus.innerText = build;
@@ -121,6 +133,7 @@ export async function initWakeSimulator() {
             loop.stop();
             if (typeof interaction.destroy === 'function') interaction.destroy();
             if (typeof controls.destroy === 'function') controls.destroy();
+            bridge.destroy();
         };
 
     } catch (err) {

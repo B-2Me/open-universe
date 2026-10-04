@@ -43,8 +43,6 @@ export const DISSIPATION_NOZZLE = 45;
 
 // --- Quanta Presets ---
 export const QUANTA_ANCHOR_WALL = 255;
-export const QUANTA_OCEAN_WATER = 200;
-export const QUANTA_COSMIC_DUST = 80;
 export const QUANTA_GAS_MIN = 2;
 export const QUANTA_GAS_VARIANCE = 3;
 
@@ -59,16 +57,12 @@ export const SPIN_DOWN_LEFT = 6;
 export const SPIN_LEFT = 7;
 export const SPIN_UP_LEFT = 8;
 
-export const SPIN_FLUID_A = SPIN_RIGHT; // 3
-export const SPIN_FLUID_B = SPIN_LEFT;  // 7
-
 // --- Heat Presets ---
 export const HEAT_ABSOLUTE_ZERO = 0;
 export const HEAT_CRYO = 1;
 export const HEAT_COLD_WATER = 20;
 export const HEAT_ROOM_AMBIENT = 500;
 export const HEAT_ATMOSPHERE_GAS = 10000;
-export const HEAT_GEOTHERMAL_CRUST = 15000;
 export const HEAT_VACUUM_CORE = 48000;
 export const HEAT_IGNITER_PLASMA = 60000;
 

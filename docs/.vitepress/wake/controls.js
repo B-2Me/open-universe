@@ -428,6 +428,10 @@ export class ControlsManager {
 
             switch (e.code) {
                 case 'Space':
+                    // A focused button must keep its native Space-to-activate
+                    // behavior — space-pan is for the canvas and body, not for
+                    // hijacking control activation.
+                    if (tag === 'BUTTON') break;
                     e.preventDefault();
                     this.state.isSpaceDown = true;
                     document.getElementById('canvas-container')?.classList.add('mode-move');

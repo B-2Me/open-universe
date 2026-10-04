@@ -6,6 +6,9 @@ import {
     THERMAL_LIMIT_DEFAULT,
     THERMAL_LIMIT_ENGINE_BELL,
     QUANTA_ANCHOR_WALL,
+    QUANTA_GAS_MIN,
+    QUANTA_GAS_VARIANCE,
+    HEAT_IGNITER_PLASMA,
     SPIN_STATIONARY,
     SPIN_UP,
     SPIN_DOWN,
@@ -177,7 +180,7 @@ export function loadScenario(type, bridge) {
                 
                 const densityProb = Math.pow(ny, 1.8) * 65;
                 if (Math.random() * 100 < densityProb) {
-                    const airQuanta = 2 + Math.floor(ny * 3);
+                    const airQuanta = QUANTA_GAS_MIN + Math.floor(ny * QUANTA_GAS_VARIANCE);
                     const localHeat = Math.floor(30 + Math.pow(ny, 2) * 1200);
                     const spin = Math.floor(Math.random() * 8) + 1;
                     return packNode(airQuanta, spin, localHeat);
@@ -347,7 +350,7 @@ export function randomizeScenarioSoup(type, bridge) {
                 // Continuous Core Ignition
                 composer.apply((x, y) => {
                     if (y >= 50 && y < GRID_HEIGHT - 10 && x >= composer.cx - 4 && x <= composer.cx + 4) {
-                        return packNode(140, SPIN_DOWN, 60000);
+                        return packNode(140, SPIN_DOWN, HEAT_IGNITER_PLASMA);
                     }
                     return null;
                 });
@@ -374,7 +377,7 @@ export function randomizeScenarioSoup(type, bridge) {
             if (flavor === 0) {
                 // Violent Wall Hotspot / Ablation
                 composer.apply((x, y) => {
-                    if (x >= 40 && x < 70 && y >= 100 && y < 140) return packNode(120, SPIN_DOWN, 60000);
+                    if (x >= 40 && x < 70 && y >= 100 && y < 140) return packNode(120, SPIN_DOWN, HEAT_IGNITER_PLASMA);
                     return null;
                 });
             } else if (flavor === 1) {
