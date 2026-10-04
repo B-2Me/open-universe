@@ -15,7 +15,6 @@ export class PlanckBridge {
     tick() { this.wasm._tick(); }
     renderFrame(layer) { this.wasm._render_frame(layer); }
     clearGrid() { this.wasm._clear_grid(); }
-    randomizeGrid() { this.wasm._randomize_grid(); }
     saveSnapshot() { this.wasm._save_grid_snapshot(); }
     restoreSnapshot() { this.wasm._restore_grid_snapshot(); }
     getSnapshotCount() { return typeof this.wasm._get_snapshot_count === 'function' ? this.wasm._get_snapshot_count() : -1; }

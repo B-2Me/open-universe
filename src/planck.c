@@ -150,17 +150,6 @@ void clear_grid() {
     obs_actualization_yield = 0;
 }
 
-EMSCRIPTEN_KEEPALIVE
-void randomize_grid() {
-    if (!grid_read) return;
-    for (int i = 0; i < PIXEL_COUNT; i++) {
-        grid_read[i].quanta = (rand() % 100 < 5) ? 1 : 0;
-        grid_read[i].spin = grid_read[i].quanta ? ((rand() % 8) + 1) : 0;
-        grid_read[i].heat = grid_read[i].quanta * 100;
-        if (grid_read[i].heat == 0) grid_read[i].heat = 1;
-    }
-    obs_actualization_yield = 0;
-}
 
 // ---------------------------------------------------------
 // INJECTION & REFRACTIVE IMPEDANCE

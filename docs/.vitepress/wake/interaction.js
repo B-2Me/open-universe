@@ -1,4 +1,14 @@
-import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, unpackNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, TOUCH_STAMP_OFFSET_PX, THERMAL_LIMIT_DEFAULT, unpackNode } from './constants.js';
+
+// --- Interaction-local tuning ---
+const DOUBLE_TAP_MS = 300;          // Pointer-tap window that triggers resetView
+const VIBRATE_THROTTLE_MS = 120;    // Min spacing between haptic ticks while painting
+const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
+const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
+const QUANTA_INJECT_DIV = 4;        // Density stamps inject 1/4 of stored quanta per node
+const HEAT_INJECT_DIV = 10;         // ...and 1/10 of stored heat
+const STAMP_HEAT_NORM = 60000;      // Stamp heat normalizes against this ceiling
+const HEAT_INJECT_FRACTION = 0.05;  // Heat stamps add 5% of the live thermal limit per node
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
@@ -86,7 +96,7 @@ export class InteractionManager {
             const pattern = this.palette.getPattern();
             if (pattern && pattern.length) return { w: pattern[0].length, h: pattern.length };
         } else if (mode === 'sample') {
-            const r = parseInt(document.getElementById('slider_radius')?.value, 10) || 10;
+            const r = parseInt(document.getElementById('slider_radius')?.value, 10) || SAMPLE_RADIUS_FALLBACK;
             return { w: 2 * r + 1, h: 2 * r + 1 };
         }
         return null;
@@ -190,7 +200,7 @@ export class InteractionManager {
 
             if (this.activePointers.size === 1) {
                 const now = Date.now();
-                if (now - this.lastTapTime < 300 && (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown)) {
+                if (now - this.lastTapTime < DOUBLE_TAP_MS && (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown)) {
                     this.resetView();
                 }
                 this.lastTapTime = now;
@@ -381,8 +391,8 @@ export class InteractionManager {
     injectPattern(centerX, centerY, pattern, mode) {
         // Throttle haptics so drag-painting is a tick, not a continuous buzz
         const now = Date.now();
-        if ('vibrate' in navigator && now - this.lastVibrate > 120) {
-            navigator.vibrate(8);
+        if ('vibrate' in navigator && now - this.lastVibrate > VIBRATE_THROTTLE_MS) {
+            navigator.vibrate(VIBRATE_PULSE_MS);
             this.lastVibrate = now;
         }
 
@@ -390,7 +400,7 @@ export class InteractionManager {
         const pWidth = pattern[0].length;
         const startX = centerX - Math.floor(pWidth / 2);
         const startY = centerY - Math.floor(pHeight / 2);
-        const thermLimit = parseInt(document.getElementById('slider_thermal')?.value, 10) || 50000;
+        const thermLimit = parseInt(document.getElementById('slider_thermal')?.value, 10) || THERMAL_LIMIT_DEFAULT;
 
         for (let py = 0; py < pHeight; py++) {
             for (let px = 0; px < pWidth; px++) {
@@ -406,11 +416,11 @@ export class InteractionManager {
                 } else {
                     const b = unpackNode(brushNode);
                     if (mode === 'quanta') {
-                        if (b.quanta > 0) this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / 4)));
-                        if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / 10)); 
+                        if (b.quanta > 0) this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / QUANTA_INJECT_DIV)));
+                        if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / HEAT_INJECT_DIV));
                         if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
                     } else if (mode === 'heat') {
-                        const deltaHeat = Math.floor((b.heat / 60000) * (thermLimit * 0.05));
+                        const deltaHeat = Math.floor((b.heat / STAMP_HEAT_NORM) * (thermLimit * HEAT_INJECT_FRACTION));
                         this.bridge.addHeat(tx, ty, deltaHeat);
                     } else if (mode === 'spin') {
                         if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
@@ -421,7 +431,7 @@ export class InteractionManager {
     }
 
     sampleRegion(centerX, centerY) {
-        const radius = parseInt(document.getElementById('slider_radius')?.value, 10) || 10;
+        const radius = parseInt(document.getElementById('slider_radius')?.value, 10) || SAMPLE_RADIUS_FALLBACK;
         const stamp = [];
         for (let dy = -radius; dy <= radius; dy++) {
             const row = [];
