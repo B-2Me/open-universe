@@ -362,7 +362,8 @@ void tick() {
 
     obs_total_quanta = frame_quanta;
     obs_total_heat = frame_heat;
-    obs_actualization_yield = frame_yield;
+    // THIS LINE IS THE FIX: Permanently accumulates the yield across all frames
+    obs_actualization_yield += frame_yield; 
     obs_phase_alignment = (active_nodes > 0) ? ((double)aligned_nodes / active_nodes) * 100.0 : 0.0;
 
     PlanckNode* temp = grid_read;

@@ -205,9 +205,7 @@ export class InteractionManager {
     }
 
     injectPattern(centerX, centerY, pattern, mode) {
-        if ('vibrate' in navigator) {
-            navigator.vibrate(8);
-        }
+        if ('vibrate' in navigator) navigator.vibrate(8);
 
         const pHeight = pattern.length;
         const pWidth = pattern[0].length;
@@ -225,20 +223,21 @@ export class InteractionManager {
                 if (tx < 0 || tx >= GRID_WIDTH || ty < 0 || ty >= GRID_HEIGHT) continue;
 
                 if (mode === 'clone') {
+                    // Clone punches rigid holes (overwrites reality)
                     this.bridge.setNodeState(tx, ty, brushNode);
                 } else {
                     const b = unpackNode(brushNode);
-                    const curr = unpackNode(this.bridge.getNodeState(tx, ty));
-
                     if (mode === 'quanta') {
-                        curr.quanta = Math.min(255, curr.quanta + Math.max(1, Math.floor(b.quanta / 4)));
+                        // Density routes through the engine's fluid displacement logic
+                        if (b.quanta > 0) this.bridge.addQuanta(tx, ty, Math.max(1, Math.floor(b.quanta / 4)));
+                        if (b.heat > 0) this.bridge.addHeat(tx, ty, Math.floor(b.heat / 10)); 
+                        if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
                     } else if (mode === 'heat') {
                         const deltaHeat = Math.floor((b.heat / 60000) * (thermLimit * 0.05));
-                        curr.heat = Math.min(65535, curr.heat + deltaHeat);
+                        this.bridge.addHeat(tx, ty, deltaHeat);
                     } else if (mode === 'spin') {
-                        if (curr.quanta > 0 && b.spin > 0) curr.spin = b.spin;
+                        if (b.spin > 0) this.bridge.setSpin(tx, ty, b.spin);
                     }
-                    this.bridge.setNodeState(tx, ty, packNode(curr.quanta, curr.spin, curr.heat));
                 }
             }
         }

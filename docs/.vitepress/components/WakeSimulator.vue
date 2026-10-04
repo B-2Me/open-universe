@@ -99,10 +99,24 @@ onUnmounted(() => {
 
           <!-- Tool Popups Open Directly Under the Segment Bar -->
           <div id="context_place" class="context-popup">
+            
+            <!-- 1. Materia Brushes (Moved to top) -->
             <div class="context-group">
               <div class="context-header">
-                <span class="context-label">Tool Mode</span>
-                <span class="context-hint" id="hint_injection_mode">Active Mode</span>
+                <span class="context-label">Materia Brushes</span>
+                <span class="context-hint">Tap brush to equip</span>
+              </div>
+              <div id="brush_selector" class="palette-grid"></div>
+            </div>
+
+            <!-- 2. Injection Matrix (Moved underneath) -->
+            <div class="context-group" style="margin-top: 8px;">
+              <div class="context-header">
+                <span class="context-label" style="display: flex; align-items: center; gap: 6px;">
+                  Injection Matrix
+                  <button id="btn_injection_info" class="icon-btn" style="width:16px; height:16px; min-height:16px; padding:0; border-radius:50%; font-size:10px;">ℹ️</button>
+                </span>
+                <span class="context-hint" id="hint_injection_mode">CLONE</span>
               </div>
               <div class="button-group" id="injection_mode_selector">
                 <button class="group-btn active" data-val="clone">📋 Clone</button>
@@ -111,13 +125,7 @@ onUnmounted(() => {
                 <button class="group-btn" data-val="spin">🔄 Spin</button>
               </div>
             </div>
-            <div class="context-group" style="margin-top: 6px;">
-              <div class="context-header">
-                <span class="context-label">Palette</span>
-                <span class="context-hint">Tap brush to equip</span>
-              </div>
-              <div id="brush_selector" class="palette-grid"></div>
-            </div>
+
           </div>
 
           <div id="context_sample" class="context-popup">
@@ -134,7 +142,7 @@ onUnmounted(() => {
           <!-- System & Capture Context Drawer -->
           <div id="context_config" class="context-popup">
             
-            <!-- NEW: WebGL Lattice Projection -->
+            <!-- WebGL Lattice Projection -->
             <div class="context-group">
               <div class="context-header">
                 <span class="context-label">Lattice Projection</span>
@@ -207,10 +215,6 @@ onUnmounted(() => {
           <div id="diag_status" class="telemetry-value">BOOTING</div>
         </div>
         <div class="telemetry-box">
-          <div class="telemetry-label">Nodes</div>
-          <div id="diag_nodes" class="telemetry-value">160,000</div>
-        </div>
-        <div class="telemetry-box">
           <div class="telemetry-label">Total Quanta</div>
           <div id="diag_quanta" class="telemetry-value">0</div>
         </div>
@@ -224,7 +228,12 @@ onUnmounted(() => {
         </div>
         <div class="telemetry-box">
           <div class="telemetry-label">Yield</div>
-          <div id="diag_yield" class="telemetry-value">0</div>
+          <div id="diag_yield" class="telemetry-value">0.00</div>
+        </div>
+        <!-- Static metric relocated to bottom / bottom-right -->
+        <div class="telemetry-box">
+          <div class="telemetry-label">Nodes</div>
+          <div id="diag_nodes" class="telemetry-value">160,000</div>
         </div>
       </div>
     </div>
