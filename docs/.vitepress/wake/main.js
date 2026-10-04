@@ -8,7 +8,8 @@ import { loadScenario } from './scenarios.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
-    SPEED_DEFAULT_TPS
+    SPEED_DEFAULT_TPS,
+    SAMPLE_RADIUS_DEFAULT
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -33,7 +34,7 @@ export async function initWakeSimulator() {
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
             forceRedraw: true,
-            sampleRadius: 10
+            sampleRadius: SAMPLE_RADIUS_DEFAULT
         };
 
         // 3. Mount Dual Canvas Renderer

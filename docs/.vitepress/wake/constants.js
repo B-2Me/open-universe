@@ -1,3 +1,10 @@
+// --- Engine & Interaction Defaults ---
+export const SPEED_DEFAULT_TPS = 60;
+export const SPEED_MAX_TPS = 120;
+export const SAMPLE_RADIUS_DEFAULT = 10;
+export const ZOOM_MIN = 1.0;
+export const ZOOM_MAX = 10.0;
+
 // --- Grid Dimensions ---
 export const GRID_WIDTH = 400;
 export const GRID_HEIGHT = 400;
