@@ -2,91 +2,96 @@
   {
     "text": "Langevin's Wake",
     "start": 0,
-    "end": 1.046
+    "end": 1.036
   },
   {
     "text": "The Planck Field bare-metal simulation engine.",
-    "start": 1.046,
-    "end": 4.252
+    "start": 1.036,
+    "end": 4.213
   },
   {
     "text": "Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge.",
-    "start": 4.252,
-    "end": 26.49
+    "start": 4.213,
+    "end": 26.245
   },
   {
     "text": "::: details ⚙️ Under the Hood: The Hardware Metaphor",
-    "start": 26.49,
-    "end": 30.115
+    "start": 26.245,
+    "end": 29.836
   },
   {
     "text": "External Depth vs. Internal Depth",
-    "start": 30.115,
-    "end": 32.415
+    "start": 29.836,
+    "end": 32.115
   },
   {
     "text": "This sandbox is a literal manifestation of the Planck Field philosophy.",
-    "start": 32.415,
-    "end": 37.364
+    "start": 32.115,
+    "end": 37.019
   },
   {
     "text": "The C Engine (External Depth): The physics loop is written in bare-metal C, compiled to WebAssembly with maximum hardware optimizations. The C code knows nothing about geometry, shapes, or user input. It exclusively calculates the relentless, microscopic accounting of thermodynamic friction, phase spins, and integer limits for all 160,000 nodes simultaneously.",
-    "start": 37.364,
-    "end": 62.599
+    "start": 37.019,
+    "end": 62.021
   },
   {
     "text": "The JavaScript UI (Internal Depth): The browser interface acts as the biological dashboard. JavaScript queries the chaotic thermal data from the Wasm memory block and compresses it into a clean, geometric visual matrix (the Macro layer). When you use the Sample tool to probe a region — or Frame Capture in the System drawer to export a PNG/VTK — JavaScript is filtering the static, extracting relational boundaries, and defining it as \"useful\" geometry. The grid doesn't know it's a shape; only the UI does.",
-    "start": 62.599,
-    "end": 98.012
+    "start": 62.021,
+    "end": 97.106
   },
   {
     "text": "The Objective Constraints",
-    "start": 98.012,
-    "end": 99.755
+    "start": 97.106,
+    "end": 98.833
   },
   {
     "text": "Unlike traditional cellular automata which rely on arbitrary \"rules\" of birth and death, this engine is strictly deterministic and rooted in physical constraints. It continuously calculates the following mechanics:",
-    "start": 99.755,
-    "end": 114.672
+    "start": 98.833,
+    "end": 113.613
   },
   {
     "text": "1. Topological Unwinding (E equals M C squared) Mass is a deadlocked knot of relational tension. When the environmental thermal limit drops below the localized heat of a node, the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust: Y act equals N nodes times tau knot, multiplied by Omega max",
-    "start": 114.672,
-    "end": 140.744
+    "start": 113.613,
+    "end": 139.443
   },
   {
     "text": "2. Phase Friction (Electromagnetism) Nodes possess a topological spin (chirality). When nodes interact, their Phase Friction (\\Phi) is dictated by momentum alignment: \\Phi = \\tau(1 + \\cos(\\Delta \\theta)) Aligned spins mesh into coherent flow, allowing relational momentum to pass smoothly. Opposite spins crash head-on, triggering immediate momentum cancellation and generating a massive spike in metabolic dissipation (a heavy heat penalty). This tension naturally resolves down the path of least resistance, driving physical repulsion or shaping structures into stable circulating vortices.",
-    "start": 140.744,
-    "end": 182.012
+    "start": 139.443,
+    "end": 180.33
+  },
+  {
+    "text": "Topological Cohesion (Phase Affinity): Because the engine relies on a rigid 2D memory array, it must actively emulate the dynamic network topology of the Planck Field. In the true substrate, distance is network routing cost—meaning nodes with aligned spins are topologically adjacent. To simulate this path of least thermodynamic resistance, the engine applies a Phase Affinity gradient. If a node's linear momentum threatens to carry it outward into unaligned, high-friction vacuum static, but an adjacent locus offers aligned phase flow, the node's trajectory naturally deflects inward to remain within the coherent network. This phase-friction avoidance is the physical mechanism that prevents circulating matter from tearing apart into the void.",
+    "start": 180.33,
+    "end": 232.06
   },
   {
     "text": "3. Entropic Gravity Gravity is not an invisible geometric curve; it is the entropic gradient of the substrate. When local momentum is shunted by a deadlocked boundary, the grid resolves the tension by routing the quanta into the coolest adjacent locus: F equals T times the change in S over the change in X",
-    "start": 182.012,
-    "end": 203.343
+    "start": 232.06,
+    "end": 253.194
   },
   {
     "text": "4. Propagation Friction (Cosmological Redshift) Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium: E received equals E emitted, times E to the negative mu D",
-    "start": 203.343,
-    "end": 227.463
+    "start": 253.194,
+    "end": 277.091
   },
   {
     "text": "5. The Cold Matter Inversion (Stefan-Boltzmann Dissipation) Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint). Because of this, heat has a hard mathematical ceiling. If a node must spend massive computational bandwidth maintaining a dense topological deadlock (mass > 200), it experiences extreme metabolic drag, over-dissipates its heat, and collapses to the stochastic floor (~2 heat). Conversely, the empty quantum foam easily sustains an ambient vibration of ~325 heat. The vacuum is hot. Matter is freezing.",
-    "start": 227.463,
-    "end": 276.887
+    "start": 277.091,
+    "end": 326.058
   },
   {
     "text": "The Biological Swerve",
-    "start": 276.887,
-    "end": 278.351
+    "start": 326.058,
+    "end": 327.509
   },
   {
     "text": "While the grid is perfectly deterministic, you are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations.",
-    "start": 278.351,
-    "end": 302.61
+    "start": 327.509,
+    "end": 351.543
   },
   {
     "text": "The Injection Matrix lets you choose which relational channels your interference writes — density (fluid displacement), heat (pure thermal energy), or spin (directional momentum) — and how strongly, via per-channel dose sliders. Enable all three and the stamp overwrites the field verbatim; dial the spin channel toward entrainment and your injected mass adopts the ambient flow instead of fighting it. :::",
-    "start": 302.61,
-    "end": 330.912
+    "start": 351.543,
+    "end": 379.584
   }
 ]
