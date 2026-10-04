@@ -102,6 +102,7 @@ export async function initWakeSimulator() {
         return () => {
             loop.stop();
             if (typeof interaction.destroy === 'function') interaction.destroy();
+            if (typeof controls.destroy === 'function') controls.destroy();
         };
 
     } catch (err) {
@@ -126,6 +127,6 @@ function updateTelemetry(bridge) {
 
     if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
     if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
-    if (tPhase) tPhase.innerText = (bridge.getPhaseAlignment() * 100).toFixed(1) + "%";
+    if (tPhase) tPhase.innerText = bridge.getPhaseAlignment().toFixed(1) + "%";
     if (tYield) tYield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
 }

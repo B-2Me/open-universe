@@ -92,6 +92,16 @@ onUnmounted(() => {
           </div>
           <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">
+              <span class="context-label">Engine Flags</span>
+              <span class="context-hint">Physics injection model</span>
+            </div>
+            <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
+              <input type="checkbox" id="chk_impedance" checked>
+              Refractive Impedance (acoustic backscatter)
+            </label>
+          </div>
+          <div class="context-group" style="margin-top: 6px;">
+            <div class="context-header">
               <span class="context-label">Palette Presets</span>
               <span class="context-hint">Import / Export stamps</span>
             </div>
@@ -113,6 +123,10 @@ onUnmounted(() => {
             <button id="btn_soup" class="group-btn">🎲 Random</button>
             <button id="btn_clear" class="group-btn">🧹 Clear</button>
             <button id="btn_undo" class="group-btn">↩️ Undo</button>
+          </div>
+          <div class="button-group" style="margin-top: 6px;">
+            <button id="btn_play" class="group-btn" title="Play/Pause (P)">⏸ Pause</button>
+            <button id="btn_step" class="group-btn" title="Advance one tick">⏭ Step</button>
           </div>
         </div>
 
@@ -188,17 +202,17 @@ onUnmounted(() => {
           <div id="error-banner"></div>
           <div id="transform-wrapper">
             <div class="split-half">
-              <canvas id="canvas_left" width="400" height="400"></canvas>
+              <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>
             </div>
             <div class="split-half" style="border-left: 1px dashed rgba(255,255,255,0.15);">
-              <canvas id="canvas_right" width="400" height="400"></canvas>
+              <canvas id="canvas_right" width="400" height="400" aria-label="Secondary visualization layer"></canvas>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Dossier Modal -->
-      <div id="modal_scenario_info" class="dossier-modal">
+      <div id="modal_scenario_info" class="dossier-modal" role="dialog" aria-modal="true" aria-labelledby="dossier_title">
         <div class="dossier-content">
           <div class="dossier-header">
             <span id="dossier_title" class="dossier-title">Scenario Dossier</span>

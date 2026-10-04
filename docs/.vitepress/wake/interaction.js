@@ -1,4 +1,4 @@
-import { GRID_WIDTH, GRID_HEIGHT, unpackNode, packNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, unpackNode, packNode } from './constants.js';
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample }) {
@@ -21,10 +21,15 @@ export class InteractionManager {
         this.lastInjectGridY = null;
         this.dragDirX = 0;
         this.dragDirY = 0;
+        this.strokeInjected = false;
+        this.lastVibrate = 0;
 
         this.activePointers = new Map();
         this.initialPinchDistance = null;
         this.initialZoom = 1;
+        this.lastPinchMid = null;
+
+        this._onResize = () => { setTimeout(() => this.constrainView(), 50); };
 
         this.init();
     }
@@ -32,16 +37,34 @@ export class InteractionManager {
     init() {
         if (!this.container) return;
         this.bindEvents();
-        window.addEventListener('resize', () => { setTimeout(() => this.constrainView(), 50); });
+        window.addEventListener('resize', this._onResize);
+    }
+
+    clampZoom(z) {
+        return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+    }
+
+    // Anchors the zoom on a screen point so the content under it stays fixed.
+    zoomAtPoint(clientX, clientY, newZoom) {
+        const rect = this.container.getBoundingClientRect();
+        const sx = (clientX - rect.left) - rect.width / 2;
+        const sy = (clientY - rect.top) - rect.height / 2;
+        const z = this.clampZoom(newZoom);
+        if (z === this.zoom) return;
+        this.panX += sx * (1 / z - 1 / this.zoom);
+        this.panY += sy * (1 / z - 1 / this.zoom);
+        this.zoom = z;
+        this.updateZoomUI();
+        this.applyTransform();
     }
 
     bindEvents() {
+        this.container.addEventListener('contextmenu', (e) => e.preventDefault());
+
         this.container.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            this.zoom = Math.max(1, Math.min(10, this.zoom + delta));
-            this.updateZoomUI();
-            this.applyTransform();
+            this.zoomAtPoint(e.clientX, e.clientY, this.zoom + delta);
             this.constrainView();
         }, { passive: false });
 
@@ -53,6 +76,8 @@ export class InteractionManager {
         });
 
         this.container.addEventListener('pointerdown', (e) => {
+            // Ignore right/middle mouse clicks entirely (paint and pan are primary-button only)
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
             if (e.pointerType !== 'mouse' && !e.isPrimary && this.activePointers.size === 0) return;
 
             this.container.setPointerCapture(e.pointerId);
@@ -71,9 +96,20 @@ export class InteractionManager {
                 this.lastY = e.clientY;
                 this.processInput(e.clientX, e.clientY, true);
             } else if (this.activePointers.size === 2) {
+                // Second finger arrived: this is a pinch, not a stroke.
+                // Revert the stamp finger 1 may have just injected.
+                if (this.strokeInjected) {
+                    this.bridge.restoreSnapshot();
+                    this.strokeInjected = false;
+                    this.state.forceRedraw = true;
+                }
                 const pts = Array.from(this.activePointers.values());
                 this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
                 this.initialZoom = this.zoom;
+                this.lastPinchMid = {
+                    x: (pts[0].x + pts[1].x) / 2,
+                    y: (pts[0].y + pts[1].y) / 2
+                };
             }
         });
 
@@ -84,10 +120,19 @@ export class InteractionManager {
             if (this.activePointers.size === 2 && this.initialPinchDistance) {
                 const pts = Array.from(this.activePointers.values());
                 const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+
+                // Zoom anchored at the pinch focal point
                 const scaleFactor = currentDist / this.initialPinchDistance;
-                this.zoom = Math.max(1, Math.min(10, this.initialZoom * scaleFactor));
-                this.updateZoomUI();
-                this.applyTransform();
+                this.zoomAtPoint(mid.x, mid.y, this.initialZoom * scaleFactor);
+
+                // Two-finger pan from midpoint drift
+                if (this.lastPinchMid) {
+                    this.panX += (mid.x - this.lastPinchMid.x) / this.zoom;
+                    this.panY += (mid.y - this.lastPinchMid.y) / this.zoom;
+                    this.applyTransform();
+                }
+                this.lastPinchMid = mid;
                 return;
             }
 
@@ -98,9 +143,13 @@ export class InteractionManager {
 
         const endPointer = (e) => {
             this.activePointers.delete(e.pointerId);
-            if (this.activePointers.size < 2) this.initialPinchDistance = null;
+            if (this.activePointers.size < 2) {
+                this.initialPinchDistance = null;
+                this.lastPinchMid = null;
+            }
             if (this.activePointers.size === 0) {
                 this.isDragging = false;
+                this.strokeInjected = false;
                 this.lastInjectGridX = null;
                 this.lastInjectGridY = null;
                 this.constrainView();
@@ -161,6 +210,7 @@ export class InteractionManager {
             if (isClick) {
                 this.bridge.saveSnapshot();
                 this.injectPattern(coords.x, coords.y, pattern, this.state.injectionMode);
+                this.strokeInjected = true;
                 this.lastInjectGridX = coords.x;
                 this.lastInjectGridY = coords.y;
                 this.dragDirX = 0;
@@ -204,7 +254,12 @@ export class InteractionManager {
     }
 
     injectPattern(centerX, centerY, pattern, mode) {
-        if ('vibrate' in navigator) navigator.vibrate(8);
+        // Throttle haptics so drag-painting is a tick, not a continuous buzz
+        const now = Date.now();
+        if ('vibrate' in navigator && now - this.lastVibrate > 120) {
+            navigator.vibrate(8);
+            this.lastVibrate = now;
+        }
 
         const pHeight = pattern.length;
         const pWidth = pattern[0].length;
@@ -299,10 +354,10 @@ export class InteractionManager {
         let targetX = this.panX;
         let targetY = this.panY;
 
-        if (this.zoom <= 1) {
+        if (this.zoom <= ZOOM_MIN) {
             targetX = 0;
             targetY = 0;
-            this.zoom = 1;
+            this.zoom = ZOOM_MIN;
         } else {
             if (this.panX > maxPanX) targetX = maxPanX;
             if (this.panX < -maxPanX) targetX = -maxPanX;
@@ -321,5 +376,9 @@ export class InteractionManager {
         }
     }
 
-    destroy() {}
+    destroy() {
+        window.removeEventListener('resize', this._onResize);
+        this.activePointers.clear();
+        this.isDragging = false;
+    }
 }

@@ -45,6 +45,7 @@ html:has(.wake-sandbox) body {
   width: 100%;
   max-width: 1400px;
   height: 82vh;
+  height: 82dvh;
   min-height: 700px;
   max-height: 950px;
   margin: 0 auto;
@@ -294,6 +295,7 @@ html:has(.wake-sandbox) body {
 }
 .sub-label { font-size: 11px; color: var(--pf-text-muted); font-weight: 600; }
 input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: pointer; touch-action: none; }
+input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
 
 /* Palette Grid */
 .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; }
@@ -346,9 +348,9 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 .dossier-text { font-size: 11px; color: #ddd; line-height: 1.3; }
 .dossier-text.highlight { color: #f0c354; }
 
-/* Error Banner */
+/* Error Banner (display must stay overridable by JS — no !important) */
 #error-banner {
-  display: none !important;
+  display: none;
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: var(--pf-bg-panel); color: var(--pf-danger); border: 1px solid var(--pf-danger);
   padding: 1rem 1.5rem; border-radius: 4px; text-align: center; z-index: 100; max-width: 80%;
@@ -358,10 +360,14 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 /* Mobile Fit */
 @media (max-width: 768px) {
   #wake-app { flex-direction: column-reverse; height: auto; min-height: 0; max-height: none; }
-  #app-sidebar { width: 100%; min-width: 100%; border-right: none; border-top: 1px solid var(--pf-bevel-dark); }
-  #app-viewport { padding: 12px; height: 50vh; justify-content: flex-start; }
+  #app-sidebar { width: 100%; min-width: 100%; border-right: none; border-top: 1px solid var(--pf-bevel-dark); padding-bottom: env(safe-area-inset-bottom); }
+  #app-viewport { padding: 12px; height: 50vh; height: 50dvh; justify-content: flex-start; }
   .viewport-header { flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
   .scenario-nav-bar { order: -1; width: 100%; margin-bottom: 2px; }
-  .lens-btn { min-height: 32px; font-size: 10px; }
-  #canvas-container { max-height: none; }
+  .lens-btn { min-height: 40px; font-size: 10px; }
+  /* Keep the canvas square AND inside the 50dvh pane (header wraps to ~2 rows) */
+  #canvas-container { max-height: none; width: min(100%, calc(50dvh - 110px)); }
+  /* Finger-friendly touch targets (Apple HIG 44pt) */
+  .group-btn, .segment-btn { min-height: 44px; }
+  .icon-btn, .palette-btn, .dossier-close-btn { min-height: 44px; min-width: 44px; }
 }

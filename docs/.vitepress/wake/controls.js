@@ -1,4 +1,4 @@
-import { LAYER_LABELS } from './constants.js';
+import { LAYER_LABELS, SPEED_DEFAULT_TPS } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 
 export class ControlsManager {
@@ -10,6 +10,7 @@ export class ControlsManager {
         this.rendererLeft = rendererLeft;
         this.rendererRight = rendererRight;
         this.interaction = interaction;
+        this.lastTPS = SPEED_DEFAULT_TPS;
 
         this.init();
     }
@@ -23,8 +24,27 @@ export class ControlsManager {
         this.bindActionButtons();
         this.bindProjectionSelector();
         this.bindOutsideDismiss();
+        this.bindKeyboard();
         this.updateDossierContent(this.state.currentScenario);
         this.updateGpuBadge();
+    }
+
+    // Single source of truth for run/pause so the slider, button, and
+    // keyboard can never disagree about engine state.
+    applySpeed(v) {
+        const speedSlider = document.getElementById('slider_speed');
+        const speedVal = document.getElementById('val_speed');
+        const playBtn = document.getElementById('btn_play');
+        if (v > 0) this.lastTPS = v;
+        this.state.isPlaying = v > 0;
+        this.loop.setTPS(v);
+        if (speedVal) speedVal.innerText = v === 0 ? "Paused" : `${v} TPS`;
+        if (speedSlider && parseInt(speedSlider.value, 10) !== v) speedSlider.value = v;
+        if (playBtn) playBtn.innerText = v > 0 ? '⏸ Pause' : '▶ Play';
+    }
+
+    setPlaying(playing) {
+        this.applySpeed(playing ? (this.lastTPS || SPEED_DEFAULT_TPS) : 0);
     }
 
     updateGpuBadge() {
@@ -177,6 +197,11 @@ export class ControlsManager {
         document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
         document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
         document.getElementById('context_config')?.classList.toggle('show', mode === 'config');
+
+        // Grab cursor for pan-capable modes (was never wired up after the refactor)
+        document.getElementById('canvas-container')?.classList.toggle(
+            'mode-move', mode === 'move' || mode === 'config'
+        );
     }
 
     bindSegmentButtons() {
@@ -204,10 +229,10 @@ export class ControlsManager {
         });
     }
 
-    // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas. 
+    // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas.
     // They are completely persistent until the user explicitly toggles the segment button.
     bindOutsideDismiss() {
-        document.addEventListener('pointerdown', (e) => {
+        this._onDocPointerDown = (e) => {
             const modal = document.getElementById('modal_scenario_info');
             const infoBtn = document.getElementById('btn_scenario_info');
 
@@ -215,18 +240,80 @@ export class ControlsManager {
             if (modal && modal.classList.contains('show') && !modal.contains(e.target) && !infoBtn?.contains(e.target)) {
                 modal.classList.remove('show');
             }
-        });
+        };
+        document.addEventListener('pointerdown', this._onDocPointerDown);
+    }
+
+    bindKeyboard() {
+        this._onKeyDown = (e) => {
+            const tag = e.target?.tagName;
+            const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable;
+
+            if (e.code === 'Escape') {
+                document.getElementById('modal_scenario_info')?.classList.remove('show');
+                return;
+            }
+            if (typing) return;
+
+            if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
+                e.preventDefault();
+                this.bridge.restoreSnapshot();
+                this.state.forceRedraw = true;
+                return;
+            }
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    this.state.isSpaceDown = true;
+                    document.getElementById('canvas-container')?.classList.add('mode-move');
+                    break;
+                case 'KeyP':
+                    this.setPlaying(!this.state.isPlaying);
+                    break;
+                case 'KeyR':
+                    this.bridge.saveSnapshot();
+                    randomizeScenarioSoup(this.state.currentScenario, this.bridge);
+                    this.state.forceRedraw = true;
+                    break;
+                case 'KeyC':
+                    this.bridge.saveSnapshot();
+                    this.bridge.clearGrid();
+                    this.state.forceRedraw = true;
+                    break;
+            }
+        };
+        this._onKeyUp = (e) => {
+            if (e.code === 'Space') {
+                this.state.isSpaceDown = false;
+                if (this.state.currentMode !== 'move' && this.state.currentMode !== 'config') {
+                    document.getElementById('canvas-container')?.classList.remove('mode-move');
+                }
+            }
+        };
+        this._onBlur = () => {
+            this.state.isSpaceDown = false;
+            if (this.state.currentMode !== 'move' && this.state.currentMode !== 'config') {
+                document.getElementById('canvas-container')?.classList.remove('mode-move');
+            }
+        };
+        window.addEventListener('keydown', this._onKeyDown);
+        window.addEventListener('keyup', this._onKeyUp);
+        window.addEventListener('blur', this._onBlur);
+    }
+
+    destroy() {
+        if (this._onDocPointerDown) document.removeEventListener('pointerdown', this._onDocPointerDown);
+        if (this._onKeyDown) window.removeEventListener('keydown', this._onKeyDown);
+        if (this._onKeyUp) window.removeEventListener('keyup', this._onKeyUp);
+        if (this._onBlur) window.removeEventListener('blur', this._onBlur);
     }
 
     bindSliders() {
         const speed = document.getElementById('slider_speed');
         if (speed) {
-            speed.oninput = (e) => {
-                const v = parseInt(e.target.value, 10);
-                this.state.isPlaying = v > 0;
-                this.loop.setTPS(v);
-                document.getElementById('val_speed').innerText = v === 0 ? "Paused" : `${v} TPS`;
-            };
+            speed.oninput = (e) => this.applySpeed(parseInt(e.target.value, 10));
         }
 
         const zoom = document.getElementById('slider_zoom');
@@ -262,6 +349,11 @@ export class ControlsManager {
                 this.state.forceRedraw = true;
             };
         }
+
+        const imp = document.getElementById('chk_impedance');
+        if (imp) {
+            imp.onchange = (e) => this.bridge.setImpedanceMode(e.target.checked ? 1 : 0);
+        }
     }
 
     bindActionButtons() {
@@ -290,6 +382,13 @@ export class ControlsManager {
             this.bridge.restoreSnapshot(); 
             this.state.forceRedraw = true; 
         });
+        bind('btn_play', () => this.setPlaying(!this.state.isPlaying));
+        bind('btn_step', () => {
+            this.setPlaying(false);
+            this.bridge.tick();
+            if (typeof this.loop.onTelemetry === 'function') this.loop.onTelemetry(this.bridge);
+            this.state.forceRedraw = true;
+        });
         bind('btn_save_scratch', () => { 
             this.palette.saveCurrentCopy(); 
             this.renderPalette(); 
@@ -298,20 +397,19 @@ export class ControlsManager {
         });
 
         bind('btn_export_png', () => {
-            const canvasLeft = document.getElementById('canvas_left');
-            if (!canvasLeft) return;
-            const dataUrl = canvasLeft.toDataURL('image/png');
+            const composite = this.compositeCanvas();
+            if (!composite) return;
             const link = document.createElement('a');
-            link.href = dataUrl;
+            link.href = composite.toDataURL('image/png');
             link.download = `planck_field_${Date.now()}.png`;
             link.click();
         });
 
         bind('btn_share', async () => {
-            const canvasLeft = document.getElementById('canvas_left');
-            if (!canvasLeft) return;
+            const composite = this.compositeCanvas();
+            if (!composite) return;
             try {
-                const dataUrl = canvasLeft.toDataURL('image/png');
+                const dataUrl = composite.toDataURL('image/png');
                 const blob = await (await fetch(dataUrl)).blob();
                 const file = new File([blob], `planck_field_${Date.now()}.png`, { type: 'image/png' });
                 
@@ -399,6 +497,22 @@ export class ControlsManager {
                 this.renderPalette();
             }
         });
+    }
+
+    // Renders both layer views side-by-side into a single exportable canvas.
+    compositeCanvas() {
+        const l = document.getElementById('canvas_left');
+        const r = document.getElementById('canvas_right');
+        if (!l || !r) return null;
+        const c = document.createElement('canvas');
+        c.width = l.width + r.width;
+        c.height = Math.max(l.height, r.height);
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(l, 0, 0);
+        ctx.drawImage(r, l.width, 0);
+        return c;
     }
 
     setupGroup(containerId, callback) {
