@@ -19,7 +19,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Prevent accidental zooming and text selecting across controls */
 .wake-sandbox button,
 .wake-sandbox select,
 #app-sidebar {
@@ -27,47 +26,52 @@
   -webkit-user-select: none;
 }
 
-/* Eliminate native pull-to-refresh */
 html:has(.wake-sandbox),
 html:has(.wake-sandbox) body {
   overscroll-behavior-y: none;
   touch-action: pan-x pan-y;
 }
 
-.wake-sandbox {
-  overscroll-behavior: contain;
-}
+.wake-sandbox { overscroll-behavior: contain; }
 
 .VPDoc:has(.wake-sandbox) { padding-top: 0 !important; }
 .VPDoc:has(.wake-sandbox) .container { padding-top: 0 !important; }
 
-/* The App Container */
+/* Main App Layout: Desktop IDE Side-by-Side Centered */
 #wake-app {
   display: flex;
   flex-direction: row;
-  height: 80vh; /* App-like height on desktop */
-  min-height: 650px;
-  max-height: 1000px;
+  width: 100%;
+  max-width: 1400px;
+  height: 82vh;
+  min-height: 700px;
+  max-height: 950px;
+  margin: 0 auto;
   background-color: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: var(--font-sans);
   position: relative;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* Left Control Sidebar */
 #app-sidebar {
-  width: 320px;
-  min-width: 320px;
+  width: 340px;
+  min-width: 340px;
   background: var(--pf-bg-panel);
   border-right: 1px solid var(--pf-bevel-dark);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  box-shadow: inset -4px 0 12px rgba(0,0,0,0.5);
+  z-index: 10;
 }
 
 .sidebar-section {
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
 /* Right Massive Viewport */
@@ -82,11 +86,39 @@ html:has(.wake-sandbox) body {
   overflow: hidden;
 }
 
-/* Perfect Flexbox Scaling Square Canvas */
+/* Viewport Corner HUD Layer Overlays */
+.viewport-hud-btn {
+  position: absolute;
+  bottom: 32px;
+  z-index: 50;
+  background: rgba(17, 22, 17, 0.88);
+  backdrop-filter: blur(4px);
+  color: var(--pf-text);
+  border-top: 1px solid #334a33;
+  border-left: 1px solid #334a33;
+  border-bottom: 1px solid #0d140d;
+  border-right: 1px solid #0d140d;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  transition: background 0.1s ease, border-color 0.1s ease;
+}
+.viewport-hud-btn:hover {
+  background: rgba(27, 36, 27, 0.95);
+  border-color: var(--pf-brand-hover);
+  color: var(--pf-brand-hover);
+}
+.hud-left { left: 40px; }
+.hud-right { right: 40px; }
+
+/* Perfect Square Canvas Container */
 #canvas-container {
   aspect-ratio: 1 / 1;
   width: 100%;
-  max-width: 800px;
+  max-width: 760px;
   max-height: 100%;
   margin: auto;
   overflow: hidden;
@@ -128,29 +160,29 @@ html:has(.wake-sandbox) body {
 /* Scenario Dropdown */
 .scenario-nav-bar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   width: 100%;
 }
 .scenario-select {
-  flex: 2;
+  flex: 1;
   background-color: #141c14;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2375b86e' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 8px center;
+  background-position: right 10px center;
   background-size: 8px 5px;
   border-top: 1px solid var(--pf-bevel-light);
   border-left: 1px solid var(--pf-bevel-light);
   border-bottom: 1px solid var(--pf-bevel-dark);
   border-right: 1px solid var(--pf-bevel-dark);
   color: var(--pf-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 4px 22px 4px 8px;
+  padding: 6px 24px 6px 10px;
   border-radius: 4px;
   outline: none;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 36px;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -164,10 +196,10 @@ html:has(.wake-sandbox) body {
   border-right: 1px solid var(--pf-bevel-dark);
   color: var(--pf-brand-hover);
   border-radius: 4px;
-  padding: 0 10px;
-  min-height: 32px;
+  padding: 0 12px;
+  min-height: 36px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,36 +210,6 @@ html:has(.wake-sandbox) body {
   border-left: 1px solid var(--pf-bevel-dark);
   border-bottom: 1px solid var(--pf-bevel-light);
   border-right: 1px solid var(--pf-bevel-light);
-}
-
-/* Layer Buttons */
-.action-btn {
-  flex: 1;
-  background: #182218;
-  color: var(--pf-text);
-  border-top: 1px solid #334a33;
-  border-left: 1px solid #334a33;
-  border-bottom: 1px solid #0d140d;
-  border-right: 1px solid #0d140d;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 11px;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  white-space: nowrap;
-  padding: 0 6px;
-  text-overflow: ellipsis;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
-}
-.action-btn:active {
-  border-top: 1px solid #0d140d;
-  border-left: 1px solid #0d140d;
-  border-bottom: 1px solid #334a33;
-  border-right: 1px solid #334a33;
 }
 
 /* Telemetry Grid */
@@ -246,7 +248,7 @@ html:has(.wake-sandbox) body {
 .context-label { font-size: 10px; font-weight: 700; color: var(--pf-brand-main); text-transform: uppercase; letter-spacing: 0.6px; }
 .context-hint { font-size: 9px; font-family: var(--font-mono); color: #777; text-transform: uppercase; }
 
-/* Buttons */
+/* Buttons & Segment Bars */
 .button-group, .segment-container {
   display: flex; background: var(--pf-bg-main); border: 1px solid var(--pf-bevel-dark); border-radius: 4px; padding: 2px; gap: 2px; width: 100%;
 }
@@ -272,7 +274,7 @@ html:has(.wake-sandbox) body {
 #btn_reset:hover { background: #3a2d10; color: #ffe685; border-top-color: #bd9638; }
 
 /* Sliders */
-.deck-row { display: flex; gap: 8px; width: 100%; align-items: center; margin-top: 6px; }
+.deck-row { display: flex; gap: 8px; width: 100%; align-items: center; margin-top: 4px; }
 .slider-group {
   flex: 1; display: flex; flex-direction: column; gap: 2px; background: #101610;
   border: 1px solid var(--pf-bevel-dark); border-radius: 4px; padding: 6px 8px;
@@ -280,7 +282,7 @@ html:has(.wake-sandbox) body {
 .sub-label { font-size: 11px; color: var(--pf-text-muted); font-weight: 600; }
 input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: pointer; touch-action: none; }
 
-/* Palette */
+/* Palette Grid */
 .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; }
 .palette-btn {
   background: #141c14; border-top: 1px solid #2f432f; border-left: 1px solid #2f432f;
@@ -314,15 +316,32 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 .dossier-text.highlight { color: #f0c354; }
 
 #error-banner {
-  display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: previously; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: var(--pf-bg-panel); color: var(--pf-danger); border: 1px solid var(--pf-danger);
   padding: 1rem 1.5rem; border-radius: 4px; text-align: center; z-index: 100; max-width: 80%;
   font-family: var(--font-mono); font-size: 14px;
 }
 
-/* Mobile Stacked Viewport */
+/* Mobile Responsive Stacked Layout (Canvas on top, Controls below) */
 @media (max-width: 768px) {
-  #wake-app { flex-direction: column-reverse; height: auto; min-height: 0; max-height: none; }
-  #app-sidebar { width: 100%; min-width: 100%; border-right: none; border-top: 1px solid var(--pf-bevel-dark); }
-  #app-viewport { padding: 12px; height: 50vh; }
+  #wake-app { 
+    flex-direction: column !important; 
+    height: auto !important; 
+    max-height: none !important; 
+  }
+  #app-viewport { 
+    order: 1 !important; 
+    height: 48vh !important; 
+    padding: 8px !important; 
+  }
+  #app-sidebar { 
+    order: 2 !important; 
+    width: 100% !important; 
+    min-width: 100% !important; 
+    border-right: none !important; 
+    border-top: 1px solid var(--pf-bevel-dark) !important; 
+  }
+  .viewport-hud-btn { bottom: 12px; padding: 4px 8px; font-size: 10px; }
+  .hud-left { left: 12px; }
+  .hud-right { right: 16px; }
 }
