@@ -1,14 +1,15 @@
 import { PlanckBridge } from './bridge.js';
-import { SimulationRenderer } from './renderer.js';
+import { DualRenderer } from './renderer.js';
 import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
-import { SimulationLoop } from './loop.js';
-import { InteractionManager } from './interaction.js';
+import { EngineLoop } from './loop.js';
+import { InteractionController } from './interaction.js';
 import { loadScenario } from './scenarios.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
-    SPEED_DEFAULT_TPS
+    SPEED_DEFAULT_TPS,
+    SAMPLE_RADIUS_DEFAULT
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -33,73 +34,60 @@ export async function initWakeSimulator() {
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
             forceRedraw: true,
-            sampleRadius: 10
+            sampleRadius: SAMPLE_RADIUS_DEFAULT
         };
 
-        // 3. Hardware / Fallback Renderers for Split Screen
-        const rendererLeft = new SimulationRenderer('canvas_left');
-        const rendererRight = new SimulationRenderer('canvas_right');
+        // 3. Mount Dual Canvas Renderer
+        const canvasLeft = document.getElementById('canvas_left');
+        const canvasRight = document.getElementById('canvas_right');
+        const renderer = new DualRenderer(canvasLeft, canvasRight);
 
         // 4. Palette System
         const palette = new PaletteManager();
 
-        // 5. Physics Stepping & Telemetry Update
-        const onTick = () => {
-            bridge.tick();
-            updateTelemetry(bridge);
-        };
-
-        // 6. Split-View Canvas Paint
-        const onRender = () => {
-            // Render Left Split
-            bridge.renderLayer(state.leftLayer, 0);
-            rendererLeft.render(bridge.getPixelBuffer());
-
-            // Render Right Split
-            bridge.renderLayer(state.rightLayer, 1);
-            rendererRight.render(bridge.getPixelBuffer());
-        };
-
-        // 7. Loop Coordinator
-        const loop = new SimulationLoop({
-            onTick,
-            onRender,
-            tps: SPEED_DEFAULT_TPS
+        // 5. Engine Loop Coordinator
+        const loop = new EngineLoop({
+            bridge,
+            renderer,
+            getState: () => state,
+            onTelemetry: updateTelemetry
         });
+        loop.setTPS(SPEED_DEFAULT_TPS);
 
-        // 8. Mount UI Controls & Pass WebGL Renderers for Live Projection Toggling
+        // 6. Mount UI Controls
         const controls = new ControlsManager({
             bridge,
             palette,
             loop,
             state,
-            rendererLeft,
-            rendererRight
+            renderer
         });
 
-        // 9. Mount Pointer / Touch Interaction Manager
-        const interaction = new InteractionManager({
+        // 7. Mount Pointer / Touch Interaction Controller
+        const container = document.getElementById('canvas-container');
+        const interaction = new InteractionController({
+            container,
             bridge,
             palette,
-            state,
-            canvasContainerId: 'canvas-container',
-            transformWrapperId: 'transform-wrapper'
+            getState: () => state
         });
 
-        // 10. Load Initial Scenario
+        // 8. Load Initial Scenario
         const initialParams = loadScenario(state.currentScenario, bridge);
         const md = document.getElementById('math_dissipation');
         const mt = document.getElementById('math_thermal_limit');
         if (md) md.innerText = initialParams.targetDissipation;
         if (mt) mt.innerText = initialParams.targetThermal;
 
-        // Start Physics & Render Loops
+        // Start Physics & Render Loop
         loop.start();
 
         // Teardown / Cleanup for Vue Component Unmount
         return () => {
             loop.stop();
-            interaction.destroy();
+            if (typeof interaction.destroy === 'function') {
+                interaction.destroy();
+            }
         };
 
     } catch (err) {
