@@ -18,6 +18,49 @@ import {
     packNode
 } from './constants.js';
 
+export const SCENARIO_DOSSIERS = {
+    vacuum: {
+        title: "🌌 Vacuum Core",
+        objective: "Study cold cosmic baseline entropy and high-energy topological mass deadlocks.",
+        mechanisms: "CMB floor dissipation, zero-friction dispersion, and topological unwinding.",
+        recommendedBrushes: ["🔥 Igniter", "⚙️ Rotor"],
+        bestLayers: "👁 Macro + 🕳 Entropic",
+        tips: "Drop an Igniter adjacent to the central knot to trigger a topological yield cascade."
+    },
+    atmosphere: {
+        title: "🪐 Atmosphere",
+        objective: "Barometric hydrostatic equilibrium and convective updrafts.",
+        mechanisms: "Exponential density gradient, thermal buoyancy, and soft kinetic collisions.",
+        recommendedBrushes: ["💨 Gas", "🔥 Igniter"],
+        bestLayers: "👁 Macro + ♨ Metabolic",
+        tips: "Stamp hot Gas or Igniters at the bedrock boundary to trigger buoyant atmospheric convection columns."
+    },
+    nozzle: {
+        title: "🚀 Engine Bell (Global)",
+        objective: "Macro fluid expansion through a converging-diverging de Laval rocket nozzle.",
+        mechanisms: "Choked throat flow, oblique shock boundaries, and separation eddies.",
+        recommendedBrushes: ["🔥 Igniter", "🧱 Wall"],
+        bestLayers: "👁 Macro + 🧲 Phase",
+        tips: "Inject high-heat plasma at the nozzle throat to see expansion shocks form along the bell contour."
+    },
+    boundary: {
+        title: "🔬 Nozzle Wall (Micro-Patch)",
+        objective: "Sub-millimeter boundary layer shear and acoustic wall quenching.",
+        mechanisms: "1-node acoustic backscatter, viscous boundary layer deceleration, and turbulence peeling.",
+        recommendedBrushes: ["🔥 Igniter", "💧 Fluid", "🧊 Cryo"],
+        bestLayers: "♨ Metabolic + 🧲 Phase",
+        tips: "Watch supersonic flow scrape along the vertical solid wall on the left. Cryo coolants reveal thermal quenching."
+    },
+    ocean: {
+        title: "🌊 Deep Ocean",
+        objective: "Resting incompressible fluid dynamics, wave propagation, and thermohaline convection.",
+        mechanisms: "Low-entropy hydrostatic basin, momentum shunting, and thermal vent buoyancy.",
+        recommendedBrushes: ["💧 Fluid", "🔥 Igniter"],
+        bestLayers: "👁 Macro + ♨ Metabolic",
+        tips: "Drop Fluid from above to observe splash ripples, or place an Igniter on the seabed to create a hydrothermal plume."
+    }
+};
+
 export function loadScenario(type, bridge) {
     bridge.clearGrid();
 
@@ -30,7 +73,7 @@ export function loadScenario(type, bridge) {
         case "vacuum": {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
-            // Center Core Knot
+            // Central core knot
             for (let y = cy - 10; y <= cy + 10; y++) {
                 for (let x = cx - 10; x <= cx + 10; x++) {
                     if (Math.hypot(x - cx, y - cy) <= 8) {
@@ -38,7 +81,7 @@ export function loadScenario(type, bridge) {
                     }
                 }
             }
-            // Ambient Dust
+            // Ambient dust
             for (let i = 0; i < 200; i++) {
                 const rx = Math.floor(Math.random() * GRID_WIDTH);
                 const ry = Math.floor(Math.random() * GRID_HEIGHT);
@@ -73,16 +116,15 @@ export function loadScenario(type, bridge) {
         }
 
         case "ocean": {
-            targetDissipation = DISSIPATION_DEFAULT;
-            targetThermal = THERMAL_LIMIT_DEFAULT;
+            // Massive heat sink and maximum containment to survive brush collisions
+            targetDissipation = 45; 
+            targetThermal = 65000;  
             
             for (let y = 0; y < GRID_HEIGHT; y++) {
                 for (let x = 0; x < GRID_WIDTH; x++) {
                     if (y >= GRID_HEIGHT - 4) {
-                        // Bedrock floor
                         bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT));
                     } else if (y > GRID_HEIGHT - 160) {
-                        // Soft resting fluid: absorbs drops without exploding
                         bridge.setNodeState(x, y, packNode(40, SPIN_STATIONARY, HEAT_COLD_WATER));
                     }
                 }
@@ -99,6 +141,29 @@ export function loadScenario(type, bridge) {
                 for (let x = 0; x < GRID_WIDTH; x++) {
                     if (x < cx - spread || x > cx + spread) {
                         bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT));
+                    }
+                }
+            }
+            break;
+        }
+
+        case "boundary": {
+            // High-magnification micro-patch of the engine wall
+            targetDissipation = DISSIPATION_NOZZLE;
+            targetThermal = THERMAL_LIMIT_ENGINE_BELL;
+            
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                // Left 60 pixels: Solid wall boundary with thermal sink
+                for (let x = 0; x < 60; x++) {
+                    bridge.setNodeState(x, y, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT));
+                }
+                // Right side: supersonic sheared gas stream flowing downwards
+                for (let x = 60; x < GRID_WIDTH; x++) {
+                    if (Math.random() < 0.6) {
+                        const distFromWall = x - 60;
+                        const spin = (distFromWall < 8 && Math.random() < 0.4) ? SPIN_STATIONARY : SPIN_DOWN;
+                        const heat = 5000 + Math.floor(Math.random() * 8000);
+                        bridge.setNodeState(x, y, packNode(25, spin, heat));
                     }
                 }
             }
@@ -139,7 +204,7 @@ export function randomizeScenarioSoup(type, bridge) {
                     bridge.setNodeState(nx, ny + 1, packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 10));
                 }
             } else {
-                // Cosmic Dust Storm
+                // Cosmic Dust Drift
                 for (let i = 0; i < 500; i++) {
                     const rx = Math.random() * GRID_WIDTH;
                     const ry = Math.random() * GRID_HEIGHT;
@@ -152,7 +217,7 @@ export function randomizeScenarioSoup(type, bridge) {
         case "atmosphere": {
             loadScenario("atmosphere", bridge);
             if (flavor === 0) {
-                // Updraft Thermal Column
+                // Thermal Updraft Column
                 for (let y = GRID_HEIGHT - 6; y > 30; y--) {
                     for (let x = cx - 8; x < cx + 8; x++) {
                         if (Math.random() > 0.3) bridge.setNodeState(x, y, packNode(6, SPIN_UP, 35000));
@@ -184,7 +249,7 @@ export function randomizeScenarioSoup(type, bridge) {
         case "nozzle": {
             loadScenario("nozzle", bridge);
             if (flavor === 0) {
-                // Core Ignition
+                // Continuous Core Ignition
                 for (let y = 50; y < GRID_HEIGHT - 10; y++) {
                     for (let x = cx - 4; x <= cx + 4; x++) {
                         bridge.setNodeState(x, y, packNode(140, SPIN_DOWN, 60000));
@@ -202,6 +267,33 @@ export function randomizeScenarioSoup(type, bridge) {
                 const side = Math.random() > 0.5 ? cx - 12 : cx + 12;
                 for (let y = 60; y < 110; y++) {
                     bridge.setNodeState(side, y, packNode(180, SPIN_DOWN, 65000));
+                }
+            }
+            break;
+        }
+
+        case "boundary": {
+            loadScenario("boundary", bridge);
+            if (flavor === 0) {
+                // Violent Wall Hotspot / Ablation
+                for (let y = 100; y < 140; y++) {
+                    for (let x = 40; x < 70; x++) {
+                        bridge.setNodeState(x, y, packNode(120, SPIN_DOWN, 60000));
+                    }
+                }
+            } else if (flavor === 1) {
+                // Severe Acoustic Boundary Backscatter
+                for (let y = 50; y < GRID_HEIGHT - 50; y += 15) {
+                    for (let dx = 0; dx < 8; dx++) {
+                        bridge.setNodeState(60 + dx, y, packNode(140, SPIN_UP, 45000));
+                    }
+                }
+            } else {
+                // Boundary Layer Separation Vortex
+                for (let y = 180; y < 220; y++) {
+                    for (let x = 65; x < 100; x++) {
+                        bridge.setNodeState(x, y, packNode(35, SPIN_UP, 12000));
+                    }
                 }
             }
             break;

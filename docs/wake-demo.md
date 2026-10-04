@@ -2,6 +2,8 @@
 title: Langevin's Wake
 description: A bare-metal WebAssembly thermodynamic cellular automata engine.
 outline: false
+overscroll: false
+layout: page
 pageClass: wake-page
 ---
 

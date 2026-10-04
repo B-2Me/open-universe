@@ -85,7 +85,9 @@ export async function initWakeSimulator() {
         // Teardown / Cleanup for Vue Component Unmount
         return () => {
             loop.stop();
-            interaction.destroy();
+            if (typeof interaction.destroy === 'function') {
+                interaction.destroy();
+            }
         };
 
     } catch (err) {

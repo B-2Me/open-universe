@@ -172,10 +172,12 @@ export class DualRenderer {
     }
 
     draw(leftLayer, rightLayer, bridge) {
-        const wasmPixels = bridge.getPixelView ? bridge.getPixelView() : bridge.getPixelBuffer();
+        const wasmPixels = typeof bridge.getPixelView === 'function' 
+            ? bridge.getPixelView() 
+            : bridge.getPixelBuffer();
 
         // Render Left Canvas
-        if (bridge.renderFrame) {
+        if (typeof bridge.renderFrame === 'function') {
             bridge.renderFrame(leftLayer);
         } else {
             bridge.renderLayer(leftLayer, 0);
@@ -183,7 +185,7 @@ export class DualRenderer {
         this.left.render(wasmPixels);
 
         // Render Right Canvas
-        if (bridge.renderFrame) {
+        if (typeof bridge.renderFrame === 'function') {
             bridge.renderFrame(rightLayer);
         } else {
             bridge.renderLayer(rightLayer, 1);
