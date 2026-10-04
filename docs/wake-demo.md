@@ -37,6 +37,9 @@ Nodes possess a topological spin (chirality). When nodes interact, their Phase F
 $$\Phi = \tau(1 + \cos(\Delta \theta))$$
 Aligned spins mesh into coherent flow, allowing relational momentum to pass smoothly. Opposite spins crash head-on, triggering immediate momentum cancellation and generating a massive spike in metabolic dissipation (a heavy heat penalty). This tension naturally resolves down the path of least resistance, driving physical repulsion or shaping structures into stable circulating vortices.
 
+**Topological Cohesion (Phase Affinity):**
+Because the engine relies on a rigid 2D memory array, it must actively emulate the dynamic network topology of the Planck Field. In the true substrate, distance is network routing cost—meaning nodes with aligned spins are topologically adjacent. To simulate this path of least thermodynamic resistance, the engine applies a Phase Affinity gradient. If a node's linear momentum threatens to carry it outward into unaligned, high-friction vacuum static, but an adjacent locus offers aligned phase flow, the node's trajectory naturally deflects inward to remain within the coherent network. This phase-friction avoidance is the physical mechanism that prevents circulating matter from tearing apart into the void.
+
 **3. Entropic Gravity**
 Gravity is not an invisible geometric curve; it is the entropic gradient of the substrate. When local momentum is shunted by a deadlocked boundary, the grid resolves the tension by routing the quanta into the coolest adjacent locus:
 $$F = T \frac{\Delta S}{\Delta x}$$
