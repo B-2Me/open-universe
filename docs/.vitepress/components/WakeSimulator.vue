@@ -19,29 +19,14 @@ onUnmounted(() => {
       
       <!-- LEFT SIDEBAR: Control Center & Telemetry -->
       <div id="app-sidebar">
-        
-        <!-- Scenario Selector Header -->
-        <div class="sidebar-section" style="padding-top: 12px;">
-          <div class="deck-row scenario-nav-bar">
-            <select id="scenario_dropdown" class="scenario-select">
-              <option value="vacuum">🌌 Vacuum</option>
-              <option value="stellar">☀️ Stellar Core</option>
-              <option value="atmosphere">🪐 Atmosphere</option>
-              <option value="nozzle">🚀 Engine Bell (Global)</option>
-              <option value="boundary">🔬 Nozzle Wall (Micro-Patch)</option>
-              <option value="ocean">🌊 Ocean</option>
-            </select>
-            <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
-          </div>
-        </div>
 
         <!-- Tool Segment Bar -->
-        <div class="sidebar-section">
+        <div class="sidebar-section" style="padding-top: 16px;">
           <div class="segment-container">
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
             <button class="segment-btn" data-mode="place">✏️ Place</button>
             <button class="segment-btn" data-mode="sample">🔍 Sample</button>
-            <button class="segment-btn" data-mode="config">⚙️ System</button>
+            <button class="segment-btn" data-mode="config">⚙️️ System</button>
           </div>
         </div>
 
@@ -139,7 +124,7 @@ onUnmounted(() => {
             <div class="tel-item"><span class="tel-lbl">Yield</span><span class="tel-val" id="diag_yield">0</span></div>
         </div>
 
-        <!-- Sliders -->
+        <!-- Sliders Moved Below Controls & Telemetry -->
         <div class="sidebar-section" style="display: flex; flex-direction: column; gap: 6px;">
           <div class="deck-row">
             <div class="slider-group">
@@ -171,14 +156,33 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- RIGHT VIEWPORT: Massive Scalable Canvas with HUD Corner Overlays -->
+      <!-- RIGHT VIEWPORT: Massive Scalable Canvas -->
       <div id="app-viewport">
         
-        <!-- Left Canvas Layer HUD Overlay -->
-        <button id="btn_toggle_left" class="viewport-hud-btn hud-left">👁 Macro</button>
-        
-        <!-- Right Canvas Layer HUD Overlay -->
-        <button id="btn_toggle_right" class="viewport-hud-btn hud-right">🕳 Entropic</button>
+        <!-- Viewport Header (Sits flush above Canvas) -->
+        <div class="viewport-header">
+          <button id="btn_toggle_left" class="lens-btn" title="Left Canvas Viewport Layer">
+            <span class="lens-tag">VIEW</span>
+            <span class="lens-label">👁 Macro</span>
+          </button>
+
+          <div class="scenario-nav-bar">
+            <select id="scenario_dropdown" class="scenario-select">
+              <option value="vacuum">🌌 Vacuum</option>
+              <option value="stellar">☀️ Stellar Core</option>
+              <option value="atmosphere">🪐 Atmosphere</option>
+              <option value="nozzle">🚀 Engine Bell (Global)</option>
+              <option value="boundary">🔬 Nozzle Wall (Micro-Patch)</option>
+              <option value="ocean">🌊 Ocean</option>
+            </select>
+            <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
+          </div>
+
+          <button id="btn_toggle_right" class="lens-btn" title="Right Canvas Viewport Layer">
+            <span class="lens-tag">VIEW</span>
+            <span class="lens-label">🕳 Entropic</span>
+          </button>
+        </div>
 
         <div id="canvas-container">
           <div id="error-banner"></div>
@@ -236,9 +240,9 @@ onUnmounted(() => {
   margin: 0.25rem 0 1rem 0 !important;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-  background: #0a0e0a;
-  color: #e0e0e0;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  background: var(--pf-bg-main);
+  color: var(--pf-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
 }
 </style>

@@ -21,7 +21,8 @@
 
 .wake-sandbox button,
 .wake-sandbox select,
-#app-sidebar {
+#app-sidebar,
+.viewport-header {
   user-select: none;
   -webkit-user-select: none;
 }
@@ -51,9 +52,6 @@ html:has(.wake-sandbox) body {
   color: var(--pf-text);
   font-family: var(--font-sans);
   position: relative;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 /* Left Control Sidebar */
@@ -74,53 +72,37 @@ html:has(.wake-sandbox) body {
   border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
-/* Right Massive Viewport */
+/* Right Massive Viewport (Stacks Header & Canvas) */
 #app-viewport {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: #030403;
-  padding: 24px;
+  padding: 16px 24px;
   position: relative;
   overflow: hidden;
 }
 
-/* Viewport Corner HUD Layer Overlays */
-.viewport-hud-btn {
-  position: absolute;
-  bottom: 32px;
-  z-index: 50;
-  background: rgba(17, 22, 17, 0.88);
-  backdrop-filter: blur(4px);
-  color: var(--pf-text);
-  border-top: 1px solid #334a33;
-  border-left: 1px solid #334a33;
-  border-bottom: 1px solid #0d140d;
-  border-right: 1px solid #0d140d;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-  transition: background 0.1s ease, border-color 0.1s ease;
+/* Viewport Header (Sits immediately above canvas) */
+.viewport-header {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto 8px auto;
+  align-items: center;
+  justify-content: space-between;
 }
-.viewport-hud-btn:hover {
-  background: rgba(27, 36, 27, 0.95);
-  border-color: var(--pf-brand-hover);
-  color: var(--pf-brand-hover);
-}
-.hud-left { left: 40px; }
-.hud-right { right: 40px; }
 
 /* Perfect Square Canvas Container */
 #canvas-container {
   aspect-ratio: 1 / 1;
   width: 100%;
   max-width: 760px;
-  max-height: 100%;
-  margin: auto;
+  max-height: calc(100% - 44px); /* Allows room for the header */
+  margin: 0 auto;
   overflow: hidden;
   border-left: 2px solid var(--pf-bevel-dark);
   border-top: 2px solid var(--pf-bevel-dark);
@@ -157,32 +139,80 @@ html:has(.wake-sandbox) body {
 #canvas_left { left: 0; }
 #canvas_right { right: 0; }
 
-/* Scenario Dropdown */
-.scenario-nav-bar {
+/* View/Lens Buttons */
+.lens-btn {
+  flex: 1;
+  background: #101812;
+  border-top: 1px solid #2d4530;
+  border-left: 1px solid #2d4530;
+  border-bottom: 1px solid #080d09;
+  border-right: 1px solid #080d09;
+  border-radius: 4px;
+  color: #c8e6c9;
+  cursor: pointer;
   display: flex;
-  gap: 6px;
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 8px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.lens-btn:hover {
+  background: #17241a;
+  border-color: var(--pf-brand-hover);
+  color: #ffffff;
+}
+.lens-btn:active {
+  border-top-color: #080d09;
+  border-left-color: #080d09;
+  border-bottom-color: #2d4530;
+  border-right-color: #2d4530;
+  background: #0c120d;
+}
+.lens-tag {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 1px 4px;
+  background: rgba(95, 158, 88, 0.2);
+  color: var(--pf-brand-hover);
+  border-radius: 2px;
+  border: 1px solid rgba(95, 158, 88, 0.4);
+}
+.lens-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Scenario Dropdown in Center */
+.scenario-nav-bar {
+  flex: 1.4;
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 .scenario-select {
   flex: 1;
   background-color: #141c14;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2375b86e' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
+  background-position: right 8px center;
   background-size: 8px 5px;
   border-top: 1px solid var(--pf-bevel-light);
   border-left: 1px solid var(--pf-bevel-light);
   border-bottom: 1px solid var(--pf-bevel-dark);
   border-right: 1px solid var(--pf-bevel-dark);
   color: var(--pf-text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 24px 6px 10px;
+  padding: 4px 22px 4px 8px;
   border-radius: 4px;
   outline: none;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 34px;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -196,10 +226,10 @@ html:has(.wake-sandbox) body {
   border-right: 1px solid var(--pf-bevel-dark);
   color: var(--pf-brand-hover);
   border-radius: 4px;
-  padding: 0 12px;
-  min-height: 36px;
+  padding: 0 10px;
+  min-height: 34px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,24 +242,7 @@ html:has(.wake-sandbox) body {
   border-right: 1px solid var(--pf-bevel-light);
 }
 
-/* Telemetry Grid */
-#telemetry-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-.tel-item {
-  background: #0c120c;
-  border: 1px solid var(--pf-bevel-dark);
-  border-radius: 4px;
-  padding: 6px 8px;
-  display: flex;
-  flex-direction: column;
-}
-.tel-lbl { font-size: 9px; color: #777; text-transform: uppercase; font-weight: 700; }
-.tel-val { font-size: 13px; color: var(--pf-text-muted); font-weight: 700; font-family: var(--font-mono); }
-
-/* Context Popups */
+/* Context Drawers */
 .context-popup {
   display: none;
   background: var(--pf-bg-input);
@@ -266,7 +279,7 @@ html:has(.wake-sandbox) body {
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 0 6px rgba(117, 184, 110, 0.25);
 }
 
-/* Reset Button Amber */
+/* Reset Amber Button */
 #btn_reset {
   background: #2b210c; border-top: 1px solid #9c7b2e; border-left: 1px solid #9c7b2e;
   border-bottom: 1px solid #140f06; border-right: 1px solid #140f06; color: #f0c354; font-weight: 700;
@@ -274,7 +287,7 @@ html:has(.wake-sandbox) body {
 #btn_reset:hover { background: #3a2d10; color: #ffe685; border-top-color: #bd9638; }
 
 /* Sliders */
-.deck-row { display: flex; gap: 8px; width: 100%; align-items: center; margin-top: 4px; }
+.deck-row { display: flex; gap: 8px; width: 100%; align-items: center; margin-top: 6px; }
 .slider-group {
   flex: 1; display: flex; flex-direction: column; gap: 2px; background: #101610;
   border: 1px solid var(--pf-bevel-dark); border-radius: 4px; padding: 6px 8px;
@@ -299,9 +312,27 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 .p-label { font-size: 9px; color: #aaa; font-weight: 600; }
 .palette-btn.active .p-label { color: #fff; font-weight: 700; }
 
+/* Telemetry Grid */
+#telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.tel-item {
+  background: #0c120c;
+  border: 1px solid var(--pf-bevel-dark);
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+}
+.tel-lbl { font-size: 9px; color: #777; text-transform: uppercase; font-weight: 700; }
+.tel-val { font-size: 12px; color: var(--pf-text-muted); font-weight: 700; font-family: var(--font-mono); }
+
 /* Dossier Modal */
 .dossier-modal {
-  display: none; position: absolute; top: 16px; left: 16px; right: 16px;
+  display: none; position: absolute; top: 40px; left: 16px; right: 16px;
   background: rgba(17, 22, 17, 0.98); border: 1px solid var(--pf-brand-main); border-radius: 6px;
   z-index: 120; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9); padding: 12px 14px;
 }
@@ -315,44 +346,22 @@ input[type=range] { width: 100%; accent-color: var(--pf-brand-main); cursor: poi
 .dossier-text { font-size: 11px; color: #ddd; line-height: 1.3; }
 .dossier-text.highlight { color: #f0c354; }
 
+/* Error Banner */
 #error-banner {
-  display: none !important; /* Forces it hidden by default */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--pf-bg-panel);
-  color: var(--pf-danger);
-  border: 1px solid var(--pf-danger);
-  padding: 1rem 1.5rem;
-  border-radius: 4px;
-  text-align: center;
-  z-index: 100;
-  max-width: 80%;
-  font-family: var(--font-mono);
-  font-size: 14px;
+  display: none !important;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background-color: var(--pf-bg-panel); color: var(--pf-danger); border: 1px solid var(--pf-danger);
+  padding: 1rem 1.5rem; border-radius: 4px; text-align: center; z-index: 100; max-width: 80%;
+  font-family: var(--font-mono); font-size: 14px;
 }
 
-/* Mobile Responsive Stacked Layout (Canvas on top, Controls below) */
+/* Mobile Fit */
 @media (max-width: 768px) {
-  #wake-app { 
-    flex-direction: column !important; 
-    height: auto !important; 
-    max-height: none !important; 
-  }
-  #app-viewport { 
-    order: 1 !important; 
-    height: 48vh !important; 
-    padding: 8px !important; 
-  }
-  #app-sidebar { 
-    order: 2 !important; 
-    width: 100% !important; 
-    min-width: 100% !important; 
-    border-right: none !important; 
-    border-top: 1px solid var(--pf-bevel-dark) !important; 
-  }
-  .viewport-hud-btn { bottom: 12px; padding: 4px 8px; font-size: 10px; }
-  .hud-left { left: 12px; }
-  .hud-right { right: 16px; }
+  #wake-app { flex-direction: column-reverse; height: auto; min-height: 0; max-height: none; }
+  #app-sidebar { width: 100%; min-width: 100%; border-right: none; border-top: 1px solid var(--pf-bevel-dark); }
+  #app-viewport { padding: 12px; height: 50vh; justify-content: flex-start; }
+  .viewport-header { flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .scenario-nav-bar { order: -1; width: 100%; margin-bottom: 2px; }
+  .lens-btn { min-height: 32px; font-size: 10px; }
+  #canvas-container { max-height: none; }
 }
