@@ -1,4 +1,3 @@
-//[span_0](start_span)[span_0](end_span)
 import {
     GRID_WIDTH,
     GRID_HEIGHT,
@@ -59,8 +58,9 @@ const ELECTRON_FOAM_QUANTA = 5;
 const ELECTRON_FOAM_PROBABILITY = 0.05;
 
 // Maps a center-relative offset to tangent momentum via 8-octant quantization (45° sectors).
-// Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so the shell
-// circulates as a continuous closed loop rather than shearing into 4 linear quadrant slabs.
+// Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so circulating
+// bodies (like the Synthetic Electron shell and Stellar convective bands) form continuous
+// closed loops rather than shearing into four linear quadrant slabs.
 const OCTANT_SPIN_MAP = [
     SPIN_RIGHT,       // 0: ~0° (East)
     SPIN_DOWN_RIGHT,  // 1: ~45° (SE)
@@ -214,21 +214,22 @@ export function loadScenario(type, bridge) {
             targetThermal = THERMAL_LIMIT_SATURATED;
 
             // Seamless Radial Layers
-            composer.apply((x, y, nx, ny, dist) => {
+            composer.apply((x, y, nx, ny, dist, dx, dy) => {
                 // Core: Extreme heat, dense, stationary deadlock
                 if (dist < 15) {
                     return packNode(STELLAR_CORE_QUANTA, SPIN_STATIONARY, STELLAR_CORE_HEAT); // Safely below the plasma threshold
                 }
-                // Radiative Zone: High heat, turbulent sub-spins
+                // Radiative Zone: High heat, isotropic turbulent sub-spins
                 else if (dist < 50) {
                     const heat = 45000 - ((dist - 15) / 35) * 30000;
-                    const spin = Math.random() > 0.5 ? SPIN_UP_RIGHT : SPIN_DOWN_LEFT;
+                    const spin = Math.floor(Math.random() * 8) + 1;
                     return packNode(150, spin, Math.floor(heat));
                 }
-                // Convective Envelope: Cooling thermal gradient, rotational banding
+                // Convective Envelope: Cooling thermal gradient, rotational banding (tangential circulation)
                 else if (dist < 120) {
                     const heat = 15000 - ((dist - 50) / 70) * 14000;
-                    const spin = (Math.floor(dist) % 20 < 10) ? SPIN_RIGHT : SPIN_LEFT;
+                    const chirality = (Math.floor(dist) % 20 < 10) ? 1 : -1;
+                    const spin = vortexSpin(dx, dy, chirality);
                     return packNode(80 + Math.floor(Math.random() * 40), spin, Math.floor(heat));
                 }
                 // Corona / Vacuum
