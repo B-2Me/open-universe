@@ -1,4 +1,4 @@
-import { PlanckBridge } from './bridge.js';
+import { PlanckBridge, loadPlanckWasm } from './bridge.js';
 import { DualRenderer } from './renderer.js';
 import { PaletteManager } from './palette.js';
 import { ControlsManager } from './controls.js';
@@ -19,13 +19,15 @@ export async function initWakeSimulator() {
     try {
         if (diagStatus) diagStatus.innerText = "INITIALIZING";
 
-        // 1. Initialize Bare-Metal WASM Bridge
-        const bridge = new PlanckBridge();
-        await bridge.init();
+        // 1. Asynchronously load the Emscripten WASM module
+        const wasm = await loadPlanckWasm();
+
+        // 2. Initialize Bare-Metal WASM Bridge with the module
+        const bridge = new PlanckBridge(wasm);
 
         if (diagStatus) diagStatus.innerText = "ONLINE";
 
-        // 2. State Container
+        // 3. State Container
         const state = {
             isPlaying: true,
             currentScenario: 'vacuum',
@@ -37,15 +39,15 @@ export async function initWakeSimulator() {
             sampleRadius: SAMPLE_RADIUS_DEFAULT
         };
 
-        // 3. Mount Dual Canvas Renderer
+        // 4. Mount Dual Canvas Renderer
         const canvasLeft = document.getElementById('canvas_left');
         const canvasRight = document.getElementById('canvas_right');
         const renderer = new DualRenderer(canvasLeft, canvasRight);
 
-        // 4. Palette System
+        // 5. Palette System
         const palette = new PaletteManager();
 
-        // 5. Engine Loop Coordinator
+        // 6. Engine Loop Coordinator
         const loop = new EngineLoop({
             bridge,
             renderer,
@@ -54,16 +56,17 @@ export async function initWakeSimulator() {
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
 
-        // 6. Mount UI Controls
+        // 7. Mount UI Controls
         const controls = new ControlsManager({
             bridge,
             palette,
             loop,
             state,
-            renderer
+            rendererLeft: renderer.left,
+            rendererRight: renderer.right
         });
 
-        // 7. Mount Pointer / Touch Interaction Manager
+        // 8. Mount Pointer / Touch Interaction Manager
         const interaction = new InteractionManager({
             bridge,
             palette,
@@ -72,7 +75,7 @@ export async function initWakeSimulator() {
             transformWrapperId: 'transform-wrapper'
         });
 
-        // 8. Load Initial Scenario
+        // 9. Load Initial Scenario
         const initialParams = loadScenario(state.currentScenario, bridge);
         const md = document.getElementById('math_dissipation');
         const mt = document.getElementById('math_thermal_limit');
@@ -113,5 +116,5 @@ function updateTelemetry(bridge) {
     if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
     if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
     if (tPhase) tPhase.innerText = (bridge.getPhaseAlignment() * 100).toFixed(1) + "%";
-    if (tYield) tYield.innerText = bridge.getFrameYield().toFixed(2);
+    if (tYield) tYield.innerText = bridge.getYield().toFixed(2);
 }
