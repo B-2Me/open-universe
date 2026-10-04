@@ -172,24 +172,13 @@ export class DualRenderer {
     }
 
     draw(leftLayer, rightLayer, bridge) {
-        const wasmPixels = typeof bridge.getPixelView === 'function' 
-            ? bridge.getPixelView() 
-            : bridge.getPixelBuffer();
+        // Fresh view each draw: safe if wasm memory grows (old buffer detaches)
+        const wasmPixels = bridge.getPixelView();
 
-        // Render Left Canvas
-        if (typeof bridge.renderFrame === 'function') {
-            bridge.renderFrame(leftLayer);
-        } else {
-            bridge.renderLayer(leftLayer, 0);
-        }
+        bridge.renderFrame(leftLayer);
         this.left.render(wasmPixels);
 
-        // Render Right Canvas
-        if (typeof bridge.renderFrame === 'function') {
-            bridge.renderFrame(rightLayer);
-        } else {
-            bridge.renderLayer(rightLayer, 1);
-        }
+        bridge.renderFrame(rightLayer);
         this.right.render(wasmPixels);
     }
 }

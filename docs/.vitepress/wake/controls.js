@@ -1,4 +1,4 @@
-import { LAYER_LABELS, SPEED_DEFAULT_TPS } from './constants.js';
+import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 
 export class ControlsManager {
@@ -45,6 +45,22 @@ export class ControlsManager {
 
     setPlaying(playing) {
         this.applySpeed(playing ? (this.lastTPS || SPEED_DEFAULT_TPS) : 0);
+    }
+
+    // Undo-aware mutation wrapper: snapshot the grid, run the change, flag redraw.
+    mutate(fn) {
+        this.bridge.saveSnapshot();
+        const result = fn();
+        this.state.forceRedraw = true;
+        return result;
+    }
+
+    downloadBlob(blob, filename) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     }
 
     updateGpuBadge() {
@@ -119,7 +135,7 @@ export class ControlsManager {
         if (btnL) {
             updateBtn(btnL, this.state.leftLayer);
             btnL.onclick = () => {
-                this.state.leftLayer = (this.state.leftLayer + 1) % 4;
+                this.state.leftLayer = (this.state.leftLayer + 1) % LAYER_LABELS.length;
                 updateBtn(btnL, this.state.leftLayer);
                 this.state.forceRedraw = true;
             };
@@ -127,7 +143,7 @@ export class ControlsManager {
         if (btnR) {
             updateBtn(btnR, this.state.rightLayer);
             btnR.onclick = () => {
-                this.state.rightLayer = (this.state.rightLayer + 1) % 4;
+                this.state.rightLayer = (this.state.rightLayer + 1) % LAYER_LABELS.length;
                 updateBtn(btnR, this.state.rightLayer);
                 this.state.forceRedraw = true;
             };
@@ -140,9 +156,8 @@ export class ControlsManager {
             select.value = this.state.currentScenario;
             select.onchange = (e) => {
                 const val = e.target.value;
-                this.bridge.saveSnapshot();
                 this.state.currentScenario = val;
-                const res = loadScenario(val, this.bridge);
+                const res = this.mutate(() => loadScenario(val, this.bridge));
                 
                 const md = document.getElementById('math_dissipation');
                 const mt = document.getElementById('math_thermal_limit');
@@ -232,11 +247,16 @@ export class ControlsManager {
             };
         });
 
-        this.setupGroup('injection_mode_selector', (val) => { 
-            this.state.injectionMode = val;
-            const hint = document.getElementById('hint_injection_mode');
-            if (hint) hint.innerText = val.toUpperCase();
+        this.setupGroup('injection_mode_selector', (val) => this.setInjectionMode(val));
+    }
+
+    setInjectionMode(val) {
+        this.state.injectionMode = val;
+        document.querySelectorAll('#injection_mode_selector .group-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.val === val);
         });
+        const hint = document.getElementById('hint_injection_mode');
+        if (hint) hint.innerText = val.toUpperCase();
     }
 
     // Context drawers (Place, Config, Sample) NO LONGER dismiss when clicking the canvas.
@@ -283,14 +303,10 @@ export class ControlsManager {
                     this.setPlaying(!this.state.isPlaying);
                     break;
                 case 'KeyR':
-                    this.bridge.saveSnapshot();
-                    randomizeScenarioSoup(this.state.currentScenario, this.bridge);
-                    this.state.forceRedraw = true;
+                    this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge));
                     break;
                 case 'KeyC':
-                    this.bridge.saveSnapshot();
-                    this.bridge.clearGrid();
-                    this.state.forceRedraw = true;
+                    this.mutate(() => this.bridge.clearGrid());
                     break;
             }
         };
@@ -323,14 +339,22 @@ export class ControlsManager {
     bindSliders() {
         const speed = document.getElementById('slider_speed');
         if (speed) {
+            speed.max = SPEED_MAX_TPS;
             speed.oninput = (e) => this.applySpeed(parseInt(e.target.value, 10));
+        }
+
+        const radius = document.getElementById('slider_radius');
+        if (radius) {
+            radius.oninput = (e) => {
+                const vr = document.getElementById('val_radius');
+                if (vr) vr.innerText = e.target.value;
+            };
         }
 
         const zoom = document.getElementById('slider_zoom');
         if (zoom) {
             zoom.oninput = (e) => {
                 const v = parseFloat(e.target.value);
-                this.state.zoom = v;
                 document.getElementById('val_zoom').innerText = v.toFixed(1) + 'x';
                 
                 if (this.interaction) {
@@ -373,21 +397,12 @@ export class ControlsManager {
             alert("INJECTION MATRIX\n\nCLONE (Default):\nOverwrites reality. Punches rigid holes through matter.\n\nDENSITY:\nFluid displacement. Splashes and mixes naturally with oceans and gases.\n\nHEAT:\nInjects pure thermal energy without adding mass.\n\nSPIN:\nAlters directional momentum without adding mass.");
         });
         
-        bind('btn_reset', () => { 
-            this.bridge.saveSnapshot(); 
-            loadScenario(this.state.currentScenario, this.bridge); 
-            this.state.forceRedraw = true; 
-        });
-        bind('btn_soup', () => { 
-            this.bridge.saveSnapshot(); 
-            randomizeScenarioSoup(this.state.currentScenario, this.bridge); 
-            this.state.forceRedraw = true; 
-        });
-        bind('btn_clear', () => { 
-            this.bridge.saveSnapshot(); 
-            this.bridge.clearGrid(); 
-            this.state.forceRedraw = true; 
-        });
+        bind('btn_reset', () =>
+            this.mutate(() => loadScenario(this.state.currentScenario, this.bridge)));
+        bind('btn_soup', () =>
+            this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge)));
+        bind('btn_clear', () =>
+            this.mutate(() => this.bridge.clearGrid()));
         bind('btn_undo', () => { 
             this.bridge.restoreSnapshot(); 
             this.state.forceRedraw = true; 
@@ -448,11 +463,10 @@ export class ControlsManager {
                     return;
                 }
                 const vtkString = this.bridge.wasm.UTF8ToString(vtkPtr);
-                const blob = new Blob([vtkString], { type: 'text/plain' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `planck_frame_${Date.now()}.vtk`;
-                link.click();
+                this.downloadBlob(
+                    new Blob([vtkString], { type: 'text/plain' }),
+                    `planck_frame_${Date.now()}.vtk`
+                );
                 this.bridge.freeVTK();
             }
             this.state.isPlaying = wasPlaying;
@@ -473,11 +487,10 @@ export class ControlsManager {
                 alert("No custom stamps to export yet!");
                 return;
             }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userPal));
-            const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", "planck_custom_palette.json");
-            dl.click();
+            this.downloadBlob(
+                new Blob([JSON.stringify(userPal)], { type: 'application/json' }),
+                'planck_custom_palette.json'
+            );
         });
 
         const importInput = document.getElementById('import_palette_input');

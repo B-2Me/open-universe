@@ -1,4 +1,4 @@
-import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, unpackNode, packNode } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, ZOOM_MIN, ZOOM_MAX, unpackNode } from './constants.js';
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample }) {
@@ -320,9 +320,6 @@ export class InteractionManager {
 
     applyTransform() {
         if (!this.tWrapper) return;
-        this.state.zoom = this.zoom;
-        this.state.panX = this.panX;
-        this.state.panY = this.panY;
         this.tWrapper.style.transform = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
     }
 
@@ -331,7 +328,6 @@ export class InteractionManager {
         const sz = document.getElementById('slider_zoom');
         if (vz) vz.innerText = this.zoom.toFixed(1) + "x";
         if (sz) sz.value = this.zoom;
-        this.state.zoom = this.zoom;
     }
 
     resetView() {

@@ -8,8 +8,7 @@ import { loadScenario } from './scenarios.js';
 import {
     LAYER_MACRO,
     LAYER_ENTROPIC,
-    SPEED_DEFAULT_TPS,
-    SAMPLE_RADIUS_DEFAULT
+    SPEED_DEFAULT_TPS
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -32,8 +31,7 @@ export async function initWakeSimulator() {
             injectionMode: 'clone', 
             leftLayer: LAYER_MACRO,
             rightLayer: LAYER_ENTROPIC,
-            forceRedraw: true,
-            sampleRadius: SAMPLE_RADIUS_DEFAULT
+            forceRedraw: true
         };
 
         const canvasLeft = document.getElementById('canvas_left');
@@ -41,11 +39,17 @@ export async function initWakeSimulator() {
         const renderer = new DualRenderer(canvasLeft, canvasRight);
         const palette = new PaletteManager();
 
+        const telemetryEls = {
+            quanta: document.getElementById('diag_quanta'),
+            heat: document.getElementById('diag_heat'),
+            phase: document.getElementById('diag_phase'),
+            yield: document.getElementById('diag_yield')
+        };
         const loop = new EngineLoop({
             bridge,
             renderer,
             getState: () => state,
-            onTelemetry: updateTelemetry
+            onTelemetry: (b) => updateTelemetry(telemetryEls, b)
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
 
@@ -61,18 +65,11 @@ export async function initWakeSimulator() {
                 if (controlsRef) {
                     // Rebuild the palette grid with the new custom brush equipped
                     controlsRef.renderPalette();
-                    
-                    // Switch the entire UI segment to Place mode immediately
+
+                    // Switch to Place mode with Clone injection so the stamp lands intact
                     controlsRef.setMode('place');
-                    
-                    // Force the Injection mode to Clone
-                    state.injectionMode = 'clone';
-                    document.querySelectorAll('#injection_mode_selector .group-btn').forEach(b => {
-                        b.classList.toggle('active', b.dataset.val === 'clone');
-                    });
-                    const hint = document.getElementById('hint_injection_mode');
-                    if (hint) hint.innerText = 'CLONE';
-                    
+                    controlsRef.setInjectionMode('clone');
+
                     // Allow the user to save the new brush
                     const btnSave = document.getElementById('btn_save_scratch');
                     if (btnSave) btnSave.disabled = false;
@@ -119,14 +116,9 @@ export async function initWakeSimulator() {
     }
 }
 
-function updateTelemetry(bridge) {
-    const tQuanta = document.getElementById('diag_quanta');
-    const tHeat = document.getElementById('diag_heat');
-    const tPhase = document.getElementById('diag_phase');
-    const tYield = document.getElementById('diag_yield');
-
-    if (tQuanta) tQuanta.innerText = bridge.getTotalQuanta().toLocaleString();
-    if (tHeat) tHeat.innerText = bridge.getTotalHeat().toLocaleString();
-    if (tPhase) tPhase.innerText = bridge.getPhaseAlignment().toFixed(1) + "%";
-    if (tYield) tYield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
+function updateTelemetry(els, bridge) {
+    if (els.quanta) els.quanta.innerText = bridge.getTotalQuanta().toLocaleString();
+    if (els.heat) els.heat.innerText = bridge.getTotalHeat().toLocaleString();
+    if (els.phase) els.phase.innerText = bridge.getPhaseAlignment().toFixed(1) + "%";
+    if (els.yield) els.yield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
