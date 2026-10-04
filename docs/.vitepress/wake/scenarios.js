@@ -13,7 +13,7 @@ import {
     SPIN_DOWN_LEFT,
     SPIN_DOWN_RIGHT,
     SPIN_UP_LEFT,
-    DIR_MAP,
+    OCTANT_SPIN_MAP,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
     packNode
@@ -61,17 +61,6 @@ const ELECTRON_FOAM_PROBABILITY = 0.05;
 // Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so circulating
 // bodies (like the Synthetic Electron shell and Stellar convective bands) form continuous
 // closed loops rather than shearing into four linear quadrant slabs.
-const OCTANT_SPIN_MAP = [
-    SPIN_RIGHT,       // 0: ~0° (East)
-    SPIN_DOWN_RIGHT,  // 1: ~45° (SE)
-    SPIN_DOWN,        // 2: ~90° (South)
-    SPIN_DOWN_LEFT,   // 3: ~135° (SW)
-    SPIN_LEFT,        // 4: ~180° (West)
-    SPIN_UP_LEFT,     // 5: ~225° (NW)
-    SPIN_UP,          // 6: ~270° (North)
-    SPIN_UP_RIGHT     // 7: ~315° (NE)
-];
-
 const vortexSpin = (dx, dy, chirality = 1) => {
     if (dx === 0 && dy === 0) return SPIN_STATIONARY;
     const tx = -dy * chirality;

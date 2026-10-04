@@ -62,6 +62,22 @@ export const SPIN_DY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
 // Maps signed (dy, dx) vector sums back to a spin id: DIR_MAP[dy+1][dx+1].
 export const DIR_MAP = [[8, 1, 2], [7, 0, 3], [6, 5, 4]];
 
+// Octant-ordered spin ids (0°=RIGHT through 315°=UP_RIGHT, y-down screen
+// coords) — for mapping a continuous angle to the nearest discrete spin.
+// NOTE: this is smoother than DIR_MAP sign-snapping, which the engine uses
+// internally for dominant_spin — painted seeds use this; emergent flow
+// re-quantizes through DIR_MAP on tick.
+export const OCTANT_SPIN_MAP = [
+    SPIN_RIGHT,       // 0: ~0° (East)
+    SPIN_DOWN_RIGHT,  // 1: ~45° (SE)
+    SPIN_DOWN,        // 2: ~90° (South)
+    SPIN_DOWN_LEFT,   // 3: ~135° (SW)
+    SPIN_LEFT,        // 4: ~180° (West)
+    SPIN_UP_LEFT,     // 5: ~225° (NW)
+    SPIN_UP,          // 6: ~270° (North)
+    SPIN_UP_RIGHT     // 7: ~315° (NE)
+];
+
 // --- Heat Presets ---
 // Shared field vocabulary used by both the brush palette and the
 // scenario composers — palette-only and scenario-only presets live in

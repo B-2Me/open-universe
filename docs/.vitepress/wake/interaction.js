@@ -6,15 +6,7 @@ import {
     TOUCH_STAMP_OFFSET_PX,
     SPIN_DX,
     SPIN_DY,
-    DIR_MAP,
-    SPIN_UP,
-    SPIN_UP_RIGHT,
-    SPIN_RIGHT,
-    SPIN_DOWN_RIGHT,
-    SPIN_DOWN,
-    SPIN_DOWN_LEFT,
-    SPIN_LEFT,
-    SPIN_UP_LEFT,
+    OCTANT_SPIN_MAP,
     unpackNode
 } from './constants.js';
 
@@ -23,19 +15,6 @@ const DOUBLE_TAP_MS = 300;          // Pointer-tap window that triggers resetVie
 const VIBRATE_THROTTLE_MS = 120;    // Min spacing between haptic ticks while painting
 const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
 const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
-
-// Maps net neighbor flow vectors to the nearest discrete 45° spin direction.
-// Eliminates artificial diagonal sign-snapping so entrainment tracks smooth ambient flow.
-const OCTANT_SPIN_MAP = [
-    SPIN_RIGHT,       // 0: ~0° (East)
-    SPIN_DOWN_RIGHT,  // 1: ~45° (SE)
-    SPIN_DOWN,        // 2: ~90° (South)
-    SPIN_DOWN_LEFT,   // 3: ~135° (SW)
-    SPIN_LEFT,        // 4: ~180° (West)
-    SPIN_UP_LEFT,     // 5: ~225° (NW)
-    SPIN_UP,          // 6: ~270° (North)
-    SPIN_UP_RIGHT     // 7: ~315° (NE)
-];
 
 export class InteractionManager {
     constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
