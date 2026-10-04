@@ -116,6 +116,8 @@ html:has(.wake-sandbox) body {
 }
 #canvas-container.mode-move { cursor: grab; }
 #canvas-container.mode-move:active { cursor: grabbing; }
+#canvas-container.mode-place:not(.mode-move) { cursor: cell; }
+#canvas-container.mode-sample:not(.mode-move) { cursor: zoom-in; }
 
 #transform-wrapper {
   width: 100%;

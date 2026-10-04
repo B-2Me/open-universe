@@ -198,10 +198,20 @@ export class ControlsManager {
         document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
         document.getElementById('context_config')?.classList.toggle('show', mode === 'config');
 
-        // Grab cursor for pan-capable modes (was never wired up after the refactor)
-        document.getElementById('canvas-container')?.classList.toggle(
-            'mode-move', mode === 'move' || mode === 'config'
-        );
+        // On mobile the drawers live below the canvas — bring the freshly
+        // opened one into view so the mode change is visibly confirmed.
+        if (mode !== 'move') {
+            document.getElementById(`context_${mode}`)
+                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        // Mode-specific canvas cursors (move was never wired up after the refactor)
+        const container = document.getElementById('canvas-container');
+        if (container) {
+            container.classList.toggle('mode-move', mode === 'move' || mode === 'config');
+            container.classList.toggle('mode-place', mode === 'place');
+            container.classList.toggle('mode-sample', mode === 'sample');
+        }
     }
 
     bindSegmentButtons() {
