@@ -2,13 +2,8 @@ import {
     GRID_WIDTH,
     GRID_HEIGHT,
     DISSIPATION_DEFAULT,
-    DISSIPATION_NOZZLE,
     THERMAL_LIMIT_DEFAULT,
-    THERMAL_LIMIT_ENGINE_BELL,
     QUANTA_ANCHOR_WALL,
-    QUANTA_GAS_MIN,
-    QUANTA_GAS_VARIANCE,
-    HEAT_IGNITER_PLASMA,
     SPIN_STATIONARY,
     SPIN_UP,
     SPIN_DOWN,
@@ -16,12 +11,37 @@ import {
     SPIN_LEFT,
     SPIN_UP_RIGHT,
     SPIN_DOWN_LEFT,
-    HEAT_ABSOLUTE_ZERO,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
-    HEAT_VACUUM_CORE,
     packNode
 } from './constants.js';
+
+// --- Scenario-Local Tuning ---
+// These presets belong to the scenario composers, not the app — the
+// shared constant pool only holds engine semantics (grid dims, node
+// bitfield, spin directions) and vocabulary used across files.
+const DISSIPATION_DENSE = 45;        // Stellar + ocean: resists thermal runaway
+const DISSIPATION_NOZZLE = 45;
+const THERMAL_LIMIT_SATURATED = 65000; // Stellar + ocean headroom above plasma
+const THERMAL_LIMIT_ENGINE_BELL = 60000;
+
+const HEAT_ABSOLUTE_ZERO = 0;
+const HEAT_VACUUM_CORE = 48000;
+const HEAT_IGNITER_PLASMA = 60000;
+const HEAT_SATURATION = 65000;       // Soup blasts: near-max unwinding heat
+
+const QUANTA_GAS_MIN = 2;
+const QUANTA_GAS_VARIANCE = 3;
+const VACUUM_DUST_QUANTA = 60;
+const VACUUM_DUST_HEAT = 800;
+const STELLAR_CORE_QUANTA = 250;
+const STELLAR_CORE_HEAT = 45000;
+const STELLAR_CORONA_HEAT = 1000;
+const OCEAN_WATER_QUANTA = 40;
+const BOUNDARY_FLOW_QUANTA = 25;
+const BOUNDARY_FLOW_HEAT_MIN = 5000;
+const BOUNDARY_FLOW_HEAT_SPAN = 8000;
+const ATMOS_BEDROCK_HEAT = 800;
 
 // --- Grid Composer Utility ---
 // Eliminates magic-number loops by applying declarative, math-based gradients 
@@ -134,19 +154,19 @@ export function loadScenario(type, bridge) {
                 return null;
             });
             // Ambient dust (Random distribution)
-            composer.sprinkle(200, () => packNode(60, Math.floor(Math.random() * 8) + 1, 800));
+            composer.sprinkle(200, () => packNode(VACUUM_DUST_QUANTA, Math.floor(Math.random() * 8) + 1, VACUUM_DUST_HEAT));
             break;
         }
 
         case "stellar": {
-            targetDissipation = 45; // Increased dissipation keeps the star from achieving thermal runaway
-            targetThermal = 65000;
-            
+            targetDissipation = DISSIPATION_DENSE; // Keeps the star from achieving thermal runaway
+            targetThermal = THERMAL_LIMIT_SATURATED;
+
             // Seamless Radial Layers
             composer.apply((x, y, nx, ny, dist) => {
                 // Core: Extreme heat, dense, stationary deadlock
                 if (dist < 15) {
-                    return packNode(250, SPIN_STATIONARY, 45000); // Safely below the 60,000 threshold
+                    return packNode(STELLAR_CORE_QUANTA, SPIN_STATIONARY, STELLAR_CORE_HEAT); // Safely below the plasma threshold
                 }
                 // Radiative Zone: High heat, turbulent sub-spins
                 else if (dist < 50) {
@@ -162,7 +182,7 @@ export function loadScenario(type, bridge) {
                 }
                 // Corona / Vacuum
                 else {
-                    if (Math.random() < 0.02) return packNode(2, SPIN_UP, 1000);
+                    if (Math.random() < 0.02) return packNode(QUANTA_GAS_MIN, SPIN_UP, STELLAR_CORONA_HEAT);
                 }
                 return null;
             });
@@ -176,7 +196,7 @@ export function loadScenario(type, bridge) {
             // Vertical Depth Layers
             composer.apply((x, y, nx, ny) => {
                 if (y < 3) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ABSOLUTE_ZERO);
-                if (y >= GRID_HEIGHT - 3) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 800);
+                if (y >= GRID_HEIGHT - 3) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, ATMOS_BEDROCK_HEAT);
                 
                 const densityProb = Math.pow(ny, 1.8) * 65;
                 if (Math.random() * 100 < densityProb) {
@@ -191,13 +211,13 @@ export function loadScenario(type, bridge) {
         }
 
         case "ocean": {
-            targetDissipation = 45; 
-            targetThermal = 65000;  
-            
+            targetDissipation = DISSIPATION_DENSE;
+            targetThermal = THERMAL_LIMIT_SATURATED;
+
             // Stratified fluid basin
             composer.apply((x, y) => {
                 if (y >= GRID_HEIGHT - 4) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT);
-                if (y > GRID_HEIGHT - 160) return packNode(40, SPIN_STATIONARY, HEAT_COLD_WATER);
+                if (y > GRID_HEIGHT - 160) return packNode(OCEAN_WATER_QUANTA, SPIN_STATIONARY, HEAT_COLD_WATER);
                 return null;
             });
             break;
@@ -231,8 +251,8 @@ export function loadScenario(type, bridge) {
                 if (Math.random() < 0.6) {
                     const distFromWall = x - 60;
                     const spin = (distFromWall < 8 && Math.random() < 0.4) ? SPIN_STATIONARY : SPIN_DOWN;
-                    const heat = 5000 + Math.floor(Math.random() * 8000);
-                    return packNode(25, spin, heat);
+                    const heat = BOUNDARY_FLOW_HEAT_MIN + Math.floor(Math.random() * BOUNDARY_FLOW_HEAT_SPAN);
+                    return packNode(BOUNDARY_FLOW_QUANTA, spin, heat);
                 }
                 return null;
             });
@@ -285,7 +305,7 @@ export function randomizeScenarioSoup(type, bridge) {
                 // Massive Core Flare (Punctures Envelope)
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
                     if (dy < 0 && dx > -10 && dx < 10 && dist > 15 && dist < 140) {
-                        return packNode(180, SPIN_UP, 65000);
+                        return packNode(180, SPIN_UP, HEAT_SATURATION);
                     }
                     return null;
                 });
@@ -359,13 +379,13 @@ export function randomizeScenarioSoup(type, bridge) {
                 composer.sprinkle(40, () => {
                     const rx = composer.cx + (Math.random() * 24 - 12);
                     const ry = 60 + Math.random() * 60;
-                    return packNode(180, Math.floor(Math.random() * 8) + 1, 65000);
+                    return packNode(180, Math.floor(Math.random() * 8) + 1, HEAT_SATURATION);
                 });
             } else {
                 // Asymmetric Wall Flare
                 const side = Math.random() > 0.5 ? composer.cx - 12 : composer.cx + 12;
                 composer.apply((x, y) => {
-                    if (x === side && y >= 60 && y < 110) return packNode(180, SPIN_DOWN, 65000);
+                    if (x === side && y >= 60 && y < 110) return packNode(180, SPIN_DOWN, HEAT_SATURATION);
                     return null;
                 });
             }

@@ -36,15 +36,13 @@ export const SPIN_MASK = 0xFF;
 export const HEAT_MASK = 0xFFFF;
 
 // --- Physics Defaults ---
+// Engine/app defaults — these also define the slider initial values in
+// the template, so they belong to the app, not to any one scenario.
 export const THERMAL_LIMIT_DEFAULT = 50000;
-export const THERMAL_LIMIT_ENGINE_BELL = 60000;
 export const DISSIPATION_DEFAULT = 15;
-export const DISSIPATION_NOZZLE = 45;
 
 // --- Quanta Presets ---
 export const QUANTA_ANCHOR_WALL = 255;
-export const QUANTA_GAS_MIN = 2;
-export const QUANTA_GAS_VARIANCE = 3;
 
 // --- Directional Spin Presets ---
 export const SPIN_STATIONARY = 0;
@@ -58,13 +56,11 @@ export const SPIN_LEFT = 7;
 export const SPIN_UP_LEFT = 8;
 
 // --- Heat Presets ---
-export const HEAT_ABSOLUTE_ZERO = 0;
-export const HEAT_CRYO = 1;
+// Shared field vocabulary used by both the brush palette and the
+// scenario composers — palette-only and scenario-only presets live in
+// their own files instead.
 export const HEAT_COLD_WATER = 20;
 export const HEAT_ROOM_AMBIENT = 500;
-export const HEAT_ATMOSPHERE_GAS = 10000;
-export const HEAT_VACUUM_CORE = 48000;
-export const HEAT_IGNITER_PLASMA = 60000;
 
 // --- Layers ---
 export const LAYER_MACRO = 0;
