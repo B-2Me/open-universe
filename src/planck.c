@@ -389,29 +389,17 @@ void tick() {
                 else next_spin = ((x + y) % 2 == 0) ? left_spin : right_spin;
             } else if (max_heat > (KNOB_THERMAL_LIMIT / GRAVITY_DIV) && next_quanta > 0) {
                 next_spin = gravity_spin;
-            } else if (next_quanta > 0 && dominant_spin != 0) {
-                // Phase Affinity (Topological Cohesion) — the substrate
-                // minimizes phase friction. If the ±45° loci off the flow
-                // direction differ, the trajectory bends toward the side
-                // carrying aligned coherent flow rather than into unaligned
-                // vacuum static. Interior ties keep the raw dominant spin;
-                // this only reshapes flow at network boundaries.
-                uint8_t left_spin = (dominant_spin - 1 < 1) ? 8 : dominant_spin - 1;
-                uint8_t right_spin = (dominant_spin + 1 > 8) ? 1 : dominant_spin + 1;
-
-                int lx = (x + SPIN_DX[left_spin] + WIDTH) % WIDTH;
-                int ly = (y + SPIN_DY[left_spin] + HEIGHT) % HEIGHT;
-                int rx = (x + SPIN_DX[right_spin] + WIDTH) % WIDTH;
-                int ry = (y + SPIN_DY[right_spin] + HEIGHT) % HEIGHT;
-
-                PlanckNode node_left = grid_read[ly * WIDTH + lx];
-                PlanckNode node_right = grid_read[ry * WIDTH + rx];
-
-                int left_affinity = (node_left.quanta > 0 && node_left.spin == dominant_spin) ? node_left.quanta : 0;
-                int right_affinity = (node_right.quanta > 0 && node_right.spin == dominant_spin) ? node_right.quanta : 0;
-
-                if (left_affinity > right_affinity) next_spin = left_spin;
-                else if (right_affinity > left_affinity) next_spin = right_spin;
+            } else if (next_quanta > 0 && current.spin != 0 && dominant_spin != 0) {
+                // Phase Lock (Topological Waveguide) — the phase lattice has
+                // structural inertia. When incoming momentum lies within the
+                // laminar regime (±45° of the established spin), the local
+                // phase pattern steers the flux rather than being erased by
+                // it. Chaotic collisions (orthogonal or head-on) exceed the
+                // tolerance and the lattice is overwritten. This is the
+                // curvature mechanism that lets bound flow structures exist:
+                // the knot channels the flow, the flow sustains the knot.
+                int diff = abs((int)current.spin - (int)dominant_spin);
+                if (diff <= 1 || diff == 7) next_spin = current.spin;
             }
             
             grid_write[idx].quanta = next_quanta;

@@ -45,17 +45,29 @@ const BOUNDARY_FLOW_HEAT_MIN = 5000;
 const BOUNDARY_FLOW_HEAT_SPAN = 8000;
 const ATMOS_BEDROCK_HEAT = 800;
 
-// Synthetic Electron — the dissipative torus. Stability comes from the
-// physics, not painted heat: the shell's mass is capped at half the
-// deadlock ceiling so any pairwise merge lands at exactly 200 (deadlock
-// is strictly >200) and flow can never stall.
+// Synthetic Electron — a bound octagon torus. Momentum in this substrate is
+// ballistic, so closed circulation only survives on the lattice's native
+// loop: an octagon whose flat edges carry exact spin tangents. Phase Lock
+// (engine-side) keeps each cell's painted phase steering the flux, and the
+// spin-only halo recaptures corner leakage back into circulation.
 const ELECTRON_CORE_RADIUS = 8;
-const ELECTRON_MOAT_RADIUS = 20;
-const ELECTRON_SHELL_RADIUS = 80;
-const ELECTRON_SHELL_QUANTA = 100;
-const ELECTRON_MOAT_QUANTA = 4;
+const ELECTRON_MOAT_OCT = 25;      // cleared vacuum between anchor and waveguide
+const ELECTRON_RING_INNER = 45;    // mass band inner apothem
+const ELECTRON_RING_OUTER = 55;    // mass band outer apothem
+const ELECTRON_HALO_OCT = 90;      // spin-only waveguide extends past the ring
+const ELECTRON_RING_QUANTA = 70;   // pairwise merges stay far under deadlock
 const ELECTRON_FOAM_QUANTA = 5;
 const ELECTRON_FOAM_PROBABILITY = 0.05;
+
+// Octagonal radius: the lattice's native perimeter. Each flat edge is
+// perpendicular to one of the 8 axes, so its tangent is an exact spin —
+// mass flows laminar along edges and turns at vertices under Phase Lock.
+const octRadius = (dx, dy) => Math.max(
+    Math.abs(dx),
+    Math.abs(dy),
+    Math.abs(dx + dy) * Math.SQRT1_2,
+    Math.abs(dx - dy) * Math.SQRT1_2
+);
 
 // Maps a center-relative offset to tangent momentum via 8-octant quantization (45° sectors).
 // Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so circulating
@@ -156,11 +168,11 @@ export const SCENARIO_DOSSIERS = {
     },
     electron: {
         title: "⚛️ Synthetic Electron",
-        objective: "Architect stable matter: a dissipative torus held together by coherent circulation, thermal equilibrium, and deadlock avoidance.",
-        mechanisms: "Aligned tangent flow avoids head-on cancellation; uniform ~100-quanta shell keeps pairwise merges under the 200 deadlock threshold; the cold anchor core sits safely below the gravity override.",
+        objective: "Architect stable matter: a bound torus where the phase lattice steers the flow that sustains it — hydrodynamic integrity, not painted stasis.",
+        mechanisms: "Phase Lock keeps edge cells steering flux within the laminar regime; the octagon is the lattice's native closed streamline (flat edges carry exact spin tangents); the spin-only halo waveguide recaptures corner leakage.",
         recommendedBrushes: ["💧 Fluid", "🔥 Igniter", "⚙️ Rotor"],
-        bestLayers: "🧲 Phase + ♨ Metabolic",
-        tips: "Watch the relaxation phase as the shell condenses and locks. Then crush Thermal Limit under ~4k to unwind the core — the densest knots fail first."
+        bestLayers: "🧲 Phase + 👁 Macro",
+        tips: "The ring slowly sheds mass at the vertices — watch the waveguide recapture it. Crush Thermal Limit under ~4k to unwind the core: the densest knots fail first."
     },
     ocean: {
         title: "🌊 Deep Ocean",
@@ -259,14 +271,22 @@ export function loadScenario(type, bridge) {
                 // Core anchor: permanent deadlock, boots cold and earns its
                 // own metabolic temperature — the densest matter is the coldest.
                 if (dist <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
-                // Accretion moat: low-density gap isolating the anchor from
-                // the shell's circulation. Transient by design — leaked mass
-                // self-organizes into a grinding boundary layer at the core edge.
-                if (dist <= ELECTRON_MOAT_RADIUS) return packNode(ELECTRON_MOAT_QUANTA, SPIN_STATIONARY, 1);
-                // Vortex shell: uniform mass at exactly half the deadlock
-                // ceiling — a worst-case two-into-one merge sums to 200,
-                // not past it, so circulation can never stall into beads.
-                if (dist <= ELECTRON_SHELL_RADIUS) return packNode(ELECTRON_SHELL_QUANTA, vortexSpin(dx, dy), HEAT_ROOM_AMBIENT);
+
+                const rOct = octRadius(dx, dy);
+                // Vacuum moat: cleared so the waveguide is the only structure
+                // between anchor and ring — infalling mass accretes raw.
+                if (rOct <= ELECTRON_MOAT_OCT) return packNode(0, SPIN_STATIONARY, 1);
+                // Phase lattice: tangent spins painted across the whole region.
+                // Mass ring on the octagon's edges; everywhere else is spin-only
+                // waveguide — escaping mass lands on it and Phase Lock steers
+                // it back into circulation.
+                if (rOct <= ELECTRON_HALO_OCT) {
+                    const spin = vortexSpin(dx, dy, 1);
+                    if (rOct >= ELECTRON_RING_INNER && rOct <= ELECTRON_RING_OUTER) {
+                        return packNode(ELECTRON_RING_QUANTA, spin, HEAT_ROOM_AMBIENT);
+                    }
+                    return packNode(0, spin, 1);
+                }
                 // Quantum foam: the active vacuum scraping the outer boundary.
                 if (Math.random() < ELECTRON_FOAM_PROBABILITY) {
                     return packNode(ELECTRON_FOAM_QUANTA, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
@@ -526,10 +546,16 @@ export function randomizeScenarioSoup(type, bridge) {
                 const bx = composer.cx + 130;
                 const by = composer.cy;
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                    const d2 = Math.hypot(x - bx, y - by);
+                    const ddx = x - bx, ddy = y - by;
+                    const d2 = Math.hypot(ddx, ddy);
                     if (d2 <= 6) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
-                    if (d2 <= 14) return packNode(ELECTRON_MOAT_QUANTA, SPIN_STATIONARY, 1);
-                    if (d2 <= 60) return packNode(ELECTRON_SHELL_QUANTA, vortexSpin(x - bx, y - by, -1), HEAT_ROOM_AMBIENT);
+                    const rOct = octRadius(ddx, ddy);
+                    if (rOct <= 18) return packNode(0, SPIN_STATIONARY, 1);
+                    if (rOct <= 60) {
+                        const spin = vortexSpin(ddx, ddy, -1);
+                        if (rOct >= 32 && rOct <= 40) return packNode(ELECTRON_RING_QUANTA, spin, HEAT_ROOM_AMBIENT);
+                        return packNode(0, spin, 1);
+                    }
                     return null;
                 });
             } else if (flavor === 1) {
