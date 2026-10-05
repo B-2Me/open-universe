@@ -89,6 +89,8 @@ html:has(.wake-sandbox) body {
 /* Viewport Header (Sits immediately above canvas) */
 .viewport-header {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 6px;
   width: 100%;
   max-width: 760px;
@@ -165,7 +167,8 @@ html:has(.wake-sandbox) body {
 
 /* View/Lens Buttons */
 .lens-btn {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 0;
   background: #101812;
   border-top: 1px solid #2d4530;
   border-left: 1px solid #2d4530;
@@ -177,7 +180,7 @@ html:has(.wake-sandbox) body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   min-height: 34px;
   padding: 0 8px;
   white-space: nowrap;
@@ -209,21 +212,25 @@ html:has(.wake-sandbox) body {
 .lens-label {
   font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Scenario Dropdown in Center */
 .scenario-nav-bar {
-  flex: 1.4;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   gap: 4px;
   align-items: center;
 }
 .scenario-select {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
   background-color: #141c14;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2375b86e' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 8px center;
+  background-position: right 6px center;
   background-size: 8px 5px;
   border-top: 1px solid var(--pf-bevel-light);
   border-left: 1px solid var(--pf-bevel-light);
@@ -232,17 +239,21 @@ html:has(.wake-sandbox) body {
   color: var(--pf-text);
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 22px 4px 8px;
+  padding: 4px 18px 4px 6px;
   border-radius: 4px;
   outline: none;
   cursor: pointer;
   min-height: 34px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
   -webkit-appearance: none;
   appearance: none;
 }
 
 /* Icon Buttons */
 .icon-btn {
+  flex: 0 0 34px;
   background: #141c14;
   border-top: 1px solid var(--pf-bevel-light);
   border-left: 1px solid var(--pf-bevel-light);
@@ -250,8 +261,10 @@ html:has(.wake-sandbox) body {
   border-right: 1px solid var(--pf-bevel-dark);
   color: var(--pf-brand-hover);
   border-radius: 4px;
-  padding: 0 10px;
+  padding: 0;
   min-height: 34px;
+  height: 34px;
+  width: 34px;
   cursor: pointer;
   font-size: 13px;
   display: flex;
@@ -403,13 +416,45 @@ input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
 @media (max-width: 768px) {
   #wake-app { flex-direction: column-reverse; height: auto; min-height: 0; max-height: none; }
   #app-sidebar { width: 100%; min-width: 100%; border-right: none; border-top: 1px solid var(--pf-bevel-dark); padding-bottom: env(safe-area-inset-bottom); }
-  #app-viewport { padding: 12px; height: 50vh; height: 50dvh; justify-content: flex-start; }
-  .viewport-header { flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-  .scenario-nav-bar { order: -1; width: 100%; margin-bottom: 2px; }
-  .lens-btn { min-height: 40px; font-size: 10px; }
-  /* Keep the canvas square AND inside the 50dvh pane (header wraps to ~2 rows) */
-  #canvas-container { max-height: none; width: min(100%, calc(50dvh - 110px)); }
-  /* Finger-friendly touch targets (Apple HIG 44pt) */
-  .group-btn, .segment-btn { min-height: 44px; }
-  .icon-btn, .palette-btn, .dossier-close-btn { min-height: 44px; min-width: 44px; }
+  #app-viewport { padding: 8px 10px; height: 52vh; height: 52dvh; justify-content: flex-start; }
+  
+  /* Strictly lock single row on mobile */
+  .viewport-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+
+  /* Left button sits on the left, right on the right */
+  #btn_toggle_left { order: 1; flex: 0 1 auto; padding: 0 6px; min-height: 32px; }
+  .scenario-nav-bar { order: 2; flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
+  #btn_toggle_right { order: 3; flex: 0 1 auto; padding: 0 6px; min-height: 32px; }
+
+  .lens-btn { min-height: 32px; font-size: 10px; gap: 3px; }
+  .lens-tag { display: none; } /* Hide the 'VIEW' badge on mobile to save width */
+  .lens-label { font-size: 10px; }
+
+  .scenario-select {
+    font-size: 10px;
+    padding: 2px 16px 2px 4px;
+    min-height: 32px;
+  }
+
+  .icon-btn {
+    flex: 0 0 32px;
+    width: 32px;
+    min-height: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  /* Keep the canvas square AND inside the 52dvh pane */
+  #canvas-container { max-height: none; width: min(100%, calc(52dvh - 50px)); }
+  
+  /* Finger-friendly touch targets for controls */
+  .group-btn, .segment-btn { min-height: 42px; }
+  .palette-btn, .dossier-close-btn { min-height: 42px; min-width: 42px; }
 }
