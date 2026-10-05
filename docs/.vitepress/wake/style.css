@@ -85,6 +85,10 @@ html:has(.wake-sandbox) body {
   padding: 16px 24px;
   position: relative;
   overflow: hidden;
+  /* clip, not hidden: hidden creates a scroll container that joins the
+     wheel scroll chain and silently consumes deltas scrolling its clipped
+     content. clip paints identically but is never scrollable. */
+  overflow: clip;
 }
 
 /* Viewport Header (Sits immediately above canvas) */

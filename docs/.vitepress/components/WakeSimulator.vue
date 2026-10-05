@@ -302,6 +302,9 @@ onUnmounted(() => {
   margin: 0.25rem 0 1rem 0 !important;
   border-radius: 8px;
   overflow: hidden;
+  /* clip so the sandbox never joins the wheel scroll chain as a
+     scrollable ancestor (overflow:hidden would silently consume deltas) */
+  overflow: clip;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   background: var(--pf-bg-main);
   color: var(--pf-text);
