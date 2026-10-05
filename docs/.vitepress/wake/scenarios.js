@@ -268,28 +268,35 @@ export function loadScenario(type, bridge) {
             targetThermal = THERMAL_LIMIT_DEFAULT;
 
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                // Core anchor: permanent deadlock, boots cold and earns its
-                // own metabolic temperature — the densest matter is the coldest.
-                if (dist <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                // Core anchor: permanent deadlock, boots cold
+                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                
+                // 4-Projection Norm: yields an octagon with edges strictly 
+                // orthogonal to the 8 native lattice vectors.
+                const adx = Math.abs(dx);
+                const ady = Math.abs(dy);
+                const r_oct = Math.max(adx, ady, Math.round((adx + ady) * 0.7071));
 
-                const rOct = octRadius(dx, dy);
-                // Vacuum moat: cleared so the waveguide is the only structure
-                // between anchor and ring — infalling mass accretes raw.
-                if (rOct <= ELECTRON_MOAT_OCT) return packNode(0, SPIN_STATIONARY, 1);
-                // Phase lattice: tangent spins painted across the whole region.
-                // Mass ring on the octagon's edges; everywhere else is spin-only
-                // waveguide — escaping mass lands on it and Phase Lock steers
-                // it back into circulation.
-                if (rOct <= ELECTRON_HALO_OCT) {
+                // Moat (cleared to vacuum so the halo acts purely as a spin-waveguide)
+                if (r_oct <= 25) return packNode(0, SPIN_STATIONARY, 1);
+
+                // Spin-only halo (Waveguide) & Octagon Mass Ring
+                if (r_oct <= 90) {
                     const spin = vortexSpin(dx, dy, 1);
-                    if (rOct >= ELECTRON_RING_INNER && rOct <= ELECTRON_RING_OUTER) {
-                        return packNode(ELECTRON_RING_QUANTA, spin, HEAT_ROOM_AMBIENT);
+                    
+                    // Dense mass ring (Laminar edge flow, vertices turn under phase lock)
+                    if (r_oct >= 45 && r_oct <= 55) {
+                        return packNode(70, spin, HEAT_ROOM_AMBIENT);
                     }
+                    
+                    // The Waveguide: 0 quanta, but structurally painted phase.
+                    // Escaping mass lands on these empty cells and the phase lock steers it back.
                     return packNode(0, spin, 1);
                 }
-                // Quantum foam: the active vacuum scraping the outer boundary.
-                if (Math.random() < ELECTRON_FOAM_PROBABILITY) {
-                    return packNode(ELECTRON_FOAM_QUANTA, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
+
+                // Quantum foam: the active vacuum scraping the outer boundary
+                if (Math.random() < 0.05) {
+                    return packNode(5, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
                 }
                 return null;
             });
