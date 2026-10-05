@@ -45,6 +45,9 @@ export async function initWakeSimulator() {
             isPlaying: true,
             currentScenario: 'vacuum',
             currentMode: 'move',
+            // Mode drawers track currentMode but can be collapsed while the
+            // tool stays armed (second tap on the active segment button).
+            drawerVisible: false,
             // Undo ring is opt-in (System drawer → Engine Flags): it costs
             // 4×640KB plus a memcpy per checkpoint — off by default.
             undoEnabled: false,

@@ -311,24 +311,14 @@ export class ControlsManager {
         setTxt('dossier_tips', data.tips);
     }
 
-    // Handles the rigorous switching of UI mode tabs and drawers
-    setMode(mode) {
-        this.state.currentMode = mode;
-        
-        document.querySelectorAll('.segment-btn').forEach(b => 
-            b.classList.toggle('active', b.dataset.mode === mode)
-        );
-        
-        document.getElementById('context_place')?.classList.toggle('show', mode === 'place');
-        document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample');
-        document.getElementById('context_config')?.classList.toggle('show', mode === 'config');
-
-        // On mobile the drawers live below the canvas — bring the freshly
-        // opened one into view so the mode change is visibly confirmed.
-        if (mode !== 'move') {
-            document.getElementById(`context_${mode}`)
-                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
+    // Drawers track mode but have their own visibility flag — a second tap
+    // on the active tool collapses its drawer without disarming the tool.
+    renderModeUI() {
+        const mode = this.state.currentMode;
+        const open = this.state.drawerVisible;
+        document.getElementById('context_place')?.classList.toggle('show', mode === 'place' && open);
+        document.getElementById('context_sample')?.classList.toggle('show', mode === 'sample' && open);
+        document.getElementById('context_config')?.classList.toggle('show', mode === 'config' && open);
 
         // Mode-specific canvas cursors (move was never wired up after the refactor)
         const container = document.getElementById('canvas-container');
@@ -336,6 +326,25 @@ export class ControlsManager {
             container.classList.toggle('mode-move', mode === 'move' || mode === 'config');
             container.classList.toggle('mode-place', mode === 'place');
             container.classList.toggle('mode-sample', mode === 'sample');
+        }
+    }
+
+    // Handles the rigorous switching of UI mode tabs and drawers
+    setMode(mode) {
+        this.state.currentMode = mode;
+        this.state.drawerVisible = mode !== 'move';
+
+        document.querySelectorAll('.segment-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.mode === mode)
+        );
+
+        this.renderModeUI();
+
+        // On mobile the drawers live below the canvas — bring the freshly
+        // opened one into view so the mode change is visibly confirmed.
+        if (mode !== 'move') {
+            document.getElementById(`context_${mode}`)
+                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
 
         this.interaction?.hideBrushPreview();
@@ -346,11 +355,21 @@ export class ControlsManager {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
 
-                // Second click only toggles off for the System drawer —
-                // Place/Sample are modal tools that must stay active so a
-                // stamp or capture in progress isn't silently cancelled.
                 if (this.state.currentMode === mode) {
-                    if (mode === 'config') this.setMode('move');
+                    if (mode === 'config') {
+                        // System dismisses back to Move entirely.
+                        this.setMode('move');
+                    } else if (mode !== 'move') {
+                        // Place/Sample: collapse or reopen the drawer but
+                        // keep the tool armed — a stamp or capture in
+                        // progress is never cancelled by the button.
+                        this.state.drawerVisible = !this.state.drawerVisible;
+                        this.renderModeUI();
+                        if (this.state.drawerVisible) {
+                            document.getElementById(`context_${mode}`)
+                                ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    }
                     return;
                 }
 
