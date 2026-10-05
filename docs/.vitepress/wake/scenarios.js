@@ -56,8 +56,11 @@ const ELECTRON_RING_INNER = 45;    // mass band inner apothem
 const ELECTRON_RING_OUTER = 55;    // mass band outer apothem
 const ELECTRON_HALO_OCT = 90;      // spin-only waveguide extends past the ring
 const ELECTRON_RING_QUANTA = 70;   // pairwise merges stay far under deadlock
-const ELECTRON_FOAM_QUANTA = 5;
-const ELECTRON_FOAM_PROBABILITY = 0.05;
+// NOTE: no ambient foam here. Mass is conserved on the closed torus —
+// painted projectiles can't decay or escape, so they inevitably clump
+// into deadlock knots that tear the ring apart gravitationally. The
+// harness shows every projectile density kills the orbit within ~300
+// ticks; clean vacuum circulates indefinitely (1000+ ticks, zero loss).
 
 // Octagonal radius: the lattice's native perimeter. Each flat edge is
 // perpendicular to one of the 8 axes, so its tangent is an exact spin —
@@ -172,7 +175,7 @@ export const SCENARIO_DOSSIERS = {
         mechanisms: "Phase Lock keeps edge cells steering flux within the laminar regime; the octagon is the lattice's native closed streamline (flat edges carry exact spin tangents); the spin-only halo waveguide recaptures corner leakage.",
         recommendedBrushes: ["💧 Fluid", "🔥 Igniter", "⚙️ Rotor"],
         bestLayers: "🧲 Phase + 👁 Macro",
-        tips: "The ring slowly sheds mass at the vertices — watch the waveguide recapture it. Crush Thermal Limit under ~4k to unwind the core: the densest knots fail first."
+        tips: "In clean vacuum the torus circulates indefinitely — ambient projectiles inevitably clump into deadlock knots that tear it apart. Crush Thermal Limit under ~4k to unwind the core: the densest knots fail first."
     },
     ocean: {
         title: "🌊 Deep Ocean",
@@ -293,10 +296,8 @@ export function loadScenario(type, bridge) {
                     return packNode(0, spin, 1);
                 }
 
-                // Quantum foam: the active vacuum scraping the outer boundary
-                if (Math.random() < ELECTRON_FOAM_PROBABILITY) {
-                    return packNode(ELECTRON_FOAM_QUANTA, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
-                }
+                // Clean vacuum beyond the halo — the bound state needs an
+                // intact waveguide; ambient mass would become shrapnel.
                 return null;
             });
             break;

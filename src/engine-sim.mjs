@@ -138,7 +138,7 @@ function octSpin(dx, dy, c = 1) {
   return DIR_MAP[Math.sign(Math.round(ty)) + 1][Math.sign(Math.round(tx)) + 1];
 }
 
-function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.05, dither = 0, ringMode = null, oct = null } = {}) {
+function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.05, dither = 0, ringMode = null, oct = null, outwardFoam = false } = {}) {
   q.fill(0); s.fill(0); h.fill(1);
   const cx = 200, cy = 200;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -156,6 +156,14 @@ function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.0
         if (rOct >= ring.lo && rOct <= ring.hi) { q[i] = ring.q; h[i] = 500; painted = true; }
       }
       if (rOct > 25 && rOct <= 90) { s[i] = tangent; painted = true; } // spin-only halo waveguide
+      if (!painted && Math.random() < foamP) {
+        q[i] = 5;
+        s[i] = outwardFoam === 'out'
+          ? OCTANT[Math.floor((Math.atan2(dy, dx) + Math.PI * 2 + Math.PI / 8) / (Math.PI / 4)) % 8]
+          : outwardFoam === 'co'
+          ? vortexSpin(dx, dy)
+          : 1 + Math.floor(Math.random() * 8);
+      } // quantum foam — matches scenarios.js
       if (painted) h[i] = 500;
     }
     else if (ringMode) {
@@ -213,15 +221,19 @@ console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
 else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
-else if (variant === 'octmix') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+else if (variant === 'octmix') paintElectron({ foamP: 0, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // shipped paint: clean vacuum
+else if (variant === 'octmixrf') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // 5% random foam — kills by ~t150
+else if (variant === 'octmixof') paintElectron({ outwardFoam: 'out', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+else if (variant === 'octmixcf') paintElectron({ outwardFoam: 'co', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+else if (variant === 'octmixlf') paintElectron({ foamP: 0.01, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
 else if (variant === 'rings') paintElectron({ ringMode: [{ r: 40, q: 130 }, { r: 60, q: 90 }] });
 else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
 else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
 else paintElectron();
 stats('tick 0');
-for (let t = 1; t <= 150; t++) {
+for (let t = 1; t <= 400; t++) {
   tick();
-  if (t % 25 === 0) stats('tick ' + t);
+  if (t % 50 === 0) stats('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
       let row = '';
