@@ -203,6 +203,15 @@ export const SCENARIO_DOSSIERS = {
         bestLayers: "🧲 Phase + 👁 Macro",
         tips: "Compare with ⚛ Synthetic Electron on the oct8 substrate (⚙ System → Substrate): same thermodynamics, different adjacency — shell-world vs filament-world."
     },
+    filamentbomb: {
+        topologies: ['hex'],
+        title: "⬡ Filament Under Fire",
+        objective: "Stress-test the bound state: ambient quantum foam plus an aimed dense projectile on a collision course with the filament.",
+        mechanisms: "The harness shows the loop absorbs a single hit intact (Phase Lock + halo recapture the shockwave), then sheds severed cells into a persistent arc — quantized severing, not the octagon's volumetric erosion. Sustained foam kills it at roughly the same rate as the octagon electron.",
+        recommendedBrushes: ["💧 Fluid", "🔥 Igniter"],
+        bestLayers: "🧲 Phase + 👁 Macro",
+        tips: "Watch the loop absorb the incoming clump whole, then look for the gap where it severs — the surviving arc keeps circulating. Stamp more projectiles to keep the pressure on."
+    },
     accretion: {
         topologies: ['hex'],
         title: "⬡ Accretion Seed",
@@ -393,7 +402,8 @@ export function loadScenario(type, bridge, topology = 'square') {
         // --- Hex-native scenarios (hex6 substrate) ---
         // Paints mirror the harness-proven variants in engine-sim.mjs.
 
-        case "filament": {
+        case "filament":
+        case "filamentbomb": {
             // The hexcycle bound state: a 1-cell discrete hexagonal loop
             // where every cell's spin points at the counterclockwise-next
             // cell on the loop — exact on the cell graph. The octagon
@@ -425,6 +435,14 @@ export function loadScenario(type, bridge, topology = 'square') {
                         return packNode(120, spin, HEAT_ROOM_AMBIENT);
                     }
                     return packNode(0, spin, 1); // spin-only waveguide
+                }
+                // filamentbomb: the harness's hexcyclep — an aimed dense
+                // projectile plus ambient foam, to stress-test the loop's
+                // quantized severing live.
+                if (type === 'filamentbomb') {
+                    const pd = hexDistance(x, y, composer.cx - 120, composer.cy - 60);
+                    if (pd <= 12) return packNode(150, hexSextant(Math.atan2(composer.cy - y, composer.cx - x)), HEAT_ROOM_AMBIENT);
+                    if (Math.random() < 0.05) return packNode(5, Math.floor(Math.random() * smax) + 1, 100);
                 }
                 return null;
             });
