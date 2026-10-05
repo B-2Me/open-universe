@@ -345,16 +345,15 @@ export class ControlsManager {
         document.querySelectorAll('.segment-btn').forEach(btn => {
             btn.onclick = (e) => {
                 const mode = e.currentTarget.dataset.mode;
-                
-                // If clicking an already active button, toggle it off and fallback to 'move'
+
+                // Second click only toggles off for the System drawer —
+                // Place/Sample are modal tools that must stay active so a
+                // stamp or capture in progress isn't silently cancelled.
                 if (this.state.currentMode === mode) {
-                    if (mode !== 'move') {
-                        this.setMode('move');
-                    }
+                    if (mode === 'config') this.setMode('move');
                     return;
                 }
 
-                // Otherwise, switch to the requested mode and leave the drawer open
                 this.setMode(mode);
             };
         });
