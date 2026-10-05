@@ -389,15 +389,13 @@ void tick() {
             } else if (max_heat > (KNOB_THERMAL_LIMIT / GRAVITY_DIV) && next_quanta > 0) {
                 next_spin = gravity_spin;
             } else if (current.spin != 0) {
-                // Phase Lock (Topological Waveguide) — the phase lattice has
-                // structural inertia. When there is no incoming momentum (dominant_spin == 0),
-                // the vacuum retains its established structural orientation.
-                // When incoming momentum arrives within the laminar regime (±45° of the
-                // established spin), the local phase pattern steers the flux rather than
-                // being erased by it. Chaotic collisions (orthogonal or head-on) exceed
-                // tolerance and the lattice orientation is overwritten.
+                // Phase Lock (Topological Waveguide)
                 if (dominant_spin == 0) {
-                    next_spin = current.spin;
+                    if (current.quanta == 0) {
+                        next_spin = current.spin;
+                    } else {
+                        next_spin = 0;
+                    }
                 } else {
                     int diff = abs((int)current.spin - (int)dominant_spin);
                     if (diff <= 1 || diff == 7) {
@@ -490,7 +488,7 @@ void render_frame(int layer) {
 }
 
 // ---------------------------------------------------------
-// PRO-GRADE DETERMINISTIC VTK PARAVIEW EXPORTER
+// VTK PARAVIEW EXPORTER
 // ---------------------------------------------------------
 char* vtk_buffer = NULL;
 size_t vtk_buffer_capacity = 0;
