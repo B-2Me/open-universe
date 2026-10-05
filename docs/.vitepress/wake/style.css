@@ -99,12 +99,33 @@ html:has(.wake-sandbox) body {
   justify-content: space-between;
 }
 
+/* Wraps the square canvas and the sub-canvas touch pad. This element must
+   carry the sizing chain explicitly: the canvases inside are absolutely
+   positioned and contribute zero intrinsic size, so a shrink-wrapped
+   parent collapses to ~0 and the whole field disappears behind the
+   viewport's dark background. flex:1 gives it a definite height too, and
+   container-type: size lets the canvas stay square within BOTH axes via
+   cqw/cqh below. */
+#canvas-touch-zone {
+  --pad-h: 0px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  container-type: size;
+}
+
 /* Perfect Square Canvas Container */
 #canvas-container {
   aspect-ratio: 1 / 1;
   width: 100%;
   max-width: 760px;
-  max-height: calc(100% - 44px); /* Allows room for the header */
+  /* Square that fits both axes: bounded by the zone's width and by the
+     height left after the touch pad (0px on fine pointers). Overrides the
+     width fallback above where cqw/cqh are supported. */
+  width: min(760px, 100cqw, max(200px, calc(100cqh - var(--pad-h) - 8px)));
   margin: 0 auto;
   overflow: hidden;
   border-left: 2px solid var(--pf-bevel-dark);
@@ -142,10 +163,10 @@ html:has(.wake-sandbox) body {
    below the field; grid coords clamp so pad touches land on the edge rows. */
 #canvas-touch-pad { display: none; }
 @media (pointer: coarse) {
+  #canvas-touch-zone { --pad-h: 72px; }
   #canvas-touch-pad {
     display: block;
-    width: 100%;
-    max-width: 760px;
+    width: min(760px, 100cqw, calc(100cqh - var(--pad-h) - 8px));
     margin: 0 auto;
     height: 72px;
     touch-action: none;
@@ -458,9 +479,8 @@ input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
     font-size: 11px;
   }
 
-  /* Keep the canvas square AND inside the 52dvh pane */
-  #canvas-container { max-height: none; width: min(100%, calc(52dvh - 50px)); }
-  #canvas-touch-pad { width: min(100%, calc(52dvh - 50px)); }
+  /* Canvas stays square and inside the 52dvh pane automatically —
+     #canvas-container sizes off 100cqw/100cqh on the touch zone. */
   
   /* Finger-friendly touch targets for controls */
   .group-btn, .segment-btn { min-height: 42px; }
