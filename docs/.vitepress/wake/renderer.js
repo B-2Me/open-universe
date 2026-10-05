@@ -50,9 +50,13 @@ const FS_SOURCE = `
             c2 = vec2(mod(c2.x, ${GRID_WIDTH.toFixed(1)}), mod(c2.y, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t1 = texture2D(u_texture, (c1 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t2 = texture2D(u_texture, (c2 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
-            // Narrow AA band along hex edges
+            // Narrow AA band along hex edges; a faint seam darkening keeps
+            // the lattice legible as a hex grain even when cells render
+            // at ~1px (zoomed-out full-field view).
             float edge = smoothstep(0.0, 0.06, sqrt(d2) - sqrt(d1));
-            gl_FragColor = mix(t1, t2, edge);
+            vec4 col = mix(t1, t2, edge);
+            col.rgb *= 1.0 - (1.0 - edge) * 0.28;
+            gl_FragColor = col;
             return;
         }
         else if (u_projection_mode == 2) {
@@ -171,6 +175,18 @@ class SingleRenderer {
 
         if (this.isWebGL && this.gl) {
             const gl = this.gl;
+            // Backing tracks display resolution so several fragments land
+            // inside each grid cell — Voronoi/chamfer cell boundaries need
+            // sub-cell fragments to exist at all (at 400px backing every
+            // fragment sits on a cell center and projections no-op).
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * dpr));
+            const h = Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * dpr));
+            if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
+                this.canvas.width = w;
+                this.canvas.height = h;
+                gl.viewport(0, 0, w, h);
+            }
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texImage2D(
