@@ -151,6 +151,8 @@ export async function initWakeSimulator() {
         if (md) md.innerText = initialParams.targetDissipation;
         if (mt) mt.innerText = initialParams.targetThermal;
 
+        bindWheelForwarding();
+
         loop.start();
 
         return () => {
@@ -165,6 +167,34 @@ export async function initWakeSimulator() {
         showFatal(err);
         return null;
     }
+}
+
+// Scroll-chain safety net: wheel deltas an in-app scroller can't consume
+// (already at its boundary) must reach the page. Browser scroll chaining
+// should deliver them on its own, but nested scroll containers
+// (overflow:hidden ancestors) and overscroll quirks have eaten them
+// before — when a scroller inside the sandbox is at its edge, take over
+// and scroll the window ourselves.
+function bindWheelForwarding() {
+    const sandbox = document.querySelector('.wake-sandbox');
+    if (!sandbox) return;
+    sandbox.addEventListener('wheel', (e) => {
+        if (e.defaultPrevented) return; // canvas zoom claimed it
+        for (let el = e.target; el && el !== sandbox; el = el.parentElement) {
+            const oy = getComputedStyle(el).overflowY;
+            if (oy !== 'auto' && oy !== 'scroll') continue;
+            if (el.scrollHeight <= el.clientHeight) continue;
+            const px = e.deltaY * (e.deltaMode === 1 ? 33 : 1);
+            const atTop = el.scrollTop <= 0;
+            const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+            if ((px < 0 && atTop) || (px > 0 && atBottom)) {
+                e.preventDefault();
+                window.scrollBy(0, px);
+            }
+            return; // nearest real scroller decides — at boundary we took over
+        }
+        // No in-app scroller under the cursor — native bubbling scrolls the page.
+    }, { passive: false });
 }
 
 function updateTelemetry(els, bridge) {
