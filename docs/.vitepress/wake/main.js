@@ -19,6 +19,18 @@ export async function initWakeSimulator() {
     const errorBanner = document.getElementById('error-banner');
     const diagStatus = document.getElementById('diag_status');
 
+    // Boot and loop share one fatal path so a crash always surfaces on screen.
+    const showFatal = (err) => {
+        if (errorBanner) {
+            errorBanner.style.display = 'block';
+            errorBanner.innerText = `Simulation Engine Exception: ${err.message || err}`;
+        }
+        if (diagStatus) {
+            diagStatus.innerText = "CRASHED";
+            diagStatus.style.color = "var(--pf-danger)";
+        }
+    };
+
     try {
         if (diagStatus) diagStatus.innerText = "INITIALIZING";
 
@@ -78,7 +90,8 @@ export async function initWakeSimulator() {
             renderer,
             getState: () => state,
             onTelemetry: (b) => updateTelemetry(telemetryEls, b),
-            onTick: (frameCount) => controlsRef?.onEngineTick(frameCount)
+            onTick: (frameCount) => controlsRef?.onEngineTick(frameCount),
+            onFatal: showFatal
         });
         loop.setTPS(SPEED_DEFAULT_TPS);
 
@@ -149,14 +162,7 @@ export async function initWakeSimulator() {
 
     } catch (err) {
         console.error("Wake Simulator Bootstrap Failed:", err);
-        if (errorBanner) {
-            errorBanner.style.display = 'block';
-            errorBanner.innerText = `Simulation Engine Exception: ${err.message || err}`;
-        }
-        if (diagStatus) {
-            diagStatus.innerText = "CRASHED";
-            diagStatus.style.color = "var(--pf-danger)";
-        }
+        showFatal(err);
         return null;
     }
 }

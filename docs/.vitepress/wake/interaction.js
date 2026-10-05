@@ -190,6 +190,12 @@ export class InteractionManager {
         host.addEventListener('contextmenu', (e) => e.preventDefault());
 
         host.addEventListener('wheel', (e) => {
+            // Zoom only when the cursor is directly over the canvas — wheel
+            // anywhere else (the touch pad, drawers, the rest of the page)
+            // falls through to normal page scrolling.
+            const rect = this.container.getBoundingClientRect();
+            if (e.clientX < rect.left || e.clientX > rect.right ||
+                e.clientY < rect.top || e.clientY > rect.bottom) return;
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
             this.zoomAtPoint(e.clientX, e.clientY, this.zoom + delta);
