@@ -1,4 +1,4 @@
-import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS, UNDO_MAX_DEPTH, UNDO_WINDOW_TICKS, AUTOSAVE_INTERVAL_MS } from './constants.js';
+import { LAYER_LABELS, SPEED_DEFAULT_TPS, SPEED_MAX_TPS, UNDO_MAX_DEPTH, UNDO_WINDOW_TICKS, AUTOSAVE_INTERVAL_MS, TOPOLOGY_KEY } from './constants.js';
 import { loadScenario, randomizeScenarioSoup, SCENARIO_DOSSIERS } from './scenarios.js';
 import { WakeLockManager } from './wakelock.js';
 import { saveSimState } from './persist.js';
@@ -21,7 +21,7 @@ export class ControlsManager {
         // Screen wake lock: held while the sim plays (see wakelock.js)
         this.wakeLock = new WakeLockManager();
 
-        this._onPageHide = () => saveSimState(this.bridge, this.state.currentScenario);
+        this._onPageHide = () => saveSimState(this.bridge, this.state.currentScenario, this.state.topology);
 
         this.init();
     }
@@ -34,6 +34,7 @@ export class ControlsManager {
         this.bindSliders();
         this.bindActionButtons();
         this.bindProjectionSelector();
+        this.bindSubstrateSelector();
         this.bindOutsideDismiss();
         this.bindKeyboard();
         this.updateDossierContent(this.state.currentScenario);
@@ -42,7 +43,7 @@ export class ControlsManager {
 
         // Periodic autosave + a final flush when the page is hidden/closed
         this._autosaveInterval = setInterval(
-            () => saveSimState(this.bridge, this.state.currentScenario),
+            () => saveSimState(this.bridge, this.state.currentScenario, this.state.topology),
             AUTOSAVE_INTERVAL_MS
         );
         window.addEventListener('pagehide', this._onPageHide);
@@ -83,7 +84,7 @@ export class ControlsManager {
     scheduleAutosave() {
         clearTimeout(this._autosaveTimer);
         this._autosaveTimer = setTimeout(
-            () => saveSimState(this.bridge, this.state.currentScenario),
+            () => saveSimState(this.bridge, this.state.currentScenario, this.state.topology),
             1500
         );
     }
@@ -171,10 +172,41 @@ export class ControlsManager {
     }
 
     bindProjectionSelector() {
+        // Boot-state sync: the substrate decides the honest projection
+        // (hex stagger on hex6, oct chamfer on oct8) — markup can't know
+        // which engine booted, so the state flag owns the active class.
+        document.querySelectorAll('#projection_mode_selector .group-btn').forEach(btn =>
+            btn.classList.toggle('active', btn.dataset.val === this.state.projection)
+        );
+        this.rendererLeft?.setMode(this.state.projection);
+        this.rendererRight?.setMode(this.state.projection);
+
         this.setupGroup('projection_mode_selector', (mode) => {
+            this.state.projection = mode;
             this.rendererLeft?.setMode(mode);
             this.rendererRight?.setMode(mode);
             this.state.forceRedraw = true;
+        });
+    }
+
+    // The substrate switch reboots the simulator on the other engine
+    // module — the Vue wrapper listens for 'wake:topology' and re-runs
+    // initWakeSimulator. The current field autosaves under its own
+    // topology tag first, so each universe keeps its own field.
+    bindSubstrateSelector() {
+        const container = document.getElementById('substrate_selector');
+        if (!container) return;
+        container.querySelectorAll('.group-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.val === this.state.topology);
+            btn.onclick = () => {
+                const val = btn.dataset.val;
+                if (val === this.state.topology) return;
+                const label = val === 'hex' ? 'hex6 (6-fold adjacency)' : 'oct8 (8-fold Moore)';
+                if (!confirm(`Rebuild the universe on the ${label} substrate?\n\nThe current field autosaves tagged to its own adjacency — switching back restores your session.`)) return;
+                saveSimState(this.bridge, this.state.currentScenario, this.state.topology);
+                localStorage.setItem(TOPOLOGY_KEY, val);
+                window.dispatchEvent(new CustomEvent('wake:topology'));
+            };
         });
     }
 
@@ -246,11 +278,21 @@ export class ControlsManager {
     bindScenarioDropdown() {
         const select = document.getElementById('scenario_dropdown');
         if (select) {
+            // Options are scoped to the active substrate — a hex-native
+            // scenario can't run on oct8 and vice versa.
+            select.innerHTML = '';
+            for (const [key, d] of Object.entries(SCENARIO_DOSSIERS)) {
+                if (!(d.topologies || ['square']).includes(this.state.topology)) continue;
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = d.title;
+                select.appendChild(opt);
+            }
             select.value = this.state.currentScenario;
             select.onchange = (e) => {
                 const val = e.target.value;
                 this.state.currentScenario = val;
-                const res = this.mutate(() => loadScenario(val, this.bridge));
+                const res = this.mutate(() => loadScenario(val, this.bridge, this.state.topology));
                 
                 const md = document.getElementById('math_dissipation');
                 const mt = document.getElementById('math_thermal_limit');
@@ -518,7 +560,7 @@ export class ControlsManager {
                     this.setPlaying(!this.state.isPlaying);
                     break;
                 case 'KeyR':
-                    this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge));
+                    this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge, this.state.topology));
                     break;
                 case 'KeyC':
                     this.mutate(() => this.bridge.clearGrid());
@@ -622,9 +664,9 @@ export class ControlsManager {
         });
         
         bind('btn_reset', () =>
-            this.mutate(() => loadScenario(this.state.currentScenario, this.bridge)));
+            this.mutate(() => loadScenario(this.state.currentScenario, this.bridge, this.state.topology)));
         bind('btn_soup', () =>
-            this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge)));
+            this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge, this.state.topology)));
         bind('btn_clear', () =>
             this.mutate(() => this.bridge.clearGrid()));
         bind('btn_play', () => this.setPlaying(!this.state.isPlaying));

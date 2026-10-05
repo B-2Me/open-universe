@@ -66,6 +66,10 @@ export class InteractionManager {
 
     init() {
         if (!this.container) return;
+        // The DOM outlives the engine — a substrate switch re-runs init on
+        // the same elements, so every element-bound listener hangs off one
+        // AbortController that destroy() trips (no stacked handlers).
+        this._abort = new AbortController();
         this.bindEvents();
         window.addEventListener('resize', this._onResize);
 
@@ -82,8 +86,9 @@ export class InteractionManager {
             const box = this.cursorBox();
             if (box) this.positionPreview(this.kbdX, this.kbdY, box.w, box.h);
         };
-        this.container.addEventListener('focus', this._onCanvasFocus);
-        this.container.addEventListener('blur', () => this.hideBrushPreview());
+        const sig = { signal: this._abort.signal };
+        this.container.addEventListener('focus', this._onCanvasFocus, sig);
+        this.container.addEventListener('blur', () => this.hideBrushPreview(), sig);
     }
 
     hideBrushPreview() {
@@ -187,7 +192,8 @@ export class InteractionManager {
 
     bindEvents() {
         const host = this.eventsEl;
-        host.addEventListener('contextmenu', (e) => e.preventDefault());
+        const sig = this._abort.signal;
+        host.addEventListener('contextmenu', (e) => e.preventDefault(), { signal: sig });
 
         host.addEventListener('wheel', (e) => {
             // Zoom only when the cursor is directly over the canvas — wheel
@@ -200,14 +206,14 @@ export class InteractionManager {
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
             this.zoomAtPoint(e.clientX, e.clientY, this.zoom + delta);
             this.constrainView();
-        }, { passive: false });
+        }, { passive: false, signal: sig });
 
         host.addEventListener('dblclick', () => {
             // Config/System mode behaves exactly like Move mode on the canvas
             if (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown) {
                 this.resetView();
             }
-        });
+        }, { signal: sig });
 
         host.addEventListener('pointerdown', (e) => {
             // Ignore right/middle mouse clicks entirely (paint and pan are primary-button only)
@@ -255,7 +261,7 @@ export class InteractionManager {
                     y: (pts[0].y + pts[1].y) / 2
                 };
             }
-        });
+        }, { signal: sig });
 
         host.addEventListener('pointermove', (e) => {
             if (!this.activePointers.has(e.pointerId)) {
@@ -290,7 +296,7 @@ export class InteractionManager {
                 if (this.suppressUntilLiftoff) return;
                 this.processInput(e.clientX, e.clientY, false, e.pointerType);
             }
-        });
+        }, { signal: sig });
 
         const endPointer = (e) => {
             this.activePointers.delete(e.pointerId);
@@ -313,9 +319,9 @@ export class InteractionManager {
             }
         };
 
-        host.addEventListener('pointerup', endPointer);
-        host.addEventListener('pointercancel', endPointer);
-        host.addEventListener('pointerleave', () => this.hideBrushPreview());
+        host.addEventListener('pointerup', endPointer, { signal: sig });
+        host.addEventListener('pointercancel', endPointer, { signal: sig });
+        host.addEventListener('pointerleave', () => this.hideBrushPreview(), { signal: sig });
     }
 
     // Maps a client point to grid coordinates, clamped into the field so
@@ -583,6 +589,7 @@ export class InteractionManager {
     }
 
     destroy() {
+        this._abort?.abort(); // drops every element-bound listener at once
         window.removeEventListener('resize', this._onResize);
         this.activePointers.clear();
         this.isDragging = false;

@@ -3,16 +3,27 @@ import { onMounted, onUnmounted } from 'vue'
 
 let cleanup = null
 
+const boot = async () => {
+  if (typeof cleanup === 'function') cleanup()
+  const { initWakeSimulator } = await import('../wake/main.js')
+  cleanup = await initWakeSimulator()
+}
+
+// The Substrate selector (System drawer) swaps engine modules — same
+// dynamics, different adjacency — by re-running the boot sequence.
+const onTopologyChange = () => { boot() }
+
 onMounted(async () => {
   // PWA shell: offline cache for the site + wasm (prod builds only)
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   }
-  const { initWakeSimulator } = await import('../wake/main.js')
-  cleanup = await initWakeSimulator()
+  window.addEventListener('wake:topology', onTopologyChange)
+  await boot()
 })
 
 onUnmounted(() => {
+  window.removeEventListener('wake:topology', onTopologyChange)
   if (typeof cleanup === 'function') cleanup()
 })
 </script>
@@ -90,6 +101,16 @@ onUnmounted(() => {
 
         <div id="context_config" class="context-popup sidebar-section">
           <div class="context-group">
+            <div class="context-header">
+              <span class="context-label">Substrate</span>
+              <span class="context-hint">Adjacency — reboots universe</span>
+            </div>
+            <div class="button-group" id="substrate_selector">
+              <button class="group-btn" data-val="square">⏹️ Oct8</button>
+              <button class="group-btn" data-val="hex">⬡ Hex6</button>
+            </div>
+          </div>
+          <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">
               <span class="context-label">Lattice Projection</span>
               <span class="context-hint" id="gpu_status_badge">WebGL Active</span>

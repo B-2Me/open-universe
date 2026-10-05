@@ -60,6 +60,7 @@ jobs:
           chmod +x build.sh || true
           ./build.sh
           test -f ../docs/public/wasm/wake/planck.wasm
+          test -f ../docs/public/wasm/wake/planck-hex.wasm
 
       - name: Build VitePress Site
         run: npm run docs:build

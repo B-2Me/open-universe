@@ -14,6 +14,10 @@ import {
     SPIN_DOWN_RIGHT,
     SPIN_UP_LEFT,
     OCTANT_SPIN_MAP,
+    HEX_OFFSETS,
+    hexSextant,
+    hexDistance,
+    spinMax,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
     packNode
@@ -130,6 +134,7 @@ class GridComposer {
 
 export const SCENARIO_DOSSIERS = {
     vacuum: {
+        topologies: ['square', 'hex'],
         title: "🌌 Vacuum Core",
         objective: "Study cold cosmic baseline entropy and high-energy topological mass deadlocks.",
         mechanisms: "CMB floor dissipation, zero-friction dispersion, and topological unwinding.",
@@ -184,21 +189,53 @@ export const SCENARIO_DOSSIERS = {
         recommendedBrushes: ["💧 Fluid", "🔥 Igniter"],
         bestLayers: "👁 Macro + ♨ Metabolic",
         tips: "Drop Fluid from above to observe splash ripples, or place an Igniter on the seabed to create a hydrothermal plume."
+    },
+    // --- Hex-native scenarios (hex6 substrate) ---
+    // The 6-fold universe is filament-world: bound states are discrete
+    // graph cycles, and accretion needs angular momentum. These paints
+    // are the harness-proven variants — see engine-sim.mjs.
+    filament: {
+        topologies: ['hex'],
+        title: "⬡ Filament Electron",
+        objective: "The 6-fold bound state: a braided one-cell filament loop — circulation as a graph cycle, not a volumetric shell.",
+        mechanisms: "No tangent is an allowed spin on hex adjacency, so extended rings shear apart; the native closed streamline is a discrete hexagonal cycle where every cell's phase points exactly at the next. Phase Lock plus the spin-only halo waveguide recapture leakage.",
+        recommendedBrushes: ["💧 Fluid", "🔥 Igniter", "⚙️ Rotor"],
+        bestLayers: "🧲 Phase + 👁 Macro",
+        tips: "Compare with ⚛ Synthetic Electron on the oct8 substrate (⚙ System → Substrate): same thermodynamics, different adjacency — shell-world vs filament-world."
+    },
+    accretion: {
+        topologies: ['hex'],
+        title: "⬡ Accretion Seed",
+        objective: "Crystal growth by congestion: a deadlock seed in a spiral infall field — deposition with angular momentum.",
+        mechanisms: "Congestion gravity refracts flux toward the densest absorbing cell. Head-on inflow collisionally heats the focus and evaporates even the seed; offset one sextant, the infall spirals in tangentially and deposits gently.",
+        recommendedBrushes: ["💧 Fluid", "🧊 Cryo", "🔥 Igniter"],
+        bestLayers: "♨ Metabolic + 👁 Macro",
+        tips: "The knot stops growing once the spiral field depletes. Stamp Fluid into the spiral's path to feed it, or an Igniter onto the crystal to evaporate it."
+    },
+    jam: {
+        topologies: ['hex'],
+        title: "⬡ The Bottleneck",
+        objective: "Congestion gravity under load: a wide SE-bound stream forced through a 100-cell gap.",
+        mechanisms: "Three-exit channels jam fast — deadlock count spikes ~7× before the front relieves. Routing impedance, bandwidth cycle-stealing, and shunt deflection are all visible at the wall.",
+        recommendedBrushes: ["🔥 Igniter", "🧱 Wall"],
+        bestLayers: "👁 Macro + ♨ Metabolic",
+        tips: "Narrow the gap with the Wall brush to harden the jam; an Igniter on the jam face unwinds the knot and relieves the pressure."
     }
 };
 
-export function loadScenario(type, bridge) {
+export function loadScenario(type, bridge, topology = 'square') {
     bridge.clearGrid();
     const composer = new GridComposer(bridge);
 
     let targetDissipation = DISSIPATION_DEFAULT;
     let targetThermal = THERMAL_LIMIT_DEFAULT;
+    const smax = spinMax(topology);
 
     switch (type) {
         case "vacuum": {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
-            
+
             // Central core knot: stationary deadlock anchor. A spin-0 node
             // never sends, so the knot holds mass permanently — the field's
             // fixed gravitational center.
@@ -207,8 +244,9 @@ export function loadScenario(type, bridge) {
                 if (rOct <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 return null;
             });
-            // Ambient dust (Random distribution)
-            composer.sprinkle(200, () => packNode(VACUUM_DUST_QUANTA, Math.floor(Math.random() * 8) + 1, VACUUM_DUST_HEAT));
+            // Ambient dust (Random distribution, within the substrate's
+            // spin vocabulary — hex has 6 directions, not 8)
+            composer.sprinkle(200, () => packNode(VACUUM_DUST_QUANTA, Math.floor(Math.random() * smax) + 1, VACUUM_DUST_HEAT));
             break;
         }
 
@@ -337,7 +375,7 @@ export function loadScenario(type, bridge) {
         case "boundary": {
             targetDissipation = DISSIPATION_NOZZLE;
             targetThermal = THERMAL_LIMIT_ENGINE_BELL;
-            
+
             // Linear Left-to-Right Gradients
             composer.apply((x, y) => {
                 if (x < 60) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, HEAT_ROOM_AMBIENT);
@@ -351,6 +389,80 @@ export function loadScenario(type, bridge) {
             });
             break;
         }
+
+        // --- Hex-native scenarios (hex6 substrate) ---
+        // Paints mirror the harness-proven variants in engine-sim.mjs.
+
+        case "filament": {
+            // The hexcycle bound state: a 1-cell discrete hexagonal loop
+            // where every cell's spin points at the counterclockwise-next
+            // cell on the loop — exact on the cell graph. The octagon
+            // electron's hex-native counterpart (filament, not shell).
+            targetDissipation = DISSIPATION_DEFAULT;
+            targetThermal = THERMAL_LIMIT_DEFAULT;
+
+            composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                const dh = hexDistance(x, y, composer.cx, composer.cy);
+                if (dh <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                if (dh <= 25) return packNode(0, SPIN_STATIONARY, 1); // moat
+                if (dh <= 90) {
+                    let spin = hexSextant(Math.atan2(dy, dx) + Math.PI / 2); // tangent halo
+                    if (dh === 50) {
+                        // Exact circulation: spin = the CCW-next loop cell
+                        // on the hex graph (never the quantized tangent).
+                        const off = HEX_OFFSETS[y & 1];
+                        const aCur = Math.atan2(dy, dx);
+                        let best = 0, bestA = Infinity;
+                        for (let d = 1; d <= 6; d++) {
+                            const nx2 = (x + off[d][0] + GRID_WIDTH) % GRID_WIDTH;
+                            const ny2 = (y + off[d][1] + GRID_HEIGHT) % GRID_HEIGHT;
+                            if (hexDistance(nx2, ny2, composer.cx, composer.cy) !== 50) continue;
+                            let da = Math.atan2(ny2 - composer.cy, nx2 - composer.cx) - aCur;
+                            while (da <= 0) da += Math.PI * 2;
+                            if (da < bestA) { bestA = da; best = d; }
+                        }
+                        if (best) spin = best;
+                        return packNode(120, spin, HEAT_ROOM_AMBIENT);
+                    }
+                    return packNode(0, spin, 1); // spin-only waveguide
+                }
+                return null;
+            });
+            break;
+        }
+
+        case "accretion": {
+            // The hexsnow spiral: a deadlock seed in a sparse field whose
+            // spins spiral inward one sextant off radial — gentle tangential
+            // deposition. Head-on inflow evaporates the seed instead.
+            targetDissipation = DISSIPATION_DEFAULT;
+            targetThermal = THERMAL_LIMIT_DEFAULT;
+
+            composer.apply((x, y) => {
+                const dh = hexDistance(x, y, composer.cx, composer.cy);
+                if (dh <= 4) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                if (Math.random() < 0.08) {
+                    const spin = hexSextant(Math.atan2(composer.cy - y, composer.cx - x) + Math.PI / 6);
+                    return packNode(40, spin, 100);
+                }
+                return null;
+            });
+            break;
+        }
+
+        case "jam": {
+            // The hexjam bottleneck: a wall with a 100-cell gap, a broad
+            // SE-bound stream above it — congestion physics made visible.
+            targetDissipation = DISSIPATION_DEFAULT;
+            targetThermal = THERMAL_LIMIT_DEFAULT;
+
+            composer.apply((x, y) => {
+                if (y === 200 && (x < 150 || x > 250)) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                if (y >= 60 && y <= 195) return packNode(60, 2, HEAT_ROOM_AMBIENT); // SE flow into the wall
+                return null;
+            });
+            break;
+        }
     }
 
     bridge.setDissipation(targetDissipation);
@@ -358,14 +470,15 @@ export function loadScenario(type, bridge) {
     return { targetDissipation, targetThermal };
 }
 
-export function randomizeScenarioSoup(type, bridge) {
+export function randomizeScenarioSoup(type, bridge, topology = 'square') {
     bridge.clearGrid();
     const composer = new GridComposer(bridge);
     const flavor = Math.floor(Math.random() * 3);
+    const smax = spinMax(topology);
 
     switch (type) {
         case "vacuum": {
-            loadScenario("vacuum", bridge); // Populates the persistent stabilized central knot
+            loadScenario("vacuum", bridge, topology); // Populates the persistent stabilized central knot
             if (flavor === 0) {
                 // Nebula Clusters
                 for (let c = 0; c < 3; c++) {
@@ -374,7 +487,7 @@ export function randomizeScenarioSoup(type, bridge) {
                     composer.sprinkle(150, () => {
                         const rx = nx + (Math.random() * 40 - 20);
                         const ry = ny + (Math.random() * 40 - 20);
-                        return packNode(80, Math.floor(Math.random() * 8) + 1, 15000);
+                        return packNode(80, Math.floor(Math.random() * smax) + 1, 15000);
                     });
                 }
             } else if (flavor === 1) {
@@ -584,6 +697,14 @@ export function randomizeScenarioSoup(type, bridge) {
                     return null;
                 });
             }
+            break;
+        }
+
+        default: {
+            // Hex-native scenarios have no soup mutations yet — Random
+            // simply repaints the base scenario rather than dead-ending
+            // on an empty field.
+            loadScenario(type, bridge, topology);
             break;
         }
     }

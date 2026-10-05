@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "wasm:build": "mkdir -p docs/public/wasm/wake && cd src && bash build.sh",
-    "wasm:check": "(test -f docs/public/wasm/wake/planck.wasm && test docs/public/wasm/wake/planck.wasm -nt src/planck.c && test docs/public/wasm/wake/planck.wasm -nt src/build.sh) || (command -v emcc >/dev/null 2>&1 && npm run wasm:build) || echo '⚠️ Notice: planck.wasm missing or stale. If testing the simulator locally, build src/ with emsdk.'",
+    "wasm:check": "(test -f docs/public/wasm/wake/planck.wasm && test -f docs/public/wasm/wake/planck-hex.wasm && test docs/public/wasm/wake/planck.wasm -nt src/planck.c && test docs/public/wasm/wake/planck-hex.wasm -nt src/planck.c && test docs/public/wasm/wake/planck.wasm -nt src/build.sh) || (command -v emcc >/dev/null 2>&1 && npm run wasm:build) || echo '⚠️ Notice: planck.wasm missing or stale. If testing the simulator locally, build src/ with emsdk.'",
     "docs:dev": "npm run wasm:check && vitepress dev docs",
     "docs:build": "npm run wasm:build && vitepress build docs",
     "docs:preview": "vitepress preview docs",

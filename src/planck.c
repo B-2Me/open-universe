@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <emscripten.h>
 
 #define WIDTH (400)
@@ -60,10 +61,114 @@ uint16_t KNOB_THERMAL_LIMIT = 1200;
 int IMPEDANCE_MODE_ACTIVE = 1;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 
+// --- Lattice Topology ---
+// Adjacency is a build parameter — the same thermodynamic accounting runs
+// on either substrate; what changes is which structures can persist.
+// Default is Moore 8-fold (square). -DTOPOLOGY_HEX builds the 6-fold
+// odd-r offset variant: 6 edge neighbors, row-parity-dependent diagonals,
+// spins 1-6 = E, SE, SW, W, NW, NE at screen angles (spin-1)*60°.
+// Triangular-cell 3-fold is the dual description of the same symmetry.
+// Mirrors tickHex()/HOFF in engine-sim.mjs — keep the two in sync.
+#ifdef TOPOLOGY_HEX
+#define SPIN_MAX 6
+#define TOPOLOGY_NAME "hex6"
+#else
+#define SPIN_MAX 8
+#define TOPOLOGY_NAME "oct8"
+#endif
+
 const uint8_t DIR_MAP[3][3] = { {8, 1, 2}, {7, 0, 3}, {6, 5, 4} };
 const uint8_t INV_DIR[9] = {0, 5, 6, 7, 8, 1, 2, 3, 4};
 const int SPIN_DX[9] = {0, 0, 1, 1, 1, 0, -1, -1, -1};
 const int SPIN_DY[9] = {0, -1, -1, 0, 1, 1, 1, 0, -1};
+
+#ifdef TOPOLOGY_HEX
+static const int8_t HEX_OFF[2][7][2] = {
+    {{0,0},{1,0},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1}},  // even rows
+    {{0,0},{1,0},{1,1},{0,1},{-1,0},{0,-1},{1,-1}}    // odd rows
+};
+static const uint8_t HEX_INV[7] = {0, 4, 5, 6, 1, 2, 3}; // E↔W, SE↔NW, SW↔NE
+// Geometric direction vectors — hex momentum is real-valued, not
+// sign-snapped, because no parity-independent (dx,dy) cell offset exists.
+static const double HEX_VX[7] = {0, 1.0, 0.5, -0.5, -1.0, -0.5, 0.5};
+static const double HEX_VY[7] = {0, 0.0, 0.8660254037844386, 0.8660254037844386,
+                                 0, -0.8660254037844386, -0.8660254037844386};
+// Foreign spins (cross-topology state, square-vocabulary brushes) fold
+// into the hex vocabulary by angle: N→NE, NE→NE, E→E, SE→SE, S→SW,
+// SW→SW, W→W, NW→NW.
+static const uint8_t SQUARE_TO_HEX[9] = {0, 6, 6, 1, 2, 3, 3, 4, 5};
+#endif
+
+// Neighbor visitation order — the 8-fold order reproduces the original
+// row-major (dy,dx) sweep; hex is the natural sextant cycle.
+static const uint8_t NB_ORDER[8] = {
+#ifdef TOPOLOGY_HEX
+    1, 2, 3, 4, 5, 6, 0, 0
+#else
+    8, 1, 2, 7, 3, 6, 5, 4
+#endif
+};
+
+static inline int nb_dx(int y, int d) {
+#ifdef TOPOLOGY_HEX
+    return HEX_OFF[y & 1][d][0];
+#else
+    (void)y; return SPIN_DX[d];
+#endif
+}
+static inline int nb_dy(int y, int d) {
+#ifdef TOPOLOGY_HEX
+    return HEX_OFF[y & 1][d][1];
+#else
+    (void)y; return SPIN_DY[d];
+#endif
+}
+static inline uint8_t inv_dir(int d) {
+#ifdef TOPOLOGY_HEX
+    return HEX_INV[d];
+#else
+    return INV_DIR[d];
+#endif
+}
+static inline double dir_vx(int d) {
+#ifdef TOPOLOGY_HEX
+    return HEX_VX[d];
+#else
+    return (double)SPIN_DX[d];
+#endif
+}
+static inline double dir_vy(int d) {
+#ifdef TOPOLOGY_HEX
+    return HEX_VY[d];
+#else
+    return (double)SPIN_DY[d];
+#endif
+}
+// Dominant momentum → spin id. 8-fold sign-snaps through DIR_MAP; hex
+// sextant-quantizes the real angle. Mirrors hexDir() in engine-sim.mjs.
+static inline uint8_t dir_from_momentum(double mx, double my) {
+#ifdef TOPOLOGY_HEX
+    if (mx == 0.0 && my == 0.0) return 0;
+    int s = (int)floor((atan2(my, mx) + M_PI / 6.0) / (M_PI / 3.0)) % 6;
+    if (s < 0) s += 6;
+    return (uint8_t)(s + 1);
+#else
+    int xd = (mx > 0) - (mx < 0);
+    int yd = (my > 0) - (my < 0);
+    return DIR_MAP[yd + 1][xd + 1];
+#endif
+}
+// Spins outside the active vocabulary (cross-topology restores, foreign
+// brush stamps) fold into range instead of addressing nonexistent
+// neighbors or leaking quanta into the void.
+static inline uint8_t norm_spin(uint8_t s) {
+#ifdef TOPOLOGY_HEX
+    return (s <= 8) ? SQUARE_TO_HEX[s] : 0;
+#else
+    return (s <= 8) ? s : 0;
+#endif
+}
+static inline int valid_spin(uint8_t s) { return s >= 1 && s <= SPIN_MAX; }
 
 // Telemetry
 double obs_total_quanta = 0;
@@ -80,7 +185,7 @@ EMSCRIPTEN_KEEPALIVE double get_yield() { return obs_actualization_yield; }
 EMSCRIPTEN_KEEPALIVE
 const char* get_engine_build() {
     static char build_str[80];
-    snprintf(build_str, sizeof(build_str), "%s · %s", __DATE__, GIT_REV);
+    snprintf(build_str, sizeof(build_str), "%s · %s · %s", __DATE__, GIT_REV, TOPOLOGY_NAME);
     return build_str;
 }
 EMSCRIPTEN_KEEPALIVE int get_grid_width() { return WIDTH; }
@@ -188,7 +293,7 @@ void set_node_state(int x, int y, int state) {
     if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
     int idx = y * WIDTH + x;
     grid_read[idx].quanta = (state >> 24) & 0xFF;
-    grid_read[idx].spin = (state >> 16) & 0xFF;
+    grid_read[idx].spin = norm_spin((state >> 16) & 0xFF);
     grid_read[idx].heat = state & 0xFFFF;
 }
 
@@ -216,33 +321,29 @@ void add_quanta_impedance(int x, int y, int amount) {
 
     // Refractive Momentum Inheritance
     if (IMPEDANCE_MODE_ACTIVE) {
-        int sum_dx = 0, sum_dy = 0;
+        double sum_dx = 0.0, sum_dy = 0.0;
         int neighbor_count = 0;
-        
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                if (dx == 0 && dy == 0) continue;
-                int nx = (x + dx + WIDTH) % WIDTH;
-                int ny = (y + dy + HEIGHT) % HEIGHT;
-                PlanckNode n = grid_read[ny * WIDTH + nx];
-                if (n.spin > 0 && n.spin <= 8) {
-                    sum_dx += SPIN_DX[n.spin];
-                    sum_dy += SPIN_DY[n.spin];
-                    neighbor_count++;
-                }
+
+        for (int k = 0; k < SPIN_MAX; k++) {
+            int d = NB_ORDER[k];
+            int nx = (x + nb_dx(y, d) + WIDTH) % WIDTH;
+            int ny = (y + nb_dy(y, d) + HEIGHT) % HEIGHT;
+            PlanckNode n = grid_read[ny * WIDTH + nx];
+            if (valid_spin(n.spin)) {
+                sum_dx += dir_vx(n.spin);
+                sum_dy += dir_vy(n.spin);
+                neighbor_count++;
             }
         }
-        
-        if (neighbor_count > 0 && (sum_dx != 0 || sum_dy != 0)) {
-            int sdx = (sum_dx > 0) - (sum_dx < 0);
-            int sdy = (sum_dy > 0) - (sum_dy < 0);
-            target->spin = DIR_MAP[sdy + 1][sdx + 1];
-            if (target->spin == 0) target->spin = (rand() % 8) + 1;
+
+        if (neighbor_count > 0 && (sum_dx != 0.0 || sum_dy != 0.0)) {
+            target->spin = dir_from_momentum(sum_dx, sum_dy);
+            if (target->spin == 0) target->spin = (rand() % SPIN_MAX) + 1;
         } else {
-            target->spin = (rand() % 8) + 1;
+            target->spin = (rand() % SPIN_MAX) + 1;
         }
     } else {
-        target->spin = (rand() % 8) + 1;
+        target->spin = (rand() % SPIN_MAX) + 1;
     }
 }
 
@@ -255,7 +356,7 @@ EMSCRIPTEN_KEEPALIVE void add_quanta(int x, int y, int amount) {
         int q = grid_read[idx].quanta + amount;
         grid_read[idx].quanta = (q > 255) ? 255 : q;
         grid_read[idx].heat += amount * QUANTA_INJECT_HEAT;
-        grid_read[idx].spin = (rand() % 8) + 1; 
+        grid_read[idx].spin = (rand() % SPIN_MAX) + 1;
     }
 }
 
@@ -267,7 +368,7 @@ EMSCRIPTEN_KEEPALIVE void add_heat(int x, int y, int amount) {
 }
 
 EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
-    if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT || dir < 1 || dir > 8) return;
+    if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT || dir < 1 || dir > SPIN_MAX) return;
     grid_read[y * WIDTH + x].spin = dir;
 }
 
@@ -289,70 +390,68 @@ void tick() {
         for (int x = 0; x < WIDTH; x++) {
             int idx = y * WIDTH + x;
             PlanckNode current = grid_read[idx];
-            
+            // Foreign spins (cross-topology state, oversized stamps) fold
+            // into the active vocabulary before they index a table.
+            if (current.spin > SPIN_MAX) current.spin = norm_spin(current.spin);
+
             int target_deadlocked = 0;
             if (current.spin != 0) {
-                int target_x = (x + SPIN_DX[current.spin] + WIDTH) % WIDTH;
-                int target_y = (y + SPIN_DY[current.spin] + HEIGHT) % HEIGHT;
+                int target_x = (x + nb_dx(y, current.spin) + WIDTH) % WIDTH;
+                int target_y = (y + nb_dy(y, current.spin) + HEIGHT) % HEIGHT;
                 if (grid_read[target_y * WIDTH + target_x].quanta > DEADLOCK_QUANTA) target_deadlocked = 1;
             }
-            
+
             int heat_sum = 0;
             int kinetic_heat = 0;
             int max_congestion = 0;
             uint8_t gravity_spin = current.spin;
             int incoming_quanta = 0;
-            int mom_x = 0; 
-            int mom_y = 0;
-            
-            int has_domain_match = 0; 
+            double mom_x = 0.0;
+            double mom_y = 0.0;
 
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    if (dx == 0 && dy == 0) continue;
-                    
-                    int nx = (x + dx + WIDTH) % WIDTH;
-                    int ny = (y + dy + HEIGHT) % HEIGHT;
-                    PlanckNode neighbor = grid_read[ny * WIDTH + nx];
+            int has_domain_match = 0;
 
-                    uint8_t n_dir = DIR_MAP[dy+1][dx+1];
-                    uint8_t req_spin = INV_DIR[n_dir];
+            for (int k = 0; k < SPIN_MAX; k++) {
+                int d = NB_ORDER[k];
+                int nx = (x + nb_dx(y, d) + WIDTH) % WIDTH;
+                int ny = (y + nb_dy(y, d) + HEIGHT) % HEIGHT;
+                PlanckNode neighbor = grid_read[ny * WIDTH + nx];
+                uint8_t req_spin = inv_dir(d);
 
-                    heat_sum += neighbor.heat / HEAT_DIFFUSION_DIV;
+                heat_sum += neighbor.heat / HEAT_DIFFUSION_DIV;
 
-                    if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
-                        // The sender only relays up to FLOW_CAP; the rest stays put.
-                        int sent = (neighbor.quanta > FLOW_CAP) ? FLOW_CAP : neighbor.quanta;
-                        kinetic_heat += (sent * KINETIC_BASE);
+                if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
+                    // The sender only relays up to FLOW_CAP; the rest stays put.
+                    int sent = (neighbor.quanta > FLOW_CAP) ? FLOW_CAP : neighbor.quanta;
+                    kinetic_heat += (sent * KINETIC_BASE);
 
-                        if (current.quanta > 0 && current.spin != 0) {
-                            if (neighbor.spin == current.spin) {
-                                kinetic_heat += sent * KINETIC_ALIGNED;
-                            } else if (neighbor.spin == INV_DIR[current.spin]) {
-                                kinetic_heat += 0;
-                            } else {
-                                kinetic_heat += sent * KINETIC_ORTHOGONAL;
-                            }
-                        }
-
-                        if (current.quanta <= DEADLOCK_QUANTA) {
-                            incoming_quanta += sent; 
-                            mom_x -= (dx * sent);    
-                            mom_y -= (dy * sent);
+                    if (current.quanta > 0 && current.spin != 0) {
+                        if (neighbor.spin == current.spin) {
+                            kinetic_heat += sent * KINETIC_ALIGNED;
+                        } else if (neighbor.spin == inv_dir(current.spin)) {
+                            kinetic_heat += 0;
+                        } else {
+                            kinetic_heat += sent * KINETIC_ORTHOGONAL;
                         }
                     }
 
-                    // Congestion gravity sink: flux deflects toward the densest
-                    // neighbor that can still absorb (quanta > 200 is a hard
-                    // wall — bending into deadlock means hitting it, not accreting).
-                    if (neighbor.quanta > max_congestion && neighbor.quanta <= DEADLOCK_QUANTA) {
-                        max_congestion = neighbor.quanta;
-                        gravity_spin = n_dir;
+                    if (current.quanta <= DEADLOCK_QUANTA) {
+                        incoming_quanta += sent;
+                        mom_x -= dir_vx(d) * sent;
+                        mom_y -= dir_vy(d) * sent;
                     }
-                    
-                    if (current.quanta > 0 && neighbor.quanta > 0 && neighbor.spin == current.spin) {
-                        has_domain_match = 1;
-                    }
+                }
+
+                // Congestion gravity sink: flux deflects toward the densest
+                // neighbor that can still absorb (quanta > 200 is a hard
+                // wall — bending into deadlock means hitting it, not accreting).
+                if (neighbor.quanta > max_congestion && neighbor.quanta <= DEADLOCK_QUANTA) {
+                    max_congestion = neighbor.quanta;
+                    gravity_spin = d;
+                }
+
+                if (current.quanta > 0 && neighbor.quanta > 0 && neighbor.spin == current.spin) {
+                    has_domain_match = 1;
                 }
             }
 
@@ -371,17 +470,15 @@ void tick() {
             next_quanta += incoming_quanta; 
             if (next_quanta > 255) next_quanta = 255; 
 
-            int x_dir = (mom_x > 0) - (mom_x < 0); 
-            int y_dir = (mom_y > 0) - (mom_y < 0);
-            uint8_t dominant_spin = DIR_MAP[y_dir + 1][x_dir + 1];
-            
+            uint8_t dominant_spin = dir_from_momentum(mom_x, mom_y);
+
             if (incoming_quanta > 0 && dominant_spin == 0) kinetic_heat += incoming_quanta * KINETIC_HEADON;
 
             // --- Bandwidth Limit & Cycle-Stealing (Time Dilation) ---
             // Spatial I/O routing load takes absolute priority over internal maintenance.
-            int routing_load = incoming_quanta + abs(mom_x) + abs(mom_y) + (shunting ? current.quanta : 0);
+            double routing_load = incoming_quanta + fabs(mom_x) + fabs(mom_y) + (shunting ? current.quanta : 0);
             if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
-            double bandwidth_fraction = 1.0 - ((double)routing_load / NODE_BANDWIDTH_MAX);
+            double bandwidth_fraction = 1.0 - (routing_load / NODE_BANDWIDTH_MAX);
             if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
 
             int kept_heat = current.heat - HEAT_KEEP_NUM * (current.heat / HEAT_DIFFUSION_DIV);
@@ -410,13 +507,13 @@ void tick() {
             // Flux rewrites phase; silence never does.
             uint8_t next_spin = (dominant_spin != 0) ? dominant_spin : current.spin; 
             if (shunting) {
-                uint8_t left_spin = (current.spin - 1 < 1) ? 8 : current.spin - 1;
-                uint8_t right_spin = (current.spin + 1 > 8) ? 1 : current.spin + 1;
-                
-                int lx = (x + SPIN_DX[left_spin] + WIDTH) % WIDTH;
-                int ly = (y + SPIN_DY[left_spin] + HEIGHT) % HEIGHT;
-                int rx = (x + SPIN_DX[right_spin] + WIDTH) % WIDTH;
-                int ry = (y + SPIN_DY[right_spin] + HEIGHT) % HEIGHT;
+                uint8_t left_spin = (current.spin - 1 < 1) ? SPIN_MAX : current.spin - 1;
+                uint8_t right_spin = (current.spin + 1 > SPIN_MAX) ? 1 : current.spin + 1;
+
+                int lx = (x + nb_dx(y, left_spin) + WIDTH) % WIDTH;
+                int ly = (y + nb_dy(y, left_spin) + HEIGHT) % HEIGHT;
+                int rx = (x + nb_dx(y, right_spin) + WIDTH) % WIDTH;
+                int ry = (y + nb_dy(y, right_spin) + HEIGHT) % HEIGHT;
                 
                 int heat_left = grid_read[ly * WIDTH + lx].heat;
                 int heat_right = grid_read[ry * WIDTH + rx].heat;
@@ -439,7 +536,7 @@ void tick() {
                     }
                 } else {
                     int diff = abs((int)current.spin - (int)dominant_spin);
-                    if (diff <= 1 || diff == 7) {
+                    if (diff <= 1 || diff == SPIN_MAX - 1) {
                         next_spin = current.spin;
                     } else {
                         next_spin = dominant_spin;
@@ -589,9 +686,9 @@ char* generate_vtk() {
     SAFE_PRINTF("\nVECTORS Spin float\n");
     for (int i = 0; i < PIXEL_COUNT; i++) {
         uint8_t s = grid_read[i].spin;
-        int dx = (s == 0) ? 0 : SPIN_DX[s];
-        int dy = (s == 0) ? 0 : SPIN_DY[s];
-        SAFE_PRINTF("%d %d 0.0\n", dx, dy);
+        double dx = valid_spin(s) ? dir_vx(s) : 0.0;
+        double dy = valid_spin(s) ? dir_vy(s) : 0.0;
+        SAFE_PRINTF("%.3f %.3f 0.0\n", dx, dy);
     }
 
     #undef SAFE_PRINTF

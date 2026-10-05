@@ -17,14 +17,16 @@ function openDB() {
     });
 }
 
-export async function saveSimState(bridge, scenario) {
+export async function saveSimState(bridge, scenario, topology = 'square') {
     try {
         const ptr = bridge.getGridPointer();
         const grid = new Uint8Array(bridge.wasm.HEAPU8.buffer, ptr, GRID_BYTE_SIZE).slice();
         const db = await openDB();
         await new Promise((resolve, reject) => {
             const tx = db.transaction(STORE, 'readwrite');
-            tx.objectStore(STORE).put({ grid: grid.buffer, scenario, savedAt: Date.now() }, KEY);
+            // The grid bytes are only meaningful under their own substrate —
+            // a field painted on oct8 carries spins the hex engine can't run.
+            tx.objectStore(STORE).put({ grid: grid.buffer, scenario, topology, savedAt: Date.now() }, KEY);
             tx.oncomplete = resolve;
             tx.onerror = () => reject(tx.error);
         });

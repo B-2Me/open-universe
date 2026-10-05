@@ -12,12 +12,14 @@ import {
     SPEED_DEFAULT_TPS,
     TOTAL_NODES,
     GRID_WIDTH,
-    GRID_HEIGHT
+    GRID_HEIGHT,
+    getTopology
 } from './constants.js';
 
 export async function initWakeSimulator() {
     const errorBanner = document.getElementById('error-banner');
     const diagStatus = document.getElementById('diag_status');
+    if (errorBanner) { errorBanner.style.display = 'none'; errorBanner.innerText = ''; }
 
     // Boot and loop share one fatal path so a crash always surfaces on screen.
     const showFatal = (err) => {
@@ -34,7 +36,10 @@ export async function initWakeSimulator() {
     try {
         if (diagStatus) diagStatus.innerText = "INITIALIZING";
 
-        const wasm = await loadPlanckWasm();
+        // Which substrate universe boots — 'square' (oct8, Moore 8-fold)
+        // or 'hex' (hex6, 6-fold). Same dynamics, different adjacency.
+        const topology = getTopology();
+        const wasm = await loadPlanckWasm(topology);
         const bridge = new PlanckBridge(wasm);
 
         // The engine reports its compiled grid dimensions — if constants.js
@@ -55,7 +60,13 @@ export async function initWakeSimulator() {
 
         const state = {
             isPlaying: true,
-            currentScenario: 'vacuum',
+            // Each substrate boots into its own flagship scenario — the
+            // hex universe's bound state is the filament, not the shell.
+            topology,
+            currentScenario: topology === 'hex' ? 'filament' : 'vacuum',
+            // Projection matches the substrate's true symmetry — hex
+            // stagger is honest on hex adjacency; oct chamfer on Moore.
+            projection: topology === 'hex' ? 'hex' : 'oct',
             currentMode: 'move',
             // Mode drawers track currentMode but can be collapsed while the
             // tool stays armed (second tap on the active segment button).
@@ -131,14 +142,16 @@ export async function initWakeSimulator() {
         });
         controlsRef = controls;
 
-        const initialParams = loadScenario(state.currentScenario, bridge);
+        const initialParams = loadScenario(state.currentScenario, bridge, topology);
 
-        // Resume a previous session if an autosave exists (grid bytes override
-        // the default scenario seed; the saved scenario name is restored too).
+        // Resume a previous session if an autosave exists — but only one
+        // from this substrate: foreign-topology bytes carry a spin
+        // vocabulary this engine can't run.
         const saved = await loadSimState();
-        if (saved && saved.grid) {
+        if (saved && saved.grid && (saved.topology || 'square') === topology) {
             restoreSimState(bridge, saved);
-            if (saved.scenario && SCENARIO_DOSSIERS[saved.scenario]) {
+            const dossier = saved.scenario && SCENARIO_DOSSIERS[saved.scenario];
+            if (dossier && (dossier.topologies || ['square']).includes(topology)) {
                 state.currentScenario = saved.scenario;
                 const dd = document.getElementById('scenario_dropdown');
                 if (dd) dd.value = saved.scenario;
@@ -178,6 +191,10 @@ export async function initWakeSimulator() {
 function bindWheelForwarding() {
     const sandbox = document.querySelector('.wake-sandbox');
     if (!sandbox) return;
+    // The sandbox element survives topology re-init; bind once or every
+    // engine swap would stack another forwarding listener (double scroll).
+    if (sandbox.dataset.wheelForwardBound) return;
+    sandbox.dataset.wheelForwardBound = '1';
     sandbox.addEventListener('wheel', (e) => {
         if (e.defaultPrevented) return; // canvas zoom claimed it
         for (let el = e.target; el && el !== sandbox; el = el.parentElement) {

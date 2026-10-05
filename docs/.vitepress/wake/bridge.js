@@ -54,22 +54,25 @@ export class PlanckBridge {
     }
 }
 
-export async function loadPlanckWasm() {
+export async function loadPlanckWasm(topology = 'square') {
     // The wasm assets live at unversioned public/ URLs — append the
     // per-deploy build token so a stale cache can never pair an old
     // engine with a new shell (or vice versa).
-    if (typeof window.createPlanck === 'undefined') {
+    const isHex = topology === 'hex';
+    const file = isHex ? 'planck-hex' : 'planck';
+    const factoryName = isHex ? 'createPlanckHex' : 'createPlanck';
+    if (typeof window[factoryName] === 'undefined') {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = `/wasm/wake/planck.js?v=${WAKE_BUILD_ID}`;
+            script.src = `/wasm/wake/${file}.js?v=${WAKE_BUILD_ID}`;
             script.onload = resolve;
-            script.onerror = () => reject(new Error('Failed to load /wasm/wake/planck.js'));
+            script.onerror = () => reject(new Error(`Failed to load /wasm/wake/${file}.js`));
             document.head.appendChild(script);
         });
     }
 
     return new Promise((resolve, reject) => {
-        window.createPlanck({
+        window[factoryName]({
             locateFile: (path) => `/wasm/wake/${path}?v=${WAKE_BUILD_ID}`,
             onAbort: () => reject(new Error("The Planck Field collapsed."))
         }).then(resolve).catch(reject);

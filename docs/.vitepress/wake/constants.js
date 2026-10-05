@@ -87,6 +87,34 @@ export const OCTANT_SPIN_MAP = [
     SPIN_UP_RIGHT     // 7: ~315° (NE)
 ];
 
+// --- Hex Substrate (6-fold) ---
+// Mirrors HEX_OFF/HEX_INV in planck.c and HOFF in engine-sim.mjs — the
+// three must stay in sync. Spins 1-6 = E, SE, SW, W, NW, NE at screen
+// angles (spin-1)*60°; diagonal offsets alternate by row parity (odd-r).
+export const HEX_OFFSETS = [
+    [[0,0],[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]], // even rows
+    [[0,0],[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]    // odd rows
+];
+
+// Angle → hex spin (sextant quantization).
+export const hexSextant = (angle) =>
+    ((Math.floor((angle + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+
+// Odd-r offset → axial hex distance between two cells.
+export const hexDistance = (x, y, cx, cy) => {
+    const dq = (x - Math.floor(y / 2)) - (cx - Math.floor(cy / 2));
+    const dr = y - cy;
+    return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+};
+
+// --- Substrate Selection ---
+// Which engine module boots — 'square' (oct8, Moore adjacency) or 'hex'
+// (hex6, 6-fold). Stored across sessions; switching reboots the sim.
+export const TOPOLOGY_KEY = 'wake_topology';
+export const getTopology = () =>
+    (typeof localStorage !== 'undefined' && localStorage.getItem(TOPOLOGY_KEY) === 'hex') ? 'hex' : 'square';
+export const spinMax = (topology) => topology === 'hex' ? 6 : 8;
+
 // --- Heat Presets ---
 // Shared field vocabulary used by both the brush palette and the
 // scenario composers — palette-only and scenario-only presets live in
