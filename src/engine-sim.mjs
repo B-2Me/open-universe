@@ -322,13 +322,13 @@ function paintHex(variant) {
     } else if (variant === 'hexstream') {
       // E is a same-row direction — straight-through exists on hex.
       if (y >= 195 && y <= 205 && x >= 40 && x <= 360) { q[i] = 80; s[i] = 1; h[i] = 500; }
-    } else if (variant === 'hexring' || variant === 'hexringthin' || variant === 'hexcycle') {
+    } else if (variant.startsWith('hexcycle') || variant === 'hexring' || variant === 'hexringthin') {
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; }
       else if (d <= 90) {
         const a = Math.atan2(y - cy, x - cx) + Math.PI / 2; // tangent
         s[i] = SEXT(a);
-        if (variant === 'hexcycle' && d === 50) {
+        if (variant.startsWith('hexcycle') && d === 50) {
           // Exact discrete circulation: spin = the counterclockwise-next
           // ring cell on the cell graph — the hex-native closed loop.
           const par = y & 1, off = HOFF[par];
@@ -348,6 +348,17 @@ function paintHex(variant) {
         } else if (variant === 'hexringthin' && d >= 48 && d <= 52) {
           q[i] = 140; h[i] = 500;
         }
+      }
+      // Bombardment tests — mirror the electron's killers:
+      //   hexcyclef: ambient quantum foam (5%, random spins)
+      //   hexcycleb: a single aimed projectile in clean vacuum (re-lock test)
+      //   hexcyclep: projectile + foam
+      else if ((variant === 'hexcyclef' || variant === 'hexcyclep') && Math.random() < 0.05) {
+        q[i] = 5; s[i] = 1 + Math.floor(Math.random() * 6); h[i] = 100;
+      }
+      if (variant === 'hexcyclep' || variant === 'hexcycleb') {
+        const pd = hexDist(x, y, cx - 120, cy - 60);
+        if (pd <= 12) { q[i] = 150; s[i] = SEXT(Math.atan2(cy - y, cx - x)); h[i] = 500; }
       }
     } else if (variant === 'hexsnow') {
       // Crystal accretion: a deadlock seed in a convergent inflow — spins
@@ -376,15 +387,21 @@ function paintHex(variant) {
 }
 
 let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetry
+let CYCLE_TRACK = false; // hexcycle* variants report loop integrity
 
 function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0;
+  let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x, d = Math.hypot(x - cx, y - cy);
     totQ += q[i]; totH += h[i];
     if (q[i] > DEADLOCK) dead++;
+    if (CYCLE_TRACK && hexDist(x, y, cx, cy) === 50) {
+      cycleTotal++;
+      if (q[i] > 0) { cycleOcc++; cycleQ += q[i]; }
+    }
     if (d > 8 && d <= 80) {
       shellMass += q[i];
       let a = Math.atan2(y - cy, x - cx); if (a < 0) a += 2 * Math.PI;
@@ -392,7 +409,8 @@ function stats(label) {
     } else if (d > 80) foamMass += q[i];
   }
   const min = Math.min(...sectorMass), max = Math.max(...sectorMass);
-  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
+  const cyc = CYCLE_TRACK ? ` cycle=${cycleOcc}/${cycleTotal} cycleQ=${cycleQ}` : '';
+  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
 // --- run ---
@@ -422,6 +440,7 @@ else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(varian
 else paintElectron();
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
+CYCLE_TRACK = variant.startsWith('hexcycle');
 stats('tick 0');
 for (let t = 1; t <= 400; t++) {
   TICK();
