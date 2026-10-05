@@ -196,11 +196,12 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
             
-            // Central core knot: octagonal native loop with circulating tangent momentum
-            // so Phase Lock keeps it stabilized against ambient collision erosion.
+            // Central core knot: stationary deadlock anchor. A spin-0 node
+            // never sends, so the knot holds mass permanently — the field's
+            // fixed gravitational center.
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
                 const rOct = octRadius(dx, dy);
-                if (rOct <= 8) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(dx, dy, 1), 1);
+                if (rOct <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 return null;
             });
             // Ambient dust (Random distribution)
@@ -216,9 +217,10 @@ export function loadScenario(type, bridge) {
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
                 const rOct = octRadius(dx, dy);
 
-                // Core: Dense, circulating deadlock aligned to native lattice tangents
+                // Core: Dense, stationary deadlock — anchored in place so it
+                // can hold the envelope's mass without leaking outward.
                 if (rOct < 15) {
-                    return packNode(STELLAR_CORE_QUANTA, vortexSpin(dx, dy, 1), STELLAR_CORE_HEAT);
+                    return packNode(STELLAR_CORE_QUANTA, SPIN_STATIONARY, STELLAR_CORE_HEAT);
                 }
                 // Radiative Zone: High heat, isotropic turbulent sub-spins
                 else if (rOct < 50) {
@@ -270,8 +272,9 @@ export function loadScenario(type, bridge) {
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
                 const rOct = octRadius(dx, dy);
 
-                // Core anchor: permanent circulating deadlock, boots cold
-                if (rOct <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(dx, dy, 1), 1);
+                // Core anchor: permanent stationary deadlock, boots cold.
+                // Spin-0 nodes never send, so the anchor can't bleed mass.
+                if (rOct <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 
                 // Moat (cleared to vacuum so the halo acts purely as a spin-waveguide)
                 if (rOct <= ELECTRON_MOAT_OCT) return packNode(0, SPIN_STATIONARY, 1);
@@ -553,7 +556,7 @@ export function randomizeScenarioSoup(type, bridge) {
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
                     const ddx = x - bx, ddy = y - by;
                     const rOct = octRadius(ddx, ddy);
-                    if (rOct <= 6) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(ddx, ddy, -1), 1);
+                    if (rOct <= 6) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                     if (rOct <= 18) return packNode(0, SPIN_STATIONARY, 1);
                     if (rOct <= 60) {
                         const spin = vortexSpin(ddx, ddy, -1);

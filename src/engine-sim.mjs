@@ -143,7 +143,7 @@ function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.0
   const cx = 200, cy = 200;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy), i = y * W + x;
-    if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
+    if (d <= 8) { q[i] = 255; s[i] = oct && oct.core === 'vortex' ? vortexSpin(dx, dy) : 0; h[i] = 1; }
     else if (d <= 20) { if (!oct) { q[i] = 4; } s[i] = 0; h[i] = 1; }
     else if (oct) {
       const adx = Math.abs(dx), ady = Math.abs(dy);
@@ -211,6 +211,7 @@ PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
+else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
 else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
 else if (variant === 'octmix') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
 else if (variant === 'rings') paintElectron({ ringMode: [{ r: 40, q: 130 }, { r: 60, q: 90 }] });
