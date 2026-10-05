@@ -33,7 +33,8 @@ html:has(.wake-sandbox) body {
   touch-action: pan-x pan-y;
 }
 
-.wake-sandbox { overscroll-behavior: contain; }
+/* No overscroll-behavior here — the wheel handler already hit-tests the
+   canvas rect for zoom, so scroll chaining must stay open for the page. */
 
 .VPDoc:has(.wake-sandbox) { padding-top: 0 !important; }
 .VPDoc:has(.wake-sandbox) .container { padding-top: 0 !important; }
