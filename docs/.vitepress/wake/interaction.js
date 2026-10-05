@@ -17,8 +17,11 @@ const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
 const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
 
 export class InteractionManager {
-    constructor({ bridge, palette, state, canvasContainerId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
+    constructor({ bridge, palette, state, canvasContainerId, touchZoneId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
         this.container = document.getElementById(canvasContainerId);
+        // Events bind to the touch zone (canvas + the coarse-pointer pad strip
+        // below it); rect/grid math always uses the canvas container itself.
+        this.eventsEl = (touchZoneId && document.getElementById(touchZoneId)) || this.container;
         this.tWrapper = document.getElementById(transformWrapperId);
         this.bridge = bridge;
         this.palette = palette;
@@ -50,6 +53,11 @@ export class InteractionManager {
         this.initialPinchDistance = null;
         this.initialZoom = 1;
         this.lastPinchMid = null;
+        // When a pinch collapses to one finger, that finger's anchor would be
+        // stale (lastX/lastY were frozen pre-pinch) — suppress its input until
+        // full liftoff so the view doesn't jump and no stray stamp lands.
+        this.pinchActive = false;
+        this.suppressUntilLiftoff = false;
 
         this._onResize = () => { setTimeout(() => this.constrainView(), 50); };
 
@@ -176,23 +184,24 @@ export class InteractionManager {
     }
 
     bindEvents() {
-        this.container.addEventListener('contextmenu', (e) => e.preventDefault());
+        const host = this.eventsEl;
+        host.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        this.container.addEventListener('wheel', (e) => {
+        host.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
             this.zoomAtPoint(e.clientX, e.clientY, this.zoom + delta);
             this.constrainView();
         }, { passive: false });
 
-        this.container.addEventListener('dblclick', () => {
+        host.addEventListener('dblclick', () => {
             // Config/System mode behaves exactly like Move mode on the canvas
             if (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown) {
                 this.resetView();
             }
         });
 
-        this.container.addEventListener('pointerdown', (e) => {
+        host.addEventListener('pointerdown', (e) => {
             // Ignore right/middle mouse clicks entirely (paint and pan are primary-button only)
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             if (e.pointerType !== 'mouse' && !e.isPrimary && this.activePointers.size === 0) return;
@@ -201,7 +210,7 @@ export class InteractionManager {
             if (document.activeElement !== this.container) {
                 this.container.focus({ preventScroll: true });
             }
-            this.container.setPointerCapture(e.pointerId);
+            host.setPointerCapture(e.pointerId);
             this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             if (this.activePointers.size === 1) {
@@ -218,6 +227,7 @@ export class InteractionManager {
                 this.processInput(e.clientX, e.clientY, true, e.pointerType);
             } else if (this.activePointers.size === 2) {
                 // Second finger arrived: this is a pinch, not a stroke.
+                this.pinchActive = true;
                 this.hideBrushPreview();
                 // Revert the stamp finger 1 may have just injected.
                 if (this.strokeInjected) {
@@ -236,7 +246,7 @@ export class InteractionManager {
             }
         });
 
-        this.container.addEventListener('pointermove', (e) => {
+        host.addEventListener('pointermove', (e) => {
             if (!this.activePointers.has(e.pointerId)) {
                 // Mouse hover: keep the footprint preview tracking the cursor
                 if (e.pointerType === 'mouse') this.updateBrushPreview(e.clientX, e.clientY, e.pointerType);
@@ -264,6 +274,9 @@ export class InteractionManager {
             }
 
             if (this.isDragging && this.activePointers.size === 1) {
+                // Finger surviving a released pinch has a stale drag anchor —
+                // swallow its motion until it lifts rather than jump the view.
+                if (this.suppressUntilLiftoff) return;
                 this.processInput(e.clientX, e.clientY, false, e.pointerType);
             }
         });
@@ -275,7 +288,12 @@ export class InteractionManager {
                 this.initialPinchDistance = null;
                 this.lastPinchMid = null;
             }
+            if (this.activePointers.size === 1 && this.pinchActive) {
+                this.suppressUntilLiftoff = true;
+            }
             if (this.activePointers.size === 0) {
+                this.pinchActive = false;
+                this.suppressUntilLiftoff = false;
                 this.isDragging = false;
                 this.strokeInjected = false;
                 this.lastInjectGridX = null;
@@ -284,11 +302,13 @@ export class InteractionManager {
             }
         };
 
-        this.container.addEventListener('pointerup', endPointer);
-        this.container.addEventListener('pointercancel', endPointer);
-        this.container.addEventListener('pointerleave', () => this.hideBrushPreview());
+        host.addEventListener('pointerup', endPointer);
+        host.addEventListener('pointercancel', endPointer);
+        host.addEventListener('pointerleave', () => this.hideBrushPreview());
     }
 
+    // Maps a client point to grid coordinates, clamped into the field so
+    // touches inside the sub-canvas touch pad resolve to the edge rows.
     getGridCoords(clientX, clientY) {
         const rect = this.container.getBoundingClientRect();
         const cx = rect.width / 2;
@@ -298,8 +318,8 @@ export class InteractionManager {
         const unscaledX = (dx / this.zoom) - this.panX;
         const unscaledY = (dy / this.zoom) - this.panY;
         return {
-            x: Math.floor((cx + unscaledX) * (GRID_WIDTH / rect.width)),
-            y: Math.floor((cy + unscaledY) * (GRID_HEIGHT / rect.height))
+            x: Math.max(0, Math.min(GRID_WIDTH - 1, Math.floor((cx + unscaledX) * (GRID_WIDTH / rect.width)))),
+            y: Math.max(0, Math.min(GRID_HEIGHT - 1, Math.floor((cy + unscaledY) * (GRID_HEIGHT / rect.height))))
         };
     }
 

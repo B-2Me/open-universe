@@ -136,6 +136,22 @@ html:has(.wake-sandbox) body {
   position: relative;
 }
 
+/* Sub-canvas touch pad — touch stamps lift 56px above the fingertip
+   (TOUCH_STAMP_OFFSET_PX), which makes the canvas' bottom rows unreachable.
+   On coarse-pointer devices this strip extends the active touch surface
+   below the field; grid coords clamp so pad touches land on the edge rows. */
+#canvas-touch-pad { display: none; }
+@media (pointer: coarse) {
+  #canvas-touch-pad {
+    display: block;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    height: 72px;
+    touch-action: none;
+  }
+}
+
 /* Brush footprint preview — positioned in full-field pixel units inside the
    transformed wrapper, so it tracks zoom/pan and spans both lens halves. */
 .brush-preview {
@@ -453,6 +469,7 @@ input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
 
   /* Keep the canvas square AND inside the 52dvh pane */
   #canvas-container { max-height: none; width: min(100%, calc(52dvh - 50px)); }
+  #canvas-touch-pad { width: min(100%, calc(52dvh - 50px)); }
   
   /* Finger-friendly touch targets for controls */
   .group-btn, .segment-btn { min-height: 42px; }

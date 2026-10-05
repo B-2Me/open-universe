@@ -234,18 +234,25 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div id="canvas-container" tabindex="0" role="application"
-             aria-label="Simulation field. Arrow keys move the brush cursor or pan the view, Enter stamps the brush, Escape removes focus.">
-          <div id="error-banner"></div>
-          <span id="kbd_cursor_status" class="sr-only" aria-live="polite"></span>
-          <div id="transform-wrapper">
-            <div class="split-half">
-              <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>
-            </div>
-            <div class="split-half" style="border-left: 1px dashed rgba(255,255,255,0.15);">
-              <canvas id="canvas_right" width="400" height="400" aria-label="Secondary visualization layer"></canvas>
+        <div id="canvas-touch-zone">
+          <div id="canvas-container" tabindex="0" role="application"
+               aria-label="Simulation field. Arrow keys move the brush cursor or pan the view, Enter stamps the brush, Escape removes focus.">
+            <div id="error-banner"></div>
+            <span id="kbd_cursor_status" class="sr-only" aria-live="polite"></span>
+            <div id="transform-wrapper">
+              <div class="split-half">
+                <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>
+              </div>
+              <div class="split-half" style="border-left: 1px dashed rgba(255,255,255,0.15);">
+                <canvas id="canvas_right" width="400" height="400" aria-label="Secondary visualization layer"></canvas>
+              </div>
             </div>
           </div>
+          <!-- Extra touch surface below the canvas: stamps are lifted 56px
+               above the fingertip, so without this strip the bottom rows of
+               the field are unreachable on touch devices. Touching here
+               clamps to the canvas' bottom edge. -->
+          <div id="canvas-touch-pad" aria-hidden="true"></div>
         </div>
       </div>
 

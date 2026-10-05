@@ -81,6 +81,7 @@ export async function initWakeSimulator() {
             palette,
             state,
             canvasContainerId: 'canvas-container',
+            touchZoneId: 'canvas-touch-zone',
             transformWrapperId: 'transform-wrapper',
             onUndoPush: () => controlsRef?.pushUndoDepth(),
             onUndoPop: () => controlsRef?.popUndoDepth(),
