@@ -45,6 +45,9 @@ export async function initWakeSimulator() {
             isPlaying: true,
             currentScenario: 'vacuum',
             currentMode: 'move',
+            // Undo ring is opt-in (System drawer → Engine Flags): it costs
+            // 4×640KB plus a memcpy per checkpoint — off by default.
+            undoEnabled: false,
             // Injection channels — all three on is a verbatim Clone write.
             // Per-channel dose % (spin = per-node application probability);
             // ignored while all three are on since clone writes verbatim.

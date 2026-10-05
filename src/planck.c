@@ -58,6 +58,7 @@ uint8_t pixel_buffer[PIXEL_COUNT * 4];
 uint8_t KNOB_DISSIPATION = 15; 
 uint16_t KNOB_THERMAL_LIMIT = 1200;
 int IMPEDANCE_MODE_ACTIVE = 1;
+int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 
 const uint8_t DIR_MAP[3][3] = { {8, 1, 2}, {7, 0, 3}, {6, 5, 4} };
 const uint8_t INV_DIR[9] = {0, 5, 6, 7, 8, 1, 2, 3, 4};
@@ -102,8 +103,10 @@ void init_grid() {
 
     grid_read = calloc(PIXEL_COUNT, sizeof(PlanckNode));
     grid_write = calloc(PIXEL_COUNT, sizeof(PlanckNode));
-    for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
-        grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
+    if (UNDO_ENABLED) {
+        for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+            grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
+        }
     }
     obs_actualization_yield = 0;
 }
@@ -139,6 +142,25 @@ void restore_grid_snapshot() {
 }
 
 EMSCRIPTEN_KEEPALIVE int get_snapshot_count() { return snap_count; }
+
+// The undo ring costs SNAPSHOT_DEPTH × 640KB and a memcpy per checkpoint —
+// too expensive to carry unconditionally on mobile. The buffers only exist
+// while the UI opts in; save/restore safely no-op when they don't.
+EMSCRIPTEN_KEEPALIVE
+void set_undo_enabled(int enabled) {
+    UNDO_ENABLED = enabled ? 1 : 0;
+    if (UNDO_ENABLED) {
+        for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+            if (!grid_snapshots[i]) grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
+        }
+    } else {
+        snap_head = -1;
+        snap_count = 0;
+        for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
+            if (grid_snapshots[i]) { free(grid_snapshots[i]); grid_snapshots[i] = NULL; }
+        }
+    }
+}
 EMSCRIPTEN_KEEPALIVE uint8_t* get_grid_pointer() { return (uint8_t*)grid_read; }
 
 EMSCRIPTEN_KEEPALIVE

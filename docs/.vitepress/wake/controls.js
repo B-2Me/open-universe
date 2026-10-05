@@ -69,8 +69,10 @@ export class ControlsManager {
 
     // Undo-aware mutation wrapper: snapshot the grid, run the change, flag redraw.
     mutate(fn) {
-        this.bridge.saveSnapshot();
-        this.pushUndoDepth();
+        if (this.state.undoEnabled) {
+            this.bridge.saveSnapshot();
+            this.pushUndoDepth();
+        }
         const result = fn();
         this.state.forceRedraw = true;
         this.scheduleAutosave();
@@ -107,6 +109,7 @@ export class ControlsManager {
 
     // Called once per engine tick via EngineLoop.onTick.
     onEngineTick(frameCount) {
+        if (!this.state.undoEnabled) return;
         if (frameCount - this.lastCheckpointTick >= UNDO_WINDOW_TICKS) {
             this.lastCheckpointTick = frameCount;
             this.bridge.saveSnapshot();
@@ -114,8 +117,15 @@ export class ControlsManager {
         }
     }
 
+    setUndoEnabled(enabled) {
+        this.state.undoEnabled = enabled;
+        this.bridge.setUndoEnabled(enabled);
+        this.undoDepth = 0;
+        this.updateUndoFill();
+    }
+
     undo() {
-        if (this.undoDepth <= 0) return;
+        if (!this.state.undoEnabled || this.undoDepth <= 0) return;
         // Snapshots capture raw field bytes only — cumulative engine stats
         // (yield) aren't rolled back, so they drift from the restored state.
         this.bridge.restoreSnapshot();
@@ -471,7 +481,7 @@ export class ControlsManager {
 
             if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
                 e.preventDefault();
-                this.undo();
+                if (this.state.undoEnabled) this.undo();
                 return;
             }
             if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -579,6 +589,11 @@ export class ControlsManager {
         if (imp) {
             imp.onchange = (e) => this.bridge.setImpedanceMode(e.target.checked ? 1 : 0);
         }
+
+        const undoChk = document.getElementById('chk_undo');
+        if (undoChk) {
+            undoChk.onchange = (e) => this.setUndoEnabled(e.target.checked);
+        }
     }
 
     bindActionButtons() {
@@ -594,7 +609,6 @@ export class ControlsManager {
             this.mutate(() => randomizeScenarioSoup(this.state.currentScenario, this.bridge)));
         bind('btn_clear', () =>
             this.mutate(() => this.bridge.clearGrid()));
-        bind('btn_undo', () => this.undo());
         bind('btn_play', () => this.setPlaying(!this.state.isPlaying));
         bind('btn_step', () => {
             this.setPlaying(false);

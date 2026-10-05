@@ -120,6 +120,10 @@ onUnmounted(() => {
               <input type="checkbox" id="chk_impedance" checked>
               Refractive Impedance (acoustic backscatter)
             </label>
+            <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
+              <input type="checkbox" id="chk_undo">
+              Undo Buffer (4 checkpoints, ~2.5 MB)
+            </label>
           </div>
           <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">
@@ -142,7 +146,7 @@ onUnmounted(() => {
             </div>
             <span class="context-hint" style="text-transform: none; line-height: 1.8;">
               <b>Space</b> pan · <b>P</b> play/pause · <b>R</b> randomize · <b>C</b> clear<br>
-              <b>Ctrl+Z</b> undo · <b>Esc</b> close/unfocus · <b>Dbl-click</b> reset view (Move)<br>
+              <b>Ctrl+Z</b> undo (if enabled) · <b>Esc</b> close/unfocus · <b>Dbl-click</b> reset view (Move)<br>
               <b>Arrows</b> move brush cursor / pan · <b>Shift+Arrows</b> ×10 · <b>Enter</b> stamp (canvas focused)
             </span>
           </div>
@@ -154,7 +158,6 @@ onUnmounted(() => {
             <button id="btn_reset" class="group-btn">🔄 Reset</button>
             <button id="btn_soup" class="group-btn">🎲 Random</button>
             <button id="btn_clear" class="group-btn">🧹 Clear</button>
-            <button id="btn_undo" class="group-btn">↩️ Undo</button>
           </div>
           <div class="button-group" style="margin-top: 6px;">
             <button id="btn_play" class="group-btn" title="Play/Pause (P)">⏸ Pause</button>

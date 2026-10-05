@@ -145,8 +145,10 @@ export class InteractionManager {
         if (mode === 'place') {
             const pattern = this.palette.getPattern();
             if (!pattern || !pattern.length) return;
-            this.bridge.saveSnapshot();
-            if (this.onUndoPush) this.onUndoPush();
+            if (this.state.undoEnabled) {
+                this.bridge.saveSnapshot();
+                if (this.onUndoPush) this.onUndoPush();
+            }
             this.injectPattern(this.kbdX, this.kbdY, pattern, this.state.injectionChannels);
             this.state.forceRedraw = true;
         } else if (mode === 'sample') {
@@ -229,12 +231,15 @@ export class InteractionManager {
                 // Second finger arrived: this is a pinch, not a stroke.
                 this.pinchActive = true;
                 this.hideBrushPreview();
-                // Revert the stamp finger 1 may have just injected.
+                // Revert the stamp finger 1 may have just injected (needs the
+                // undo ring — without it the stray stamp stays, no copy exists).
                 if (this.strokeInjected) {
-                    this.bridge.restoreSnapshot();
-                    if (this.onUndoPop) this.onUndoPop();
+                    if (this.state.undoEnabled) {
+                        this.bridge.restoreSnapshot();
+                        if (this.onUndoPop) this.onUndoPop();
+                        this.state.forceRedraw = true;
+                    }
                     this.strokeInjected = false;
-                    this.state.forceRedraw = true;
                 }
                 const pts = Array.from(this.activePointers.values());
                 this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -368,8 +373,10 @@ export class InteractionManager {
             const stampH = pattern.length;
 
             if (isClick) {
-                this.bridge.saveSnapshot();
-                if (this.onUndoPush) this.onUndoPush();
+                if (this.state.undoEnabled) {
+                    this.bridge.saveSnapshot();
+                    if (this.onUndoPush) this.onUndoPush();
+                }
                 this.injectPattern(coords.x, coords.y, pattern, this.state.injectionChannels);
                 this.strokeInjected = true;
                 this.lastInjectGridX = coords.x;
