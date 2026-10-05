@@ -95,9 +95,9 @@ onUnmounted(() => {
               <span class="context-hint" id="gpu_status_badge">WebGL Active</span>
             </div>
             <div class="button-group" id="projection_mode_selector">
-              <button class="group-btn active" data-val="quad">⏹️ Quad</button>
+              <button class="group-btn" data-val="quad">⏹️ Quad</button>
               <button class="group-btn" data-val="hex">⬡ Hex</button>
-              <button class="group-btn" data-val="oct">🛑 Oct</button>
+              <button class="group-btn active" data-val="oct">🛑 Oct</button>
             </div>
           </div>
           <div class="context-group" style="margin-top: 6px;">

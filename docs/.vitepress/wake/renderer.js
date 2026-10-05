@@ -46,7 +46,9 @@ const FS_SOURCE = `
 class SingleRenderer {
     constructor(canvas) {
         this.canvas = canvas;
-        this.projectionMode = 0; // 0: Quad, 1: Hex, 2: Oct
+        // Default to Oct — it's the projection that shares the engine's
+        // 8-fold symmetry, so motion renders fluid instead of aliased.
+        this.projectionMode = 2; // 0: Quad, 1: Hex, 2: Oct
         this.isWebGL = false;
 
         if (!this.canvas) return;
