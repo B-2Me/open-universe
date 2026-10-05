@@ -54,12 +54,12 @@ jobs:
           actions-cache-folder: 'emsdk-cache'
 
       - name: Compile Planck Field Engine
-        continue-on-error: true
         run: |
           mkdir -p docs/public/wasm/wake/
           cd src
           chmod +x build.sh || true
-          ./build.sh || true
+          ./build.sh
+          test -f ../docs/public/wasm/wake/planck.wasm
 
       - name: Build VitePress Site
         run: npm run docs:build
