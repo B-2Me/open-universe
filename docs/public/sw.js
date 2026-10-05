@@ -1,8 +1,9 @@
 // The Open Universe — offline shell.
-// Stale-while-revalidate for same-origin GETs: serve cache instantly,
-// refresh it in the background for the next visit.
+// Network-first with cache fallback: this app ships frequent engine/UI
+// updates, and stale-while-revalidate can serve a mixed shell (e.g. an
+// old JS bundle against a new wasm). Cache exists for offline use only.
 
-const CACHE = 'open-universe-v1';
+const CACHE = 'open-universe-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -19,15 +20,14 @@ self.addEventListener('fetch', (e) => {
   if (new URL(e.request.url).origin !== self.location.origin) return;
 
   e.respondWith(
-    caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(e.request);
-      const network = fetch(e.request)
-        .then((res) => {
-          if (res.ok) cache.put(e.request, res.clone());
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(e.request)
+      .then((res) => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((cached) => cached || Response.error()))
   );
 });

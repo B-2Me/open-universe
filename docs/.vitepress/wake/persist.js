@@ -47,8 +47,15 @@ export async function loadSimState() {
 }
 
 export function restoreSimState(bridge, record) {
-    if (!record?.grid) return;
+    if (!record?.grid || !bridge.wasm.HEAPU8) return;
     const bytes = new Uint8Array(record.grid);
     if (bytes.length !== GRID_BYTE_SIZE) return;
+    // A dead autosave would permanently brick the boot — the empty field
+    // just re-saves itself on every interval. Quanta sits at byte offset 0
+    // of each 4-byte PlanckNode; if the snapshot carries no mass at all,
+    // keep the freshly painted scenario instead.
+    let mass = 0;
+    for (let i = 0; i < bytes.length; i += 4) mass += bytes[i];
+    if (mass === 0) return;
     bridge.wasm.HEAPU8.set(bytes, bridge.getGridPointer());
 }
