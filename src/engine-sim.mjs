@@ -14,7 +14,7 @@ const DEADLOCK = 200, HEAT_MAX = 65535;
 const KINETIC_BASE = 1, KINETIC_ALIGNED = 5, KINETIC_ORTHOGONAL = 2;
 const KINETIC_SHUNT = 5, KINETIC_HEADON = 10;
 const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
-const GRAVITY_DIV = 4, DIFF_DIV = 9, KEEP = 8;
+const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant across substrates
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
@@ -89,7 +89,8 @@ function tickHex() {
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
 
-    let nh2 = ch - KEEP * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    // Retain what the 6 channels cannot send: h - 6*(h/9).
+    let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
     } else {
@@ -176,7 +177,8 @@ function tick() {
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
 
-    let nh2 = ch - KEEP * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    // Retain what the 8 channels cannot send: h - 8*(h/9).
+    let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
     } else {

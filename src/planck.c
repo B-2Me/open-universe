@@ -17,8 +17,7 @@
 // --- Physics Constants ---
 #define DEADLOCK_QUANTA (200)    // Density at which a target blocks incoming traffic
 #define HEAT_MAX (65535)         // 16-bit thermal saturation ceiling
-#define HEAT_DIFFUSION_DIV (9)   // Neighbor heat sharing divisor
-#define HEAT_KEEP_NUM (8)        // Of 9 heat parts, node keeps 8ths redistributed
+#define HEAT_DIFFUSION_DIV (9)   // Per-channel heat sharing rate — invariant across substrates
 #define KINETIC_BASE (1)         // Base heat from a valid collision
 #define KINETIC_ALIGNED (5)      // Bonus heat for spin-aligned collisions
 #define KINETIC_ORTHOGONAL (2)   // Bonus heat for perpendicular collisions
@@ -481,7 +480,11 @@ void tick() {
             double bandwidth_fraction = 1.0 - (routing_load / NODE_BANDWIDTH_MAX);
             if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
 
-            int kept_heat = current.heat - HEAT_KEEP_NUM * (current.heat / HEAT_DIFFUSION_DIV);
+            // Each adjacency channel carries h/9 — a substrate-invariant
+            // rate. The node retains whatever its coordination number
+            // cannot send: 1/9 on oct8, 3/9 on hex6 (sparser channels,
+            // less dissipation — a true topological consequence).
+            int kept_heat = current.heat - SPIN_MAX * (current.heat / HEAT_DIFFUSION_DIV);
             int next_heat = kept_heat + heat_sum + kinetic_heat;
 
             next_heat += (next_quanta * QUANTA_HEAT_GEN);
