@@ -30,7 +30,7 @@ onUnmounted(() => {
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
             <button class="segment-btn" data-mode="place">✏️ Place</button>
             <button class="segment-btn" data-mode="sample">🔍 Sample</button>
-            <button class="segment-btn" data-mode="config">⚙️️ System</button>
+            <button class="segment-btn" data-mode="config">⚙ System</button>
           </div>
         </div>
 
@@ -205,13 +205,15 @@ onUnmounted(() => {
       <!-- RIGHT VIEWPORT: Massive Scalable Canvas -->
       <div id="app-viewport">
         
-        <!-- Viewport Header (Sits flush above Canvas) -->
+        <!-- Viewport Header: Left Toggle + Scenario Select + Right Toggle -->
         <div class="viewport-header">
+          <!-- Left Split Layer Toggle (positioned strictly on the left) -->
           <button id="btn_toggle_left" class="lens-btn" title="Left Canvas Viewport Layer">
-            <span class="lens-tag">VIEW</span>
+            <span class="lens-tag">L</span>
             <span class="lens-label">👁 Macro</span>
           </button>
 
+          <!-- Centered Scenario Nav Bar -->
           <div class="scenario-nav-bar">
             <select id="scenario_dropdown" class="scenario-select">
               <option value="vacuum">🌌 Vacuum</option>
@@ -225,8 +227,9 @@ onUnmounted(() => {
             <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
           </div>
 
+          <!-- Right Split Layer Toggle (positioned strictly on the right) -->
           <button id="btn_toggle_right" class="lens-btn" title="Right Canvas Viewport Layer">
-            <span class="lens-tag">VIEW</span>
+            <span class="lens-tag">R</span>
             <span class="lens-label">🕳 Entropic</span>
           </button>
         </div>
@@ -293,5 +296,64 @@ onUnmounted(() => {
   background: var(--pf-bg-main);
   color: var(--pf-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+}
+
+/* --- Mobile Safari Header Optimization --- */
+.viewport-header {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  padding: 4px 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.viewport-header .lens-btn {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  padding: 4px 6px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.viewport-header .lens-tag {
+  font-size: 9px !important;
+  opacity: 0.75 !important;
+  font-weight: bold !important;
+}
+
+.viewport-header .scenario-nav-bar {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+.viewport-header .scenario-select {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 4px 6px !important;
+  font-size: 11px !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+.viewport-header .icon-btn {
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 </style>
