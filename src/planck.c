@@ -92,9 +92,9 @@ static const uint8_t HEX_INV[7] = {0, 4, 5, 6, 1, 2, 3}; // E↔W, SE↔NW, SW�
 static const double HEX_VX[7] = {0, 1.0, 0.5, -0.5, -1.0, -0.5, 0.5};
 static const double HEX_VY[7] = {0, 0.0, 0.8660254037844386, 0.8660254037844386,
                                  0, -0.8660254037844386, -0.8660254037844386};
-// Foreign spins (cross-topology state, square-vocabulary brushes) fold
-// into the hex vocabulary by angle: N→NE, NE→NE, E→E, SE→SE, S→SW,
-// SW→SW, W→W, NW→NW.
+// Foreign square-vocabulary spins that can still stray in (cross-
+// substrate autosaves, stamps sampled on oct8) fold by angle:
+// N→NE, NE→NE, E→E, SE→SE, S→SW, SW→SW, W→W, NW→NW.
 static const uint8_t SQUARE_TO_HEX[9] = {0, 6, 6, 1, 2, 3, 3, 4, 5};
 #endif
 
@@ -157,11 +157,14 @@ static inline uint8_t dir_from_momentum(double mx, double my) {
     return DIR_MAP[yd + 1][xd + 1];
 #endif
 }
-// Spins outside the active vocabulary (cross-topology restores, foreign
-// brush stamps) fold into range instead of addressing nonexistent
-// neighbors or leaking quanta into the void.
+// Writes arrive in the ACTIVE vocabulary — scenario paints, palette
+// stamps, autosave restores are all native to the running substrate.
+// Folding hex spins 1-6 through the square map scrambles them (E→NE,
+// W→SE, NE→SW), which severed the filament at paint time. Only spins
+// outside the vocabulary (cross-substrate strays: 7=W→4, 8=NW→5) fold.
 static inline uint8_t norm_spin(uint8_t s) {
 #ifdef TOPOLOGY_HEX
+    if (s <= SPIN_MAX) return s;
     return (s <= 8) ? SQUARE_TO_HEX[s] : 0;
 #else
     return (s <= 8) ? s : 0;
