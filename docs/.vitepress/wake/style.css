@@ -339,6 +339,8 @@ html:has(.wake-sandbox) body {
 }
 .context-label { font-size: 10px; font-weight: 700; color: var(--pf-brand-main); text-transform: uppercase; letter-spacing: 0.6px; }
 .context-hint { font-size: 9px; font-family: var(--font-mono); color: #777; text-transform: uppercase; }
+.context-link { font-size: 10px; font-family: var(--font-mono); color: var(--accent, #00e5ff); text-decoration: none; }
+.context-link:hover { text-decoration: underline; }
 
 /* Buttons & Segment Bars */
 .button-group, .segment-container {

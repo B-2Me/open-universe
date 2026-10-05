@@ -109,6 +109,7 @@ onUnmounted(() => {
               <button class="group-btn" data-val="square">⏹️ Oct8</button>
               <button class="group-btn" data-val="hex">⬡ Hex6</button>
             </div>
+            <a class="context-link" href="/topology" target="_blank" rel="noopener">📖 Shell-World vs. Knot-World</a>
           </div>
           <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">

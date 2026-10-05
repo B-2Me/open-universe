@@ -19,6 +19,7 @@ The site is structured as an audit: state the thesis, stress-test it against the
 | [**The Source**](docs/source.md) (`source.md`) | The thermodynamic bedrock: entropic gravity, capacity-stealing time dilation, propagation-friction redshift, phase friction, actualization yield — plus the lineage (Whitehead, Popper, Prigogine, et al.) |
 | [**The Interface**](docs/interface.md) (`interface.md`) | Biology as nature's causal router — geometry as sensory compression, agency as hyper-local |
 | [**The Interference**](docs/interference.md) (`interference.md`) | Predict → Interfere → Measure; five theoretical audits translating each legacy paradox into a testable lab procedure |
+| [**Topology: Shell-World vs. Knot-World**](docs/topology.md) (`topology.md`) | The empirical capstone — the same thermodynamic laws compiled onto 8-fold and 6-fold substrates produce volumetric shells vs. braided filaments, proving adjacency is the free variable |
 | [**The Intent**](docs/intent.md) (`intent.md`) | Why this site exists — a systems integrator's audit of philosophical architecture |
 | [**Langevin's Wake**](docs/wake-demo.md) (`wake-demo.md`) | The instrument page — mounts the live simulator and explains the engine mechanics |
 
@@ -51,6 +52,7 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 
 ### What the instrument does
 
+- **Two substrate builds** from one `planck.c` source: ⏹️ Oct8 (8-neighbor Moore) and ⬡ Hex6 (parity-aware 6-neighbor hex) via `-DTOPOLOGY_HEX` — identical thermodynamic laws, different adjacency; the System drawer's Substrate selector reboots the universe on the other WASM module with topology-tagged autosaves. See [Topology](docs/topology.md).
 - **Four layers** per half of the split view: Macro, Metabolic, Phase, Entropic — independently toggled.
 - **Scenarios** (Vacuum, Stellar Core, Atmosphere, Engine Bell, Nozzle Wall, Ocean, Synthetic Electron) with dossiers, composited via declarative grid writers.
 - **Modes**: Move (pan/zoom/dbl-click reset), Place (brush stamps through the injection matrix), Sample (probe a region into a reusable stamp), System (settings drawer).
@@ -76,7 +78,7 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 | `/docs` | The VitePress site: the framework essays listed above |
 | `/docs/.vitepress/wake/` | The simulator's JS modules (see map above) |
 | `/docs/.vitepress/components/WakeSimulator.vue` | The simulator's DOM shell / Vue mount point |
-| `/docs/public/wasm/wake/` | Build output for `planck.js`/`planck.wasm` (gitignored) |
+| `/docs/public/wasm/wake/` | Build output for `planck.*`/`planck-hex.*` wasm modules (gitignored) |
 | `/script` | The automated Node.js pipeline for TTS audio + sync maps |
 | `.github/workflows/` | `ci.yml` (PR build validation) and `deploy.yml` (Pages deploy) |
 

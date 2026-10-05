@@ -10,6 +10,7 @@ const readingOrder = [
   { text: 'Source', link: '/source' },
   { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
+  { text: 'Topology', link: '/topology' },
   { text: 'Intent', link: '/intent' }
 ]
 
