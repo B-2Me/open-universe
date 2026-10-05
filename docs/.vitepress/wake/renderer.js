@@ -78,6 +78,8 @@ class SingleRenderer {
         // Default to Oct — it's the projection that shares the engine's
         // 8-fold symmetry, so motion renders fluid instead of aliased.
         this.projectionMode = 2; // 0: Quad, 1: Hex, 2: Oct
+        this.pixelScale = 1; // zoom-driven backing multiplier — keeps
+                             // cell detail crisp when CSS-zoomed in
         this.isWebGL = false;
 
         if (!this.canvas) return;
@@ -159,6 +161,8 @@ class SingleRenderer {
         return shader;
     }
 
+    setPixelScale(z) { this.pixelScale = z || 1; }
+
     setMode(mode) {
         if (mode === 'quad') this.projectionMode = 0;
         else if (mode === 'hex') this.projectionMode = 1;
@@ -179,9 +183,9 @@ class SingleRenderer {
             // inside each grid cell — Voronoi/chamfer cell boundaries need
             // sub-cell fragments to exist at all (at 400px backing every
             // fragment sits on a cell center and projections no-op).
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const w = Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * dpr));
-            const h = Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * dpr));
+            const dpr = Math.min(window.devicePixelRatio || 1, 2) * (this.pixelScale || 1);
+            const w = Math.min(4096, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * dpr)));
+            const h = Math.min(4096, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * dpr)));
             if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
                 this.canvas.width = w;
                 this.canvas.height = h;
@@ -207,6 +211,11 @@ export class DualRenderer {
         this.left = new SingleRenderer(canvasLeft);
         this.right = new SingleRenderer(canvasRight);
         this.isWebGL = this.left.isWebGL || this.right.isWebGL;
+    }
+
+    setPixelScale(z) {
+        this.left.setPixelScale(z);
+        this.right.setPixelScale(z);
     }
 
     draw(leftLayer, rightLayer, bridge) {

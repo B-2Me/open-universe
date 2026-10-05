@@ -17,7 +17,7 @@ const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
 const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
 
 export class InteractionManager {
-    constructor({ bridge, palette, state, canvasContainerId, touchZoneId, transformWrapperId, onSample, onUndoPush, onUndoPop }) {
+    constructor({ bridge, palette, state, canvasContainerId, touchZoneId, transformWrapperId, onSample, onUndoPush, onUndoPop, onZoom }) {
         this.container = document.getElementById(canvasContainerId);
         // Events bind to the touch zone (canvas + the coarse-pointer pad strip
         // below it); rect/grid math always uses the canvas container itself.
@@ -29,6 +29,7 @@ export class InteractionManager {
         this.onSample = onSample;
         this.onUndoPush = onUndoPush;
         this.onUndoPop = onUndoPop;
+        this.onZoom = onZoom;
 
         this.zoom = 1;
         this.panX = 0;
@@ -537,6 +538,7 @@ export class InteractionManager {
     applyTransform() {
         if (!this.tWrapper) return;
         this.tWrapper.style.transform = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
+        this.onZoom?.(this.zoom);
     }
 
     updateZoomUI() {

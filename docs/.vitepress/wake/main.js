@@ -115,6 +115,7 @@ export async function initWakeSimulator() {
             transformWrapperId: 'transform-wrapper',
             onUndoPush: () => controlsRef?.pushUndoDepth(),
             onUndoPop: () => controlsRef?.popUndoDepth(),
+            onZoom: (z) => renderer.setPixelScale(z),
             onSample: (stamp) => {
                 if (controlsRef) {
                     // Rebuild the palette grid with the new custom brush equipped
