@@ -50,12 +50,12 @@ const FS_SOURCE = `
             c2 = vec2(mod(c2.x, ${GRID_WIDTH.toFixed(1)}), mod(c2.y, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t1 = texture2D(u_texture, (c1 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t2 = texture2D(u_texture, (c2 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
-            // Narrow AA band along hex edges; a faint seam darkening keeps
-            // the lattice legible as a hex grain even when cells render
-            // at ~1px (zoomed-out full-field view).
-            float edge = smoothstep(0.0, 0.06, sqrt(d2) - sqrt(d1));
+            // AA + a visible hex seam: cells render at ~2px at rest, so the
+            // band is wide enough to leave a legible diagonal lattice grain
+            // even zoomed out; zoomed in it reads as clean tile borders.
+            float edge = smoothstep(0.0, 0.10, sqrt(d2) - sqrt(d1));
             vec4 col = mix(t1, t2, edge);
-            col.rgb *= 1.0 - (1.0 - edge) * 0.28;
+            col.rgb *= 1.0 - (1.0 - edge) * 0.35;
             gl_FragColor = col;
             return;
         }
