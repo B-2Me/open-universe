@@ -11,7 +11,11 @@ const VS_SOURCE = `
 `;
 
 const FS_SOURCE = `
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    #else
     precision mediump float;
+    #endif
     uniform sampler2D u_texture;
     uniform int u_projection_mode; // 0: Quad, 1: Hex, 2: Oct
     varying vec2 v_uv;
@@ -20,15 +24,36 @@ const FS_SOURCE = `
         vec2 coord = v_uv;
 
         if (u_projection_mode == 1) {
-            // Hexagonal Staggered Lattice (Odd-row +0.5 shift)
-            float row = floor(coord.y * ${GRID_HEIGHT.toFixed(1)});
-            if (mod(row, 2.0) == 1.0) {
-                coord.x += (0.5 / ${GRID_WIDTH.toFixed(1)});
+            // Hexagonal cells (odd-r lattice): each fragment resolves to
+            // the nearest cell center in hex metric space — dy scaled by
+            // sqrt(3)/2 equalizes all six neighbor distances, producing
+            // true interlocking hex tiles (stretched ~15% vertically to
+            // fill the square canvas).
+            vec2 p = coord * vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)});
+            float rc = floor(p.y);
+            float d1 = 9e9, d2 = 9e9;
+            vec2 c1 = vec2(0.0), c2 = vec2(0.0);
+            for (int rr = -1; rr <= 1; rr++) {
+                float r = rc + float(rr);
+                float par = mod(r, 2.0);
+                float c0 = floor(p.x - 0.5 * par);
+                for (int cc = -1; cc <= 1; cc++) {
+                    float c = c0 + float(cc);
+                    float dx = p.x - (c + 0.5 * par + 0.5);
+                    float dy = (p.y - (r + 0.5)) * 0.8660254;
+                    float dd = dx * dx + dy * dy;
+                    if (dd < d1) { d2 = d1; c2 = c1; d1 = dd; c1 = vec2(c, r); }
+                    else if (dd < d2) { d2 = dd; c2 = vec2(c, r); }
+                }
             }
-            if (coord.x > 1.0) {
-                gl_FragColor = vec4(0.04, 0.06, 0.04, 1.0);
-                return;
-            }
+            c1 = vec2(mod(c1.x, ${GRID_WIDTH.toFixed(1)}), mod(c1.y, ${GRID_HEIGHT.toFixed(1)}));
+            c2 = vec2(mod(c2.x, ${GRID_WIDTH.toFixed(1)}), mod(c2.y, ${GRID_HEIGHT.toFixed(1)}));
+            vec4 t1 = texture2D(u_texture, (c1 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
+            vec4 t2 = texture2D(u_texture, (c2 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
+            // Narrow AA band along hex edges
+            float edge = smoothstep(0.0, 0.06, sqrt(d2) - sqrt(d1));
+            gl_FragColor = mix(t1, t2, edge);
+            return;
         }
         else if (u_projection_mode == 2) {
             // Octagonal Lattice (Chamfered corners with interstitial voids)
