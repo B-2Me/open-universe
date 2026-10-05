@@ -1,6 +1,12 @@
 // App version — injected from package.json by vite define at build time.
 export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.9-dev';
 
+// Per-deploy token — injected by vite define (GITHUB_SHA in CI, timestamp
+// locally). Appended to the unversioned wasm URLs so a stale service
+// worker or HTTP cache can never serve an older engine alongside a
+// newer shell.
+export const WAKE_BUILD_ID = typeof __WAKE_BUILD__ !== 'undefined' ? __WAKE_BUILD__ : 'dev';
+
 // --- Engine & Interaction Defaults ---
 export const SPEED_DEFAULT_TPS = 60;
 export const SPEED_MAX_TPS = 120;

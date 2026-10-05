@@ -23,7 +23,11 @@ export default defineConfig({
   // Stays on 0.9.x until there's a formal release process.
   vite: {
     define: {
-      __APP_VERSION__: JSON.stringify(pkg.version)
+      __APP_VERSION__: JSON.stringify(pkg.version),
+      // Per-deploy cache-bust token for the unversioned wasm URLs under
+      // public/. CI provides GITHUB_SHA; local builds fall back to the
+      // build timestamp.
+      __WAKE_BUILD__: JSON.stringify(process.env.GITHUB_SHA || String(Date.now()))
     }
   },
   

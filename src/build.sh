@@ -4,8 +4,11 @@ mkdir -p ../docs/public/wasm/wake/
 
 echo "Compiling Planck Field engine (Production Bridge Simulator Edition)..."
 
-# Stamp the engine with the repo revision it was built from
-GIT_REV=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
+# Stamp the engine with the revision that last touched planck.c — the
+# physics provenance. Stamping the deploy HEAD would churn the displayed
+# rev on JS-only commits and make "is this wasm stale?" unanswerable.
+# The compile date alongside it proves build freshness.
+GIT_REV=$(git log -1 --format=%h -- planck.c 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo "nogit")
 
 if emcc planck.c \
   -DGIT_REV=\"$GIT_REV\" \

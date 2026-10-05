@@ -1,4 +1,4 @@
-import { PIXEL_BUFFER_SIZE } from './constants.js';
+import { PIXEL_BUFFER_SIZE, WAKE_BUILD_ID } from './constants.js';
 
 export class PlanckBridge {
     constructor(wasmModule) {
@@ -55,10 +55,13 @@ export class PlanckBridge {
 }
 
 export async function loadPlanckWasm() {
+    // The wasm assets live at unversioned public/ URLs — append the
+    // per-deploy build token so a stale cache can never pair an old
+    // engine with a new shell (or vice versa).
     if (typeof window.createPlanck === 'undefined') {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = '/wasm/wake/planck.js';
+            script.src = `/wasm/wake/planck.js?v=${WAKE_BUILD_ID}`;
             script.onload = resolve;
             script.onerror = () => reject(new Error('Failed to load /wasm/wake/planck.js'));
             document.head.appendChild(script);
@@ -67,7 +70,7 @@ export async function loadPlanckWasm() {
 
     return new Promise((resolve, reject) => {
         window.createPlanck({
-            locateFile: (path) => `/wasm/wake/${path}`,
+            locateFile: (path) => `/wasm/wake/${path}?v=${WAKE_BUILD_ID}`,
             onAbort: () => reject(new Error("The Planck Field collapsed."))
         }).then(resolve).catch(reject);
     });
