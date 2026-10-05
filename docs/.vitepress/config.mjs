@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitepress'
+import { createRequire } from 'module'
 import mathjax3 from 'markdown-it-mathjax3'
+
+const pkg = createRequire(import.meta.url)('../../package.json')
 
 const readingOrder = [
   { text: 'Planck Field', link: '/field' },
@@ -15,6 +18,14 @@ export default defineConfig({
   description: "Reality is a live-rendering, zero-storage computational grid.",
   base: '/', 
   cleanUrls: true,
+
+  // Single source of truth for the app version: package.json.
+  // Stays on 0.9.x until there's a formal release process.
+  vite: {
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version)
+    }
+  },
   
   // Enable LaTeX Math Rendering
   markdown: {

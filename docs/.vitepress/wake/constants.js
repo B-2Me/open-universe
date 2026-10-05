@@ -1,3 +1,6 @@
+// App version — injected from package.json by vite define at build time.
+export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.9-dev';
+
 // --- Engine & Interaction Defaults ---
 export const SPEED_DEFAULT_TPS = 60;
 export const SPEED_MAX_TPS = 120;

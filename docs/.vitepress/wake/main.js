@@ -12,7 +12,8 @@ import {
     SPEED_DEFAULT_TPS,
     TOTAL_NODES,
     GRID_WIDTH,
-    GRID_HEIGHT
+    GRID_HEIGHT,
+    APP_VERSION
 } from './constants.js';
 
 export async function initWakeSimulator() {
@@ -36,7 +37,7 @@ export async function initWakeSimulator() {
         }
 
         const build = bridge.getEngineBuild();
-        if (diagStatus) diagStatus.innerText = build;
+        if (diagStatus) diagStatus.innerText = `v${APP_VERSION} · ${build}`;
 
         const diagNodes = document.getElementById('diag_nodes');
         if (diagNodes) diagNodes.innerText = `${TOTAL_NODES.toLocaleString()} Nodes`;
