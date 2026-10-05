@@ -196,13 +196,11 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
             
-            // Central core knot (Radial mapping) — a cold deadlock anchor.
-            // Painted heat would only be transient initialization noise; the
-            // knot earns its own metabolic temperature from quanta flux. Its
-            // pre-dissipation tension (~3.9k) is the highest organic tension
-            // in the field — crush the thermal limit under it to unwind it.
-            composer.apply((x, y, nx, ny, dist) => {
-                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+            // Central core knot: octagonal native loop with circulating tangent momentum
+            // so Phase Lock keeps it stabilized against ambient collision erosion.
+            composer.apply((x, y, nx, ny, dist, dx, dy) => {
+                const rOct = octRadius(dx, dy);
+                if (rOct <= 8) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(dx, dy, 1), 1);
                 return null;
             });
             // Ambient dust (Random distribution)
@@ -214,22 +212,24 @@ export function loadScenario(type, bridge) {
             targetDissipation = DISSIPATION_DENSE; // Keeps the star from achieving thermal runaway
             targetThermal = THERMAL_LIMIT_SATURATED;
 
-            // Seamless Radial Layers
+            // Seamless Octagonal Lattice Layers
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                // Core: Extreme heat, dense, stationary deadlock
-                if (dist < 15) {
-                    return packNode(STELLAR_CORE_QUANTA, SPIN_STATIONARY, STELLAR_CORE_HEAT); // Safely below the plasma threshold
+                const rOct = octRadius(dx, dy);
+
+                // Core: Dense, circulating deadlock aligned to native lattice tangents
+                if (rOct < 15) {
+                    return packNode(STELLAR_CORE_QUANTA, vortexSpin(dx, dy, 1), STELLAR_CORE_HEAT);
                 }
                 // Radiative Zone: High heat, isotropic turbulent sub-spins
-                else if (dist < 50) {
-                    const heat = 45000 - ((dist - 15) / 35) * 30000;
+                else if (rOct < 50) {
+                    const heat = 45000 - ((rOct - 15) / 35) * 30000;
                     const spin = Math.floor(Math.random() * 8) + 1;
                     return packNode(150, spin, Math.floor(heat));
                 }
-                // Convective Envelope: Cooling thermal gradient, rotational banding (tangential circulation)
-                else if (dist < 120) {
-                    const heat = 15000 - ((dist - 50) / 70) * 14000;
-                    const chirality = (Math.floor(dist) % 20 < 10) ? 1 : -1;
+                // Convective Envelope: Rotational banding using tangent vortex flow
+                else if (rOct < 120) {
+                    const heat = 15000 - ((rOct - 50) / 70) * 14000;
+                    const chirality = (Math.floor(rOct) % 20 < 10) ? 1 : -1;
                     const spin = vortexSpin(dx, dy, chirality);
                     return packNode(80 + Math.floor(Math.random() * 40), spin, Math.floor(heat));
                 }
@@ -268,25 +268,21 @@ export function loadScenario(type, bridge) {
             targetThermal = THERMAL_LIMIT_DEFAULT;
 
             composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                // Core anchor: permanent deadlock, boots cold
-                if (dist <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
-                
-                // 4-Projection Norm: yields an octagon with edges strictly 
-                // orthogonal to the 8 native lattice vectors.
-                const adx = Math.abs(dx);
-                const ady = Math.abs(dy);
-                const r_oct = Math.max(adx, ady, Math.round((adx + ady) * 0.7071));
+                const rOct = octRadius(dx, dy);
 
+                // Core anchor: permanent circulating deadlock, boots cold
+                if (rOct <= ELECTRON_CORE_RADIUS) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(dx, dy, 1), 1);
+                
                 // Moat (cleared to vacuum so the halo acts purely as a spin-waveguide)
-                if (r_oct <= 25) return packNode(0, SPIN_STATIONARY, 1);
+                if (rOct <= ELECTRON_MOAT_OCT) return packNode(0, SPIN_STATIONARY, 1);
 
                 // Spin-only halo (Waveguide) & Octagon Mass Ring
-                if (r_oct <= 90) {
+                if (rOct <= ELECTRON_HALO_OCT) {
                     const spin = vortexSpin(dx, dy, 1);
                     
                     // Dense mass ring (Laminar edge flow, vertices turn under phase lock)
-                    if (r_oct >= 45 && r_oct <= 55) {
-                        return packNode(70, spin, HEAT_ROOM_AMBIENT);
+                    if (rOct >= ELECTRON_RING_INNER && rOct <= ELECTRON_RING_OUTER) {
+                        return packNode(ELECTRON_RING_QUANTA, spin, HEAT_ROOM_AMBIENT);
                     }
                     
                     // The Waveguide: 0 quanta, but structurally painted phase.
@@ -295,8 +291,8 @@ export function loadScenario(type, bridge) {
                 }
 
                 // Quantum foam: the active vacuum scraping the outer boundary
-                if (Math.random() < 0.05) {
-                    return packNode(5, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
+                if (Math.random() < ELECTRON_FOAM_PROBABILITY) {
+                    return packNode(ELECTRON_FOAM_QUANTA, Math.floor(Math.random() * 8) + 1, HEAT_ROOM_AMBIENT);
                 }
                 return null;
             });
@@ -365,6 +361,7 @@ export function randomizeScenarioSoup(type, bridge) {
 
     switch (type) {
         case "vacuum": {
+            loadScenario("vacuum", bridge); // Populates the persistent stabilized central knot
             if (flavor === 0) {
                 // Nebula Clusters
                 for (let c = 0; c < 3; c++) {
@@ -397,7 +394,8 @@ export function randomizeScenarioSoup(type, bridge) {
             if (flavor === 0) {
                 // Massive Core Flare (Punctures Envelope)
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                    if (dy < 0 && dx > -10 && dx < 10 && dist > 15 && dist < 140) {
+                    const rOct = octRadius(dx, dy);
+                    if (dy < 0 && dx > -10 && dx < 10 && rOct > 15 && rOct < 140) {
                         return packNode(180, SPIN_UP, HEAT_SATURATION);
                     }
                     return null;
@@ -405,8 +403,8 @@ export function randomizeScenarioSoup(type, bridge) {
             } else if (flavor === 1) {
                 // Core Asymmetry / Wobble
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                    const offsetDist = Math.hypot(dx - 15, dy + 15);
-                    if (offsetDist < 12) return packNode(250, SPIN_STATIONARY, 55000);
+                    const rOct = octRadius(dx - 15, dy + 15);
+                    if (rOct < 12) return packNode(250, SPIN_STATIONARY, 55000);
                     return null;
                 });
             } else {
@@ -554,9 +552,8 @@ export function randomizeScenarioSoup(type, bridge) {
                 const by = composer.cy;
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
                     const ddx = x - bx, ddy = y - by;
-                    const d2 = Math.hypot(ddx, ddy);
-                    if (d2 <= 6) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                     const rOct = octRadius(ddx, ddy);
+                    if (rOct <= 6) return packNode(QUANTA_ANCHOR_WALL, vortexSpin(ddx, ddy, -1), 1);
                     if (rOct <= 18) return packNode(0, SPIN_STATIONARY, 1);
                     if (rOct <= 60) {
                         const spin = vortexSpin(ddx, ddy, -1);
@@ -578,8 +575,8 @@ export function randomizeScenarioSoup(type, bridge) {
                 // Incoming projectile — a dense clump aimed at the shell to
                 // watch the vortex catch and shred foreign mass.
                 composer.apply((x, y, nx, ny, dist, dx, dy) => {
-                    const d2 = Math.hypot(x - (composer.cx - 120), y - (composer.cy - 60));
-                    if (d2 < 15) return packNode(150, SPIN_DOWN_RIGHT, 800);
+                    const rOct = octRadius(x - (composer.cx - 120), y - (composer.cy - 60));
+                    if (rOct < 15) return packNode(150, SPIN_DOWN_RIGHT, 800);
                     return null;
                 });
             }
