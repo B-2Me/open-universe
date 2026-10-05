@@ -309,6 +309,7 @@ function paintBlobStream(variant) {
 function paintHex(variant) {
   q.fill(0); s.fill(0); h.fill(1);
   const cx = 200, cy = 200;
+  const SEXT = (a) => ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     const d = hexDist(x, y, cx, cy);
@@ -321,22 +322,65 @@ function paintHex(variant) {
     } else if (variant === 'hexstream') {
       // E is a same-row direction — straight-through exists on hex.
       if (y >= 195 && y <= 205 && x >= 40 && x <= 360) { q[i] = 80; s[i] = 1; h[i] = 500; }
-    } else if (variant === 'hexring') {
+    } else if (variant === 'hexring' || variant === 'hexringthin' || variant === 'hexcycle') {
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; }
       else if (d <= 90) {
         const a = Math.atan2(y - cy, x - cx) + Math.PI / 2; // tangent
-        s[i] = ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
-        if (d >= 45 && d <= 55) { q[i] = 70; h[i] = 500; }
+        s[i] = SEXT(a);
+        if (variant === 'hexcycle' && d === 50) {
+          // Exact discrete circulation: spin = the counterclockwise-next
+          // ring cell on the cell graph — the hex-native closed loop.
+          const par = y & 1, off = HOFF[par];
+          const aCur = Math.atan2(y - cy, x - cx);
+          let best = 0, bestA = Infinity;
+          for (let dd = 1; dd <= 6; dd++) {
+            const nx = (x + off[dd][0] + W) % W, ny = (y + off[dd][1] + H) % H;
+            if (hexDist(nx, ny, cx, cy) !== 50) continue;
+            let da = Math.atan2(ny - cy, nx - cx) - aCur;
+            while (da <= 0) da += Math.PI * 2;
+            if (da < bestA) { bestA = da; best = dd; }
+          }
+          if (best) s[i] = best;
+          q[i] = 120; h[i] = 500;
+        } else if (variant === 'hexring' && d >= 45 && d <= 55) {
+          q[i] = 70; h[i] = 500;
+        } else if (variant === 'hexringthin' && d >= 48 && d <= 52) {
+          q[i] = 140; h[i] = 500;
+        }
       }
+    } else if (variant === 'hexsnow') {
+      // Crystal accretion: a deadlock seed in a convergent inflow — spins
+      // quantized toward center ride the six native spokes and deposit on
+      // the seed. A bubble chamber for snowflake growth.
+      if (d <= 4) { q[i] = 255; s[i] = 0; h[i] = 1; }
+      else if (Math.random() < 0.08) {
+        q[i] = 40;
+        s[i] = SEXT(Math.atan2(cy - y, cx - x) + Math.PI / 6); // spiral infall
+        h[i] = 100;
+      }
+    } else if (variant === 'hexbraid') {
+      // Two streams crossing at the native 60° — how do flows negotiate
+      // on three-exit channels?
+      if (y >= 190 && y <= 200 && x >= 30 && x <= 300) { q[i] = 80; s[i] = 1; h[i] = 500; }
+      const perp = Math.abs((x - cx) * Math.sin(Math.PI / 3) - (y - cy) * Math.cos(Math.PI / 3));
+      if (perp <= 6 && x > cx && x < 390) { q[i] = 80; s[i] = 2; h[i] = 500; }
+    } else if (variant === 'hexjam') {
+      // A wide stream forced through a bottleneck — congestion gravity's
+      // home turf.
+      const wall = y === 200 && (x < 150 || x > 250);
+      if (wall) { q[i] = 255; s[i] = 0; h[i] = 1; }
+      else if (y >= 60 && y <= 195) { q[i] = 60; s[i] = 2; h[i] = 500; } // SE flow into the wall
     }
   }
 }
 
+let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetry
+
 function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0;
   const cx = 200, cy = 200;
-  const sectorMass = new Array(8).fill(0);
+  const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x, d = Math.hypot(x - cx, y - cy);
     totQ += q[i]; totH += h[i];
@@ -344,7 +388,7 @@ function stats(label) {
     if (d > 8 && d <= 80) {
       shellMass += q[i];
       let a = Math.atan2(y - cy, x - cx); if (a < 0) a += 2 * Math.PI;
-      sectorMass[Math.floor(a / (Math.PI / 4))] += q[i];
+      sectorMass[Math.floor(a / (Math.PI * 2 / SECTORS))] += q[i];
     } else if (d > 80) foamMass += q[i];
   }
   const min = Math.min(...sectorMass), max = Math.max(...sectorMass);
@@ -377,6 +421,7 @@ else if (variant.startsWith('hex')) paintHex(variant);
 else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
 else paintElectron();
 const TICK = variant.startsWith('hex') ? tickHex : tick;
+if (TICK === tickHex) SECTORS = 6;
 stats('tick 0');
 for (let t = 1; t <= 400; t++) {
   TICK();
