@@ -2,96 +2,96 @@
   {
     "text": "Langevin's Wake",
     "start": 0,
-    "end": 1.034
+    "end": 1.029
   },
   {
     "text": "The Planck Field bare-metal simulation engine.",
-    "start": 1.034,
-    "end": 4.205
+    "start": 1.029,
+    "end": 4.185
   },
   {
     "text": "Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge.",
-    "start": 4.205,
-    "end": 26.195
+    "start": 4.185,
+    "end": 26.068
   },
   {
     "text": "::: details ⚙️ Under the Hood: The Hardware Metaphor",
-    "start": 26.195,
-    "end": 29.779
+    "start": 26.068,
+    "end": 29.635
   },
   {
     "text": "External Depth vs. Internal Depth",
-    "start": 29.779,
-    "end": 32.054
+    "start": 29.635,
+    "end": 31.899
   },
   {
     "text": "This sandbox is a literal manifestation of the Planck Field philosophy.",
-    "start": 32.054,
-    "end": 36.948
+    "start": 31.899,
+    "end": 36.77
   },
   {
     "text": "The C Engine (External Depth): The physics loop is written in bare-metal C, compiled to WebAssembly with maximum hardware optimizations. The C code knows nothing about geometry, shapes, or user input. It exclusively calculates the relentless, microscopic accounting of thermodynamic friction, phase spins, and integer limits for all 160,000 nodes simultaneously.",
-    "start": 36.948,
-    "end": 61.902
+    "start": 36.77,
+    "end": 61.603
   },
   {
     "text": "The JavaScript UI (Internal Depth): The browser interface acts as the biological dashboard. JavaScript queries the chaotic thermal data from the Wasm memory block and compresses it into a clean, geometric visual matrix (the Macro layer). When you use the Sample tool to probe a region — or Frame Capture in the System drawer to export a PNG/VTK — JavaScript is filtering the static, extracting relational boundaries, and defining it as \"useful\" geometry. The grid doesn't know it's a shape; only the UI does.",
-    "start": 61.902,
-    "end": 96.92
+    "start": 61.603,
+    "end": 96.452
   },
   {
     "text": "The Objective Constraints",
-    "start": 96.92,
-    "end": 98.643
+    "start": 96.452,
+    "end": 98.167
   },
   {
     "text": "Unlike traditional cellular automata which rely on arbitrary \"rules\" of birth and death, this engine is strictly deterministic and rooted in physical constraints. It continuously calculates the following mechanics:",
-    "start": 98.643,
-    "end": 113.395
+    "start": 98.167,
+    "end": 112.848
   },
   {
     "text": "1. Topological Unwinding (E equals M C squared) Mass is a deadlocked knot of relational tension. When the environmental thermal limit drops below the localized heat of a node, the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust: Y act equals N nodes times tau knot, multiplied by Omega max",
-    "start": 113.395,
-    "end": 139.176
+    "start": 112.848,
+    "end": 138.504
   },
   {
     "text": "2. Phase Friction (Electromagnetism) Nodes possess a topological spin (chirality). When nodes interact, their Phase Friction (\\Phi) is dictated by momentum alignment: \\Phi = \\tau(1 + \\cos(\\Delta \\theta)) Aligned spins mesh into coherent flow, allowing relational momentum to pass smoothly. Opposite spins crash head-on, triggering immediate momentum cancellation and generating a massive spike in metabolic dissipation (a heavy heat penalty). This tension naturally resolves down the path of least resistance, driving physical repulsion or shaping structures into stable circulating vortices.",
-    "start": 139.176,
-    "end": 179.984
+    "start": 138.504,
+    "end": 179.116
   },
   {
-    "text": "Hydrodynamic Integrity (Phase Lock): Momentum in the raw engine is ballistic — a node's spin is always overwritten by the direction of its incoming momentum, so no painted circulation can survive: vortices shear apart into linear streams within a few ticks. But a knot of matter is a persistent phase pattern, and the substrate's structure must steer the flux that flows through it. Phase Lock grants the lattice that inertia: when a node's incoming momentum lies within ±45° of its established spin, the node keeps its own direction — the phase lattice acts as a waveguide, channeling laminar flux rather than being erased by it. Orthogonal or head-on collisions exceed the tolerance, the lattice shatters, and raw momentum writes a new phase. This is what makes bound structures possible at all: the knot channels the flow, and the channeled flow sustains the knot. On the 8-direction lattice, the native closed streamline is the octagon — its flat edges carry exact spin tangents, which is why the Synthetic Electron's torus is an octagonal waveguide rather than a painted circle.",
-    "start": 179.984,
-    "end": 254.639
+    "text": "Hydrodynamic Integrity (Phase Lock): Momentum in the raw engine is ballistic — a node's spin is always overwritten by the direction of its incoming momentum, so no painted circulation can survive: vortices shear apart into linear streams within a few ticks. But a knot of matter is a persistent phase pattern, and the substrate's structure must steer the flux that flows through it. Phase Lock grants the lattice that inertia: when a node's incoming momentum lies within ±45° of its established spin, the node keeps its own direction — the phase lattice acts as a waveguide, channeling laminar flux rather than being erased by it. Orthogonal or head-on collisions exceed the tolerance, the lattice shatters, and raw momentum writes a new phase. And because phase is structural state rather than energy, an empty node receiving no flux holds its spin — silence never erases a waveguide; only flux rewrites it. A node still holding mass when momentum falls silent relinquishes its phase and goes inert: in this substrate, matter must keep circulating or it is no longer matter. This is what makes bound structures possible at all: the knot channels the flow, and the channeled flow sustains the knot. On the 8-direction lattice, the native closed streamline is the octagon — its flat edges carry exact spin tangents, which is why the Synthetic Electron's torus is an octagonal waveguide rather than a painted circle.",
+    "start": 179.116,
+    "end": 276.117
   },
   {
-    "text": "3. Entropic Gravity Gravity is not an invisible geometric curve; it is the entropic gradient of the substrate. When local momentum is shunted by a deadlocked boundary, the grid resolves the tension by routing the quanta into the coolest adjacent locus: F equals T times the change in S over the change in X",
-    "start": 254.639,
-    "end": 275.732
+    "text": "3. Routing-Impedance Gravity Gravity is not an invisible geometric curve pulling objects toward mass; it is congestion in the substrate's routing fabric. Every node relays at most FLOW_CAP quanta per tick — heavier flow accumulates in the cell, and that residual is the gravitational field: a jammed neighbor refracts passing flux toward the densest node that can still absorb, so mass accretes onto congestion boundaries rather than being tugged at a distance. Hard congestion (quanta > 200) deadlocks into an impenetrable surface — the knot's body — while merely heavy congestion bends trajectories, the lensing regime. Transport lag gives heavy flow momentum magnitude: a dense packet drains over multiple ticks, so mass resists turning — inertia falls out of the accumulator rather than being assumed: F equals T times the change in S over the change in X",
+    "start": 276.117,
+    "end": 335.045
   },
   {
     "text": "4. Propagation Friction (Cosmological Redshift) Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium: E received equals E emitted, times E to the negative mu D",
-    "start": 275.732,
-    "end": 299.583
+    "start": 335.045,
+    "end": 358.781
   },
   {
     "text": "5. The Cold Matter Inversion (Stefan-Boltzmann Dissipation) Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint). Because of this, heat has a hard mathematical ceiling. If a node must spend massive computational bandwidth maintaining a dense topological deadlock (mass > 200), it experiences extreme metabolic drag, over-dissipates its heat, and collapses to the stochastic floor (~2 heat). Conversely, the empty quantum foam easily sustains an ambient vibration of ~325 heat. The vacuum is hot. Matter is freezing.",
-    "start": 299.583,
-    "end": 348.457
+    "start": 358.781,
+    "end": 407.419
   },
   {
     "text": "The Biological Swerve",
-    "start": 348.457,
-    "end": 349.904
+    "start": 407.419,
+    "end": 408.859
   },
   {
     "text": "While the grid is perfectly deterministic, you are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations.",
-    "start": 349.904,
-    "end": 373.893
+    "start": 408.859,
+    "end": 432.732
   },
   {
     "text": "The Injection Matrix lets you choose which relational channels your interference writes — density (fluid displacement), heat (pure thermal energy), or spin (directional momentum) — and how strongly, via per-channel dose sliders. Enable all three and the stamp overwrites the field verbatim; dial the spin channel toward entrainment and your injected mass adopts the ambient flow instead of fighting it. :::",
-    "start": 373.893,
-    "end": 401.88
+    "start": 432.732,
+    "end": 460.584
   }
 ]
