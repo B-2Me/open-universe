@@ -27,11 +27,12 @@
 #define QUANTA_INJECT_HEAT (25)  // Heat added per injected quanta unit
 #define TEMP_SCALAR_DIV (200)    // Divisor for thermal runaway acceleration
 #define HEAT_FLOOR (2)           // Heat below this hits the stochastic floor
-#define GRAVITY_DIV (4)          // Spins align to heat above LIMIT/4
+#define GRAVITY_DIV (4)          // Spins align to resistance drop threshold
 #define BACKSCATTER_DIV (20)     // Impedance backscatter = LIMIT/20
 #define IMPEDANCE_DENSITY (180)  // Density that triggers acoustic backscatter
 #define THERMAL_NORM (1200.0)    // Baseline for environment-normalized scaling
 #define DISSIPATION_SCALE (0.1)  // Dissipation dampening factor in impedance injector
+#define NODE_BANDWIDTH_MAX (220) // C_max vector budget ceiling for time dilation cycle-stealing
 
 // --- Undo Snapshot Ring ---
 #define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
@@ -250,7 +251,7 @@ EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
 
 
 // ---------------------------------------------------------
-// PHYSICS ENGINE
+// PHYSICS ENGINE (v2.0: Entropic Gravity & Bandwidth Cycle-Stealing)
 // ---------------------------------------------------------
 EMSCRIPTEN_KEEPALIVE
 void tick() {
@@ -276,7 +277,7 @@ void tick() {
             
             int heat_sum = 0;
             int kinetic_heat = 0;
-            int max_heat = -1;
+            double min_resistance = 1e9;
             uint8_t gravity_spin = current.spin;
             int incoming_quanta = 0;
             int mom_x = 0; 
@@ -317,8 +318,12 @@ void tick() {
                         }
                     }
 
-                    if (neighbor.heat > max_heat) {
-                        max_heat = neighbor.heat;
+                    // Entropic Gravity Routing Sink:
+                    // Evaluate thermodynamic resistance gradient: Resistance = heat / (quanta + 1).
+                    // Flux deflects toward the steepest drop in resistance (cold, dense mass sinks).
+                    double neighbor_resistance = (double)neighbor.heat / ((double)neighbor.quanta + 1.0);
+                    if (neighbor_resistance < min_resistance) {
+                        min_resistance = neighbor_resistance;
                         gravity_spin = n_dir;
                     }
                     
@@ -347,15 +352,19 @@ void tick() {
             
             if (incoming_quanta > 0 && dominant_spin == 0) kinetic_heat += incoming_quanta * KINETIC_HEADON;
 
+            // --- Bandwidth Limit & Cycle-Stealing (Time Dilation) ---
+            // Spatial I/O routing load takes absolute priority over internal maintenance.
+            int routing_load = incoming_quanta + abs(mom_x) + abs(mom_y) + (shunting ? current.quanta : 0);
+            if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
+            double bandwidth_fraction = 1.0 - ((double)routing_load / NODE_BANDWIDTH_MAX);
+            if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
+
             int kept_heat = current.heat - HEAT_KEEP_NUM * (current.heat / HEAT_DIFFUSION_DIV);
             int next_heat = kept_heat + heat_sum + kinetic_heat;
 
             next_heat += (next_quanta * QUANTA_HEAT_GEN);
 
-            // Topological Unwinding — the knot fails when its pre-dissipation
-            // tension exceeds what the environment can carry. The check reads
-            // tension before the field drains it: dissipation rate decides how
-            // fast heat escapes, not whether the knot survives.
+            // Topological Unwinding
             if (next_heat > KNOB_THERMAL_LIMIT && next_quanta > 0) {
                 next_heat = HEAT_MAX;
                 next_quanta = 0;   
@@ -364,7 +373,8 @@ void tick() {
                 frame_yield += 1.0; 
             } else {
                 int temp_scalar = next_heat / TEMP_SCALAR_DIV;
-                int heat_loss = (1 + (temp_scalar * temp_scalar)) * KNOB_DISSIPATION;
+                // High routing load starves internal dissipation (time dilation lag)
+                int heat_loss = (int)((1 + (temp_scalar * temp_scalar)) * KNOB_DISSIPATION * bandwidth_fraction);
                 next_heat -= heat_loss;
 
                 if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
@@ -386,7 +396,7 @@ void tick() {
                 if (heat_left < heat_right) next_spin = left_spin;
                 else if (heat_right < heat_left) next_spin = right_spin;
                 else next_spin = ((x + y) % 2 == 0) ? left_spin : right_spin;
-            } else if (max_heat > (KNOB_THERMAL_LIMIT / GRAVITY_DIV) && next_quanta > 0) {
+            } else if (min_resistance < (double)KNOB_THERMAL_LIMIT / GRAVITY_DIV && next_quanta > 0) {
                 next_spin = gravity_spin;
             } else if (current.spin != 0) {
                 // Phase Lock (Topological Waveguide)
@@ -424,10 +434,6 @@ void tick() {
 
     obs_total_quanta = frame_quanta;
     obs_total_heat = frame_heat;
-    // Yield accumulates over the lifetime of the current field — reset by
-    // clear/randomize/scenario load. CAVEAT: it lives outside the undo
-    // snapshot ring, so an undo restores field bytes but leaves this
-    // counter inflated relative to the restored state (cosmetic drift).
     obs_actualization_yield += frame_yield;
     obs_phase_alignment = (active_nodes > 0) ? ((double)aligned_nodes / active_nodes) * 100.0 : 0.0;
 
