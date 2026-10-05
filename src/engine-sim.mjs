@@ -23,6 +23,103 @@ const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
 const SPIN_DY = [0,-1,-1,0,1,1,1,0,-1];
 const OCTANT = [3,4,5,6,7,8,1,2];
 
+// --- Hex topology (6-fold): odd-r offset rows. Each cell has 6 edge
+// neighbors; diagonal offsets alternate by row parity. Spins 1-6 =
+// E, SE, SW, W, NW, NE — screen angles (s-1)*60°. Triangular-cell 3-fold
+// is the dual description of the same symmetry, so this covers both.
+const HOFF = [
+  [[0,0],[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]], // even rows
+  [[0,0],[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]    // odd rows
+];
+const HINV = [0,4,5,6,1,2,3]; // E↔W, SE↔NW, SW↔NE (parity-invariant)
+const hexDir = (mx, my) => {
+  if (mx === 0 && my === 0) return 0;
+  const a = Math.atan2(my, mx);
+  return ((Math.floor((a + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+};
+// Odd-r offset → axial hex distance between two cells.
+const hexDist = (x, y, cx, cy) => {
+  const dq = (x - Math.floor(y / 2)) - (cx - Math.floor(cy / 2));
+  const dr = y - cy;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+};
+
+function tickHex() {
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    const cq = q[i], cs = s[i], ch = h[i];
+    const par = y & 1, off = HOFF[par];
+    let deadlocked = 0;
+    if (cs !== 0) {
+      const tx = (x + off[cs][0] + W) % W, ty = (y + off[cs][1] + H) % H;
+      if (q[ty * W + tx] > DEADLOCK) deadlocked = 1;
+    }
+    let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
+    for (let d = 1; d <= 6; d++) {
+      const nx = (x + off[d][0] + W) % W, ny = (y + off[d][1] + H) % H;
+      const ni = ny * W + nx;
+      const nq = q[ni], ns = s[ni], nh = h[ni];
+      heatSum += Math.floor(nh / DIFF_DIV);
+      if (nq > 0 && ns === HINV[d]) { // neighbor's spin points back at us
+        const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        kin += sent * KINETIC_BASE;
+        if (cq > 0 && cs !== 0) {
+          if (ns === cs) kin += sent * KINETIC_ALIGNED;
+          else if (ns === HINV[cs]) kin += 0;
+          else kin += sent * KINETIC_ORTHOGONAL;
+        }
+        if (cq <= DEADLOCK) {
+          incoming += sent;
+          const a = (d - 1) * Math.PI / 3; // screen angle of direction d
+          mx -= Math.cos(a) * sent; my -= Math.sin(a) * sent;
+        }
+      }
+      if (nq > maxCong && nq <= DEADLOCK) { maxCong = nq; congSpin = d; }
+    }
+    let nq2 = cq, shunt = 0;
+    if (cq > 0 && cs !== 0) {
+      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+      else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+    }
+    nq2 += incoming; if (nq2 > 255) nq2 = 255;
+    let dom = incoming > 0 ? hexDir(mx, my) : 0;
+    if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
+
+    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0);
+    if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
+    const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
+
+    let nh2 = ch - KEEP * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    if (nh2 > KNOB_LIMIT && nq2 > 0) {
+      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
+    } else {
+      const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
+      nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
+      if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
+    }
+
+    let ns2 = dom !== 0 ? dom : cs;
+    if (shunt) {
+      const ls = cs - 1 < 1 ? 6 : cs - 1, rs = cs + 1 > 6 ? 1 : cs + 1;
+      const lx = (x + off[ls][0] + W) % W, ly = (y + off[ls][1] + H) % H;
+      const rx = (x + off[rs][0] + W) % W, ry = (y + off[rs][1] + H) % H;
+      const hl = h[ly * W + lx], hr = h[ry * W + rx];
+      ns2 = hl < hr ? ls : hr < hl ? rs : ((x + y) % 2 === 0 ? ls : rs);
+    } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
+      ns2 = congSpin;
+    } else if (LOCK_ON && cs !== 0) {
+      if (dom === 0) ns2 = (cq === 0 || PERSIST_MASS) ? cs : 0;
+      else {
+        const dd = Math.abs(cs - dom);
+        ns2 = dd <= 1 || dd === 5 ? cs : dom; // 6-fold wrap adjacency
+      }
+    } else ns2 = dom;
+
+    q2[i] = nq2; s2[i] = ns2; h2[i] = nh2;
+  }
+  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; }
+}
+
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
 
@@ -189,6 +286,53 @@ function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.0
   }
 }
 
+// Neutral isotropy probes shared by both topologies.
+function paintBlobStream(variant) {
+  q.fill(0); s.fill(0); h.fill(1);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (variant === 'blob') {
+      const dx = x - 200, dy = y - 200;
+      if (Math.hypot(dx, dy) <= 25) {
+        // radial burst: outward-quantized spins — measures how anisotropically
+        // the topology carries a circular front
+        const a = Math.atan2(dy, dx);
+        s[i] = OCTANT[Math.floor((a + Math.PI * 2 + Math.PI / 8) / (Math.PI / 4)) % 8];
+        q[i] = 150; h[i] = 500;
+      }
+    } else if (variant === 'stream') {
+      if (y >= 195 && y <= 205 && x >= 40 && x <= 360) { q[i] = 80; s[i] = 3; h[i] = 500; }
+    }
+  }
+}
+
+function paintHex(variant) {
+  q.fill(0); s.fill(0); h.fill(1);
+  const cx = 200, cy = 200;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    const d = hexDist(x, y, cx, cy);
+    if (variant === 'hexblob') {
+      if (d <= 25) {
+        const a = Math.atan2(y - cy, x - cx);
+        s[i] = ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+        q[i] = 150; h[i] = 500;
+      }
+    } else if (variant === 'hexstream') {
+      // E is a same-row direction — straight-through exists on hex.
+      if (y >= 195 && y <= 205 && x >= 40 && x <= 360) { q[i] = 80; s[i] = 1; h[i] = 500; }
+    } else if (variant === 'hexring') {
+      if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
+      else if (d <= 25) { s[i] = 0; }
+      else if (d <= 90) {
+        const a = Math.atan2(y - cy, x - cx) + Math.PI / 2; // tangent
+        s[i] = ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+        if (d >= 45 && d <= 55) { q[i] = 70; h[i] = 500; }
+      }
+    }
+  }
+}
+
 function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0;
   const cx = 200, cy = 200;
@@ -228,11 +372,14 @@ else if (variant === 'octmixcf') paintElectron({ outwardFoam: 'co', oct: { rings
 else if (variant === 'octmixlf') paintElectron({ foamP: 0.01, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
 else if (variant === 'rings') paintElectron({ ringMode: [{ r: 40, q: 130 }, { r: 60, q: 90 }] });
 else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
+else if (variant === 'blob' || variant === 'stream') paintBlobStream(variant);
+else if (variant.startsWith('hex')) paintHex(variant);
 else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
 else paintElectron();
+const TICK = variant.startsWith('hex') ? tickHex : tick;
 stats('tick 0');
 for (let t = 1; t <= 400; t++) {
-  tick();
+  TICK();
   if (t % 50 === 0) stats('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
