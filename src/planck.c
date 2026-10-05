@@ -27,7 +27,7 @@
 #define QUANTA_INJECT_HEAT (25)  // Heat added per injected quanta unit
 #define TEMP_SCALAR_DIV (200)    // Divisor for thermal runaway acceleration
 #define HEAT_FLOOR (2)           // Heat below this hits the stochastic floor
-#define GRAVITY_DIV (4)          // Spins align to resistance drop threshold
+#define FLOW_CAP (160)           // Max quanta relayed per node per tick; residual accumulates
 #define BACKSCATTER_DIV (20)     // Impedance backscatter = LIMIT/20
 #define IMPEDANCE_DENSITY (180)  // Density that triggers acoustic backscatter
 #define THERMAL_NORM (1200.0)    // Baseline for environment-normalized scaling
@@ -273,7 +273,7 @@ EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
 
 
 // ---------------------------------------------------------
-// PHYSICS ENGINE (v2.0: Entropic Gravity & Bandwidth Cycle-Stealing)
+// PHYSICS ENGINE (v2.1: Congestion Gravity & Transport-Lag Accumulator)
 // ---------------------------------------------------------
 EMSCRIPTEN_KEEPALIVE
 void tick() {
@@ -299,7 +299,7 @@ void tick() {
             
             int heat_sum = 0;
             int kinetic_heat = 0;
-            double min_resistance = 1e9;
+            int max_congestion = 0;
             uint8_t gravity_spin = current.spin;
             int incoming_quanta = 0;
             int mom_x = 0; 
@@ -321,31 +321,32 @@ void tick() {
                     heat_sum += neighbor.heat / HEAT_DIFFUSION_DIV;
 
                     if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
-                        kinetic_heat += (neighbor.quanta * KINETIC_BASE);
+                        // The sender only relays up to FLOW_CAP; the rest stays put.
+                        int sent = (neighbor.quanta > FLOW_CAP) ? FLOW_CAP : neighbor.quanta;
+                        kinetic_heat += (sent * KINETIC_BASE);
 
                         if (current.quanta > 0 && current.spin != 0) {
                             if (neighbor.spin == current.spin) {
-                                kinetic_heat += neighbor.quanta * KINETIC_ALIGNED;
+                                kinetic_heat += sent * KINETIC_ALIGNED;
                             } else if (neighbor.spin == INV_DIR[current.spin]) {
                                 kinetic_heat += 0;
                             } else {
-                                kinetic_heat += neighbor.quanta * KINETIC_ORTHOGONAL;
+                                kinetic_heat += sent * KINETIC_ORTHOGONAL;
                             }
                         }
 
                         if (current.quanta <= DEADLOCK_QUANTA) {
-                            incoming_quanta += neighbor.quanta; 
-                            mom_x -= (dx * neighbor.quanta);    
-                            mom_y -= (dy * neighbor.quanta);
+                            incoming_quanta += sent; 
+                            mom_x -= (dx * sent);    
+                            mom_y -= (dy * sent);
                         }
                     }
 
-                    // Entropic Gravity Routing Sink:
-                    // Evaluate thermodynamic resistance gradient: Resistance = heat / (quanta + 1).
-                    // Flux deflects toward the steepest drop in resistance (cold, dense mass sinks).
-                    double neighbor_resistance = (double)neighbor.heat / ((double)neighbor.quanta + 1.0);
-                    if (neighbor_resistance < min_resistance) {
-                        min_resistance = neighbor_resistance;
+                    // Congestion gravity sink: flux deflects toward the densest
+                    // neighbor that can still absorb (quanta > 200 is a hard
+                    // wall — bending into deadlock means hitting it, not accreting).
+                    if (neighbor.quanta > max_congestion && neighbor.quanta <= DEADLOCK_QUANTA) {
+                        max_congestion = neighbor.quanta;
                         gravity_spin = n_dir;
                     }
                     
@@ -359,8 +360,10 @@ void tick() {
             int shunting = 0;
             
             if (current.quanta > 0 && current.spin != 0) {
-                if (!target_deadlocked) next_quanta = 0;
-                else {
+                if (!target_deadlocked) {
+                    int sent = (current.quanta > FLOW_CAP) ? FLOW_CAP : current.quanta;
+                    next_quanta = current.quanta - sent;  // transport lag: residual accumulates
+                } else {
                     shunting = 1;
                     kinetic_heat += (current.quanta * KINETIC_SHUNT);
                 }
@@ -421,7 +424,10 @@ void tick() {
                 if (heat_left < heat_right) next_spin = left_spin;
                 else if (heat_right < heat_left) next_spin = right_spin;
                 else next_spin = ((x + y) % 2 == 0) ? left_spin : right_spin;
-            } else if (min_resistance < (double)KNOB_THERMAL_LIMIT / GRAVITY_DIV && next_quanta > 0) {
+            } else if (max_congestion > FLOW_CAP && next_quanta > 0) {
+                // Routing-impedance gravity: a neighbor jammed above the flow
+                // cap refracts flux toward the densest node that can still
+                // absorb — accretion emerges from congestion, not heat-chasing.
                 next_spin = gravity_spin;
             } else if (current.spin != 0) {
                 // Phase Lock (Topological Waveguide)

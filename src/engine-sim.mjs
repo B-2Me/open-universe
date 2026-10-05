@@ -1,7 +1,12 @@
 // Engine test harness: faithful JS port of planck.c tick() for scenario
 // design validation without an emcc build. quanta/spin/heat fields,
-// deadlock, shunting, gravity, Phase Lock, pre-dissipation unwinding.
-// Usage: node engine-sim.mjs [off|strict|tolerant|lock|locktol] [variant] [dump N]
+// deadlock, shunting, congestion gravity, Phase Lock, FLOW_CAP transport
+// lag, bandwidth cycle-stealing, pre-dissipation unwinding.
+// Usage: node engine-sim.mjs [mode] [variant] [dump N]
+//   mode: default ('engine'/'cap') mirrors planck.c: FLOW_CAP + congestion
+//         gravity + Phase Lock. Suffixes A/B-test features: '+res' (old
+//         resistance gravity), '+persist' (mass persist), '+nocap',
+//         '+nograv', '+nolock' to disable.
 // If planck.c's tick() changes, mirror the change here or results drift.
 
 const W = 400, H = 400, N = W * H;
@@ -10,6 +15,8 @@ const KINETIC_BASE = 1, KINETIC_ALIGNED = 5, KINETIC_ORTHOGONAL = 2;
 const KINETIC_SHUNT = 5, KINETIC_HEADON = 10;
 const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
 const GRAVITY_DIV = 4, DIFF_DIV = 9, KEEP = 8;
+const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
+const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
 const INV_DIR = [0,5,6,7,8,1,2,3,4];
 const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
@@ -17,7 +24,7 @@ const SPIN_DY = [0,-1,-1,0,1,1,1,0,-1];
 const OCTANT = [3,4,5,6,7,8,1,2];
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
-let AFFINITY = "off"; let PHASE_LOCK = false; let PHASE_PERSIST = false; // 'off' | 'strict' | 'tolerant'
+let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
 
 const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
 const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
@@ -31,7 +38,7 @@ function tick() {
       const tx = (x + SPIN_DX[cs] + W) % W, ty = (y + SPIN_DY[cs] + H) % H;
       if (q[ty * W + tx] > DEADLOCK) deadlocked = 1;
     }
-    let heatSum = 0, kin = 0, maxHeat = -1, gravSpin = cs, incoming = 0, mx = 0, my = 0;
+    let heatSum = 0, kin = 0, minRes = 1e9, gravSpin = cs, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
       if (!dx && !dy) continue;
       const nx = (x + dx + W) % W, ny = (y + dy + H) % H;
@@ -40,68 +47,69 @@ function tick() {
       const nDir = DIR_MAP[dy + 1][dx + 1], req = INV_DIR[nDir];
       heatSum += Math.floor(nh / DIFF_DIV);
       if (nq > 0 && ns === req) {
-        kin += nq * KINETIC_BASE;
+        const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
-          if (ns === cs) kin += nq * KINETIC_ALIGNED;
+          if (ns === cs) kin += sent * KINETIC_ALIGNED;
           else if (ns === INV_DIR[cs]) kin += 0;
-          else kin += nq * KINETIC_ORTHOGONAL;
+          else kin += sent * KINETIC_ORTHOGONAL;
         }
-        if (cq <= DEADLOCK) { incoming += nq; mx -= dx * nq; my -= dy * nq; }
+        if (cq <= DEADLOCK) { incoming += sent; mx -= dx * sent; my -= dy * sent; }
       }
-      if (nh > maxHeat) { maxHeat = nh; gravSpin = nDir; }
+      // Entropic gravity sink: flux deflects toward the steepest drop in
+      // thermodynamic resistance (cold, dense mass absorbs).
+      const res = nh / (nq + 1);
+      if (res < minRes) { minRes = res; gravSpin = nDir; }
+      // Congestion gravity: densest neighbor that can still absorb flux.
+      if (nq > maxCong && nq <= DEADLOCK) { maxCong = nq; congSpin = nDir; }
     }
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
-      if (!deadlocked) nq2 = 0; else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+      else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     nq2 += incoming; if (nq2 > 255) nq2 = 255;
     const xd = Math.sign(mx), yd = Math.sign(my);
     let dom = DIR_MAP[yd + 1][xd + 1];
     if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
+
+    // Bandwidth limit & cycle-stealing: spatial I/O load starves internal
+    // dissipation (time dilation lag).
+    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0);
+    if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
+    const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
+
     let nh2 = ch - KEEP * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
-      nh2 -= (1 + ts * ts) * KNOB_DISS;
+      nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
       if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
     }
-    let ns2 = dom;
-    if (PHASE_LOCK && cs !== 0 && dom !== 0) {
-      const dd = Math.abs(cs - dom);
-      if (dd <= 1 || dd === 7) ns2 = cs;
-    }
-    if (PHASE_PERSIST && dom === 0 && ns2 === 0) ns2 = cs; // phase persists without flux
+
+    // Phase is structural state: silence holds spin; flux rewrites it.
+    let ns2 = dom !== 0 ? dom : cs;
     if (shunt) {
       const ls = cs - 1 < 1 ? 8 : cs - 1, rs = cs + 1 > 8 ? 1 : cs + 1;
       const lx = (x + SPIN_DX[ls] + W) % W, ly = (y + SPIN_DY[ls] + H) % H;
       const rx = (x + SPIN_DX[rs] + W) % W, ry = (y + SPIN_DY[rs] + H) % H;
       const hl = h[ly * W + lx], hr = h[ry * W + rx];
       ns2 = hl < hr ? ls : hr < hl ? rs : ((x + y) % 2 === 0 ? ls : rs);
-    } else if (maxHeat > KNOB_LIMIT / GRAVITY_DIV && nq2 > 0) {
+    } else if (GRAV_MODE === 'res' && minRes < KNOB_LIMIT / GRAVITY_DIV && nq2 > 0) {
       ns2 = gravSpin;
-    } else if (AFFINITY !== 'off' && nq2 > 0 && dom !== 0) {
-      const ls = dom - 1 < 1 ? 8 : dom - 1, rs = dom + 1 > 8 ? 1 : dom + 1;
-      const lx = (x + SPIN_DX[ls] + W) % W, ly = (y + SPIN_DY[ls] + H) % H;
-      const rx = (x + SPIN_DX[rs] + W) % W, ry = (y + SPIN_DY[rs] + H) % H;
-      const ni = ly * W + lx, nj = ry * W + rx;
-      let la = 0, ra = 0;
-      if (q[ni] > 0) {
-        if (AFFINITY === 'strict' && s[ni] === dom) la = q[ni];
-        else if (AFFINITY === 'tolerant') {
-          const d = Math.abs(s[ni] - dom);
-          if (s[ni] !== 0 && (d <= 1 || d === 7)) la = q[ni];
-        }
+    } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
+      ns2 = congSpin; // bend toward densest absorbing neighbor — routing impedance
+    } else if (LOCK_ON && cs !== 0) {
+      // Phase Lock: laminar inflow keeps established phase; stalled mass
+      // (dom==0, quanta>0) goes inert unless PERSIST_MASS; waveguides persist.
+      if (dom === 0) ns2 = (cq === 0 || PERSIST_MASS) ? cs : 0;
+      else {
+        const dd = Math.abs(cs - dom);
+        ns2 = dd <= 1 || dd === 7 ? cs : dom;
       }
-      if (q[nj] > 0) {
-        if (AFFINITY === 'strict' && s[nj] === dom) ra = q[nj];
-        else if (AFFINITY === 'tolerant') {
-          const d = Math.abs(s[nj] - dom);
-          if (s[nj] !== 0 && (d <= 1 || d === 7)) ra = q[nj];
-        }
-      }
-      if (la > ra) ns2 = ls; else if (ra > la) ns2 = rs;
-    }
+    } else ns2 = dom;
+
     q2[i] = nq2; s2[i] = ns2; h2[i] = nh2;
   }
   for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; }
@@ -192,13 +200,16 @@ function stats(label) {
 }
 
 // --- run ---
+// modes: 'engine' = faithful to current planck.c (flow cap off until engine gains it)
+// 'cap' adds FLOW_CAP transport lag; '+nocap'+nograv'+nolock' toggle features off.
 const args = process.argv.slice(2);
-const affinity = args[0] || 'tolerant';
+const mode = args[0] || 'engine';
 const variant = args[1] || 'solid';
-AFFINITY = affinity === "locktol" ? (PHASE_LOCK = true, "tolerant") : affinity.startsWith("lock") ? (PHASE_LOCK = true, "off") : affinity;
-if (affinity === "persist" || affinity === "locktol" || affinity === "lockpersist") PHASE_PERSIST = true;
-if (affinity === "lockpersist") PHASE_LOCK = true, AFFINITY = "off";
-console.log(`=== affinity=${AFFINITY} variant=${variant} ===`);
+FLOW_CAP_ON = !mode.includes('nocap');
+GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
+PERSIST_MASS = mode.includes('persist');
+LOCK_ON = !mode.includes('nolock');
+console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
 else if (variant === 'octmix') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
