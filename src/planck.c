@@ -380,7 +380,10 @@ void tick() {
                 if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
             }
 
-            uint8_t next_spin = dominant_spin; 
+            // Phase is structural state: with no incoming momentum the
+            // lattice holds its established spin rather than erasing to 0.
+            // Flux rewrites phase; silence never does.
+            uint8_t next_spin = (dominant_spin != 0) ? dominant_spin : current.spin; 
             if (shunting) {
                 uint8_t left_spin = (current.spin - 1 < 1) ? 8 : current.spin - 1;
                 uint8_t right_spin = (current.spin + 1 > 8) ? 1 : current.spin + 1;

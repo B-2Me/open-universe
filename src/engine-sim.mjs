@@ -17,7 +17,7 @@ const SPIN_DY = [0,-1,-1,0,1,1,1,0,-1];
 const OCTANT = [3,4,5,6,7,8,1,2];
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
-let AFFINITY = "off"; let PHASE_LOCK = false; // 'off' | 'strict' | 'tolerant'
+let AFFINITY = "off"; let PHASE_LOCK = false; let PHASE_PERSIST = false; // 'off' | 'strict' | 'tolerant'
 
 const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
 const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
@@ -71,6 +71,7 @@ function tick() {
       const dd = Math.abs(cs - dom);
       if (dd <= 1 || dd === 7) ns2 = cs;
     }
+    if (PHASE_PERSIST && dom === 0 && ns2 === 0) ns2 = cs; // phase persists without flux
     if (shunt) {
       const ls = cs - 1 < 1 ? 8 : cs - 1, rs = cs + 1 > 8 ? 1 : cs + 1;
       const lx = (x + SPIN_DX[ls] + W) % W, ly = (y + SPIN_DY[ls] + H) % H;
@@ -195,6 +196,8 @@ const args = process.argv.slice(2);
 const affinity = args[0] || 'tolerant';
 const variant = args[1] || 'solid';
 AFFINITY = affinity === "locktol" ? (PHASE_LOCK = true, "tolerant") : affinity.startsWith("lock") ? (PHASE_LOCK = true, "off") : affinity;
+if (affinity === "persist" || affinity === "locktol" || affinity === "lockpersist") PHASE_PERSIST = true;
+if (affinity === "lockpersist") PHASE_LOCK = true, AFFINITY = "off";
 console.log(`=== affinity=${AFFINITY} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
