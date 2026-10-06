@@ -204,8 +204,34 @@ html:has(.wake-sandbox) body {
   image-rendering: pixelated;
   pointer-events: none;
 }
+
 #canvas_left { left: 0; }
 #canvas_right { right: 0; }
+
+/* Update #canvas-touch-zone */
+#canvas-touch-zone {
+  --pad-h: 0px;
+  width: 100%;
+  height: 100%; /* FIX: Force definite height for Safari container queries so cqw/cqh don't equal 0 */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  container-type: size;
+}
+
+/* Update #canvas_left, #canvas_right */
+#canvas_left, #canvas_right {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 200%;
+  image-rendering: -webkit-crisp-edges; /* FIX: Prevent blurring on iOS Safari */
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 
 /* View/Lens Buttons */
 .lens-btn {
