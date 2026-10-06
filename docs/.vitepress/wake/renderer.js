@@ -79,8 +79,13 @@ const FS_SOURCE = `
 `;
 
 class SingleRenderer {
-    constructor(canvas) {
+    constructor(canvas, clipHalf) {
         this.canvas = canvas;
+        // Split-view: each canvas element is 200% the width of its pane and
+        // CSS-clipped to one half — left canvas shows element-left, right
+        // shows element-right. Scissoring to that half rejects the invisible
+        // fragments before shading: a guaranteed 2x GPU saving.
+        this.clipHalf = clipHalf === 'left' ? 0 : 1;
         // Default to Oct — it's the projection that shares the engine's
         // 8-fold symmetry, so motion renders fluid instead of aliased.
         this.projectionMode = 2; // 0: Quad, 1: Hex, 2: Oct
@@ -123,6 +128,7 @@ class SingleRenderer {
         }
 
         gl.useProgram(this.program);
+        gl.enable(gl.SCISSOR_TEST);
 
         this.uModeLocation = gl.getUniformLocation(this.program, "u_projection_mode");
         this.uCellPxLocation = gl.getUniformLocation(this.program, "u_cell_px");
@@ -190,15 +196,21 @@ class SingleRenderer {
             // supersampling; cell-boundary geometry doesn't benefit) scaled
             // by zoom so magnified cells stay crisp. Quad has no sub-cell
             // geometry at all, so it pins to the grid — CSS NEAREST upscale
-            // is identical and free. Cap 2048 keeps weak GPUs alive.
+            // is identical and free. Cap 2560 keeps weak GPUs alive — only
+            // half of it is shaded anyway thanks to the scissor clip.
             const scale = this.projectionMode === 0 ? 0 : (this.pixelScale || 1);
-            const w = Math.min(2048, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * scale)));
-            const h = Math.min(2048, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * scale)));
+            const w = Math.min(2560, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * scale)));
+            const h = Math.min(2560, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * scale)));
             if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
                 this.canvas.width = w;
                 this.canvas.height = h;
                 gl.viewport(0, 0, w, h);
             }
+            // Element-space halves map linearly onto backing halves, so the
+            // clip stays aligned at any zoom/pan (the wrapper transform only
+            // affects the element's CSS box, not its internal layout).
+            const halfW = Math.floor(this.canvas.width / 2);
+            gl.scissor(this.clipHalf * halfW, 0, this.canvas.width - halfW, this.canvas.height);
             gl.useProgram(this.program);
             gl.uniform1f(this.uCellPxLocation, Math.max(1, this.canvas.width / GRID_WIDTH));
             gl.activeTexture(gl.TEXTURE0);
@@ -218,8 +230,8 @@ class SingleRenderer {
 
 export class DualRenderer {
     constructor(canvasLeft, canvasRight) {
-        this.left = new SingleRenderer(canvasLeft);
-        this.right = new SingleRenderer(canvasRight);
+        this.left = new SingleRenderer(canvasLeft, 'left');
+        this.right = new SingleRenderer(canvasRight, 'right');
         this.isWebGL = this.left.isWebGL || this.right.isWebGL;
     }
 
