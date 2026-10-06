@@ -18,6 +18,7 @@ const FS_SOURCE = `
     #endif
     uniform sampler2D u_texture;
     uniform int u_projection_mode; // 0: Quad, 1: Hex, 2: Oct
+    uniform float u_cell_px;     // backing px per grid cell (supersample density)
     varying vec2 v_uv;
 
     void main() {
@@ -50,12 +51,14 @@ const FS_SOURCE = `
             c2 = vec2(mod(c2.x, ${GRID_WIDTH.toFixed(1)}), mod(c2.y, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t1 = texture2D(u_texture, (c1 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
             vec4 t2 = texture2D(u_texture, (c2 + 0.5) / vec2(${GRID_WIDTH.toFixed(1)}, ${GRID_HEIGHT.toFixed(1)}));
-            // AA + a visible hex seam: cells render at ~2px at rest, so the
-            // band is wide enough to leave a legible diagonal lattice grain
-            // even zoomed out; zoomed in it reads as clean tile borders.
-            float edge = smoothstep(0.0, 0.10, sqrt(d2) - sqrt(d1));
+            // Seam width is pixel-proportional (1.2 backing px), and seams
+            // fade out below ~2.5px cells — a cell too small to fill must be
+            // solid, not a hollow outline. Zoomed in: filled hexes + thin
+            // clean borders.
+            float edge = smoothstep(0.0, min(0.45, 1.2 / u_cell_px), sqrt(d2) - sqrt(d1));
             vec4 col = mix(t1, t2, edge);
-            col.rgb *= 1.0 - (1.0 - edge) * 0.35;
+            float seam = (1.0 - edge) * 0.45 * smoothstep(2.5, 5.0, u_cell_px);
+            col.rgb *= 1.0 - seam;
             gl_FragColor = col;
             return;
         }
@@ -119,6 +122,7 @@ class SingleRenderer {
         gl.useProgram(this.program);
 
         this.uModeLocation = gl.getUniformLocation(this.program, "u_projection_mode");
+        this.uCellPxLocation = gl.getUniformLocation(this.program, "u_cell_px");
         this.uTexLocation = gl.getUniformLocation(this.program, "u_texture");
         const aPosLocation = gl.getAttribLocation(this.program, "a_position");
 
@@ -191,6 +195,8 @@ class SingleRenderer {
                 this.canvas.height = h;
                 gl.viewport(0, 0, w, h);
             }
+            gl.useProgram(this.program);
+            gl.uniform1f(this.uCellPxLocation, Math.max(1, this.canvas.width / GRID_WIDTH));
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texImage2D(
