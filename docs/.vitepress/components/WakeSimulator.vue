@@ -234,7 +234,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Footer Boot Info -->
-        <div style="padding: 12px 16px; margin-top: auto; font-size: 10px; color: #666; display: flex; justify-content: space-between; font-family: var(--font-mono); font-weight: bold;">
+        <div style="padding: 12px 16px; margin-top: auto; font-size: 10px; line-height: 1.25; color: #666; display: flex; justify-content: space-between; font-family: var(--font-mono); font-weight: bold;">
           <span id="diag_status">BOOTING</span>
           <span id="diag_nodes">160,000 Nodes</span>
         </div>
