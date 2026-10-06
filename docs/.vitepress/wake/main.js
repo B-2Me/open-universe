@@ -13,6 +13,8 @@ import {
     TOTAL_NODES,
     GRID_WIDTH,
     GRID_HEIGHT,
+    APP_VERSION,
+    WAKE_BUILD_ID,
     getTopology
 } from './constants.js';
 
@@ -52,8 +54,12 @@ export async function initWakeSimulator() {
             );
         }
 
+        // Two build identities: the engine's planck.c hash (wasm) and the
+        // frontend's deploy SHA (WAKE_BUILD_ID = GITHUB_SHA in CI). Showing
+        // both lets the user verify the deployed JS matches a commit.
         const build = bridge.getEngineBuild();
-        if (diagStatus) diagStatus.innerText = build;
+        const uiRev = String(WAKE_BUILD_ID).slice(0, 8);
+        if (diagStatus) diagStatus.innerText = `${build} · ui:${uiRev} v${APP_VERSION}`;
 
         const diagNodes = document.getElementById('diag_nodes');
         if (diagNodes) diagNodes.innerText = `${TOTAL_NODES.toLocaleString()} Nodes`;

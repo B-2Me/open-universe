@@ -55,9 +55,12 @@ const FS_SOURCE = `
             // fade out below ~2.5px cells — a cell too small to fill must be
             // solid, not a hollow outline. Zoomed in: filled hexes + thin
             // clean borders.
-            float edge = smoothstep(0.0, min(0.45, 1.2 / u_cell_px), sqrt(d2) - sqrt(d1));
-            vec4 col = mix(t1, t2, edge);
-            float seam = (1.0 - edge) * 0.45 * smoothstep(2.5, 5.0, u_cell_px);
+            // edge: 0 at the tile boundary, 1 in the interior. The interior
+            // must sample its OWN cell (t1); only the boundary band blends
+            // toward the neighbor (t2) for AA.
+            float edge = smoothstep(0.0, min(0.45, 0.9 / u_cell_px), sqrt(d2) - sqrt(d1));
+            vec4 col = mix(t2, t1, edge);
+            float seam = (1.0 - edge) * 0.40 * smoothstep(3.0, 7.0, u_cell_px);
             col.rgb *= 1.0 - seam;
             gl_FragColor = col;
             return;
