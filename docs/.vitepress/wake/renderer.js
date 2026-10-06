@@ -186,13 +186,14 @@ class SingleRenderer {
 
         if (this.isWebGL && this.gl) {
             const gl = this.gl;
-            // Backing tracks display resolution so several fragments land
-            // inside each grid cell — Voronoi/chamfer cell boundaries need
-            // sub-cell fragments to exist at all (at 400px backing every
-            // fragment sits on a cell center and projections no-op).
-            const dpr = Math.min(window.devicePixelRatio || 1, 2) * (this.pixelScale || 1);
-            const w = Math.min(4096, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * dpr)));
-            const h = Math.min(4096, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * dpr)));
+            // Backing tracks DISPLAY resolution (1 frag per CSS px — no dpr
+            // supersampling; cell-boundary geometry doesn't benefit) scaled
+            // by zoom so magnified cells stay crisp. Quad has no sub-cell
+            // geometry at all, so it pins to the grid — CSS NEAREST upscale
+            // is identical and free. Cap 2048 keeps weak GPUs alive.
+            const scale = this.projectionMode === 0 ? 0 : (this.pixelScale || 1);
+            const w = Math.min(2048, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * scale)));
+            const h = Math.min(2048, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * scale)));
             if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
                 this.canvas.width = w;
                 this.canvas.height = h;
@@ -234,7 +235,9 @@ export class DualRenderer {
         bridge.renderFrame(leftLayer);
         this.left.render(wasmPixels);
 
-        bridge.renderFrame(rightLayer);
+        // Same layer on both panes → the pixel buffer already holds the
+        // right frame; a second renderFrame would just refill it identically.
+        if (rightLayer !== leftLayer) bridge.renderFrame(rightLayer);
         this.right.render(wasmPixels);
     }
 }
