@@ -784,20 +784,19 @@ export class ControlsManager {
         });
     }
 
-    // Renders the on-screen split field (left half of L + right half of R)
-    // into a single exportable canvas — this is also the source a future
-    // captureStream()/timelapse pump would draw each frame.
+    // Renders the on-screen split field (each canvas holds its own half of
+    // the view window) into a single exportable canvas — this is also the
+    // source a future captureStream()/timelapse pump would draw each frame.
     compositeCanvas() {
         const l = document.getElementById('canvas_left');
         const r = document.getElementById('canvas_right');
         if (!l || !r) return null;
         const c = document.createElement('canvas');
-        const hw = l.width / 2;
-        c.width = hw * 2;
+        c.width = l.width + r.width;
         c.height = l.height;
         const ctx = c.getContext('2d');
-        ctx.drawImage(l, 0, 0, hw, l.height, 0, 0, hw, l.height);
-        ctx.drawImage(r, hw, 0, hw, r.height, hw, 0, hw, r.height);
+        ctx.drawImage(l, 0, 0);
+        ctx.drawImage(r, l.width, 0);
         return c;
     }
 

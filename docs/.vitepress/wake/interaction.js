@@ -17,19 +17,23 @@ const VIBRATE_PULSE_MS = 8;         // Single haptic tick duration
 const SAMPLE_RADIUS_FALLBACK = 10;  // Probe radius when the slider is unavailable
 
 export class InteractionManager {
-    constructor({ bridge, palette, state, canvasContainerId, touchZoneId, transformWrapperId, onSample, onUndoPush, onUndoPop, onZoom }) {
+    constructor({ bridge, palette, state, canvasContainerId, touchZoneId, transformWrapperId, onSample, onUndoPush, onUndoPop, onView, useCssZoom }) {
         this.container = document.getElementById(canvasContainerId);
         // Events bind to the touch zone (canvas + the coarse-pointer pad strip
         // below it); rect/grid math always uses the canvas container itself.
         this.eventsEl = (touchZoneId && document.getElementById(touchZoneId)) || this.container;
         this.tWrapper = document.getElementById(transformWrapperId);
+        this.splitView = document.getElementById('split-view');
+        // 2D fallback canvases can't take a shader view uniform — they get
+        // the old CSS transform on #split-view instead.
+        this.useCssZoom = !!useCssZoom;
         this.bridge = bridge;
         this.palette = palette;
         this.state = state;
         this.onSample = onSample;
         this.onUndoPush = onUndoPush;
         this.onUndoPop = onUndoPop;
-        this.onZoom = onZoom;
+        this.onView = onView;
 
         this.zoom = 1;
         this.panX = 0;
@@ -536,9 +540,25 @@ export class InteractionManager {
     }
 
     applyTransform() {
-        if (!this.tWrapper) return;
-        this.tWrapper.style.transform = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
-        this.onZoom?.(this.zoom);
+        const t = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
+        // The preview overlay always tracks via CSS (it's positioned in
+        // full-field px). In the 2D fallback the canvases zoom the same way.
+        if (this.tWrapper) this.tWrapper.style.transform = t;
+        if (this.useCssZoom && this.splitView) this.splitView.style.transform = t;
+        // View window in field-uv: same math as getGridCoords inverted —
+        // screen center dx=0 maps to field-uv 0.5 - pan/rect, window extent
+        // is 1/zoom per axis.
+        if (this.container && this.onView) {
+            const rect = this.container.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                const invZ = 1 / this.zoom;
+                this.onView(
+                    0.5 - 0.5 * invZ - this.panX / rect.width,
+                    0.5 - 0.5 * invZ - this.panY / rect.height,
+                    invZ, invZ
+                );
+            }
+        }
     }
 
     updateZoomUI() {
@@ -554,9 +574,13 @@ export class InteractionManager {
         this.panY = 0;
         if (this.tWrapper) {
             this.tWrapper.style.transition = 'transform 0.2s ease-out';
+            if (this.splitView) this.splitView.style.transition = 'transform 0.2s ease-out';
             this.applyTransform();
             this.updateZoomUI();
-            setTimeout(() => { if (this.tWrapper) this.tWrapper.style.transition = 'none'; }, 200);
+            setTimeout(() => {
+                if (this.tWrapper) this.tWrapper.style.transition = 'none';
+                if (this.splitView) this.splitView.style.transition = 'none';
+            }, 200);
         }
     }
 
@@ -582,10 +606,14 @@ export class InteractionManager {
         if (targetX !== this.panX || targetY !== this.panY) {
             if (this.tWrapper) {
                 this.tWrapper.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2)';
+                if (this.splitView) this.splitView.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2)';
                 this.panX = targetX;
                 this.panY = targetY;
                 this.applyTransform();
-                setTimeout(() => { if (!this.isDragging && this.tWrapper) this.tWrapper.style.transition = 'none'; }, 300);
+                setTimeout(() => {
+                    if (!this.isDragging && this.tWrapper) this.tWrapper.style.transition = 'none';
+                    if (!this.isDragging && this.splitView) this.splitView.style.transition = 'none';
+                }, 300);
             }
         }
     }

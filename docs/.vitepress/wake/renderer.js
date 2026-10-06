@@ -18,11 +18,12 @@ const FS_SOURCE = `
     #endif
     uniform sampler2D u_texture;
     uniform int u_projection_mode; // 0: Quad, 1: Hex, 2: Oct
-    uniform float u_cell_px;     // backing px per grid cell (supersample density)
+    uniform float u_cell_px;     // backing px per grid cell (seam density)
+    uniform vec4 u_view;         // field-uv window: xy = top-left, zw = extent
     varying vec2 v_uv;
 
     void main() {
-        vec2 coord = v_uv;
+        vec2 coord = u_view.xy + v_uv * u_view.zw;
 
         if (u_projection_mode == 1) {
             // Hexagonal cells (odd-r lattice): each fragment resolves to
@@ -81,16 +82,14 @@ const FS_SOURCE = `
 class SingleRenderer {
     constructor(canvas, clipHalf) {
         this.canvas = canvas;
-        // Split-view: each canvas element is 200% the width of its pane and
-        // CSS-clipped to one half — left canvas shows element-left, right
-        // shows element-right. Scissoring to that half rejects the invisible
-        // fragments before shading: a guaranteed 2x GPU saving.
+        // Split-view: each canvas renders ONE half of the shared view window
+        // — left takes [x, x+w/2], right takes [x+w/2, x+w]. The field-uv
+        // window feeds the u_view uniform; zoom/pan are data, not transforms.
         this.clipHalf = clipHalf === 'left' ? 0 : 1;
+        this.view = { x: this.clipHalf * 0.5, y: 0, w: 0.5, h: 1 };
         // Default to Oct — it's the projection that shares the engine's
         // 8-fold symmetry, so motion renders fluid instead of aliased.
         this.projectionMode = 2; // 0: Quad, 1: Hex, 2: Oct
-        this.pixelScale = 1; // zoom-driven backing multiplier — keeps
-                             // cell detail crisp when CSS-zoomed in
         this.isWebGL = false;
 
         if (!this.canvas) return;
@@ -128,10 +127,10 @@ class SingleRenderer {
         }
 
         gl.useProgram(this.program);
-        gl.enable(gl.SCISSOR_TEST);
 
         this.uModeLocation = gl.getUniformLocation(this.program, "u_projection_mode");
         this.uCellPxLocation = gl.getUniformLocation(this.program, "u_cell_px");
+        this.uViewLocation = gl.getUniformLocation(this.program, "u_view");
         this.uTexLocation = gl.getUniformLocation(this.program, "u_texture");
         const aPosLocation = gl.getAttribLocation(this.program, "a_position");
 
@@ -174,7 +173,7 @@ class SingleRenderer {
         return shader;
     }
 
-    setPixelScale(z) { this.pixelScale = z || 1; }
+    setView(x, y, w, h) { this.view = { x, y, w, h }; }
 
     setMode(mode) {
         if (mode === 'quad') this.projectionMode = 0;
@@ -192,27 +191,23 @@ class SingleRenderer {
 
         if (this.isWebGL && this.gl) {
             const gl = this.gl;
-            // Backing tracks DISPLAY resolution (1 frag per CSS px — no dpr
-            // supersampling; cell-boundary geometry doesn't benefit) scaled
-            // by zoom so magnified cells stay crisp. Quad has no sub-cell
-            // geometry at all, so it pins to the grid — CSS NEAREST upscale
-            // is identical and free. Cap 2560 keeps weak GPUs alive — only
-            // half of it is shaded anyway thanks to the scissor clip.
-            const scale = this.projectionMode === 0 ? 0 : (this.pixelScale || 1);
-            const w = Math.min(2560, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * scale)));
-            const h = Math.min(2560, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * scale)));
+            // Viewport-uniform rendering: the canvas only ever shows its
+            // half of the view window, so backing is pinned to display
+            // resolution — fragment cost is CONSTANT at any zoom, and zoom
+            // never reallocates the buffer or blurs. Quad pins to the grid
+            // (no sub-cell geometry); Hex/Oct take up to 2x dpr so cell
+            // boundaries stay clean on retina. Cap 2048 for weak GPUs.
+            const dpr = this.projectionMode === 0 ? 0 : Math.min(window.devicePixelRatio || 1, 2);
+            const w = Math.min(2048, Math.max(GRID_WIDTH, Math.round(this.canvas.clientWidth * dpr)));
+            const h = Math.min(2048, Math.max(GRID_HEIGHT, Math.round(this.canvas.clientHeight * dpr)));
             if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
                 this.canvas.width = w;
                 this.canvas.height = h;
                 gl.viewport(0, 0, w, h);
             }
-            // Element-space halves map linearly onto backing halves, so the
-            // clip stays aligned at any zoom/pan (the wrapper transform only
-            // affects the element's CSS box, not its internal layout).
-            const halfW = Math.floor(this.canvas.width / 2);
-            gl.scissor(this.clipHalf * halfW, 0, this.canvas.width - halfW, this.canvas.height);
             gl.useProgram(this.program);
-            gl.uniform1f(this.uCellPxLocation, Math.max(1, this.canvas.width / GRID_WIDTH));
+            gl.uniform4f(this.uViewLocation, this.view.x, this.view.y, this.view.w, this.view.h);
+            gl.uniform1f(this.uCellPxLocation, Math.max(1, this.canvas.width / (GRID_WIDTH * this.view.w)));
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texImage2D(
@@ -222,8 +217,22 @@ class SingleRenderer {
             );
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         } else if (this.ctx) {
+            // 2D fallback: each canvas shows its half of the field. putImageData
+            // ignores clip paths, so blit through a scratch canvas — view
+            // windowing isn't available without shaders; CSS zoom handles it.
+            if (!this.scratch) {
+                this.scratch = document.createElement('canvas');
+                this.scratch.width = GRID_WIDTH;
+                this.scratch.height = GRID_HEIGHT;
+                this.scratchCtx = this.scratch.getContext('2d');
+            }
             this.imgData.data.set(pixelBytes);
-            this.ctx.putImageData(this.imgData, 0, 0);
+            this.scratchCtx.putImageData(this.imgData, 0, 0);
+            this.ctx.drawImage(
+                this.scratch,
+                this.clipHalf * (GRID_WIDTH / 2), 0, GRID_WIDTH / 2, GRID_HEIGHT,
+                0, 0, this.canvas.width, this.canvas.height
+            );
         }
     }
 }
@@ -235,9 +244,10 @@ export class DualRenderer {
         this.isWebGL = this.left.isWebGL || this.right.isWebGL;
     }
 
-    setPixelScale(z) {
-        this.left.setPixelScale(z);
-        this.right.setPixelScale(z);
+    // Full-field view window in uv space → each canvas takes its half.
+    setView(vx, vy, vw, vh) {
+        this.left.setView(vx, vy, vw * 0.5, vh);
+        this.right.setView(vx + vw * 0.5, vy, vw * 0.5, vh);
     }
 
     draw(leftLayer, rightLayer, bridge) {

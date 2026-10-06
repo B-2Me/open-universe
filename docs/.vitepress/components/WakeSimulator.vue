@@ -277,7 +277,7 @@ onUnmounted(() => {
                aria-label="Simulation field. Arrow keys move the brush cursor or pan the view, Enter stamps the brush, Escape removes focus.">
             <div id="error-banner"></div>
             <span id="kbd_cursor_status" class="sr-only" aria-live="polite"></span>
-            <div id="transform-wrapper">
+            <div id="split-view">
               <div class="split-half">
                 <canvas id="canvas_left" width="400" height="400" aria-label="Primary visualization layer"></canvas>
               </div>
@@ -285,6 +285,10 @@ onUnmounted(() => {
                 <canvas id="canvas_right" width="400" height="400" aria-label="Secondary visualization layer"></canvas>
               </div>
             </div>
+            <!-- Overlay layer for the brush footprint preview; the canvases
+                 live outside it because WebGL zoom/pan is shader-side now.
+                 In the 2D fallback, #split-view receives the CSS transform. -->
+            <div id="transform-wrapper"></div>
           </div>
           <!-- Extra touch surface below the canvas: stamps are lifted 56px
                above the fingertip, so without this strip the bottom rows of

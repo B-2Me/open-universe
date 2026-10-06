@@ -120,7 +120,10 @@ export async function initWakeSimulator() {
             transformWrapperId: 'transform-wrapper',
             onUndoPush: () => controlsRef?.pushUndoDepth(),
             onUndoPop: () => controlsRef?.popUndoDepth(),
-            onZoom: (z) => renderer.setPixelScale(z),
+            // WebGL path: zoom/pan are shader uniforms (view window in
+            // field-uv). 2D fallback gets the CSS transform on #split-view.
+            onView: (vx, vy, vw, vh) => renderer.setView(vx, vy, vw, vh),
+            useCssZoom: !renderer.isWebGL,
             onSample: (stamp) => {
                 if (controlsRef) {
                     // Rebuild the palette grid with the new custom brush equipped
