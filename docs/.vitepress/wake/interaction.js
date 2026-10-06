@@ -63,6 +63,9 @@ export class InteractionManager {
         // full liftoff so the view doesn't jump and no stray stamp lands.
         this.pinchActive = false;
         this.suppressUntilLiftoff = false;
+        // A touch right after a pinch ends is usually the pan continuing,
+        // not a deliberate double-tap — suppress resetView in that window.
+        this.lastPinchEnd = 0;
 
         this._onResize = () => { setTimeout(() => this.constrainView(), 50); };
 
@@ -133,7 +136,7 @@ export class InteractionManager {
         const box = this.cursorBox();
         if (!box) { this.hideBrushPreview(); return; }
 
-        const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
+        const ly = this.liftedClientY(clientY, pointerType);
         const coords = this.getGridCoords(clientX, ly);
         this.positionPreview(coords.x, coords.y, box.w, box.h);
     }
@@ -234,7 +237,8 @@ export class InteractionManager {
 
             if (this.activePointers.size === 1) {
                 const now = Date.now();
-                if (now - this.lastTapTime < DOUBLE_TAP_MS && (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown)) {
+                if (now - this.lastTapTime < DOUBLE_TAP_MS && now - this.lastPinchEnd > 400 &&
+                    (this.state.currentMode === 'move' || this.state.currentMode === 'config' || this.state.isSpaceDown)) {
                     this.resetView();
                 }
                 this.lastTapTime = now;
@@ -314,6 +318,7 @@ export class InteractionManager {
                 this.suppressUntilLiftoff = true;
             }
             if (this.activePointers.size === 0) {
+                if (this.pinchActive) this.lastPinchEnd = Date.now();
                 this.pinchActive = false;
                 this.suppressUntilLiftoff = false;
                 this.isDragging = false;
@@ -372,8 +377,9 @@ export class InteractionManager {
         this.updateBrushPreview(clientX, clientY, pointerType);
 
         // Lift touch input above the fingertip so the user can see where the
-        // stamp/sample actually lands (mirrored by updateBrushPreview).
-        const ly = pointerType === 'touch' ? clientY - TOUCH_STAMP_OFFSET_PX : clientY;
+        // stamp/sample actually lands (mirrored by updateBrushPreview). On the
+        // pad strip the lift compresses into the last band — see liftedClientY.
+        const ly = this.liftedClientY(clientY, pointerType);
         const coords = this.getGridCoords(clientX, ly);
 
         // Keep the keyboard cursor unified with pointer position so swapping
@@ -539,7 +545,35 @@ export class InteractionManager {
         }
     }
 
+    // Keep the view window inside the field at all times. This used to run
+    // only post-release (constrainView's animated bounce), but under
+    // viewport-uniform rendering the field snaps instantly — the overshoot
+    // has to be prevented during the gesture, not repaired after.
+    clampPan() {
+        const rect = this.container.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const maxX = (rect.width * (this.zoom - 1)) / (2 * this.zoom);
+        const maxY = (rect.height * (this.zoom - 1)) / (2 * this.zoom);
+        this.panX = Math.max(-maxX, Math.min(maxX, this.panX));
+        this.panY = Math.max(-maxY, Math.min(maxY, this.panY));
+    }
+
+    // Touch stamps lift 56px above the fingertip so the target isn't
+    // occluded. On the pad strip below the canvas there is nothing to
+    // occlude — map the pad's height linearly onto the lifted band so the
+    // field's bottom rows stay reachable (pad top → bottom-56, pad bottom →
+    // bottom edge).
+    liftedClientY(clientY, pointerType) {
+        if (pointerType !== 'touch') return clientY;
+        const rect = this.container.getBoundingClientRect();
+        if (clientY <= rect.bottom) return clientY - TOUCH_STAMP_OFFSET_PX;
+        const padBottom = this.eventsEl ? this.eventsEl.getBoundingClientRect().bottom : rect.bottom;
+        const f = Math.min(1, Math.max(0, (clientY - rect.bottom) / Math.max(1, padBottom - rect.bottom)));
+        return rect.bottom - TOUCH_STAMP_OFFSET_PX * (1 - f);
+    }
+
     applyTransform() {
+        this.clampPan();
         const t = `scale(${this.zoom}) translate(${this.panX}px, ${this.panY}px)`;
         // The preview overlay always tracks via CSS (it's positioned in
         // full-field px). In the 2D fallback the canvases zoom the same way.
