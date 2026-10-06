@@ -159,6 +159,10 @@ onUnmounted(() => {
               <input type="checkbox" id="chk_undo">
               Undo Buffer (4 checkpoints, ~2.5 MB)
             </label>
+            <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
+              <input type="checkbox" id="chk_iobuf">
+              I/O Buffering (congestion field — prototype)
+            </label>
           </div>
           <div class="context-group" style="margin-top: 6px;">
             <div class="context-header">

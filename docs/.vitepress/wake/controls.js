@@ -654,6 +654,11 @@ export class ControlsManager {
         if (undoChk) {
             undoChk.onchange = (e) => this.setUndoEnabled(e.target.checked);
         }
+
+        const iobufChk = document.getElementById('chk_iobuf');
+        if (iobufChk) {
+            iobufChk.onchange = (e) => this.bridge.setIOBufMode(e.target.checked ? 1 : 0);
+        }
     }
 
     bindActionButtons() {

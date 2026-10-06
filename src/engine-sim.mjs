@@ -6,7 +6,9 @@
 //   mode: default ('engine'/'cap') mirrors planck.c: FLOW_CAP + congestion
 //         gravity + Phase Lock. Suffixes A/B-test features: '+res' (old
 //         resistance gravity), '+persist' (mass persist), '+nocap',
-//         '+nograv', '+nolock' to disable.
+//         '+nograv', '+nolock', '+iobuf' (explicit input-buffer field —
+//         in-flight flux materializes as node state; congestion measured
+//         on occupancy q+b, arrival overflow becomes backscatter heat).
 // If planck.c's tick() changes, mirror the change here or results drift.
 
 const W = 400, H = 400, N = W * H;
@@ -17,6 +19,7 @@ const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
 const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant across substrates
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
+const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows (backscatter)
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
 const INV_DIR = [0,5,6,7,8,1,2,3,4];
 const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
@@ -52,7 +55,10 @@ function tickHex() {
     let deadlocked = 0;
     if (cs !== 0) {
       const tx = (x + off[cs][0] + W) % W, ty = (y + off[cs][1] + H) % H;
-      if (q[ty * W + tx] > DEADLOCK) deadlocked = 1;
+      const ti = ty * W + tx;
+      // iobuf: the port refuses on occupancy (resident + in-flight), not
+      // resident mass alone — a pressurized buffer is already a wall.
+      if (IOBUF_ON ? q[ti] + b[ti] > DEADLOCK : q[ti] > DEADLOCK) deadlocked = 1;
     }
     let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
     for (let d = 1; d <= 6; d++) {
@@ -60,6 +66,7 @@ function tickHex() {
       const ni = ny * W + nx;
       const nq = q[ni], ns = s[ni], nh = h[ni];
       heatSum += Math.floor(nh / DIFF_DIV);
+      const nOcc = IOBUF_ON ? nq + b[ni] : nq;
       if (nq > 0 && ns === HINV[d]) { // neighbor's spin points back at us
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
@@ -68,31 +75,41 @@ function tickHex() {
           else if (ns === HINV[cs]) kin += 0;
           else kin += sent * KINETIC_ORTHOGONAL;
         }
-        if (cq <= DEADLOCK) {
+        if (IOBUF_ON ? cq + b[i] <= DEADLOCK : cq <= DEADLOCK) {
           incoming += sent;
           const a = (d - 1) * Math.PI / 3; // screen angle of direction d
           mx -= Math.cos(a) * sent; my -= Math.sin(a) * sent;
         }
       }
-      if (nq > maxCong && nq <= DEADLOCK) { maxCong = nq; congSpin = d; }
+      if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
     }
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
       else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
-    nq2 += incoming; if (nq2 > 255) nq2 = 255;
+    let nb2 = b[i];
+    if (IOBUF_ON) {
+      // Arrivals stage in the input buffer and integrate only up to free
+      // capacity — overflow is backscatter heat, not silent mass loss.
+      nb2 = b[i] + incoming;
+      if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+      const take = Math.min(nb2, 255 - nq2);
+      nq2 += take; nb2 -= take;
+    } else {
+      nq2 += incoming; if (nq2 > 255) nq2 = 255;
+    }
     let dom = incoming > 0 ? hexDir(mx, my) : 0;
     if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
 
-    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0);
+    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + (IOBUF_ON ? b[i] : 0);
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
 
     // Retain what the 6 channels cannot send: h - 6*(h/9).
     let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
-      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
+      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0; // buffered flux unwinds with the knot
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
       nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
@@ -116,16 +133,18 @@ function tickHex() {
       }
     } else ns2 = dom;
 
-    q2[i] = nq2; s2[i] = ns2; h2[i] = nh2;
+    q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; if (IOBUF_ON) b2[i] = nb2;
   }
-  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; }
+  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; if (IOBUF_ON) b[i] = b2[i]; }
 }
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
+let IOBUF_ON = false; // explicit input-buffer field — in-flight flux is state
 
 const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
 const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
+const b = new Uint8Array(N), b2 = new Uint8Array(N); // iobuf: staged arrivals
 
 function tick() {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -134,7 +153,8 @@ function tick() {
     let deadlocked = 0;
     if (cs !== 0) {
       const tx = (x + SPIN_DX[cs] + W) % W, ty = (y + SPIN_DY[cs] + H) % H;
-      if (q[ty * W + tx] > DEADLOCK) deadlocked = 1;
+      const ti = ty * W + tx;
+      if (IOBUF_ON ? q[ti] + b[ti] > DEADLOCK : q[ti] > DEADLOCK) deadlocked = 1;
     }
     let heatSum = 0, kin = 0, minRes = 1e9, gravSpin = cs, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -143,6 +163,7 @@ function tick() {
       const ni = ny * W + nx;
       const nq = q[ni], ns = s[ni], nh = h[ni];
       const nDir = DIR_MAP[dy + 1][dx + 1], req = INV_DIR[nDir];
+      const nOcc = IOBUF_ON ? nq + b[ni] : nq;
       heatSum += Math.floor(nh / DIFF_DIV);
       if (nq > 0 && ns === req) {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
@@ -152,35 +173,44 @@ function tick() {
           else if (ns === INV_DIR[cs]) kin += 0;
           else kin += sent * KINETIC_ORTHOGONAL;
         }
-        if (cq <= DEADLOCK) { incoming += sent; mx -= dx * sent; my -= dy * sent; }
+        if (IOBUF_ON ? cq + b[i] <= DEADLOCK : cq <= DEADLOCK) { incoming += sent; mx -= dx * sent; my -= dy * sent; }
       }
       // Entropic gravity sink: flux deflects toward the steepest drop in
       // thermodynamic resistance (cold, dense mass absorbs).
       const res = nh / (nq + 1);
       if (res < minRes) { minRes = res; gravSpin = nDir; }
-      // Congestion gravity: densest neighbor that can still absorb flux.
-      if (nq > maxCong && nq <= DEADLOCK) { maxCong = nq; congSpin = nDir; }
+      // Congestion gravity: densest neighbor that can still absorb flux —
+      // under iobuf, occupancy is resident + in-flight quanta.
+      if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = nDir; }
     }
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
       else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
-    nq2 += incoming; if (nq2 > 255) nq2 = 255;
+    let nb2 = b[i];
+    if (IOBUF_ON) {
+      nb2 = b[i] + incoming;
+      if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+      const take = Math.min(nb2, 255 - nq2);
+      nq2 += take; nb2 -= take;
+    } else {
+      nq2 += incoming; if (nq2 > 255) nq2 = 255;
+    }
     const xd = Math.sign(mx), yd = Math.sign(my);
     let dom = DIR_MAP[yd + 1][xd + 1];
     if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
 
     // Bandwidth limit & cycle-stealing: spatial I/O load starves internal
     // dissipation (time dilation lag).
-    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0);
+    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + (IOBUF_ON ? b[i] : 0);
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
 
     // Retain what the 8 channels cannot send: h - 8*(h/9).
     let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
-      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1;
+      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0; // buffered flux unwinds with the knot
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
       nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
@@ -209,9 +239,9 @@ function tick() {
       }
     } else ns2 = dom;
 
-    q2[i] = nq2; s2[i] = ns2; h2[i] = nh2;
+    q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; if (IOBUF_ON) b2[i] = nb2;
   }
-  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; }
+  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; if (IOBUF_ON) b[i] = b2[i]; }
 }
 
 const vortexSpin = (dx, dy, c = 1) => {
@@ -238,7 +268,7 @@ function octSpin(dx, dy, c = 1) {
 }
 
 function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.05, dither = 0, ringMode = null, oct = null, outwardFoam = false } = {}) {
-  q.fill(0); s.fill(0); h.fill(1);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
   const cx = 200, cy = 200;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy), i = y * W + x;
@@ -290,7 +320,7 @@ function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.0
 
 // Neutral isotropy probes shared by both topologies.
 function paintBlobStream(variant) {
-  q.fill(0); s.fill(0); h.fill(1);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     if (variant === 'blob') {
@@ -309,7 +339,7 @@ function paintBlobStream(variant) {
 }
 
 function paintHex(variant) {
-  q.fill(0); s.fill(0); h.fill(1);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
   const cx = 200, cy = 200;
   const SEXT = (a) => ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -392,13 +422,13 @@ let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetr
 let CYCLE_TRACK = false; // hexcycle* variants report loop integrity
 
 function stats(label) {
-  let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0;
+  let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0;
   let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x, d = Math.hypot(x - cx, y - cy);
-    totQ += q[i]; totH += h[i];
+    totQ += q[i]; totH += h[i]; bufQ += b[i];
     if (q[i] > DEADLOCK) dead++;
     if (CYCLE_TRACK && hexDist(x, y, cx, cy) === 50) {
       cycleTotal++;
@@ -412,7 +442,8 @@ function stats(label) {
   }
   const min = Math.min(...sectorMass), max = Math.max(...sectorMass);
   const cyc = CYCLE_TRACK ? ` cycle=${cycleOcc}/${cycleTotal} cycleQ=${cycleQ}` : '';
-  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
+  const buf = IOBUF_ON ? ` bufQ=${bufQ}` : '';
+  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
 // --- run ---
@@ -425,6 +456,7 @@ FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
+IOBUF_ON = mode.includes('iobuf');
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
