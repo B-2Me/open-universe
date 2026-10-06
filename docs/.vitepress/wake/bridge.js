@@ -9,7 +9,8 @@ export class PlanckBridge {
     getPixelView() {
         const ptr = this.wasm._get_pixel_buffer_pointer();
         const buffer = this.wasm.HEAPU8 ? this.wasm.HEAPU8.buffer : this.wasm.wasmMemory.buffer;
-        return new Uint8ClampedArray(buffer, ptr, PIXEL_BUFFER_SIZE);
+        // FIX: iOS Safari WebGL rejects Uint8ClampedArray in texImage2D. Use Uint8Array.
+        return new Uint8Array(buffer, ptr, PIXEL_BUFFER_SIZE);
     }
 
     tick() { this.wasm._tick(); }
