@@ -35,8 +35,21 @@ onUnmounted(() => {
       <!-- LEFT SIDEBAR: Control Center & Telemetry -->
       <div id="app-sidebar">
 
-        <!-- Tool Segment Bar -->
+        <!-- Quick Actions (Moved above Move/mode bar) -->
         <div class="sidebar-section" style="padding-top: 16px;">
+          <div class="button-group">
+            <button id="btn_reset" class="group-btn">🔄 Reset</button>
+            <button id="btn_soup" class="group-btn">🎲 Random</button>
+            <button id="btn_clear" class="group-btn">🧹 Clear</button>
+          </div>
+          <div class="button-group" style="margin-top: 6px;">
+            <button id="btn_play" class="group-btn" title="Play/Pause (P)">⏸ Pause</button>
+            <button id="btn_step" class="group-btn" title="Advance one tick">⏭ Step</button>
+          </div>
+        </div>
+
+        <!-- Tool Segment Bar -->
+        <div class="sidebar-section">
           <div class="segment-container">
             <button class="segment-btn active" data-mode="move">🖐 Move</button>
             <button class="segment-btn" data-mode="place">✏️ Place</button>
