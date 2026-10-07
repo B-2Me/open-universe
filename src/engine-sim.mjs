@@ -49,7 +49,6 @@ const hexDist = (x, y, cx, cy) => {
 };
 
 function tickHex() {
-  ZSPIN = 6; ZCOST = TURN_COST_HEX;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i];
@@ -88,7 +87,14 @@ function tickHex() {
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
-      else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      else if (ZSHUNT_ON && zb[i] < 255) {
+        // Sender-side diversion: the saturated port doesn't reflect the
+        // flux — it escapes through the extra channel, spinless. Gravity
+        // as pressure release: local routing failure routes vertically.
+        const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+        const dv = Math.min(sendable, 255 - zb[i]);
+        zb[i] += dv; nq2 = cq - dv;
+      } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     // Arrivals stage in the input buffer and integrate only up to free
     // capacity — overflow is backscatter heat, not silent mass loss.
@@ -97,12 +103,11 @@ function tickHex() {
       let excess = nb2 - 255; nb2 = 255;
       if (ZS_ON && zb[i] < 255) {
         // Adjacency expansion: buffer pressure overflows across the extra
-        // channel (counterpart at depth^1) instead of thermalizing.
+        // channel (counterpart at depth^1) instead of thermalizing. The
+        // flux lands spinless — phase is an actualized property; it
+        // entrains on integration, matching planar buffer semantics.
         const divert = Math.min(excess, 255 - zb[i]);
-        const ddz = (cs && zs[i]) ? Math.min(Math.abs(zs[i] - cs), ZSPIN - Math.abs(zs[i] - cs)) : 0;
-        zh[i] = Math.min(65535, zh[i] + divert * ZCOST[ddz]); // τ(1-cosΔθ) friction on landing
         zb[i] += divert;
-        if (cs) zs[i] = cs; // diverted flux keeps its heading — bypass preserves momentum
         excess -= divert;
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
@@ -152,6 +157,7 @@ function tickHex() {
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
 let ZS_ON = false; // depth-2 adjacency expansion — the Open Frontier prototype
+let ZSHUNT_ON = false; // sender-side vertical diversion on port deadlock
 
 // The field is a flat 1D array of slabs; "depth" is one extra routing
 // channel per node — its counterpart at z^1. Not a sheet, a wider table.
@@ -163,19 +169,15 @@ const makeSlab = () => ({
 const slabs = [makeSlab(), makeSlab()];
 // Active-slab bindings — tick() reads/writes these.
 let q, s, h, q2, s2, h2, b, b2;
-// Counterpart committed arrays — the vertical adjacency channel.
-let zq, zs, zh, zb;
+// Counterpart slab's committed buffer — the extra adjacency channel.
+let zb;
 function bindSlab(z) {
   ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
-  ({ q: zq, s: zs, h: zh, b: zb } = slabs[z ^ 1]);
+  zb = slabs[z ^ 1].b;
 }
 bindSlab(0);
 
-// Vertical friction uses the same τ(1-cosΔθ) kernel, tabulated per substrate.
-let ZSPIN = 6, ZCOST = TURN_COST_HEX;
-
 function tick() {
-  ZSPIN = 8; ZCOST = TURN_COST_OCT;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i];
@@ -214,19 +216,25 @@ function tick() {
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
-      else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      else if (ZSHUNT_ON && zb[i] < 255) {
+        // Sender-side diversion: the saturated port doesn't reflect the
+        // flux — it escapes through the extra channel, spinless. Gravity
+        // as pressure release: local routing failure routes vertically.
+        const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+        const dv = Math.min(sendable, 255 - zb[i]);
+        zb[i] += dv; nq2 = cq - dv;
+      } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     let nb2 = b[i] + incoming;
     if (nb2 > 255) {
       let excess = nb2 - 255; nb2 = 255;
       if (ZS_ON && zb[i] < 255) {
         // Adjacency expansion: buffer pressure overflows across the extra
-        // channel (counterpart at depth^1) instead of thermalizing.
+        // channel (counterpart at depth^1) instead of thermalizing. The
+        // flux lands spinless — phase is an actualized property; it
+        // entrains on integration, matching planar buffer semantics.
         const divert = Math.min(excess, 255 - zb[i]);
-        const ddz = (cs && zs[i]) ? Math.min(Math.abs(zs[i] - cs), ZSPIN - Math.abs(zs[i] - cs)) : 0;
-        zh[i] = Math.min(65535, zh[i] + divert * ZCOST[ddz]); // τ(1-cosΔθ) friction on landing
         zb[i] += divert;
-        if (cs) zs[i] = cs; // diverted flux keeps its heading — bypass preserves momentum
         excess -= divert;
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
@@ -488,6 +496,8 @@ function stats(label) {
 // --- run ---
 // modes: 'engine' = faithful to current planck.c (flow cap off until engine gains it)
 // 'cap' adds FLOW_CAP transport lag; '+nocap'+nograv'+nolock' toggle features off.
+// '+zshadow' = receiver-side buffer overflow spills to the depth^1 slab;
+// '+zshunt' = sender-side deadlock diverts vertically instead of bouncing.
 const args = process.argv.slice(2);
 const mode = args[0] || 'engine';
 const variant = args[1] || 'solid';
@@ -495,7 +505,8 @@ FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
-ZS_ON = mode.includes('zshadow'); // depth-2 adjacency expansion (Open Frontier)
+ZSHUNT_ON = mode.includes('zshunt');
+ZS_ON = mode.includes('zshadow') || ZSHUNT_ON; // depth-2 adjacency expansion (Open Frontier)
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
