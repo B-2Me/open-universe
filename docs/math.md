@@ -70,6 +70,8 @@ If the phase friction between two entangled nodes is zero, their network distanc
 An electron is not a solid bullet; it is a wave of un-actualized relational potential, and an electromagnetic barrier is simply a localized zone of high relational resistance. When the potential wave hits this resistance zone, its probability amplitude decays exponentially. A fraction bleeds past the boundary because the network is porous. We replace the geometric tunneling probability ($T \approx e^{-2\gamma a}$) with a threshold actualization of network leakage:
 $$ \text{Actualize}(x) \text{ where } \min \left( \sum \text{Relational Resistance} \right) \text{ reaches } FLOW\_CAP $$
 
+*Measured constraint (harness `+seep`):* a naive per-port leakage fraction does **not** produce the exponential curve — transmission through a closed deadlocked ring is thickness-independent (a *pipeline*, not an attenuator), because a mass-conserving buffer warehouses seeped flux and forwards it at the same rate at every stage. Exponential attenuation requires **per-stage loss**: each barrier hop must thermalize a fraction of the staged flux into exhaust rather than relaying it intact. Porous barriers exist; thickness-dependent decay requires absorptive barrier nodes, which is a different mechanism.
+
 ### 7. Pauli Exclusion Principle $\to$ Node Saturation
 The Pauli Exclusion Principle states that two identical fermions cannot occupy the same quantum state simultaneously, using antisymmetric wave functions to forbid overlap. 
 
