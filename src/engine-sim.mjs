@@ -158,8 +158,9 @@ function tickHex() {
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
-let ZS_ON = false; // depth-2 adjacency expansion — the Open Frontier prototype
+let ZS_ON = false; // adjacency expansion — the Open Frontier prototype
 let ZSHUNT_ON = false; // sender-side vertical diversion on port deadlock
+let ZOPEN_ON = false; // bounded depth: slab0/slabD-1 are hard surfaces
 
 // The field is a flat 1D array of slabs; "depth" is one extra routing
 // channel per node — its counterpart at z^1. Not a sheet, a wider table.
@@ -173,24 +174,36 @@ const slabs = [makeSlab(), makeSlab()];
 let q, s, h, q2, s2, h2, b, b2;
 // Vertical adjacency: counterpart buffers at z-1 and z+1 in the depth
 // ring. zMoved tracks signed ring flux for the oscillation test.
-let zbM, zbP, zMoved = 0, zSign = 1, DEPTH = 2;
+let zbM, zbP, zMoved = 0, zSign = 1, zLastMoved = 0, DEPTH = 2;
 function bindSlab(z) {
   ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
-  zbM = slabs[(z + DEPTH - 1) % DEPTH].b;
-  zbP = DEPTH === 2 ? zbM : slabs[(z + 1) % DEPTH].b;
+  if (ZOPEN_ON && DEPTH > 2) {
+    // Bounded depth: surfaces have a single vertical neighbor — no wrap.
+    // (At D=2 open and ring are identical — one neighbor either way.)
+    zbM = z > 0 ? slabs[z - 1].b : null;
+    zbP = z < DEPTH - 1 ? slabs[z + 1].b : null;
+  } else {
+    zbM = slabs[(z + DEPTH - 1) % DEPTH].b;
+    zbP = DEPTH === 2 ? zbM : slabs[(z + 1) % DEPTH].b;
+  }
   zSign = z === 0 ? 1 : -1;
 }
 // Route overflow to the vertical neighbor with the most free buffer —
 // the steepest drop in routing impedance (path of least resistance).
+// A null neighbor is a surface boundary; a full one is a wall. If both
+// sides refuse, the flux falls back to planar fate (bounce/backscatter).
 function zDivert(i, amount) {
   if (DEPTH === 2) {
     const dv = Math.min(amount, 255 - zbM[i]);
     zbM[i] += dv; zMoved += zSign * dv;
     return dv;
   }
-  const rM = 255 - zbM[i], rP = 255 - zbP[i];
+  const rM = zbM ? 255 - zbM[i] : -1;
+  const rP = zbP ? 255 - zbP[i] : -1;
   const useP = rP > rM;
-  const dv = Math.min(amount, useP ? rP : rM);
+  const room = useP ? rP : rM;
+  if (room <= 0) return 0;
+  const dv = Math.min(amount, room);
   (useP ? zbP : zbM)[i] += dv;
   zMoved += (useP ? 1 : -1) * dv;
   return dv;
@@ -514,7 +527,8 @@ function stats(label) {
       for (let i = 0; i < N; i++) { tq += slabs[z].q[i]; tb += slabs[z].b[i]; }
       qs.push(tq); bs.push(tb);
     }
-    zstr = ` zQ=[${qs}] zbufQ=[${bs}] zNet=${zMoved}`;
+    const zFlow = zMoved - zLastMoved; zLastMoved = zMoved;
+    zstr = ` zQ=[${qs}] zbufQ=[${bs}] zNet=${zMoved} zFlw=${zFlow}`;
   }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
@@ -532,6 +546,7 @@ GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'co
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
 ZSHUNT_ON = mode.includes('zshunt');
+ZOPEN_ON = mode.includes('zopen');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
