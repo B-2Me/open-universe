@@ -21,6 +21,24 @@ const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows 
 // (index = sextant/octant distance). math.md §4: least-friction traversal.
 const TURN_COST_HEX = [0, 2, 6, 8];      // 0° 60° 120° 180°
 const TURN_COST_OCT = [0, 1, 4, 7, 8];   // 0° 45° 90° 135° 180°
+// Integer-momentum path (+intmom): ×256 fixed-point hex direction weights
+// (sin60°=0.8660→222, +0.13%; cos60°=0.5→128 exact) and a baked quadrature
+// budget LUT. Momentum is a per-tick local, so fixed-point error cannot
+// drift. Dominant spin resolves by argmax dot-product — the nearest
+// direction vector to the momentum — replacing atan2 entirely.
+const HEX_MX256 = [0, 256, 128, -128, -256, -128, 128];
+const HEX_MY256 = [0, 0, 222, 222, 0, -222, -222];
+const BWF_LUT = Uint8Array.from({ length: NODE_BANDWIDTH_MAX + 1 }, (_, r) =>
+  Math.round(256 * Math.sqrt(1 - (r / NODE_BANDWIDTH_MAX) ** 2)));
+const hexDirInt = (mx, my) => {
+  if (mx === 0 && my === 0) return 0;
+  let bd = 1, bdot = -Infinity;
+  for (let d = 1; d <= 6; d++) {
+    const dot = mx * HEX_MX256[d] + my * HEX_MY256[d];
+    if (dot > bdot) { bdot = dot; bd = d; }
+  }
+  return bd;
+};
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
 const INV_DIR = [0,5,6,7,8,1,2,3,4];
 const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
@@ -78,8 +96,8 @@ function tickHex() {
         }
         if (cq + b[i] <= DEADLOCK) {
           incoming += sent;
-          const a = (d - 1) * Math.PI / 3; // screen angle of direction d
-          mx -= Math.cos(a) * sent; my -= Math.sin(a) * sent;
+          if (INTMOM_ON) { mx -= HEX_MX256[d] * sent; my -= HEX_MY256[d] * sent; }
+          else { const a = (d - 1) * Math.PI / 3; mx -= Math.cos(a) * sent; my -= Math.sin(a) * sent; }
         } else if (SEEP_ON) {
           // Porous barrier: a fixed fraction bleeds through the saturated
           // port — wall thickness compounds the cost, no hard-coded decay.
@@ -87,8 +105,8 @@ function tickHex() {
           const absorbed = SEEP_ABS_ON ? (leak >> SEEP_ABS) : 0;
           incoming += leak - absorbed; seepQ += leak - absorbed;
           kin += absorbed; // per-stage attenuation: flux thermalizes, not relays
-          const a = (d - 1) * Math.PI / 3;
-          mx -= Math.cos(a) * (leak - absorbed); my -= Math.sin(a) * (leak - absorbed);
+          if (INTMOM_ON) { mx -= HEX_MX256[d] * (leak - absorbed); my -= HEX_MY256[d] * (leak - absorbed); }
+          else { const a = (d - 1) * Math.PI / 3; mx -= Math.cos(a) * (leak - absorbed); my -= Math.sin(a) * (leak - absorbed); }
         }
       }
       if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
@@ -140,11 +158,13 @@ function tickHex() {
     }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
-    let dom = incoming > 0 ? hexDir(mx, my) : 0;
+    let dom = incoming > 0 ? (INTMOM_ON ? hexDirInt(mx, my) : hexDir(mx, my)) : 0;
     // Head-on arrivals are priced by the turn kernel (Δθ=180° → 2τ);
     // no separate cancellation tax.
 
-    let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + b[i];
+    // ×256 momentum reads back to unit scale for the routing-load sum.
+    const mag = INTMOM_ON ? (Math.abs(mx) + Math.abs(my)) >> 8 : Math.abs(mx) + Math.abs(my);
+    let routing = incoming + mag + (shunt ? cq : 0) + b[i];
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     // Quadrature vector budget (math.md §3): C_i = sqrt(C_max² - C_s²).
     const frac6 = Math.min(1, routing / NODE_BANDWIDTH_MAX);
@@ -167,7 +187,8 @@ function tickHex() {
       nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
-      nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
+      nh2 -= INTMOM_ON ? ((1 + ts * ts) * KNOB_DISS * BWF_LUT[routing]) >> 8
+        : Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
       if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
     }
 
@@ -200,6 +221,7 @@ let ZSEED_ON = false; // paint the variant on slab1 too — seeded mid-jam
 let SEEP_ON = false; // porous barriers: saturated ports leak a fixed fraction
 let SEEP_ABS_ON = false; // seeped flux pays a per-hop absorption tax
 let SPRAY_ON = false; // unwinding sprays mass as radiation instead of deleting it
+let INTMOM_ON = false; // integer momentum + LUT quadrature — no floats in the tick
 let sprayQ = 0, sprayLast = 0; // cumulative unspooled quanta (windowed in stats)
 const SEEP_SHIFT = 6; // leak = sendable >> 6 ≈ 1.6% per port per tick
 const SEEP_ABS = 1; // seepabs: absorbed = leak >> 1 (half thermalizes per hop)
@@ -371,7 +393,8 @@ function tick() {
       nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
-      nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
+      nh2 -= INTMOM_ON ? ((1 + ts * ts) * KNOB_DISS * BWF_LUT[routing]) >> 8
+        : Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
       if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
     }
 
@@ -662,6 +685,7 @@ ZSEED_ON = mode.includes('zseed');
 SEEP_ON = mode.includes('seep');
 SEEP_ABS_ON = mode.includes('seepabs');
 SPRAY_ON = mode.includes('spray');
+INTMOM_ON = mode.includes('intmom');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
