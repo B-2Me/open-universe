@@ -40,6 +40,7 @@ build_engine() {
       '_add_quanta',
       '_set_undo_enabled',
       '_set_seepage_mode',
+      '_set_spray_mode',
       '_save_grid_snapshot',
       '_restore_grid_snapshot',
       '_get_snapshot_count',

@@ -1,7 +1,7 @@
 /*
  * The Planck Field Engine (Langevin's Wake)
  * Copyright (c) 2026 Nathan / btwo.me
- * v2.4: Occupancy Gravity, Port Repulsion & Porous Barriers (seepage)
+ * v2.4: Occupancy Gravity, Port Repulsion, Porous Barriers & Unwind Radiation
  */
 
 #include <stdint.h>
@@ -62,6 +62,7 @@ uint8_t KNOB_DISSIPATION = 15;
 uint16_t KNOB_THERMAL_LIMIT = 1200;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 int SEEPAGE_MODE_ACTIVE = 0; // Porous-barrier prototype — off until the UI exposes it
+int SPRAY_MODE_ACTIVE = 0;   // Unwind radiation-spray conservation — off until proven stable
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs
@@ -217,6 +218,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t* get_pixel_buffer_pointer() { return pixel_buffer; 
 EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_t)rate; }
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
 EMSCRIPTEN_KEEPALIVE void set_seepage_mode(int active) { SEEPAGE_MODE_ACTIVE = active ? 1 : 0; }
+EMSCRIPTEN_KEEPALIVE void set_spray_mode(int active) { SPRAY_MODE_ACTIVE = active ? 1 : 0; }
 
 EMSCRIPTEN_KEEPALIVE
 void init_grid() {
@@ -560,9 +562,25 @@ void tick() {
 
             // Topological Unwinding
             if (next_heat > KNOB_THERMAL_LIMIT && next_quanta > 0) {
+                if (SPRAY_MODE_ACTIVE) {
+                    // Unwinding = E=mc²: the knot's mass unspools as
+                    // un-actualized radiation — sprayed into neighbor
+                    // buffers, not deleted. Conservation makes a thermal
+                    // detonation contagious, which is the honest physics.
+                    int share = (next_quanta + next_buffer) / SPIN_MAX;
+                    for (int k = 0; k < SPIN_MAX; k++) {
+                        int d = NB_ORDER[k];
+                        int nx = (x + nb_dx(y, d) + WIDTH) % WIDTH;
+                        int ny = (y + nb_dy(y, d) + HEIGHT) % HEIGHT;
+                        PlanckNode* n = &grid_read[ny * WIDTH + nx];
+                        int room = 255 - n->buffer;
+                        int add = (share < room) ? share : room;
+                        n->buffer = (uint8_t)(n->buffer + add);
+                    }
+                }
                 next_heat = HEAT_MAX;
                 next_quanta = 0;
-                next_buffer = 0;   // buffered flux unwinds with the knot
+                next_buffer = 0;   // staged flux unspools with the knot
                 dominant_spin = 0;
                 shunting = 1;
                 frame_yield += 1.0;

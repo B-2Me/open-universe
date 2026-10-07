@@ -21,6 +21,7 @@ export class PlanckBridge {
     getSnapshotCount() { return typeof this.wasm._get_snapshot_count === 'function' ? this.wasm._get_snapshot_count() : -1; }
     setUndoEnabled(v) { if (typeof this.wasm._set_undo_enabled === 'function') this.wasm._set_undo_enabled(v ? 1 : 0); }
     setSeepageMode(v) { if (typeof this.wasm._set_seepage_mode === 'function') this.wasm._set_seepage_mode(v ? 1 : 0); }
+    setSprayMode(v) { if (typeof this.wasm._set_spray_mode === 'function') this.wasm._set_spray_mode(v ? 1 : 0); }
     getGridPointer() { return this.wasm._get_grid_pointer(); }
 
     getNodeState(x, y) { return this.wasm._get_node_state(x, y); }
