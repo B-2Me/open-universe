@@ -32,7 +32,6 @@ export class PlanckBridge {
     setDissipation(rate) { this.wasm._set_dissipation(rate); }
     setThermalLimit(limit) { this.wasm._set_thermal_limit(limit); }
     setImpedanceMode(mode) { this.wasm._set_impedance_mode(mode); }
-    setIOBufMode(enabled) { if (typeof this.wasm._set_iobuf_mode === 'function') this.wasm._set_iobuf_mode(enabled); }
 
     getTotalQuanta() { return this.wasm._get_total_quanta(); }
     getTotalHeat() { return this.wasm._get_total_heat(); }

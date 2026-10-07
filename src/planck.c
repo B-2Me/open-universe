@@ -64,7 +64,6 @@ uint8_t KNOB_DISSIPATION = 15;
 uint16_t KNOB_THERMAL_LIMIT = 1200;
 int IMPEDANCE_MODE_ACTIVE = 1;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
-int IOBUF_ENABLED = 0; // Explicit input-buffer field (prototype); opt-in
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs
@@ -203,9 +202,6 @@ EMSCRIPTEN_KEEPALIVE uint8_t* get_pixel_buffer_pointer() { return pixel_buffer; 
 EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_t)rate; }
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
 EMSCRIPTEN_KEEPALIVE void set_impedance_mode(int active) { IMPEDANCE_MODE_ACTIVE = active; }
-// I/O buffer field (prototype): arrivals stage in io_buffer and integrate
-// up to free capacity; congestion is measured on occupancy (q + staged).
-EMSCRIPTEN_KEEPALIVE void set_iobuf_mode(int enabled) { IOBUF_ENABLED = enabled ? 1 : 0; }
 
 EMSCRIPTEN_KEEPALIVE
 void init_grid() {
@@ -399,7 +395,7 @@ EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
 
 
 // ---------------------------------------------------------
-// PHYSICS ENGINE (v2.1: Congestion Gravity & Transport-Lag Accumulator)
+// PHYSICS ENGINE (v2.2: Occupancy Gravity & I/O-Buffered Transport)
 // ---------------------------------------------------------
 EMSCRIPTEN_KEEPALIVE
 void tick() {
@@ -424,9 +420,9 @@ void tick() {
                 int target_x = (x + nb_dx(y, current.spin) + WIDTH) % WIDTH;
                 int target_y = (y + nb_dy(y, current.spin) + HEIGHT) % HEIGHT;
                 int t_idx = target_y * WIDTH + target_x;
-                // iobuf: the port refuses on occupancy (resident + in-flight),
+                // The port refuses on occupancy (resident + in-flight),
                 // not resident mass alone — a pressurized buffer is a wall.
-                int t_occ = grid_read[t_idx].quanta + (IOBUF_ENABLED ? io_buffer[t_idx] : 0);
+                int t_occ = grid_read[t_idx].quanta + io_buffer[t_idx];
                 if (t_occ > DEADLOCK_QUANTA) target_deadlocked = 1;
             }
 
@@ -464,7 +460,7 @@ void tick() {
                         }
                     }
 
-                    int my_occ = current.quanta + (IOBUF_ENABLED ? io_buffer[idx] : 0);
+                    int my_occ = current.quanta + io_buffer[idx];
                     if (my_occ <= DEADLOCK_QUANTA) {
                         incoming_quanta += sent;
                         mom_x -= dir_vx(d) * sent;
@@ -475,7 +471,7 @@ void tick() {
                 // Congestion gravity sink: flux deflects toward the densest
                 // neighbor that can still absorb (occupancy > 200 is a hard
                 // wall — bending into deadlock means hitting it, not accreting).
-                int n_occ = neighbor.quanta + (IOBUF_ENABLED ? io_buffer[ny * WIDTH + nx] : 0);
+                int n_occ = neighbor.quanta + io_buffer[ny * WIDTH + nx];
                 if (n_occ > max_congestion && n_occ <= DEADLOCK_QUANTA) {
                     max_congestion = n_occ;
                     gravity_spin = d;
@@ -502,20 +498,14 @@ void tick() {
             // only up to free capacity — overflow is backscatter heat, not
             // silent mass loss. Buffered backlog also occupies the node's
             // routing bandwidth (congestion literally dilates dissipation).
-            int next_buffer = 0;
-            if (IOBUF_ENABLED) {
-                next_buffer = io_buffer[idx] + incoming_quanta;
-                if (next_buffer > 255) {
-                    kinetic_heat += (next_buffer - 255) * KINETIC_BACKPRESSURE;
-                    next_buffer = 255;
-                }
-                int take = (255 - next_quanta < next_buffer) ? 255 - next_quanta : next_buffer;
-                next_quanta += take;
-                next_buffer -= take;
-            } else {
-                next_quanta += incoming_quanta;
-                if (next_quanta > 255) next_quanta = 255;
+            int next_buffer = io_buffer[idx] + incoming_quanta;
+            if (next_buffer > 255) {
+                kinetic_heat += (next_buffer - 255) * KINETIC_BACKPRESSURE;
+                next_buffer = 255;
             }
+            int buffered_take = (255 - next_quanta < next_buffer) ? 255 - next_quanta : next_buffer;
+            next_quanta += buffered_take;
+            next_buffer -= buffered_take;
 
             uint8_t dominant_spin = dir_from_momentum(mom_x, mom_y);
 
@@ -524,7 +514,7 @@ void tick() {
             // --- Bandwidth Limit & Cycle-Stealing (Time Dilation) ---
             // Spatial I/O routing load takes absolute priority over internal maintenance.
             double routing_load = incoming_quanta + fabs(mom_x) + fabs(mom_y) + (shunting ? current.quanta : 0)
-                                + (IOBUF_ENABLED ? io_buffer[idx] : 0);
+                                + io_buffer[idx];
             if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
             double bandwidth_fraction = 1.0 - (routing_load / NODE_BANDWIDTH_MAX);
             if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
@@ -602,7 +592,7 @@ void tick() {
             grid_write[idx].quanta = next_quanta;
             grid_write[idx].heat = next_heat;
             grid_write[idx].spin = next_spin;
-            if (IOBUF_ENABLED) io_buffer_next[idx] = (uint8_t)next_buffer;
+            io_buffer_next[idx] = (uint8_t)next_buffer;
             
             frame_quanta += next_quanta;
             frame_heat += next_heat;
@@ -622,11 +612,9 @@ void tick() {
     PlanckNode* temp = grid_read;
     grid_read = grid_write;
     grid_write = temp;
-    if (IOBUF_ENABLED) {
-        uint8_t* btemp = io_buffer;
-        io_buffer = io_buffer_next;
-        io_buffer_next = btemp;
-    }
+    uint8_t* btemp = io_buffer;
+    io_buffer = io_buffer_next;
+    io_buffer_next = btemp;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -670,9 +658,9 @@ void render_frame(int layer) {
                 pixel_buffer[px_idx + 1] = 0; 
                 pixel_buffer[px_idx + 2] = (next_quanta > 200) ? 255 : 100; 
             } else {
-                // Entropic tension on empty nodes — under iobuf, staged
-                // in-flight flux glows faintly (radiation is visible).
-                int tension_v = next_heat + (IOBUF_ENABLED ? io_buffer[i] / 2 : 0);
+                // Entropic tension on empty nodes — staged in-flight flux
+                // glows faintly (radiation is visible).
+                int tension_v = next_heat + io_buffer[i] / 2;
                 uint8_t tension = (tension_v > 100) ? 100 : tension_v;
                 pixel_buffer[px_idx + 0] = tension;
                 pixel_buffer[px_idx + 1] = 0;

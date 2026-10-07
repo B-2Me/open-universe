@@ -39,7 +39,6 @@ build_engine() {
       '_set_spin',
       '_add_quanta',
       '_set_impedance_mode',
-      '_set_iobuf_mode',
       '_set_undo_enabled',
       '_save_grid_snapshot',
       '_restore_grid_snapshot',
