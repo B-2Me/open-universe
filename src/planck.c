@@ -1,6 +1,7 @@
 /*
  * The Planck Field Engine (Langevin's Wake)
  * Copyright (c) 2026 Nathan / btwo.me
+ * v2.4: Occupancy Gravity, Port Repulsion & Porous Barriers (seepage)
  */
 
 #include <stdint.h>
@@ -31,6 +32,9 @@
 #define THERMAL_NORM (1200.0)    // Baseline for environment-normalized scaling
 #define DISSIPATION_SCALE (0.1)  // Dissipation dampening factor in impedance injector
 #define NODE_BANDWIDTH_MAX (220) // C_max vector budget ceiling for time dilation cycle-stealing
+#define SEEP_SHIFT (6)          // Porous barrier: saturated ports leak sendable>>6 (~1.6%)
+#define SEEP_ABS_SHIFT (1)      // Mid-hop absorption: half the leaked flux thermalizes
+#define SEEP_BURN_SHIFT (2)     // Deadlocked nodes burn staged flux/tick — dwell attenuation
 
 // --- Undo Snapshot Ring ---
 #define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
@@ -57,6 +61,7 @@ uint8_t pixel_buffer[PIXEL_COUNT * 4];
 uint8_t KNOB_DISSIPATION = 15; 
 uint16_t KNOB_THERMAL_LIMIT = 1200;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
+int SEEPAGE_MODE_ACTIVE = 0; // Porous-barrier prototype — off until the UI exposes it
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs
@@ -211,6 +216,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t* get_pixel_buffer_pointer() { return pixel_buffer; 
 
 EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_t)rate; }
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
+EMSCRIPTEN_KEEPALIVE void set_seepage_mode(int active) { SEEPAGE_MODE_ACTIVE = active ? 1 : 0; }
 
 EMSCRIPTEN_KEEPALIVE
 void init_grid() {
@@ -460,6 +466,17 @@ void tick() {
                         incoming_quanta += sent;
                         mom_x -= dir_vx(d) * sent;
                         mom_y -= dir_vy(d) * sent;
+                    } else if (SEEPAGE_MODE_ACTIVE) {
+                        // Porous barrier: a fixed fraction bleeds through
+                        // the saturated port; part thermalizes mid-hop —
+                        // attenuation requires loss, not just delay.
+                        int leak = sent >> SEEP_SHIFT;
+                        if (leak < 1) leak = 1;
+                        int absorbed = leak >> SEEP_ABS_SHIFT;
+                        incoming_quanta += leak - absorbed;
+                        kinetic_heat += absorbed;
+                        mom_x -= dir_vx(d) * (leak - absorbed);
+                        mom_y -= dir_vy(d) * (leak - absorbed);
                     }
                 }
 
@@ -485,6 +502,15 @@ void tick() {
                     int sent = (current.quanta > FLOW_CAP) ? FLOW_CAP : current.quanta;
                     next_quanta = current.quanta - sent;  // transport lag: residual accumulates
                 } else {
+                    if (SEEPAGE_MODE_ACTIVE) {
+                        // Release the seeped fraction — the receiver
+                        // accepts it, so the sender must deduct it or
+                        // mass duplicates across the port.
+                        int sent = (current.quanta > FLOW_CAP) ? FLOW_CAP : current.quanta;
+                        int leak = sent >> SEEP_SHIFT;
+                        if (leak < 1) leak = 1;
+                        next_quanta = current.quanta - leak;
+                    }
                     shunting = 1;
                     kinetic_heat += (current.quanta * KINETIC_SHUNT);
                 }
@@ -497,6 +523,15 @@ void tick() {
             if (next_buffer > 255) {
                 kinetic_heat += (next_buffer - 255) * KINETIC_BACKPRESSURE;
                 next_buffer = 255;
+            }
+            if (SEEPAGE_MODE_ACTIVE && current.quanta + current.buffer > DEADLOCK_QUANTA) {
+                // Absorptive barrier medium: a deadlocked node thermalizes
+                // a fraction of its staged flux per tick — in-transit mass
+                // decays with dwell time, so attenuation compounds with
+                // wall thickness (the measured tunneling constraint).
+                int burn = next_buffer >> SEEP_BURN_SHIFT;
+                next_buffer -= burn;
+                kinetic_heat += burn;
             }
             int buffered_take = (255 - next_quanta < next_buffer) ? 255 - next_quanta : next_buffer;
             next_quanta += buffered_take;
