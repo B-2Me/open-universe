@@ -48,6 +48,7 @@ build_engine() {
       '_get_grid_width',
       '_get_grid_height',
       '_get_total_quanta',
+      '_get_total_occupancy',
       '_get_total_heat',
       '_get_phase_alignment',
       '_get_yield',

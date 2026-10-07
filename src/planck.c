@@ -44,17 +44,14 @@
 #endif
 
 typedef struct {
-    uint8_t quanta;  
-    uint8_t spin;    
-    uint16_t heat;   
-} PlanckNode;
+    uint8_t quanta;
+    uint8_t spin;
+    uint16_t heat;
+    uint8_t buffer;  // staged in-flight flux — part of node occupancy
+} PlanckNode;      // sizeof = 6 (alignment pads to the u16 boundary)
 
 PlanckNode* grid_read = NULL;
 PlanckNode* grid_write = NULL;
-// I/O buffer field: in-flight quanta per node. Parallel to the node arrays —
-// NOT serialized (autosaves/snapshots drop in-flight flux; it's transient).
-uint8_t* io_buffer = NULL;
-uint8_t* io_buffer_next = NULL;
 PlanckNode* grid_snapshots[SNAPSHOT_DEPTH] = {NULL};
 int snap_head = -1;  // Ring index of the newest checkpoint; -1 when empty
 int snap_count = 0;  // Valid checkpoints in the ring
@@ -178,12 +175,15 @@ static inline uint8_t norm_spin(uint8_t s) {
 static inline int valid_spin(uint8_t s) { return s >= 1 && s <= SPIN_MAX; }
 
 // Telemetry
-double obs_total_quanta = 0;
+double obs_total_quanta = 0;     // resident quanta only
+double obs_total_buffer = 0;     // staged in-flight flux
 double obs_total_heat = 0;
-double obs_phase_alignment = 0; 
+double obs_phase_alignment = 0;
 double obs_actualization_yield = 0;
 
 EMSCRIPTEN_KEEPALIVE double get_total_quanta() { return obs_total_quanta; }
+// Occupancy is the conserved mass reading: resident + staged in-flight.
+EMSCRIPTEN_KEEPALIVE double get_total_occupancy() { return obs_total_quanta + obs_total_buffer; }
 EMSCRIPTEN_KEEPALIVE double get_total_heat() { return obs_total_heat; }
 EMSCRIPTEN_KEEPALIVE double get_phase_alignment() { return obs_phase_alignment; }
 EMSCRIPTEN_KEEPALIVE double get_yield() { return obs_actualization_yield; }
@@ -207,8 +207,6 @@ EMSCRIPTEN_KEEPALIVE
 void init_grid() {
     if (grid_read != NULL) { free(grid_read); grid_read = NULL; }
     if (grid_write != NULL) { free(grid_write); grid_write = NULL; }
-    if (io_buffer != NULL) { free(io_buffer); io_buffer = NULL; }
-    if (io_buffer_next != NULL) { free(io_buffer_next); io_buffer_next = NULL; }
     for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
         if (grid_snapshots[i] != NULL) { free(grid_snapshots[i]); grid_snapshots[i] = NULL; }
     }
@@ -217,8 +215,6 @@ void init_grid() {
 
     grid_read = calloc(PIXEL_COUNT, sizeof(PlanckNode));
     grid_write = calloc(PIXEL_COUNT, sizeof(PlanckNode));
-    io_buffer = calloc(PIXEL_COUNT, sizeof(uint8_t));
-    io_buffer_next = calloc(PIXEL_COUNT, sizeof(uint8_t));
     if (UNDO_ENABLED) {
         for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
             grid_snapshots[i] = calloc(PIXEL_COUNT, sizeof(PlanckNode));
@@ -231,8 +227,6 @@ EMSCRIPTEN_KEEPALIVE
 void free_grid() {
     if (grid_read != NULL) { free(grid_read); grid_read = NULL; }
     if (grid_write != NULL) { free(grid_write); grid_write = NULL; }
-    if (io_buffer != NULL) { free(io_buffer); io_buffer = NULL; }
-    if (io_buffer_next != NULL) { free(io_buffer_next); io_buffer_next = NULL; }
     for (int i = 0; i < SNAPSHOT_DEPTH; i++) {
         if (grid_snapshots[i] != NULL) { free(grid_snapshots[i]); grid_snapshots[i] = NULL; }
     }
@@ -257,10 +251,8 @@ void restore_grid_snapshot() {
     memcpy(grid_read, grid_snapshots[snap_head], PIXEL_COUNT * sizeof(PlanckNode));
     snap_head = (snap_head - 1 + SNAPSHOT_DEPTH) % SNAPSHOT_DEPTH;
     snap_count--;
-    // Snapshots capture resident node state only — in-flight flux is
-    // transient and does not survive a rewind.
-    if (io_buffer) memset(io_buffer, 0, PIXEL_COUNT);
-    if (io_buffer_next) memset(io_buffer_next, 0, PIXEL_COUNT);
+    // Node state includes staged flux, so a rewind restores the
+    // radiation field with the matter — physically complete.
 }
 
 EMSCRIPTEN_KEEPALIVE int get_snapshot_count() { return snap_count; }
@@ -289,10 +281,8 @@ EMSCRIPTEN_KEEPALIVE
 void clear_grid() {
     if (!grid_read) return;
     for (int i = 0; i < PIXEL_COUNT; i++) {
-        grid_read[i].quanta = 0; grid_read[i].spin = 0; grid_read[i].heat = 1;
+        grid_read[i].quanta = 0; grid_read[i].spin = 0; grid_read[i].heat = 1; grid_read[i].buffer = 0;
     }
-    if (io_buffer) memset(io_buffer, 0, PIXEL_COUNT);
-    if (io_buffer_next) memset(io_buffer_next, 0, PIXEL_COUNT);
     obs_actualization_yield = 0;
 }
 
@@ -315,7 +305,7 @@ void set_node_state(int x, int y, int state) {
     grid_read[idx].spin = norm_spin((state >> 16) & 0xFF);
     grid_read[idx].heat = state & 0xFFFF;
     // Paints overwrite node state outright; staged flux at the node goes too.
-    if (io_buffer) io_buffer[idx] = 0;
+    grid_read[idx].buffer = 0;
 }
 
 // Internal-only: reached via add_quanta when IMPEDANCE_MODE_ACTIVE is set.
@@ -402,6 +392,7 @@ void tick() {
     if (!grid_read || !grid_write) return;
 
     double frame_quanta = 0;
+    double frame_buffer = 0;
     double frame_heat = 0;
     double frame_yield = 0;
     int active_nodes = 0;
@@ -422,7 +413,7 @@ void tick() {
                 int t_idx = target_y * WIDTH + target_x;
                 // The port refuses on occupancy (resident + in-flight),
                 // not resident mass alone — a pressurized buffer is a wall.
-                int t_occ = grid_read[t_idx].quanta + io_buffer[t_idx];
+                int t_occ = grid_read[t_idx].quanta + grid_read[t_idx].buffer;
                 if (t_occ > DEADLOCK_QUANTA) target_deadlocked = 1;
             }
 
@@ -460,7 +451,7 @@ void tick() {
                         }
                     }
 
-                    int my_occ = current.quanta + io_buffer[idx];
+                    int my_occ = current.quanta + current.buffer;
                     if (my_occ <= DEADLOCK_QUANTA) {
                         incoming_quanta += sent;
                         mom_x -= dir_vx(d) * sent;
@@ -471,7 +462,7 @@ void tick() {
                 // Congestion gravity sink: flux deflects toward the densest
                 // neighbor that can still absorb (occupancy > 200 is a hard
                 // wall — bending into deadlock means hitting it, not accreting).
-                int n_occ = neighbor.quanta + io_buffer[ny * WIDTH + nx];
+                int n_occ = neighbor.quanta + neighbor.buffer;
                 if (n_occ > max_congestion && n_occ <= DEADLOCK_QUANTA) {
                     max_congestion = n_occ;
                     gravity_spin = d;
@@ -498,7 +489,7 @@ void tick() {
             // only up to free capacity — overflow is backscatter heat, not
             // silent mass loss. Buffered backlog also occupies the node's
             // routing bandwidth (congestion literally dilates dissipation).
-            int next_buffer = io_buffer[idx] + incoming_quanta;
+            int next_buffer = current.buffer + incoming_quanta;
             if (next_buffer > 255) {
                 kinetic_heat += (next_buffer - 255) * KINETIC_BACKPRESSURE;
                 next_buffer = 255;
@@ -514,7 +505,7 @@ void tick() {
             // --- Bandwidth Limit & Cycle-Stealing (Time Dilation) ---
             // Spatial I/O routing load takes absolute priority over internal maintenance.
             double routing_load = incoming_quanta + fabs(mom_x) + fabs(mom_y) + (shunting ? current.quanta : 0)
-                                + io_buffer[idx];
+                                + current.buffer;
             if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
             double bandwidth_fraction = 1.0 - (routing_load / NODE_BANDWIDTH_MAX);
             if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
@@ -592,9 +583,10 @@ void tick() {
             grid_write[idx].quanta = next_quanta;
             grid_write[idx].heat = next_heat;
             grid_write[idx].spin = next_spin;
-            io_buffer_next[idx] = (uint8_t)next_buffer;
+            grid_write[idx].buffer = (uint8_t)next_buffer;
             
             frame_quanta += next_quanta;
+            frame_buffer += next_buffer;
             frame_heat += next_heat;
             
             if (next_quanta > 0) {
@@ -605,6 +597,7 @@ void tick() {
     }
 
     obs_total_quanta = frame_quanta;
+    obs_total_buffer = frame_buffer;
     obs_total_heat = frame_heat;
     obs_actualization_yield += frame_yield;
     obs_phase_alignment = (active_nodes > 0) ? ((double)aligned_nodes / active_nodes) * 100.0 : 0.0;
@@ -612,9 +605,6 @@ void tick() {
     PlanckNode* temp = grid_read;
     grid_read = grid_write;
     grid_write = temp;
-    uint8_t* btemp = io_buffer;
-    io_buffer = io_buffer_next;
-    io_buffer_next = btemp;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -660,7 +650,7 @@ void render_frame(int layer) {
             } else {
                 // Entropic tension on empty nodes — staged in-flight flux
                 // glows faintly (radiation is visible).
-                int tension_v = next_heat + io_buffer[i] / 2;
+                int tension_v = next_heat + grid_read[i].buffer / 2;
                 uint8_t tension = (tension_v > 100) ? 100 : tension_v;
                 pixel_buffer[px_idx + 0] = tension;
                 pixel_buffer[px_idx + 1] = 0;
@@ -679,10 +669,11 @@ size_t vtk_buffer_capacity = 0;
 
 size_t get_required_vtk_buffer_size() {
     size_t header_size = 512;
-    size_t quanta_size = (size_t)PIXEL_COUNT * 16; 
-    size_t heat_size = (size_t)PIXEL_COUNT * 16;   
-    size_t vector_size = (size_t)PIXEL_COUNT * 32; 
-    return header_size + quanta_size + heat_size + vector_size;
+    size_t quanta_size = (size_t)PIXEL_COUNT * 16;
+    size_t buffer_size = (size_t)PIXEL_COUNT * 16;
+    size_t heat_size = (size_t)PIXEL_COUNT * 16;
+    size_t vector_size = (size_t)PIXEL_COUNT * 32;
+    return header_size + quanta_size + buffer_size + heat_size + vector_size;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -725,6 +716,12 @@ char* generate_vtk() {
     SAFE_PRINTF("LOOKUP_TABLE default\n");
     for (int i = 0; i < PIXEL_COUNT; i++) {
         SAFE_PRINTF("%d\n", grid_read[i].quanta);
+    }
+
+    SAFE_PRINTF("\nSCALARS Buffer float 1\n");
+    SAFE_PRINTF("LOOKUP_TABLE default\n");
+    for (int i = 0; i < PIXEL_COUNT; i++) {
+        SAFE_PRINTF("%d\n", grid_read[i].buffer);
     }
 
     SAFE_PRINTF("\nSCALARS Heat float 1\n");

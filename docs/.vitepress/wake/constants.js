@@ -31,7 +31,7 @@ export const RGBA_CHANNELS = 4;
 export const PIXEL_BUFFER_SIZE = TOTAL_NODES * RGBA_CHANNELS;
 
 // --- Node Layout ---
-export const NODE_SIZE_BYTES = 4;      // sizeof(PlanckNode): u8 quanta + u8 spin + u16 heat
+export const NODE_SIZE_BYTES = 6;      // sizeof(PlanckNode): u8 quanta + u8 spin + u16 heat + u8 buffer (+1 pad)
 export const GRID_BYTE_SIZE = TOTAL_NODES * NODE_SIZE_BYTES;
 
 // --- Bitfield Offsets and Masks ---

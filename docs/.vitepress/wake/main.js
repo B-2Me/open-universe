@@ -224,7 +224,7 @@ function bindWheelForwarding() {
 }
 
 function updateTelemetry(els, bridge) {
-    if (els.quanta) els.quanta.innerText = bridge.getTotalQuanta().toLocaleString();
+    if (els.quanta) els.quanta.innerText = bridge.getTotalOccupancy().toLocaleString();
     if (els.heat) els.heat.innerText = bridge.getTotalHeat().toLocaleString();
     if (els.phase) els.phase.innerText = bridge.getPhaseAlignment().toFixed(1) + "%";
     if (els.yield) els.yield.innerText = bridge.getYield().toLocaleString(undefined, { maximumFractionDigits: 0 });

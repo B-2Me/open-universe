@@ -1,8 +1,8 @@
-// IndexedDB autosave — persists the raw 640KB grid + active scenario so a
+// IndexedDB autosave — persists the raw grid + active scenario so a
 // reload resumes the cultivated simulation instead of resetting it.
 // Best-effort: IDB may be unavailable (private mode); all failures are silent.
 
-import { GRID_BYTE_SIZE } from './constants.js';
+import { GRID_BYTE_SIZE, NODE_SIZE_BYTES } from './constants.js';
 
 const DB_NAME = 'planck-wake';
 const STORE = 'state';
@@ -54,10 +54,10 @@ export function restoreSimState(bridge, record) {
     if (bytes.length !== GRID_BYTE_SIZE) return;
     // A dead autosave would permanently brick the boot — the empty field
     // just re-saves itself on every interval. Quanta sits at byte offset 0
-    // of each 4-byte PlanckNode; if the snapshot carries no mass at all,
-    // keep the freshly painted scenario instead.
+    // of each PlanckNode; if the snapshot carries no mass at all, keep the
+    // freshly painted scenario instead.
     let mass = 0;
-    for (let i = 0; i < bytes.length; i += 4) mass += bytes[i];
+    for (let i = 0; i < bytes.length; i += NODE_SIZE_BYTES) mass += bytes[i];
     if (mass === 0) return;
     bridge.wasm.HEAPU8.set(bytes, bridge.getGridPointer());
 }

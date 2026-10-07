@@ -34,6 +34,12 @@ export class PlanckBridge {
     setImpedanceMode(mode) { this.wasm._set_impedance_mode(mode); }
 
     getTotalQuanta() { return this.wasm._get_total_quanta(); }
+    // Conserved mass reading: resident + staged in-flight flux.
+    getTotalOccupancy() {
+        return typeof this.wasm._get_total_occupancy === 'function'
+            ? this.wasm._get_total_occupancy()
+            : this.getTotalQuanta();
+    }
     getTotalHeat() { return this.wasm._get_total_heat(); }
     getPhaseAlignment() { return this.wasm._get_phase_alignment(); }
     getYield() { return typeof this.wasm._get_yield === 'function' ? this.wasm._get_yield() : 0; }
