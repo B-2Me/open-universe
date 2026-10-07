@@ -67,6 +67,19 @@ As a software engineer, my expertise is in systems architecture and concurrency,
 
 ---
 
+## The Open Frontier: Adjacency Expansion
+
+*The following is the immediate roadmap for the framework — how the current 2D mechanics scale toward volumetric observables. None of this is implemented in the engine yet; it is the theoretical trajectory, kept honest by that distinction.*
+
+The engine is already a flat 1D array — `calloc(PIXEL_COUNT, sizeof(PlanckNode))`. The "plane" exists only because the routing table wires node $i$ to specific neighbors via modulo arithmetic (`y·W + x`). There is no geometric container. It follows that "3D space" is not a stack of 2D sheets — it is simply a wider coordination number. Going from Oct8 (8 exits) or Hex6 (6 exits) to a 3D substrate means giving each node 12 (hexagonal close-packed), 14 (body-centered cubic), or 26 (3D Moore) valid neighbors in the same flat array. The field isn't deeper; it has more exit vectors per locus — more ways to dissipate thermodynamic friction.
+
+*   **Gravity as congestion overflow:** on a wider graph, a saturated node's in-flight buffer can route overflow through the extra adjacency channels instead of stalling — 3D gravity is routing overflow across the expanded matrix, not an interlayer phenomenon.
+*   **Cross-sections ($\sigma$) → waveguide shearing:** how many adjacency channels of a phase-locked knot must fail before the structure loses hydrodynamic integrity. *(The 2D engine already measures this natively — quantized severing counts in the bombardment scenarios.)*
+*   **Resonance widths ($\Gamma$) → synchronization endurance:** the number of ticks a knot sustains phase alignment against ambient thermal jitter before unwinding into actualization yield.
+*   **Quantum spin:** not an abstract intrinsic property but the routing-phase offset required to weave a self-sustaining standing wave through the expanded graph.
+
+---
+
 ## Planned Audio Sessions
 
 *Note: The audio roadmap is a living syllabus. The exact order and topics are tentative, but each episode will be anchored by specific media (films, shows, or lectures) that you can watch beforehand to set the context.*

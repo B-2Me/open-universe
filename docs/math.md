@@ -75,3 +75,11 @@ The Pauli Exclusion Principle states that two identical fermions cannot occupy t
 
 In a discrete network, they don't overlap because a single network switch can only handle so much traffic before it drops packets. If you attempt to force two circulating topological waveguides into the exact same spatial locus, the incoming un-actualized potential ($Q_{in}$) instantly exceeds the absolute flow capacity of the local grid ($DEADLOCK\_QUANTA$). We replace the antisymmetric wave function with the hard integer limits of the hardware:
 $$ \text{If } Q_{in} > DEADLOCK\_QUANTA, \text{ trigger Relational Repulsion} $$
+
+## Dimensionality Is a Coordination Number
+
+The engine stores its universe as a flat 1D array of nodes — "space" exists only in the adjacency table that wires each node to its routing partners. Dimensionality is therefore not a container property but a bandwidth property: it is the count of valid exit vectors per locus.
+
+$$ \text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;|\; 8 \text{ (Moore 2D)} \;|\; 12 \text{ (HCP)} \;|\; 14 \text{ (BCC)} \;|\; 26 \text{ (Moore 3D)} $$
+
+"Scaling the universe to 3D" is not stacking sheets; it is widening the local routing table in the same flat array. A macro-object on a 12-neighbor graph is just a denser knot resolving thermodynamic friction across more channels — and the added channels give congestion somewhere else to go, which is precisely where 3D gravity (routing overflow) would live.

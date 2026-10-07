@@ -49,6 +49,7 @@ const hexDist = (x, y, cx, cy) => {
 };
 
 function tickHex() {
+  ZSPIN = 6; ZCOST = TURN_COST_HEX;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i];
@@ -92,7 +93,20 @@ function tickHex() {
     // Arrivals stage in the input buffer and integrate only up to free
     // capacity — overflow is backscatter heat, not silent mass loss.
     let nb2 = b[i] + incoming;
-    if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+    if (nb2 > 255) {
+      let excess = nb2 - 255; nb2 = 255;
+      if (ZS_ON && zb[i] < 255) {
+        // Adjacency expansion: buffer pressure overflows across the extra
+        // channel (counterpart at depth^1) instead of thermalizing.
+        const divert = Math.min(excess, 255 - zb[i]);
+        const ddz = (cs && zs[i]) ? Math.min(Math.abs(zs[i] - cs), ZSPIN - Math.abs(zs[i] - cs)) : 0;
+        zh[i] = Math.min(65535, zh[i] + divert * ZCOST[ddz]); // τ(1-cosΔθ) friction on landing
+        zb[i] += divert;
+        if (cs) zs[i] = cs; // diverted flux keeps its heading — bypass preserves momentum
+        excess -= divert;
+      }
+      if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
+    }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
     let dom = incoming > 0 ? hexDir(mx, my) : 0;
@@ -137,12 +151,31 @@ function tickHex() {
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
+let ZS_ON = false; // depth-2 adjacency expansion — the Open Frontier prototype
 
-const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
-const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
-const b = new Uint8Array(N), b2 = new Uint8Array(N); // staged in-flight arrivals
+// The field is a flat 1D array of slabs; "depth" is one extra routing
+// channel per node — its counterpart at z^1. Not a sheet, a wider table.
+const makeSlab = () => ({
+  q: new Uint8Array(N), s: new Uint8Array(N), h: new Uint16Array(N),
+  q2: new Uint8Array(N), s2: new Uint8Array(N), h2: new Uint16Array(N),
+  b: new Uint8Array(N), b2: new Uint8Array(N),
+});
+const slabs = [makeSlab(), makeSlab()];
+// Active-slab bindings — tick() reads/writes these.
+let q, s, h, q2, s2, h2, b, b2;
+// Counterpart committed arrays — the vertical adjacency channel.
+let zq, zs, zh, zb;
+function bindSlab(z) {
+  ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
+  ({ q: zq, s: zs, h: zh, b: zb } = slabs[z ^ 1]);
+}
+bindSlab(0);
+
+// Vertical friction uses the same τ(1-cosΔθ) kernel, tabulated per substrate.
+let ZSPIN = 6, ZCOST = TURN_COST_HEX;
 
 function tick() {
+  ZSPIN = 8; ZCOST = TURN_COST_OCT;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i];
@@ -184,7 +217,20 @@ function tick() {
       else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     let nb2 = b[i] + incoming;
-    if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+    if (nb2 > 255) {
+      let excess = nb2 - 255; nb2 = 255;
+      if (ZS_ON && zb[i] < 255) {
+        // Adjacency expansion: buffer pressure overflows across the extra
+        // channel (counterpart at depth^1) instead of thermalizing.
+        const divert = Math.min(excess, 255 - zb[i]);
+        const ddz = (cs && zs[i]) ? Math.min(Math.abs(zs[i] - cs), ZSPIN - Math.abs(zs[i] - cs)) : 0;
+        zh[i] = Math.min(65535, zh[i] + divert * ZCOST[ddz]); // τ(1-cosΔθ) friction on landing
+        zb[i] += divert;
+        if (cs) zs[i] = cs; // diverted flux keeps its heading — bypass preserves momentum
+        excess -= divert;
+      }
+      if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
+    }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
     const xd = Math.sign(mx), yd = Math.sign(my);
@@ -430,7 +476,13 @@ function stats(label) {
   const min = Math.min(...sectorMass), max = Math.max(...sectorMass);
   const cyc = CYCLE_TRACK ? ` cycle=${cycleOcc}/${cycleTotal} cycleQ=${cycleQ}` : '';
   const buf = ` bufQ=${bufQ}`;
-  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
+  let zstr = '';
+  if (ZS_ON) {
+    let zQ = 0, zbuf = 0;
+    for (let i = 0; i < N; i++) { zQ += slabs[1].q[i]; zbuf += slabs[1].b[i]; }
+    zstr = ` zQ=${zQ} zbufQ=${zbuf}`;
+  }
+  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
 // --- run ---
@@ -443,6 +495,7 @@ FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
+ZS_ON = mode.includes('zshadow'); // depth-2 adjacency expansion (Open Frontier)
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
@@ -461,9 +514,11 @@ else paintElectron();
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
+if (ZS_ON) slabs[1].h.fill(1); // shadow slab starts as cold vacuum
 stats('tick 0');
 for (let t = 1; t <= 400; t++) {
-  TICK();
+  bindSlab(0); TICK();
+  if (ZS_ON) { bindSlab(1); TICK(); bindSlab(0); }
   if (t % 50 === 0) stats('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
