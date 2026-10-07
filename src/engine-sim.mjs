@@ -6,20 +6,21 @@
 //   mode: default ('engine'/'cap') mirrors planck.c: FLOW_CAP + I/O-buffer
 //         occupancy gravity + Phase Lock. Suffixes A/B-test features: '+res'
 //         (old resistance gravity), '+persist' (mass persist), '+nocap',
-//         '+nograv', '+nolock' to disable. math.md candidates: '+quad'
-//         (quadrature vector budget), '+angle' (continuous turn friction).
+//         '+nograv', '+nolock' to disable.
 // If planck.c's tick() changes, mirror the change here or results drift.
 
 const W = 400, H = 400, N = W * H;
 const DEADLOCK = 200, HEAT_MAX = 65535;
-const KINETIC_BASE = 1, KINETIC_ALIGNED = 5, KINETIC_ORTHOGONAL = 2;
-const KINETIC_SHUNT = 5, KINETIC_HEADON = 10;
+const KINETIC_BASE = 1, KINETIC_SHUNT = 5;
 const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
 const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant across substrates
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows (backscatter)
-const KINETIC_TURN_TAU = 4;      // continuous turn friction scale: τ(1-cosΔθ) per unit
+// Turn-friction kernel τ(1-cosΔθ), τ=4, tabulated by wrapped spin separation
+// (index = sextant/octant distance). math.md §4: least-friction traversal.
+const TURN_COST_HEX = [0, 2, 6, 8];      // 0° 60° 120° 180°
+const TURN_COST_OCT = [0, 1, 4, 7, 8];   // 0° 45° 90° 135° 180°
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
 const INV_DIR = [0,5,6,7,8,1,2,3,4];
 const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
@@ -71,15 +72,9 @@ function tickHex() {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
-          if (ANGLE_ON) {
-            // τ(1-cosΔθ): straight-through is free, reversal costs 2τ.
-            const dd = Math.min(Math.abs(ns - cs), 6 - Math.abs(ns - cs));
-            kin += sent * KINETIC_TURN_TAU * (1 - Math.cos(dd * Math.PI / 3));
-          } else {
-            if (ns === cs) kin += sent * KINETIC_ALIGNED;
-            else if (ns === HINV[cs]) kin += 0;
-            else kin += sent * KINETIC_ORTHOGONAL;
-          }
+          // Continuous turn friction: straight-through free, reversal 2τ.
+          const dd = Math.min(Math.abs(ns - cs), 6 - Math.abs(ns - cs));
+          kin += sent * TURN_COST_HEX[dd];
         }
         if (cq + b[i] <= DEADLOCK) {
           incoming += sent;
@@ -101,15 +96,14 @@ function tickHex() {
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
     let dom = incoming > 0 ? hexDir(mx, my) : 0;
-    // Under +angle the turn kernel already prices head-on arrivals; the
-    // aggregate cancellation tax would double-charge them.
-    if (!ANGLE_ON && incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
+    // Head-on arrivals are priced by the turn kernel (Δθ=180° → 2τ);
+    // no separate cancellation tax.
 
     let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + b[i];
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     // Quadrature vector budget (math.md §3): C_i = sqrt(C_max² - C_s²).
     const frac6 = Math.min(1, routing / NODE_BANDWIDTH_MAX);
-    const bwf = QUAD_ON ? Math.sqrt(Math.max(0, 1 - frac6 * frac6)) : 1 - frac6;
+    const bwf = Math.sqrt(1 - frac6 * frac6);
 
     // Retain what the 6 channels cannot send: h - 6*(h/9).
     let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
@@ -143,7 +137,6 @@ function tickHex() {
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
-let QUAD_ON = false, ANGLE_ON = false; // math.md prototypes under evaluation
 
 const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
 const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
@@ -172,14 +165,8 @@ function tick() {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
-          if (ANGLE_ON) {
-            const dd = Math.min(Math.abs(ns - cs), 8 - Math.abs(ns - cs));
-            kin += sent * KINETIC_TURN_TAU * (1 - Math.cos(dd * Math.PI / 4));
-          } else {
-            if (ns === cs) kin += sent * KINETIC_ALIGNED;
-            else if (ns === INV_DIR[cs]) kin += 0;
-            else kin += sent * KINETIC_ORTHOGONAL;
-          }
+          const dd = Math.min(Math.abs(ns - cs), 8 - Math.abs(ns - cs));
+          kin += sent * TURN_COST_OCT[dd];
         }
         if (cq + b[i] <= DEADLOCK) { incoming += sent; mx -= dx * sent; my -= dy * sent; }
       }
@@ -202,14 +189,14 @@ function tick() {
     nq2 += take; nb2 -= take;
     const xd = Math.sign(mx), yd = Math.sign(my);
     let dom = DIR_MAP[yd + 1][xd + 1];
-    if (!ANGLE_ON && incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
 
     // Bandwidth limit & cycle-stealing: spatial I/O load starves internal
-    // dissipation (time dilation lag). Buffered backlog is routing load too.
+    // dissipation (time dilation lag). Quadrature budget (math.md §3):
+    // C_max² = C_s² + C_i². Buffered backlog is routing load too.
     let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + b[i];
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
     const frac8 = Math.min(1, routing / NODE_BANDWIDTH_MAX);
-    const bwf = QUAD_ON ? Math.sqrt(Math.max(0, 1 - frac8 * frac8)) : 1 - frac8;
+    const bwf = Math.sqrt(1 - frac8 * frac8);
 
     // Retain what the 8 channels cannot send: h - 8*(h/9).
     let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
@@ -456,8 +443,6 @@ FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
-QUAD_ON = mode.includes('quad');
-ANGLE_ON = mode.includes('angle');
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });

@@ -19,10 +19,7 @@
 #define HEAT_MAX (65535)         // 16-bit thermal saturation ceiling
 #define HEAT_DIFFUSION_DIV (9)   // Per-channel heat sharing rate — invariant across substrates
 #define KINETIC_BASE (1)         // Base heat from a valid collision
-#define KINETIC_ALIGNED (5)      // Bonus heat for spin-aligned collisions
-#define KINETIC_ORTHOGONAL (2)   // Bonus heat for perpendicular collisions
 #define KINETIC_SHUNT (5)        // Heat cost when a saturated port repels the flux
-#define KINETIC_HEADON (10)      // Penalty heat for head-on momentum cancellation
 #define KINETIC_BACKPRESSURE (10) // Heat blowoff when an input buffer overflows (backscatter)
 #define QUANTA_HEAT_GEN (15)     // Ambient heat emitted per unit of settled quanta
 #define QUANTA_INJECT_HEAT (25)  // Heat added per injected quanta unit
@@ -130,6 +127,20 @@ static inline uint8_t inv_dir(int d) {
 #else
     return INV_DIR[d];
 #endif
+}
+// Turn-friction kernel τ(1−cosΔθ), τ=4, tabulated per substrate —
+// math.md §4's least-friction traversal made per-arrival. Index is the
+// wrapped spin separation: straight-through is free, reversal costs 2τ.
+static const uint8_t KINETIC_TURN[] = {
+#ifdef TOPOLOGY_HEX
+    0, 2, 6, 8          // 0° 60° 120° 180°
+#else
+    0, 1, 4, 7, 8       // 0° 45° 90° 135° 180°
+#endif
+};
+static inline int turn_delta(uint8_t a, uint8_t b) {
+    int dd = abs((int)a - (int)b);
+    return dd > SPIN_MAX / 2 ? SPIN_MAX - dd : dd;
 }
 static inline double dir_vx(int d) {
 #ifdef TOPOLOGY_HEX
@@ -385,7 +396,7 @@ EMSCRIPTEN_KEEPALIVE void set_spin(int x, int y, int dir) {
 
 
 // ---------------------------------------------------------
-// PHYSICS ENGINE (v2.2: Occupancy Gravity & I/O-Buffered Transport)
+// PHYSICS ENGINE (v2.3: Occupancy Gravity, Port Repulsion & Quadrature Budget)
 // ---------------------------------------------------------
 EMSCRIPTEN_KEEPALIVE
 void tick() {
@@ -442,13 +453,9 @@ void tick() {
                     kinetic_heat += (sent * KINETIC_BASE);
 
                     if (current.quanta > 0 && current.spin != 0) {
-                        if (neighbor.spin == current.spin) {
-                            kinetic_heat += sent * KINETIC_ALIGNED;
-                        } else if (neighbor.spin == inv_dir(current.spin)) {
-                            kinetic_heat += 0;
-                        } else {
-                            kinetic_heat += sent * KINETIC_ORTHOGONAL;
-                        }
+                        // Phase friction is continuous in the turn angle —
+                        // aligned inflow is free, reversal is priced at 2τ.
+                        kinetic_heat += sent * KINETIC_TURN[turn_delta(neighbor.spin, current.spin)];
                     }
 
                     int my_occ = current.quanta + current.buffer;
@@ -500,15 +507,15 @@ void tick() {
 
             uint8_t dominant_spin = dir_from_momentum(mom_x, mom_y);
 
-            if (incoming_quanta > 0 && dominant_spin == 0) kinetic_heat += incoming_quanta * KINETIC_HEADON;
-
             // --- Bandwidth Limit & Cycle-Stealing (Time Dilation) ---
-            // Spatial I/O routing load takes absolute priority over internal maintenance.
+            // Spatial I/O routing load takes absolute priority over internal
+            // maintenance. The budget is quadrature (math.md §3):
+            // C_max² = C_s² + C_i² → available fraction is sqrt(1 - load²).
             double routing_load = incoming_quanta + fabs(mom_x) + fabs(mom_y) + (shunting ? current.quanta : 0)
                                 + current.buffer;
             if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
-            double bandwidth_fraction = 1.0 - (routing_load / NODE_BANDWIDTH_MAX);
-            if (bandwidth_fraction < 0.0) bandwidth_fraction = 0.0;
+            double load_frac = routing_load / NODE_BANDWIDTH_MAX;
+            double bandwidth_fraction = sqrt(1.0 - load_frac * load_frac);
 
             // Each adjacency channel carries h/9 — a substrate-invariant
             // rate. The node retains whatever its coordination number
