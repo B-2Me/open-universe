@@ -84,9 +84,11 @@ function tickHex() {
           // Porous barrier: a fixed fraction bleeds through the saturated
           // port — wall thickness compounds the cost, no hard-coded decay.
           const leak = Math.max(1, sent >> SEEP_SHIFT);
-          incoming += leak; seepQ += leak;
+          const absorbed = SEEP_ABS_ON ? (leak >> SEEP_ABS) : 0;
+          incoming += leak - absorbed; seepQ += leak - absorbed;
+          kin += absorbed; // per-stage attenuation: flux thermalizes, not relays
           const a = (d - 1) * Math.PI / 3;
-          mx -= Math.cos(a) * leak; my -= Math.sin(a) * leak;
+          mx -= Math.cos(a) * (leak - absorbed); my -= Math.sin(a) * (leak - absorbed);
         }
       }
       if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
@@ -108,7 +110,10 @@ function tickHex() {
           // Release the seeped fraction — the receiver accepts it, so the
           // sender must deduct it or mass duplicates across the port.
           const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
-          nq2 -= Math.max(1, sendable >> SEEP_SHIFT);
+          const leak = Math.max(1, sendable >> SEEP_SHIFT);
+          // Full leak leaves the sender; the absorbed fraction thermalizes
+          // mid-hop and simply never arrives — mass becomes wall heat.
+          nq2 = cq - leak;
         }
         if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
       }
@@ -126,6 +131,12 @@ function tickHex() {
         excess -= zDivert(i, excess);
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
+    }
+    if (SEEP_ABS_ON && cq + b[i] > DEADLOCK) {
+      // Absorptive barrier medium: a deadlocked node thermalizes a
+      // fraction of its staged flux per tick — in-transit mass decays
+      // with dwell time, so attenuation compounds with wall thickness.
+      const burn = nb2 >> 2; nb2 -= burn; kin += burn;
     }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
@@ -176,7 +187,9 @@ let ZSHUNT_ON = false; // sender-side vertical diversion on port deadlock
 let ZOPEN_ON = false; // bounded depth: slab0/slabD-1 are hard surfaces
 let ZSEED_ON = false; // paint the variant on slab1 too — seeded mid-jam
 let SEEP_ON = false; // porous barriers: saturated ports leak a fixed fraction
+let SEEP_ABS_ON = false; // seeped flux pays a per-hop absorption tax
 const SEEP_SHIFT = 6; // leak = sendable >> 6 ≈ 1.6% per port per tick
+const SEEP_ABS = 1; // seepabs: absorbed = leak >> 1 (half thermalizes per hop)
 let seepQ = 0, seepLast = 0; // cumulative seeped quanta (windowed in stats)
 let SEEP_TRACK = false, SEEP_T = 1; // wall-transmission probe
 
@@ -258,8 +271,10 @@ function tick() {
         else if (SEEP_ON) {
           // Porous barrier: a fixed fraction bleeds through the saturated port.
           const leak = Math.max(1, sent >> SEEP_SHIFT);
-          incoming += leak; seepQ += leak;
-          mx -= dx * leak; my -= dy * leak;
+          const absorbed = SEEP_ABS_ON ? (leak >> SEEP_ABS) : 0;
+          incoming += leak - absorbed; seepQ += leak - absorbed;
+          kin += absorbed; // per-stage attenuation: flux thermalizes, not relays
+          mx -= dx * (leak - absorbed); my -= dy * (leak - absorbed);
         }
       }
       // Entropic gravity sink: flux deflects toward the steepest drop in
@@ -287,7 +302,10 @@ function tick() {
           // Release the seeped fraction — the receiver accepts it, so the
           // sender must deduct it or mass duplicates across the port.
           const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
-          nq2 -= Math.max(1, sendable >> SEEP_SHIFT);
+          const leak = Math.max(1, sendable >> SEEP_SHIFT);
+          // Full leak leaves the sender; the absorbed fraction thermalizes
+          // mid-hop and simply never arrives — mass becomes wall heat.
+          nq2 = cq - leak;
         }
         if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
       }
@@ -303,6 +321,12 @@ function tick() {
         excess -= zDivert(i, excess);
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
+    }
+    if (SEEP_ABS_ON && cq + b[i] > DEADLOCK) {
+      // Absorptive barrier medium: a deadlocked node thermalizes a
+      // fraction of its staged flux per tick — in-transit mass decays
+      // with dwell time, so attenuation compounds with wall thickness.
+      const burn = nb2 >> 2; nb2 -= burn; kin += burn;
     }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
@@ -538,7 +562,7 @@ function paintSeepwall(t) {
     const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy);
     const i = y * W + x;
     if (d >= 58 && d < 58 + t) { q[i] = 220; s[i] = 0; }
-    else if (d < 55) { q[i] = 100; s[i] = 1 + (Math.random() * 8 | 0); }
+    else if (d < 55) { q[i] = 40; s[i] = 1 + (Math.random() * 8 | 0); } // sub-critical density — seepage is the dominant drain, not unwinding
   }
 }
 
@@ -580,13 +604,14 @@ function stats(label) {
     zstr += ` seep=${sWin}`;
   }
   if (SEEP_TRACK) {
-    let tq = 0;
+    let tq = 0, iq = 0;
     const r2 = (62 + SEEP_T) * (62 + SEEP_T);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const dx = x - 200, dy = y - 200;
-      if (dx * dx + dy * dy > r2) tq += q[y * W + x] + b[y * W + x];
+      const dx = x - 200, dy = y - 200, d2 = dx * dx + dy * dy;
+      if (d2 > r2) tq += q[y * W + x] + b[y * W + x];
+      else if (d2 < 55 * 55) iq += q[y * W + x] + b[y * W + x]; // interior retention — the true barrier-integrity metric
     }
-    zstr += ` transQ=${tq}`;
+    zstr += ` transQ=${tq} intQ=${iq}`;
   }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
@@ -607,6 +632,7 @@ ZSHUNT_ON = mode.includes('zshunt');
 ZOPEN_ON = mode.includes('zopen');
 ZSEED_ON = mode.includes('zseed');
 SEEP_ON = mode.includes('seep');
+SEEP_ABS_ON = mode.includes('seepabs');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
