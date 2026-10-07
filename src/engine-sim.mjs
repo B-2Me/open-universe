@@ -93,7 +93,8 @@ function tickHex() {
         // as pressure release: local routing failure routes vertically.
         const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
         const dv = Math.min(sendable, 255 - zb[i]);
-        zb[i] += dv; nq2 = cq - dv;
+        zb[i] += dv; zMoved += zSign * dv;
+        nq2 = cq - dv;
       } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     // Arrivals stage in the input buffer and integrate only up to free
@@ -108,6 +109,7 @@ function tickHex() {
         // entrains on integration, matching planar buffer semantics.
         const divert = Math.min(excess, 255 - zb[i]);
         zb[i] += divert;
+        zMoved += zSign * divert;
         excess -= divert;
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
@@ -170,10 +172,12 @@ const slabs = [makeSlab(), makeSlab()];
 // Active-slab bindings — tick() reads/writes these.
 let q, s, h, q2, s2, h2, b, b2;
 // Counterpart slab's committed buffer — the extra adjacency channel.
-let zb;
+// zMoved tracks net vertical flux (slab0→1 positive) for the oscillation test.
+let zb, zMoved = 0, zSign = 1;
 function bindSlab(z) {
   ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
   zb = slabs[z ^ 1].b;
+  zSign = z === 0 ? 1 : -1;
 }
 bindSlab(0);
 
@@ -222,7 +226,8 @@ function tick() {
         // as pressure release: local routing failure routes vertically.
         const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
         const dv = Math.min(sendable, 255 - zb[i]);
-        zb[i] += dv; nq2 = cq - dv;
+        zb[i] += dv; zMoved += zSign * dv;
+        nq2 = cq - dv;
       } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
     let nb2 = b[i] + incoming;
@@ -235,6 +240,7 @@ function tick() {
         // entrains on integration, matching planar buffer semantics.
         const divert = Math.min(excess, 255 - zb[i]);
         zb[i] += divert;
+        zMoved += zSign * divert;
         excess -= divert;
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
@@ -488,7 +494,7 @@ function stats(label) {
   if (ZS_ON) {
     let zQ = 0, zbuf = 0;
     for (let i = 0; i < N; i++) { zQ += slabs[1].q[i]; zbuf += slabs[1].b[i]; }
-    zstr = ` zQ=${zQ} zbufQ=${zbuf}`;
+    zstr = ` zQ=${zQ} zbufQ=${zbuf} zNet=${zMoved}`;
   }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
@@ -527,7 +533,8 @@ if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
 if (ZS_ON) slabs[1].h.fill(1); // shadow slab starts as cold vacuum
 stats('tick 0');
-for (let t = 1; t <= 400; t++) {
+const MAXT = parseInt(process.env.TICKS || '400');
+for (let t = 1; t <= MAXT; t++) {
   bindSlab(0); TICK();
   if (ZS_ON) { bindSlab(1); TICK(); bindSlab(0); }
   if (t % 50 === 0) stats('tick ' + t);
