@@ -77,17 +77,17 @@ html.dark body {
    Desktop Header: Fixed-Width Text Links
 --------------------------------------------------- */
 .VPNavBar > .wrapper {
-  padding: 0 12px !important;
+  padding: 0 8px !important;
 }
 
 .VPNavBarMenuLink {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 85px !important; 
-  padding: 4px !important;
-  font-size: 13px !important;
-  line-height: 1.2 !important;
+  width: 72px !important; 
+  padding: 2px !important;
+  font-size: 12px !important;
+  line-height: 1.15 !important;
   text-align: center !important;
   white-space: normal !important; 
 }
@@ -100,12 +100,12 @@ html.dark body {
 }
 
 .VPNavBarTitle {
-  padding-right: 12px !important;
+  padding-right: 8px !important;
 }
 
 .VPNavBarAppearance, 
 .VPNavBarSocialLinks {
-  margin-left: 8px !important;
+  margin-left: 6px !important;
 }
 
 /* ---------------------------------------------------
