@@ -53,10 +53,11 @@ $$ C_{max}^2 = C_s^2 + C_i^2 $$
 If spatial routing ($C_s$) is maximized to define a hard boundary, internal kinetic state updates ($C_i$) must mathematically approach zero. The Uncertainty Principle is the absolute thermodynamic capacity limit of the substrate.
 
 ### 4. Feynman Path Integrals $\to$ Least Friction Traversal
-Feynman’s formulation sums over every possible continuous geometric trajectory a particle could take, assuming it physically explores infinite frictionless paths simultaneously. 
+Feynman’s formulation sums over every possible continuous geometric trajectory a particle could take, relying on probability amplitudes where forward propagation is maximized ($\propto 1 + \cos(\Delta \theta)$).
 
-In a finite-bandwidth network, infinite paths are computationally impossible. The field performs a rapid graph traversal to find the path of least thermodynamic resistance. We replace the continuous action integral ($S = \int L \, dt$) with a discrete summation minimizing Electromagnetic Phase Friction ($\Phi$) across available network edges:
-$$ \min \sum_{hop=1}^{N} \tau(1 + \cos(\Delta \theta_{hop})) $$
+In a finite-bandwidth network, infinite paths are computationally impossible. The field performs a rapid graph traversal to find the path of least thermodynamic resistance. We replace the continuous action integral ($S = \int L \, dt$) with a discrete summation that penalizes deviation, minimizing Electromagnetic Phase Friction ($\Phi$) across available network edges:
+$$ \min \sum_{hop=1}^{N} \tau(1 - \cos(\Delta \theta_{hop})) $$
+Aligned arrivals are thermodynamically free ($\Delta \theta = 0^\circ \implies \text{cost } 0$), while momentum reversal incurs the maximum metabolic toll ($2\tau$).
 
 ### 5. Bell's Theorem & Non-Locality $\to$ Network Adjacency
 Bell's Theorem forces standard quantum mechanics into "spooky action at a distance" because it assumes distance is a rigid geometric metric. 
