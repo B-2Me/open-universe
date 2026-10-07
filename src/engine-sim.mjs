@@ -87,30 +87,30 @@ function tickHex() {
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
-      else if (ZSHUNT_ON && zb[i] < 255) {
-        // Sender-side diversion: the saturated port doesn't reflect the
-        // flux — it escapes through the extra channel, spinless. Gravity
-        // as pressure release: local routing failure routes vertically.
-        const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
-        const dv = Math.min(sendable, 255 - zb[i]);
-        zb[i] += dv; zMoved += zSign * dv;
-        nq2 = cq - dv;
-      } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      else {
+        let dv = 0;
+        if (ZSHUNT_ON) {
+          // Sender-side diversion: the saturated port doesn't reflect the
+          // flux — it escapes through the extra channel, spinless.
+          // Gravity as pressure release: routing failure goes vertical.
+          const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+          dv = zDivert(i, sendable);
+          nq2 = cq - dv;
+        }
+        if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      }
     }
     // Arrivals stage in the input buffer and integrate only up to free
     // capacity — overflow is backscatter heat, not silent mass loss.
     let nb2 = b[i] + incoming;
     if (nb2 > 255) {
       let excess = nb2 - 255; nb2 = 255;
-      if (ZS_ON && zb[i] < 255) {
-        // Adjacency expansion: buffer pressure overflows across the extra
-        // channel (counterpart at depth^1) instead of thermalizing. The
-        // flux lands spinless — phase is an actualized property; it
-        // entrains on integration, matching planar buffer semantics.
-        const divert = Math.min(excess, 255 - zb[i]);
-        zb[i] += divert;
-        zMoved += zSign * divert;
-        excess -= divert;
+      if (ZS_ON && excess > 0) {
+        // Adjacency expansion: buffer pressure overflows into the extra
+        // channel instead of thermalizing. The flux lands spinless —
+        // phase is an actualized property; it entrains on integration,
+        // matching planar buffer semantics.
+        excess -= zDivert(i, excess);
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
     }
@@ -171,13 +171,29 @@ const makeSlab = () => ({
 const slabs = [makeSlab(), makeSlab()];
 // Active-slab bindings — tick() reads/writes these.
 let q, s, h, q2, s2, h2, b, b2;
-// Counterpart slab's committed buffer — the extra adjacency channel.
-// zMoved tracks net vertical flux (slab0→1 positive) for the oscillation test.
-let zb, zMoved = 0, zSign = 1;
+// Vertical adjacency: counterpart buffers at z-1 and z+1 in the depth
+// ring. zMoved tracks signed ring flux for the oscillation test.
+let zbM, zbP, zMoved = 0, zSign = 1, DEPTH = 2;
 function bindSlab(z) {
   ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
-  zb = slabs[z ^ 1].b;
+  zbM = slabs[(z + DEPTH - 1) % DEPTH].b;
+  zbP = DEPTH === 2 ? zbM : slabs[(z + 1) % DEPTH].b;
   zSign = z === 0 ? 1 : -1;
+}
+// Route overflow to the vertical neighbor with the most free buffer —
+// the steepest drop in routing impedance (path of least resistance).
+function zDivert(i, amount) {
+  if (DEPTH === 2) {
+    const dv = Math.min(amount, 255 - zbM[i]);
+    zbM[i] += dv; zMoved += zSign * dv;
+    return dv;
+  }
+  const rM = 255 - zbM[i], rP = 255 - zbP[i];
+  const useP = rP > rM;
+  const dv = Math.min(amount, useP ? rP : rM);
+  (useP ? zbP : zbM)[i] += dv;
+  zMoved += (useP ? 1 : -1) * dv;
+  return dv;
 }
 bindSlab(0);
 
@@ -220,28 +236,28 @@ function tick() {
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
-      else if (ZSHUNT_ON && zb[i] < 255) {
-        // Sender-side diversion: the saturated port doesn't reflect the
-        // flux — it escapes through the extra channel, spinless. Gravity
-        // as pressure release: local routing failure routes vertically.
-        const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
-        const dv = Math.min(sendable, 255 - zb[i]);
-        zb[i] += dv; zMoved += zSign * dv;
-        nq2 = cq - dv;
-      } else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      else {
+        let dv = 0;
+        if (ZSHUNT_ON) {
+          // Sender-side diversion: the saturated port doesn't reflect the
+          // flux — it escapes through the extra channel, spinless.
+          // Gravity as pressure release: routing failure goes vertical.
+          const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+          dv = zDivert(i, sendable);
+          nq2 = cq - dv;
+        }
+        if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      }
     }
     let nb2 = b[i] + incoming;
     if (nb2 > 255) {
       let excess = nb2 - 255; nb2 = 255;
-      if (ZS_ON && zb[i] < 255) {
-        // Adjacency expansion: buffer pressure overflows across the extra
-        // channel (counterpart at depth^1) instead of thermalizing. The
-        // flux lands spinless — phase is an actualized property; it
-        // entrains on integration, matching planar buffer semantics.
-        const divert = Math.min(excess, 255 - zb[i]);
-        zb[i] += divert;
-        zMoved += zSign * divert;
-        excess -= divert;
+      if (ZS_ON && excess > 0) {
+        // Adjacency expansion: buffer pressure overflows into the extra
+        // channel instead of thermalizing. The flux lands spinless —
+        // phase is an actualized property; it entrains on integration,
+        // matching planar buffer semantics.
+        excess -= zDivert(i, excess);
       }
       if (excess > 0) kin += excess * KINETIC_BACKPRESSURE;
     }
@@ -492,9 +508,13 @@ function stats(label) {
   const buf = ` bufQ=${bufQ}`;
   let zstr = '';
   if (ZS_ON) {
-    let zQ = 0, zbuf = 0;
-    for (let i = 0; i < N; i++) { zQ += slabs[1].q[i]; zbuf += slabs[1].b[i]; }
-    zstr = ` zQ=${zQ} zbufQ=${zbuf} zNet=${zMoved}`;
+    const qs = [], bs = [];
+    for (let z = 1; z < DEPTH; z++) {
+      let tq = 0, tb = 0;
+      for (let i = 0; i < N; i++) { tq += slabs[z].q[i]; tb += slabs[z].b[i]; }
+      qs.push(tq); bs.push(tb);
+    }
+    zstr = ` zQ=[${qs}] zbufQ=[${bs}] zNet=${zMoved}`;
   }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
@@ -512,7 +532,12 @@ GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'co
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
 ZSHUNT_ON = mode.includes('zshunt');
-ZS_ON = mode.includes('zshadow') || ZSHUNT_ON; // depth-2 adjacency expansion (Open Frontier)
+ZS_ON = mode.includes('zshadow') || ZSHUNT_ON; // adjacency expansion (Open Frontier)
+if (ZS_ON) {
+  const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
+  if (zd) DEPTH = Math.max(2, parseInt(zd[1]));
+  while (slabs.length < DEPTH) slabs.push(makeSlab());
+}
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
@@ -531,12 +556,12 @@ else paintElectron();
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
-if (ZS_ON) slabs[1].h.fill(1); // shadow slab starts as cold vacuum
+if (ZS_ON) for (let z = 1; z < DEPTH; z++) slabs[z].h.fill(1); // deeper slabs start as cold vacuum
 stats('tick 0');
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
   bindSlab(0); TICK();
-  if (ZS_ON) { bindSlab(1); TICK(); bindSlab(0); }
+  if (ZS_ON) { for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
   if (t % 50 === 0) stats('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
