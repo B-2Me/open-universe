@@ -6,7 +6,8 @@
 //   mode: default ('engine'/'cap') mirrors planck.c: FLOW_CAP + I/O-buffer
 //         occupancy gravity + Phase Lock. Suffixes A/B-test features: '+res'
 //         (old resistance gravity), '+persist' (mass persist), '+nocap',
-//         '+nograv', '+nolock' to disable.
+//         '+nograv', '+nolock' to disable. math.md candidates: '+quad'
+//         (quadrature vector budget), '+angle' (continuous turn friction).
 // If planck.c's tick() changes, mirror the change here or results drift.
 
 const W = 400, H = 400, N = W * H;
@@ -18,6 +19,7 @@ const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant acro
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows (backscatter)
+const KINETIC_TURN_TAU = 4;      // continuous turn friction scale: τ(1-cosΔθ) per unit
 const DIR_MAP = [[8,1,2],[7,0,3],[6,5,4]];
 const INV_DIR = [0,5,6,7,8,1,2,3,4];
 const SPIN_DX = [0,0,1,1,1,0,-1,-1,-1];
@@ -69,9 +71,15 @@ function tickHex() {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
-          if (ns === cs) kin += sent * KINETIC_ALIGNED;
-          else if (ns === HINV[cs]) kin += 0;
-          else kin += sent * KINETIC_ORTHOGONAL;
+          if (ANGLE_ON) {
+            // τ(1-cosΔθ): straight-through is free, reversal costs 2τ.
+            const dd = Math.min(Math.abs(ns - cs), 6 - Math.abs(ns - cs));
+            kin += sent * KINETIC_TURN_TAU * (1 - Math.cos(dd * Math.PI / 3));
+          } else {
+            if (ns === cs) kin += sent * KINETIC_ALIGNED;
+            else if (ns === HINV[cs]) kin += 0;
+            else kin += sent * KINETIC_ORTHOGONAL;
+          }
         }
         if (cq + b[i] <= DEADLOCK) {
           incoming += sent;
@@ -93,11 +101,15 @@ function tickHex() {
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
     let dom = incoming > 0 ? hexDir(mx, my) : 0;
-    if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
+    // Under +angle the turn kernel already prices head-on arrivals; the
+    // aggregate cancellation tax would double-charge them.
+    if (!ANGLE_ON && incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
 
     let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + b[i];
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
-    const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
+    // Quadrature vector budget (math.md §3): C_i = sqrt(C_max² - C_s²).
+    const frac6 = Math.min(1, routing / NODE_BANDWIDTH_MAX);
+    const bwf = QUAD_ON ? Math.sqrt(Math.max(0, 1 - frac6 * frac6)) : 1 - frac6;
 
     // Retain what the 6 channels cannot send: h - 6*(h/9).
     let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
@@ -111,11 +123,9 @@ function tickHex() {
 
     let ns2 = dom !== 0 ? dom : cs;
     if (shunt) {
-      const ls = cs - 1 < 1 ? 6 : cs - 1, rs = cs + 1 > 6 ? 1 : cs + 1;
-      const lx = (x + off[ls][0] + W) % W, ly = (y + off[ls][1] + H) % H;
-      const rx = (x + off[rs][0] + W) % W, ry = (y + off[rs][1] + H) % H;
-      const hl = h[ly * W + lx], hr = h[ry * W + rx];
-      ns2 = hl < hr ? ls : hr < hl ? rs : ((x + y) % 2 === 0 ? ls : rs);
+      // Relational repulsion: the saturated port bounces the flux
+      // straight back — deadlock walls are mirrors (Pauli exclusion).
+      ns2 = HINV[cs];
     } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
       ns2 = congSpin;
     } else if (LOCK_ON && cs !== 0) {
@@ -133,6 +143,7 @@ function tickHex() {
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
 let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
+let QUAD_ON = false, ANGLE_ON = false; // math.md prototypes under evaluation
 
 const q = new Uint8Array(N), s = new Uint8Array(N), h = new Uint16Array(N);
 const q2 = new Uint8Array(N), s2 = new Uint8Array(N), h2 = new Uint16Array(N);
@@ -161,9 +172,14 @@ function tick() {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
-          if (ns === cs) kin += sent * KINETIC_ALIGNED;
-          else if (ns === INV_DIR[cs]) kin += 0;
-          else kin += sent * KINETIC_ORTHOGONAL;
+          if (ANGLE_ON) {
+            const dd = Math.min(Math.abs(ns - cs), 8 - Math.abs(ns - cs));
+            kin += sent * KINETIC_TURN_TAU * (1 - Math.cos(dd * Math.PI / 4));
+          } else {
+            if (ns === cs) kin += sent * KINETIC_ALIGNED;
+            else if (ns === INV_DIR[cs]) kin += 0;
+            else kin += sent * KINETIC_ORTHOGONAL;
+          }
         }
         if (cq + b[i] <= DEADLOCK) { incoming += sent; mx -= dx * sent; my -= dy * sent; }
       }
@@ -186,13 +202,14 @@ function tick() {
     nq2 += take; nb2 -= take;
     const xd = Math.sign(mx), yd = Math.sign(my);
     let dom = DIR_MAP[yd + 1][xd + 1];
-    if (incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
+    if (!ANGLE_ON && incoming > 0 && dom === 0) kin += incoming * KINETIC_HEADON;
 
     // Bandwidth limit & cycle-stealing: spatial I/O load starves internal
     // dissipation (time dilation lag). Buffered backlog is routing load too.
     let routing = incoming + Math.abs(mx) + Math.abs(my) + (shunt ? cq : 0) + b[i];
     if (routing > NODE_BANDWIDTH_MAX) routing = NODE_BANDWIDTH_MAX;
-    const bwf = Math.max(0, 1 - routing / NODE_BANDWIDTH_MAX);
+    const frac8 = Math.min(1, routing / NODE_BANDWIDTH_MAX);
+    const bwf = QUAD_ON ? Math.sqrt(Math.max(0, 1 - frac8 * frac8)) : 1 - frac8;
 
     // Retain what the 8 channels cannot send: h - 8*(h/9).
     let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
@@ -207,11 +224,7 @@ function tick() {
     // Phase is structural state: silence holds spin; flux rewrites it.
     let ns2 = dom !== 0 ? dom : cs;
     if (shunt) {
-      const ls = cs - 1 < 1 ? 8 : cs - 1, rs = cs + 1 > 8 ? 1 : cs + 1;
-      const lx = (x + SPIN_DX[ls] + W) % W, ly = (y + SPIN_DY[ls] + H) % H;
-      const rx = (x + SPIN_DX[rs] + W) % W, ry = (y + SPIN_DY[rs] + H) % H;
-      const hl = h[ly * W + lx], hr = h[ry * W + rx];
-      ns2 = hl < hr ? ls : hr < hl ? rs : ((x + y) % 2 === 0 ? ls : rs);
+      ns2 = INV_DIR[cs]; // relational repulsion — deadlock reflects flux
     } else if (GRAV_MODE === 'res' && minRes < KNOB_LIMIT / GRAVITY_DIV && nq2 > 0) {
       ns2 = gravSpin;
     } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
@@ -443,6 +456,8 @@ FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
+QUAD_ON = mode.includes('quad');
+ANGLE_ON = mode.includes('angle');
 console.log(`=== mode=${mode} variant=${variant} ===`);
 if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
 else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
