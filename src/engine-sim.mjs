@@ -153,7 +153,18 @@ function tickHex() {
     // Retain what the 6 channels cannot send: h - 6*(h/9).
     let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
-      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0; // buffered flux unwinds with the knot
+      if (SPRAY_ON) {
+        // Unwinding = E=mc²: the knot's mass unspools as un-actualized
+        // radiation — sprayed into neighbor buffers, not deleted.
+        const share = ((nq2 + nb2) / 6) | 0;
+        for (let d = 1; d <= 6; d++) {
+          const nx = (x + off[d][0] + W) % W, ny = (y + off[d][1] + H) % H;
+          const ni = ny * W + nx;
+          b[ni] = Math.min(255, b[ni] + share);
+        }
+        sprayQ += nq2 + nb2;
+      }
+      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
       nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
@@ -188,6 +199,8 @@ let ZOPEN_ON = false; // bounded depth: slab0/slabD-1 are hard surfaces
 let ZSEED_ON = false; // paint the variant on slab1 too — seeded mid-jam
 let SEEP_ON = false; // porous barriers: saturated ports leak a fixed fraction
 let SEEP_ABS_ON = false; // seeped flux pays a per-hop absorption tax
+let SPRAY_ON = false; // unwinding sprays mass as radiation instead of deleting it
+let sprayQ = 0, sprayLast = 0; // cumulative unspooled quanta (windowed in stats)
 const SEEP_SHIFT = 6; // leak = sendable >> 6 ≈ 1.6% per port per tick
 const SEEP_ABS = 1; // seepabs: absorbed = leak >> 1 (half thermalizes per hop)
 let seepQ = 0, seepLast = 0; // cumulative seeped quanta (windowed in stats)
@@ -344,7 +357,18 @@ function tick() {
     // Retain what the 8 channels cannot send: h - 8*(h/9).
     let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
-      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0; // buffered flux unwinds with the knot
+      if (SPRAY_ON) {
+        // Unwinding = E=mc²: the knot's mass unspools as un-actualized
+        // radiation — sprayed into neighbor buffers, not deleted.
+        const share = ((nq2 + nb2) / 8) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const ni = ((y + dy + H) % H) * W + ((x + dx + W) % W);
+          b[ni] = Math.min(255, b[ni] + share);
+        }
+        sprayQ += nq2 + nb2;
+      }
+      nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
       const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
       nh2 -= Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
@@ -603,6 +627,10 @@ function stats(label) {
     const sWin = seepQ - seepLast; seepLast = seepQ;
     zstr += ` seep=${sWin}`;
   }
+  if (SPRAY_ON) {
+    const sWin = sprayQ - sprayLast; sprayLast = sprayQ;
+    zstr += ` spray=${sWin}`;
+  }
   if (SEEP_TRACK) {
     let tq = 0, iq = 0;
     const r2 = (62 + SEEP_T) * (62 + SEEP_T);
@@ -633,6 +661,7 @@ ZOPEN_ON = mode.includes('zopen');
 ZSEED_ON = mode.includes('zseed');
 SEEP_ON = mode.includes('seep');
 SEEP_ABS_ON = mode.includes('seepabs');
+SPRAY_ON = mode.includes('spray');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
@@ -664,6 +693,8 @@ const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
 stats('tick 0');
+if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
+if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
   bindSlab(0); TICK();
