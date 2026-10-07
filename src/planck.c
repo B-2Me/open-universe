@@ -35,6 +35,7 @@
 #define SEEP_SHIFT (6)          // Porous barrier: saturated ports leak sendable>>6 (~1.6%)
 #define SEEP_ABS_SHIFT (1)      // Mid-hop absorption: half the leaked flux thermalizes
 #define SEEP_BURN_SHIFT (2)     // Deadlocked nodes burn staged flux/tick — dwell attenuation
+#define BUFDECAY_SHIFT (4)      // Radiation decoherence: unresolved buffer flux thermalizes ~6%/tick
 
 // --- Undo Snapshot Ring ---
 #define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
@@ -570,6 +571,14 @@ void tick() {
             int buffered_take = (255 - next_quanta < next_buffer) ? 255 - next_quanta : next_buffer;
             next_quanta += buffered_take;
             next_buffer -= buffered_take;
+            if (SPRAY_MODE_ACTIVE && next_buffer > 0) {
+                // Radiation has a finite lifetime: only potential that
+                // failed to resolve decoheres into ambient heat. In-transit
+                // flux actualizes and pays nothing; a standing bath drains.
+                int bleed = next_buffer >> BUFDECAY_SHIFT;
+                next_buffer -= bleed;
+                kinetic_heat += bleed;
+            }
 
             uint8_t dominant_spin = dir_from_momentum(mom_x, mom_y);
 

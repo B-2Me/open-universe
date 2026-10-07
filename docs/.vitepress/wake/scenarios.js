@@ -432,7 +432,7 @@ export function loadScenario(type, bridge, topology = 'square') {
                             if (da < bestA) { bestA = da; best = d; }
                         }
                         if (best) spin = best;
-                        return packNode(120, spin, HEAT_ROOM_AMBIENT);
+                        return packNode(90, spin, HEAT_ROOM_AMBIENT); // v3.0: q=120 cooked off at ~t450 (collision heat at the anchor edge); 90 holds 300/300 to t2000 in harness
                     }
                     return packNode(0, spin, 1); // spin-only waveguide
                 }

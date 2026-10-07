@@ -158,7 +158,14 @@ function tickHex() {
     }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
-    let dom = incoming > 0 ? (INTMOM_ON ? hexDirInt(mx, my) : hexDir(mx, my)) : 0;
+    if (SPRAY_ON && nb2 > 0) {
+      // Radiation has a finite lifetime: only potential that FAILED to
+      // resolve decoheres into ambient heat. In-transit flux actualizes
+      // and pays nothing; a standing radiation bath drains. (hexcycle:
+      // spray pooled in the halo at ~3.5k quanta and severed the loop.)
+      const bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed;
+    }
+    let dom = incoming > 0 ? (INTMOM_ON && INTMOM_DOM ? hexDirInt(mx, my) : hexDir(mx, my)) : 0;
     // Head-on arrivals are priced by the turn kernel (Δθ=180° → 2τ);
     // no separate cancellation tax.
 
@@ -221,7 +228,9 @@ let ZSEED_ON = false; // paint the variant on slab1 too — seeded mid-jam
 let SEEP_ON = false; // porous barriers: saturated ports leak a fixed fraction
 let SEEP_ABS_ON = false; // seeped flux pays a per-hop absorption tax
 let SPRAY_ON = false; // unwinding sprays mass as radiation instead of deleting it
+let BUFDECAY = parseInt(process.env.BUFDECAY || '4'); // radiation decoherence: buffer >> 4 (~6%/tick) thermalizes
 let INTMOM_ON = false; // integer momentum + LUT quadrature — no floats in the tick
+const INTMOM_DOM = process.env.INTMOM_DOM !== '0'; // diagnostic: 0 = keep atan2 resolver, isolate LUT cause
 let sprayQ = 0, sprayLast = 0; // cumulative unspooled quanta (windowed in stats)
 const SEEP_SHIFT = 6; // leak = sendable >> 6 ≈ 1.6% per port per tick
 const SEEP_ABS = 1; // seepabs: absorbed = leak >> 1 (half thermalizes per hop)
@@ -365,6 +374,12 @@ function tick() {
     }
     const take = Math.min(nb2, 255 - nq2);
     nq2 += take; nb2 -= take;
+    if (SPRAY_ON && nb2 > 0) {
+      // Radiation has a finite lifetime: only potential that FAILED to
+      // resolve decoheres into ambient heat. In-transit flux actualizes
+      // and pays nothing; a standing radiation bath drains.
+      const bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed;
+    }
     const xd = Math.sign(mx), yd = Math.sign(my);
     let dom = DIR_MAP[yd + 1][xd + 1];
 
@@ -551,7 +566,7 @@ function paintHex(variant) {
             if (da < bestA) { bestA = da; best = dd; }
           }
           if (best) s[i] = best;
-          q[i] = 120; h[i] = 500;
+          q[i] = parseInt(process.env.RING_Q || '90'); h[i] = 500; // 90: under-220-routing margin — v3.0 integer physics runs hotter than the float-era fixed point
         } else if (variant === 'hexring' && d >= 45 && d <= 55) {
           q[i] = 70; h[i] = 500;
         } else if (variant === 'hexringthin' && d >= 48 && d <= 52) {
@@ -614,13 +629,14 @@ function paintSeepwall(t) {
 }
 
 function stats(label) {
-  let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0;
+  let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0, hMax = 0, hMaxX = 0, hMaxY = 0;
   let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x, d = Math.hypot(x - cx, y - cy);
     totQ += q[i]; totH += h[i]; bufQ += b[i];
+    if (h[i] > hMax) { hMax = h[i]; hMaxX = x; hMaxY = y; }
     if (q[i] > DEADLOCK) dead++;
     if (CYCLE_TRACK && hexDist(x, y, cx, cy) === 50) {
       cycleTotal++;
@@ -664,7 +680,7 @@ function stats(label) {
     }
     zstr += ` transQ=${tq} intQ=${iq}`;
   }
-  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead}${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
+  console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
 // --- run ---
