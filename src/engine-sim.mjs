@@ -161,6 +161,7 @@ let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res';
 let ZS_ON = false; // adjacency expansion — the Open Frontier prototype
 let ZSHUNT_ON = false; // sender-side vertical diversion on port deadlock
 let ZOPEN_ON = false; // bounded depth: slab0/slabD-1 are hard surfaces
+let ZSEED_ON = false; // paint the variant on slab1 too — seeded mid-jam
 
 // The field is a flat 1D array of slabs; "depth" is one extra routing
 // channel per node — its counterpart at z^1. Not a sheet, a wider table.
@@ -547,31 +548,36 @@ PERSIST_MASS = mode.includes('persist');
 LOCK_ON = !mode.includes('nolock');
 ZSHUNT_ON = mode.includes('zshunt');
 ZOPEN_ON = mode.includes('zopen');
-ZS_ON = mode.includes('zshadow') || ZSHUNT_ON; // adjacency expansion (Open Frontier)
+ZSEED_ON = mode.includes('zseed');
+ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
   if (zd) DEPTH = Math.max(2, parseInt(zd[1]));
   while (slabs.length < DEPTH) slabs.push(makeSlab());
+  for (let z = 1; z < DEPTH; z++) slabs[z].h.fill(1); // deeper slabs start as cold vacuum
 }
 console.log(`=== mode=${mode} variant=${variant} ===`);
-if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
-else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
-else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
-else if (variant === 'octmix') paintElectron({ foamP: 0, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // shipped paint: clean vacuum
-else if (variant === 'octmixrf') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // 5% random foam — kills by ~t150
-else if (variant === 'octmixof') paintElectron({ outwardFoam: 'out', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
-else if (variant === 'octmixcf') paintElectron({ outwardFoam: 'co', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
-else if (variant === 'octmixlf') paintElectron({ foamP: 0.01, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
-else if (variant === 'rings') paintElectron({ ringMode: [{ r: 40, q: 130 }, { r: 60, q: 90 }] });
-else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
-else if (variant === 'blob' || variant === 'stream') paintBlobStream(variant);
-else if (variant.startsWith('hex')) paintHex(variant);
-else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
-else paintElectron();
+const paintVariant = () => {
+  if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
+  else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
+  else if (variant === 'octapprox') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'approx', tangent: 'vortex' } });
+  else if (variant === 'octmix') paintElectron({ foamP: 0, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // shipped paint: clean vacuum
+  else if (variant === 'octmixrf') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } }); // 5% random foam — kills by ~t150
+  else if (variant === 'octmixof') paintElectron({ outwardFoam: 'out', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+  else if (variant === 'octmixcf') paintElectron({ outwardFoam: 'co', oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+  else if (variant === 'octmixlf') paintElectron({ foamP: 0.01, oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'vortex' } });
+  else if (variant === 'rings') paintElectron({ ringMode: [{ r: 40, q: 130 }, { r: 60, q: 90 }] });
+  else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
+  else if (variant === 'blob' || variant === 'stream') paintBlobStream(variant);
+  else if (variant.startsWith('hex')) paintHex(variant);
+  else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
+  else paintElectron();
+};
+bindSlab(0); paintVariant();
+if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed the sink slab with its own jam
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
-if (ZS_ON) for (let z = 1; z < DEPTH; z++) slabs[z].h.fill(1); // deeper slabs start as cold vacuum
 stats('tick 0');
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
