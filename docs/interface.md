@@ -52,9 +52,9 @@ When we fail to understand the true nature of this biological substrate, we end 
 
 To drive the interface properly, we must understand how causality actually works on the field:
 
-*   **The Dissolution of Force:** Traditional descriptions rely on a vocabulary of "forces" and "pulls." But as classical mechanics demonstrates when traced to its conceptual limits, gravitational "force" acting across empty space is an illusion; mass does not pull on mass via invisible ropes. Instead, dense relational geometry shapes the natural paths of motion through a dynamic field. There are no independent "things" pushing on one another; there are only relational tensions adjusting.
-*   **Causality is Not a Global Blanket:** Legacy determinism assumes that causality is a pre-determined chain of dominos spanning the entire block universe. This is false. In a continuously actualizing field, causality is strictly localized. It only exists at the absolute lowest resolution of the field—the Planck scale—and *only* at the exact boundary of a relational collision. Where there is no interaction, there is no causality, only unwritten potential.
-*   **The Interface as a Causal Router:** A human being is a macroscopic localized pattern that aggregates trillions of these Planck-scale causal actualizations every microsecond. We are not passively swept along by a global current. We are active causal routers, overlapping our metabolic boundaries with the environment to co-precipitate the field in real-time.
+*   **The Dissolution of Force:** Traditional descriptions rely on a vocabulary of "forces" and "pulls." But as classical mechanics demonstrates when traced to its conceptual limits, gravitational "force" acting across empty space is an illusion; mass does not pull on mass via invisible ropes. Instead, dense relational geometry shapes the natural paths of motion through a dynamic field. There are no independent "things" pushing on one another; there are only relational routing impedances adjusting.
+*   **Causality is Not a Global Blanket:** Legacy determinism assumes that causality is a pre-determined chain of dominos spanning the entire block universe. This is false. In a continuously actualizing field, causality is strictly localized. It only exists at the absolute lowest resolution of the field—the Planck scale—and *only* at the exact boundary of a relational collision. 
+*   **The Vector Budget of Agency ($C_{max}$):** The biological interface is bound by the substrate's exact same actualization capacity limits as a fundamental particle: $C_{max}^2 = C_s^2 + C_i^2$. Because actualization has a strict speed limit, you cannot operate outside your localized boundary. You are an active causal router, overlapping your metabolic boundaries with the environment to co-precipitate the field in real-time.
 
 ---
 
@@ -64,7 +64,7 @@ If causality at the fundamental level encompasses phase shifts, charge transfers
 
 Because the Local Interface demands it. 
 
-Our biological hardware did not evolve to measure quantum state changes; it evolved to navigate a macroscopic, 3D environment under the crushing constraints of gravity and entropy. To survive, the interface must filter the environment specifically for **spatial displacement**—the trajectory of a predator, the momentum of a falling rock, the distance to a water source. 
+Our biological hardware did not evolve to measure quantum state changes; it evolved to navigate a macroscopic, 3D environment under the crushing constraints of gravity and entropy. To survive, the interface must filter the environment specifically for **spatial displacement** ($C_s$)—the trajectory of a predator, the momentum of a falling rock, the distance to a water source. 
 
 We are hardwired with a profound **spatial bias**. We actively demand that the universe be composed entirely of kinetic movement, because spatial causality is the only class of data our macroscopic structures are tuned to metabolize for survival. When we try to understand fundamental physics using this localized interface, we project our biological limitations all the way down to the fundamental bedrock, generating paradoxes by forcing non-spatial actualizations into the narrow spatial formatting required by our biological monitors.
 
@@ -97,13 +97,15 @@ You do not experience the universe because you burn fuel. **You have fuel becaus
 
 ---
 
-## The Hayles Loop: Embodied Feedback
+## The Hayles Loop: The Calorimetry of Agency
 
-Information is not a disembodied ghost or a weightless file floating above physical reality. In a process ontology, a mental representation is a material event—a physical constraint written directly into the biological substrate.
+Information is not a disembodied ghost or a weightless file floating above physical reality. In a finite-bandwidth network, a mental representation is a material event. Per Landauer's Principle, the erasure or manipulation of a single bit of information requires a measurable physical dissipation of heat. 
 
 Human consciousness is a recursive feedback loop (**The Hayles Loop**). We simulate our own futures, watch ourselves react to those simulations, and feed those predictions back into our physical neural structures as fresh causal inputs. 
 
-If reality were a pre-recorded block universe or a static script, a feedback loop would be impossible, because a movie cannot watch itself and edit its next frame. The very fact that you can examine a prediction, feed it back into your biological substrate, and physically swerve to change your trajectory is absolute proof that you are an active Navigator operating on the unwritten edge of reality.
+This internal simulation requires massive computational overhead. Stealing cycles to run internal simulations ($C_i$) physically taxes the localized vector budget of the network. When you experience "genuine surprise," your interface's simulation has failed, and it must rapidly overlap its boundaries to write a new physical constraint into the neural clay. 
+
+If reality were a pre-recorded block universe or a static script, a feedback loop would be impossible, because a movie cannot watch itself and edit its next frame. The very fact that you can examine a prediction, feed it back into your biological substrate, and physically swerve to change your trajectory is absolute proof that you are an active Navigator operating on the unwritten edge of reality. Agency is a literal thermodynamic exertion.
 
 ---
 
@@ -111,6 +113,6 @@ If reality were a pre-recorded block universe or a static script, a feedback loo
 
 The necessity of constant upkeep—such as an insect meticulously cleaning its antennal pores to preserve its chemical sensitivity, or a human maintaining cellular homeostasis—reveals that a local interface is always tending toward decoherence against environmental noise.
 
-The Local Interface is the ultimate macroscopic dissipative structure. If physical upkeep ceases, the structural clarity of the interface collapses back into the static. 
+The Local Interface is the ultimate macroscopic Prigogine dissipative structure. It must actively consume and route thermodynamic energy to keep its boundaries intact against the ambient quantum foam. If physical upkeep ceases, the structural clarity of the interface collapses back into the static. 
 
 In a process ontology, this metabolic maintenance is the active, continuous expenditure of relational effort required to keep a localized window open to the broader stream of becoming. A static, block universe would require no maintenance; a pre-recorded world requires only a passive recording medium. The absolute requirement of thermodynamic upkeep proves that perception is not a playback. The metabolic effort of your biology is the literal friction of holding open a local window into the unwritten future.

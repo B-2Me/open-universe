@@ -8,10 +8,9 @@ const readingOrder = [
   { text: 'Planck Field', link: '/field' },
   { text: 'Interface', link: '/interface' },
   { text: 'Source', link: '/source' },
-  { text: 'Causal Math', link: '/math' },
+  { text: 'Math', link: '/math' },
   { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
-  { text: 'Topology', link: '/topology' },
   { text: 'Intent', link: '/intent' }
 ]
 
