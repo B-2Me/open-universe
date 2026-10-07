@@ -78,6 +78,15 @@ The engine is already a flat 1D array — `calloc(PIXEL_COUNT, sizeof(PlanckNode
 *   **Resonance widths ($\Gamma$) → synchronization endurance:** the number of ticks a knot sustains phase alignment against ambient thermal jitter before unwinding into actualization yield.
 *   **Quantum spin:** not an abstract intrinsic property but the routing-phase offset required to weave a self-sustaining standing wave through the expanded graph.
 
+### Measured: The Adjacency-Expansion Experiments
+
+*The following results were measured in `src/engine-sim.mjs` by widening each node's routing table with one extra adjacency channel (a counterpart at depth±1), carrying buffer overflow and deadlocked sends as pressure-driven, spinless flux. These are instrumented outcomes, not proposals — including a falsified hypothesis.*
+
+*   **The Skin Effect:** at `hexjam` flux density, a single extra plane absorbs the entire 1.7M-quanta overflow — a 2D plane is an almost inexhaustible entropy sink. Mass penetrates exactly one slab deep. This is a measurement of why the universe defaults to flat quantum foam: rendering bulk 3D structure requires a thermodynamic event violent enough to saturate multiple planar capacities simultaneously.
+*   **The Squeeze:** depth propagation beyond the first slab occurs only when the adjacent layer is itself congested (a seeded mid-jam forced mass through to a third slab, with a thin trickle reaching a fourth — each plane is another skin-depth barrier). When every reachable plane is jammed, the surface deadlock rebuilds to its un-expanded count: the relief valve works only while a non-jammed plane exists downstream.
+*   **Quantized accretion pulses:** vertical mass transfer is not continuous — long static plateaus punctuated by discrete threshold-break events that dump a packet and re-lock. Accretion happens in packets, matching the framework's quantized exchange premise.
+*   **The Dissipative Verdict (falsified):** we hunted a Z-axis standing wave — a volumetric resonant cavity — and it does not exist in this mechanism. Vertical overflow is *dissipative escape*, not elastic coupling: escaped flux diffuses across 160,000 nodes of planar capacity rather than building recoil. The cavity rings once, then equilibrates. **Collider-scale resonance cannot emerge from congestion alone; it requires an elastic restoring force** (e.g., a vertical structural phase-lock that binds node pairs across depth). This constraint is now recorded so the resonance hypothesis cannot be re-proposed without addressing it.
+
 ---
 
 ## Planned Audio Sessions
