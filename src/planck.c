@@ -1,14 +1,14 @@
 /*
  * The Planck Field Engine (Langevin's Wake)
  * Copyright (c) 2026 Nathan / btwo.me
- * v2.4: Occupancy Gravity, Port Repulsion, Porous Barriers & Unwind Radiation
+ * v3.0: Pure discrete mathematics — integer momentum, argmax spin
+ * resolution, LUT quadrature budget. No floats in the routing tick.
  */
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <emscripten.h>
 
 #define WIDTH (400)
@@ -91,11 +91,10 @@ static const int8_t HEX_OFF[2][7][2] = {
     {{0,0},{1,0},{1,1},{0,1},{-1,0},{0,-1},{1,-1}}    // odd rows
 };
 static const uint8_t HEX_INV[7] = {0, 4, 5, 6, 1, 2, 3}; // E↔W, SE↔NW, SW↔NE
-// Geometric direction vectors — hex momentum is real-valued, not
-// sign-snapped, because no parity-independent (dx,dy) cell offset exists.
-static const double HEX_VX[7] = {0, 1.0, 0.5, -0.5, -1.0, -0.5, 0.5};
-static const double HEX_VY[7] = {0, 0.0, 0.8660254037844386, 0.8660254037844386,
-                                 0, -0.8660254037844386, -0.8660254037844386};
+// Geometric direction vectors at ×256 fixed point — sin60°=0.8660→222
+// (+0.13% error, and momentum is a per-tick local so it cannot drift).
+static const int16_t HEX_VX[7] = {0, 256, 128, -128, -256, -128, 128};
+static const int16_t HEX_VY[7] = {0, 0, 222, 222, 0, -222, -222};
 // Foreign square-vocabulary spins that can still stray in (cross-
 // substrate autosaves, stamps sampled on oct8) fold by angle:
 // N→NE, NE→NE, E→E, SE→SE, S→SW, SW→SW, W→W, NW→NW.
@@ -147,28 +146,61 @@ static inline int turn_delta(uint8_t a, uint8_t b) {
     int dd = abs((int)a - (int)b);
     return dd > SPIN_MAX / 2 ? SPIN_MAX - dd : dd;
 }
-static inline double dir_vx(int d) {
+// Quadrature bandwidth budget, baked: BWF_LUT[r] = 256·sqrt(1−(r/C_max)²)
+// for r = 0..C_max. The ×256 fraction applies via >>8 — the discrete
+// substrate has no sqrt; it has a table.
+static const uint8_t BWF_LUT[NODE_BANDWIDTH_MAX + 1] = {
+    256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 254, 254, 254, 254, 254, 254, 254, 253, 253, 253, 253, 253, 253, 252, 252, 252,
+    252, 252, 251, 251, 251, 251, 250, 250, 250, 250, 249, 249, 249, 248, 248, 248, 248, 247, 247, 247,
+    246, 246, 246, 245, 245, 245, 244, 244, 243, 243, 243, 242, 242, 241, 241, 241, 240, 240, 239, 239,
+    238, 238, 238, 237, 237, 236, 236, 235, 235, 234, 234, 233, 233, 232, 231, 231, 230, 230, 229, 229,
+    228, 227, 227, 226, 226, 225, 224, 224, 223, 222, 222, 221, 220, 220, 219, 218, 218, 217, 216, 215,
+    215, 214, 213, 212, 211, 211, 210, 209, 208, 207, 207, 206, 205, 204, 203, 202, 201, 200, 199, 198,
+    197, 197, 196, 195, 194, 193, 192, 190, 189, 188, 187, 186, 185, 184, 183, 182, 181, 179, 178, 177,
+    176, 174, 173, 172, 171, 169, 168, 167, 165, 164, 162, 161, 160, 158, 157, 155, 154, 152, 150, 149,
+    147, 146, 144, 142, 140, 139, 137, 135, 133, 131, 129, 127, 125, 123, 121, 119, 116, 114, 112, 109,
+    107, 104, 101, 99, 96, 93, 90, 87, 83, 80, 76, 72, 68, 64, 59, 54, 49, 42, 34, 24,
+    0
+};
+// Integer momentum weights: hex6 at ×256 fixed point, oct8 at unit
+// scale (sign-snapped momentum made it exact already). MOM_SHIFT reads
+// accumulated momentum back to unit scale; MOM_FUNIT maps weights to
+// real scale for float consumers (VTK export).
+static inline int dir_vx(int d) {
 #ifdef TOPOLOGY_HEX
     return HEX_VX[d];
 #else
-    return (double)SPIN_DX[d];
+    return SPIN_DX[d];
 #endif
 }
-static inline double dir_vy(int d) {
+static inline int dir_vy(int d) {
 #ifdef TOPOLOGY_HEX
     return HEX_VY[d];
 #else
-    return (double)SPIN_DY[d];
+    return SPIN_DY[d];
 #endif
 }
-// Dominant momentum → spin id. 8-fold sign-snaps through DIR_MAP; hex
-// sextant-quantizes the real angle. Mirrors hexDir() in engine-sim.mjs.
-static inline uint8_t dir_from_momentum(double mx, double my) {
 #ifdef TOPOLOGY_HEX
-    if (mx == 0.0 && my == 0.0) return 0;
-    int s = (int)floor((atan2(my, mx) + M_PI / 6.0) / (M_PI / 3.0)) % 6;
-    if (s < 0) s += 6;
-    return (uint8_t)(s + 1);
+#define MOM_SHIFT (8)
+#define MOM_FUNIT (1.0 / 256.0)
+#else
+#define MOM_SHIFT (0)
+#define MOM_FUNIT (1.0)
+#endif
+// Dominant momentum → spin id. Hex resolves by argmax dot-product — the
+// nearest direction vector to the momentum, no angle quantization. Oct8
+// sign-snaps through DIR_MAP. Mirrors engine-sim.mjs.
+static inline uint8_t dir_from_momentum(int32_t mx, int32_t my) {
+#ifdef TOPOLOGY_HEX
+    if (mx == 0 && my == 0) return 0;
+    int best_d = 1;
+    int32_t best_dot = INT32_MIN;
+    for (int d = 1; d <= SPIN_MAX; d++) {
+        int32_t dot = mx * dir_vx(d) + my * dir_vy(d);
+        if (dot > best_dot) { best_dot = dot; best_d = d; }
+    }
+    return (uint8_t)best_d;
 #else
     int xd = (mx > 0) - (mx < 0);
     int yd = (my > 0) - (my < 0);
@@ -364,7 +396,7 @@ EMSCRIPTEN_KEEPALIVE void add_quanta(int x, int y, int amount) {
     target->heat = (h > HEAT_MAX) ? HEAT_MAX : h;
 
     // Refractive Momentum Inheritance
-    double sum_dx = 0.0, sum_dy = 0.0;
+    int32_t sum_dx = 0, sum_dy = 0;
     int neighbor_count = 0;
 
     for (int k = 0; k < SPIN_MAX; k++) {
@@ -379,7 +411,7 @@ EMSCRIPTEN_KEEPALIVE void add_quanta(int x, int y, int amount) {
         }
     }
 
-    if (neighbor_count > 0 && (sum_dx != 0.0 || sum_dy != 0.0)) {
+    if (neighbor_count > 0 && (sum_dx != 0 || sum_dy != 0)) {
         target->spin = dir_from_momentum(sum_dx, sum_dy);
         if (target->spin == 0) target->spin = (rand() % SPIN_MAX) + 1;
     } else {
@@ -438,8 +470,8 @@ void tick() {
             int max_congestion = 0;
             uint8_t gravity_spin = current.spin;
             int incoming_quanta = 0;
-            double mom_x = 0.0;
-            double mom_y = 0.0;
+            int32_t mom_x = 0;   // fixed-point momentum — a per-tick local,
+            int32_t mom_y = 0;   // discrete state, not a real coordinate
 
             int has_domain_match = 0;
 
@@ -545,11 +577,11 @@ void tick() {
             // Spatial I/O routing load takes absolute priority over internal
             // maintenance. The budget is quadrature (math.md §3):
             // C_max² = C_s² + C_i² → available fraction is sqrt(1 - load²).
-            double routing_load = incoming_quanta + fabs(mom_x) + fabs(mom_y) + (shunting ? current.quanta : 0)
+            int routing_load = incoming_quanta
+                                + ((abs(mom_x) + abs(mom_y)) >> MOM_SHIFT)
+                                + (shunting ? current.quanta : 0)
                                 + current.buffer;
             if (routing_load > NODE_BANDWIDTH_MAX) routing_load = NODE_BANDWIDTH_MAX;
-            double load_frac = routing_load / NODE_BANDWIDTH_MAX;
-            double bandwidth_fraction = sqrt(1.0 - load_frac * load_frac);
 
             // Each adjacency channel carries h/9 — a substrate-invariant
             // rate. The node retains whatever its coordination number
@@ -587,7 +619,7 @@ void tick() {
             } else {
                 int temp_scalar = next_heat / TEMP_SCALAR_DIV;
                 // High routing load starves internal dissipation (time dilation lag)
-                int heat_loss = (int)((1 + (temp_scalar * temp_scalar)) * KNOB_DISSIPATION * bandwidth_fraction);
+                int heat_loss = (int)(((int64_t)(1 + temp_scalar * temp_scalar) * KNOB_DISSIPATION * BWF_LUT[routing_load]) >> 8);
                 next_heat -= heat_loss;
 
                 if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
@@ -780,8 +812,8 @@ char* generate_vtk() {
     SAFE_PRINTF("\nVECTORS Spin float\n");
     for (int i = 0; i < PIXEL_COUNT; i++) {
         uint8_t s = grid_read[i].spin;
-        double dx = valid_spin(s) ? dir_vx(s) : 0.0;
-        double dy = valid_spin(s) ? dir_vy(s) : 0.0;
+        double dx = valid_spin(s) ? dir_vx(s) * MOM_FUNIT : 0.0;
+        double dy = valid_spin(s) ? dir_vy(s) * MOM_FUNIT : 0.0;
         SAFE_PRINTF("%.3f %.3f 0.0\n", dx, dy);
     }
 
