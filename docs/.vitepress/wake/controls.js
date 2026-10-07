@@ -645,11 +645,6 @@ export class ControlsManager {
             };
         }
 
-        const imp = document.getElementById('chk_impedance');
-        if (imp) {
-            imp.onchange = (e) => this.bridge.setImpedanceMode(e.target.checked ? 1 : 0);
-        }
-
         const undoChk = document.getElementById('chk_undo');
         if (undoChk) {
             undoChk.onchange = (e) => this.setUndoEnabled(e.target.checked);

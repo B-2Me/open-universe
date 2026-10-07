@@ -56,7 +56,6 @@ uint8_t pixel_buffer[PIXEL_COUNT * 4];
 
 uint8_t KNOB_DISSIPATION = 15; 
 uint16_t KNOB_THERMAL_LIMIT = 1200;
-int IMPEDANCE_MODE_ACTIVE = 1;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 
 // --- Lattice Topology ---
@@ -212,7 +211,6 @@ EMSCRIPTEN_KEEPALIVE uint8_t* get_pixel_buffer_pointer() { return pixel_buffer; 
 
 EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_t)rate; }
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
-EMSCRIPTEN_KEEPALIVE void set_impedance_mode(int active) { IMPEDANCE_MODE_ACTIVE = active; }
 
 EMSCRIPTEN_KEEPALIVE
 void init_grid() {
@@ -319,21 +317,37 @@ void set_node_state(int x, int y, int state) {
     grid_read[idx].buffer = 0;
 }
 
-// Internal-only: reached via add_quanta when IMPEDANCE_MODE_ACTIVE is set.
-void add_quanta_impedance(int x, int y, int amount) {
+// Injection is biological interference obeying the field's own rules:
+// dense matter thermalizes the dose (acoustic backscatter), overflow
+// stages into the input buffer rather than clipping, and injected mass
+// entrains to the ambient phase instead of landing with random spin.
+EMSCRIPTEN_KEEPALIVE void add_quanta(int x, int y, int amount) {
     if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT || amount <= 0) return;
     int idx = y * WIDTH + x;
     PlanckNode* target = &grid_read[idx];
 
-    // Acoustic Backscatter
-    if (IMPEDANCE_MODE_ACTIVE && target->quanta > IMPEDANCE_DENSITY) {
+    // Acoustic Backscatter: a dense node converts the injection to heat.
+    if (target->quanta > IMPEDANCE_DENSITY) {
         int backscatter_heat = amount * (KNOB_THERMAL_LIMIT / BACKSCATTER_DIV);
         target->heat = (target->heat + backscatter_heat > HEAT_MAX) ? HEAT_MAX : target->heat + backscatter_heat;
         return;
     }
 
     int q = target->quanta + amount;
-    target->quanta = (q > 255) ? 255 : q;
+    if (q > 255) {
+        // No silent clip: excess stages in the input buffer, and buffer
+        // overflow thermalizes — same accounting as in-flight arrivals.
+        int excess_buffer = target->buffer + (q - 255);
+        if (excess_buffer > 255) {
+            int blowoff = (excess_buffer - 255) * KINETIC_BACKPRESSURE;
+            target->heat = (target->heat + blowoff > HEAT_MAX) ? HEAT_MAX : target->heat + blowoff;
+            excess_buffer = 255;
+        }
+        target->buffer = (uint8_t)excess_buffer;
+        target->quanta = 255;
+    } else {
+        target->quanta = (uint8_t)q;
+    }
 
     // Environment-Normalized Thermal Scaling
     double thermal_scale = (double)KNOB_THERMAL_LIMIT / THERMAL_NORM;
@@ -342,43 +356,26 @@ void add_quanta_impedance(int x, int y, int amount) {
     target->heat = (h > HEAT_MAX) ? HEAT_MAX : h;
 
     // Refractive Momentum Inheritance
-    if (IMPEDANCE_MODE_ACTIVE) {
-        double sum_dx = 0.0, sum_dy = 0.0;
-        int neighbor_count = 0;
+    double sum_dx = 0.0, sum_dy = 0.0;
+    int neighbor_count = 0;
 
-        for (int k = 0; k < SPIN_MAX; k++) {
-            int d = NB_ORDER[k];
-            int nx = (x + nb_dx(y, d) + WIDTH) % WIDTH;
-            int ny = (y + nb_dy(y, d) + HEIGHT) % HEIGHT;
-            PlanckNode n = grid_read[ny * WIDTH + nx];
-            if (valid_spin(n.spin)) {
-                sum_dx += dir_vx(n.spin);
-                sum_dy += dir_vy(n.spin);
-                neighbor_count++;
-            }
+    for (int k = 0; k < SPIN_MAX; k++) {
+        int d = NB_ORDER[k];
+        int nx = (x + nb_dx(y, d) + WIDTH) % WIDTH;
+        int ny = (y + nb_dy(y, d) + HEIGHT) % HEIGHT;
+        PlanckNode n = grid_read[ny * WIDTH + nx];
+        if (valid_spin(n.spin)) {
+            sum_dx += dir_vx(n.spin);
+            sum_dy += dir_vy(n.spin);
+            neighbor_count++;
         }
+    }
 
-        if (neighbor_count > 0 && (sum_dx != 0.0 || sum_dy != 0.0)) {
-            target->spin = dir_from_momentum(sum_dx, sum_dy);
-            if (target->spin == 0) target->spin = (rand() % SPIN_MAX) + 1;
-        } else {
-            target->spin = (rand() % SPIN_MAX) + 1;
-        }
+    if (neighbor_count > 0 && (sum_dx != 0.0 || sum_dy != 0.0)) {
+        target->spin = dir_from_momentum(sum_dx, sum_dy);
+        if (target->spin == 0) target->spin = (rand() % SPIN_MAX) + 1;
     } else {
         target->spin = (rand() % SPIN_MAX) + 1;
-    }
-}
-
-EMSCRIPTEN_KEEPALIVE void add_quanta(int x, int y, int amount) {
-    if (IMPEDANCE_MODE_ACTIVE) {
-        add_quanta_impedance(x, y, amount);
-    } else {
-        if (!grid_read || x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT || amount <= 0) return;
-        int idx = y * WIDTH + x;
-        int q = grid_read[idx].quanta + amount;
-        grid_read[idx].quanta = (q > 255) ? 255 : q;
-        grid_read[idx].heat += amount * QUANTA_INJECT_HEAT;
-        grid_read[idx].spin = (rand() % SPIN_MAX) + 1;
     }
 }
 

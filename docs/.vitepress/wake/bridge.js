@@ -31,7 +31,6 @@ export class PlanckBridge {
 
     setDissipation(rate) { this.wasm._set_dissipation(rate); }
     setThermalLimit(limit) { this.wasm._set_thermal_limit(limit); }
-    setImpedanceMode(mode) { this.wasm._set_impedance_mode(mode); }
 
     getTotalQuanta() { return this.wasm._get_total_quanta(); }
     // Conserved mass reading: resident + staged in-flight flux.

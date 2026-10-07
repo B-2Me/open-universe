@@ -38,7 +38,6 @@ build_engine() {
       '_add_heat',
       '_set_spin',
       '_add_quanta',
-      '_set_impedance_mode',
       '_set_undo_enabled',
       '_save_grid_snapshot',
       '_restore_grid_snapshot',

@@ -152,10 +152,6 @@ onUnmounted(() => {
               <span class="context-hint">Physics injection model</span>
             </div>
             <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
-              <input type="checkbox" id="chk_impedance" checked>
-              Refractive Impedance (acoustic backscatter)
-            </label>
-            <label class="sub-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 32px;">
               <input type="checkbox" id="chk_undo">
               Undo Buffer (4 checkpoints, ~2.5 MB)
             </label>

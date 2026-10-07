@@ -60,7 +60,7 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 - **Undo buffer**: a `SNAPSHOT_DEPTH`-slot ring in the engine (currently 4); every mutation pushes a checkpoint and a roller captures one every ~2s of play. The Undo button's fill gradient shows buffered depth. Snapshots hold field bytes only — cumulative stats (Yield) persist through undo by design.
 - **Lattice projections**: Quad / Hex (staggered rows) / Oct (chamfered cells with interstitial voids) via a fragment-shader pass — requires WebGL, so the buttons disable on the 2D-canvas fallback.
 - **Telemetry**: live Quanta / Heat / Phase-alignment / Yield readouts. Yield counts topological-unwinding events and resets with the field (scenario load, Clear, Random).
-- **Physics live-tuning**: dissipation, thermal limit, and refractive impedance toggles; sim speed slider (fixed timestep — consistent across refresh rates).
+- **Physics live-tuning**: dissipation and thermal limit sliders; sim speed slider (fixed timestep — consistent across refresh rates).
 - **Export**: WYSIWYG PNG snapshot of the split view, Web Share, and ASCII VTK for ParaView.
 - **Mobile-first input**: unified Pointer Events, pinch-focal zoom, stray-stamp pinch revert, 44px targets, `dvh` layout, haptics on Android.
 - **Brush footprint preview + touch lift**: the stamp/sample outline is drawn on the field (follows zoom/pan), and touch input lands ~56px above the fingertip so painting isn't blind.
