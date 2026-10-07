@@ -62,7 +62,7 @@ uint8_t KNOB_DISSIPATION = 15;
 uint16_t KNOB_THERMAL_LIMIT = 1200;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 int SEEPAGE_MODE_ACTIVE = 0; // Porous-barrier prototype — off until the UI exposes it
-int SPRAY_MODE_ACTIVE = 0;   // Unwind radiation-spray conservation — off until proven stable
+int SPRAY_MODE_ACTIVE = 1;   // Unwind radiation-spray conservation — canonical since v3.0
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs
