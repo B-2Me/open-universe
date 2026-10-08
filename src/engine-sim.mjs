@@ -66,10 +66,12 @@ const hexDist = (x, y, cx, cy) => {
   return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
 };
 
+let curTick = 0; // tension duty-cycle hashing needs a time base
 function tickHex() {
+  curTick++;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
-    const cq = q[i], cs = s[i], ch = h[i];
+    const cq = q[i], cs = s[i], ch = h[i], tn0 = tn[i];
     const par = y & 1, off = HOFF[par];
     let deadlocked = 0;
     if (cs !== 0) {
@@ -79,13 +81,39 @@ function tickHex() {
       // resident mass alone — a pressurized buffer is already a wall.
       if (q[ti] + b[ti] > DEADLOCK) deadlocked = 1;
     }
-    let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
+    let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0, pmx = 0, pmy = 0;
+    let tSum = 0, gx = 0, gy = 0, gNi = -1, gMaxD = 0;
+    // Only actualized matter in motion feels the tension gradient —
+    // the knot itself and empty vacuum stay inert (a source can't
+    // self-propel).
+    const feelsTension = cq > 0 && cs !== 0;
     for (let d = 1; d <= 6; d++) {
       const nx = (x + off[d][0] + W) % W, ny = (y + off[d][1] + H) % H;
       const ni = ny * W + nx;
       const nq = q[ni], ns = s[ni], nh = h[ni];
       heatSum += Math.floor(nh / DIFF_DIV);
       const nOcc = nq + b[ni];
+      if (TENS_ON) {
+        tSum += tn[ni] >> T_SHARE;
+        // Track the steepest up-gradient neighbor that can carry flux —
+        // arrivals deflect toward it (refraction) without touching spin.
+        // Shear into a spinless cell stalls and accretes, so s≠0 only.
+        const gd = tn[ni] - tn0;
+        if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
+        if (feelsTension) {
+          if (INTMOM_ON) { gx += HEX_MX256[d] * gd; gy += HEX_MY256[d] * gd; }
+          else { const a = (d - 1) * Math.PI / 3; gx += Math.cos(a) * gd; gy += Math.sin(a) * gd; }
+        }
+      }
+      if (PRESS_ON && nOcc > PRESS_MIN) {
+        // Asymmetric pressure gradient (stateless Stage-3a): occupancy
+        // biases the momentum sum toward the dense side. Pressure rides
+        // the dominant-spin channel only — it never enters `routing`,
+        // so dissipation budgets stay clean.
+        const pn = PRESS_SIGN * (nOcc >> PRESS_SHIFT);
+        if (INTMOM_ON) { pmx += HEX_MX256[d] * pn; pmy += HEX_MY256[d] * pn; }
+        else { const a = (d - 1) * Math.PI / 3; pmx += Math.cos(a) * pn; pmy += Math.sin(a) * pn; }
+      }
       if (nq > 0 && ns === HINV[d]) { // neighbor's spin points back at us
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
@@ -153,6 +181,16 @@ function tickHex() {
         if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
       }
     }
+    // Tension shear: a share of arriving flux is deflected mid-hop into
+    // the up-gradient neighbor's buffer — refraction, not spin-capture.
+    // Mass conserves; the stream drifts gradient-ward each hop without
+    // its heading being rewritten. (spray's direct b[ni] mutation is the
+    // established convention for same-tick cross-cell pushes.)
+    if (TENS_ON && gNi >= 0 && incoming > 0 && T_DIVERT < 16) {
+      const room = 255 - b[gNi];
+      const push = Math.min(incoming >> T_DIVERT, room);
+      incoming -= push; b[gNi] += push;
+    }
     // Arrivals stage in the input buffer and integrate only up to free
     // capacity — overflow is backscatter heat, not silent mass loss.
     let nb2 = b[i] + incoming;
@@ -182,7 +220,29 @@ function tickHex() {
       // spray pooled in the halo at ~3.5k quanta and severed the loop.)
       const bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed;
     }
-    let dom = incoming > 0 ? (INTMOM_ON && INTMOM_DOM ? hexDirInt(mx, my) : hexDir(mx, my)) : 0;
+    // Tension field bookkeeping: keeps what the 6 channels don't send,
+    // gains neighbors' shares, sources from own occupancy, decoheres.
+    if (TENS_ON) {
+      let ntn = tn0 - 6 * (tn0 >> T_SHARE) + tSum
+              - (tn0 >> T_DECAY)
+              + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
+      tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
+      // T_PULL is a gain exponent (gx << T_PULL) scaling the gradient's pull
+      // against transport momentum in the dom argmax; T_RATE duty-cycles
+      // the response — quantized 60° turns become an average fractional
+      // force, so a stream can bend instead of only "hold or capture".
+      if (((i * 2654435761 + curTick * 40503) >>> 0 & 255) < T_RATE) {
+        gx <<= T_PULL; gy <<= T_PULL;
+      } else { gx = 0; gy = 0; }
+    } else {
+      tn2[i] = tn0;
+    }
+
+    // Pressure and tension merge into the dominant-spin resolver only —
+    // transport routing load (mag) stays on raw inflow momentum.
+    const dmx = mx + pmx + gx, dmy = my + pmy + gy;
+    let dom = (incoming > 0 || pmx !== 0 || pmy !== 0 || gx !== 0 || gy !== 0)
+      ? (INTMOM_ON && INTMOM_DOM ? hexDirInt(dmx, dmy) : hexDir(dmx, dmy)) : 0;
     // Head-on arrivals are priced by the turn kernel (Δθ=180° → 2τ);
     // no separate cancellation tax.
 
@@ -233,7 +293,7 @@ function tickHex() {
 
     q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; b2[i] = nb2;
   }
-  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; }
+  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; tn[i] = tn2[i]; }
 }
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
@@ -248,6 +308,24 @@ let SPRAY_ON = false; // unwinding sprays mass as radiation instead of deleting 
 let BUFDECAY = parseInt(process.env.BUFDECAY || '4'); // radiation decoherence: buffer >> 4 (~6%/tick) thermalizes
 let INTMOM_ON = false; // integer momentum + LUT quadrature — no floats in the tick
 let HALVE_ON = false; // conflict-scoped halving wave on head-on arrivals
+let PRESS_ON = false; // stateless asymmetric pressure gradient (Stage 3a)
+let PRESS_SHIFT = parseInt(process.env.PRESS_SHIFT || '4'); // occupancy >> shift → momentum bias
+let PRESS_SIGN = parseInt(process.env.PRESS_SIGN || '1');   // +1 attract toward density, -1 repel
+let PRESS_MIN = parseInt(process.env.PRESS_MIN || '0');     // occupancy floor — only real knots pull
+let LENS_B = parseInt(process.env.LENS_B || '50');          // hexlens impact parameter
+// Stage 3b (Todd's causal mechanics): a propagating tension field.
+// Occupancy emits a scalar potential; it diffuses at channel-share rate
+// (finite propagation speed — the field IS latency), decoheres slowly
+// (finite range), and its gradient steers moving mass. The pad byte in
+// PlanckNode is its physical home — this needs no layout change in C.
+let TENS_ON = false;
+let T_EMIT = parseInt(process.env.T_EMIT || '3');   // occupancy >> 3 → tension source
+let T_EMIT_MIN = parseInt(process.env.T_EMIT_MIN || '0'); // only occupancy above this emits — knots source the field, dilute flux doesn't
+let T_SHARE = parseInt(process.env.T_SHARE || '5'); // per-channel share tn>>5 (~3%/hop)
+let T_DECAY = parseInt(process.env.T_DECAY || '5'); // tn >> 5 decoheres (~3%/tick)
+let T_PULL = parseInt(process.env.T_PULL || '4');   // gradient << 4 → momentum bias (gain)
+let T_RATE = parseInt(process.env.T_RATE || '255'); // pull duty cycle /256 — fractional steering
+let T_DIVERT = parseInt(process.env.T_DIVERT || '5'); // arrivals >> 5 shear up-gradient (16 = off)
 // Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
 // pulse into a running scenario and measure when the excess reaches a
 // detector gate — control/pulse differencing isolates the wave's
@@ -270,15 +348,16 @@ const makeSlab = () => ({
   q: new Uint8Array(N), s: new Uint8Array(N), h: new Uint16Array(N),
   q2: new Uint8Array(N), s2: new Uint8Array(N), h2: new Uint16Array(N),
   b: new Uint8Array(N), b2: new Uint8Array(N),
+  tn: new Uint8Array(N), tn2: new Uint8Array(N),
 });
 const slabs = [makeSlab(), makeSlab()];
 // Active-slab bindings — tick() reads/writes these.
-let q, s, h, q2, s2, h2, b, b2;
+let q, s, h, q2, s2, h2, b, b2, tn, tn2;
 // Vertical adjacency: counterpart buffers at z-1 and z+1 in the depth
 // ring. zMoved tracks signed ring flux for the oscillation test.
 let zbM, zbP, zMoved = 0, zSign = 1, zLastMoved = 0, DEPTH = 2;
 function bindSlab(z) {
-  ({ q, s, h, q2, s2, h2, b, b2 } = slabs[z]);
+  ({ q, s, h, q2, s2, h2, b, b2, tn, tn2 } = slabs[z]);
   if (ZOPEN_ON && DEPTH > 2) {
     // Bounded depth: surfaces have a single vertical neighbor — no wrap.
     // (At D=2 open and ring are identical — one neighbor either way.)
@@ -487,7 +566,7 @@ function octSpin(dx, dy, c = 1) {
 }
 
 function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.05, dither = 0, ringMode = null, oct = null, outwardFoam = false } = {}) {
-  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0); tn.fill(0);
   const cx = 200, cy = 200;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy), i = y * W + x;
@@ -539,7 +618,7 @@ function paintElectron({ shellQ = 100, shellMin = 21, shellMax = 80, foamP = 0.0
 
 // Neutral isotropy probes shared by both topologies.
 function paintBlobStream(variant) {
-  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0); tn.fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     if (variant === 'blob') {
@@ -558,7 +637,7 @@ function paintBlobStream(variant) {
 }
 
 function paintHex(variant) {
-  q.fill(0); s.fill(0); h.fill(1); b.fill(0);
+  q.fill(0); s.fill(0); h.fill(1); b.fill(0); tn.fill(0);
   const cx = 200, cy = 200;
   const SEXT = (a) => ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -621,6 +700,18 @@ function paintHex(variant) {
         s[i] = SEXT(Math.atan2(cy - y, cx - x) + Math.PI / 6); // spiral infall
         h[i] = 100;
       }
+    } else if (variant === 'hexlens') {
+      // Gravitational lensing probe: a bare anchor knot at center, and a
+      // probe stream (s=E) aimed past it at impact parameter LENS_B.
+      // Without a force the stream holds its lane; a real field must
+      // curve it measurably — deflection should grow as LENS_B shrinks.
+      // Result so far: every steering coupling tried shows a binary
+      // cliff — invisible below threshold, accretion above it. Streams
+      // are sticky mass flows, not rays: they get eaten, not bent.
+      if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
+      else if (d <= 25) { s[i] = 0; } // moat — isolate the knot
+      const sy = cy - LENS_B;
+      if (y >= sy - 3 && y <= sy + 3 && x >= 30 && x <= 370) { q[i] = 80; s[i] = 1; h[i] = 500; }
     } else if (variant === 'hexcollide') {
       // Head-on collision front: two dense streams aimed 180° apart
       // meeting on the same row band — the conflict-scoped halving
@@ -648,13 +739,14 @@ function paintHex(variant) {
 
 let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetry
 let CYCLE_TRACK = false; // hexcycle* variants report loop integrity
+let LENS_TRACK = false;  // hexlens reports downstream centroid deflection
 
 // Seepwall: a closed ring barrier of thickness t (deadlocked disk shell
 // at radius ~60) with randomized interior flux — a boxed particle. Any
 // mass measured outside the ring is seeped transmission; a column wall
 // on a torus can't isolate regions, so the barrier must be closed.
 function paintSeepwall(t) {
-  h.fill(1);
+  h.fill(1); tn.fill(0);
   const cx = 200, cy = 200;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy);
@@ -790,6 +882,24 @@ function stats(label) {
     const sWin = sprayQ - sprayLast; sprayLast = sprayQ;
     zstr += ` spray=${sWin}`;
   }
+  if (TENS_ON) {
+    let tMax = 0;
+    for (let i = 0; i < N; i++) if (tn[i] > tMax) tMax = tn[i];
+    // Radial profile along the upward ray through the knot — shows
+    // whether the well has spatial extent or saturates at contact.
+    const prof = [10, 25, 40, 50, 70, 100].map(r => tn[(cy - r) * W + cx]);
+    zstr += ` tenMax=${tMax} ten@[${prof.join(',')}]`;
+  }
+  if (LENS_TRACK) {
+    // Downstream centroid of the probe stream (x ∈ [300,360]) minus its
+    // initial row — positive = deflected toward the knot (attraction).
+    let num = 0, den = 0;
+    for (let x = 300; x <= 360; x++) for (let y = 0; y < H; y++) {
+      const qq = q[y * W + x]; num += qq * y; den += qq;
+    }
+    const cyL = den > 0 ? num / den : cy - LENS_B;
+    zstr += ` lensY=${(cyL - (cy - LENS_B)).toFixed(1)}`;
+  }
   if (SEEP_TRACK) {
     let tq = 0, iq = 0;
     const r2 = (62 + SEEP_T) * (62 + SEEP_T);
@@ -824,6 +934,8 @@ SPRAY_ON = mode.includes('spray');
 INTMOM_ON = mode.includes('intmom');
 HALVE_ON = mode.includes('halve');
 LAT_ON = mode.includes('latprobe');
+PRESS_ON = mode.includes('press');
+TENS_ON = mode.includes('tension');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
@@ -854,6 +966,7 @@ if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
+LENS_TRACK = variant === 'hexlens';
 if (LAT_ON) {
   const gates = PROBE_GATES[variant];
   if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }
