@@ -259,6 +259,7 @@ onUnmounted(() => {
               <option value="electron">⚛️ Synthetic Electron</option>
             </select>
             <button id="btn_scenario_info" class="icon-btn" title="Scenario Dossier">ℹ️</button>
+            <button id="btn_composer" class="icon-btn" title="Scenario Composer — paint a custom universe">🎨</button>
           </div>
 
           <!-- Right Split Layer Toggle (positioned strictly on the right) -->
@@ -325,7 +326,59 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      
+
+      <!-- Scenario Composer Modal -->
+      <div id="modal_composer" class="dossier-modal" role="dialog" aria-modal="true" aria-labelledby="composer_title">
+        <div class="dossier-content composer-content">
+          <div class="dossier-header">
+            <span id="composer_title" class="dossier-title">🎨 Scenario Composer</span>
+            <button id="btn_close_composer" class="dossier-close-btn">✕</button>
+          </div>
+          <div class="dossier-body">
+            <div class="composer-head-row">
+              <input id="composer_name" class="composer-name" type="text" maxlength="48"
+                     value="Custom Scenario" aria-label="Scenario name">
+              <select id="composer_substrate" class="scenario-select" style="flex: 0 0 auto;" aria-label="Substrate compatibility">
+                <option value="both">Oct8 + Hex6</option>
+                <option value="square">Oct8 only</option>
+                <option value="hex">Hex6 only</option>
+              </select>
+            </div>
+            <div class="composer-head-row">
+              <div class="dose-row" style="flex: 1;">
+                <span class="dose-label">Dissipation</span>
+                <input type="range" id="composer_dissipation" min="0" max="100" value="15" class="slider-fill">
+                <span class="dose-val" id="val_composer_dissipation">15</span>
+              </div>
+              <div class="dose-row" style="flex: 1;">
+                <span class="dose-label">Thermal Lim</span>
+                <input type="range" id="composer_thermal" min="1000" max="65000" step="1000" value="50000" class="slider-fill">
+                <span class="dose-val" id="val_composer_thermal">50000</span>
+              </div>
+            </div>
+            <div class="context-header" style="margin-top: 4px;">
+              <span class="context-label">Paint Layers</span>
+              <span class="context-hint">applied bottom → top</span>
+            </div>
+            <div id="composer_layers" class="composer-layers"></div>
+            <div class="composer-add-row">
+              <select id="composer_add_prim" class="scenario-select" aria-label="Primitive to add"></select>
+              <button id="btn_add_layer" class="group-btn">＋ Add Layer</button>
+            </div>
+            <div class="button-group" style="margin-top: 10px;">
+              <button id="btn_composer_apply" class="group-btn" style="font-weight: bold;">🎨 Apply to Field</button>
+              <button id="btn_composer_save" class="group-btn">💾 Save</button>
+              <button id="btn_composer_export" class="group-btn">📤 Export</button>
+              <label class="group-btn" style="cursor: pointer; margin: 0;">
+                📂 Import
+                <input type="file" id="composer_import_input" accept=".json" style="display: none;">
+              </label>
+              <button id="btn_composer_delete" class="group-btn" style="color: #ff8888;" disabled>🗑️ Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>

@@ -100,6 +100,16 @@ export const HEX_OFFSETS = [
 export const hexSextant = (angle) =>
     ((Math.floor((angle + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
 
+// Octagonal radius: the oct8 lattice's native perimeter metric (each
+// flat edge is perpendicular to one of the 8 axes). Hex6's native
+// radius is hexDistance below.
+export const octRadius = (dx, dy) => Math.max(
+    Math.abs(dx),
+    Math.abs(dy),
+    Math.abs(dx + dy) * Math.SQRT1_2,
+    Math.abs(dx - dy) * Math.SQRT1_2
+);
+
 // Odd-r offset → axial hex distance between two cells.
 export const hexDistance = (x, y, cx, cy) => {
     const dq = (x - Math.floor(y / 2)) - (cx - Math.floor(cy / 2));

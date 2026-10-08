@@ -17,6 +17,7 @@ import {
     HEX_OFFSETS,
     hexSextant,
     hexDistance,
+    octRadius,
     spinMax,
     HEAT_COLD_WATER,
     HEAT_ROOM_AMBIENT,
@@ -65,16 +66,6 @@ const ELECTRON_RING_QUANTA = 70;   // pairwise merges stay far under deadlock
 // into deadlock knots that tear the ring apart gravitationally. The
 // harness shows every projectile density kills the orbit within ~300
 // ticks; clean vacuum circulates indefinitely (1000+ ticks, zero loss).
-
-// Octagonal radius: the lattice's native perimeter. Each flat edge is
-// perpendicular to one of the 8 axes, so its tangent is an exact spin —
-// mass flows laminar along edges and turns at vertices under Phase Lock.
-const octRadius = (dx, dy) => Math.max(
-    Math.abs(dx),
-    Math.abs(dy),
-    Math.abs(dx + dy) * Math.SQRT1_2,
-    Math.abs(dx - dy) * Math.SQRT1_2
-);
 
 // Maps a center-relative offset to tangent momentum via 8-octant quantization (45° sectors).
 // Restores cardinal directions (UP, DOWN, LEFT, RIGHT) alongside diagonals so circulating

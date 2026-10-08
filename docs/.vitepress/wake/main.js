@@ -159,8 +159,17 @@ export async function initWakeSimulator() {
         const saved = await loadSimState();
         if (saved && saved.grid && (saved.topology || 'square') === topology) {
             restoreSimState(bridge, saved);
-            const dossier = saved.scenario && SCENARIO_DOSSIERS[saved.scenario];
-            if (dossier && (dossier.topologies || ['square']).includes(topology)) {
+            // Custom options aren't in the DOM until the library loads.
+            await controls.customsReady;
+            let scenarioOk = false;
+            if (saved.scenario?.startsWith('custom:')) {
+                const spec = controls.customSpecs.get(saved.scenario.slice(7));
+                scenarioOk = !!spec && (spec.topologies || ['square', 'hex']).includes(topology);
+            } else {
+                const dossier = saved.scenario && SCENARIO_DOSSIERS[saved.scenario];
+                scenarioOk = !!dossier && (dossier.topologies || ['square']).includes(topology);
+            }
+            if (scenarioOk) {
                 state.currentScenario = saved.scenario;
                 const dd = document.getElementById('scenario_dropdown');
                 if (dd) dd.value = saved.scenario;

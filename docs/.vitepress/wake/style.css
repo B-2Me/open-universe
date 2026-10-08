@@ -432,6 +432,41 @@ input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
 .dossier-text { font-size: 11px; color: #ddd; line-height: 1.3; }
 .dossier-text.highlight { color: #f0c354; }
 
+/* Scenario Composer */
+.composer-content { max-height: 70vh; overflow-y: auto; overscroll-behavior: contain; }
+.composer-head-row { display: flex; gap: 8px; align-items: center; }
+.composer-name {
+  flex: 1; min-width: 0; background: var(--pf-bg-main); color: var(--pf-text);
+  border: 1px solid var(--pf-bevel-light); border-radius: 4px;
+  padding: 5px 8px; font-size: 12px; font-family: var(--font-mono);
+}
+.composer-layers { display: flex; flex-direction: column; gap: 6px; }
+.composer-layer {
+  border: 1px solid var(--pf-bevel-dark); border-radius: 5px;
+  padding: 6px 8px; background: rgba(255,255,255,0.02);
+}
+.composer-layer-head { display: flex; align-items: center; gap: 4px; }
+.composer-layer-head select { flex: 1; min-width: 0; }
+.composer-layer-hint { font-size: 9px; color: var(--pf-text-muted); margin: 3px 0 0; line-height: 1.25; }
+.composer-params { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; }
+.composer-param { display: flex; align-items: center; gap: 4px; }
+.composer-param label { font-size: 9px; color: var(--pf-text-muted); white-space: nowrap; }
+.composer-param input[type=number] {
+  width: 58px; background: var(--pf-bg-main); color: var(--pf-text);
+  border: 1px solid var(--pf-bevel-light); border-radius: 3px;
+  padding: 3px 4px; font-size: 11px; font-family: var(--font-mono);
+}
+.composer-param select { font-size: 10px; max-width: 120px; }
+.composer-layer-btn {
+  background: transparent; border: none; color: #888; cursor: pointer;
+  font-size: 12px; padding: 2px 5px; border-radius: 3px; flex-shrink: 0;
+}
+.composer-layer-btn:hover { color: var(--pf-brand-hover); }
+.composer-layer-btn:disabled { opacity: 0.25; cursor: default; }
+.composer-add-row { display: flex; gap: 6px; margin-top: 6px; }
+.composer-add-row select { flex: 1; min-width: 0; }
+.composer-empty { font-size: 10px; color: var(--pf-text-muted); padding: 8px 4px; text-align: center; font-style: italic; }
+
 /* Error Banner */
 #error-banner {
   display: none;
