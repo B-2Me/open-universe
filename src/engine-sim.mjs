@@ -96,7 +96,24 @@ function tickHex() {
         }
         if (cq + b[i] <= DEADLOCK) {
           incoming += sent;
-          if (INTMOM_ON) { mx -= HEX_MX256[d] * sent; my -= HEX_MY256[d] * sent; }
+          if (HALVE_ON && cs === d) {
+            // Conflict-scoped halving wave (Todd's averaging horizon):
+            // our spin points back at a head-on sender — the colliding
+            // momentum splits ½ opposing + ¼+¼ into the lateral channels,
+            // so the conflict resolves as a dampened acoustic deflection
+            // rather than argmax winner-take-all.
+            const half = sent >> 1, quar = sent >> 2;
+            const dl = d === 1 ? 6 : d - 1, dr = d === 6 ? 1 : d + 1;
+            if (INTMOM_ON) {
+              mx -= HEX_MX256[d] * half + (HEX_MX256[dl] + HEX_MX256[dr]) * quar;
+              my -= HEX_MY256[d] * half + (HEX_MY256[dl] + HEX_MY256[dr]) * quar;
+            } else {
+              const a = (d - 1) * Math.PI / 3, al = (dl - 1) * Math.PI / 3, ar = (dr - 1) * Math.PI / 3;
+              mx -= Math.cos(a) * half + (Math.cos(al) + Math.cos(ar)) * quar;
+              my -= Math.sin(a) * half + (Math.sin(al) + Math.sin(ar)) * quar;
+            }
+          }
+          else if (INTMOM_ON) { mx -= HEX_MX256[d] * sent; my -= HEX_MY256[d] * sent; }
           else { const a = (d - 1) * Math.PI / 3; mx -= Math.cos(a) * sent; my -= Math.sin(a) * sent; }
         } else if (SEEP_ON) {
           // Porous barrier: a fixed fraction bleeds through the saturated
@@ -230,6 +247,16 @@ let SEEP_ABS_ON = false; // seeped flux pays a per-hop absorption tax
 let SPRAY_ON = false; // unwinding sprays mass as radiation instead of deleting it
 let BUFDECAY = parseInt(process.env.BUFDECAY || '4'); // radiation decoherence: buffer >> 4 (~6%/tick) thermalizes
 let INTMOM_ON = false; // integer momentum + LUT quadrature — no floats in the tick
+let HALVE_ON = false; // conflict-scoped halving wave on head-on arrivals
+// Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
+// pulse into a running scenario and measure when the excess reaches a
+// detector gate — control/pulse differencing isolates the wave's
+// transit time from ambient flow. Distance = propagation latency.
+let LAT_ON = false;
+let PULSE_T = parseInt(process.env.PULSE_T || '60');   // injection tick
+let PULSE_Q = parseInt(process.env.PULSE_Q || '60');   // quanta added per cell
+let JAM_GAP = parseInt(process.env.JAM_GAP || '50');   // hexjam throat half-width
+let PROBE_SRC = null, PROBE_DST = null;                // gate rectangles per variant
 const INTMOM_DOM = process.env.INTMOM_DOM !== '0'; // diagnostic: 0 = keep atan2 resolver, isolate LUT cause
 let sprayQ = 0, sprayLast = 0; // cumulative unspooled quanta (windowed in stats)
 const SEEP_SHIFT = 6; // leak = sendable >> 6 ≈ 1.6% per port per tick
@@ -594,6 +621,15 @@ function paintHex(variant) {
         s[i] = SEXT(Math.atan2(cy - y, cx - x) + Math.PI / 6); // spiral infall
         h[i] = 100;
       }
+    } else if (variant === 'hexcollide') {
+      // Head-on collision front: two dense streams aimed 180° apart
+      // meeting on the same row band — the conflict-scoped halving
+      // wave's home turf. A/B vs canonical measures whether the
+      // conflict resolves as acoustic ripples or thermal blowoff.
+      if (y >= 195 && y <= 205) {
+        if (x >= 30 && x < 200) { q[i] = 80; s[i] = 1; h[i] = 500; }  // E stream
+        else if (x >= 200 && x <= 370) { q[i] = 80; s[i] = 4; h[i] = 500; } // W stream
+      }
     } else if (variant === 'hexbraid') {
       // Two streams crossing at the native 60° — how do flows negotiate
       // on three-exit channels?
@@ -602,8 +638,8 @@ function paintHex(variant) {
       if (perp <= 6 && x > cx && x < 390) { q[i] = 80; s[i] = 2; h[i] = 500; }
     } else if (variant === 'hexjam') {
       // A wide stream forced through a bottleneck — congestion gravity's
-      // home turf.
-      const wall = y === 200 && (x < 150 || x > 250);
+      // home turf. JAM_GAP sets the throat half-width (50 = shipped paint).
+      const wall = y === 200 && (x < 200 - JAM_GAP || x > 200 + JAM_GAP);
       if (wall) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (y >= 60 && y <= 195) { q[i] = 60; s[i] = 2; h[i] = 500; } // SE flow into the wall
     }
@@ -625,6 +661,90 @@ function paintSeepwall(t) {
     const i = y * W + x;
     if (d >= 58 && d < 58 + t) { q[i] = 220; s[i] = 0; }
     else if (d < 55) { q[i] = 40; s[i] = 1 + (Math.random() * 8 | 0); } // sub-critical density — seepage is the dominant drain, not unwinding
+  }
+}
+
+// --- Stage 1 latency probe ---
+// Tagged pulse = overdensity injected into a source gate at t=PULSE_T.
+// A control run without the pulse gives the baseline; the detector
+// gate's excess mass over control is the wave's arrival. Since the
+// lattice propagates ≤1 cell/tick, transit ticks ≈ operational
+// distance — congestion lengthens it.
+const PROBE_GATES = {
+  // hexjam: source rides the SE stream upstream of the throat.
+  // 'mid' sits in the congestion field at the throat mouth (upstream
+  // of the wall); 'exit' sits below the gap in the outflow fan. The
+  // mid→exit leg is the congested transit being priced.
+  hexjam:    { src: { x0: 60, x1: 79, y0: 110, y1: 129 },
+               dst: [{ name: 'mid',  x0: 140, x1: 240, y0: 170, y1: 195 },
+                     { name: 'exit', x0: 160, x1: 240, y0: 210, y1: 230 }] },
+  // hexstream: free corridor control — same mechanism, no congestion.
+  hexstream: { src: { x0: 50, x1: 69, y0: 195, y1: 205 },
+               dst: [{ name: 'mid',  x0: 180, x1: 200, y0: 190, y1: 210 },
+                     { name: 'exit', x0: 330, x1: 350, y0: 190, y1: 210 }] },
+};
+
+function probeDetMass(g) {
+  let m = 0;
+  for (let y = g.y0; y <= g.y1; y++)
+    for (let x = g.x0; x <= g.x1; x++) {
+      const i = y * W + x;
+      m += q[i] + b[i];
+    }
+  return m;
+}
+
+function probeInject() {
+  let total = 0;
+  for (let y = PROBE_SRC.y0; y <= PROBE_SRC.y1; y++)
+    for (let x = PROBE_SRC.x0; x <= PROBE_SRC.x1; x++) {
+      const i = y * W + x;
+      const add = Math.min(PULSE_Q, 255 - q[i]);
+      q[i] += add; total += add;
+    }
+  return total;
+}
+
+function runLatProbe(tickFn, maxT) {
+  const dets = PROBE_DST;
+  const runSeries = (withPulse) => {
+    paintVariant();
+    let injected = 0;
+    const series = dets.map(() => new Float64Array(maxT + 1));
+    for (let t = 1; t <= maxT; t++) {
+      tickFn();
+      if (withPulse && t === PULSE_T) injected = probeInject();
+      if (t >= PULSE_T) for (let g = 0; g < dets.length; g++) series[g][t] = probeDetMass(dets[g]);
+    }
+    return { series, injected };
+  };
+
+  const ctrl = runSeries(false);
+  const puls = runSeries(true);
+  const scx = (PROBE_SRC.x0 + PROBE_SRC.x1) / 2, scy = (PROBE_SRC.y0 + PROBE_SRC.y1) / 2;
+  const thresh = Math.max(200, puls.injected * 0.02); // 2% of injected mass
+
+  console.log(`LATPROBE: injected=${puls.injected} thresh=${Math.round(thresh)}`);
+  for (let g = 0; g < dets.length; g++) {
+    const d = dets[g];
+    const dcx = (d.x0 + d.x1) / 2, dcy = (d.y0 + d.y1) / 2;
+    const geomD = Math.round(hexDist(scx, scy, dcx, dcy));
+    let firstT = 0, peakT = 0, peak = 0;
+    for (let t = PULSE_T; t <= maxT; t++) {
+      const diff = puls.series[g][t] - ctrl.series[g][t];
+      if (diff > peak) { peak = diff; peakT = t; }
+      if (!firstT && diff >= thresh) firstT = t;
+    }
+    console.log(`  [${d.name}] ctrl/pulse/diff per 20t:`);
+    for (let t = PULSE_T; t <= maxT; t += 20)
+      console.log(`    ${t}: ${Math.round(ctrl.series[g][t])} ${Math.round(puls.series[g][t])} ${Math.round(puls.series[g][t] - ctrl.series[g][t])}`);
+    if (firstT) {
+      const transit = firstT - PULSE_T;
+      console.log(`  [${d.name}] ARRIVAL t=${firstT} → transit=${transit} ticks over ${geomD} cells ≈ ${(transit / geomD).toFixed(2)} ticks/cell`);
+    } else {
+      console.log(`  [${d.name}] ARRIVAL: no tagged excess ≥ threshold in window (captured upstream)`);
+    }
+    console.log(`  [${d.name}] peak excess ${Math.round(peak)} @ t=${peakT}`);
   }
 }
 
@@ -702,6 +822,8 @@ SEEP_ON = mode.includes('seep');
 SEEP_ABS_ON = mode.includes('seepabs');
 SPRAY_ON = mode.includes('spray');
 INTMOM_ON = mode.includes('intmom');
+HALVE_ON = mode.includes('halve');
+LAT_ON = mode.includes('latprobe');
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
@@ -732,6 +854,14 @@ if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
+if (LAT_ON) {
+  const gates = PROBE_GATES[variant];
+  if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }
+  PROBE_SRC = gates.src; PROBE_DST = gates.dst;
+  const MAXT = parseInt(process.env.TICKS || '400');
+  runLatProbe(TICK, MAXT);
+  process.exit(0);
+}
 stats('tick 0');
 if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
 if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);

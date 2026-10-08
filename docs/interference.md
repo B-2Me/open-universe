@@ -98,6 +98,13 @@ The engine is already a flat 1D array — `calloc(PIXEL_COUNT, sizeof(PlanckNode
 *   **Tunneling — confirmed, mechanism sharpened.** A weak retention gradient exists early (+~12%/layer at t=100) but washes out by t=200. Buffer decoherence now taxes in-transit staged flux, and spray deposits dissolved wall mass *outside* the barrier — the exterior count conflates transmission with erosion. Asymptotic attenuation still does not emerge.
 *   **New phenomenon — thermal self-regulation.** Under v3.0, structures park hot cells just under the thermal limit and vent via unwinding spray — a thermostat made of microscopic detonations. The float-era `hexcycle` fixed point was an artifact of permanent deadlocks absorbing the mismatch as heat sinks; the discrete dynamics run hotter and regulate themselves. What reads as "leaking" in the entropy layer is this radiation simmer — honest physics, not a bug.
 
+### Causal Mechanics Probes (Stage 1–2)
+
+*Two instruments were added to `engine-sim.mjs` to test causal-mechanics claims against the shipped engine — neither required new physics in `planck.c` to produce a measurement.*
+
+*   **Distance is propagation latency — confirmed, with structure** (`+latprobe`, overdensity pulse vs. pulse-free control): on a free corridor (`hexstream`) a density wave transits 281 cells in 134 ticks ≈ **0.48 ticks/cell** — the wave outruns bulk transport (a sound-like mode). Through `hexjam`'s upstream pressure pile the wave crosses 152 cells in 63 ticks ≈ **0.41 ticks/cell** — a congested field is stiffer, not slower, for the signal. But below the throat the tagged mass **never arrived** in 340 ticks — even at 120-cell gap width. Signal latency is congestion-insensitive; *bulk* latency is set by port throughput and can become effectively unbounded. Distance-as-latency is real; the wall is a selective membrane, not a speed bump.
+*   **Halving wave on head-on conflict — real but outgunned** (`+halve`, conflict-scoped ½-opposing + ¼+¼-lateral momentum split on `cs === d` arrivals): inert on `hexcycle` (300/300 through t2000 — the scope correctly never fires on healthy circulation), `hexcycleb`, and `hexjam`. On the new `hexcollide` variant (two 180° streams meeting head-on) the mechanism is measurable — early spray −12%, surviving knots +38%, mass spread into more sectors (balance 0.15 vs 0.11) — but the front still detonates at 65535 by t50. The acoustic channel exists and redistributes laterally as predicted; at this energy density it cannot prevent the blowoff. Flag-gated pending a decision on split fractions or lower-energy scoping.
+
 ---
 
 ## Planned Audio Sessions
