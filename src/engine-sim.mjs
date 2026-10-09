@@ -898,7 +898,19 @@ function stats(label) {
       const qq = q[y * W + x]; num += qq * y; den += qq;
     }
     const cyL = den > 0 ? num / den : cy - LENS_B;
-    zstr += ` lensY=${(cyL - (cy - LENS_B)).toFixed(1)}`;
+    // Capture accounting: mass + knotted cells inside the well (r ≤ 35).
+    // Stream transiting the region inflates capQ transiently — the
+    // meaningful signal is what REMAINS after passage, and stalls
+    // (capD) since captured flux can't leave on its own.
+    let capQ = 0, capD = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (hexDist(x, y, cx, cy) <= 35) {
+        const i = y * W + x;
+        capQ += q[i] + b[i];
+        if (q[i] + b[i] > DEADLOCK) capD++;
+      }
+    }
+    zstr += ` lensY=${(cyL - (cy - LENS_B)).toFixed(1)} capQ=${capQ} capD=${capD}`;
   }
   if (SEEP_TRACK) {
     let tq = 0, iq = 0;
