@@ -267,6 +267,8 @@ EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
 EMSCRIPTEN_KEEPALIVE void set_seepage_mode(int active) { SEEPAGE_MODE_ACTIVE = active ? 1 : 0; }
 EMSCRIPTEN_KEEPALIVE void set_spray_mode(int active) { SPRAY_MODE_ACTIVE = active ? 1 : 0; }
+// Deprecated escape hatch — hidden debug A/B only, slated for removal
+// once the canonical field is proven across the deployed suite.
 EMSCRIPTEN_KEEPALIVE void set_tension_mode(int active) { TENSION_MODE_ACTIVE = active ? 1 : 0; }
 
 EMSCRIPTEN_KEEPALIVE

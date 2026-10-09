@@ -22,7 +22,7 @@ export class PlanckBridge {
     setUndoEnabled(v) { if (typeof this.wasm._set_undo_enabled === 'function') this.wasm._set_undo_enabled(v ? 1 : 0); }
     setSeepageMode(v) { if (typeof this.wasm._set_seepage_mode === 'function') this.wasm._set_seepage_mode(v ? 1 : 0); }
     setSprayMode(v) { if (typeof this.wasm._set_spray_mode === 'function') this.wasm._set_spray_mode(v ? 1 : 0); }
-    setTensionMode(v) { if (typeof this.wasm._set_tension_mode === 'function') this.wasm._set_tension_mode(v ? 1 : 0); }
+    setTensionMode(v) { if (typeof this.wasm._set_tension_mode === 'function') this.wasm._set_tension_mode(v ? 1 : 0); } // deprecated debug hatch — no UX control, slated for removal
     getGridPointer() { return this.wasm._get_grid_pointer(); }
 
     getNodeState(x, y) { return this.wasm._get_node_state(x, y); }
