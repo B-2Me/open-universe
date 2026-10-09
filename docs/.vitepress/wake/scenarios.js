@@ -214,18 +214,18 @@ export const SCENARIO_DOSSIERS = {
     },
     accretion: {
         topologies: ['hex'],
-        title: "⬡ Accretion Seed",
-        objective: "Crystal growth by congestion: a deadlock seed in a spiral infall field — deposition with angular momentum.",
-        mechanisms: "Congestion gravity refracts flux toward the densest absorbing cell. Head-on inflow collisionally heats the focus and evaporates even the seed; offset one sextant, the infall spirals in tangentially and deposits gently.",
+        title: "⬡ Accretion Disk",
+        objective: "Emergent accretion under the tension field: a bare anchor knot propagates a diffusing tension well — a grazing stream sheds its boundary layer into bound capture at the well's edge.",
+        mechanisms: "Near-deadlock occupancy emits scalar tension that diffuses outward and decoheres with range; flux arriving inside the gradient shears up-field into a flowing neighbor's buffer. Grazing passes capture boundary mass into new deadlocked cells — the disk forms from the field, not from painted spiral spins. Direct hits erode instead (tidal stripping).",
         recommendedBrushes: ["💧 Fluid", "🧊 Cryo", "🔥 Igniter"],
         bestLayers: "♨ Metabolic + 👁 Macro",
-        tips: "The knot stops growing once the spiral field depletes. Stamp Fluid into the spiral's path to feed it, or an Igniter onto the crystal to evaporate it."
+        tips: "Watch the stream's lower edge bleed into knots orbiting the well — capture peaks at grazing incidence. Stamp Fluid above the stream to feed the disk, or an Igniter onto the anchor to evaporate the well's source."
     },
     jam: {
         topologies: ['hex'],
         title: "⬡ The Bottleneck",
-        objective: "Congestion gravity under load: a wide SE-bound stream forced through a 100-cell gap.",
-        mechanisms: "Three-exit channels jam fast — deadlock count spikes ~7× before the front relieves. Routing impedance, bandwidth cycle-stealing, and shunt deflection are all visible at the wall.",
+        objective: "Congestion gravity under load: a wide SE-bound stream forced through a 60-cell gap whose wall radiates tension.",
+        mechanisms: "The deadlocked wall emits a tension field that shears the upstream pile — the jam forms, detonates at the face, and the congestion itself becomes a field source. Routing impedance, bandwidth cycle-stealing, and shunt deflection remain visible at the throat.",
         recommendedBrushes: ["🔥 Igniter", "🧱 Wall"],
         bestLayers: "👁 Macro + ♨ Metabolic",
         tips: "Narrow the gap with the Wall brush to harden the jam; an Igniter on the jam face unwinds the knot and relieves the pressure."
@@ -450,18 +450,23 @@ export function loadScenario(type, bridge, topology = 'square') {
         }
 
         case "accretion": {
-            // The hexsnow spiral: a deadlock seed in a sparse field whose
-            // spins spiral inward one sextant off radial — gentle tangential
-            // deposition. Head-on inflow evaporates the seed instead.
+            // Emergent accretion under the tension field (harness variant
+            // hexaccretion): a bare anchor knot emits a diffusing tension
+            // well, and a grazing stream at impact parameter ~28 sheds its
+            // boundary layer into bound capture around the well's edge —
+            // an accretion disk that forms from the field, not from
+            // painted spiral spins. The old hexsnow spiral-infall relied
+            // on scripted deposition the shear now deflects.
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
 
             composer.apply((x, y) => {
                 const dh = hexDistance(x, y, composer.cx, composer.cy);
-                if (dh <= 4) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
-                if (Math.random() < 0.08) {
-                    const spin = hexSextant(Math.atan2(composer.cy - y, composer.cx - x) + Math.PI / 6);
-                    return packNode(40, spin, 100);
+                if (dh <= 8) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                if (dh <= 25) return packNode(0, SPIN_STATIONARY, 1); // moat
+                const sy = composer.cy - 28;
+                if (y >= sy - 3 && y <= sy + 3 && x >= 30 && x <= 370) {
+                    return packNode(80, 1, HEAT_ROOM_AMBIENT); // E-bound stream grazing the well
                 }
                 return null;
             });
@@ -469,13 +474,15 @@ export function loadScenario(type, bridge, topology = 'square') {
         }
 
         case "jam": {
-            // The hexjam bottleneck: a wall with a 100-cell gap, a broad
-            // SE-bound stream above it — congestion physics made visible.
+            // The hexjam bottleneck under the tension baseline: the q=255
+            // wall emits a field that shears the upstream pile apart, so
+            // the gap is narrowed to 60 cells (harness JAM_GAP=30) — the
+            // jam reforms and congestion visibly emits its own tension.
             targetDissipation = DISSIPATION_DEFAULT;
             targetThermal = THERMAL_LIMIT_DEFAULT;
 
             composer.apply((x, y) => {
-                if (y === 200 && (x < 150 || x > 250)) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
+                if (y === 200 && (x < 170 || x > 230)) return packNode(QUANTA_ANCHOR_WALL, SPIN_STATIONARY, 1);
                 if (y >= 60 && y <= 195) return packNode(60, 2, HEAT_ROOM_AMBIENT); // SE flow into the wall
                 return null;
             });
