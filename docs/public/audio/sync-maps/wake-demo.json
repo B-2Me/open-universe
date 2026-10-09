@@ -2,141 +2,146 @@
   {
     "text": "Langevin's Wake",
     "start": 0,
-    "end": 1.039
+    "end": 1.034
   },
   {
     "text": "The Planck Field bare-metal simulation engine.",
-    "start": 1.039,
-    "end": 4.227
+    "start": 1.034,
+    "end": 4.206
   },
   {
     "text": "Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge.",
-    "start": 4.227,
-    "end": 26.334
+    "start": 4.206,
+    "end": 26.2
   },
   {
     "text": "::: details ⚙️ Under the Hood: The Hardware Metaphor",
-    "start": 26.334,
-    "end": 29.937
+    "start": 26.2,
+    "end": 29.785
   },
   {
     "text": "External Depth vs. Internal Depth",
-    "start": 29.937,
-    "end": 32.224
+    "start": 29.785,
+    "end": 32.061
   },
   {
     "text": "This sandbox is a literal manifestation of the Planck Field philosophy.",
-    "start": 32.224,
-    "end": 37.144
+    "start": 32.061,
+    "end": 36.956
   },
   {
     "text": "The C Engine (External Depth): The physics loop is written in bare-metal C, compiled to WebAssembly with maximum hardware optimizations. The C code knows nothing about geometry, shapes, or user input. It exclusively calculates the relentless, microscopic accounting of thermodynamic friction, phase spins, and integer limits for all 160,000 nodes simultaneously.",
-    "start": 37.144,
-    "end": 62.23
+    "start": 36.956,
+    "end": 61.915
   },
   {
     "text": "The JavaScript UI (Internal Depth): The browser interface acts as the biological dashboard. JavaScript queries the chaotic thermal data from the Wasm memory block and compresses it into a clean, geometric visual matrix (the Macro layer). When you use the Sample tool to probe a region — or Frame Capture in the System drawer to export a PNG/VTK — JavaScript is filtering the static, extracting relational boundaries, and defining it as \"useful\" geometry. The grid doesn't know it's a shape; only the UI does.",
-    "start": 62.23,
-    "end": 97.434
+    "start": 61.915,
+    "end": 96.941
   },
   {
     "text": "The Objective Constraints",
-    "start": 97.434,
-    "end": 99.167
+    "start": 96.941,
+    "end": 98.664
   },
   {
     "text": "Unlike traditional cellular automata which rely on arbitrary \"rules\" of birth and death, this engine is strictly deterministic and rooted in physical constraints. It continuously calculates the following mechanics:",
-    "start": 99.167,
-    "end": 113.997
+    "start": 98.664,
+    "end": 113.419
   },
   {
     "text": "1. Topological Unwinding (E equals M C squared) Mass is a deadlocked knot of relational tension. When the environmental thermal limit drops below the localized heat of a node, the topological deadlock unwinds. The total actualization yield instantly saturates the local grid, converting mass into thermal exhaust: Y act equals N nodes times tau knot, multiplied by Omega max",
-    "start": 113.997,
-    "end": 139.914
+    "start": 113.419,
+    "end": 139.206
   },
   {
     "text": "2. Phase Friction (Electromagnetism) Nodes possess a topological spin (chirality). When flux arrives at an occupied node, the Phase Friction (\\Phi) charged to the receiver is continuous in the turn angle — a least-friction traversal kernel applied per unit of quanta: \\Phi = \\tau(1 - \\cos(\\Delta \\theta)) Straight-through arrivals are free, a glancing turn costs a little, and full reversal is the most expensive exchange the substrate offers (2\\tau). Aligned spins mesh into coherent flow, letting relational momentum pass smoothly; opposing momentum pays the maximum phase toll and floods the local node with metabolic heat. This tension naturally resolves down the path of least resistance, driving physical repulsion or shaping structures into stable circulating vortices.",
-    "start": 139.914,
-    "end": 193.69
+    "start": 139.206,
+    "end": 192.709
   },
   {
     "text": "Hydrodynamic Integrity (Phase Lock): Momentum in the raw engine is ballistic — a node's spin is always overwritten by the direction of its incoming momentum, so no painted circulation can survive: vortices shear apart into linear streams within a few ticks. But a knot of matter is a persistent phase pattern, and the substrate's structure must steer the flux that flows through it. Phase Lock grants the lattice that inertia: when a node's incoming momentum lies within ±45° of its established spin, the node keeps its own direction — the phase lattice acts as a waveguide, channeling laminar flux rather than being erased by it. Orthogonal or head-on collisions exceed the tolerance, the lattice shatters, and raw momentum writes a new phase. And because phase is structural state rather than energy, an empty node receiving no flux holds its spin — silence never erases a waveguide; only flux rewrites it. A node still holding mass when momentum falls silent relinquishes its phase and goes inert: in this substrate, matter must keep circulating or it is no longer matter. This is what makes bound structures possible at all: the knot channels the flow, and the channeled flow sustains the knot. On the 8-direction lattice, the native closed streamline is the octagon — its flat edges carry exact spin tangents, which is why the Synthetic Electron's torus is an octagonal waveguide rather than a painted circle.",
-    "start": 193.69,
-    "end": 291.679
+    "start": 192.709,
+    "end": 290.201
   },
   {
-    "text": "3. Occupancy Gravity & the In-Flight Buffer Gravity is not an invisible geometric curve pulling objects toward mass; it is congestion in the substrate's routing fabric — and congestion is carried state, not a threshold heuristic. Every node holds a per-node input buffer: arriving quanta stage as in-flight flux and integrate into the resident count only up to the node's hard capacity. Overflow does not silently clip — it thermalizes as acoustic backscatter, so nothing is ever lost off the books.",
-    "start": 291.679,
-    "end": 326.259
+    "text": "3. Occupancy Gravity, the In-Flight Buffer & the Tension Field Gravity is not an invisible geometric curve pulling objects toward mass; it is congestion in the substrate's routing fabric — and congestion is carried state, not a threshold heuristic. Every node holds a per-node input buffer: arriving quanta stage as in-flight flux and integrate into the resident count only up to the node's hard capacity. Overflow does not silently clip — it thermalizes as acoustic backscatter, so nothing is ever lost off the books.",
+    "start": 290.201,
+    "end": 325.916
   },
   {
     "text": "Congestion is measured on occupancy — resident plus staged quanta. A jammed neighbor refracts passing flux toward the densest node that can still absorb, so mass accretes onto congestion boundaries rather than being tugged at a distance. Every node relays at most FLOW_CAP quanta per tick, so a dense packet drains over multiple ticks — inertia falls out of the accumulator rather than being assumed. And when a port's occupancy saturates (q + staged > 200), it does not merely refuse entry: it bounces the flux straight back. Deadlock walls are mirrors — exclusion pressure is real upstream load, the routing-table expression of the Pauli principle: F equals T times the change in S over the change in X",
-    "start": 326.259,
-    "end": 375.045
+    "start": 325.916,
+    "end": 374.455
+  },
+  {
+    "text": "The propagating tension field (prototype, set_tension_mode — off by default): near-deadlock occupancy also emits a scalar tension that diffuses outward at finite speed and decoheres with distance — a graded well that physically exists beyond the knot's surface. A share of any flux arriving inside the gradient shears toward the denser side mid-hop. Harness measurement (docs/interference.md) shows the phenomenology is grazing-incidence accretion, not orbital bending: streams that clip a well's edge shed mass into bound capture, streams that hit head-on strip the knot, and the interaction vanishes exactly at the field's diffusive reach. Matter does not curve through empty space here — it is gathered, stripped, and bound by a field that congestion itself propagates.",
+    "start": 374.455,
+    "end": 427.683
   },
   {
     "text": "4. Propagation Friction (Cosmological Redshift) Propagation incurs inevitable thermodynamic dissipation. Every time a quanta packet is handed off to an adjacent Planck node, it undergoes a baseline actualization friction. Light frequency degrades logarithmically across the active medium: E received equals E emitted, times E to the negative mu D",
-    "start": 375.045,
-    "end": 399.023
+    "start": 427.683,
+    "end": 451.539
   },
   {
     "text": "5. The Cold Matter Inversion (Stefan-Boltzmann Dissipation) Localized relational friction continuously dissipates into the surrounding field. Nodes cool down proportionally to the square of their local temperature limit, dropping toward a minimum baseline floor (The Cosmic Microwave Background constraint). Because of this, heat has a hard mathematical ceiling. The node's bandwidth is a quadrature budget — C max squared equals C S squared plus C I squared — so spatial I/O load (arrivals, momentum, buffered backlog) starves internal dissipation exactly the way the uncertainty budget predicts. If a node must spend massive capacity maintaining a dense topological deadlock (occupancy > 200), it experiences extreme metabolic drag, over-dissipates its heat, and collapses to the stochastic floor (~2 heat). Conversely, the empty quantum foam easily sustains an ambient vibration of ~325 heat. The vacuum is hot. Matter is freezing.",
-    "start": 399.023,
-    "end": 463.748
+    "start": 451.539,
+    "end": 515.936
   },
   {
     "text": "Topology: Shell-World vs. Knot-World",
-    "start": 463.748,
-    "end": 466.242
+    "start": 515.936,
+    "end": 518.418
   },
   {
     "text": "To prove that geometry is the dashboard and not the territory, the engine compiles two distinct universes: an 8-fold (Octagonal) substrate and a 6-fold (Hexagonal) substrate. The underlying physical laws, thermal limits, and code logic are identical in both — one C source, one -DTOPOLOGY_HEX compile flag. The only variable is the coordination number: how many neighbors a node routes traffic to.",
-    "start": 466.242,
-    "end": 493.754
+    "start": 518.418,
+    "end": 545.791
   },
   {
     "text": "By running identical thermodynamic accounting on two different graphs, we observe a radical emergence: changing the adjacency graph shifts the physical universe from classical fluid mechanics to quantum string dynamics.",
-    "start": 493.754,
-    "end": 508.93
+    "start": 545.791,
+    "end": 560.89
   },
   {
     "text": "Invariant Viscosity: The engine enforces a strict topological invariant for heat diffusion: a channel always transfers exactly 1/9 of a node's heat per tick. Because a 6-fold node only has 6 avenues to dump heat, it natively retains 3/9 of its heat locally, compared to an 8-fold node's 1/9. In our simulator, this means 6-fold matter sustains slightly higher internal thermodynamic pressure, eroding ~17% faster under identical ambient quantum foam.",
-    "start": 508.93,
-    "end": 540.115
+    "start": 560.89,
+    "end": 591.917
   },
   {
     "text": "Oct-8 (Macroscopic Continua): On the 8-fold substrate, matter bounds itself as a continuous, 2D shell (a volumetric torus). When subjected to ambient quantum foam, the shell degrades continuously (thinning and stretching), mirroring the classical fluid mechanics of a dissipating vortex in water.",
-    "start": 540.115,
-    "end": 560.627
+    "start": 591.917,
+    "end": 612.325
   },
   {
     "text": "Hex-6 (Quantum String Dynamics): On the 6-fold substrate, the volumetric torus cannot exist. The native stable structure collapses into a 1-dimensional braided graph loop. When this 1D filament is struck by a massive shockwave, it does not thin out like a fluid. It suffers quantized severing—individual links are cleanly cut. This is a direct computational analogue to Quantum Chromodynamics (QCD), where pulling quarks apart causes the color-flux string to snap.",
-    "start": 560.627,
-    "end": 592.782
+    "start": 612.325,
+    "end": 644.317
   },
   {
     "text": "The Empirical Bridge: The hex-native engine maps directly to empirical observations in 2D quantum materials. In real-world physics, forcing a rigid 6-fold hexagonal carbon lattice (like graphene) into sub-nanometer asymmetric curvature creates a massive 1D topological conduit. Researchers found a hard threshold voltage (\\sim 1\\text{V}) that acts as a barrier, causing highly asymmetric current flow. In the Planck Field, this is the exact measurement of Phase Friction. Pushing current \"against\" the 6-fold curvature-induced phase lock causes a massive spike in metabolic dissipation, creating the threshold barrier.",
-    "start": 592.782,
-    "end": 635.609
+    "start": 644.317,
+    "end": 686.927
   },
   {
     "text": "(You can test this yourself: open the System drawer and switch the Substrate between ⏹️ Oct8 and ⬡ Hex6. The ⬡ Filament Under Fire scenario reproduces the bombardment test live.)",
-    "start": 635.609,
-    "end": 647.944
+    "start": 686.927,
+    "end": 699.199
   },
   {
     "text": "The Biological Swerve",
-    "start": 647.944,
-    "end": 649.399
+    "start": 699.199,
+    "end": 700.647
   },
   {
     "text": "While the grid is perfectly deterministic, you are the external biological interface. When you click the grid to inject a pattern, you are executing an intentional interference. You are actively altering the relational constraints of the substrate, forcing the physics engine to resolve your interference through a cascade of causal actualizations.",
-    "start": 649.399,
-    "end": 673.515
+    "start": 700.647,
+    "end": 724.641
   },
   {
     "text": "The Injection Matrix lets you choose which relational channels your interference writes — density (fluid displacement), heat (pure thermal energy), or spin (directional momentum) — and how strongly, via per-channel dose sliders. Injection obeys the field's own rules: dose into dense matter thermalizes as backscatter, and any overflow past the node's capacity stages into its input buffer as in-flight flux — nothing is ever silently discarded. Enable all three channels and the stamp overwrites the field verbatim; dial the spin channel toward entrainment and your injected mass adopts the ambient flow instead of fighting it. :::",
-    "start": 673.515,
-    "end": 717.312
+    "start": 724.641,
+    "end": 768.216
   }
 ]
