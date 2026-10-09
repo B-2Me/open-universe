@@ -78,7 +78,7 @@ uint16_t KNOB_THERMAL_LIMIT = 1200;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 int SEEPAGE_MODE_ACTIVE = 0; // Porous-barrier prototype — off until the UI exposes it
 int SPRAY_MODE_ACTIVE = 1;   // Unwind radiation-spray conservation — canonical since v3.0
-int TENSION_MODE_ACTIVE = 0; // Tension-field prototype — off; harness-measured accretion/shear
+int TENSION_MODE_ACTIVE = 1; // Tension field is canonical physics — set_tension_mode(0) opts out
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs

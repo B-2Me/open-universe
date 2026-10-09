@@ -298,7 +298,9 @@ function tickHex() {
 }
 
 let KNOB_DISS = 15, KNOB_LIMIT = 50000;
-let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'res'; // 'res'|'cong'|'off'
+// 'cong' is canonical (matches planck.c); 'res' is the deprecated
+// resistance-sink heuristic kept for A/B history; 'off' disables.
+let FLOW_CAP_ON = true, LOCK_ON = true, PERSIST_MASS = false, GRAV_MODE = 'cong'; // 'res'(deprecated)|'cong'|'off'
 let ZS_ON = false; // adjacency expansion — the Open Frontier prototype
 let ZSHUNT_ON = false; // sender-side vertical diversion on port deadlock
 let ZOPEN_ON = false; // bounded depth: slab0/slabD-1 are hard surfaces
@@ -319,14 +321,14 @@ let LENS_B = parseInt(process.env.LENS_B || '50');          // hexlens impact pa
 // (finite propagation speed — the field IS latency), decoheres slowly
 // (finite range), and its gradient steers moving mass. The pad byte in
 // PlanckNode is its physical home — this needs no layout change in C.
-let TENS_ON = false;
-let T_EMIT = parseInt(process.env.T_EMIT || '3');   // occupancy >> 3 → tension source
-let T_EMIT_MIN = parseInt(process.env.T_EMIT_MIN || '0'); // only occupancy above this emits — knots source the field, dilute flux doesn't
-let T_SHARE = parseInt(process.env.T_SHARE || '5'); // per-channel share tn>>5 (~3%/hop)
+let TENS_ON = false; // parsed below — canonical default is ON ('+notension' opts out)
+let T_EMIT = parseInt(process.env.T_EMIT || '4');   // occupancy >> 4 → tension source
+let T_EMIT_MIN = parseInt(process.env.T_EMIT_MIN || '200'); // only occupancy above this emits — knots source the field, dilute flux doesn't
+let T_SHARE = parseInt(process.env.T_SHARE || '3'); // per-channel share tn>>3 (~12%/hop)
 let T_DECAY = parseInt(process.env.T_DECAY || '5'); // tn >> 5 decoheres (~3%/tick)
 let T_PULL = parseInt(process.env.T_PULL || '4');   // gradient << 4 → momentum bias (gain)
-let T_RATE = parseInt(process.env.T_RATE || '255'); // pull duty cycle /256 — fractional steering
-let T_DIVERT = parseInt(process.env.T_DIVERT || '5'); // arrivals >> 5 shear up-gradient (16 = off)
+let T_RATE = parseInt(process.env.T_RATE || '0');   // pull duty cycle /256 — 0 = shear-only (canonical)
+let T_DIVERT = parseInt(process.env.T_DIVERT || '4'); // arrivals >> 4 shear up-gradient (16 = off)
 // Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
 // pulse into a running scenario and measure when the excess reaches a
 // detector gate — control/pulse differencing isolates the wave's
@@ -334,7 +336,7 @@ let T_DIVERT = parseInt(process.env.T_DIVERT || '5'); // arrivals >> 5 shear up-
 let LAT_ON = false;
 let PULSE_T = parseInt(process.env.PULSE_T || '60');   // injection tick
 let PULSE_Q = parseInt(process.env.PULSE_Q || '60');   // quanta added per cell
-let JAM_GAP = parseInt(process.env.JAM_GAP || '50');   // hexjam throat half-width
+let JAM_GAP = parseInt(process.env.JAM_GAP || '30');   // hexjam throat half-width (30 = tension-baseline paint)
 let PROBE_SRC = null, PROBE_DST = null;                // gate rectangles per variant
 const INTMOM_DOM = process.env.INTMOM_DOM !== '0'; // diagnostic: 0 = keep atan2 resolver, isolate LUT cause
 let sprayQ = 0, sprayLast = 0; // cumulative unspooled quanta (windowed in stats)
@@ -722,18 +724,23 @@ function paintHex(variant) {
         s[i] = SEXT(Math.atan2(cy - y, cx - x) + Math.PI / 6); // spiral infall
         h[i] = 100;
       }
-    } else if (variant === 'hexlens') {
-      // Gravitational lensing probe: a bare anchor knot at center, and a
-      // probe stream (s=E) aimed past it at impact parameter LENS_B.
-      // Without a force the stream holds its lane; a real field must
-      // curve it measurably — deflection should grow as LENS_B shrinks.
-      // Result so far: every steering coupling tried shows a binary
-      // cliff — invisible below threshold, accretion above it. Streams
-      // are sticky mass flows, not rays: they get eaten, not bent.
+    } else if (variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal') {
+      // Tension-field probes around a bare anchor knot:
+      //   hexlens       — probe stream at LENS_B (deflection/capture metric)
+      //   hexaccretion  — grazing stream at B≈28: boundary-layer mass binds
+      //                   into new deadlocked cells around the well
+      //   hextidal      — compact projectile at B≈14: erosive stripping,
+      //                   the knot and projectile damage each other
+      // Streams are sticky mass flows, not rays: wells eat, not bend.
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; } // moat — isolate the knot
       const sy = cy - LENS_B;
-      if (y >= sy - 3 && y <= sy + 3 && x >= 30 && x <= 370) { q[i] = 80; s[i] = 1; h[i] = 500; }
+      if (variant === 'hextidal') {
+        const pd = Math.hypot(x - 60, y - sy);
+        if (pd <= 10) { q[i] = 140; s[i] = 1; h[i] = 500; } // compact projectile heading E
+      } else {
+        if (y >= sy - 3 && y <= sy + 3 && x >= 30 && x <= 370) { q[i] = 80; s[i] = 1; h[i] = 500; }
+      }
     } else if (variant === 'hexcollide') {
       // Head-on collision front: two dense streams aimed 180° apart
       // meeting on the same row band — the conflict-scoped halving
@@ -969,7 +976,7 @@ INTMOM_ON = mode.includes('intmom');
 HALVE_ON = mode.includes('halve');
 LAT_ON = mode.includes('latprobe');
 PRESS_ON = mode.includes('press');
-TENS_ON = mode.includes('tension');
+TENS_ON = !mode.includes('notension'); // canonical — '+notension' A/Bs the field off
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
@@ -978,6 +985,8 @@ if (ZS_ON) {
   for (let z = 1; z < DEPTH; z++) slabs[z].h.fill(1); // deeper slabs start as cold vacuum
 }
 console.log(`=== mode=${mode} variant=${variant} ===`);
+// Per-variant impact parameters when the env doesn't pin one (paint reads it).
+if (!process.env.LENS_B) LENS_B = variant === 'hexaccretion' ? 28 : variant === 'hextidal' ? 14 : 50;
 const paintVariant = () => {
   if (variant === 'oct') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct' } });
   else if (variant === 'octvc') paintElectron({ oct: { rings: [{ lo: 45, hi: 55, q: 70 }], metric: 'exact', tangent: 'oct', core: 'vortex' } });
@@ -1000,7 +1009,7 @@ if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed
 const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
-LENS_TRACK = variant === 'hexlens';
+LENS_TRACK = variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal';
 if (LAT_ON) {
   const gates = PROBE_GATES[variant];
   if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }
