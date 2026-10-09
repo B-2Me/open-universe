@@ -37,6 +37,19 @@
 #define SEEP_BURN_SHIFT (2)     // Deadlocked nodes burn staged flux/tick — dwell attenuation
 #define BUFDECAY_SHIFT (4)      // Radiation decoherence: unresolved buffer flux thermalizes ~6%/tick
 
+// --- Tension Field (causal mechanics, harness-validated) ---
+// Occupancy above TENSION_EMIT_MIN sources a scalar field that diffuses
+// per-channel at >>TENSION_SHARE, decoheres at >>TENSION_DECAY, and
+// shears arriving flux toward the up-gradient flowing neighbor by
+// >>TENSION_DIVERT. Flag-gated: default off. NOT a gravity module —
+// the measured phenomenology is local accretion/stripping/dispersal
+// (see docs/interference.md, Causal Mechanics Probes).
+#define TENSION_EMIT_MIN (200)   // only near-deadlock occupancy emits — knots source the field
+#define TENSION_EMIT_SHIFT (4)   // occupancy >> 4 → source strength
+#define TENSION_SHARE (3)        // per-channel diffusion share tn>>3 (~12%/hop)
+#define TENSION_DECAY (5)        // field decoherence tn>>5 (~3%/tick) — sets reach ℓ
+#define TENSION_DIVERT (4)       // arrivals >> 4 shear up-gradient (~6%)
+
 // --- Undo Snapshot Ring ---
 #define SNAPSHOT_DEPTH (4)       // Checkpoints retained for undo
 
@@ -49,8 +62,9 @@ typedef struct {
     uint8_t quanta;
     uint8_t spin;
     uint16_t heat;
-    uint8_t buffer;  // staged in-flight flux — part of node occupancy
-} PlanckNode;      // sizeof = 6 (alignment pads to the u16 boundary)
+    uint8_t buffer;   // staged in-flight flux — part of node occupancy
+    uint8_t tension;  // propagating tension field — claims the alignment pad
+} PlanckNode;      // sizeof = 6 (tension fills the byte alignment left free)
 
 PlanckNode* grid_read = NULL;
 PlanckNode* grid_write = NULL;
@@ -64,6 +78,7 @@ uint16_t KNOB_THERMAL_LIMIT = 1200;
 int UNDO_ENABLED = 0;  // Snapshot ring only allocates when the UI opts in
 int SEEPAGE_MODE_ACTIVE = 0; // Porous-barrier prototype — off until the UI exposes it
 int SPRAY_MODE_ACTIVE = 1;   // Unwind radiation-spray conservation — canonical since v3.0
+int TENSION_MODE_ACTIVE = 0; // Tension-field prototype — off; harness-measured accretion/shear
 
 // --- Lattice Topology ---
 // Adjacency is a build parameter — the same thermodynamic accounting runs
@@ -252,6 +267,7 @@ EMSCRIPTEN_KEEPALIVE void set_dissipation(int rate) { KNOB_DISSIPATION = (uint8_
 EMSCRIPTEN_KEEPALIVE void set_thermal_limit(int limit) { KNOB_THERMAL_LIMIT = (uint16_t)limit; }
 EMSCRIPTEN_KEEPALIVE void set_seepage_mode(int active) { SEEPAGE_MODE_ACTIVE = active ? 1 : 0; }
 EMSCRIPTEN_KEEPALIVE void set_spray_mode(int active) { SPRAY_MODE_ACTIVE = active ? 1 : 0; }
+EMSCRIPTEN_KEEPALIVE void set_tension_mode(int active) { TENSION_MODE_ACTIVE = active ? 1 : 0; }
 
 EMSCRIPTEN_KEEPALIVE
 void init_grid() {
@@ -331,7 +347,7 @@ EMSCRIPTEN_KEEPALIVE
 void clear_grid() {
     if (!grid_read) return;
     for (int i = 0; i < PIXEL_COUNT; i++) {
-        grid_read[i].quanta = 0; grid_read[i].spin = 0; grid_read[i].heat = 1; grid_read[i].buffer = 0;
+        grid_read[i].quanta = 0; grid_read[i].spin = 0; grid_read[i].heat = 1; grid_read[i].buffer = 0; grid_read[i].tension = 0;
     }
     obs_actualization_yield = 0;
 }
@@ -475,6 +491,9 @@ void tick() {
             int32_t mom_y = 0;   // discrete state, not a real coordinate
 
             int has_domain_match = 0;
+            int tension_sum = 0;   // neighbors' diffusion shares
+            int g_grad_max = 0;    // steepest up-gradient step
+            int g_grad_idx = -1;   // ...into this neighbor (must carry flux)
 
             for (int k = 0; k < SPIN_MAX; k++) {
                 int d = NB_ORDER[k];
@@ -484,6 +503,16 @@ void tick() {
                 uint8_t req_spin = inv_dir(d);
 
                 heat_sum += neighbor.heat / HEAT_DIFFUSION_DIV;
+
+                if (TENSION_MODE_ACTIVE) {
+                    tension_sum += neighbor.tension >> TENSION_SHARE;
+                    // Shear target: up-gradient and flowing — pushed mass
+                    // must have somewhere to go, spinless cells stall it.
+                    int gd = (int)neighbor.tension - (int)current.tension;
+                    if (gd > g_grad_max && neighbor.spin != 0) {
+                        g_grad_max = gd; g_grad_idx = ny * WIDTH + nx;
+                    }
+                }
 
                 if (neighbor.quanta > 0 && neighbor.spin == req_spin) {
                     // The sender only relays up to FLOW_CAP; the rest stays put.
@@ -549,6 +578,17 @@ void tick() {
                     shunting = 1;
                     kinetic_heat += (current.quanta * KINETIC_SHUNT);
                 }
+            }
+            // Tension shear: a share of arriving flux is deflected mid-hop
+            // into the up-gradient flowing neighbor's buffer. Mass conserves;
+            // headings are untouched — this is refraction/accretion, not
+            // spin-capture. (grid_read mutation mid-sweep mirrors spray.)
+            if (TENSION_MODE_ACTIVE && g_grad_idx >= 0 && incoming_quanta > 0) {
+                int room = 255 - grid_read[g_grad_idx].buffer;
+                int push = incoming_quanta >> TENSION_DIVERT;
+                if (push > room) push = room;
+                incoming_quanta -= push;
+                grid_read[g_grad_idx].buffer += push;
             }
             // I/O buffer: arrivals stage in the buffer field and integrate
             // only up to free capacity — overflow is backscatter heat, not
@@ -634,6 +674,21 @@ void tick() {
                 if (next_heat < HEAT_FLOOR) next_heat = 1 + (rand() % 3);
             }
 
+            // Tension field bookkeeping: keep what the channels don't
+            // send, gain neighbors' shares, source from own occupancy,
+            // decohere. The field lives in the pad byte — no layout cost.
+            int next_tension = current.tension;
+            if (TENSION_MODE_ACTIVE) {
+                int occ = current.quanta + current.buffer;
+                next_tension = current.tension
+                    - SPIN_MAX * (current.tension >> TENSION_SHARE)
+                    + tension_sum
+                    - (current.tension >> TENSION_DECAY)
+                    + (occ > TENSION_EMIT_MIN ? occ >> TENSION_EMIT_SHIFT : 0);
+                if (next_tension < 0) next_tension = 0;
+                if (next_tension > 255) next_tension = 255;
+            }
+
             // Phase is structural state: with no incoming momentum the
             // lattice holds its established spin rather than erasing to 0.
             // Flux rewrites phase; silence never does.
@@ -672,6 +727,7 @@ void tick() {
             grid_write[idx].heat = next_heat;
             grid_write[idx].spin = next_spin;
             grid_write[idx].buffer = (uint8_t)next_buffer;
+            grid_write[idx].tension = (uint8_t)next_tension;
             
             frame_quanta += next_quanta;
             frame_buffer += next_buffer;

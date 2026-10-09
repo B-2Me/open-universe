@@ -8,6 +8,7 @@
 //         (old resistance gravity), '+persist' (mass persist), '+nocap',
 //         '+nograv', '+nolock' to disable.
 // If planck.c's tick() changes, mirror the change here or results drift.
+// (+tension is mirrored in planck.c behind set_tension_mode, off default.)
 
 const W = 400, H = 400, N = W * H;
 const DEADLOCK = 200, HEAT_MAX = 65535;

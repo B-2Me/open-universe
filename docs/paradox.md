@@ -261,6 +261,8 @@ This is a perfect demonstration of actualization capacity limits.
 - If you continuously bombard a local system with measurement collisions, the system is forced to expend its finite actualization capacity entirely on resolving the external measurement tension. 
 - Because its thermodynamic capacity is saturated dealing with the external environment, it has zero capacity left over for internal state updates (decaying). You aren't freezing a probability wave; you are just maximizing its relational drag so it cannot tick forward.
 
+**The Anti-Zeno Effect:** The inverse is equally mechanical. High-frequency clamping freezes a knot because measurement noise is *incompatible* with its internal phase — pure drag. But resonant environmental shaking — perturbations arriving in phase with the knot's own unspooling mode — does not clamp; it *punctures* the energy isolation. Each in-phase collision couples into the unwinding channel itself, accelerating the topological release instead of suppressing it. Freeze versus accelerate is not about how much the environment touches a system; it is about whether the touching fights or feeds the mode the system was already on.
+
 ---
 
 ## 20. The Retrocausality Paradox (Wheeler’s Delayed-Choice)
