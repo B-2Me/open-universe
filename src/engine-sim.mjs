@@ -394,7 +394,7 @@ bindSlab(0);
 function tick() {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
-    const cq = q[i], cs = s[i], ch = h[i];
+    const cq = q[i], cs = s[i], ch = h[i], tn0 = tn[i];
     let deadlocked = 0;
     if (cs !== 0) {
       const tx = (x + SPIN_DX[cs] + W) % W, ty = (y + SPIN_DY[cs] + H) % H;
@@ -402,6 +402,7 @@ function tick() {
       if (q[ti] + b[ti] > DEADLOCK) deadlocked = 1;
     }
     let heatSum = 0, kin = 0, minRes = 1e9, gravSpin = cs, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0;
+    let tSum = 0, gNi = -1, gMaxD = 0;
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
       if (!dx && !dy) continue;
       const nx = (x + dx + W) % W, ny = (y + dy + H) % H;
@@ -410,6 +411,12 @@ function tick() {
       const nDir = DIR_MAP[dy + 1][dx + 1], req = INV_DIR[nDir];
       const nOcc = nq + b[ni];
       heatSum += Math.floor(nh / DIFF_DIV);
+      if (TENS_ON) {
+        tSum += tn[ni] >> T_SHARE;
+        // Oct8 shear: steepest up-gradient neighbor that can carry flux.
+        const gd = tn[ni] - tn0;
+        if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
+      }
       if (nq > 0 && ns === req) {
         const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
         kin += sent * KINETIC_BASE;
@@ -459,6 +466,11 @@ function tick() {
         }
         if (dv === 0) { shunt = 1; kin += cq * KINETIC_SHUNT; }
       }
+    }
+    if (TENS_ON && gNi >= 0 && incoming > 0 && T_DIVERT < 16) {
+      const room = 255 - b[gNi];
+      const push = Math.min(incoming >> T_DIVERT, room);
+      incoming -= push; b[gNi] += push;
     }
     let nb2 = b[i] + incoming;
     if (nb2 > 255) {
@@ -518,6 +530,15 @@ function tick() {
         : Math.floor((1 + ts * ts) * KNOB_DISS * bwf);
       if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
     }
+    // Tension bookkeeping — same update as hex, 8 channels instead of 6.
+    if (TENS_ON) {
+      let ntn = tn0 - 8 * (tn0 >> T_SHARE) + tSum
+              - (tn0 >> T_DECAY)
+              + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
+      tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
+    } else {
+      tn2[i] = tn0;
+    }
 
     // Phase is structural state: silence holds spin; flux rewrites it.
     let ns2 = dom !== 0 ? dom : cs;
@@ -539,7 +560,7 @@ function tick() {
 
     q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; b2[i] = nb2;
   }
-  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; }
+  for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; tn[i] = tn2[i]; }
 }
 
 const vortexSpin = (dx, dy, c = 1) => {
