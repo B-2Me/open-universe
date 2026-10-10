@@ -653,6 +653,267 @@ function tick() {
   for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; tn[i] = tn2[i]; }
 }
 
+// === Phase-3 prototype: 12-neighbor close-packed 3D substrate ===
+// Stacked-hex (HCP-style): each node keeps its 6 equatorial neighbors
+// and gains 3 zenith (z+1) + 3 nadir (z-1) contacts nested in the
+// triangle gaps. Layer parity interleaves: even z layers seat their
+// vertical neighbors at planar dirs {1,3,5} (0°,120°,240°), odd at
+// {2,4,6} — and each layer's zenith set is its own nadir set, because
+// HINV maps {1,3,5}↔{2,4,6}, so every vertical port is reciprocal.
+// Spin 0 = dead, 1-6 equatorial, 7-9 zenith, 10-12 nadir. Boundary:
+// planar wrap (as 2D), z is a hard surface (ports off-box refuse).
+const W3 = 100, H3 = 100, D3 = 40, N3 = W3 * H3 * D3;
+const S3 = [[1, 3, 5], [2, 4, 6]]; // planar dirs of vertical ports by z-parity
+const FZ = 209, FP = 148;          // √(2/3)·256 and (1/√3)·256 — unit 3D ports
+const V3 = [0, 1].map(p => {
+  const v = [null];
+  for (let s = 1; s <= 6; s++) v.push([HEX_MX256[s], HEX_MY256[s], 0]);
+  for (let j = 0; j < 3; j++) {
+    const d = S3[p][j];
+    v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), FZ]);
+  }
+  for (let j = 0; j < 3; j++) {
+    const d = S3[p][j];
+    v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), -FZ]);
+  }
+  return v;
+});
+// BACK3[p][d]: the port on the neighbor reached via my port d that
+// points back at me — the 3D generalization of HINV.
+const BACK3 = [0, 1].map(p => {
+  const t = [0];
+  for (let d = 1; d <= 12; d++) {
+    if (d <= 6) t.push(HINV[d]);
+    else if (d <= 9) t.push(10 + S3[p ^ 1].indexOf(HINV[S3[p][d - 7]]));
+    else t.push(7 + S3[p ^ 1].indexOf(HINV[S3[p][d - 10]]));
+  }
+  return t;
+});
+const dotV = (a, b) => (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) >> 8;
+// Angular-distance LUTs (×256 cosine): same-parity port pairs and
+// opposite-parity pairs — replaces runtime trigonometry in the tick.
+const DOTSAME = [], DOTDIFF = [];
+for (let a = 0; a <= 12; a++) {
+  DOTSAME.push(new Int16Array(13)); DOTDIFF.push(new Int16Array(13));
+  for (let b = 1; b <= 12; b++) {
+    DOTSAME[a][b] = a === 0 ? 0 : dotV(V3[0][a], V3[0][b]);
+    DOTDIFF[a][b] = a === 0 ? 0 : dotV(V3[0][a], V3[1][b]);
+  }
+}
+// dot3: cosine×256 between port sa at parity pa and port sb at parity pb.
+const dot3 = (pa, sa, pb, sb) =>
+  pa === pb ? DOTSAME[sa][sb] : (pa === 0 ? DOTDIFF[sa][sb] : DOTDIFF[sb][sa]);
+// REV3[p][s]: antipodal port — the deadlock mirror (shunt reflection).
+const REV3 = [0, 1].map(p => {
+  const t = [0];
+  for (let a = 1; a <= 12; a++) {
+    let best = 0, bd = Infinity;
+    for (let b = 1; b <= 12; b++) { const d = dotV(V3[p][a], V3[p][b]); if (d < bd) { bd = d; best = b; } }
+    t.push(best);
+  }
+  return t;
+});
+// Quantize a 3D vector (any scale) to the nearest port at parity p.
+const dir3 = (p, vx, vy, vz) => {
+  if (!vx && !vy && !vz) return 0;
+  let bs = 0, bd = -Infinity;
+  for (let s = 1; s <= 12; s++) {
+    const d = V3[p][s][0] * vx + V3[p][s][1] * vy + V3[p][s][2] * vz;
+    if (d > bd) { bd = d; bs = s; }
+  }
+  return bs;
+};
+// Doubled adjacency doubles routing load — bandwidth ceiling scales
+// (blueprint §4); deadlock/buffer saturation does not.
+const FCC_BW = 440;
+const BWF3_LUT = Uint16Array.from({ length: FCC_BW + 1 }, (_, r) =>
+  Math.round(256 * Math.sqrt(1 - (r / FCC_BW) ** 2)));
+let fq, fs3, fh3, fb3, ftn3, fq2, fs32, fh32, fb32, ftn32, NT3;
+function initFCC() {
+  if (fq) return;
+  fq = new Uint8Array(N3); fs3 = new Uint8Array(N3); fh3 = new Uint16Array(N3);
+  fq2 = new Uint8Array(N3); fs32 = new Uint8Array(N3); fh32 = new Uint16Array(N3);
+  fb3 = new Uint8Array(N3); fb32 = new Uint8Array(N3);
+  ftn3 = new Uint8Array(N3); ftn32 = new Uint8Array(N3);
+  NT3 = new Int32Array(N3 * 13).fill(-1);
+  for (let z = 0; z < D3; z++) {
+    const p = z & 1;
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = (z * H3 + y) * W3 + x, off = HOFF[y & 1], nb = i * 13;
+      for (let d = 1; d <= 6; d++) {
+        const nx = (x + off[d][0] + W3) % W3, ny = (y + off[d][1] + H3) % H3;
+        NT3[nb + d] = (z * H3 + ny) * W3 + nx;
+      }
+      for (let j = 0; j < 3; j++) {
+        const d = S3[p][j], nx = (x + off[d][0] + W3) % W3, ny = (y + off[d][1] + H3) % H3;
+        if (z + 1 < D3) NT3[nb + 7 + j] = ((z + 1) * H3 + ny) * W3 + nx;
+        if (z > 0) NT3[nb + 10 + j] = ((z - 1) * H3 + ny) * W3 + nx;
+      }
+    }
+  }
+}
+function tickFCC() {
+  curTick++;
+  for (let z = 0; z < D3; z++) {
+    const p = z & 1, np = p ^ 1, zrow = z * H3 * W3;
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = zrow + y * W3 + x, nb = i * 13;
+      const cq = fq[i], cs = fs3[i], ch = fh3[i], tn0 = ftn3[i];
+      let deadlocked = 0;
+      if (cs !== 0) {
+        const ti = NT3[nb + cs];
+        if (ti < 0 || fq[ti] + fb3[ti] > DEADLOCK) deadlocked = 1;
+      }
+      let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0, mz = 0;
+      let tSum = 0, gx = 0, gy = 0, gz = 0, gNi = -1, gMaxD = 0;
+      const feelsTension = cq > 0 && cs !== 0;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[nb + d];
+        if (ni < 0) continue; // hard surface — no channel
+        const nq = fq[ni], ns = fs3[ni], nh = fh3[ni];
+        heatSum += HEAT_SHARE_CH(nh, 12);
+        const nOcc = nq + fb3[ni];
+        if (TENS_ON) {
+          tSum += TENSION_SHARE_CH(ftn3[ni], 12);
+          const gd = ftn3[ni] - tn0;
+          if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
+          if (feelsTension) { const vd = V3[p][d]; gx += vd[0] * gd; gy += vd[1] * gd; gz += vd[2] * gd; }
+        }
+        if (nq > 0 && ns === BACK3[p][d]) { // neighbor's spin points back at us
+          const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+          kin += sent * KINETIC_BASE;
+          if (cq > 0 && cs !== 0) {
+            // τ(1-cosΔθ) turn friction — sender heading at its own parity.
+            const ddot = d <= 6 ? DOTSAME[ns][cs] : (p === 0 ? DOTDIFF[cs][ns] : DOTDIFF[ns][cs]);
+            kin += sent * ((256 - ddot) >> 6);
+          }
+          if (cq + fb3[i] <= DEADLOCK) {
+            incoming += sent;
+            const vd = V3[p][d];
+            mx -= vd[0] * sent; my -= vd[1] * sent; mz -= vd[2] * sent;
+          }
+        }
+        if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
+      }
+      let nq2 = cq, shunt = 0;
+      if (cq > 0 && cs !== 0) {
+        if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+        else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      }
+      if (TENS_ON && gNi >= 0 && incoming > 0 && T_DIVERT < 16) {
+        const room = 255 - fb3[gNi];
+        const push = Math.min(incoming >> T_DIVERT, room);
+        incoming -= push; fb3[gNi] += push;
+      }
+      let nb2 = fb3[i] + incoming;
+      if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+      const take = Math.min(nb2, 255 - nq2);
+      nq2 += take; nb2 -= take;
+      if (SPRAY_ON && nb2 > 0) { const bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed; }
+      if (TENS_ON) {
+        let ntn = tn0 - 12 * TENSION_SHARE_CH(tn0, 12) + tSum
+                - (tn0 >> T_DECAY)
+                + ((cq + fb3[i]) > T_EMIT_MIN ? ((cq + fb3[i]) >> T_EMIT) : 0);
+        ftn32[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
+        if (((i * 2654435761 + curTick * 40503) >>> 0 & 255) < T_RATE) {
+          gx <<= T_PULL; gy <<= T_PULL; gz <<= T_PULL;
+        } else { gx = 0; gy = 0; gz = 0; }
+      } else {
+        ftn32[i] = tn0;
+      }
+      const dmx = mx + gx, dmy = my + gy, dmz = mz + gz;
+      let dom = dir3(p, dmx, dmy, dmz);
+      const mag = (Math.abs(mx) + Math.abs(my) + Math.abs(mz)) >> 8;
+      let routing = incoming + mag + (shunt ? cq : 0) + fb3[i];
+      if (routing > FCC_BW) routing = FCC_BW;
+      let nh2 = ch - 12 * HEAT_SHARE_CH(ch, 12) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+      if (nh2 > KNOB_LIMIT && nq2 > 0) {
+        if (SPRAY_ON) {
+          const share = ((nq2 + nb2) / 12) | 0;
+          for (let d = 1; d <= 12; d++) {
+            const ni = NT3[nb + d];
+            if (ni >= 0) fb3[ni] = Math.min(255, fb3[ni] + share);
+          }
+          sprayQ += nq2 + nb2;
+        }
+        nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
+      } else {
+        const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
+        nh2 -= ((1 + ts * ts) * KNOB_DISS * BWF3_LUT[routing]) >> 8;
+        if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
+      }
+      let ns2 = dom !== 0 ? dom : cs;
+      if (shunt) {
+        ns2 = REV3[p][cs];
+      } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
+        ns2 = congSpin;
+      } else if (LOCK_ON && cs !== 0) {
+        if (dom === 0) ns2 = (cq === 0 || PERSIST_MASS) ? cs : 0;
+        else ns2 = DOTSAME[cs][dom] >= 128 ? cs : dom; // ≤60° turn holds phase
+      } else ns2 = dom;
+      fq2[i] = nq2; fs32[i] = ns2; fh32[i] = nh2; fb32[i] = nb2;
+    }
+  }
+  for (let i = 0; i < N3; i++) { fq[i] = fq2[i]; fs3[i] = fs32[i]; fh3[i] = fh32[i]; fb3[i] = fb32[i]; ftn3[i] = ftn32[i]; }
+}
+
+const HOPF_R0 = parseFloat(process.env.HOPF_R0 || '25'); // major radius
+const HOPF_R1 = parseFloat(process.env.HOPF_R1 || '9');  // minor (tube) radius
+const HOPF_Q = parseInt(process.env.HOPF_Q || '60');
+const HOPF_TW = parseFloat(process.env.HOPF_TW || '1');  // toroidal weight
+const HOPF_PW = parseFloat(process.env.HOPF_PW || '1');  // poloidal weight
+// Ideal Hopfion field at a cell: toroidal CCW (torus axis = z) blended
+// with a poloidal roll — up through the hole, out over the top, down the
+// outside, back under the bottom (a smoke ring). Returns port index.
+function hopfSpin(x, y, z) {
+  const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+  const rho = Math.hypot(dx, dy);
+  if (rho === 0) return 0;
+  const psi = Math.atan2(dz, rho - HOPF_R0);
+  const ux = dx / rho, uy = dy / rho, sp = Math.sin(psi), cp = Math.cos(psi);
+  const hx = HOPF_TW * -uy + HOPF_PW * sp * ux;
+  const hy = HOPF_TW * ux + HOPF_PW * sp * uy;
+  const hz = HOPF_PW * -cp;
+  return dir3(z & 1, hx, hy, hz);
+}
+function paintFCC(variant) {
+  initFCC();
+  fq.fill(0); fs3.fill(0); fh3.fill(1); fb3.fill(0); ftn3.fill(0);
+  const FOAM = variant === 'hopfionf' ? 0.01 : variant === 'hopfionF' ? 0.05 : 0;
+  const zMid = D3 >> 1;
+  for (let z = 0; z < D3; z++) for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+    const i = (z * H3 + y) * W3 + x;
+    const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+    const rho = Math.hypot(dx, dy);
+    if (variant === 'hopfring') {
+      // Substrate control: hexcycle's exact ring-trace in the mid-layer —
+      // proves the FCC lattice can host a closed orbit at all. Paint only
+      // cells that have an on-ring next-neighbor (d === R0 ring cells).
+      if (z !== zMid) continue;
+      const d = hexDist(x, y, W3 >> 1, H3 >> 1);
+      if (d !== Math.round(HOPF_R0)) continue;
+      const off = HOFF[y & 1], aCur = Math.atan2(dy, dx);
+      let best = 0, bestA = Infinity;
+      for (let dd = 1; dd <= 6; dd++) {
+        const nx = (x + off[dd][0] + W3) % W3, ny = (y + off[dd][1] + H3) % H3;
+        if (hexDist(nx, ny, W3 >> 1, H3 >> 1) !== d) continue;
+        let da = Math.atan2(ny - H3 / 2, nx - W3 / 2) - aCur;
+        while (da <= 0) da += Math.PI * 2;
+        if (da < bestA) { bestA = da; best = dd; }
+      }
+      if (best) { fq[i] = 90; fs3[i] = best; fh3[i] = 500; }
+      continue;
+    }
+    if (rho > 0 && Math.hypot(rho - HOPF_R0, dz) <= HOPF_R1) {
+      fq[i] = HOPF_Q; fs3[i] = hopfSpin(x, y, z); fh3[i] = 500;
+    } else if (FOAM && Math.random() < FOAM) {
+      fq[i] = 1 + Math.floor(Math.random() * 3);
+      fs3[i] = 1 + Math.floor(Math.random() * 12);
+      fh3[i] = 100;
+    }
+  }
+}
+
 const vortexSpin = (dx, dy, c = 1) => {
   if (!dx && !dy) return 0;
   const tx = -dy * c, ty = dx * c;
@@ -1156,6 +1417,44 @@ function stats(label) {
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
+function statsFCC(label) {
+  let totQ = 0, bufQ = 0, dead = 0, tubeQ = 0, vAct = 0, vCoh = 0, vDead = 0;
+  let cxs = 0, cys = 0, czs = 0, cm = 0, topQ = 0, botQ = 0, px = 0, py = 0, pz = 0;
+  for (let z = 0; z < D3; z++) {
+    const p = z & 1;
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = (z * H3 + y) * W3 + x;
+      const qq = fq[i], occ = qq + fb3[i], cs = fs3[i];
+      totQ += qq; bufQ += fb3[i];
+      if (occ > DEADLOCK) dead++;
+      cxs += qq * x; cys += qq * y; czs += qq * z; cm += qq;
+      if (z > D3 / 2) topQ += qq; else if (z < D3 / 2) botQ += qq;
+      if (qq > 0 && cs !== 0) { px += qq * V3[p][cs][0]; py += qq * V3[p][cs][1]; pz += qq * V3[p][cs][2]; }
+      const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+      if (Math.hypot(Math.hypot(dx, dy) - HOPF_R0, dz) <= HOPF_R1 + 2) {
+        tubeQ += occ;
+        if (occ >= DEADLOCK) vDead++;
+        if (qq > 0 && cs !== 0) {
+          vAct++;
+          const ideal = hopfSpin(x, y, z);
+          if (ideal !== 0 && DOTSAME[cs][ideal] >= 128) vCoh++;
+        }
+      }
+    }
+  }
+  let zstr = '';
+  if (TENS_ON) {
+    let tMax = 0;
+    for (let i = 0; i < N3; i++) if (ftn3[i] > tMax) tMax = ftn3[i];
+    zstr += ` tenMax=${tMax}`;
+  }
+  if (SPRAY_ON) {
+    const sWin = sprayQ - sprayLast; sprayLast = sprayQ;
+    zstr += ` spray=${sWin}`;
+  }
+  console.log(`${label}: totQ=${totQ} bufQ=${bufQ} deadlocked=${dead} tubeQ=${tubeQ} coh=${(vCoh / (vAct || 1)).toFixed(2)} fdead=${(vDead / (vAct || 1)).toFixed(3)} cen=(${cm ? (cxs / cm).toFixed(1) : '-'},${cm ? (cys / cm).toFixed(1) : '-'},${cm ? (czs / cm).toFixed(1) : '-'}) topQ=${topQ} botQ=${botQ} netP3=(${(px / 256).toFixed(0)},${(py / 256).toFixed(0)},${(pz / 256).toFixed(0)})${zstr}`);
+}
+
 // --- run ---
 // modes: 'engine' = faithful to current planck.c (flow cap off until engine gains it)
 // 'cap' adds FLOW_CAP transport lag; '+nocap'+nograv'+nolock' toggle features off.
@@ -1164,6 +1463,7 @@ function stats(label) {
 const args = process.argv.slice(2);
 const mode = args[0] || 'engine';
 const variant = args[1] || 'solid';
+const FCC_ON = variant.startsWith('hopf'); // 3D substrate path (Phase-3 prototype)
 FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
@@ -1204,13 +1504,15 @@ const paintVariant = () => {
   else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
   else if (variant === 'blob' || variant === 'stream') paintBlobStream(variant);
   else if (variant.startsWith('seep')) { SEEP_T = parseInt(variant.slice(4)) || 1; SEEP_TRACK = true; paintSeepwall(SEEP_T); }
+  else if (FCC_ON) paintFCC(variant);
   else if (variant.startsWith('hex')) paintHex(variant);
   else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
   else paintElectron();
 };
 bindSlab(0); paintVariant();
 if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed the sink slab with its own jam
-const TICK = variant.startsWith('hex') ? tickHex : tick;
+const TICK = FCC_ON ? tickFCC : variant.startsWith('hex') ? tickHex : tick;
+const STATS = FCC_ON ? statsFCC : stats;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
 LENS_TRACK = variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal';
@@ -1225,14 +1527,14 @@ if (LAT_ON) {
   runLatProbe(TICK, MAXT);
   process.exit(0);
 }
-stats('tick 0');
+STATS('tick 0');
 if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
 if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
   bindSlab(0); TICK();
   if (ZS_ON) { if (ZHOP_ON) tickZOverpass(); else for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
-  if (t % 50 === 0) stats('tick ' + t);
+  if (t % 50 === 0) STATS('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
       let row = '';
