@@ -18,7 +18,8 @@
 // --- Physics Constants ---
 #define DEADLOCK_QUANTA (200)    // Density at which a target blocks incoming traffic
 #define HEAT_MAX (65535)         // 16-bit thermal saturation ceiling
-#define HEAT_DIFFUSION_DIV (9)   // Per-channel heat sharing rate — invariant across substrates
+// Heat diffusion is degree-normalized via heat_share() — the legacy
+// per-channel HEAT_DIFFUSION_DIV=9 is 2v/(3·6), i.e. 2/3 total export.
 #define KINETIC_BASE (1)         // Base heat from a valid collision
 #define KINETIC_SHUNT (5)        // Heat cost when a saturated port repels the flux
 #define KINETIC_BACKPRESSURE (10) // Heat blowoff when an input buffer overflows (backscatter)
@@ -46,7 +47,9 @@
 // (see docs/interference.md, Causal Mechanics Probes).
 #define TENSION_EMIT_MIN (200)   // only near-deadlock occupancy emits — knots source the field
 #define TENSION_EMIT_SHIFT (4)   // occupancy >> 4 → source strength
-#define TENSION_SHARE (3)        // per-channel diffusion share tn>>3 (~12%/hop)
+// TENSION_SHARE(3) superseded by tension_share(): the raw >>3 was
+// per-channel, so oct8 exported ~100% of the field per tick (a swap)
+// where hex6 exported 75%. Normalized: 3/4 total, split by degree.
 #define TENSION_DECAY (5)        // field decoherence tn>>5 (~3%/tick) — sets reach ℓ
 #define TENSION_DIVERT (4)       // arrivals >> 4 shear up-gradient (~6%)
 
@@ -162,6 +165,15 @@ static inline int turn_delta(uint8_t a, uint8_t b) {
     int dd = abs((int)a - (int)b);
     return dd > SPIN_MAX / 2 ? SPIN_MAX - dd : dd;
 }
+// Degree-normalized diffusion shares (audit 2026-10): the legacy
+// per-channel shifts scaled total export with neighbor count — hex6
+// exported 3/4 of the tension field per tick, oct8 ~100% (a full
+// swap), and a 12-neighbor lattice would overshare the register
+// negative. Normalized: 3/4 (tension) / 2/3 (heat) of the register,
+// split evenly across channels. At SPIN_MAX=6 these reduce exactly to
+// the legacy values (3v/24 = v>>3, 2v/18 = v/9) — hex is bit-identical.
+static inline int tension_share(int v) { return (v * 3) / (SPIN_MAX * 4); }
+static inline int heat_share(int v) { return (v * 2) / (SPIN_MAX * 3); }
 // Quadrature bandwidth budget, baked: BWF_LUT[r] = 256·sqrt(1−(r/C_max)²)
 // for r = 0..C_max. The ×256 fraction applies via >>8 — the discrete
 // substrate has no sqrt; it has a table.
@@ -507,10 +519,10 @@ void tick() {
                 PlanckNode neighbor = grid_read[ny * WIDTH + nx];
                 uint8_t req_spin = inv_dir(d);
 
-                heat_sum += neighbor.heat / HEAT_DIFFUSION_DIV;
+                heat_sum += heat_share(neighbor.heat);
 
                 if (TENSION_MODE_ACTIVE) {
-                    tension_sum += neighbor.tension >> TENSION_SHARE;
+                    tension_sum += tension_share(neighbor.tension);
                     // Shear target: up-gradient and flowing — pushed mass
                     // must have somewhere to go, spinless cells stall it.
                     int gd = (int)neighbor.tension - (int)current.tension;
@@ -641,7 +653,7 @@ void tick() {
             // rate. The node retains whatever its coordination number
             // cannot send: 1/9 on oct8, 3/9 on hex6 (sparser channels,
             // less dissipation — a true topological consequence).
-            int kept_heat = current.heat - SPIN_MAX * (current.heat / HEAT_DIFFUSION_DIV);
+            int kept_heat = current.heat - SPIN_MAX * heat_share(current.heat);
             int next_heat = kept_heat + heat_sum + kinetic_heat;
 
             next_heat += (next_quanta * QUANTA_HEAT_GEN);
@@ -686,7 +698,7 @@ void tick() {
             if (TENSION_MODE_ACTIVE) {
                 int occ = current.quanta + current.buffer;
                 next_tension = current.tension
-                    - SPIN_MAX * (current.tension >> TENSION_SHARE)
+                    - SPIN_MAX * tension_share(current.tension)
                     + tension_sum
                     - (current.tension >> TENSION_DECAY)
                     + (occ > TENSION_EMIT_MIN ? occ >> TENSION_EMIT_SHIFT : 0);

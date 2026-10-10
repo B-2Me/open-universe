@@ -15,6 +15,15 @@ const DEADLOCK = 200, HEAT_MAX = 65535;
 const KINETIC_BASE = 1, KINETIC_SHUNT = 5;
 const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
 const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant across substrates
+// Degree-normalized diffusion shares (audit 2026-10): raw per-channel
+// bit-shifts scale total export with neighbor count — hex6 sent 3/4 of
+// the tension field per tick, oct8 sent ~100% (a full swap), and a
+// 12-neighbor lattice would overshare negative. Normalized: total
+// export is 3/4 (tension) and 2/3 (heat) of the register, split evenly
+// across channels. At deg=6 these reduce EXACTLY to the legacy shifts
+// (3v/24 = v>>3, 2v/18 = v/9) — hex dynamics are bit-identical.
+const TENSION_SHARE_CH = (v, deg) => Math.floor(v * 3 / (deg * 4));
+const HEAT_SHARE_CH = (v, deg) => Math.floor(v * 2 / (deg * 3));
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows (backscatter)
@@ -104,10 +113,10 @@ function tickHex() {
       const nx = (x + off[d][0] + W) % W, ny = (y + off[d][1] + H) % H;
       const ni = ny * W + nx;
       const nq = q[ni], ns = s[ni], nh = h[ni];
-      heatSum += Math.floor(nh / DIFF_DIV);
+      heatSum += HEAT_SHARE_CH(nh, 6);
       const nOcc = nq + b[ni];
       if (TENS_ON) {
-        tSum += tn[ni] >> T_SHARE;
+        tSum += TENSION_SHARE_CH(tn[ni], 6);
         // Track the steepest up-gradient neighbor that can carry flux —
         // arrivals deflect toward it (refraction) without touching spin.
         // Shear into a spinless cell stalls and accretes, so s≠0 only.
@@ -243,7 +252,7 @@ function tickHex() {
     // Tension field bookkeeping: keeps what the 6 channels don't send,
     // gains neighbors' shares, sources from own occupancy, decoheres.
     if (TENS_ON) {
-      let ntn = tn0 - 6 * (tn0 >> T_SHARE) + tSum
+      let ntn = tn0 - 6 * TENSION_SHARE_CH(tn0, 6) + tSum
               - (tn0 >> T_DECAY)
               + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
       tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
@@ -275,7 +284,7 @@ function tickHex() {
     const bwf = Math.sqrt(1 - frac6 * frac6);
 
     // Retain what the 6 channels cannot send: h - 6*(h/9).
-    let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    let nh2 = ch - 6 * HEAT_SHARE_CH(ch, 6) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       if (SPRAY_ON) {
         // Unwinding = E=mc²: the knot's mass unspools as un-actualized
@@ -454,9 +463,9 @@ function tick() {
       const nq = q[ni], ns = s[ni], nh = h[ni];
       const nDir = DIR_MAP[dy + 1][dx + 1], req = INV_DIR[nDir];
       const nOcc = nq + b[ni];
-      heatSum += Math.floor(nh / DIFF_DIV);
+      heatSum += HEAT_SHARE_CH(nh, 8);
       if (TENS_ON) {
-        tSum += tn[ni] >> T_SHARE;
+        tSum += TENSION_SHARE_CH(tn[ni], 8);
         // Oct8 shear: steepest up-gradient neighbor that can carry flux.
         const gd = tn[ni] - tn0;
         if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
@@ -554,7 +563,7 @@ function tick() {
     const bwf = Math.sqrt(1 - frac8 * frac8);
 
     // Retain what the 8 channels cannot send: h - 8*(h/9).
-    let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    let nh2 = ch - 8 * HEAT_SHARE_CH(ch, 8) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       if (SPRAY_ON) {
         // Unwinding = E=mc²: the knot's mass unspools as un-actualized
@@ -576,7 +585,7 @@ function tick() {
     }
     // Tension bookkeeping — same update as hex, 8 channels instead of 6.
     if (TENS_ON) {
-      let ntn = tn0 - 8 * (tn0 >> T_SHARE) + tSum
+      let ntn = tn0 - 8 * TENSION_SHARE_CH(tn0, 8) + tSum
               - (tn0 >> T_DECAY)
               + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
       tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
