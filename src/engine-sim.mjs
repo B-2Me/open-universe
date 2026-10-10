@@ -76,13 +76,23 @@ function tickHex() {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i], tn0 = tn[i];
     const par = y & 1, off = HOFF[par];
-    let deadlocked = 0;
+    let deadlocked = 0, flankShift = 0;
     if (cs !== 0) {
       const tx = (x + off[cs][0] + W) % W, ty = (y + off[cs][1] + H) % H;
       const ti = ty * W + tx;
       // The port refuses on occupancy (resident + in-flight), not
       // resident mass alone — a pressurized buffer is already a wall.
       if (q[ti] + b[ti] > DEADLOCK) deadlocked = 1;
+      else if (FLANK_ON && q[ti] > 0 && s[ti] !== 0) {
+        // RFC-044 lateral incompressibility: a loaded, streaming target
+        // refuses misaligned intake. dd = angle between my heading and
+        // the target's stream — 0 co-linear merge (free), 3 head-on.
+        // Refused quanta stay resident in the sender: retained mass IS
+        // the lateral pressure. Receiver replicates the shift below so
+        // mass conserves exactly.
+        const dd = Math.abs(cs - s[ti]);
+        flankShift = FLANK_SH[Math.min(dd, 6 - dd)];
+      }
     }
     let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0, pmx = 0, pmy = 0;
     let tSum = 0, gx = 0, gy = 0, gNi = -1, gMaxD = 0;
@@ -118,7 +128,14 @@ function tickHex() {
         else { const a = (d - 1) * Math.PI / 3; pmx += Math.cos(a) * pn; pmy += Math.sin(a) * pn; }
       }
       if (nq > 0 && ns === HINV[d]) { // neighbor's spin points back at us
-        const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        let sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        // RFC-044: receiver replicates the sender's flank refusal — same
+        // angle (sender heading ns vs our stream cs), same shift, so the
+        // refused share never leaves the sender and mass conserves.
+        if (FLANK_ON && cq > 0 && cs !== 0) {
+          const fdd = Math.abs(ns - cs);
+          sent >>= FLANK_SH[Math.min(fdd, 6 - fdd)]; // sent=0 flows through inert
+        }
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
           // Continuous turn friction: straight-through free, reversal 2τ.
@@ -161,7 +178,7 @@ function tickHex() {
     }
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
-      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - (Math.min(cq, FLOW_CAP) >> flankShift) : 0;
       else {
         let dv = 0;
         if (ZSHUNT_ON) {
@@ -345,6 +362,14 @@ let T_DIVERT = parseInt(process.env.T_DIVERT || '4'); // arrivals >> 4 shear up-
 let ZPE_ON = false, ZPE_TRACK = false;
 const ZPE_FLOOR = parseInt(process.env.ZPE_FLOOR || '1');
 const ZPE_PACKET = parseInt(process.env.ZPE_PACKET || '8');
+// RFC-044: anisotropic flank shield — sender-side intake refusal scaled
+// by heading-vs-target-stream angle. FLANK_SH[dd]: dd=0 co-linear merge
+// (free), dd=3 head-on (refuse 7/8). Hex6 only.
+let FLANK_ON = false;
+const FLANK_SH = [0,
+  parseInt(process.env.FLANK_SH1 || '1'),
+  parseInt(process.env.FLANK_SH2 || '2'),
+  parseInt(process.env.FLANK_SH3 || '3')];
 // Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
 // pulse into a running scenario and measure when the excess reaches a
 // detector gate — control/pulse differencing isolates the wave's
@@ -960,6 +985,8 @@ function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0, hMax = 0, hMaxX = 0, hMaxY = 0;
   let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
   let vAct = 0, vCoh = 0, vDead = 0, bandQ = 0, bandH = 0;
+  const ringQ = new Array(56).fill(0), ringQ2 = new Array(56).fill(0), ringN = new Array(56).fill(0);
+  let vradNum = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -977,6 +1004,9 @@ function stats(label) {
       // and saturated-node fraction.
       bandQ += q[i]; bandH += h[i];
       if (q[i] + b[i] >= DEADLOCK) vDead++;
+      const ri = Math.round(d);
+      ringQ[ri] += q[i]; ringQ2[ri] += q[i] * q[i]; ringN[ri]++;
+      if (s[i] !== 0) vradNum += q[i] * (HEX_MX256[s[i]] * (x - cx) + HEX_MY256[s[i]] * (y - cy)) / (256 * d);
       if (q[i] > 0) {
         vAct++;
         const a = Math.atan2(y - cy, x - cx) + Math.PI / 2;
@@ -1065,8 +1095,17 @@ function stats(label) {
   if (VORTEX_TRACK) {
     // ccirc = tangential-coherence fraction of active band cells;
     // barH = dissipation per quantum (RFC predicts it falls with W);
-    // fdead = saturated fraction (must stay < 0.05 — no collapse).
-    zstr += ` ccirc=${(vCoh / (vAct || 1)).toFixed(2)} barH=${(bandH / (bandQ || 1)).toFixed(1)} bandQ=${bandQ} fdead=${(vDead / (vAct || 1)).toFixed(3)}`;
+    // fdead = saturated fraction (must stay < 0.05 — no collapse);
+    // orbitCv = mean per-ring coefficient of variation (necklace ≈ high,
+    // stratified envelope ≈ low); vrad = mean radial drift per quantum
+    // (0 = impermeable lamination).
+    let sigSum = 0, sigN = 0;
+    for (let r = 32; r <= 48; r++) if (ringN[r] > 1) {
+      const mean = ringQ[r] / ringN[r];
+      const sd = Math.sqrt(Math.max(0, ringQ2[r] / ringN[r] - mean * mean));
+      if (mean > 0) { sigSum += sd / mean; sigN++; }
+    }
+    zstr += ` ccirc=${(vCoh / (vAct || 1)).toFixed(2)} barH=${(bandH / (bandQ || 1)).toFixed(1)} bandQ=${bandQ} fdead=${(vDead / (vAct || 1)).toFixed(3)} orbitCv=${(sigSum / (sigN || 1)).toFixed(2)} vrad=${(vradNum / (bandQ || 1)).toFixed(3)}`;
   }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
@@ -1094,6 +1133,7 @@ HALVE_ON = mode.includes('halve');
 LAT_ON = mode.includes('latprobe');
 PRESS_ON = mode.includes('press');
 TENS_ON = !mode.includes('notension'); // canonical — '+notension' A/Bs the field off
+FLANK_ON = mode.includes('flank'); // '+flank' = RFC-044 lateral incompressibility
 ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
