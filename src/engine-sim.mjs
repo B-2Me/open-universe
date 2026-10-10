@@ -190,7 +190,16 @@ function tickHex() {
       if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - (Math.min(cq, FLOW_CAP) >> flankShift) : 0;
       else {
         let dv = 0;
-        if (ZSHUNT_ON) {
+        if (ZHOP_ON) {
+          // RFC-046 overpass: refused flux goes up WITH its vector.
+          const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+          dv = Math.min(sendable, 255 - slabs[1].b[i]);
+          slabs[1].b[i] += dv;
+          if (dv > 0) slabs[1].s[i] = cs;
+          zMoved += dv;
+          nq2 = cq - dv;
+        }
+        if (dv === 0 && ZSHUNT_ON) {
           // Sender-side diversion: the saturated port doesn't reflect the
           // flux — it escapes through the extra channel, spinless.
           // Gravity as pressure release: routing failure goes vertical.
@@ -371,6 +380,34 @@ let T_DIVERT = parseInt(process.env.T_DIVERT || '4'); // arrivals >> 4 shear up-
 let ZPE_ON = false, ZPE_TRACK = false;
 const ZPE_FLOOR = parseInt(process.env.ZPE_FLOOR || '1');
 const ZPE_PACKET = parseInt(process.env.ZPE_PACKET || '8');
+// RFC-046: spin-preserving Z-overpass ('+zhopfion'). Deadlock-diverted
+// quanta enter slab 1 carrying their spin; each following tick the
+// shadow cell attempts re-entry into slab 0's buffer TWO hops along
+// that spin (one hop is the jammed port itself; two is downstream).
+// The packet's spin is written onto the re-entry cell — it arrives
+// still carrying its vector. Refused packets queue on the overpass.
+// Caveat: shadow b is scalar — multiple senders into one shadow cell
+// mix vectors (recorded spin is last-writer-wins).
+let ZHOP_ON = false;
+function tickZOverpass() {
+  const zs = slabs[1], pl = slabs[0];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (zs.b[i] > 0) { // stage diverted flux into occupancy first
+      const take = Math.min(zs.b[i], 255 - zs.q[i]);
+      zs.q[i] += take; zs.b[i] -= take;
+    }
+    if (zs.q[i] === 0 || zs.s[i] === 0) continue;
+    const off = HOFF[y & 1], d = zs.s[i];
+    const tx = (x + 2 * off[d][0] + W) % W, ty = (y + 2 * off[d][1] + H) % H;
+    const ti = ty * W + tx;
+    if (pl.q[ti] + pl.b[ti] > DEADLOCK) continue; // downstream still jammed — hold
+    const amt = Math.min(zs.q[i], FLOW_CAP, 255 - pl.b[ti]);
+    if (amt <= 0) continue;
+    zs.q[i] -= amt; pl.b[ti] += amt; pl.s[ti] = d; zMoved -= amt;
+    if (zs.q[i] === 0) zs.s[i] = 0;
+  }
+}
 // RFC-044: anisotropic flank shield — sender-side intake refusal scaled
 // by heading-vs-target-stream angle. FLANK_SH[dd]: dd=0 co-linear merge
 // (free), dd=3 head-on (refuse 7/8). Hex6 only.
@@ -1143,7 +1180,8 @@ LAT_ON = mode.includes('latprobe');
 PRESS_ON = mode.includes('press');
 TENS_ON = !mode.includes('notension'); // canonical — '+notension' A/Bs the field off
 FLANK_ON = mode.includes('flank'); // '+flank' = RFC-044 lateral incompressibility
-ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
+ZHOP_ON = mode.includes('zhopfion');
+ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON || ZHOP_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
   if (zd) DEPTH = Math.max(2, parseInt(zd[1]));
@@ -1193,7 +1231,7 @@ if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
   bindSlab(0); TICK();
-  if (ZS_ON) { for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
+  if (ZS_ON) { if (ZHOP_ON) tickZOverpass(); else for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
   if (t % 50 === 0) stats('tick ' + t);
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
