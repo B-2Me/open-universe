@@ -722,6 +722,46 @@ function paintHex(variant) {
           q[i] = parseInt(process.env.RING_Q || '90'); h[i] = 500;
         }
       }
+    } else if (variant.startsWith('hexvort')) {
+      // RFC-043: distributed vortex envelope — circulation spread across
+      // a radial band R_mid±W/2 with a Gaussian quanta profile and naive
+      // tangential spins (deliberately not hexcycle's exact ring-trace:
+      // sextant-arc shedding is part of the experiment). hexvortN is
+      // width W=N in clean vacuum; hexvortNf adds 1% sparse foam
+      // (q∈[1,3], random spin) — the gentle bombardment control.
+      const vw = variant.match(/^hexvort(\d+)([fxF]*)$/);
+      const VW = vw ? parseInt(vw[1]) : 4, VFLAGS = (vw && vw[2]) || '';
+      const VFOAM = VFLAGS.includes('f'), VEXACT = VFLAGS.includes('x');
+      const VHEAVY = VFLAGS.includes('F'); // 'F' = hexcyclep-grade 5% q=5 foam
+      const R_MID = 40, sig = VW / 3;
+      if (d >= R_MID - VW / 2 && d <= R_MID + VW / 2) {
+        const gq = Math.round(64 * Math.exp(-((d - R_MID) ** 2) / (2 * sig * sig)));
+        if (gq > 0) {
+          q[i] = Math.min(255, gq);
+          if (VEXACT) {
+            // Exact same-ring trace (hexcycle's r=50 algorithm per radius):
+            // isolates thickness itself from naive-paint streamline loss.
+            const par = y & 1, off = HOFF[par];
+            const aCur = Math.atan2(y - cy, x - cx);
+            let best = 0, bestA = Infinity;
+            for (let dd = 1; dd <= 6; dd++) {
+              const nx = (x + off[dd][0] + W) % W, ny = (y + off[dd][1] + H) % H;
+              if (hexDist(nx, ny, cx, cy) !== d) continue;
+              let da = Math.atan2(ny - cy, nx - cx) - aCur;
+              while (da <= 0) da += Math.PI * 2;
+              if (da < bestA) { bestA = da; best = dd; }
+            }
+            if (best) s[i] = best; else s[i] = SEXT(aCur + Math.PI / 2);
+          } else {
+            s[i] = SEXT(Math.atan2(y - cy, x - cx) + Math.PI / 2);
+          }
+        }
+      } else if (VFOAM && Math.random() < 0.01) {
+        q[i] = 1 + Math.floor(Math.random() * 3);
+        s[i] = 1 + Math.floor(Math.random() * 6);
+      } else if (VHEAVY && Math.random() < 0.05) {
+        q[i] = 5; s[i] = 1 + Math.floor(Math.random() * 6); h[i] = 100;
+      }
     } else if (variant.startsWith('hexcycle') || variant === 'hexring' || variant === 'hexringthin') {
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; }
@@ -815,6 +855,7 @@ function paintHex(variant) {
 let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetry
 let CYCLE_TRACK = false; // hexcycle* variants report loop integrity
 let LENS_TRACK = false;  // hexlens reports downstream centroid deflection
+let VORTEX_TRACK = false; // RFC-043 hexvort* reports envelope coherence
 
 // Seepwall: a closed ring barrier of thickness t (deadlocked disk shell
 // at radius ~60) with randomized interior flux — a boxed particle. Any
@@ -918,6 +959,7 @@ function runLatProbe(tickFn, maxT) {
 function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0, hMax = 0, hMaxX = 0, hMaxY = 0;
   let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
+  let vAct = 0, vCoh = 0, vDead = 0, bandQ = 0, bandH = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -928,6 +970,20 @@ function stats(label) {
     if (CYCLE_TRACK && hexDist(x, y, cx, cy) === 50) {
       cycleTotal++;
       if (q[i] > 0) { cycleOcc++; cycleQ += q[i]; }
+    }
+    if (VORTEX_TRACK && d >= 25 && d <= 55) {
+      // RFC-043 envelope band: Σq, Σh, active fraction with |Δs|≤1 of the
+      // ideal tangent (wrap-aware; s=0 inert cells can't be coherent),
+      // and saturated-node fraction.
+      bandQ += q[i]; bandH += h[i];
+      if (q[i] + b[i] >= DEADLOCK) vDead++;
+      if (q[i] > 0) {
+        vAct++;
+        const a = Math.atan2(y - cy, x - cx) + Math.PI / 2;
+        const ideal = ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+        const dd = Math.abs(s[i] - ideal);
+        if (s[i] !== 0 && Math.min(dd, 6 - dd) <= 1) vCoh++;
+      }
     }
     if (d > 8 && d <= 80) {
       shellMass += q[i];
@@ -1006,6 +1062,12 @@ function stats(label) {
     for (let i = 0; i < N; i++) { px += q[i] * HEX_MX256[s[i]]; py += q[i] * HEX_MY256[s[i]]; }
     zstr += ` netP=(${(px / 256).toFixed(1)},${(py / 256).toFixed(1)}) totH=${totH}`;
   }
+  if (VORTEX_TRACK) {
+    // ccirc = tangential-coherence fraction of active band cells;
+    // barH = dissipation per quantum (RFC predicts it falls with W);
+    // fdead = saturated fraction (must stay < 0.05 — no collapse).
+    zstr += ` ccirc=${(vCoh / (vAct || 1)).toFixed(2)} barH=${(bandH / (bandQ || 1)).toFixed(1)} bandQ=${bandQ} fdead=${(vDead / (vAct || 1)).toFixed(3)}`;
+  }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
@@ -1067,6 +1129,7 @@ CYCLE_TRACK = variant.startsWith('hexcycle');
 LENS_TRACK = variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal';
 ZPE_ON = ZPE_TRACK = variant === 'hexzpe' || variant === 'hexcyclez';
 if (process.env.ZPE_NOWAKE) ZPE_ON = false; // A/B: floor without the clean-wake reset
+VORTEX_TRACK = variant.startsWith('hexvort');
 if (LAT_ON) {
   const gates = PROBE_GATES[variant];
   if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }
