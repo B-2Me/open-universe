@@ -862,25 +862,149 @@ const HOPF_R1 = parseFloat(process.env.HOPF_R1 || '9');  // minor (tube) radius
 const HOPF_Q = parseInt(process.env.HOPF_Q || '60');
 const HOPF_TW = parseFloat(process.env.HOPF_TW || '1');  // toroidal weight
 const HOPF_PW = parseFloat(process.env.HOPF_PW || '1');  // poloidal weight
-// Ideal Hopfion field at a cell: toroidal CCW (torus axis = z) blended
-// with a poloidal roll — up through the hole, out over the top, down the
-// outside, back under the bottom (a smoke ring). Returns port index.
-function hopfSpin(x, y, z) {
+// Ideal Hopfion field vector at a cell: toroidal CCW (torus axis = z)
+// blended with a poloidal roll — up through the hole, out over the top,
+// down the outside, back under the bottom (a smoke ring).
+function hopfVec(x, y, z) {
   const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
   const rho = Math.hypot(dx, dy);
-  if (rho === 0) return 0;
+  if (rho === 0) return [0, 0, 0];
   const psi = Math.atan2(dz, rho - HOPF_R0);
   const ux = dx / rho, uy = dy / rho, sp = Math.sin(psi), cp = Math.cos(psi);
-  const hx = HOPF_TW * -uy + HOPF_PW * sp * ux;
-  const hy = HOPF_TW * ux + HOPF_PW * sp * uy;
-  const hz = HOPF_PW * -cp;
-  return dir3(z & 1, hx, hy, hz);
+  return [HOPF_TW * -uy + HOPF_PW * sp * ux,
+          HOPF_TW * ux + HOPF_PW * sp * uy,
+          HOPF_PW * -cp];
 }
+const hopfSpin = (x, y, z) => dir3(z & 1, ...hopfVec(x, y, z));
+// Painted-trace bookkeeping for statsFCC: hold = fraction of painted
+// cells still carrying their traced spin (winding persistence).
+let hopfMask = null, hopfSnap = null;
 function paintFCC(variant) {
   initFCC();
   fq.fill(0); fs3.fill(0); fh3.fill(1); fb3.fill(0); ftn3.fill(0);
-  const FOAM = variant === 'hopfionf' ? 0.01 : variant === 'hopfionF' ? 0.05 : 0;
+  const FOAM = variant === 'hopfionf' || variant === 'hopfionxf' ? 0.01
+    : variant === 'hopfionF' || variant === 'hopfionxF' ? 0.05 : 0;
   const zMid = D3 >> 1;
+  if (variant.startsWith('hopfionx')) {
+    // RFC-047 pathfinder paint: weave field lines by graph adjacency.
+    // From a seed, repeatedly take the port best aligned with the ideal
+    // Hopfion field among unvisited/unpainted in-tube neighbors; a loop
+    // is kept ONLY if it returns to its seed (closed by construction).
+    // Cells hold exactly one outgoing spin, so self-intersecting paths
+    // are unreachable — conflicts discard the loop. Nested loops tiled
+    // across the tube cross-section build the thick particle; untouched
+    // cells stay vacuum (the moat).
+    hopfMask = new Uint8Array(N3);
+    const MINLEN = parseInt(process.env.HOPF_MINLEN || '20');
+    const MAXLEN = parseInt(process.env.HOPF_MAXLEN || '2000');
+    const SHELL_W = parseFloat(process.env.HOPF_SHELLW || '1.6'); // shell thickness tolerance
+    const cx3 = W3 >> 1, cy3 = H3 >> 1, cz3 = D3 >> 1;
+    let painted = 0, loops = 0, attempts = 0, steepTurns = 0;
+    const trace = (sx, sy, sz) => {
+      const seedI = (sz * H3 + sy) * W3 + sx;
+      const seen = new Set([seedI]);
+      const path = [];
+      let x = sx, y = sy, z = sz, i = seedI;
+      let tvx = 0, tvy = 0, tvz = 0; // travel vector INTO the current cell
+      let seedP = 0, seedD = 0;
+      // Hopfion field lines live on nested toroidal shells (both the
+      // toroidal and poloidal components are tangent to rt = const):
+      // same-shell tracing is the 3D analog of hexcycle's same-ring
+      // neighbor restriction — it is what makes closure findable.
+      const rt0 = Math.hypot(Math.hypot(sx - cx3, sy - cy3) - HOPF_R0, sz - cz3);
+      for (let step = 0; step < MAXLEN; step++) {
+        const p = z & 1, hv = hopfVec(x, y, z);
+        let bd = -1, bi = -1, bdot = -Infinity, closed = false;
+        for (let d = 1; d <= 12; d++) {
+          const ni = NT3[i * 13 + d];
+          if (ni < 0) continue;
+          // Lock-tolerance constraint: the chosen port must stay within
+          // 60° of the incoming travel direction, or Phase Lock rewires
+          // the cell mid-run and the winding dissolves from that seed.
+          if (step > 0 && ((tvx * V3[p][d][0] + tvy * V3[p][d][1] + tvz * V3[p][d][2]) >> 8) < 128) {
+            if (process.env.HOPF_DBG === '2') console.log(`    d${d}: lock dt=${(tvx * V3[p][d][0] + tvy * V3[p][d][1] + tvz * V3[p][d][2]) >> 8}`);
+            continue;
+          }
+          if (ni === seedI) {
+            // Closure also has to make the turn AT the seed within 60° —
+            // the seed's own lock faces the closing hop.
+            if (step + 1 >= MINLEN
+                && ((V3[p][d][0] * V3[seedP][seedD][0] + V3[p][d][1] * V3[seedP][seedD][1] + V3[p][d][2] * V3[seedP][seedD][2]) >> 8) >= 128) {
+              bd = d; closed = true; break;
+            }
+            continue;
+          }
+          if (seen.has(ni) || hopfMask[ni]) { if (process.env.HOPF_DBG === '2') console.log(`    d${d}: seen/mask`); continue; }
+          const nz = (ni / (H3 * W3)) | 0, ny = ((ni % (H3 * W3)) / W3) | 0, nx = ni % W3;
+          const rr = Math.hypot(Math.hypot(nx - cx3, ny - cy3) - HOPF_R0, nz - cz3);
+          if (Math.abs(rr - rt0) > SHELL_W) { if (process.env.HOPF_DBG === '2') console.log(`    d${d}: shell rr=${rr.toFixed(1)} vs ${rt0.toFixed(1)}`); continue; }
+          if (process.env.HOPF_DBG === '2') console.log(`    d${d}: ok dot=${(V3[p][d][0] * hv[0] + V3[p][d][1] * hv[1] + V3[p][d][2] * hv[2]).toFixed(0)}`);
+          const dot = V3[p][d][0] * hv[0] + V3[p][d][1] * hv[1] + V3[p][d][2] * hv[2];
+          if (dot > bdot) { bdot = dot; bd = d; bi = ni; }
+        }
+        if (bd < 0) { if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) died @step${step} len=${path.length}`); return null; }
+        path.push([i, bd]);
+        if (closed) { if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) closed len=${path.length}`); return path; }
+        if (step === 0) { seedP = p; seedD = bd; }
+        tvx = V3[p][bd][0]; tvy = V3[p][bd][1]; tvz = V3[p][bd][2];
+        seen.add(bi); i = bi;
+        x = bi % W3; y = ((bi % (H3 * W3)) / W3) | 0; z = (bi / (H3 * W3)) | 0;
+      }
+      if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) hit MAXLEN len=${path.length}`);
+      return null;
+    };
+    // Seeds tile the tube cross-section at the x+ azimuthal plane —
+    // each closed line precesses around the torus, so a few dozen
+    // seeds cover the full toroidal surface.
+    const SSTEP = parseInt(process.env.HOPF_SEEDSTEP || '3');
+    const ONESEED = process.env.HOPF_SEED ? process.env.HOPF_SEED.split(',').map(Number) : null;
+    if (ONESEED) {
+      attempts = 1;
+      const path = trace(ONESEED[0], ONESEED[1], ONESEED[2]);
+      if (path) {
+        loops++;
+        for (const [i, d] of path) { hopfMask[i] = 1; fs3[i] = d; fq[i] = HOPF_Q; fh3[i] = 500; painted++; }
+      }
+      console.log(`hopfionx single-seed: ${loops ? 'closed' : 'no closure'}, ${painted} cells`);
+      hopfSnap = fs3.slice();
+      return;
+    }
+    for (let dz = -HOPF_R1; dz <= HOPF_R1; dz += SSTEP) {
+      for (let dr = -HOPF_R1; dr <= HOPF_R1; dr += SSTEP) {
+        if (Math.hypot(dr, dz) > HOPF_R1) continue;
+        attempts++;
+        const path = trace(cx3 + Math.round(HOPF_R0) + Math.round(dr), cy3, cz3 + Math.round(dz));
+        if (!path) continue;
+        loops++;
+        // Turn-angle audit: at each painted cell the incoming travel
+        // direction (predecessor's port vector) must re-lock onto the
+        // traced port — Phase Lock tolerates ≤60° (dot ≥ 128/256).
+        let steep = 0;
+        for (let k = 0; k < path.length; k++) {
+          const [pi, pd] = path[k], [ni2, nd] = path[(k + 1) % path.length];
+          const pp = (pi / (H3 * W3) | 0) & 1, np2 = (ni2 / (H3 * W3) | 0) & 1;
+          const iv = V3[pp][pd]; // travel direction into cell ni2
+          const dt = (iv[0] * V3[np2][nd][0] + iv[1] * V3[np2][nd][1] + iv[2] * V3[np2][nd][2]) >> 8;
+          if (dt < 128) steep++;
+        }
+        steepTurns += steep;
+        for (const [i, d] of path) {
+          hopfMask[i] = 1; fs3[i] = d; fq[i] = HOPF_Q; fh3[i] = 500; painted++;
+        }
+      }
+    }
+    console.log(`hopfionx: ${loops}/${attempts} seeds closed loops, ${painted} cells painted, steepTurns=${steepTurns}`);
+    hopfSnap = fs3.slice();
+    if (FOAM) {
+      for (let i = 0; i < N3; i++) {
+        if (!hopfMask[i] && Math.random() < FOAM) {
+          fq[i] = 1 + Math.floor(Math.random() * 3);
+          fs3[i] = 1 + Math.floor(Math.random() * 12); fh3[i] = 100;
+        }
+      }
+    }
+    return;
+  }
   for (let z = 0; z < D3; z++) for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
     const i = (z * H3 + y) * W3 + x;
     const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
@@ -1420,6 +1544,7 @@ function stats(label) {
 function statsFCC(label) {
   let totQ = 0, bufQ = 0, dead = 0, tubeQ = 0, vAct = 0, vCoh = 0, vDead = 0;
   let cxs = 0, cys = 0, czs = 0, cm = 0, topQ = 0, botQ = 0, px = 0, py = 0, pz = 0;
+  let paintN = 0, paintQ = 0, holdN = 0;
   for (let z = 0; z < D3; z++) {
     const p = z & 1;
     for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
@@ -1430,6 +1555,7 @@ function statsFCC(label) {
       cxs += qq * x; cys += qq * y; czs += qq * z; cm += qq;
       if (z > D3 / 2) topQ += qq; else if (z < D3 / 2) botQ += qq;
       if (qq > 0 && cs !== 0) { px += qq * V3[p][cs][0]; py += qq * V3[p][cs][1]; pz += qq * V3[p][cs][2]; }
+      if (hopfMask && hopfMask[i]) { paintN++; paintQ += occ; if (cs === hopfSnap[i]) holdN++; }
       const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
       if (Math.hypot(Math.hypot(dx, dy) - HOPF_R0, dz) <= HOPF_R1 + 2) {
         tubeQ += occ;
@@ -1443,6 +1569,7 @@ function statsFCC(label) {
     }
   }
   let zstr = '';
+  if (hopfMask) zstr += ` paintQ=${paintQ} hold=${(holdN / (paintN || 1)).toFixed(2)}`;
   if (TENS_ON) {
     let tMax = 0;
     for (let i = 0; i < N3; i++) if (ftn3[i] > tMax) tMax = ftn3[i];
