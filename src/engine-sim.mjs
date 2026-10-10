@@ -29,7 +29,9 @@ const TURN_COST_OCT = [0, 1, 4, 7, 8];   // 0° 45° 90° 135° 180°
 // direction vector to the momentum — replacing atan2 entirely.
 const HEX_MX256 = [0, 256, 128, -128, -256, -128, 128];
 const HEX_MY256 = [0, 0, 222, 222, 0, -222, -222];
-const BWF_LUT = Uint8Array.from({ length: NODE_BANDWIDTH_MAX + 1 }, (_, r) =>
+// Uint16Array: LUT[r≤13] rounds to 256 (full budget at idle) — a u8 table
+// wraps 256→0 and silently zeroes dissipation for low-routing cells.
+const BWF_LUT = Uint16Array.from({ length: NODE_BANDWIDTH_MAX + 1 }, (_, r) =>
   Math.round(256 * Math.sqrt(1 - (r / NODE_BANDWIDTH_MAX) ** 2)));
 const hexDirInt = (mx, my) => {
   if (mx === 0 && my === 0) return 0;
@@ -292,6 +294,14 @@ function tickHex() {
       }
     } else ns2 = dom;
 
+    // RFC-042 clean-wake reset: a quiescent cell that heard no flux this
+    // tick restores its native sublattice orientation — residual spin
+    // labels from a departed structure must not freeze into drag
+    // vortices. Cells still receiving flux keep Phase Lock's answer.
+    if (ZPE_ON && incoming === 0 && nq2 <= ZPE_FLOOR && nb2 < ZPE_PACKET) {
+      ns2 = ((x + y) & 1) ? 4 : 1;
+    }
+
     q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; b2[i] = nb2;
   }
   for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; tn[i] = tn2[i]; }
@@ -329,6 +339,12 @@ let T_DECAY = parseInt(process.env.T_DECAY || '5'); // tn >> 5 decoheres (~3%/ti
 let T_PULL = parseInt(process.env.T_PULL || '4');   // gradient << 4 → momentum bias (gain)
 let T_RATE = parseInt(process.env.T_RATE || '0');   // pull duty cycle /256 — 0 = shear-only (canonical)
 let T_DIVERT = parseInt(process.env.T_DIVERT || '4'); // arrivals >> 4 shear up-gradient (16 = off)
+// RFC-042: active-vacuum ground state — quiescent cells hold q=ZPE_FLOOR
+// and reciprocate E/W on sublattice parity (zero net momentum). A cell
+// at the floor that heard no flux restores its parity spin (clean wake).
+let ZPE_ON = false, ZPE_TRACK = false;
+const ZPE_FLOOR = parseInt(process.env.ZPE_FLOOR || '1');
+const ZPE_PACKET = parseInt(process.env.ZPE_PACKET || '8');
 // Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
 // pulse into a running scenario and measure when the excess reaches a
 // detector gate — control/pulse differencing isolates the wave's
@@ -676,6 +692,36 @@ function paintHex(variant) {
     } else if (variant === 'hexstream') {
       // E is a same-row direction — straight-through exists on hex.
       if (y >= 195 && y <= 205 && x >= 40 && x <= 360) { q[i] = 80; s[i] = 1; h[i] = 500; }
+    } else if (variant === 'hexzpe' || variant === 'hexcyclez') {
+      // RFC-042: active ZPE vacuum. Quiescent space holds q=ZPE_FLOOR with
+      // a bipartite reciprocating spin — parity A points E(1), parity B
+      // points W(4); E/W neighbors are always opposite parity, so pairs
+      // exchange flux every tick (standing oscillation, zero net
+      // momentum). Phase Lock then self-maintains the alternation: each
+      // cell's spin follows its incoming flux direction.
+      // hexcyclez overlays the standard hexcycle filament on the live
+      // floor; the dead moat (d<=25) stays dead — it's part of the
+      // structure, not the vacuum.
+      q[i] = ZPE_FLOOR; s[i] = ((x + y) & 1) ? 4 : 1; h[i] = 1;
+      if (variant === 'hexcyclez') {
+        if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
+        else if (d <= 25) { q[i] = 0; s[i] = 0; }
+        else if (d === 50) {
+          // Same discrete-circulation paint as hexcycle.
+          const par = y & 1, off = HOFF[par];
+          const aCur = Math.atan2(y - cy, x - cx);
+          let best = 0, bestA = Infinity;
+          for (let dd = 1; dd <= 6; dd++) {
+            const nx = (x + off[dd][0] + W) % W, ny = (y + off[dd][1] + H) % H;
+            if (hexDist(nx, ny, cx, cy) !== 50) continue;
+            let da = Math.atan2(ny - cy, nx - cx) - aCur;
+            while (da <= 0) da += Math.PI * 2;
+            if (da < bestA) { bestA = da; best = dd; }
+          }
+          if (best) s[i] = best;
+          q[i] = parseInt(process.env.RING_Q || '90'); h[i] = 500;
+        }
+      }
     } else if (variant.startsWith('hexcycle') || variant === 'hexring' || variant === 'hexringthin') {
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; }
@@ -951,6 +997,15 @@ function stats(label) {
     }
     zstr += ` transQ=${tq} intQ=${iq}`;
   }
+  if (ZPE_TRACK || process.env.HEAT_TRACK) {
+    // RFC-042 macro-isotropy: net momentum of the spin-flux field
+    // (Σ q·v(s), ×256 unit basis) must cancel to ~0 in the pure vacuum;
+    // totH is the RFC's cumulative dissipation metric. HEAT_TRACK env
+    // exposes the same fields on non-ZPE controls for the A/B table.
+    let px = 0, py = 0;
+    for (let i = 0; i < N; i++) { px += q[i] * HEX_MX256[s[i]]; py += q[i] * HEX_MY256[s[i]]; }
+    zstr += ` netP=(${(px / 256).toFixed(1)},${(py / 256).toFixed(1)}) totH=${totH}`;
+  }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
 }
 
@@ -1010,6 +1065,8 @@ const TICK = variant.startsWith('hex') ? tickHex : tick;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
 LENS_TRACK = variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal';
+ZPE_ON = ZPE_TRACK = variant === 'hexzpe' || variant === 'hexcyclez';
+if (process.env.ZPE_NOWAKE) ZPE_ON = false; // A/B: floor without the clean-wake reset
 if (LAT_ON) {
   const gates = PROBE_GATES[variant];
   if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }

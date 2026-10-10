@@ -165,7 +165,10 @@ static inline int turn_delta(uint8_t a, uint8_t b) {
 // Quadrature bandwidth budget, baked: BWF_LUT[r] = 256·sqrt(1−(r/C_max)²)
 // for r = 0..C_max. The ×256 fraction applies via >>8 — the discrete
 // substrate has no sqrt; it has a table.
-static const uint8_t BWF_LUT[NODE_BANDWIDTH_MAX + 1] = {
+// uint16_t: the first 14 entries are 256 — uint8_t wraps them to 0 and
+// zeroes heat dissipation for low-routing cells (exposed by RFC-042's
+// active vacuum: quiescent cells generate turn friction but had no drain).
+static const uint16_t BWF_LUT[NODE_BANDWIDTH_MAX + 1] = {
     256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 254, 254, 254, 254, 254, 254, 254, 253, 253, 253, 253, 253, 253, 252, 252, 252,
     252, 252, 251, 251, 251, 251, 250, 250, 250, 250, 249, 249, 249, 248, 248, 248, 248, 247, 247, 247,
