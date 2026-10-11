@@ -13,7 +13,7 @@ layout: page
 
 *A knot of matter, woven from whirlpools — alive in your browser.*
 
-What you're looking at is a **Hopfion**: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember-orange ring is heat locked inside the knot, the cold blue-violet darkness is the vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.
+What you're looking at is a **Hopfion**: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember ring is heat locked inside the knot, the dim red darkness is the cooling vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.
 
 And it's *running*. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.
 

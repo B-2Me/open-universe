@@ -83,23 +83,25 @@ void main() {
       :            vec3(0.6, 0.3, 1.0) * (0.4 + 0.8 * d);
   } else if (u_colorMode == 2) {
     // metabolism: G channel carries heat>>4 — gamma-expanded low end
-    // (ambient foam ~325 heat -> s~20) mapped onto a wide ember spectrum:
-    // cold vacuum violet -> blue -> cyan -> green -> ember -> white-hot
+    // (ambient foam ~325 heat -> s~20) mapped onto a wide blackbody
+    // spectrum: dying ember -> deep red -> orange -> amber -> white-hot
     float h = pow(s / 255.0, 0.55);
-    vec3 c0 = vec3(0.02, 0.00, 0.10);
-    vec3 c1 = vec3(0.10, 0.15, 0.95);
-    vec3 c2 = vec3(0.10, 0.85, 1.00);
-    vec3 c3 = vec3(0.55, 1.00, 0.20);
-    vec3 c4 = vec3(1.00, 0.45, 0.05);
-    vec3 c5 = vec3(1.00, 1.00, 0.95);
-    rgb = (h < 0.25 ? mix(c0, c1, h * 4.0)
-        :  h < 0.45 ? mix(c1, c2, (h - 0.25) * 5.0)
-        :  h < 0.65 ? mix(c2, c3, (h - 0.45) * 5.0)
-        :  h < 0.85 ? mix(c3, c4, (h - 0.65) * 5.0)
-        :             mix(c4, c5, (h - 0.85) * 6.67)) * (0.35 + 0.85 * d);
+    vec3 c0 = vec3(0.06, 0.00, 0.00);  // near-black, heat death
+    vec3 c1 = vec3(0.42, 0.04, 0.00);  // deep red
+    vec3 c2 = vec3(0.82, 0.20, 0.00);  // red-orange
+    vec3 c3 = vec3(1.00, 0.48, 0.00);  // orange
+    vec3 c4 = vec3(1.00, 0.72, 0.10);  // amber
+    vec3 c5 = vec3(1.00, 0.95, 0.80);  // white-hot
+    rgb = (h < 0.20 ? mix(c0, c1, h * 5.0)
+        :  h < 0.40 ? mix(c1, c2, (h - 0.20) * 5.0)
+        :  h < 0.60 ? mix(c2, c3, (h - 0.40) * 5.0)
+        :  h < 0.78 ? mix(c3, c4, (h - 0.60) * 5.56)
+        :             mix(c4, c5, (h - 0.78) * 4.55)) * (0.35 + 0.85 * d);
   } else {
-    rgb = mix(vec3(0.05, 0.15, 0.4), vec3(0.2, 0.9, 1.0), d)
-        + vec3(1.0, 0.7, 0.2) * d * d;
+    // density: indigo depths -> cyan body -> white crest
+    float dd = pow(d, 0.8);
+    rgb = dd < 0.5 ? mix(vec3(0.03, 0.06, 0.30), vec3(0.10, 0.65, 1.00), dd * 2.0)
+                   : mix(vec3(0.10, 0.65, 1.00), vec3(0.95, 1.00, 0.95), (dd - 0.5) * 2.0);
   }
   v_color = vec4(rgb, alpha);
 }`;
