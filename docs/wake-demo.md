@@ -72,3 +72,6 @@ While the grid is perfectly deterministic, **you** are the external biological i
 
 The Injection Matrix lets you choose *which* relational channels your interference writes — density (fluid displacement), heat (pure thermal energy), or spin (directional momentum) — and how strongly, via per-channel dose sliders. Injection obeys the field's own rules: dose into dense matter thermalizes as backscatter, and any overflow past the node's capacity stages into its input buffer as in-flight flux — nothing is ever silently discarded. Enable all three channels and the stamp overwrites the field verbatim; dial the spin channel toward entrainment and your injected mass adopts the ambient flow instead of fighting it.
 :::
+---
+
+**Next: the third dimension.** Everything above plays out on a flat grid. [Hopf's Loom](/loom-demo) runs the *same* laws on a 400,000-node 3D lattice — where a knot of matter can actually close on itself. It survives because it was woven, not painted: closed loops, traced cell-to-cell, until every strand came home. You can slice it, smash things into it, and rewind the collision.
