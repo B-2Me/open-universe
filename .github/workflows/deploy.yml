@@ -55,12 +55,13 @@ jobs:
 
       - name: Compile Planck Field Engine
         run: |
-          mkdir -p docs/public/wasm/wake/
+          mkdir -p docs/public/wasm/wake/ docs/public/wasm/loom/
           cd src
           chmod +x build.sh || true
           ./build.sh
           test -f ../docs/public/wasm/wake/planck.wasm
           test -f ../docs/public/wasm/wake/planck-hex.wasm
+          test -f ../docs/public/wasm/loom/planck3.wasm
 
       - name: Build VitePress Site
         run: npm run docs:build

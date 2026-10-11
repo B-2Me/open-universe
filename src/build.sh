@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p ../docs/public/wasm/wake/
+mkdir -p ../docs/public/wasm/wake/ ../docs/public/wasm/loom/
 
 # Stamp engines with the revision that last touched planck.c — the
 # physics provenance. Stamping the deploy HEAD would churn the displayed
@@ -105,7 +105,7 @@ if emcc planck3.c \
     '_planck3_restore'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
-  -o ../docs/public/wasm/wake/planck3.js; then
+  -o ../docs/public/wasm/loom/planck3.js; then
   echo "✅ planck3 compiled successfully."
 else
   echo "❌ Error: planck3 compilation failed!"

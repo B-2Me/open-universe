@@ -81,7 +81,7 @@
   const fail = e => { hud.textContent = 'ERR ' + (e && e.message || e); console.error(e); };
   import('/docs/.vitepress/loom/main.js')
     .then(m => m.initLoomSimulator(document.getElementById('host'), {
-      wasmUrl: '/docs/public/wasm/wake/planck3.js',
+      wasmUrl: '/docs/public/wasm/loom/planck3.js',
       stateUrl: '/docs/public/loom/hopfion.p3st',
     }))
     .catch(fail);

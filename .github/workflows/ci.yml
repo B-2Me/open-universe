@@ -30,5 +30,5 @@ jobs:
 
       - name: Test Build (WASM & VitePress)
         run: |
-          mkdir -p docs/public/wasm/wake/
+          mkdir -p docs/public/wasm/wake/ docs/public/wasm/loom/
           npm run docs:build

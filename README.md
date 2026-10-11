@@ -80,12 +80,13 @@ Plain ES modules composed by `main.js` — no framework inside the hot path.
 | `/docs/.vitepress/wake/` | The simulator's JS modules (see map above) |
 | `/docs/.vitepress/components/WakeSimulator.vue` | The simulator's DOM shell / Vue mount point |
 | `/docs/public/wasm/wake/` | Build output for `planck.*`/`planck-hex.*` wasm modules (gitignored) |
+| `/docs/public/wasm/loom/` | Build output for `planck3.*` — the 3D engine powering Hopf's Loom (gitignored) |
 | `/script` | The automated Node.js pipeline for TTS audio + sync maps |
 | `.github/workflows/` | `ci.yml` (PR build validation) and `deploy.yml` (Pages deploy) |
 
 ## Building & Local Development
 
-The WASM artifacts (`docs/public/wasm/wake/planck.*`) are **gitignored build outputs** — they are always compiled from the same commit as the site, in CI and deploy alike.
+The WASM artifacts (`docs/public/wasm/wake/planck.*`, `docs/public/wasm/loom/planck3.*`) are **gitignored build outputs** — they are always compiled from the same commit as the site, in CI and deploy alike.
 
 | Command | Behavior |
 |---|---|

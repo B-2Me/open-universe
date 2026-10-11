@@ -119,7 +119,7 @@ void main() {
 }`;
 
 export async function initLoomSimulator(root, opts = {}) {
-  const wasmUrl = opts.wasmUrl || '/wasm/wake/planck3.js';
+  const wasmUrl = opts.wasmUrl || '/wasm/loom/planck3.js';
   const stateUrl = opts.stateUrl || '/loom/hopfion.p3st';
   const canvas = root.querySelector('canvas');
   const gl = canvas.getContext('webgl2', { antialias: true, alpha: false });
