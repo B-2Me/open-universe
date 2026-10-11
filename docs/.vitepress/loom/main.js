@@ -81,6 +81,12 @@ void main() {
       : s <= 6.0 ? vec3(1.0, 0.35 + 0.4 * d, 0.1) * (0.4 + 0.8 * d)
       : s <= 9.0 ? vec3(0.1, 0.8, 1.0) * (0.4 + 0.8 * d)
       :            vec3(0.6, 0.3, 1.0) * (0.4 + 0.8 * d);
+  } else if (u_colorMode == 2) {
+    // metabolism: G channel carries heat>>4 — blackbody ramp
+    float h = s / 255.0;
+    rgb = vec3(clamp(h * 3.0, 0.0, 1.0),
+               clamp(h * 3.0 - 1.0, 0.0, 1.0) * 0.75,
+               clamp(h * 3.0 - 2.0, 0.0, 1.0)) * (0.3 + 0.9 * d);
   } else {
     rgb = mix(vec3(0.05, 0.15, 0.4), vec3(0.2, 0.9, 1.0), d)
         + vec3(1.0, 0.7, 0.2) * d * d;
@@ -134,10 +140,46 @@ export async function initLoomSimulator(root, opts = {}) {
   await loadState(stateUrl);
   if (hud) hud.textContent = 'state loaded';
 
-  const injectKnot = () => {
-    for (let z = 16; z < 24; z++) for (let y = 40; y < 48; y++) for (let x = 40; x < 48; x++) {
-      wasm._planck3_set_node((z * H3 + y) * W3 + x, 255, 1, 3000, 0, 0);
-    }
+  // Inject an 8^3 saturated knot centred on a lattice cell.
+  const injectKnot = (lx = 44, ly = 44, lz = 20) => {
+    for (let z = lz - 4; z < lz + 4; z++)
+      for (let y = ly - 4; y < ly + 4; y++)
+        for (let x = lx - 4; x < lx + 4; x++) {
+          if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
+          wasm._planck3_set_node((z * H3 + y) * W3 + x, 255, 1, 3000, 0, 0);
+        }
+  };
+
+  // Camera ray through a canvas pixel -> lattice cell on the current
+  // slice plane. Camera orbits the origin at (yaw, pitch, dist); the
+  // lattice embeds at (x + 0.5*(y&1), y*0.866, z*0.816) minus centroid.
+  const pickCell = (cx, cy) => {
+    const r = canvas.getBoundingClientRect();
+    const nx = ((cx - r.left) / r.width) * 2 - 1;
+    const ny = 1 - ((cy - r.top) / r.height) * 2;
+    const asp = canvas.width / Math.max(1, canvas.height);
+    const th = Math.tan(0.45);              // half-fov (persp fov = 0.9 rad)
+    // view-space ray
+    const vx = nx * th * asp, vy = ny * th, vz = -1;
+    // world = Ry(-yaw) * Rx(-pitch) applied to both camera pos and dir
+    const cyw = Math.cos(cam.yaw), syw = Math.sin(cam.yaw);
+    const cph = Math.cos(cam.pitch), sph = Math.sin(cam.pitch);
+    // Rx(-p): (x, y c + z s, -y s + z c)
+    const d1 = { x: vx, y: vy * cph + vz * sph, z: -vy * sph + vz * cph };
+    // Ry(-y): (x c - z s, y, x s + z c)
+    const dW = { x: d1.x * cyw - d1.z * syw, y: d1.y, z: d1.x * syw + d1.z * cyw };
+    // camera world position = Ry(-yaw)*Rx(-pitch)*(0,0,dist)
+    const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
+    const cW = { x: -c1.z * syw, y: c1.y, z: c1.z * cyw };
+    // slice plane: world z = zCenter*0.816 - 16.3
+    const pz = ui.zCenter * 0.816 - 16.3;
+    if (Math.abs(dW.z) < 1e-3) return null;  // edge-on: plane never hit
+    const t = (pz - cW.z) / dW.z;
+    if (t <= 0) return null;
+    const wx = cW.x + t * dW.x, wy = cW.y + t * dW.y;
+    const ly = Math.round((wy + 43.3) / 0.8660254);
+    const lx = Math.round(wx + 50 - 0.5 * (ly & 1));
+    return { lx, ly, lz: ui.zCenter };
   };
 
   // ---------- GL ----------
@@ -171,7 +213,7 @@ export async function initLoomSimulator(root, opts = {}) {
   gl.activeTexture(gl.TEXTURE0);
   const rgPtr = wasm._planck3_rg_pointer();
   const upload = () => {
-    wasm._planck3_rg_refresh();
+    wasm._planck3_rg_refresh(ui.colorMode === 2 ? 1 : 0);
     // re-fetch the heap view each frame — ALLOW_MEMORY_GROWTH can detach it
     const h8 = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
     gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RG, gl.UNSIGNED_BYTE,
@@ -211,9 +253,11 @@ export async function initLoomSimulator(root, opts = {}) {
   let lastPinch = 0;
   canvas.style.touchAction = 'none';
   const poke = () => { lastInteract = performance.now(); };
+  let downPos = null;
   canvas.addEventListener('pointerdown', e => {
     poke();
     ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    downPos = [e.clientX, e.clientY];
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', e => {
@@ -232,7 +276,22 @@ export async function initLoomSimulator(root, opts = {}) {
       lastPinch = d;
     }
   });
-  const endPtr = e => { ptrs.delete(e.pointerId); lastPinch = 0; };
+  const endPtr = e => {
+    ptrs.delete(e.pointerId); lastPinch = 0;
+    // armed knot tool: a click (not a drag) places a knot on the slice plane
+    if (ui.knotArm && downPos && ptrs.size === 0) {
+      const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
+      if (moved < 8) {
+        const cell = pickCell(e.clientX, e.clientY);
+        if (cell) {
+          injectKnot(cell.lx, cell.ly, cell.lz);
+          upload(); dirty = true;
+        } else if (hud) hud.textContent = 'edge-on view — pick while the slice plane is facing you';
+        setKnotArm(false);
+      }
+    }
+    downPos = null;
+  };
   canvas.addEventListener('pointerup', endPtr);
   canvas.addEventListener('pointercancel', endPtr);
   canvas.addEventListener('wheel', e => {
@@ -247,6 +306,7 @@ export async function initLoomSimulator(root, opts = {}) {
     zCenter: 20, zThick: 40, ghostAlpha: 0.06,
     qmin: 1, size: 0.55, colorMode: 1, zscale: 0.816,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
+    knotArm: false,
   };
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
@@ -254,7 +314,22 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-play]', 'click', e => { ui.playing = !ui.playing; e.target.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => { wasm._planck3_tick(); ui.tick++; upload(); dirty = true; });
   bind('[data-reset]', 'click', async () => { await loadState(stateUrl); ui.tick = 0; upload(); dirty = true; });
-  bind('[data-knot]', 'click', () => { injectKnot(); upload(); dirty = true; });
+  const knotBtn = root.querySelector('[data-knot]');
+  const setKnotArm = (on) => {
+    ui.knotArm = on;
+    canvas.style.cursor = on ? 'crosshair' : '';
+    if (knotBtn) { knotBtn.classList.toggle('on', on); knotBtn.setAttribute('aria-pressed', String(on)); }
+    if (hud && on) hud.textContent = 'knot tool armed — click the lattice to place';
+  };
+  bind('[data-knot]', 'click', () => setKnotArm(!ui.knotArm));
+  bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; if (hud) hud.textContent = 'snapshot saved'; });
+  bind('[data-unsnap]', 'click', () => { if (wasm._planck3_restore() === 0) { upload(); dirty = true; } });
+  bind('[data-diss]', 'input', e => { wasm._planck3_set_dissipation(+e.target.value); readout(e); });
+  bind('[data-therm]', 'input', e => {
+    wasm._planck3_set_thermal_limit(+e.target.value * 1000);
+    const o = e.target.parentElement?.querySelector('output');
+    if (o) o.value = e.target.value + 'k';
+  });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;
     e.target.setAttribute('aria-pressed', String(ui.turntable));
@@ -278,6 +353,8 @@ export async function initLoomSimulator(root, opts = {}) {
     equator: { yaw: 0.7,  pitch: 0.18, dist: 95,  zCenter: 20, zThick: 4 },
     bore:    { yaw: 0.0,  pitch: 1.5,  dist: 95,  zCenter: 20, zThick: 40 },
     lattice: { yaw: 0.7,  pitch: 0.6,  dist: 95,  zCenter: 20, zThick: 1 },
+    side:    { yaw: 0.7,  pitch: 0.05, dist: 105, zCenter: 20, zThick: 40 },
+    core:    { yaw: 0.9,  pitch: 0.9,  dist: 55,  zCenter: 20, zThick: 8 },
   };
   const setRange = (sel, v) => {
     const el = root.querySelector(sel);

@@ -66,6 +66,10 @@
 #define FCC_BW (440)
 #define KNOB_DISS (15)
 #define KNOB_LIMIT (50000)
+// Runtime-adjustable metabolism knobs (was: compile-time KNOB_*). Same
+// defaults; the viewer exposes them as sliders.
+static int g_dissipation = KNOB_DISS;
+static int g_thermal_limit = KNOB_LIMIT;
 #define T_EMIT (4)
 #define T_EMIT_MIN (200)
 #define T_DECAY (5)
@@ -247,7 +251,7 @@ static inline void planck3_node_tick(int32_t gidx,
     if (routing > FCC_BW) routing = FCC_BW;
 
     int nh2 = ch - 12 * hshare3(ch) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
-    if (nh2 > KNOB_LIMIT && nq2 > 0) {
+    if (nh2 > g_thermal_limit && nq2 > 0) {
         // Unwind: the knot unspools into neighbor buffers (spray).
         int share = (nq2 + nb2) / 12;
         for (int d = 1; d <= 12; d++) {
@@ -260,7 +264,7 @@ static inline void planck3_node_tick(int32_t gidx,
         nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
         int ts = nh2 / TEMP_SCALAR_DIV;
-        nh2 -= (int)(((int64_t)(1 + ts * ts) * KNOB_DISS * BWF3_LUT[routing]) >> 8);
+        nh2 -= (int)(((int64_t)(1 + ts * ts) * g_dissipation * BWF3_LUT[routing]) >> 8);
         if (nh2 < HEAT_FLOOR) nh2 = 1 + (int)(rng_next() % 3);
     }
 
@@ -575,11 +579,32 @@ EMSCRIPTEN_KEEPALIVE int planck3_load_commit(void) {
 EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) { return rg_buf; }
 // Repack {q,s} from the canonical flat state — call planck3_collect() first
 // after chunked runs so g_rd is current.
-EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(void) {
-    for (int32_t i = 0; i < N3; i++) {
-        rg_buf[2 * i] = g_rd[i].quanta;
-        rg_buf[2 * i + 1] = g_rd[i].spin;
+EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
+    if (mode == 1) {
+        for (int32_t i = 0; i < N3; i++) {
+            rg_buf[2 * i] = g_rd[i].quanta;
+            rg_buf[2 * i + 1] = (uint8_t)(g_rd[i].heat >> 4); // heat/16 -> 0..255 band
+        }
+    } else {
+        for (int32_t i = 0; i < N3; i++) {
+            rg_buf[2 * i] = g_rd[i].quanta;
+            rg_buf[2 * i + 1] = g_rd[i].spin;
+        }
     }
+}
+
+EMSCRIPTEN_KEEPALIVE void planck3_set_dissipation(int rate) { g_dissipation = rate; }
+EMSCRIPTEN_KEEPALIVE void planck3_set_thermal_limit(int limit) { g_thermal_limit = limit; }
+
+// Snapshot/restore — the Loom analog of Wake's undo: freeze a frame,
+// collide it, rewind.
+static Node3 save_buf[N3];
+static int save_valid = 0;
+EMSCRIPTEN_KEEPALIVE void planck3_save(void) { memcpy(save_buf, g_rd, sizeof(save_buf)); save_valid = 1; }
+EMSCRIPTEN_KEEPALIVE int planck3_restore(void) {
+    if (!save_valid) return -1;
+    memcpy(g_rd, save_buf, sizeof(save_buf));
+    return 0;
 }
 
 // Telemetry snapshot (flat array is canonical — call planck3_collect() first

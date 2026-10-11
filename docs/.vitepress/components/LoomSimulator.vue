@@ -50,15 +50,20 @@ onUnmounted(() => {
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
         <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
         <button data-reset title="Reset to Hopfion"   aria-label="Reset">⟲</button>
-        <button data-knot  title="Inject knot"        aria-label="Inject knot">✹</button>
+        <button data-knot  title="Knot tool — arm, then click the lattice to place"
+                aria-label="Knot placement tool"      aria-pressed="false">⌖</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
+        <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
+        <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
       </div>
 
       <select data-preset aria-label="View preset" title="Camera preset">
         <option value="full"    selected>Full torus</option>
+        <option value="side">Side profile</option>
         <option value="equator">Equator slab</option>
         <option value="bore">Core bore</option>
+        <option value="core">Deep core</option>
         <option value="lattice">Lattice plane</option>
       </select>
 
@@ -66,10 +71,13 @@ onUnmounted(() => {
       <label>Width <input type="range" data-zthick  min="1" max="40" step="1" value="40"><output>40</output></label>
       <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
       <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
+      <label>Diss  <input type="range" data-diss    min="0" max="31" step="1" value="15"><output>15</output></label>
+      <label>Heat  <input type="range" data-therm   min="5" max="65" step="1" value="50"><output>50k</output></label>
 
       <select data-colormode aria-label="Color mode" title="Color mode">
         <option value="1" selected>spin class</option>
         <option value="0">density</option>
+        <option value="2">metabolism</option>
       </select>
     </div>
   </div>
@@ -166,6 +174,7 @@ onUnmounted(() => {
   border-color: #7fe;
 }
 .loom-transport button.on { border-color: #7fe; color: #7fe; }
+.loom-transport button:disabled { opacity: 0.35; cursor: default; }
 
 .loom-dock label {
   display: flex;

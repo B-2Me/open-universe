@@ -23,18 +23,23 @@
       <button data-play title="Play / pause">⏸</button>
       <button data-step title="Step">⏭</button>
       <button data-reset title="Reset">⟲</button>
-      <button data-knot title="Knot">✹</button>
+      <button data-knot title="Knot tool">⌖</button>
       <button data-spin class="on" title="Auto-rotate">⟳</button>
+      <button data-snap title="Snapshot">⧉</button>
+      <button data-unsnap title="Restore" disabled>⤺</button>
     </div>
     <select data-preset title="Camera preset">
-      <option value="full">Full torus</option><option value="equator">Equator slab</option>
-      <option value="bore">Core bore</option><option value="lattice">Lattice plane</option>
+      <option value="full">Full torus</option><option value="side">Side profile</option>
+      <option value="equator">Equator slab</option><option value="bore">Core bore</option>
+      <option value="core">Deep core</option><option value="lattice">Lattice plane</option>
     </select>
     <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
     <label>Width <input type="range" data-zthick min="1" max="40" step="1" value="40"><output>40</output></label>
     <label>Size <input type="range" data-size min="20" max="150" step="1" value="55"><output>55</output></label>
     <label>Q≥ <input type="range" data-qmin min="1" max="120" step="1" value="1"><output>1</output></label>
-    <select data-colormode title="Color mode"><option value="1">spin class</option><option value="0">density</option></select>
+    <label>Diss <input type="range" data-diss min="0" max="31" step="1" value="15"><output>15</output></label>
+    <label>Heat <input type="range" data-therm min="5" max="65" step="1" value="50"><output>50k</output></label>
+    <select data-colormode title="Color mode"><option value="1">spin class</option><option value="0">density</option><option value="2">metabolism</option></select>
   </div>
 </div>
 <script type="module">

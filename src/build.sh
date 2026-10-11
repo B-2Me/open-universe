@@ -98,7 +98,11 @@ if emcc planck3.c \
     '_planck3_load_pointer',
     '_planck3_load_commit',
     '_planck3_rg_pointer',
-    '_planck3_rg_refresh'
+    '_planck3_rg_refresh',
+    '_planck3_set_dissipation',
+    '_planck3_set_thermal_limit',
+    '_planck3_save',
+    '_planck3_restore'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/wake/planck3.js; then
