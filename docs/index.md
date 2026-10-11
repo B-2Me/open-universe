@@ -15,6 +15,9 @@ hero:
     - theme: alt
       text: Run the Sandbox Engine
       link: /wake-demo
+    - theme: alt
+      text: Weave Hopf's Loom
+      link: /loom-demo
 
 features:
   - title: Objective Thermodynamics

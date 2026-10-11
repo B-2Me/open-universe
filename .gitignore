@@ -3,3 +3,10 @@ docs/public/wasm/wake/planck.js
 docs/public/wasm/wake/planck.wasm
 docs/public/wasm/wake/planck-hex.js
 docs/public/wasm/wake/planck-hex.wasm
+docs/public/wasm/wake/planck3.js
+docs/public/wasm/wake/planck3.wasm
+
+# Build artifacts / local tooling
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/

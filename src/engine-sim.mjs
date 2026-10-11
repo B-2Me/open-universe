@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs';
 // Engine test harness: faithful JS port of planck.c tick() for scenario
 // design validation without an emcc build. quanta/spin/heat fields,
 // deadlock, shunting, congestion gravity, Phase Lock, FLOW_CAP transport
@@ -15,6 +16,15 @@ const DEADLOCK = 200, HEAT_MAX = 65535;
 const KINETIC_BASE = 1, KINETIC_SHUNT = 5;
 const QUANTA_HEAT_GEN = 15, TEMP_SCALAR_DIV = 200, HEAT_FLOOR = 2;
 const GRAVITY_DIV = 4, DIFF_DIV = 9; // per-channel h/9 share — invariant across substrates
+// Degree-normalized diffusion shares (audit 2026-10): raw per-channel
+// bit-shifts scale total export with neighbor count — hex6 sent 3/4 of
+// the tension field per tick, oct8 sent ~100% (a full swap), and a
+// 12-neighbor lattice would overshare negative. Normalized: total
+// export is 3/4 (tension) and 2/3 (heat) of the register, split evenly
+// across channels. At deg=6 these reduce EXACTLY to the legacy shifts
+// (3v/24 = v>>3, 2v/18 = v/9) — hex dynamics are bit-identical.
+const TENSION_SHARE_CH = (v, deg) => Math.floor(v * 3 / (deg * 4));
+const HEAT_SHARE_CH = (v, deg) => Math.floor(v * 2 / (deg * 3));
 const NODE_BANDWIDTH_MAX = 220; // routing-load ceiling for bandwidth cycle-stealing
 const FLOW_CAP = 160; // max quanta relayed per node per tick — residual accumulates
 const KINETIC_BACKPRESSURE = 10; // heat blowoff when an input buffer overflows (backscatter)
@@ -76,13 +86,23 @@ function tickHex() {
     const i = y * W + x;
     const cq = q[i], cs = s[i], ch = h[i], tn0 = tn[i];
     const par = y & 1, off = HOFF[par];
-    let deadlocked = 0;
+    let deadlocked = 0, flankShift = 0;
     if (cs !== 0) {
       const tx = (x + off[cs][0] + W) % W, ty = (y + off[cs][1] + H) % H;
       const ti = ty * W + tx;
       // The port refuses on occupancy (resident + in-flight), not
       // resident mass alone — a pressurized buffer is already a wall.
       if (q[ti] + b[ti] > DEADLOCK) deadlocked = 1;
+      else if (FLANK_ON && q[ti] > 0 && s[ti] !== 0) {
+        // RFC-044 lateral incompressibility: a loaded, streaming target
+        // refuses misaligned intake. dd = angle between my heading and
+        // the target's stream — 0 co-linear merge (free), 3 head-on.
+        // Refused quanta stay resident in the sender: retained mass IS
+        // the lateral pressure. Receiver replicates the shift below so
+        // mass conserves exactly.
+        const dd = Math.abs(cs - s[ti]);
+        flankShift = FLANK_SH[Math.min(dd, 6 - dd)];
+      }
     }
     let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0, pmx = 0, pmy = 0;
     let tSum = 0, gx = 0, gy = 0, gNi = -1, gMaxD = 0;
@@ -94,10 +114,10 @@ function tickHex() {
       const nx = (x + off[d][0] + W) % W, ny = (y + off[d][1] + H) % H;
       const ni = ny * W + nx;
       const nq = q[ni], ns = s[ni], nh = h[ni];
-      heatSum += Math.floor(nh / DIFF_DIV);
+      heatSum += HEAT_SHARE_CH(nh, 6);
       const nOcc = nq + b[ni];
       if (TENS_ON) {
-        tSum += tn[ni] >> T_SHARE;
+        tSum += TENSION_SHARE_CH(tn[ni], 6);
         // Track the steepest up-gradient neighbor that can carry flux —
         // arrivals deflect toward it (refraction) without touching spin.
         // Shear into a spinless cell stalls and accretes, so s≠0 only.
@@ -118,7 +138,14 @@ function tickHex() {
         else { const a = (d - 1) * Math.PI / 3; pmx += Math.cos(a) * pn; pmy += Math.sin(a) * pn; }
       }
       if (nq > 0 && ns === HINV[d]) { // neighbor's spin points back at us
-        const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        let sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+        // RFC-044: receiver replicates the sender's flank refusal — same
+        // angle (sender heading ns vs our stream cs), same shift, so the
+        // refused share never leaves the sender and mass conserves.
+        if (FLANK_ON && cq > 0 && cs !== 0) {
+          const fdd = Math.abs(ns - cs);
+          sent >>= FLANK_SH[Math.min(fdd, 6 - fdd)]; // sent=0 flows through inert
+        }
         kin += sent * KINETIC_BASE;
         if (cq > 0 && cs !== 0) {
           // Continuous turn friction: straight-through free, reversal 2τ.
@@ -161,10 +188,19 @@ function tickHex() {
     }
     let nq2 = cq, shunt = 0;
     if (cq > 0 && cs !== 0) {
-      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+      if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - (Math.min(cq, FLOW_CAP) >> flankShift) : 0;
       else {
         let dv = 0;
-        if (ZSHUNT_ON) {
+        if (ZHOP_ON) {
+          // RFC-046 overpass: refused flux goes up WITH its vector.
+          const sendable = FLOW_CAP_ON ? Math.min(cq, FLOW_CAP) : cq;
+          dv = Math.min(sendable, 255 - slabs[1].b[i]);
+          slabs[1].b[i] += dv;
+          if (dv > 0) slabs[1].s[i] = cs;
+          zMoved += dv;
+          nq2 = cq - dv;
+        }
+        if (dv === 0 && ZSHUNT_ON) {
           // Sender-side diversion: the saturated port doesn't reflect the
           // flux — it escapes through the extra channel, spinless.
           // Gravity as pressure release: routing failure goes vertical.
@@ -226,7 +262,7 @@ function tickHex() {
     // Tension field bookkeeping: keeps what the 6 channels don't send,
     // gains neighbors' shares, sources from own occupancy, decoheres.
     if (TENS_ON) {
-      let ntn = tn0 - 6 * (tn0 >> T_SHARE) + tSum
+      let ntn = tn0 - 6 * TENSION_SHARE_CH(tn0, 6) + tSum
               - (tn0 >> T_DECAY)
               + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
       tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
@@ -258,7 +294,7 @@ function tickHex() {
     const bwf = Math.sqrt(1 - frac6 * frac6);
 
     // Retain what the 6 channels cannot send: h - 6*(h/9).
-    let nh2 = ch - 6 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    let nh2 = ch - 6 * HEAT_SHARE_CH(ch, 6) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       if (SPRAY_ON) {
         // Unwinding = E=mc²: the knot's mass unspools as un-actualized
@@ -345,6 +381,42 @@ let T_DIVERT = parseInt(process.env.T_DIVERT || '4'); // arrivals >> 4 shear up-
 let ZPE_ON = false, ZPE_TRACK = false;
 const ZPE_FLOOR = parseInt(process.env.ZPE_FLOOR || '1');
 const ZPE_PACKET = parseInt(process.env.ZPE_PACKET || '8');
+// RFC-046: spin-preserving Z-overpass ('+zhopfion'). Deadlock-diverted
+// quanta enter slab 1 carrying their spin; each following tick the
+// shadow cell attempts re-entry into slab 0's buffer TWO hops along
+// that spin (one hop is the jammed port itself; two is downstream).
+// The packet's spin is written onto the re-entry cell — it arrives
+// still carrying its vector. Refused packets queue on the overpass.
+// Caveat: shadow b is scalar — multiple senders into one shadow cell
+// mix vectors (recorded spin is last-writer-wins).
+let ZHOP_ON = false;
+function tickZOverpass() {
+  const zs = slabs[1], pl = slabs[0];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (zs.b[i] > 0) { // stage diverted flux into occupancy first
+      const take = Math.min(zs.b[i], 255 - zs.q[i]);
+      zs.q[i] += take; zs.b[i] -= take;
+    }
+    if (zs.q[i] === 0 || zs.s[i] === 0) continue;
+    const off = HOFF[y & 1], d = zs.s[i];
+    const tx = (x + 2 * off[d][0] + W) % W, ty = (y + 2 * off[d][1] + H) % H;
+    const ti = ty * W + tx;
+    if (pl.q[ti] + pl.b[ti] > DEADLOCK) continue; // downstream still jammed — hold
+    const amt = Math.min(zs.q[i], FLOW_CAP, 255 - pl.b[ti]);
+    if (amt <= 0) continue;
+    zs.q[i] -= amt; pl.b[ti] += amt; pl.s[ti] = d; zMoved -= amt;
+    if (zs.q[i] === 0) zs.s[i] = 0;
+  }
+}
+// RFC-044: anisotropic flank shield — sender-side intake refusal scaled
+// by heading-vs-target-stream angle. FLANK_SH[dd]: dd=0 co-linear merge
+// (free), dd=3 head-on (refuse 7/8). Hex6 only.
+let FLANK_ON = false;
+const FLANK_SH = [0,
+  parseInt(process.env.FLANK_SH1 || '1'),
+  parseInt(process.env.FLANK_SH2 || '2'),
+  parseInt(process.env.FLANK_SH3 || '3')];
 // Stage 1 latency probe (Todd's causal mechanics): inject an overdensity
 // pulse into a running scenario and measure when the excess reaches a
 // detector gate — control/pulse differencing isolates the wave's
@@ -429,9 +501,9 @@ function tick() {
       const nq = q[ni], ns = s[ni], nh = h[ni];
       const nDir = DIR_MAP[dy + 1][dx + 1], req = INV_DIR[nDir];
       const nOcc = nq + b[ni];
-      heatSum += Math.floor(nh / DIFF_DIV);
+      heatSum += HEAT_SHARE_CH(nh, 8);
       if (TENS_ON) {
-        tSum += tn[ni] >> T_SHARE;
+        tSum += TENSION_SHARE_CH(tn[ni], 8);
         // Oct8 shear: steepest up-gradient neighbor that can carry flux.
         const gd = tn[ni] - tn0;
         if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
@@ -529,7 +601,7 @@ function tick() {
     const bwf = Math.sqrt(1 - frac8 * frac8);
 
     // Retain what the 8 channels cannot send: h - 8*(h/9).
-    let nh2 = ch - 8 * Math.floor(ch / DIFF_DIV) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    let nh2 = ch - 8 * HEAT_SHARE_CH(ch, 8) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > KNOB_LIMIT && nq2 > 0) {
       if (SPRAY_ON) {
         // Unwinding = E=mc²: the knot's mass unspools as un-actualized
@@ -551,7 +623,7 @@ function tick() {
     }
     // Tension bookkeeping — same update as hex, 8 channels instead of 6.
     if (TENS_ON) {
-      let ntn = tn0 - 8 * (tn0 >> T_SHARE) + tSum
+      let ntn = tn0 - 8 * TENSION_SHARE_CH(tn0, 8) + tSum
               - (tn0 >> T_DECAY)
               + ((cq + b[i]) > T_EMIT_MIN ? ((cq + b[i]) >> T_EMIT) : 0);
       tn2[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
@@ -580,6 +652,434 @@ function tick() {
     q2[i] = nq2; s2[i] = ns2; h2[i] = nh2; b2[i] = nb2;
   }
   for (let i = 0; i < N; i++) { q[i] = q2[i]; s[i] = s2[i]; h[i] = h2[i]; b[i] = b2[i]; tn[i] = tn2[i]; }
+}
+
+// === Phase-3 prototype: 12-neighbor close-packed 3D substrate ===
+// Stacked-hex FCC (A-B-C, RFC-048): each node keeps its 6 equatorial
+// neighbors and gains 3 zenith (z+1) + 3 nadir (z-1) contacts nested in
+// the triangle gaps. In ABC stacking the zenith azimuths are the SAME
+// triple on every layer — a hop along one port repeats the identical
+// planar offset each layer, tracing a straight 3D diagonal and cycling
+// A→B→C→A automatically (3 hops = one lattice translation). Every layer
+// offers zenith {1,3,5} and nadir {2,4,6}; HINV maps between the triples,
+// so every port is reciprocal with NO parity dependence — fixing the HCP
+// frustration where descent azimuths alternated by layer and forced
+// >60° hops into every non-planar winding (RFC-047).
+// Spin 0 = dead, 1-6 equatorial, 7-9 zenith, 10-12 nadir. Boundary:
+// planar wrap (as 2D), z is a hard surface (ports off-box refuse).
+const W3 = 100, H3 = 100, D3 = 40, N3 = W3 * H3 * D3;
+const ZU3 = [1, 3, 5], ZD3 = [2, 4, 6]; // zenith/nadir planar dirs (all layers)
+const FZ = 209, FP = 148;               // √(2/3)·256 and (1/√3)·256 — unit 3D ports
+const V3 = (() => {
+  const v = [null];
+  for (let s = 1; s <= 6; s++) v.push([HEX_MX256[s], HEX_MY256[s], 0]);
+  for (const d of ZU3) v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), FZ]);
+  for (const d of ZD3) v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), -FZ]);
+  return v;
+})();
+// BACK3[d]: the port on the neighbor reached via my port d that points
+// back at me — the 3D generalization of HINV (parity-free under ABC).
+const BACK3 = (() => {
+  const t = [0];
+  for (let d = 1; d <= 12; d++) {
+    if (d <= 6) t.push(HINV[d]);
+    else if (d <= 9) t.push(10 + ZD3.indexOf(HINV[ZU3[d - 7]]));
+    else t.push(7 + ZU3.indexOf(HINV[ZD3[d - 10]]));
+  }
+  return t;
+})();
+const dotV = (a, b) => (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) >> 8;
+// Angular-distance LUT (×256 cosine) — replaces runtime trigonometry.
+const DOTS = [new Int16Array(13)];
+for (let a = 1; a <= 12; a++) {
+  DOTS.push(new Int16Array(13));
+  for (let b = 1; b <= 12; b++) DOTS[a][b] = dotV(V3[a], V3[b]);
+}
+// REV3[s]: antipodal port — the deadlock mirror (shunt reflection).
+const REV3 = (() => {
+  const t = [0];
+  for (let a = 1; a <= 12; a++) {
+    let best = 0, bd = Infinity;
+    for (let b = 1; b <= 12; b++) { const d = dotV(V3[a], V3[b]); if (d < bd) { bd = d; best = b; } }
+    t.push(best);
+  }
+  return t;
+})();
+// Quantize a 3D vector (any scale) to the nearest port.
+const dir3 = (vx, vy, vz) => {
+  if (!vx && !vy && !vz) return 0;
+  let bs = 0, bd = -Infinity;
+  for (let s = 1; s <= 12; s++) {
+    const d = V3[s][0] * vx + V3[s][1] * vy + V3[s][2] * vz;
+    if (d > bd) { bd = d; bs = s; }
+  }
+  return bs;
+};
+// Doubled adjacency doubles routing load — bandwidth ceiling scales
+// (blueprint §4); deadlock/buffer saturation does not.
+const FCC_BW = 440;
+const BWF3_LUT = Uint16Array.from({ length: FCC_BW + 1 }, (_, r) =>
+  Math.round(256 * Math.sqrt(1 - (r / FCC_BW) ** 2)));
+let fq, fs3, fh3, fb3, ftn3, fq2, fs32, fh32, fb32, ftn32, NT3;
+function initFCC() {
+  if (fq) return;
+  fq = new Uint8Array(N3); fs3 = new Uint8Array(N3); fh3 = new Uint16Array(N3);
+  fq2 = new Uint8Array(N3); fs32 = new Uint8Array(N3); fh32 = new Uint16Array(N3);
+  fb3 = new Uint8Array(N3); fb32 = new Uint8Array(N3);
+  ftn3 = new Uint8Array(N3); ftn32 = new Uint8Array(N3);
+  NT3 = new Int32Array(N3 * 13).fill(-1);
+  for (let z = 0; z < D3; z++) {
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = (z * H3 + y) * W3 + x, off = HOFF[y & 1], nb = i * 13;
+      for (let d = 1; d <= 6; d++) {
+        const nx = (x + off[d][0] + W3) % W3, ny = (y + off[d][1] + H3) % H3;
+        NT3[nb + d] = (z * H3 + ny) * W3 + nx;
+      }
+      for (let j = 0; j < 3; j++) {
+        let nx = (x + off[ZU3[j]][0] + W3) % W3, ny = (y + off[ZU3[j]][1] + H3) % H3;
+        if (z + 1 < D3) NT3[nb + 7 + j] = ((z + 1) * H3 + ny) * W3 + nx;
+        nx = (x + off[ZD3[j]][0] + W3) % W3; ny = (y + off[ZD3[j]][1] + H3) % H3;
+        if (z > 0) NT3[nb + 10 + j] = ((z - 1) * H3 + ny) * W3 + nx;
+      }
+    }
+  }
+  // Reciprocity audit (RFC-048 acceptance #1): every reachable neighbor
+  // must point straight back through BACK3 — no broken inverses.
+  let ok = 0, bad = 0;
+  for (let i = 0; i < N3; i++) for (let d = 1; d <= 12; d++) {
+    const ni = NT3[i * 13 + d];
+    if (ni < 0) continue;
+    if (NT3[ni * 13 + BACK3[d]] === i) ok++; else bad++;
+  }
+  console.log(`FCC reciprocity: ${ok} ok, ${bad} broken`);
+}
+function tickFCC() {
+  curTick++;
+  for (let z = 0; z < D3; z++) {
+    const zrow = z * H3 * W3;
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = zrow + y * W3 + x, nb = i * 13;
+      const cq = fq[i], cs = fs3[i], ch = fh3[i], tn0 = ftn3[i];
+      let deadlocked = 0;
+      if (cs !== 0) {
+        const ti = NT3[nb + cs];
+        if (ti < 0 || fq[ti] + fb3[ti] > DEADLOCK) deadlocked = 1;
+      }
+      let heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0, mx = 0, my = 0, mz = 0;
+      let tSum = 0, gx = 0, gy = 0, gz = 0, gNi = -1, gMaxD = 0;
+      const feelsTension = cq > 0 && cs !== 0;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[nb + d];
+        if (ni < 0) continue; // hard surface — no channel
+        const nq = fq[ni], ns = fs3[ni], nh = fh3[ni];
+        heatSum += HEAT_SHARE_CH(nh, 12);
+        const nOcc = nq + fb3[ni];
+        if (TENS_ON) {
+          tSum += TENSION_SHARE_CH(ftn3[ni], 12);
+          const gd = ftn3[ni] - tn0;
+          if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
+          if (feelsTension) { const vd = V3[d]; gx += vd[0] * gd; gy += vd[1] * gd; gz += vd[2] * gd; }
+        }
+        if (nq > 0 && ns === BACK3[d]) { // neighbor's spin points back at us
+          const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
+          kin += sent * KINETIC_BASE;
+          if (cq > 0 && cs !== 0) {
+            // τ(1-cosΔθ) turn friction from the cosine LUT.
+            kin += sent * ((256 - DOTS[ns][cs]) >> 6);
+          }
+          if (cq + fb3[i] <= DEADLOCK) {
+            incoming += sent;
+            const vd = V3[d];
+            mx -= vd[0] * sent; my -= vd[1] * sent; mz -= vd[2] * sent;
+          }
+        }
+        if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
+      }
+      let nq2 = cq, shunt = 0;
+      if (cq > 0 && cs !== 0) {
+        if (!deadlocked) nq2 = FLOW_CAP_ON ? cq - Math.min(cq, FLOW_CAP) : 0;
+        else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+      }
+      if (TENS_ON && gNi >= 0 && incoming > 0 && T_DIVERT < 16) {
+        const room = 255 - fb3[gNi];
+        const push = Math.min(incoming >> T_DIVERT, room);
+        incoming -= push; fb3[gNi] += push;
+      }
+      let nb2 = fb3[i] + incoming;
+      if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+      const take = Math.min(nb2, 255 - nq2);
+      nq2 += take; nb2 -= take;
+      if (SPRAY_ON && nb2 > 0) { const bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed; }
+      if (TENS_ON) {
+        let ntn = tn0 - 12 * TENSION_SHARE_CH(tn0, 12) + tSum
+                - (tn0 >> T_DECAY)
+                + ((cq + fb3[i]) > T_EMIT_MIN ? ((cq + fb3[i]) >> T_EMIT) : 0);
+        ftn32[i] = ntn < 0 ? 0 : (ntn > 255 ? 255 : ntn);
+        if (((i * 2654435761 + curTick * 40503) >>> 0 & 255) < T_RATE) {
+          gx <<= T_PULL; gy <<= T_PULL; gz <<= T_PULL;
+        } else { gx = 0; gy = 0; gz = 0; }
+      } else {
+        ftn32[i] = tn0;
+      }
+      const dmx = mx + gx, dmy = my + gy, dmz = mz + gz;
+      let dom = dir3(dmx, dmy, dmz);
+      const mag = (Math.abs(mx) + Math.abs(my) + Math.abs(mz)) >> 8;
+      let routing = incoming + mag + (shunt ? cq : 0) + fb3[i];
+      if (routing > FCC_BW) routing = FCC_BW;
+      let nh2 = ch - 12 * HEAT_SHARE_CH(ch, 12) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+      if (nh2 > KNOB_LIMIT && nq2 > 0) {
+        if (SPRAY_ON) {
+          const share = ((nq2 + nb2) / 12) | 0;
+          for (let d = 1; d <= 12; d++) {
+            const ni = NT3[nb + d];
+            if (ni >= 0) fb3[ni] = Math.min(255, fb3[ni] + share);
+          }
+          sprayQ += nq2 + nb2;
+        }
+        nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
+      } else {
+        const ts = Math.floor(nh2 / TEMP_SCALAR_DIV);
+        nh2 -= ((1 + ts * ts) * KNOB_DISS * BWF3_LUT[routing]) >> 8;
+        if (nh2 < HEAT_FLOOR) nh2 = 1 + Math.floor(Math.random() * 3);
+      }
+      let ns2 = dom !== 0 ? dom : cs;
+      if (shunt) {
+        ns2 = REV3[cs];
+      } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
+        ns2 = congSpin;
+      } else if (LOCK_ON && cs !== 0) {
+        if (dom === 0) ns2 = (cq === 0 || PERSIST_MASS) ? cs : 0;
+        else ns2 = DOTS[cs][dom] >= 128 ? cs : dom; // ≤60° turn holds phase
+      } else ns2 = dom;
+      fq2[i] = nq2; fs32[i] = ns2; fh32[i] = nh2; fb32[i] = nb2;
+    }
+  }
+  for (let i = 0; i < N3; i++) { fq[i] = fq2[i]; fs3[i] = fs32[i]; fh3[i] = fh32[i]; fb3[i] = fb32[i]; ftn3[i] = ftn32[i]; }
+}
+
+const HOPF_R0 = parseFloat(process.env.HOPF_R0 || '25'); // major radius
+const HOPF_R1 = parseFloat(process.env.HOPF_R1 || '9');  // minor (tube) radius
+const HOPF_Q = parseInt(process.env.HOPF_Q || '60');
+const HOPF_TW = parseFloat(process.env.HOPF_TW || '1');  // toroidal weight
+const HOPF_PW = parseFloat(process.env.HOPF_PW || '1');  // poloidal weight
+// Ideal Hopfion field vector at a cell: toroidal CCW (torus axis = z)
+// blended with a poloidal roll — up through the hole, out over the top,
+// down the outside, back under the bottom (a smoke ring).
+function hopfVec(x, y, z) {
+  const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+  const rho = Math.hypot(dx, dy);
+  if (rho === 0) return [0, 0, 0];
+  const psi = Math.atan2(dz, rho - HOPF_R0);
+  const ux = dx / rho, uy = dy / rho, sp = Math.sin(psi), cp = Math.cos(psi);
+  return [HOPF_TW * -uy + HOPF_PW * sp * ux,
+          HOPF_TW * ux + HOPF_PW * sp * uy,
+          HOPF_PW * -cp];
+}
+const hopfSpin = (x, y, z) => dir3(...hopfVec(x, y, z));
+// Painted-trace bookkeeping for statsFCC: hold = fraction of painted
+// cells still carrying their traced spin (winding persistence).
+let hopfMask = null, hopfSnap = null, CUR_T = 0;
+function paintFCC(variant) {
+  initFCC();
+  fq.fill(0); fs3.fill(0); fh3.fill(1); fb3.fill(0); ftn3.fill(0);
+  const FOAM = variant === 'hopfionf' || variant === 'hopfionxf' ? 0.01
+    : variant === 'hopfionF' || variant === 'hopfionxF' ? 0.05 : 0;
+  const zMid = D3 >> 1;
+  if (variant.startsWith('hopfionx')) {
+    // RFC-047 pathfinder paint: weave field lines by graph adjacency.
+    // From a seed, repeatedly take the port best aligned with the ideal
+    // Hopfion field among unvisited/unpainted in-tube neighbors; a loop
+    // is kept ONLY if it returns to its seed (closed by construction).
+    // Cells hold exactly one outgoing spin, so self-intersecting paths
+    // are unreachable — conflicts discard the loop. Nested loops tiled
+    // across the tube cross-section build the thick particle; untouched
+    // cells stay vacuum (the moat).
+    hopfMask = new Uint8Array(N3);
+    const MINLEN = parseInt(process.env.HOPF_MINLEN || '20');
+    const MAXLEN = parseInt(process.env.HOPF_MAXLEN || '2000');
+    const SHELL_W = parseFloat(process.env.HOPF_SHELLW || '1.6'); // shell thickness tolerance
+    const cx3 = W3 >> 1, cy3 = H3 >> 1, cz3 = D3 >> 1;
+    let painted = 0, loops = 0, attempts = 0, steepTurns = 0;
+    const trace = (sx, sy, sz) => {
+      const seedI = (sz * H3 + sy) * W3 + sx;
+      // A seed landing on an already-painted cell would overwrite that
+      // cell's spin: its old predecessor keeps feeding it (double inflow
+      // -> buffer overflow -> deadlock) and its old successor starves
+      // (-> s=0 -> dead link). Both seeds of the cascade observed at t=5.
+      if (hopfMask[seedI]) return null;
+      const seen = new Set([seedI]);
+      const path = [];
+      let seedD = 0, steps = 0;
+      // Hopfion field lines live on nested toroidal shells (both the
+      // toroidal and poloidal components are tangent to rt = const):
+      // same-shell restriction is the 3D analog of hexcycle's same-ring
+      // neighbor gate. Closure is then sought as a GRAPH CYCLE — DFS
+      // memoized on (cell, incoming-port) proves existence or exhausts
+      // the search space, unlike greedy field-following (RFC-047/048:
+      // the lock-tolerance turn constraint still applies per hop).
+      const rt0 = Math.hypot(Math.hypot(sx - cx3, sy - cy3) - HOPF_R0, sz - cz3);
+      const memo = new Set();
+      let budget = parseInt(process.env.HOPF_DFSMAX || '2000000');
+      const dfs = (i, x, y, z, tvx, tvy, tvz, depth) => {
+        if (budget-- <= 0 || depth > MAXLEN) return false;
+        steps++;
+        const hv = hopfVec(x, y, z);
+        // The lock compares cs vs dom — the ARGMAX port of the incoming
+        // momentum, not the travel vector itself. A port within 60° of
+        // the travel axis can still lose the lock if dom lands elsewhere,
+        // so candidates must sit within 60° of the actual dom port.
+        let domP = 0;
+        if (depth > 0) {
+          let dBest = -Infinity;
+          for (let dd = 1; dd <= 12; dd++) {
+            const sc = tvx * V3[dd][0] + tvy * V3[dd][1] + tvz * V3[dd][2];
+            if (sc > dBest) { dBest = sc; domP = dd; }
+          }
+        }
+        const cand = [];
+        for (let d = 1; d <= 12; d++) {
+          const ni = NT3[i * 13 + d];
+          if (ni < 0) continue;
+          if (depth > 0 && DOTS[d][domP] < 128) continue;
+          if (ni === seedI) {
+            // Closure must also hold the lock AT the seed: compute the
+            // seed's dom from the closing hop's travel direction.
+            if (depth + 1 >= MINLEN) {
+              let sBest = -Infinity, sDom = 0;
+              for (let dd = 1; dd <= 12; dd++) {
+                const sc = V3[d][0] * V3[dd][0] + V3[d][1] * V3[dd][1] + V3[d][2] * V3[dd][2];
+                if (sc > sBest) { sBest = sc; sDom = dd; }
+              }
+              if (DOTS[seedD][sDom] >= 128) { path.push([i, d]); return true; }
+            }
+            continue;
+          }
+          if (seen.has(ni) || hopfMask[ni] || memo.has(ni * 13 + d)) continue;
+          const nz = (ni / (H3 * W3)) | 0, ny = ((ni % (H3 * W3)) / W3) | 0, nx = ni % W3;
+          const rr = Math.hypot(Math.hypot(nx - cx3, ny - cy3) - HOPF_R0, nz - cz3);
+          if (Math.abs(rr - rt0) > SHELL_W) continue;
+          cand.push([V3[d][0] * hv[0] + V3[d][1] * hv[1] + V3[d][2] * hv[2], d, ni]);
+        }
+        cand.sort((a, b) => b[0] - a[0]); // ideal-field guidance first
+        for (const [, d, ni] of cand) {
+          if (memo.has(ni * 13 + d)) continue;
+          path.push([i, d]);
+          if (depth === 0) seedD = d;
+          seen.add(ni);
+          const nx = ni % W3, ny = ((ni % (H3 * W3)) / W3) | 0, nz = (ni / (H3 * W3)) | 0;
+          if (dfs(ni, nx, ny, nz, V3[d][0], V3[d][1], V3[d][2], depth + 1)) return true;
+          seen.delete(ni); path.pop();
+          memo.add(ni * 13 + d);
+        }
+        return false;
+      };
+      if (dfs(seedI, sx, sy, sz, 0, 0, 0, 0)) {
+        if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) closed len=${path.length} dfs=${steps}`);
+        return path;
+      }
+      if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) exhausted dfs=${steps}`);
+      return null;
+    };
+    // Seeds tile the tube cross-section at the x+ azimuthal plane —
+    // each closed line precesses around the torus, so a few dozen
+    // seeds cover the full toroidal surface.
+    const SSTEP = parseInt(process.env.HOPF_SEEDSTEP || '3');
+    const ONESEED = process.env.HOPF_SEED ? process.env.HOPF_SEED.split(',').map(Number) : null;
+    if (ONESEED) {
+      attempts = 1;
+      const path = trace(ONESEED[0], ONESEED[1], ONESEED[2]);
+      if (path) {
+        loops++;
+        for (const [i, d] of path) { hopfMask[i] = 1; fs3[i] = d; fq[i] = HOPF_Q; fh3[i] = 500; painted++; }
+      }
+      console.log(`hopfionx single-seed: ${loops ? 'closed' : 'no closure'}, ${painted} cells`);
+      hopfSnap = fs3.slice();
+      return;
+    }
+    for (let dz = -HOPF_R1; dz <= HOPF_R1; dz += SSTEP) {
+      for (let dr = -HOPF_R1; dr <= HOPF_R1; dr += SSTEP) {
+        if (Math.hypot(dr, dz) > HOPF_R1) continue;
+        attempts++;
+        const path = trace(cx3 + Math.round(HOPF_R0) + Math.round(dr), cy3, cz3 + Math.round(dz));
+        if (!path) continue;
+        loops++;
+        // Turn-angle audit: at each painted cell the incoming travel
+        // direction (predecessor's port vector) must re-lock onto the
+        // traced port — Phase Lock tolerates ≤60° (dot ≥ 128/256).
+        let steep = 0;
+        for (let k = 0; k < path.length; k++) {
+          const [pi, pd] = path[k], [ni2, nd] = path[(k + 1) % path.length];
+          const iv = V3[pd]; // travel direction into cell ni2
+          let bP = 0, bS = -Infinity;
+          for (let dd = 1; dd <= 12; dd++) {
+            const sc = iv[0] * V3[dd][0] + iv[1] * V3[dd][1] + iv[2] * V3[dd][2];
+            if (sc > bS) { bS = sc; bP = dd; }
+          }
+          if (DOTS[nd][bP] < 128) steep++;
+        }
+        steepTurns += steep;
+        for (const [i, d] of path) {
+          hopfMask[i] = 1; fs3[i] = d; fq[i] = HOPF_Q; fh3[i] = 500; painted++;
+        }
+      }
+    }
+    // Inflow audit: each painted cell should hear exactly ONE painted
+    // pointer (its predecessor). >1 means alien inflow mixes momentum —
+    // cross-loop rewiring despite disjoint paths.
+    let in1 = 0, in2 = 0, in0 = 0;
+    for (let i = 0; i < N3; i++) {
+      if (!hopfMask[i]) continue;
+      let inbound = 0;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[i * 13 + d];
+        if (ni < 0 || !hopfMask[ni]) continue;
+        if (fs3[ni] === BACK3[d]) inbound++;
+      }
+      if (inbound === 1) in1++; else if (inbound === 0) in0++; else in2++;
+    }
+    console.log(`hopfionx: ${loops}/${attempts} seeds closed loops, ${painted} cells painted, steepTurns=${steepTurns} inflow[0,1,>1]=${in0},${in1},${in2}`);
+    hopfSnap = fs3.slice();
+    if (FOAM) {
+      for (let i = 0; i < N3; i++) {
+        if (!hopfMask[i] && Math.random() < FOAM) {
+          fq[i] = 1 + Math.floor(Math.random() * 3);
+          fs3[i] = 1 + Math.floor(Math.random() * 12); fh3[i] = 100;
+        }
+      }
+    }
+    return;
+  }
+  for (let z = 0; z < D3; z++) for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+    const i = (z * H3 + y) * W3 + x;
+    const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+    const rho = Math.hypot(dx, dy);
+    if (variant === 'hopfring') {
+      // Substrate control: hexcycle's exact ring-trace in the mid-layer —
+      // proves the FCC lattice can host a closed orbit at all. Paint only
+      // cells that have an on-ring next-neighbor (d === R0 ring cells).
+      if (z !== zMid) continue;
+      const d = hexDist(x, y, W3 >> 1, H3 >> 1);
+      if (d !== Math.round(HOPF_R0)) continue;
+      const off = HOFF[y & 1], aCur = Math.atan2(dy, dx);
+      let best = 0, bestA = Infinity;
+      for (let dd = 1; dd <= 6; dd++) {
+        const nx = (x + off[dd][0] + W3) % W3, ny = (y + off[dd][1] + H3) % H3;
+        if (hexDist(nx, ny, W3 >> 1, H3 >> 1) !== d) continue;
+        let da = Math.atan2(ny - H3 / 2, nx - W3 / 2) - aCur;
+        while (da <= 0) da += Math.PI * 2;
+        if (da < bestA) { bestA = da; best = dd; }
+      }
+      if (best) { fq[i] = 90; fs3[i] = best; fh3[i] = 500; }
+      continue;
+    }
+    if (rho > 0 && Math.hypot(rho - HOPF_R0, dz) <= HOPF_R1) {
+      fq[i] = HOPF_Q; fs3[i] = hopfSpin(x, y, z); fh3[i] = 500;
+    } else if (FOAM && Math.random() < FOAM) {
+      fq[i] = 1 + Math.floor(Math.random() * 3);
+      fs3[i] = 1 + Math.floor(Math.random() * 12);
+      fh3[i] = 100;
+    }
+  }
 }
 
 const vortexSpin = (dx, dy, c = 1) => {
@@ -722,6 +1222,46 @@ function paintHex(variant) {
           q[i] = parseInt(process.env.RING_Q || '90'); h[i] = 500;
         }
       }
+    } else if (variant.startsWith('hexvort')) {
+      // RFC-043: distributed vortex envelope — circulation spread across
+      // a radial band R_mid±W/2 with a Gaussian quanta profile and naive
+      // tangential spins (deliberately not hexcycle's exact ring-trace:
+      // sextant-arc shedding is part of the experiment). hexvortN is
+      // width W=N in clean vacuum; hexvortNf adds 1% sparse foam
+      // (q∈[1,3], random spin) — the gentle bombardment control.
+      const vw = variant.match(/^hexvort(\d+)([fxF]*)$/);
+      const VW = vw ? parseInt(vw[1]) : 4, VFLAGS = (vw && vw[2]) || '';
+      const VFOAM = VFLAGS.includes('f'), VEXACT = VFLAGS.includes('x');
+      const VHEAVY = VFLAGS.includes('F'); // 'F' = hexcyclep-grade 5% q=5 foam
+      const R_MID = 40, sig = VW / 3;
+      if (d >= R_MID - VW / 2 && d <= R_MID + VW / 2) {
+        const gq = Math.round(64 * Math.exp(-((d - R_MID) ** 2) / (2 * sig * sig)));
+        if (gq > 0) {
+          q[i] = Math.min(255, gq);
+          if (VEXACT) {
+            // Exact same-ring trace (hexcycle's r=50 algorithm per radius):
+            // isolates thickness itself from naive-paint streamline loss.
+            const par = y & 1, off = HOFF[par];
+            const aCur = Math.atan2(y - cy, x - cx);
+            let best = 0, bestA = Infinity;
+            for (let dd = 1; dd <= 6; dd++) {
+              const nx = (x + off[dd][0] + W) % W, ny = (y + off[dd][1] + H) % H;
+              if (hexDist(nx, ny, cx, cy) !== d) continue;
+              let da = Math.atan2(ny - cy, nx - cx) - aCur;
+              while (da <= 0) da += Math.PI * 2;
+              if (da < bestA) { bestA = da; best = dd; }
+            }
+            if (best) s[i] = best; else s[i] = SEXT(aCur + Math.PI / 2);
+          } else {
+            s[i] = SEXT(Math.atan2(y - cy, x - cx) + Math.PI / 2);
+          }
+        }
+      } else if (VFOAM && Math.random() < 0.01) {
+        q[i] = 1 + Math.floor(Math.random() * 3);
+        s[i] = 1 + Math.floor(Math.random() * 6);
+      } else if (VHEAVY && Math.random() < 0.05) {
+        q[i] = 5; s[i] = 1 + Math.floor(Math.random() * 6); h[i] = 100;
+      }
     } else if (variant.startsWith('hexcycle') || variant === 'hexring' || variant === 'hexringthin') {
       if (d <= 8) { q[i] = 255; s[i] = 0; h[i] = 1; }
       else if (d <= 25) { s[i] = 0; }
@@ -815,6 +1355,7 @@ function paintHex(variant) {
 let SECTORS = 8; // set to 6 for hex runs — measure in the substrate's symmetry
 let CYCLE_TRACK = false; // hexcycle* variants report loop integrity
 let LENS_TRACK = false;  // hexlens reports downstream centroid deflection
+let VORTEX_TRACK = false; // RFC-043 hexvort* reports envelope coherence
 
 // Seepwall: a closed ring barrier of thickness t (deadlocked disk shell
 // at radius ~60) with randomized interior flux — a boxed particle. Any
@@ -918,6 +1459,9 @@ function runLatProbe(tickFn, maxT) {
 function stats(label) {
   let shellMass = 0, foamMass = 0, dead = 0, totQ = 0, totH = 0, bufQ = 0, hMax = 0, hMaxX = 0, hMaxY = 0;
   let cycleOcc = 0, cycleQ = 0, cycleTotal = 0;
+  let vAct = 0, vCoh = 0, vDead = 0, bandQ = 0, bandH = 0;
+  const ringQ = new Array(56).fill(0), ringQ2 = new Array(56).fill(0), ringN = new Array(56).fill(0);
+  let vradNum = 0;
   const cx = 200, cy = 200;
   const sectorMass = new Array(SECTORS).fill(0);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -928,6 +1472,23 @@ function stats(label) {
     if (CYCLE_TRACK && hexDist(x, y, cx, cy) === 50) {
       cycleTotal++;
       if (q[i] > 0) { cycleOcc++; cycleQ += q[i]; }
+    }
+    if (VORTEX_TRACK && d >= 25 && d <= 55) {
+      // RFC-043 envelope band: Σq, Σh, active fraction with |Δs|≤1 of the
+      // ideal tangent (wrap-aware; s=0 inert cells can't be coherent),
+      // and saturated-node fraction.
+      bandQ += q[i]; bandH += h[i];
+      if (q[i] + b[i] >= DEADLOCK) vDead++;
+      const ri = Math.round(d);
+      ringQ[ri] += q[i]; ringQ2[ri] += q[i] * q[i]; ringN[ri]++;
+      if (s[i] !== 0) vradNum += q[i] * (HEX_MX256[s[i]] * (x - cx) + HEX_MY256[s[i]] * (y - cy)) / (256 * d);
+      if (q[i] > 0) {
+        vAct++;
+        const a = Math.atan2(y - cy, x - cx) + Math.PI / 2;
+        const ideal = ((Math.floor((a + Math.PI * 2 + Math.PI / 6) / (Math.PI / 3)) % 6) + 6) % 6 + 1;
+        const dd = Math.abs(s[i] - ideal);
+        if (s[i] !== 0 && Math.min(dd, 6 - dd) <= 1) vCoh++;
+      }
     }
     if (d > 8 && d <= 80) {
       shellMass += q[i];
@@ -1006,7 +1567,92 @@ function stats(label) {
     for (let i = 0; i < N; i++) { px += q[i] * HEX_MX256[s[i]]; py += q[i] * HEX_MY256[s[i]]; }
     zstr += ` netP=(${(px / 256).toFixed(1)},${(py / 256).toFixed(1)}) totH=${totH}`;
   }
+  if (VORTEX_TRACK) {
+    // ccirc = tangential-coherence fraction of active band cells;
+    // barH = dissipation per quantum (RFC predicts it falls with W);
+    // fdead = saturated fraction (must stay < 0.05 — no collapse);
+    // orbitCv = mean per-ring coefficient of variation (necklace ≈ high,
+    // stratified envelope ≈ low); vrad = mean radial drift per quantum
+    // (0 = impermeable lamination).
+    let sigSum = 0, sigN = 0;
+    for (let r = 32; r <= 48; r++) if (ringN[r] > 1) {
+      const mean = ringQ[r] / ringN[r];
+      const sd = Math.sqrt(Math.max(0, ringQ2[r] / ringN[r] - mean * mean));
+      if (mean > 0) { sigSum += sd / mean; sigN++; }
+    }
+    zstr += ` ccirc=${(vCoh / (vAct || 1)).toFixed(2)} barH=${(bandH / (bandQ || 1)).toFixed(1)} bandQ=${bandQ} fdead=${(vDead / (vAct || 1)).toFixed(3)} orbitCv=${(sigSum / (sigN || 1)).toFixed(2)} vrad=${(vradNum / (bandQ || 1)).toFixed(3)}`;
+  }
   console.log(`${label}: shellQ=${shellMass} foamQ=${foamMass} deadlocked=${dead} hMax=${hMax}@(${hMaxX},${hMaxY})${cyc}${buf}${zstr} sectorMin/Max=${(min / (max || 1)).toFixed(2)} sectors=[${sectorMass.map(v => (v / 1000 | 0) + 'k').join(',')}]`);
+}
+
+function statsFCC(label) {
+  let totQ = 0, bufQ = 0, dead = 0, tubeQ = 0, vAct = 0, vCoh = 0, vDead = 0;
+  let cxs = 0, cys = 0, czs = 0, cm = 0, topQ = 0, botQ = 0, px = 0, py = 0, pz = 0;
+  let paintN = 0, paintQ = 0, holdN = 0;
+  for (let z = 0; z < D3; z++) {
+    for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
+      const i = (z * H3 + y) * W3 + x;
+      const qq = fq[i], occ = qq + fb3[i], cs = fs3[i];
+      totQ += qq; bufQ += fb3[i];
+      if (occ > DEADLOCK) dead++;
+      cxs += qq * x; cys += qq * y; czs += qq * z; cm += qq;
+      if (z > D3 / 2) topQ += qq; else if (z < D3 / 2) botQ += qq;
+      if (qq > 0 && cs !== 0) { px += qq * V3[cs][0]; py += qq * V3[cs][1]; pz += qq * V3[cs][2]; }
+      if (hopfMask && hopfMask[i]) { paintN++; paintQ += occ; if (cs === hopfSnap[i]) holdN++; }
+      const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
+      if (Math.hypot(Math.hypot(dx, dy) - HOPF_R0, dz) <= HOPF_R1 + 2) {
+        tubeQ += occ;
+        if (occ >= DEADLOCK) vDead++;
+        if (qq > 0 && cs !== 0) {
+          vAct++;
+          const ideal = hopfSpin(x, y, z);
+          if (ideal !== 0 && DOTS[cs][ideal] >= 128) vCoh++;
+        }
+      }
+    }
+  }
+  if (hopfMask && CUR_T === +(process.env.PROBE_T || -1)) {
+    let shown = 0;
+    for (let i = 0; i < N3 && shown < 15; i++) {
+      if (!hopfMask[i] || fs3[i] === hopfSnap[i]) continue;
+      let pred = -1;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[i * 13 + d];
+        if (ni >= 0 && hopfMask[ni] && hopfSnap[ni] === BACK3[d]) pred = ni;
+      }
+      const x = i % W3, y = ((i % (H3 * W3)) / W3) | 0, z = (i / (H3 * W3)) | 0;
+      const pp = pred < 0 ? 'NONE' :
+        `(${pred % W3},${((pred % (H3 * W3)) / W3) | 0},${(pred / (H3 * W3)) | 0}) s${fs3[pred]}/snap${hopfSnap[pred]} occ${fq[pred] + fb3[pred]}`;
+      console.log(`  rewire (${x},${y},${z}) snap${hopfSnap[i]}->s${fs3[i]} occ${fq[i] + fb3[i]} pred ${pp}`);
+      shown++;
+    }
+  }
+  let zstr = '';
+  if (hopfMask) zstr += ` paintQ=${paintQ} hold=${(holdN / (paintN || 1)).toFixed(2)}`;
+  if (TENS_ON) {
+    let tMax = 0;
+    for (let i = 0; i < N3; i++) if (ftn3[i] > tMax) tMax = ftn3[i];
+    zstr += ` tenMax=${tMax}`;
+  }
+  if (SPRAY_ON) {
+    const sWin = sprayQ - sprayLast; sprayLast = sprayQ;
+    zstr += ` spray=${sWin}`;
+  }
+  console.log(`${label}: totQ=${totQ} bufQ=${bufQ} deadlocked=${dead} tubeQ=${tubeQ} coh=${(vCoh / (vAct || 1)).toFixed(2)} fdead=${(vDead / (vAct || 1)).toFixed(3)} cen=(${cm ? (cxs / cm).toFixed(1) : '-'},${cm ? (cys / cm).toFixed(1) : '-'},${cm ? (czs / cm).toFixed(1) : '-'}) topQ=${topQ} botQ=${botQ} netP3=(${(px / 256).toFixed(0)},${(py / 256).toFixed(0)},${(pz / 256).toFixed(0)})${zstr}`);
+}
+
+// RFC-048 tomographic slice viewer: three z-planes (zc-1, zc, zc+1) at
+// the requested tick — density chars match the 2D dump convention.
+function printSlice(zc) {
+  const CH = v => v === 0 ? ' ' : v < 30 ? '.' : v < 100 ? '+' : v <= 200 ? '#' : '@';
+  for (let z = Math.max(0, zc - 1); z <= Math.min(D3 - 1, zc + 1); z++) {
+    console.log(`--- z=${z} ---`);
+    for (let y = 0; y < H3; y += 2) {
+      let row = '';
+      for (let x = 0; x < W3; x++) row += CH(fq[(z * H3 + y) * W3 + x]);
+      console.log(row);
+    }
+  }
 }
 
 // --- run ---
@@ -1017,6 +1663,7 @@ function stats(label) {
 const args = process.argv.slice(2);
 const mode = args[0] || 'engine';
 const variant = args[1] || 'solid';
+const FCC_ON = variant.startsWith('hopf'); // 3D substrate path (Phase-3 prototype)
 FLOW_CAP_ON = !mode.includes('nocap');
 GRAV_MODE = mode.includes('res') ? 'res' : mode.includes('nograv') ? 'off' : 'cong';
 PERSIST_MASS = mode.includes('persist');
@@ -1032,7 +1679,9 @@ HALVE_ON = mode.includes('halve');
 LAT_ON = mode.includes('latprobe');
 PRESS_ON = mode.includes('press');
 TENS_ON = !mode.includes('notension'); // canonical — '+notension' A/Bs the field off
-ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON; // adjacency expansion (Open Frontier)
+FLANK_ON = mode.includes('flank'); // '+flank' = RFC-044 lateral incompressibility
+ZHOP_ON = mode.includes('zhopfion');
+ZS_ON = mode.includes('zshadow') || ZSHUNT_ON || ZSEED_ON || ZHOP_ON; // adjacency expansion (Open Frontier)
 if (ZS_ON) {
   const zd = mode.match(/z(\d)/); // '+z4' sets the depth ring
   if (zd) DEPTH = Math.max(2, parseInt(zd[1]));
@@ -1055,18 +1704,21 @@ const paintVariant = () => {
   else if (variant === 'thin') paintElectron({ shellMin: 40, shellMax: 55, shellQ: 110 });
   else if (variant === 'blob' || variant === 'stream') paintBlobStream(variant);
   else if (variant.startsWith('seep')) { SEEP_T = parseInt(variant.slice(4)) || 1; SEEP_TRACK = true; paintSeepwall(SEEP_T); }
+  else if (FCC_ON) paintFCC(variant);
   else if (variant.startsWith('hex')) paintHex(variant);
   else if (variant.startsWith('dither')) paintElectron({ dither: parseFloat(variant.slice(6)) || 2 });
   else paintElectron();
 };
 bindSlab(0); paintVariant();
 if (ZSEED_ON && DEPTH > 1) { bindSlab(1); paintVariant(); bindSlab(0); } // seed the sink slab with its own jam
-const TICK = variant.startsWith('hex') ? tickHex : tick;
+const TICK = FCC_ON ? tickFCC : variant.startsWith('hex') ? tickHex : tick;
+const STATS = FCC_ON ? statsFCC : stats;
 if (TICK === tickHex) SECTORS = 6;
 CYCLE_TRACK = variant.startsWith('hexcycle');
 LENS_TRACK = variant === 'hexlens' || variant === 'hexaccretion' || variant === 'hextidal';
 ZPE_ON = ZPE_TRACK = variant === 'hexzpe' || variant === 'hexcyclez';
 if (process.env.ZPE_NOWAKE) ZPE_ON = false; // A/B: floor without the clean-wake reset
+VORTEX_TRACK = variant.startsWith('hexvort');
 if (LAT_ON) {
   const gates = PROBE_GATES[variant];
   if (!gates) { console.log('latprobe: no gates defined for ' + variant); process.exit(1); }
@@ -1075,14 +1727,30 @@ if (LAT_ON) {
   runLatProbe(TICK, MAXT);
   process.exit(0);
 }
-stats('tick 0');
+STATS('tick 0');
+// RFC-049: binary state dump for the planck3.c port's bit-identity test.
+// Layout: 'P3ST' + u32 dims (W3,H3,D3) + q,s,b,tn (u8×N3) + h (u16le×N3).
+const writeState3 = (file) => {
+  const head = Buffer.alloc(16);
+  head.write('P3ST', 0); head.writeUInt32LE(W3, 4); head.writeUInt32LE(H3, 8); head.writeUInt32LE(D3, 12);
+  const h16 = Buffer.alloc(N3 * 2);
+  for (let i = 0; i < N3; i++) h16.writeUInt16LE(fh3[i], i * 2);
+  writeFileSync(file, Buffer.concat([head, Buffer.from(fq.buffer), Buffer.from(fs3.buffer),
+    Buffer.from(fb3.buffer), Buffer.from(ftn3.buffer), h16]));
+  console.log(`state3 -> ${file}`);
+};
+if (FCC_ON && args[2] === 'state') writeState3(args[3] || 'state3_t0.bin');
 if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
 if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
+  CUR_T = t;
   bindSlab(0); TICK();
-  if (ZS_ON) { for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
-  if (t % 50 === 0) stats('tick ' + t);
+  if (ZS_ON) { if (ZHOP_ON) tickZOverpass(); else for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
+  if (t % 50 === 0) STATS('tick ' + t);
+  else if (t === +(process.env.PROBE_T || -1)) STATS('probe ' + t);
+  if (args[2] === 'slice' && t === parseInt(args[3] || '100')) printSlice(parseInt(args[4] || String(D3 / 2)));
+  if (FCC_ON && args[2] === 'state' && t === MAXT) writeState3(args[4] || 'state3_tN.bin');
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
       let row = '';
