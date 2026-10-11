@@ -2,151 +2,146 @@
   {
     "text": "Hopf's Loom",
     "start": 0,
-    "end": 0.816
+    "end": 0.818
   },
   {
     "text": "A knot of matter, woven from whirlpools — alive in your browser.",
-    "start": 0.816,
-    "end": 5.564
+    "start": 0.818,
+    "end": 5.579
   },
   {
     "text": "What you're looking at is a Hopfion: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power Langevin's Wake. It opens in metabolism view — a thermal portrait, not a photograph: the ember ring is heat locked inside the knot, the dim red darkness is the cooling vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.",
-    "start": 5.564,
-    "end": 41.915
+    "start": 5.579,
+    "end": 42.03
   },
   {
     "text": "And it's running. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.",
-    "start": 41.915,
-    "end": 51.188
+    "start": 42.03,
+    "end": 51.329
   },
   {
     "text": "Play with it",
-    "start": 51.188,
-    "end": 52.079
+    "start": 51.329,
+    "end": 52.222
   },
   {
-    "text": "Drag to orbit; two-finger drag pans, pinch zooms. It slowly rotates on its own if you leave it alone.",
-    "start": 52.079,
-    "end": 59.571
+    "text": "Drag to orbit; two-finger drag pans, pinch zooms (or use the Zoom slider). It slowly rotates on its own if you leave it alone.",
+    "start": 52.222,
+    "end": 61.595
   },
   {
-    "text": "Slice + Width — the torus becomes a living MRI scan. Drop the width to 1 and scrub through the lattice plane by plane.",
-    "start": 59.571,
-    "end": 68.325
+    "text": "Focus menu — quick camera framings: try Equator slab (a thin slice through the ring's waist) or Core bore (straight down the vortex's throat). The little axes orb on the right edge shows where you're looking; double-tap it to reset.",
+    "start": 61.595,
+    "end": 78.853
   },
   {
-    "text": "⌖ (knot tool) — click it, then click on the structure itself to inject a bolt of dense matter. Watch the collision stir the vacuum; it may survive as a lump, spray apart, or get eaten by the ring. Every outcome is physics, not animation.",
-    "start": 68.325,
-    "end": 85.907
+    "text": "View menu — you're looking at metabolism (heat) by default; switch to spin class to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or density for raw mass.",
+    "start": 78.853,
+    "end": 92.913
+  },
+  {
+    "text": "⌖ (knot tool) — tap it, then tap on the structure itself to inject a bolt of dense matter. It stays armed for repeat throws; tap ⌖ again to disarm. Every outcome is physics, not animation.",
+    "start": 92.913,
+    "end": 106.898
   },
   {
     "text": "⧉ / ⤺ — snapshot the universe, smash things into it, then rewind and try a different shot.",
-    "start": 85.907,
-    "end": 92.584
+    "start": 106.898,
+    "end": 113.593
   },
   {
-    "text": "View menu — quick camera presets: try Equator slab (a thin slice through the ring's waist) or Core bore (straight down the vortex's throat).",
-    "start": 92.584,
-    "end": 102.97
-  },
-  {
-    "text": "Color menu — you're looking at metabolism (heat) by default; switch to spin class to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or density for raw mass.",
-    "start": 102.97,
-    "end": 117.065
-  },
-  {
-    "text": "Diss and Heat are the substrate's metabolism knobs — how fast structure radiates energy, and how much heat a cell can take before it explosively unwinds. Crank Dissipation down and matter lingers; drop the thermal ceiling and knots detonate.",
-    "start": 117.065,
-    "end": 134.944
+    "text": "Tuning — open the sliders: Slice + Width turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); Diss and Heat are the substrate's metabolism knobs — crank Dissipation down and matter lingers, drop the thermal ceiling and knots detonate.",
+    "start": 113.593,
+    "end": 134.051
   },
   {
     "text": "Why it matters",
-    "start": 134.944,
-    "end": 135.983
+    "start": 134.051,
+    "end": 135.092
   },
   {
     "text": "On the older substrates this knot was impossible — every attempt to paint a 3D particle decayed or collapsed within seconds. This one survived because it was woven, not painted: its flow was traced cell-to-cell around closed loops, like thread on a loom, until every strand came home to its start. That's the name. Whether matter in our universe works this way is an open question — but here, weaving is what makes a particle a particle.",
-    "start": 135.983,
-    "end": 168.402
+    "start": 135.092,
+    "end": 167.601
   },
   {
     "text": "::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts",
-    "start": 168.402,
-    "end": 173.447
+    "start": 167.601,
+    "end": 172.659
   },
   {
     "text": "What the engine actually is",
-    "start": 173.447,
-    "end": 175.45
+    "start": 172.659,
+    "end": 174.668
   },
   {
     "text": "Substrate: 100×100×40 stacked-hex (ABC/FCC-style) lattice, 400,000 nodes, 12 ports each — 6 equatorial + 3 zenith + 3 nadir. Parity-free port tables; a fixed port index repeats its offset every layer, so long-range diagonals trace straight lines through the A→B→C→A cycle.",
-    "start": 175.45,
-    "end": 195.628
+    "start": 174.668,
+    "end": 194.902
   },
   {
     "text": "Engine: src/planck3.c compiled to WebAssembly — the same register set as the 2D engine (8-bit quanta, 8-bit spin, 16-bit heat, buffer, tension), same canonical physics: Phase Lock, FLOW_CAP routing, occupancy congestion, tension divert, unwind spray, quadrature dissipation.",
-    "start": 195.628,
-    "end": 215.955
+    "start": 194.902,
+    "end": 215.284
   },
   {
     "text": "Falsifiability: the C port is bit-identical to the JS harness on all mass channels over 400 ticks (verified natively and in Wasm — test/loom/t0.bin/t400.bin regression vectors).",
-    "start": 215.955,
-    "end": 229.086
+    "start": 215.284,
+    "end": 228.451
   },
   {
     "text": "The pipeline (why it's fast)",
-    "start": 229.086,
-    "end": 231.163
+    "start": 228.451,
+    "end": 230.534
   },
   {
     "text": "quanta+spin are packed into an RG8 buffer inside the Wasm heap (planck3_rg_refresh) and uploaded per tick via gl.texSubImage3D — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries scene-normalized heat (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.",
-    "start": 231.163,
-    "end": 278.865
+    "start": 230.534,
+    "end": 278.367
   },
   {
     "text": "What the Hopfion is made of",
-    "start": 278.865,
-    "end": 280.868
+    "start": 278.367,
+    "end": 280.376
   },
   {
     "text": "19 nested closed field-line loops traced by a memoized depth-first search over the port graph — each loop only painted if it returned to its seed within Phase-Lock tolerance on every hop. 27,971 painted cells, in-degree exactly 1 everywhere, hold = 1.00 through t=400: the structure never deviates from its traced spins.",
-    "start": 280.868,
-    "end": 304.607
+    "start": 280.376,
+    "end": 304.18
   },
   {
     "text": "The honest residuals",
-    "start": 304.607,
-    "end": 306.091
+    "start": 304.18,
+    "end": 305.668
   },
   {
     "text": "coh = 0.61, not 1.00 — that metric counts cells whose quantized port lies within 60° of the continuum ideal field; it's a quantization ceiling, not an instability.",
-    "start": 306.091,
-    "end": 318.183
+    "start": 305.668,
+    "end": 317.794
   },
   {
     "text": "~2/3 of seeds close, so the envelope is a subset of ideal field lines, not a complete torus foliation.",
-    "start": 318.183,
-    "end": 325.75
+    "start": 317.794,
+    "end": 325.382
   },
   {
     "text": "The fast chunk/halo memory mode is bit-exact in this laminar regime but diverges under knot congestion (push-ordering); the flat mode you see running is the canonical reference.",
-    "start": 325.75,
-    "end": 338.881
+    "start": 325.382,
+    "end": 338.549
   },
   {
     "text": "Full experiment log",
-    "start": 338.881,
-    "end": 340.291
+    "start": 338.549,
+    "end": 339.962
   },
   {
     "text": "The complete chain — RFC-043's closed-streamline law → the RFC-047 tracing failure → the RFC-048 crystallography fix → the RFC-049 C port → this renderer — lives in the audit log: The Interference.",
-    "start": 340.291,
-    "end": 354.905
+    "start": 339.962,
+    "end": 354.617
   },
   {
     "text": ":::",
-    "start": 354.905,
-    "end": 355.128
+    "start": 354.617,
+    "end": 354.84
   }
 ]
