@@ -109,13 +109,15 @@ export async function initLoomSimulator(root, opts = {}) {
   if (!gl) { hud.textContent = 'WebGL2 unavailable'; return () => {}; }
 
   // ---------- wasm ----------
+  if (hud) hud.textContent = 'loading engine…';
   if (typeof createPlanck3 === 'undefined')
     await new Promise((res, rej) => {
       const sc = document.createElement('script');
       sc.src = wasmUrl; sc.onload = res;
-      sc.onerror = () => rej(new Error('planck3.js load failed'));
+      sc.onerror = () => rej(new Error('planck3.js load failed: ' + wasmUrl));
       document.head.appendChild(sc);
     });
+  if (hud) hud.textContent = 'instantiating wasm…';
   const wasm = await createPlanck3();
   wasm._planck3_init();
   wasm._planck3_set_mode(0); // flat — canonical deterministic baseline
@@ -123,12 +125,14 @@ export async function initLoomSimulator(root, opts = {}) {
 
   const loadState = async (url) => {
     const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-    if (bytes.length !== 16 + N3 * 6) throw new Error(`state size ${bytes.length}`);
+    if (bytes.length !== 16 + N3 * 6) throw new Error(`state size ${bytes.length} (${url})`);
     heap.set(bytes, wasm._planck3_load_pointer());
     const rc = wasm._planck3_load_commit();
     if (rc !== 0) throw new Error(`planck3_load_commit rc=${rc}`);
   };
+  if (hud) hud.textContent = 'loading state…';
   await loadState(stateUrl);
+  if (hud) hud.textContent = 'state loaded';
 
   const injectKnot = () => {
     for (let z = 16; z < 24; z++) for (let y = 40; y < 48; y++) for (let x = 40; x < 48; x++) {
@@ -342,7 +346,7 @@ export async function initLoomSimulator(root, opts = {}) {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, N3);
       dirty = false;
     }
-    if (hud && (ui.tick % 10 === 0 || !ui.playing)) {
+    if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
       hud.textContent = `q=${wasm._planck3_total_quanta().toLocaleString()} / ${N3.toLocaleString()} · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
     }
   };

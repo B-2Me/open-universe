@@ -554,7 +554,7 @@ EMSCRIPTEN_KEEPALIVE int32_t planck3_dims(void) { return (W3 << 16) | (H3 << 8) 
 // one memory copy, no per-node ccall overhead. rg_buf packs {q,s} per
 // node for gl.texSubImage3D(RG8) uploads straight from wasm memory.
 // ---------------------------------------------------------
-static uint8_t load_buf[N3 * 6];
+static uint8_t load_buf[16 + N3 * 6]; // P3ST header + payload
 static uint8_t rg_buf[N3 * 2];
 
 EMSCRIPTEN_KEEPALIVE uint8_t *planck3_load_pointer(void) { return load_buf; }

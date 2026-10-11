@@ -4,27 +4,32 @@
   body { margin:0; background:#05050d; }
   .loom-simulator { position:relative; height:100vh; }
   canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-  .loom-hud { position:absolute; top:0; left:0; right:0; padding:8px 12px; font:11px monospace; color:#7fe; background:rgba(5,5,13,.55); pointer-events:none; }
-  .loom-presets { position:absolute; top:34px; left:10px; display:flex; gap:6px; }
-  .loom-dock { position:absolute; bottom:0; left:0; right:0; padding:8px 12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:rgba(5,5,13,.55); }
-  button, select { min-width:44px; min-height:44px; font:13px monospace; color:#9ef; background:#14202f; border:1px solid #4a7fb0; border-radius:6px; }
-  label { font:11px monospace; color:#9ef; display:flex; align-items:center; gap:6px; min-height:44px; }
-  input[type=range] { width:90px; height:44px; }
-  .loom-transport { display:flex; gap:8px; }
+  .loom-hud { position:absolute; top:0; left:0; right:0; padding:6px 10px; font:11px monospace; color:#7fe; background:rgba(5,5,13,.5); pointer-events:none; }
+  .loom-presets { position:absolute; top:30px; right:8px; display:flex; gap:4px; }
+  .loom-presets button, .loom-transport button, select { min-width:34px; min-height:34px; padding:0 8px; font:14px monospace; color:#9ef; background:#141a2c; border:1px solid #4a7fb0; border-radius:6px; }
+  .loom-dock { position:absolute; bottom:0; left:0; right:0; padding:6px 8px; display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; background:rgba(5,5,13,.5); }
+  .loom-transport { display:flex; gap:4px; }
+  label { font:11px monospace; color:#9ef; display:flex; align-items:center; gap:4px; }
+  input[type=range] { width:72px; height:24px; }
 </style></head><body>
 <div id="host" class="loom-simulator">
   <canvas></canvas>
   <div class="loom-hud" data-hud>booting…</div>
   <div class="loom-presets">
-    <button data-preset="full">Full</button><button data-preset="equator">Equator Cut</button>
-    <button data-preset="bore">Core Bore</button><button data-preset="lattice">Lattice Plane</button>
+    <button data-preset="full" title="Full torus">◉</button>
+    <button data-preset="equator" title="Equatorial slab">◐</button>
+    <button data-preset="bore" title="Down the bore">⊙</button>
+    <button data-preset="lattice" title="Single lattice plane">≡</button>
   </div>
   <div class="loom-dock">
     <div class="loom-transport">
-      <button data-play>⏸</button><button data-step>⏭</button>
-      <button data-reset>↺</button><button data-knot>💥</button><button data-spin class="on">🔁</button>
+      <button data-play title="Play/Pause">⏸</button>
+      <button data-step title="Step">⏭</button>
+      <button data-reset title="Reset">↺</button>
+      <button data-knot title="Knot">💥</button>
+      <button data-spin class="on" title="Turntable">🔁</button>
     </div>
-    <label>Elev <input type="range" data-zcenter min="0" max="39" step="1" value="20"></label>
+    <label>Z <input type="range" data-zcenter min="0" max="39" step="1" value="20"></label>
     <label>Slab <input type="range" data-zthick min="1" max="40" step="1" value="40"></label>
     <label>Q≥ <input type="range" data-qmin min="1" max="120" step="1" value="1"></label>
     <label>Size <input type="range" data-size min="20" max="150" step="1" value="55"></label>
@@ -32,10 +37,13 @@
   </div>
 </div>
 <script type="module">
-  import { initLoomSimulator } from '/docs/.vitepress/loom/main.js';
-  initLoomSimulator(document.getElementById('host'), {
-    wasmUrl: '/docs/public/wasm/wake/planck3.js',
-    stateUrl: '/docs/public/loom/hopfion.p3st',
-  }).catch(e => { document.querySelector('[data-hud]').textContent = 'ERR ' + e.message; console.error(e); });
+  const hud = document.querySelector('[data-hud]');
+  const fail = e => { hud.textContent = 'ERR ' + (e && e.message || e); console.error(e); };
+  import('/docs/.vitepress/loom/main.js')
+    .then(m => m.initLoomSimulator(document.getElementById('host'), {
+      wasmUrl: '/docs/public/wasm/wake/planck3.js',
+      stateUrl: '/docs/public/loom/hopfion.p3st',
+    }))
+    .catch(fail);
 </script>
 </body></html>
