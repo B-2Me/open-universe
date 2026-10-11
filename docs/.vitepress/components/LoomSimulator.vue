@@ -99,10 +99,12 @@ onUnmounted(() => {
   --loom-muted: #9ef;
   position: relative;
   height: 75vh;
+  height: 75dvh;
   min-height: 520px;
   background: #05050d;
   border-radius: 10px;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 .loom-canvas {
   position: absolute;
@@ -309,6 +311,19 @@ onUnmounted(() => {
   }
   .loom-sliders input[type='range'] { width: 90px; height: 40px; }
   .loom-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
+
+  /* mobile: the canvas IS the app — fill the viewport under the nav bar,
+     edge to edge, and clear the iPhone home-indicator strip */
+  .loom-simulator {
+    height: 100vh;
+    height: calc(100dvh - var(--vp-nav-height, 64px));
+    min-height: 0;
+    border-radius: 0;
+  }
+  .loom-dock {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 8px);
+  }
 }
 </style>
 
@@ -319,5 +334,12 @@ onUnmounted(() => {
 .loom-page .VPLocalNavOutlineDropdown,
 .loom-page .aside-top {
   display: none !important;
+}
+/* Orbiting/pinch on mobile must not bounce or pull-to-refresh the page. */
+html:has(.loom-simulator) {
+  overscroll-behavior: none;
+}
+@media (pointer: coarse) {
+  .loom-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
 }
 </style>

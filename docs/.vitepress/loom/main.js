@@ -262,7 +262,7 @@ export async function initLoomSimulator(root, opts = {}) {
   // lastInteract in the past → turntable spins from the first frame
   let dirty = true, lastInteract = -1e4;
   const ptrs = new Map();
-  let lastPinch = 0;
+  let lastPinch = 0, pinchRest = false;
   canvas.style.touchAction = 'none';
   const poke = () => { lastInteract = performance.now(); };
   let downPos = null;
@@ -278,6 +278,9 @@ export async function initLoomSimulator(root, opts = {}) {
     const prev = ptrs.get(e.pointerId);
     ptrs.set(e.pointerId, [e.clientX, e.clientY]);
     if (ptrs.size === 1) {
+      // pinch collapsed to one finger — its tracked position is stale
+      // pre-pinch state; eating the delta avoids an orbit jump
+      if (pinchRest) return;
       tgt.yaw += (e.clientX - prev[0]) * 0.008;
       tgt.pitch = Math.max(-1.5, Math.min(1.5, tgt.pitch + (e.clientY - prev[1]) * 0.008));
       dirty = true;
@@ -290,6 +293,8 @@ export async function initLoomSimulator(root, opts = {}) {
   });
   const endPtr = e => {
     ptrs.delete(e.pointerId); lastPinch = 0;
+    if (ptrs.size === 1) pinchRest = true;   // a pinch just collapsed
+    else pinchRest = false;
     // armed knot tool: a click (not a drag) places a knot on the slice plane
     if (ui.knotArm && downPos && ptrs.size === 0) {
       const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
@@ -306,6 +311,19 @@ export async function initLoomSimulator(root, opts = {}) {
   };
   canvas.addEventListener('pointerup', endPtr);
   canvas.addEventListener('pointercancel', endPtr);
+  // iOS Safari fires gesture* events for pinch regardless of touch-action —
+  // preventDefault keeps page pinch-zoom from fighting the orbit zoom.
+  for (const g of ['gesturestart', 'gesturechange', 'gestureend'])
+    canvas.addEventListener(g, e => e.preventDefault());
+  // Keep the screen awake while a mobile visitor watches the turntable.
+  let wakeLock = null;
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  const keepAwake = () => {
+    if (!coarse || document.hidden) return;
+    navigator.wakeLock?.request('screen').then(l => { wakeLock = l; }).catch(() => {});
+  };
+  keepAwake();
+  document.addEventListener('visibilitychange', keepAwake);
   canvas.addEventListener('wheel', e => {
     e.preventDefault(); poke();
     tgt.dist = Math.max(20, Math.min(300, tgt.dist * (1 + e.deltaY * 0.001)));
@@ -457,6 +475,8 @@ export async function initLoomSimulator(root, opts = {}) {
   return () => {
     cancelAnimationFrame(raf);
     ro.disconnect();
+    document.removeEventListener('visibilitychange', keepAwake);
+    wakeLock?.release().catch(() => {});
     gl.getExtension('WEBGL_lose_context')?.loseContext();
   };
 }
