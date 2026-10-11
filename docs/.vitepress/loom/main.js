@@ -82,11 +82,21 @@ void main() {
       : s <= 9.0 ? vec3(0.1, 0.8, 1.0) * (0.4 + 0.8 * d)
       :            vec3(0.6, 0.3, 1.0) * (0.4 + 0.8 * d);
   } else if (u_colorMode == 2) {
-    // metabolism: G channel carries heat>>4 — blackbody ramp
-    float h = s / 255.0;
-    rgb = vec3(clamp(h * 3.0, 0.0, 1.0),
-               clamp(h * 3.0 - 1.0, 0.0, 1.0) * 0.75,
-               clamp(h * 3.0 - 2.0, 0.0, 1.0)) * (0.3 + 0.9 * d);
+    // metabolism: G channel carries heat>>4 — gamma-expanded low end
+    // (ambient foam ~325 heat -> s~20) mapped onto a wide ember spectrum:
+    // cold vacuum violet -> blue -> cyan -> green -> ember -> white-hot
+    float h = pow(s / 255.0, 0.55);
+    vec3 c0 = vec3(0.02, 0.00, 0.10);
+    vec3 c1 = vec3(0.10, 0.15, 0.95);
+    vec3 c2 = vec3(0.10, 0.85, 1.00);
+    vec3 c3 = vec3(0.55, 1.00, 0.20);
+    vec3 c4 = vec3(1.00, 0.45, 0.05);
+    vec3 c5 = vec3(1.00, 1.00, 0.95);
+    rgb = (h < 0.25 ? mix(c0, c1, h * 4.0)
+        :  h < 0.45 ? mix(c1, c2, (h - 0.25) * 5.0)
+        :  h < 0.65 ? mix(c2, c3, (h - 0.45) * 5.0)
+        :  h < 0.85 ? mix(c3, c4, (h - 0.65) * 5.0)
+        :             mix(c4, c5, (h - 0.85) * 6.67)) * (0.35 + 0.85 * d);
   } else {
     rgb = mix(vec3(0.05, 0.15, 0.4), vec3(0.2, 0.9, 1.0), d)
         + vec3(1.0, 0.7, 0.2) * d * d;
@@ -304,7 +314,7 @@ export async function initLoomSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 80, budget: 12, tick: 0,
     zCenter: 20, zThick: 40, ghostAlpha: 0.06,
-    qmin: 1, size: 0.55, colorMode: 1, zscale: 0.816,
+    qmin: 1, size: 0.55, colorMode: 2, zscale: 0.816,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     knotArm: false,
   };
@@ -392,7 +402,7 @@ export async function initLoomSimulator(root, opts = {}) {
     fps = fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05;
 
     // auto-turntable: resume after 4 s of pointer inactivity
-    if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.003; dirty = true; }
+    if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
 
     // smooth camera lerp toward preset/manual targets
     if (cam.yaw !== tgt.yaw || cam.pitch !== tgt.pitch || cam.dist !== tgt.dist) {

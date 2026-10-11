@@ -13,7 +13,7 @@ layout: page
 
 *A knot of matter, woven from whirlpools — alive in your browser.*
 
-What you're looking at is a **Hopfion**: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power [Langevin's Wake](/wake-demo). The warm (amber) cells race around the ring; the cyan and violet cells loop through the hole and back, weaving the whole thing shut. Because the flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.
+What you're looking at is a **Hopfion**: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember-orange ring is heat locked inside the knot, the cold blue-violet darkness is the vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.
 
 And it's *running*. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.
 
@@ -24,7 +24,7 @@ And it's *running*. This is not a video — the little universe is ticking away 
 - **⌖ (knot tool)** — click it, then click *on the structure itself* to inject a bolt of dense matter. Watch the collision stir the vacuum; it may survive as a lump, spray apart, or get eaten by the ring. Every outcome is physics, not animation.
 - **⧉ / ⤺** — snapshot the universe, smash things into it, then rewind and try a different shot.
 - **View menu** — quick camera presets: try **Equator slab** (a thin slice through the ring's waist) or **Core bore** (straight down the vortex's throat).
-- **Color menu → metabolism** — switches from flow direction to *heat*. You can literally watch the knot burn.
+- **Color menu** — you're looking at *metabolism* (heat) by default; switch to **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or **density** for raw mass.
 
 **Diss** and **Heat** are the substrate's metabolism knobs — how fast structure radiates energy, and how much heat a cell can take before it explosively unwinds. Crank Dissipation down and matter lingers; drop the thermal ceiling and knots detonate.
 
