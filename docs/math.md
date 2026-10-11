@@ -90,13 +90,15 @@ $$ \text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;|\; 8 \te
 
 To out-predict the Standard Model, we must discard its continuous geometric maps while preserving its raw experimental data. We do not need to prove the 12-port lattice disappears; we only need to prove that the lattice's discrete outputs (`quanta`, `heat`, `yield`, `deadlocks`) match the raw telemetry spitting out of CERN detectors before legacy physicists apply their spatial approximations to it.
 
+**The Local Calibration Premise:** We explicitly reject the Standard Model assumption that collider data defines "universal" objects. Because a topological knot only exists in equilibrium with its surrounding field, the resonances measured at CERN are biased by Earth's specific gravity well and ambient noise. We use CERN data strictly as *local calibration telemetry* to tune the engine to Earth's baseline tension. 
+
 Here is how particle collider observables translate directly to the `planck3.c` engine state:
 
 ### 1. Invariant Mass ($GeV/c^2$) $\to$ Topological Deadlock Quanta
 * **The Raw Observable:** Colliders measure the total rest energy of a resonance peak before it shatters.
 * **The Process Translation:** In the engine, mass is not an object; it is the raw count of `quanta` trapped in a stationary routing cycle where $Q \ge DEADLOCK\_QUANTA$. 
-* **Validation Status [OPEN - HIGH PRIORITY]:** We must define a particle's mass strictly by the minimum `FLOW_CAP` and `TENSION` required to force a specific nested winding (like the 19-loop Hopfion) into stable equilibrium. 
-* **Next Step:** Run automated tuning sweeps across the 3D engine to find the exact quanta-count eigenvalues where Hopfions self-stabilize.
+* **Validation Status [OPEN - HIGH PRIORITY]:** We must define a particle's mass strictly by the minimum `FLOW_CAP` and `TENSION` required to force a specific nested winding (like the 19-loop Hopfion) into stable equilibrium under Earth-analog noise. 
+* **Next Step:** Run automated tuning sweeps across the 3D engine to find the exact quanta-count eigenvalues where Hopfions self-stabilize against our calibrated environmental baseline.
 
 ### 2. Mean Lifetime ($\tau$) $\to$ Phase-Lock Endurance (Ticks)
 * **The Raw Observable:** The statistical half-life of a particle before it decays into lighter debris.
