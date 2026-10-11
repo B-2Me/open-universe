@@ -6,8 +6,12 @@ layout: page
 ---
 
 <ClientOnly>
-  <LoomSimulator />
+  <div class="loom-stage">
+    <LoomSimulator />
+  </div>
 </ClientOnly>
+
+<div class="loom-doc vp-doc">
 
 # Hopf's Loom
 
@@ -19,14 +23,12 @@ And it's *running*. This is not a video — the little universe is ticking away 
 
 ## Play with it
 
-- **Drag** to orbit; **two-finger drag** pans, pinch zooms. It slowly rotates on its own if you leave it alone.
-- **Slice** + **Width** — the torus becomes a living MRI scan. Drop the width to 1 and scrub through the lattice plane by plane.
-- **⌖ (knot tool)** — click it, then click *on the structure itself* to inject a bolt of dense matter. Watch the collision stir the vacuum; it may survive as a lump, spray apart, or get eaten by the ring. Every outcome is physics, not animation.
+- **Drag** to orbit; **two-finger drag** pans, pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
+- **Focus menu** — quick camera framings: try **Equator slab** (a thin slice through the ring's waist) or **Core bore** (straight down the vortex's throat). The little axes orb on the right edge shows where you're looking; double-tap it to reset.
+- **View menu** — you're looking at *metabolism* (heat) by default; switch to **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or **density** for raw mass.
+- **⌖ (knot tool)** — tap it, then tap *on the structure itself* to inject a bolt of dense matter. It stays armed for repeat throws; tap ⌖ again to disarm. Every outcome is physics, not animation.
 - **⧉ / ⤺** — snapshot the universe, smash things into it, then rewind and try a different shot.
-- **View menu** — quick camera presets: try **Equator slab** (a thin slice through the ring's waist) or **Core bore** (straight down the vortex's throat).
-- **Color menu** — you're looking at *metabolism* (heat) by default; switch to **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or **density** for raw mass.
-
-**Diss** and **Heat** are the substrate's metabolism knobs — how fast structure radiates energy, and how much heat a cell can take before it explosively unwinds. Crank Dissipation down and matter lingers; drop the thermal ceiling and knots detonate.
+- **Tuning** — open the sliders: **Slice** + **Width** turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); **Diss** and **Heat** are the substrate's metabolism knobs — crank Dissipation down and matter lingers, drop the thermal ceiling and knots detonate.
 
 ## Why it matters
 
@@ -59,3 +61,5 @@ On the older substrates this knot was impossible — every attempt to paint a 3D
 The complete chain — RFC-043's closed-streamline law → the RFC-047 tracing failure → the RFC-048 crystallography fix → the RFC-049 C port → this renderer — lives in the audit log: [The Interference](/interference).
 
 :::
+
+</div>

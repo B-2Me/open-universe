@@ -109,6 +109,9 @@ onUnmounted(() => {
   height: 75vh;
   height: 75dvh;
   min-height: 520px;
+  max-width: 1200px;
+  margin: 0 auto;                     /* HUD/⚙/gizmo align to the canvas
+                                         edges, not the window edges */
   background: #05050d;
   border-radius: 10px;
   overflow: hidden;
@@ -374,6 +377,7 @@ onUnmounted(() => {
     height: 100vh;
     height: calc(100dvh - var(--vp-nav-height, 64px));
     min-height: 0;
+    max-width: none;
     border-radius: 0;
   }
   .loom-dock {
@@ -397,5 +401,13 @@ html:has(.loom-simulator) {
 }
 @media (pointer: coarse) {
   .loom-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
+}
+/* Page prose: doc typography + article width, same as the rest of the site.
+   (layout: page renders raw Content with no .vp-doc wrapper — we add the
+   class in loom-demo.md and constrain it here.) */
+.loom-page .loom-doc {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 24px 24px 72px;
 }
 </style>
