@@ -581,9 +581,24 @@ EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) { return rg_buf; }
 // after chunked runs so g_rd is current.
 EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
     if (mode == 1) {
+        // Thermal-camera normalization: spread the live heat range of
+        // rendered (q>0) cells across the full byte so internal structure
+        // resolves regardless of absolute temperature. Fixed /16 scaling
+        // collapsed the whole donut into a few values.
+        int hmin = 65535, hmax = 0;
         for (int32_t i = 0; i < N3; i++) {
+            if (g_rd[i].quanta > 0) {
+                int h = g_rd[i].heat;
+                if (h < hmin) hmin = h;
+                if (h > hmax) hmax = h;
+            }
+        }
+        int span = hmax > hmin ? hmax - hmin : 1;
+        for (int32_t i = 0; i < N3; i++) {
+            int d = (int)g_rd[i].heat - hmin;
+            if (d < 0) d = 0; else if (d > span) d = span;
             rg_buf[2 * i] = g_rd[i].quanta;
-            rg_buf[2 * i + 1] = (uint8_t)(g_rd[i].heat >> 4); // heat/16 -> 0..255 band
+            rg_buf[2 * i + 1] = (uint8_t)(d * 255 / span);
         }
     } else {
         for (int32_t i = 0; i < N3; i++) {

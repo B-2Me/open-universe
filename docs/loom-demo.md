@@ -42,7 +42,7 @@ On the older substrates this knot was impossible — every attempt to paint a 3D
 
 ### The pipeline (why it's fast)
 
-`quanta`+`spin` are packed into an RG8 buffer *inside* the Wasm heap (`planck3_rg_refresh`) and uploaded per tick via `gl.texSubImage3D` — the physics state never crosses into a JavaScript array. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.
+`quanta`+`spin` are packed into an RG8 buffer *inside* the Wasm heap (`planck3_rg_refresh`) and uploaded per tick via `gl.texSubImage3D` — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries **scene-normalized heat** (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.
 
 ### What the Hopfion is made of
 

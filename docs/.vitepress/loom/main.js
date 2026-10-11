@@ -82,10 +82,10 @@ void main() {
       : s <= 9.0 ? vec3(0.1, 0.8, 1.0) * (0.4 + 0.8 * d)
       :            vec3(0.6, 0.3, 1.0) * (0.4 + 0.8 * d);
   } else if (u_colorMode == 2) {
-    // metabolism: G channel carries heat>>4 — gamma-expanded low end
-    // (ambient foam ~325 heat -> s~20) mapped onto a wide blackbody
-    // spectrum: dying ember -> deep red -> orange -> amber -> white-hot
-    float h = pow(s / 255.0, 0.55);
+    // metabolism: G carries scene-normalized heat (thermal-camera style,
+    // planck3_rg_refresh mode 1) across a wide blackbody spectrum:
+    // dying ember -> deep red -> orange -> amber -> white-hot
+    float h = pow(s / 255.0, 0.75);
     vec3 c0 = vec3(0.06, 0.00, 0.00);  // near-black, heat death
     vec3 c1 = vec3(0.42, 0.04, 0.00);  // deep red
     vec3 c2 = vec3(0.82, 0.20, 0.00);  // red-orange
