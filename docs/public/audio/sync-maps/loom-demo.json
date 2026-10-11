@@ -2,151 +2,151 @@
   {
     "text": "Hopf's Loom",
     "start": 0,
-    "end": 0.815
+    "end": 0.816
   },
   {
     "text": "A knot of matter, woven from whirlpools — alive in your browser.",
-    "start": 0.815,
-    "end": 5.557
+    "start": 0.816,
+    "end": 5.564
   },
   {
     "text": "What you're looking at is a Hopfion: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power Langevin's Wake. It opens in metabolism view — a thermal portrait, not a photograph: the ember ring is heat locked inside the knot, the dim red darkness is the cooling vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.",
-    "start": 5.557,
-    "end": 41.864
+    "start": 5.564,
+    "end": 41.915
   },
   {
     "text": "And it's running. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.",
-    "start": 41.864,
-    "end": 51.126
+    "start": 41.915,
+    "end": 51.188
   },
   {
     "text": "Play with it",
-    "start": 51.126,
-    "end": 52.015
+    "start": 51.188,
+    "end": 52.079
   },
   {
-    "text": "Drag to orbit. It slowly rotates on its own if you leave it alone.",
-    "start": 52.015,
-    "end": 56.906
+    "text": "Drag to orbit; two-finger drag pans, pinch zooms. It slowly rotates on its own if you leave it alone.",
+    "start": 52.079,
+    "end": 59.571
   },
   {
     "text": "Slice + Width — the torus becomes a living MRI scan. Drop the width to 1 and scrub through the lattice plane by plane.",
-    "start": 56.906,
-    "end": 65.649
+    "start": 59.571,
+    "end": 68.325
   },
   {
     "text": "⌖ (knot tool) — click it, then click on the structure itself to inject a bolt of dense matter. Watch the collision stir the vacuum; it may survive as a lump, spray apart, or get eaten by the ring. Every outcome is physics, not animation.",
-    "start": 65.649,
-    "end": 83.21
+    "start": 68.325,
+    "end": 85.907
   },
   {
     "text": "⧉ / ⤺ — snapshot the universe, smash things into it, then rewind and try a different shot.",
-    "start": 83.21,
-    "end": 89.878
+    "start": 85.907,
+    "end": 92.584
   },
   {
     "text": "View menu — quick camera presets: try Equator slab (a thin slice through the ring's waist) or Core bore (straight down the vortex's throat).",
-    "start": 89.878,
-    "end": 100.252
+    "start": 92.584,
+    "end": 102.97
   },
   {
     "text": "Color menu — you're looking at metabolism (heat) by default; switch to spin class to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or density for raw mass.",
-    "start": 100.252,
-    "end": 114.33
+    "start": 102.97,
+    "end": 117.065
   },
   {
     "text": "Diss and Heat are the substrate's metabolism knobs — how fast structure radiates energy, and how much heat a cell can take before it explosively unwinds. Crank Dissipation down and matter lingers; drop the thermal ceiling and knots detonate.",
-    "start": 114.33,
-    "end": 132.187
+    "start": 117.065,
+    "end": 134.944
   },
   {
     "text": "Why it matters",
-    "start": 132.187,
-    "end": 133.225
+    "start": 134.944,
+    "end": 135.983
   },
   {
     "text": "On the older substrates this knot was impossible — every attempt to paint a 3D particle decayed or collapsed within seconds. This one survived because it was woven, not painted: its flow was traced cell-to-cell around closed loops, like thread on a loom, until every strand came home to its start. That's the name. Whether matter in our universe works this way is an open question — but here, weaving is what makes a particle a particle.",
-    "start": 133.225,
-    "end": 165.604
+    "start": 135.983,
+    "end": 168.402
   },
   {
     "text": "::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts",
-    "start": 165.604,
-    "end": 170.643
+    "start": 168.402,
+    "end": 173.447
   },
   {
     "text": "What the engine actually is",
-    "start": 170.643,
-    "end": 172.644
+    "start": 173.447,
+    "end": 175.45
   },
   {
     "text": "Substrate: 100×100×40 stacked-hex (ABC/FCC-style) lattice, 400,000 nodes, 12 ports each — 6 equatorial + 3 zenith + 3 nadir. Parity-free port tables; a fixed port index repeats its offset every layer, so long-range diagonals trace straight lines through the A→B→C→A cycle.",
-    "start": 172.644,
-    "end": 192.798
+    "start": 175.45,
+    "end": 195.628
   },
   {
     "text": "Engine: src/planck3.c compiled to WebAssembly — the same register set as the 2D engine (8-bit quanta, 8-bit spin, 16-bit heat, buffer, tension), same canonical physics: Phase Lock, FLOW_CAP routing, occupancy congestion, tension divert, unwind spray, quadrature dissipation.",
-    "start": 192.798,
-    "end": 213.1
+    "start": 195.628,
+    "end": 215.955
   },
   {
     "text": "Falsifiability: the C port is bit-identical to the JS harness on all mass channels over 400 ticks (verified natively and in Wasm — test/loom/t0.bin/t400.bin regression vectors).",
-    "start": 213.1,
-    "end": 226.215
+    "start": 215.955,
+    "end": 229.086
   },
   {
     "text": "The pipeline (why it's fast)",
-    "start": 226.215,
-    "end": 228.29
+    "start": 229.086,
+    "end": 231.163
   },
   {
     "text": "quanta+spin are packed into an RG8 buffer inside the Wasm heap (planck3_rg_refresh) and uploaded per tick via gl.texSubImage3D — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries scene-normalized heat (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.",
-    "start": 228.29,
-    "end": 275.933
+    "start": 231.163,
+    "end": 278.865
   },
   {
     "text": "What the Hopfion is made of",
-    "start": 275.933,
-    "end": 277.934
+    "start": 278.865,
+    "end": 280.868
   },
   {
     "text": "19 nested closed field-line loops traced by a memoized depth-first search over the port graph — each loop only painted if it returned to its seed within Phase-Lock tolerance on every hop. 27,971 painted cells, in-degree exactly 1 everywhere, hold = 1.00 through t=400: the structure never deviates from its traced spins.",
-    "start": 277.934,
-    "end": 301.645
+    "start": 280.868,
+    "end": 304.607
   },
   {
     "text": "The honest residuals",
-    "start": 301.645,
-    "end": 303.127
+    "start": 304.607,
+    "end": 306.091
   },
   {
     "text": "coh = 0.61, not 1.00 — that metric counts cells whose quantized port lies within 60° of the continuum ideal field; it's a quantization ceiling, not an instability.",
-    "start": 303.127,
-    "end": 315.204
+    "start": 306.091,
+    "end": 318.183
   },
   {
     "text": "~2/3 of seeds close, so the envelope is a subset of ideal field lines, not a complete torus foliation.",
-    "start": 315.204,
-    "end": 322.762
+    "start": 318.183,
+    "end": 325.75
   },
   {
     "text": "The fast chunk/halo memory mode is bit-exact in this laminar regime but diverges under knot congestion (push-ordering); the flat mode you see running is the canonical reference.",
-    "start": 322.762,
-    "end": 335.877
+    "start": 325.75,
+    "end": 338.881
   },
   {
     "text": "Full experiment log",
-    "start": 335.877,
-    "end": 337.285
+    "start": 338.881,
+    "end": 340.291
   },
   {
     "text": "The complete chain — RFC-043's closed-streamline law → the RFC-047 tracing failure → the RFC-048 crystallography fix → the RFC-049 C port → this renderer — lives in the audit log: The Interference.",
-    "start": 337.285,
-    "end": 351.882
+    "start": 340.291,
+    "end": 354.905
   },
   {
     "text": ":::",
-    "start": 351.882,
-    "end": 352.104
+    "start": 354.905,
+    "end": 355.128
   }
 ]
