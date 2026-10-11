@@ -2,146 +2,146 @@
   {
     "text": "Hopf's Loom",
     "start": 0,
-    "end": 0.818
+    "end": 0.817
   },
   {
     "text": "A knot of matter, woven from whirlpools — alive in your browser.",
-    "start": 0.818,
-    "end": 5.579
+    "start": 0.817,
+    "end": 5.567
   },
   {
     "text": "What you're looking at is a Hopfion: a smoke-ring-shaped knot made of 400,000 tiny cells, each one shoving its neighbors according to the same thermodynamic rules that power Langevin's Wake. It opens in metabolism view — a thermal portrait, not a photograph: the ember ring is heat locked inside the knot, the dim red darkness is the cooling vacuum it sits in. Because the underlying flow is woven into a closed loop, it can't simply unravel — the same reason a knot in a rope stays a knot.",
-    "start": 5.579,
-    "end": 42.03
+    "start": 5.567,
+    "end": 41.939
   },
   {
     "text": "And it's running. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.",
-    "start": 42.03,
-    "end": 51.329
+    "start": 41.939,
+    "end": 51.217
   },
   {
     "text": "Play with it",
-    "start": 51.329,
-    "end": 52.222
+    "start": 51.217,
+    "end": 52.108
   },
   {
     "text": "Drag to orbit; two-finger drag pans, pinch zooms (or use the Zoom slider). It slowly rotates on its own if you leave it alone.",
-    "start": 52.222,
-    "end": 61.595
+    "start": 52.108,
+    "end": 61.461
   },
   {
     "text": "Focus menu — quick camera framings: try Equator slab (a thin slice through the ring's waist) or Core bore (straight down the vortex's throat). The little axes orb on the right edge shows where you're looking; double-tap it to reset.",
-    "start": 61.595,
-    "end": 78.853
+    "start": 61.461,
+    "end": 78.682
   },
   {
-    "text": "View menu — you're looking at metabolism (heat) by default; switch to spin class to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or density for raw mass.",
-    "start": 78.853,
-    "end": 92.913
+    "text": "View menu — you're looking at metabolism (heat) by default; switch to macro for the clean geometric readout (dense cores glow cyan — the shape of the knot), spin class to paint by flow direction (warm = around the ring, cyan/violet = through the hole), or density for raw mass.",
+    "start": 78.682,
+    "end": 99.243
   },
   {
     "text": "⌖ (knot tool) — tap it, then tap on the structure itself to inject a bolt of dense matter. It stays armed for repeat throws; tap ⌖ again to disarm. Every outcome is physics, not animation.",
-    "start": 92.913,
-    "end": 106.898
+    "start": 99.243,
+    "end": 113.198
   },
   {
     "text": "⧉ / ⤺ — snapshot the universe, smash things into it, then rewind and try a different shot.",
-    "start": 106.898,
-    "end": 113.593
+    "start": 113.198,
+    "end": 119.878
   },
   {
     "text": "Tuning — open the sliders: Slice + Width turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); Diss and Heat are the substrate's metabolism knobs — crank Dissipation down and matter lingers, drop the thermal ceiling and knots detonate.",
-    "start": 113.593,
-    "end": 134.051
+    "start": 119.878,
+    "end": 140.291
   },
   {
     "text": "Why it matters",
-    "start": 134.051,
-    "end": 135.092
+    "start": 140.291,
+    "end": 141.33
   },
   {
     "text": "On the older substrates this knot was impossible — every attempt to paint a 3D particle decayed or collapsed within seconds. This one survived because it was woven, not painted: its flow was traced cell-to-cell around closed loops, like thread on a loom, until every strand came home to its start. That's the name. Whether matter in our universe works this way is an open question — but here, weaving is what makes a particle a particle.",
-    "start": 135.092,
-    "end": 167.601
+    "start": 141.33,
+    "end": 173.768
   },
   {
     "text": "::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts",
-    "start": 167.601,
-    "end": 172.659
+    "start": 173.768,
+    "end": 178.815
   },
   {
     "text": "What the engine actually is",
-    "start": 172.659,
-    "end": 174.668
+    "start": 178.815,
+    "end": 180.82
   },
   {
     "text": "Substrate: 100×100×40 stacked-hex (ABC/FCC-style) lattice, 400,000 nodes, 12 ports each — 6 equatorial + 3 zenith + 3 nadir. Parity-free port tables; a fixed port index repeats its offset every layer, so long-range diagonals trace straight lines through the A→B→C→A cycle.",
-    "start": 174.668,
-    "end": 194.902
+    "start": 180.82,
+    "end": 201.01
   },
   {
     "text": "Engine: src/planck3.c compiled to WebAssembly — the same register set as the 2D engine (8-bit quanta, 8-bit spin, 16-bit heat, buffer, tension), same canonical physics: Phase Lock, FLOW_CAP routing, occupancy congestion, tension divert, unwind spray, quadrature dissipation.",
-    "start": 194.902,
-    "end": 215.284
+    "start": 201.01,
+    "end": 221.348
   },
   {
     "text": "Falsifiability: the C port is bit-identical to the JS harness on all mass channels over 400 ticks (verified natively and in Wasm — test/loom/t0.bin/t400.bin regression vectors).",
-    "start": 215.284,
-    "end": 228.451
+    "start": 221.348,
+    "end": 234.486
   },
   {
     "text": "The pipeline (why it's fast)",
-    "start": 228.451,
-    "end": 230.534
+    "start": 234.486,
+    "end": 236.565
   },
   {
     "text": "quanta+spin are packed into an RG8 buffer inside the Wasm heap (planck3_rg_refresh) and uploaded per tick via gl.texSubImage3D — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries scene-normalized heat (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.",
-    "start": 230.534,
-    "end": 278.367
+    "start": 236.565,
+    "end": 284.294
   },
   {
     "text": "What the Hopfion is made of",
-    "start": 278.367,
-    "end": 280.376
+    "start": 284.294,
+    "end": 286.298
   },
   {
     "text": "19 nested closed field-line loops traced by a memoized depth-first search over the port graph — each loop only painted if it returned to its seed within Phase-Lock tolerance on every hop. 27,971 painted cells, in-degree exactly 1 everywhere, hold = 1.00 through t=400: the structure never deviates from its traced spins.",
-    "start": 280.376,
-    "end": 304.18
+    "start": 286.298,
+    "end": 310.051
   },
   {
     "text": "The honest residuals",
-    "start": 304.18,
-    "end": 305.668
+    "start": 310.051,
+    "end": 311.535
   },
   {
     "text": "coh = 0.61, not 1.00 — that metric counts cells whose quantized port lies within 60° of the continuum ideal field; it's a quantization ceiling, not an instability.",
-    "start": 305.668,
-    "end": 317.794
+    "start": 311.535,
+    "end": 323.634
   },
   {
     "text": "~2/3 of seeds close, so the envelope is a subset of ideal field lines, not a complete torus foliation.",
-    "start": 317.794,
-    "end": 325.382
+    "start": 323.634,
+    "end": 331.206
   },
   {
     "text": "The fast chunk/halo memory mode is bit-exact in this laminar regime but diverges under knot congestion (push-ordering); the flat mode you see running is the canonical reference.",
-    "start": 325.382,
-    "end": 338.549
+    "start": 331.206,
+    "end": 344.344
   },
   {
     "text": "Full experiment log",
-    "start": 338.549,
-    "end": 339.962
+    "start": 344.344,
+    "end": 345.754
   },
   {
     "text": "The complete chain — RFC-043's closed-streamline law → the RFC-047 tracing failure → the RFC-048 crystallography fix → the RFC-049 C port → this renderer — lives in the audit log: The Interference.",
-    "start": 339.962,
-    "end": 354.617
+    "start": 345.754,
+    "end": 360.377
   },
   {
     "text": ":::",
-    "start": 354.617,
-    "end": 354.84
+    "start": 360.377,
+    "end": 360.6
   }
 ]
