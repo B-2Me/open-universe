@@ -38,33 +38,39 @@ onUnmounted(() => {
   <div ref="host" class="loom-simulator">
     <canvas class="loom-canvas" aria-label="Hopf's Loom 3D lattice renderer"></canvas>
 
+    <!-- telemetry chip -->
     <div class="loom-hud" data-hud>booting…</div>
 
-    <div class="loom-presets" role="group" aria-label="Camera presets">
-      <button data-preset="full"    title="Full torus"            aria-label="Full torus">◉</button>
-      <button data-preset="equator" title="Equatorial slab"       aria-label="Equatorial slab">◐</button>
-      <button data-preset="bore"    title="Down the bore (top view)" aria-label="Down the bore">⊙</button>
-      <button data-preset="lattice" title="Single lattice plane"  aria-label="Single lattice plane">≡</button>
-    </div>
+    <!-- always-visible collapse toggle -->
+    <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
+    <!-- floating control dock -->
     <div class="loom-dock">
-      <div class="loom-transport">
-        <button data-play title="Play/Pause" aria-label="Play or pause">⏸</button>
-        <button data-step title="Step one tick" aria-label="Step one tick">⏭</button>
-        <button data-reset title="Reload Hopfion state" aria-label="Reset state">↺</button>
-        <button data-knot title="Inject a saturated knot" aria-label="Inject knot">💥</button>
-        <button data-spin class="on" aria-pressed="true" title="Auto-turntable" aria-label="Toggle auto-turntable">🔁</button>
+      <div class="loom-transport" role="group" aria-label="Transport">
+        <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
+        <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
+        <button data-reset title="Reset to Hopfion"   aria-label="Reset">⟲</button>
+        <button data-knot  title="Inject knot"        aria-label="Inject knot">✹</button>
+        <button data-spin class="on" aria-pressed="true"
+                title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
       </div>
-      <div class="loom-sliders">
-        <label><span>Z</span><input type="range" data-zcenter min="0" max="39" step="1" value="20"></label>
-        <label><span>Slab</span><input type="range" data-zthick min="1" max="40" step="1" value="40"></label>
-        <label><span>Q≥</span><input type="range" data-qmin min="1" max="120" step="1" value="1"></label>
-        <label><span>Size</span><input type="range" data-size min="20" max="150" step="1" value="55"></label>
-        <select data-colormode aria-label="Color mode">
-          <option value="1" selected>spin</option>
-          <option value="0">density</option>
-        </select>
-      </div>
+
+      <select data-preset aria-label="View preset" title="Camera preset">
+        <option value="full"    selected>Full torus</option>
+        <option value="equator">Equator slab</option>
+        <option value="bore">Core bore</option>
+        <option value="lattice">Lattice plane</option>
+      </select>
+
+      <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
+      <label>Width <input type="range" data-zthick  min="1" max="40" step="1" value="40"><output>40</output></label>
+      <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
+      <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
+
+      <select data-colormode aria-label="Color mode" title="Color mode">
+        <option value="1" selected>spin class</option>
+        <option value="0">density</option>
+      </select>
     </div>
   </div>
 </template>
@@ -86,99 +92,108 @@ onUnmounted(() => {
   display: block;
   touch-action: none;
 }
+
+/* telemetry chip — small, top-left, translucent */
 .loom-hud {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 6px 10px;
-  font: 11px/1.4 monospace;
+  top: 8px;
+  left: 8px;
+  max-width: calc(100% - 64px);
+  padding: 4px 10px;
+  font: 11px/1.5 monospace;
   color: #7fe;
-  background: rgba(5, 5, 13, 0.5);
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid rgba(80, 140, 200, 0.25);
+  border-radius: 8px;
   pointer-events: none;
   text-shadow: 0 0 4px #000;
-}
-.loom-presets {
-  position: absolute;
-  top: 30px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-}
-.loom-presets button,
-.loom-transport button,
-.loom-sliders select {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 8px;
-  font: 14px monospace;
-  color: #9ef;
-  background: rgba(18, 26, 44, 0.7);
-  border: 1px solid rgba(80, 140, 200, 0.4);
-  border-radius: 6px;
-  cursor: pointer;
-}
-.loom-presets button { font-size: 15px; }
-.loom-dock {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 6px 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  background: rgba(5, 5, 13, 0.5);
-}
-.loom-transport {
-  display: flex;
-  gap: 4px;
-}
-.loom-transport button { font-size: 14px; }
-.loom-transport button:active,
-.loom-presets button:active {
-  transform: scale(0.92);
-  border-color: #7fe;
-}
-.loom-transport button.on {
-  border-color: #7fe;
-  color: #7fe;
-}
-.loom-sliders {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  align-items: center;
-  font: 11px monospace;
-  color: #9ef;
-}
-.loom-sliders label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.loom-sliders label span { opacity: 0.8; }
-.loom-sliders input[type='range'] {
-  width: 72px;
-  height: 24px;
-  accent-color: #7fe;
-}
-.loom-sliders select {
-  min-height: 30px;
-  font-size: 11px;
+  word-break: break-all;
+  z-index: 3;
 }
 
-/* 44px touch targets only where fingers live (coarse pointers). */
+/* collapse toggle — small, always visible */
+.loom-uitoggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  font: 14px monospace;
+  color: #9ef;
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid rgba(80, 140, 200, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 3;
+}
+.loom-simulator.dock-hidden .loom-dock { display: none; }
+
+/* floating dock — centered pill, Sketchfab-style */
+.loom-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 16px);
+  padding: 6px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  align-items: center;
+  background: rgba(8, 10, 20, 0.72);
+  border: 1px solid rgba(80, 140, 200, 0.25);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  z-index: 3;
+}
+.loom-transport { display: flex; gap: 4px; }
+.loom-transport button,
+.loom-dock select {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 9px;
+  font: 13px monospace;
+  color: #9ef;
+  background: rgba(24, 34, 56, 0.9);
+  border: 1px solid rgba(80, 140, 200, 0.35);
+  border-radius: 7px;
+  cursor: pointer;
+}
+.loom-transport button:active,
+.loom-dock select:active {
+  transform: scale(0.94);
+  border-color: #7fe;
+}
+.loom-transport button.on { border-color: #7fe; color: #7fe; }
+
+.loom-dock label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 11px monospace;
+  color: #9ef;
+  white-space: nowrap;
+}
+.loom-dock label input[type='range'] {
+  width: 70px;
+  height: 22px;
+  accent-color: #7fe;
+}
+.loom-dock label output {
+  min-width: 2ch;
+  color: #7fe;
+  opacity: 0.9;
+}
+.loom-dock select { font-size: 11px; min-height: 30px; }
+
+/* real 44px targets only where fingers live */
 @media (pointer: coarse) {
-  .loom-presets button,
-  .loom-transport button,
-  .loom-sliders select {
+  .loom-transport button, .loom-dock select, .loom-uitoggle {
     min-width: 44px;
     min-height: 44px;
   }
-  .loom-sliders label { min-height: 44px; }
-  .loom-sliders input[type='range'] { width: 96px; height: 40px; }
+  .loom-dock label input[type='range'] { width: 90px; height: 40px; }
 }
 </style>
 

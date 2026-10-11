@@ -261,11 +261,16 @@ export async function initLoomSimulator(root, opts = {}) {
     e.target.classList.toggle('on', ui.turntable);
     poke();
   });
-  bind('[data-zcenter]', 'input', e => { ui.zCenter = +e.target.value; dirty = true; });
-  bind('[data-zthick]', 'input', e => { ui.zThick = +e.target.value; dirty = true; });
-  bind('[data-qmin]', 'input', e => { ui.qmin = +e.target.value; dirty = true; });
-  bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; dirty = true; });
+  const readout = e => {
+    const o = e.target.parentElement?.querySelector('output');
+    if (o) o.value = e.target.value;
+  };
+  bind('[data-zcenter]', 'input', e => { ui.zCenter = +e.target.value; readout(e); dirty = true; });
+  bind('[data-zthick]', 'input', e => { ui.zThick = +e.target.value; readout(e); dirty = true; });
+  bind('[data-qmin]', 'input', e => { ui.qmin = +e.target.value; readout(e); dirty = true; });
+  bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
+  bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
   // quick-view presets: smooth-lerp camera + jump slice values
   const PRESETS = {
@@ -274,16 +279,24 @@ export async function initLoomSimulator(root, opts = {}) {
     bore:    { yaw: 0.0,  pitch: 1.5,  dist: 95,  zCenter: 20, zThick: 40 },
     lattice: { yaw: 0.7,  pitch: 0.6,  dist: 95,  zCenter: 20, zThick: 1 },
   };
-  const setRange = (sel, v) => { const el = root.querySelector(sel); if (el) el.value = v; };
-  for (const el of root.querySelectorAll('[data-preset]'))
-    el.addEventListener('click', () => {
-      const p = PRESETS[el.dataset.preset];
-      if (!p) return;
-      Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist });
-      ui.zCenter = p.zCenter; ui.zThick = p.zThick;
-      setRange('[data-zcenter]', ui.zCenter); setRange('[data-zthick]', ui.zThick);
-      poke(); dirty = true;
-    });
+  const setRange = (sel, v) => {
+    const el = root.querySelector(sel);
+    if (el) { el.value = v; el.dispatchEvent(new Event('input')); }
+  };
+  const applyPreset = (name) => {
+    const p = PRESETS[name];
+    if (!p) return;
+    Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist });
+    ui.zCenter = p.zCenter; ui.zThick = p.zThick;
+    setRange('[data-zcenter]', ui.zCenter); setRange('[data-zthick]', ui.zThick);
+    poke(); dirty = true;
+  };
+  for (const el of root.querySelectorAll('[data-preset]')) {
+    if (el.tagName === 'SELECT')
+      el.addEventListener('change', () => applyPreset(el.value));
+    else
+      el.addEventListener('click', () => applyPreset(el.dataset.preset));
+  }
 
   const resize = () => {
     const dpr = Math.min(2, devicePixelRatio || 1);
