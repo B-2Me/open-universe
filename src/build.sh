@@ -83,6 +83,9 @@ if emcc planck3.c \
   -s EXPORT_NAME="'createPlanck3'" \
   -s EXPORTED_FUNCTIONS="[
     '_planck3_init',
+    '_planck3_init_dims',
+    '_planck3_dim',
+    '_planck3_chunk_size',
     '_planck3_set_mode',
     '_planck3_prepare',
     '_planck3_tick',
@@ -95,6 +98,10 @@ if emcc planck3.c \
     '_planck3_dims',
     '_planck3_total_quanta',
     '_planck3_deadlocked',
+    '_planck3_live_cells',
+    '_planck3_spray_events',
+    '_planck3_spray_quanta',
+    '_planck3_reset_stats',
     '_planck3_load_pointer',
     '_planck3_load_commit',
     '_planck3_rg_pointer',
