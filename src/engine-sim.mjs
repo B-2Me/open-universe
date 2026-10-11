@@ -654,71 +654,62 @@ function tick() {
 }
 
 // === Phase-3 prototype: 12-neighbor close-packed 3D substrate ===
-// Stacked-hex (HCP-style): each node keeps its 6 equatorial neighbors
-// and gains 3 zenith (z+1) + 3 nadir (z-1) contacts nested in the
-// triangle gaps. Layer parity interleaves: even z layers seat their
-// vertical neighbors at planar dirs {1,3,5} (0°,120°,240°), odd at
-// {2,4,6} — and each layer's zenith set is its own nadir set, because
-// HINV maps {1,3,5}↔{2,4,6}, so every vertical port is reciprocal.
+// Stacked-hex FCC (A-B-C, RFC-048): each node keeps its 6 equatorial
+// neighbors and gains 3 zenith (z+1) + 3 nadir (z-1) contacts nested in
+// the triangle gaps. In ABC stacking the zenith azimuths are the SAME
+// triple on every layer — a hop along one port repeats the identical
+// planar offset each layer, tracing a straight 3D diagonal and cycling
+// A→B→C→A automatically (3 hops = one lattice translation). Every layer
+// offers zenith {1,3,5} and nadir {2,4,6}; HINV maps between the triples,
+// so every port is reciprocal with NO parity dependence — fixing the HCP
+// frustration where descent azimuths alternated by layer and forced
+// >60° hops into every non-planar winding (RFC-047).
 // Spin 0 = dead, 1-6 equatorial, 7-9 zenith, 10-12 nadir. Boundary:
 // planar wrap (as 2D), z is a hard surface (ports off-box refuse).
 const W3 = 100, H3 = 100, D3 = 40, N3 = W3 * H3 * D3;
-const S3 = [[1, 3, 5], [2, 4, 6]]; // planar dirs of vertical ports by z-parity
-const FZ = 209, FP = 148;          // √(2/3)·256 and (1/√3)·256 — unit 3D ports
-const V3 = [0, 1].map(p => {
+const ZU3 = [1, 3, 5], ZD3 = [2, 4, 6]; // zenith/nadir planar dirs (all layers)
+const FZ = 209, FP = 148;               // √(2/3)·256 and (1/√3)·256 — unit 3D ports
+const V3 = (() => {
   const v = [null];
   for (let s = 1; s <= 6; s++) v.push([HEX_MX256[s], HEX_MY256[s], 0]);
-  for (let j = 0; j < 3; j++) {
-    const d = S3[p][j];
-    v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), FZ]);
-  }
-  for (let j = 0; j < 3; j++) {
-    const d = S3[p][j];
-    v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), -FZ]);
-  }
+  for (const d of ZU3) v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), FZ]);
+  for (const d of ZD3) v.push([Math.round(HEX_MX256[d] * FP / 256), Math.round(HEX_MY256[d] * FP / 256), -FZ]);
   return v;
-});
-// BACK3[p][d]: the port on the neighbor reached via my port d that
-// points back at me — the 3D generalization of HINV.
-const BACK3 = [0, 1].map(p => {
+})();
+// BACK3[d]: the port on the neighbor reached via my port d that points
+// back at me — the 3D generalization of HINV (parity-free under ABC).
+const BACK3 = (() => {
   const t = [0];
   for (let d = 1; d <= 12; d++) {
     if (d <= 6) t.push(HINV[d]);
-    else if (d <= 9) t.push(10 + S3[p ^ 1].indexOf(HINV[S3[p][d - 7]]));
-    else t.push(7 + S3[p ^ 1].indexOf(HINV[S3[p][d - 10]]));
+    else if (d <= 9) t.push(10 + ZD3.indexOf(HINV[ZU3[d - 7]]));
+    else t.push(7 + ZU3.indexOf(HINV[ZD3[d - 10]]));
   }
   return t;
-});
+})();
 const dotV = (a, b) => (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) >> 8;
-// Angular-distance LUTs (×256 cosine): same-parity port pairs and
-// opposite-parity pairs — replaces runtime trigonometry in the tick.
-const DOTSAME = [], DOTDIFF = [];
-for (let a = 0; a <= 12; a++) {
-  DOTSAME.push(new Int16Array(13)); DOTDIFF.push(new Int16Array(13));
-  for (let b = 1; b <= 12; b++) {
-    DOTSAME[a][b] = a === 0 ? 0 : dotV(V3[0][a], V3[0][b]);
-    DOTDIFF[a][b] = a === 0 ? 0 : dotV(V3[0][a], V3[1][b]);
-  }
+// Angular-distance LUT (×256 cosine) — replaces runtime trigonometry.
+const DOTS = [new Int16Array(13)];
+for (let a = 1; a <= 12; a++) {
+  DOTS.push(new Int16Array(13));
+  for (let b = 1; b <= 12; b++) DOTS[a][b] = dotV(V3[a], V3[b]);
 }
-// dot3: cosine×256 between port sa at parity pa and port sb at parity pb.
-const dot3 = (pa, sa, pb, sb) =>
-  pa === pb ? DOTSAME[sa][sb] : (pa === 0 ? DOTDIFF[sa][sb] : DOTDIFF[sb][sa]);
-// REV3[p][s]: antipodal port — the deadlock mirror (shunt reflection).
-const REV3 = [0, 1].map(p => {
+// REV3[s]: antipodal port — the deadlock mirror (shunt reflection).
+const REV3 = (() => {
   const t = [0];
   for (let a = 1; a <= 12; a++) {
     let best = 0, bd = Infinity;
-    for (let b = 1; b <= 12; b++) { const d = dotV(V3[p][a], V3[p][b]); if (d < bd) { bd = d; best = b; } }
+    for (let b = 1; b <= 12; b++) { const d = dotV(V3[a], V3[b]); if (d < bd) { bd = d; best = b; } }
     t.push(best);
   }
   return t;
-});
-// Quantize a 3D vector (any scale) to the nearest port at parity p.
-const dir3 = (p, vx, vy, vz) => {
+})();
+// Quantize a 3D vector (any scale) to the nearest port.
+const dir3 = (vx, vy, vz) => {
   if (!vx && !vy && !vz) return 0;
   let bs = 0, bd = -Infinity;
   for (let s = 1; s <= 12; s++) {
-    const d = V3[p][s][0] * vx + V3[p][s][1] * vy + V3[p][s][2] * vz;
+    const d = V3[s][0] * vx + V3[s][1] * vy + V3[s][2] * vz;
     if (d > bd) { bd = d; bs = s; }
   }
   return bs;
@@ -737,7 +728,6 @@ function initFCC() {
   ftn3 = new Uint8Array(N3); ftn32 = new Uint8Array(N3);
   NT3 = new Int32Array(N3 * 13).fill(-1);
   for (let z = 0; z < D3; z++) {
-    const p = z & 1;
     for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
       const i = (z * H3 + y) * W3 + x, off = HOFF[y & 1], nb = i * 13;
       for (let d = 1; d <= 6; d++) {
@@ -745,17 +735,27 @@ function initFCC() {
         NT3[nb + d] = (z * H3 + ny) * W3 + nx;
       }
       for (let j = 0; j < 3; j++) {
-        const d = S3[p][j], nx = (x + off[d][0] + W3) % W3, ny = (y + off[d][1] + H3) % H3;
+        let nx = (x + off[ZU3[j]][0] + W3) % W3, ny = (y + off[ZU3[j]][1] + H3) % H3;
         if (z + 1 < D3) NT3[nb + 7 + j] = ((z + 1) * H3 + ny) * W3 + nx;
+        nx = (x + off[ZD3[j]][0] + W3) % W3; ny = (y + off[ZD3[j]][1] + H3) % H3;
         if (z > 0) NT3[nb + 10 + j] = ((z - 1) * H3 + ny) * W3 + nx;
       }
     }
   }
+  // Reciprocity audit (RFC-048 acceptance #1): every reachable neighbor
+  // must point straight back through BACK3 — no broken inverses.
+  let ok = 0, bad = 0;
+  for (let i = 0; i < N3; i++) for (let d = 1; d <= 12; d++) {
+    const ni = NT3[i * 13 + d];
+    if (ni < 0) continue;
+    if (NT3[ni * 13 + BACK3[d]] === i) ok++; else bad++;
+  }
+  console.log(`FCC reciprocity: ${ok} ok, ${bad} broken`);
 }
 function tickFCC() {
   curTick++;
   for (let z = 0; z < D3; z++) {
-    const p = z & 1, np = p ^ 1, zrow = z * H3 * W3;
+    const zrow = z * H3 * W3;
     for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
       const i = zrow + y * W3 + x, nb = i * 13;
       const cq = fq[i], cs = fs3[i], ch = fh3[i], tn0 = ftn3[i];
@@ -777,19 +777,18 @@ function tickFCC() {
           tSum += TENSION_SHARE_CH(ftn3[ni], 12);
           const gd = ftn3[ni] - tn0;
           if (gd > gMaxD && ns !== 0) { gMaxD = gd; gNi = ni; }
-          if (feelsTension) { const vd = V3[p][d]; gx += vd[0] * gd; gy += vd[1] * gd; gz += vd[2] * gd; }
+          if (feelsTension) { const vd = V3[d]; gx += vd[0] * gd; gy += vd[1] * gd; gz += vd[2] * gd; }
         }
-        if (nq > 0 && ns === BACK3[p][d]) { // neighbor's spin points back at us
+        if (nq > 0 && ns === BACK3[d]) { // neighbor's spin points back at us
           const sent = FLOW_CAP_ON ? Math.min(nq, FLOW_CAP) : nq;
           kin += sent * KINETIC_BASE;
           if (cq > 0 && cs !== 0) {
-            // τ(1-cosΔθ) turn friction — sender heading at its own parity.
-            const ddot = d <= 6 ? DOTSAME[ns][cs] : (p === 0 ? DOTDIFF[cs][ns] : DOTDIFF[ns][cs]);
-            kin += sent * ((256 - ddot) >> 6);
+            // τ(1-cosΔθ) turn friction from the cosine LUT.
+            kin += sent * ((256 - DOTS[ns][cs]) >> 6);
           }
           if (cq + fb3[i] <= DEADLOCK) {
             incoming += sent;
-            const vd = V3[p][d];
+            const vd = V3[d];
             mx -= vd[0] * sent; my -= vd[1] * sent; mz -= vd[2] * sent;
           }
         }
@@ -822,7 +821,7 @@ function tickFCC() {
         ftn32[i] = tn0;
       }
       const dmx = mx + gx, dmy = my + gy, dmz = mz + gz;
-      let dom = dir3(p, dmx, dmy, dmz);
+      let dom = dir3(dmx, dmy, dmz);
       const mag = (Math.abs(mx) + Math.abs(my) + Math.abs(mz)) >> 8;
       let routing = incoming + mag + (shunt ? cq : 0) + fb3[i];
       if (routing > FCC_BW) routing = FCC_BW;
@@ -844,12 +843,12 @@ function tickFCC() {
       }
       let ns2 = dom !== 0 ? dom : cs;
       if (shunt) {
-        ns2 = REV3[p][cs];
+        ns2 = REV3[cs];
       } else if (GRAV_MODE === 'cong' && maxCong > FLOW_CAP && nq2 > 0) {
         ns2 = congSpin;
       } else if (LOCK_ON && cs !== 0) {
         if (dom === 0) ns2 = (cq === 0 || PERSIST_MASS) ? cs : 0;
-        else ns2 = DOTSAME[cs][dom] >= 128 ? cs : dom; // ≤60° turn holds phase
+        else ns2 = DOTS[cs][dom] >= 128 ? cs : dom; // ≤60° turn holds phase
       } else ns2 = dom;
       fq2[i] = nq2; fs32[i] = ns2; fh32[i] = nh2; fb32[i] = nb2;
     }
@@ -875,10 +874,10 @@ function hopfVec(x, y, z) {
           HOPF_TW * ux + HOPF_PW * sp * uy,
           HOPF_PW * -cp];
 }
-const hopfSpin = (x, y, z) => dir3(z & 1, ...hopfVec(x, y, z));
+const hopfSpin = (x, y, z) => dir3(...hopfVec(x, y, z));
 // Painted-trace bookkeeping for statsFCC: hold = fraction of painted
 // cells still carrying their traced spin (winding persistence).
-let hopfMask = null, hopfSnap = null;
+let hopfMask = null, hopfSnap = null, CUR_T = 0;
 function paintFCC(variant) {
   initFCC();
   fq.fill(0); fs3.fill(0); fh3.fill(1); fb3.fill(0); ftn3.fill(0);
@@ -902,55 +901,82 @@ function paintFCC(variant) {
     let painted = 0, loops = 0, attempts = 0, steepTurns = 0;
     const trace = (sx, sy, sz) => {
       const seedI = (sz * H3 + sy) * W3 + sx;
+      // A seed landing on an already-painted cell would overwrite that
+      // cell's spin: its old predecessor keeps feeding it (double inflow
+      // -> buffer overflow -> deadlock) and its old successor starves
+      // (-> s=0 -> dead link). Both seeds of the cascade observed at t=5.
+      if (hopfMask[seedI]) return null;
       const seen = new Set([seedI]);
       const path = [];
-      let x = sx, y = sy, z = sz, i = seedI;
-      let tvx = 0, tvy = 0, tvz = 0; // travel vector INTO the current cell
-      let seedP = 0, seedD = 0;
+      let seedD = 0, steps = 0;
       // Hopfion field lines live on nested toroidal shells (both the
       // toroidal and poloidal components are tangent to rt = const):
-      // same-shell tracing is the 3D analog of hexcycle's same-ring
-      // neighbor restriction — it is what makes closure findable.
+      // same-shell restriction is the 3D analog of hexcycle's same-ring
+      // neighbor gate. Closure is then sought as a GRAPH CYCLE — DFS
+      // memoized on (cell, incoming-port) proves existence or exhausts
+      // the search space, unlike greedy field-following (RFC-047/048:
+      // the lock-tolerance turn constraint still applies per hop).
       const rt0 = Math.hypot(Math.hypot(sx - cx3, sy - cy3) - HOPF_R0, sz - cz3);
-      for (let step = 0; step < MAXLEN; step++) {
-        const p = z & 1, hv = hopfVec(x, y, z);
-        let bd = -1, bi = -1, bdot = -Infinity, closed = false;
+      const memo = new Set();
+      let budget = parseInt(process.env.HOPF_DFSMAX || '2000000');
+      const dfs = (i, x, y, z, tvx, tvy, tvz, depth) => {
+        if (budget-- <= 0 || depth > MAXLEN) return false;
+        steps++;
+        const hv = hopfVec(x, y, z);
+        // The lock compares cs vs dom — the ARGMAX port of the incoming
+        // momentum, not the travel vector itself. A port within 60° of
+        // the travel axis can still lose the lock if dom lands elsewhere,
+        // so candidates must sit within 60° of the actual dom port.
+        let domP = 0;
+        if (depth > 0) {
+          let dBest = -Infinity;
+          for (let dd = 1; dd <= 12; dd++) {
+            const sc = tvx * V3[dd][0] + tvy * V3[dd][1] + tvz * V3[dd][2];
+            if (sc > dBest) { dBest = sc; domP = dd; }
+          }
+        }
+        const cand = [];
         for (let d = 1; d <= 12; d++) {
           const ni = NT3[i * 13 + d];
           if (ni < 0) continue;
-          // Lock-tolerance constraint: the chosen port must stay within
-          // 60° of the incoming travel direction, or Phase Lock rewires
-          // the cell mid-run and the winding dissolves from that seed.
-          if (step > 0 && ((tvx * V3[p][d][0] + tvy * V3[p][d][1] + tvz * V3[p][d][2]) >> 8) < 128) {
-            if (process.env.HOPF_DBG === '2') console.log(`    d${d}: lock dt=${(tvx * V3[p][d][0] + tvy * V3[p][d][1] + tvz * V3[p][d][2]) >> 8}`);
-            continue;
-          }
+          if (depth > 0 && DOTS[d][domP] < 128) continue;
           if (ni === seedI) {
-            // Closure also has to make the turn AT the seed within 60° —
-            // the seed's own lock faces the closing hop.
-            if (step + 1 >= MINLEN
-                && ((V3[p][d][0] * V3[seedP][seedD][0] + V3[p][d][1] * V3[seedP][seedD][1] + V3[p][d][2] * V3[seedP][seedD][2]) >> 8) >= 128) {
-              bd = d; closed = true; break;
+            // Closure must also hold the lock AT the seed: compute the
+            // seed's dom from the closing hop's travel direction.
+            if (depth + 1 >= MINLEN) {
+              let sBest = -Infinity, sDom = 0;
+              for (let dd = 1; dd <= 12; dd++) {
+                const sc = V3[d][0] * V3[dd][0] + V3[d][1] * V3[dd][1] + V3[d][2] * V3[dd][2];
+                if (sc > sBest) { sBest = sc; sDom = dd; }
+              }
+              if (DOTS[seedD][sDom] >= 128) { path.push([i, d]); return true; }
             }
             continue;
           }
-          if (seen.has(ni) || hopfMask[ni]) { if (process.env.HOPF_DBG === '2') console.log(`    d${d}: seen/mask`); continue; }
+          if (seen.has(ni) || hopfMask[ni] || memo.has(ni * 13 + d)) continue;
           const nz = (ni / (H3 * W3)) | 0, ny = ((ni % (H3 * W3)) / W3) | 0, nx = ni % W3;
           const rr = Math.hypot(Math.hypot(nx - cx3, ny - cy3) - HOPF_R0, nz - cz3);
-          if (Math.abs(rr - rt0) > SHELL_W) { if (process.env.HOPF_DBG === '2') console.log(`    d${d}: shell rr=${rr.toFixed(1)} vs ${rt0.toFixed(1)}`); continue; }
-          if (process.env.HOPF_DBG === '2') console.log(`    d${d}: ok dot=${(V3[p][d][0] * hv[0] + V3[p][d][1] * hv[1] + V3[p][d][2] * hv[2]).toFixed(0)}`);
-          const dot = V3[p][d][0] * hv[0] + V3[p][d][1] * hv[1] + V3[p][d][2] * hv[2];
-          if (dot > bdot) { bdot = dot; bd = d; bi = ni; }
+          if (Math.abs(rr - rt0) > SHELL_W) continue;
+          cand.push([V3[d][0] * hv[0] + V3[d][1] * hv[1] + V3[d][2] * hv[2], d, ni]);
         }
-        if (bd < 0) { if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) died @step${step} len=${path.length}`); return null; }
-        path.push([i, bd]);
-        if (closed) { if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) closed len=${path.length}`); return path; }
-        if (step === 0) { seedP = p; seedD = bd; }
-        tvx = V3[p][bd][0]; tvy = V3[p][bd][1]; tvz = V3[p][bd][2];
-        seen.add(bi); i = bi;
-        x = bi % W3; y = ((bi % (H3 * W3)) / W3) | 0; z = (bi / (H3 * W3)) | 0;
+        cand.sort((a, b) => b[0] - a[0]); // ideal-field guidance first
+        for (const [, d, ni] of cand) {
+          if (memo.has(ni * 13 + d)) continue;
+          path.push([i, d]);
+          if (depth === 0) seedD = d;
+          seen.add(ni);
+          const nx = ni % W3, ny = ((ni % (H3 * W3)) / W3) | 0, nz = (ni / (H3 * W3)) | 0;
+          if (dfs(ni, nx, ny, nz, V3[d][0], V3[d][1], V3[d][2], depth + 1)) return true;
+          seen.delete(ni); path.pop();
+          memo.add(ni * 13 + d);
+        }
+        return false;
+      };
+      if (dfs(seedI, sx, sy, sz, 0, 0, 0, 0)) {
+        if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) closed len=${path.length} dfs=${steps}`);
+        return path;
       }
-      if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) hit MAXLEN len=${path.length}`);
+      if (process.env.HOPF_DBG) console.log(`  seed(${sx},${sy},${sz}) exhausted dfs=${steps}`);
       return null;
     };
     // Seeds tile the tube cross-section at the x+ azimuthal plane —
@@ -982,10 +1008,13 @@ function paintFCC(variant) {
         let steep = 0;
         for (let k = 0; k < path.length; k++) {
           const [pi, pd] = path[k], [ni2, nd] = path[(k + 1) % path.length];
-          const pp = (pi / (H3 * W3) | 0) & 1, np2 = (ni2 / (H3 * W3) | 0) & 1;
-          const iv = V3[pp][pd]; // travel direction into cell ni2
-          const dt = (iv[0] * V3[np2][nd][0] + iv[1] * V3[np2][nd][1] + iv[2] * V3[np2][nd][2]) >> 8;
-          if (dt < 128) steep++;
+          const iv = V3[pd]; // travel direction into cell ni2
+          let bP = 0, bS = -Infinity;
+          for (let dd = 1; dd <= 12; dd++) {
+            const sc = iv[0] * V3[dd][0] + iv[1] * V3[dd][1] + iv[2] * V3[dd][2];
+            if (sc > bS) { bS = sc; bP = dd; }
+          }
+          if (DOTS[nd][bP] < 128) steep++;
         }
         steepTurns += steep;
         for (const [i, d] of path) {
@@ -993,7 +1022,21 @@ function paintFCC(variant) {
         }
       }
     }
-    console.log(`hopfionx: ${loops}/${attempts} seeds closed loops, ${painted} cells painted, steepTurns=${steepTurns}`);
+    // Inflow audit: each painted cell should hear exactly ONE painted
+    // pointer (its predecessor). >1 means alien inflow mixes momentum —
+    // cross-loop rewiring despite disjoint paths.
+    let in1 = 0, in2 = 0, in0 = 0;
+    for (let i = 0; i < N3; i++) {
+      if (!hopfMask[i]) continue;
+      let inbound = 0;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[i * 13 + d];
+        if (ni < 0 || !hopfMask[ni]) continue;
+        if (fs3[ni] === BACK3[d]) inbound++;
+      }
+      if (inbound === 1) in1++; else if (inbound === 0) in0++; else in2++;
+    }
+    console.log(`hopfionx: ${loops}/${attempts} seeds closed loops, ${painted} cells painted, steepTurns=${steepTurns} inflow[0,1,>1]=${in0},${in1},${in2}`);
     hopfSnap = fs3.slice();
     if (FOAM) {
       for (let i = 0; i < N3; i++) {
@@ -1546,7 +1589,6 @@ function statsFCC(label) {
   let cxs = 0, cys = 0, czs = 0, cm = 0, topQ = 0, botQ = 0, px = 0, py = 0, pz = 0;
   let paintN = 0, paintQ = 0, holdN = 0;
   for (let z = 0; z < D3; z++) {
-    const p = z & 1;
     for (let y = 0; y < H3; y++) for (let x = 0; x < W3; x++) {
       const i = (z * H3 + y) * W3 + x;
       const qq = fq[i], occ = qq + fb3[i], cs = fs3[i];
@@ -1554,7 +1596,7 @@ function statsFCC(label) {
       if (occ > DEADLOCK) dead++;
       cxs += qq * x; cys += qq * y; czs += qq * z; cm += qq;
       if (z > D3 / 2) topQ += qq; else if (z < D3 / 2) botQ += qq;
-      if (qq > 0 && cs !== 0) { px += qq * V3[p][cs][0]; py += qq * V3[p][cs][1]; pz += qq * V3[p][cs][2]; }
+      if (qq > 0 && cs !== 0) { px += qq * V3[cs][0]; py += qq * V3[cs][1]; pz += qq * V3[cs][2]; }
       if (hopfMask && hopfMask[i]) { paintN++; paintQ += occ; if (cs === hopfSnap[i]) holdN++; }
       const dx = x - W3 / 2, dy = y - H3 / 2, dz = z - D3 / 2;
       if (Math.hypot(Math.hypot(dx, dy) - HOPF_R0, dz) <= HOPF_R1 + 2) {
@@ -1563,9 +1605,25 @@ function statsFCC(label) {
         if (qq > 0 && cs !== 0) {
           vAct++;
           const ideal = hopfSpin(x, y, z);
-          if (ideal !== 0 && DOTSAME[cs][ideal] >= 128) vCoh++;
+          if (ideal !== 0 && DOTS[cs][ideal] >= 128) vCoh++;
         }
       }
+    }
+  }
+  if (hopfMask && CUR_T === +(process.env.PROBE_T || -1)) {
+    let shown = 0;
+    for (let i = 0; i < N3 && shown < 15; i++) {
+      if (!hopfMask[i] || fs3[i] === hopfSnap[i]) continue;
+      let pred = -1;
+      for (let d = 1; d <= 12; d++) {
+        const ni = NT3[i * 13 + d];
+        if (ni >= 0 && hopfMask[ni] && hopfSnap[ni] === BACK3[d]) pred = ni;
+      }
+      const x = i % W3, y = ((i % (H3 * W3)) / W3) | 0, z = (i / (H3 * W3)) | 0;
+      const pp = pred < 0 ? 'NONE' :
+        `(${pred % W3},${((pred % (H3 * W3)) / W3) | 0},${(pred / (H3 * W3)) | 0}) s${fs3[pred]}/snap${hopfSnap[pred]} occ${fq[pred] + fb3[pred]}`;
+      console.log(`  rewire (${x},${y},${z}) snap${hopfSnap[i]}->s${fs3[i]} occ${fq[i] + fb3[i]} pred ${pp}`);
+      shown++;
     }
   }
   let zstr = '';
@@ -1580,6 +1638,20 @@ function statsFCC(label) {
     zstr += ` spray=${sWin}`;
   }
   console.log(`${label}: totQ=${totQ} bufQ=${bufQ} deadlocked=${dead} tubeQ=${tubeQ} coh=${(vCoh / (vAct || 1)).toFixed(2)} fdead=${(vDead / (vAct || 1)).toFixed(3)} cen=(${cm ? (cxs / cm).toFixed(1) : '-'},${cm ? (cys / cm).toFixed(1) : '-'},${cm ? (czs / cm).toFixed(1) : '-'}) topQ=${topQ} botQ=${botQ} netP3=(${(px / 256).toFixed(0)},${(py / 256).toFixed(0)},${(pz / 256).toFixed(0)})${zstr}`);
+}
+
+// RFC-048 tomographic slice viewer: three z-planes (zc-1, zc, zc+1) at
+// the requested tick — density chars match the 2D dump convention.
+function printSlice(zc) {
+  const CH = v => v === 0 ? ' ' : v < 30 ? '.' : v < 100 ? '+' : v <= 200 ? '#' : '@';
+  for (let z = Math.max(0, zc - 1); z <= Math.min(D3 - 1, zc + 1); z++) {
+    console.log(`--- z=${z} ---`);
+    for (let y = 0; y < H3; y += 2) {
+      let row = '';
+      for (let x = 0; x < W3; x++) row += CH(fq[(z * H3 + y) * W3 + x]);
+      console.log(row);
+    }
+  }
 }
 
 // --- run ---
@@ -1659,9 +1731,12 @@ if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
 if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
 for (let t = 1; t <= MAXT; t++) {
+  CUR_T = t;
   bindSlab(0); TICK();
   if (ZS_ON) { if (ZHOP_ON) tickZOverpass(); else for (let z = 1; z < DEPTH; z++) { bindSlab(z); TICK(); } bindSlab(0); }
   if (t % 50 === 0) STATS('tick ' + t);
+  else if (t === +(process.env.PROBE_T || -1)) STATS('probe ' + t);
+  if (args[2] === 'slice' && t === parseInt(args[3] || '100')) printSlice(parseInt(args[4] || String(D3 / 2)));
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
       let row = '';
