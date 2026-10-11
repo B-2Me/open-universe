@@ -44,6 +44,10 @@ onUnmounted(() => {
     <!-- always-visible collapse toggle -->
     <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
+    <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
+    <canvas class="loom-gizmo" data-gizmo width="96" height="96"
+            title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
+
     <!-- floating control dock -->
     <div class="loom-dock">
       <div class="loom-well loom-transport" role="group" aria-label="Transport">
@@ -74,6 +78,7 @@ onUnmounted(() => {
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
         <label>Diss  <input type="range" data-diss    min="0" max="31" step="1" value="15"><output>15</output></label>
         <label>Heat  <input type="range" data-therm   min="5" max="65" step="1" value="50"><output>50k</output></label>
+        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>
 
       <label class="loom-field"><span>Color</span><select data-colormode aria-label="Color mode" title="Color mode">
@@ -152,6 +157,22 @@ onUnmounted(() => {
 }
 .loom-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .loom-simulator.dock-hidden .loom-dock { display: none; }
+
+/* orientation gizmo — Blender-style axes chip under the collapse toggle */
+.loom-gizmo {
+  position: absolute;
+  top: 50px;
+  right: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid var(--loom-bevel-light);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--loom-bevel-light);
+  cursor: pointer;
+  touch-action: none;
+  z-index: 3;
+}
 
 /* floating dock — raised panel; wells carve control groups into it */
 .loom-dock {

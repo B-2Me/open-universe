@@ -375,6 +375,53 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-qmin]', 'input', e => { ui.qmin = +e.target.value; readout(e); dirty = true; });
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
+  bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
+  const zoomEl = root.querySelector('[data-zoom]');
+  const syncZoom = () => {           // wheel/pinch/preset moved dist externally
+    if (!zoomEl) return;
+    const v = Math.round(tgt.dist);
+    if (+zoomEl.value !== v) {
+      zoomEl.value = v;
+      const o = zoomEl.parentElement?.querySelector('output');
+      if (o) o.textContent = v;
+    }
+  };
+
+  // orientation gizmo — the same R = Rx(pitch)·Ry(yaw) the camera uses,
+  // projected onto a corner axes chip (Blender/ParaView convention)
+  const gizmo = root.querySelector('[data-gizmo]');
+  const g2 = gizmo?.getContext('2d');
+  const drawGizmo = () => {
+    if (!g2) return;
+    const S = gizmo.width, c = S / 2, r = S * 0.36;
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+    const cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
+    const rot = (x, y, z) => {       // v' = Rx(pitch) * Ry(yaw) * v
+      const x1 = cy * x + sy * z, z1 = -sy * x + cy * z;
+      return [x1, cx * y - sx * z1, sx * y + cx * z1];
+    };
+    g2.clearRect(0, 0, S, S);
+    for (const [x, y, z, col] of [[1,0,0,'#ffb347'], [0,1,0,'#7fe'], [0,0,1,'#b78aff']]) {
+      const [vx, vy, vz] = rot(x, y, z);
+      g2.globalAlpha = 0.35 + 0.65 * (vz * 0.5 + 0.5);   // depth cue
+      g2.strokeStyle = col; g2.lineWidth = S * 0.045; g2.lineCap = 'round';
+      g2.beginPath(); g2.moveTo(c, c); g2.lineTo(c + vx * r, c - vy * r); g2.stroke();
+      g2.fillStyle = col;
+      g2.beginPath(); g2.arc(c + vx * r, c - vy * r, S * 0.055, 0, 7); g2.fill();
+    }
+    g2.globalAlpha = 1;
+  };
+  if (gizmo) {
+    let lastTap = 0;
+    const resetView = () => applyPreset('full');
+    gizmo.addEventListener('dblclick', e => { e.preventDefault(); resetView(); });
+    gizmo.addEventListener('pointerdown', e => {   // double-tap for touch
+      e.preventDefault(); e.stopPropagation();
+      const t = performance.now();
+      if (t - lastTap < 330) resetView();
+      lastTap = t;
+    });
+  }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
   // quick-view presets: smooth-lerp camera + jump slice values
@@ -464,6 +511,8 @@ export async function initLoomSimulator(root, opts = {}) {
       gl.uniform1f(U.u_qmin, ui.qmin);
       gl.uniform1i(U.u_colorMode, ui.colorMode);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, N3);
+      syncZoom();
+      drawGizmo();
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
