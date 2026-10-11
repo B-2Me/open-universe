@@ -117,7 +117,7 @@ static int8_t POFF[2][13][3];
 // Quadrature bandwidth LUT: BWF3[r] = round(256*sqrt(1-(r/FCC_BW)^2)).
 static uint16_t BWF3_LUT[FCC_BW + 1];
 
-static void fcc_tables_init(void) {
+static void planck3_tables_init(void) {
     for (int par = 0; par < 2; par++) {
         for (int d = 1; d <= 6; d++) {
             POFF[par][d][0] = HOFF[par][d][0];
@@ -169,7 +169,7 @@ static inline uint8_t dir3(int32_t vx, int32_t vy, int32_t vz) {
 // ---------------------------------------------------------
 typedef Node3 *(*resolve_fn)(void *ctx, int32_t key);
 
-static inline void fcc_node_tick(int32_t gidx,
+static inline void planck3_node_tick(int32_t gidx,
                                  const Node3 *self, const Node3 *nb[13], const int32_t key[13],
                                  resolve_fn resolve, void *ctx, Node3 *out) {
     int cq = self->quanta, cs = self->spin, ch = self->heat, tn0 = self->tension;
@@ -305,7 +305,7 @@ static void tick_flat3(void) {
                     nb[d] = &g_rd[key[d]];
                 }
                 key[0] = -1; nb[0] = NULL;
-                fcc_node_tick(i, &g_rd[i], nb, key, resolve_flat, NULL, &g_wr[i]);
+                planck3_node_tick(i, &g_rd[i], nb, key, resolve_flat, NULL, &g_wr[i]);
             }
         }
     }
@@ -410,7 +410,7 @@ static void tick_chunk3(void) {
                         nb[d] = &c->rd[bp];
                     }
                     key[0] = -1; nb[0] = NULL;
-                    fcc_node_tick(gidx, &c->rd[self_bp], nb, key,
+                    planck3_node_tick(gidx, &c->rd[self_bp], nb, key,
                                   resolve_chunk, c, &c->wr[ipos(lx, ly, lz)]);
                 }
             }
@@ -465,7 +465,7 @@ static void tick_ordered3(void) {
                     nb[d] = &nc->rd[bpos(nx % CW + 1, ny % CW + 1, nz % CW + 1)];
                 }
                 // wr target mirrors rd's chunk-interior position
-                fcc_node_tick(i, &c->rd[bp_self], nb, key,
+                planck3_node_tick(i, &c->rd[bp_self], nb, key,
                               resolve_ordered, c,
                               &c->wr[ipos(x % CW, y % CW, z % CW)]);
             }
@@ -480,8 +480,8 @@ static void tick_ordered3(void) {
     }
 }
 
-EMSCRIPTEN_KEEPALIVE void fcc_init(void) {
-    fcc_tables_init();
+EMSCRIPTEN_KEEPALIVE void planck3_init(void) {
+    planck3_tables_init();
     if (!g_rd) { g_rd = calloc(N3, sizeof(Node3)); g_wr = calloc(N3, sizeof(Node3)); }
     if (!chunks) {
         chunks = calloc(NCHUNK, sizeof(Chunk3));
@@ -496,18 +496,18 @@ EMSCRIPTEN_KEEPALIVE void fcc_init(void) {
     rng_state = 0x9E3779B9u;
 }
 
-EMSCRIPTEN_KEEPALIVE void fcc_set_mode(int mode) { chunk_mode = mode; } // 0=flat 1=halo 2=ordered
+EMSCRIPTEN_KEEPALIVE void planck3_set_mode(int mode) { chunk_mode = mode; } // 0=flat 1=halo 2=ordered
 
-EMSCRIPTEN_KEEPALIVE void fcc_set_node(int32_t i, int q, int s, int h, int b, int tn) {
+EMSCRIPTEN_KEEPALIVE void planck3_set_node(int32_t i, int q, int s, int h, int b, int tn) {
     g_rd[i].quanta = (uint8_t)q; g_rd[i].spin = (uint8_t)s;
     g_rd[i].heat = (uint16_t)h; g_rd[i].buffer = (uint8_t)b; g_rd[i].tension = (uint8_t)tn;
 }
 
-EMSCRIPTEN_KEEPALIVE int32_t fcc_get_node(int32_t i) {
+EMSCRIPTEN_KEEPALIVE int32_t planck3_get_node(int32_t i) {
     Node3 *n = &g_rd[i];
     return (n->quanta << 24) | (n->spin << 16) | (n->buffer << 8) | n->tension;
 }
-EMSCRIPTEN_KEEPALIVE int32_t fcc_get_heat(int32_t i) { return g_rd[i].heat; }
+EMSCRIPTEN_KEEPALIVE int32_t planck3_get_heat(int32_t i) { return g_rd[i].heat; }
 
 // Load the flat g_rd state into the chunk interiors (pre-run), and dump
 // chunk interiors back to g_rd (post-run compare/export).
@@ -534,31 +534,31 @@ static void chunks_to_flat(void) {
     }
 }
 
-EMSCRIPTEN_KEEPALIVE void fcc_prepare(void) { if (chunk_mode) chunks_from_flat(); }
-EMSCRIPTEN_KEEPALIVE void fcc_collect(void) { if (chunk_mode) chunks_to_flat(); }
+EMSCRIPTEN_KEEPALIVE void planck3_prepare(void) { if (chunk_mode) chunks_from_flat(); }
+EMSCRIPTEN_KEEPALIVE void planck3_collect(void) { if (chunk_mode) chunks_to_flat(); }
 
-EMSCRIPTEN_KEEPALIVE void fcc_tick(void) {
+EMSCRIPTEN_KEEPALIVE void planck3_tick(void) {
     if (chunk_mode == 1) tick_chunk3();
     else if (chunk_mode == 2) tick_ordered3();
     else tick_flat3();
 }
 
 // Direct access for the test driver / wasm bulk state moves.
-EMSCRIPTEN_KEEPALIVE uint8_t *fcc_state_pointer(void) { return (uint8_t *)g_rd; }
-EMSCRIPTEN_KEEPALIVE int32_t fcc_node_count(void) { return N3; }
-EMSCRIPTEN_KEEPALIVE int32_t fcc_dims(void) { return (W3 << 16) | (H3 << 8) | D3; }
+EMSCRIPTEN_KEEPALIVE uint8_t *planck3_state_pointer(void) { return (uint8_t *)g_rd; }
+EMSCRIPTEN_KEEPALIVE int32_t planck3_node_count(void) { return N3; }
+EMSCRIPTEN_KEEPALIVE int32_t planck3_dims(void) { return (W3 << 16) | (H3 << 8) | D3; }
 
 // ---------------------------------------------------------
 // Browser pipeline (RFC-050): bulk state I/O + RG8 texture buffer.
-// JS writes a P3ST blob into load_buf, fcc_load_commit() unpacks it —
+// JS writes a P3ST blob into load_buf, planck3_load_commit() unpacks it —
 // one memory copy, no per-node ccall overhead. rg_buf packs {q,s} per
 // node for gl.texSubImage3D(RG8) uploads straight from wasm memory.
 // ---------------------------------------------------------
 static uint8_t load_buf[N3 * 6];
 static uint8_t rg_buf[N3 * 2];
 
-EMSCRIPTEN_KEEPALIVE uint8_t *fcc_load_pointer(void) { return load_buf; }
-EMSCRIPTEN_KEEPALIVE int fcc_load_commit(void) {
+EMSCRIPTEN_KEEPALIVE uint8_t *planck3_load_pointer(void) { return load_buf; }
+EMSCRIPTEN_KEEPALIVE int planck3_load_commit(void) {
     if (memcmp(load_buf, "P3ST", 4)) return -1;
     uint32_t w = *(uint32_t *)(load_buf + 4), h = *(uint32_t *)(load_buf + 8),
              d = *(uint32_t *)(load_buf + 12);
@@ -572,24 +572,24 @@ EMSCRIPTEN_KEEPALIVE int fcc_load_commit(void) {
     }
     return 0;
 }
-EMSCRIPTEN_KEEPALIVE uint8_t *fcc_rg_pointer(void) { return rg_buf; }
-// Repack {q,s} from the canonical flat state — call fcc_collect() first
+EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) { return rg_buf; }
+// Repack {q,s} from the canonical flat state — call planck3_collect() first
 // after chunked runs so g_rd is current.
-EMSCRIPTEN_KEEPALIVE void fcc_rg_refresh(void) {
+EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(void) {
     for (int32_t i = 0; i < N3; i++) {
         rg_buf[2 * i] = g_rd[i].quanta;
         rg_buf[2 * i + 1] = g_rd[i].spin;
     }
 }
 
-// Telemetry snapshot (flat array is canonical — call fcc_collect() first
+// Telemetry snapshot (flat array is canonical — call planck3_collect() first
 // after chunked runs).
-EMSCRIPTEN_KEEPALIVE double fcc_total_quanta(void) {
+EMSCRIPTEN_KEEPALIVE double planck3_total_quanta(void) {
     double t = 0;
     for (int i = 0; i < N3; i++) t += g_rd[i].quanta;
     return t;
 }
-EMSCRIPTEN_KEEPALIVE double fcc_deadlocked(void) {
+EMSCRIPTEN_KEEPALIVE double planck3_deadlocked(void) {
     double n = 0;
     for (int i = 0; i < N3; i++) if (g_rd[i].quanta + g_rd[i].buffer > DEADLOCK) n++;
     return n;

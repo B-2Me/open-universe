@@ -6,7 +6,7 @@ layout: page
 ---
 
 <ClientOnly>
-  <FccViewer />
+  <LoomSimulator />
 </ClientOnly>
 
 # Hopf's Loom

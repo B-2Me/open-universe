@@ -16,16 +16,16 @@
 #include <string.h>
 #include <time.h>
 
-void fcc_init(void);
-void fcc_set_mode(int);
-void fcc_set_node(int32_t, int, int, int, int, int);
-void fcc_prepare(void);
-void fcc_collect(void);
-void fcc_tick(void);
-uint8_t *fcc_state_pointer(void);
-int32_t fcc_node_count(void);
-double fcc_total_quanta(void);
-double fcc_deadlocked(void);
+void planck3_init(void);
+void planck3_set_mode(int);
+void planck3_set_node(int32_t, int, int, int, int, int);
+void planck3_prepare(void);
+void planck3_collect(void);
+void planck3_tick(void);
+uint8_t *planck3_state_pointer(void);
+int32_t planck3_node_count(void);
+double planck3_total_quanta(void);
+double planck3_deadlocked(void);
 
 typedef struct { uint8_t q, s; uint16_t h; uint8_t b, tn; } Rec;
 
@@ -50,11 +50,11 @@ static Rec *load_state(const char *path, int32_t *n_out) {
 }
 
 static void inject(const Rec *r, int32_t n) {
-    for (int32_t i = 0; i < n; i++) fcc_set_node(i, r[i].q, r[i].s, r[i].h, r[i].b, r[i].tn);
+    for (int32_t i = 0; i < n; i++) planck3_set_node(i, r[i].q, r[i].s, r[i].h, r[i].b, r[i].tn);
 }
 
 static Rec *snapshot(int32_t n) {
-    uint8_t *p = fcc_state_pointer();
+    uint8_t *p = planck3_state_pointer();
     Rec *r = malloc(n * sizeof(Rec));
     memcpy(r, p, n * sizeof(Rec));
     return r;
@@ -70,41 +70,41 @@ int main(int argc, char **argv) {
     Rec *ref = NULL;
     int32_t rn = 0;
     if (argc > 3) ref = load_state(argv[3], &rn);
-    if (n != fcc_node_count() || (ref && rn != n)) { fprintf(stderr, "dim mismatch\n"); return 1; }
+    if (n != planck3_node_count() || (ref && rn != n)) { fprintf(stderr, "dim mismatch\n"); return 1; }
 
-    fcc_init();
+    planck3_init();
 
     // --- flat run ---
-    fcc_set_mode(0);
-    inject(init, n); fcc_prepare();
+    planck3_set_mode(0);
+    inject(init, n); planck3_prepare();
     double t0 = now_s();
-    for (int t = 0; t < ticks; t++) fcc_tick();
+    for (int t = 0; t < ticks; t++) planck3_tick();
     double flat_s = now_s() - t0;
     Rec *flat = snapshot(n);
     printf("flat   %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
-           ticks, fcc_total_quanta(), fcc_deadlocked(), flat_s);
+           ticks, planck3_total_quanta(), planck3_deadlocked(), flat_s);
 
     // --- chunked run ---
-    fcc_set_mode(1);
-    inject(init, n); fcc_prepare();
+    planck3_set_mode(1);
+    inject(init, n); planck3_prepare();
     t0 = now_s();
-    for (int t = 0; t < ticks; t++) fcc_tick();
+    for (int t = 0; t < ticks; t++) planck3_tick();
     double chunk_s = now_s() - t0;
-    fcc_collect();
+    planck3_collect();
     Rec *chunk = snapshot(n);
     printf("chunk  %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
-           ticks, fcc_total_quanta(), fcc_deadlocked(), chunk_s);
+           ticks, planck3_total_quanta(), planck3_deadlocked(), chunk_s);
 
     // --- ordered-chunk run (exact in all regimes) ---
-    fcc_set_mode(2);
-    inject(init, n); fcc_prepare();
+    planck3_set_mode(2);
+    inject(init, n); planck3_prepare();
     t0 = now_s();
-    for (int t = 0; t < ticks; t++) fcc_tick();
+    for (int t = 0; t < ticks; t++) planck3_tick();
     double ord_s = now_s() - t0;
-    fcc_collect();
+    planck3_collect();
     Rec *ord = snapshot(n);
     printf("ordchk %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
-           ticks, fcc_total_quanta(), fcc_deadlocked(), ord_s);
+           ticks, planck3_total_quanta(), planck3_deadlocked(), ord_s);
 
     // --- chunked vs flat: mass-channel fields must be byte-identical ---
     int dif = 0, hdif = 0, hmax = 0;
