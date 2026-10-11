@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs';
 // Engine test harness: faithful JS port of planck.c tick() for scenario
 // design validation without an emcc build. quanta/spin/heat fields,
 // deadlock, shunting, congestion gravity, Phase Lock, FLOW_CAP transport
@@ -1727,6 +1728,18 @@ if (LAT_ON) {
   process.exit(0);
 }
 STATS('tick 0');
+// RFC-049: binary state dump for the planck3.c port's bit-identity test.
+// Layout: 'P3ST' + u32 dims (W3,H3,D3) + q,s,b,tn (u8×N3) + h (u16le×N3).
+const writeState3 = (file) => {
+  const head = Buffer.alloc(16);
+  head.write('P3ST', 0); head.writeUInt32LE(W3, 4); head.writeUInt32LE(H3, 8); head.writeUInt32LE(D3, 12);
+  const h16 = Buffer.alloc(N3 * 2);
+  for (let i = 0; i < N3; i++) h16.writeUInt16LE(fh3[i], i * 2);
+  writeFileSync(file, Buffer.concat([head, Buffer.from(fq.buffer), Buffer.from(fs3.buffer),
+    Buffer.from(fb3.buffer), Buffer.from(ftn3.buffer), h16]));
+  console.log(`state3 -> ${file}`);
+};
+if (FCC_ON && args[2] === 'state') writeState3(args[3] || 'state3_t0.bin');
 if (process.env.KNOB_LIMIT) KNOB_LIMIT = parseInt(process.env.KNOB_LIMIT);
 if (process.env.KNOB_DISS) KNOB_DISS = parseInt(process.env.KNOB_DISS);
 const MAXT = parseInt(process.env.TICKS || '400');
@@ -1737,6 +1750,7 @@ for (let t = 1; t <= MAXT; t++) {
   if (t % 50 === 0) STATS('tick ' + t);
   else if (t === +(process.env.PROBE_T || -1)) STATS('probe ' + t);
   if (args[2] === 'slice' && t === parseInt(args[3] || '100')) printSlice(parseInt(args[4] || String(D3 / 2)));
+  if (FCC_ON && args[2] === 'state' && t === MAXT) writeState3(args[4] || 'state3_tN.bin');
   if (args[2] === 'dump' && t === parseInt(args[3] || 40)) {
     for (let y = 165; y <= 235; y += 2) {
       let row = '';

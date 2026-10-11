@@ -69,3 +69,37 @@ build_engine() {
 
 build_engine planck createPlanck ""
 build_engine planck-hex createPlanckHex "-DTOPOLOGY_HEX"
+
+# RFC-049: True FCC (A-B-C) 12-port 3D substrate — separate module from
+# the 2D engine (own export vocabulary: fcc_*). Flat + chunk/halo +
+# ordered-chunk engines; mode-selectable at runtime via fcc_set_mode.
+echo "Compiling Planck Field 3D engine (planck3)..."
+if emcc planck3.c \
+  -DGIT_REV=\"$GIT_REV\" \
+  -O3 \
+  -s WASM=1 \
+  -s MODULARIZE=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -s EXPORT_NAME="'createPlanck3'" \
+  -s EXPORTED_FUNCTIONS="[
+    '_fcc_init',
+    '_fcc_set_mode',
+    '_fcc_prepare',
+    '_fcc_tick',
+    '_fcc_collect',
+    '_fcc_set_node',
+    '_fcc_get_node',
+    '_fcc_get_heat',
+    '_fcc_state_pointer',
+    '_fcc_node_count',
+    '_fcc_dims',
+    '_fcc_total_quanta',
+    '_fcc_deadlocked'
+  ]" \
+  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
+  -o ../docs/public/wasm/wake/planck3.js; then
+  echo "✅ planck3 compiled successfully."
+else
+  echo "❌ Error: planck3 compilation failed!"
+  exit 1
+fi
