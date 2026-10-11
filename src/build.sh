@@ -94,7 +94,11 @@ if emcc planck3.c \
     '_fcc_node_count',
     '_fcc_dims',
     '_fcc_total_quanta',
-    '_fcc_deadlocked'
+    '_fcc_deadlocked',
+    '_fcc_load_pointer',
+    '_fcc_load_commit',
+    '_fcc_rg_pointer',
+    '_fcc_rg_refresh'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/wake/planck3.js; then

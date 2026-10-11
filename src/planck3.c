@@ -548,6 +548,40 @@ EMSCRIPTEN_KEEPALIVE uint8_t *fcc_state_pointer(void) { return (uint8_t *)g_rd; 
 EMSCRIPTEN_KEEPALIVE int32_t fcc_node_count(void) { return N3; }
 EMSCRIPTEN_KEEPALIVE int32_t fcc_dims(void) { return (W3 << 16) | (H3 << 8) | D3; }
 
+// ---------------------------------------------------------
+// Browser pipeline (RFC-050): bulk state I/O + RG8 texture buffer.
+// JS writes a P3ST blob into load_buf, fcc_load_commit() unpacks it —
+// one memory copy, no per-node ccall overhead. rg_buf packs {q,s} per
+// node for gl.texSubImage3D(RG8) uploads straight from wasm memory.
+// ---------------------------------------------------------
+static uint8_t load_buf[N3 * 6];
+static uint8_t rg_buf[N3 * 2];
+
+EMSCRIPTEN_KEEPALIVE uint8_t *fcc_load_pointer(void) { return load_buf; }
+EMSCRIPTEN_KEEPALIVE int fcc_load_commit(void) {
+    if (memcmp(load_buf, "P3ST", 4)) return -1;
+    uint32_t w = *(uint32_t *)(load_buf + 4), h = *(uint32_t *)(load_buf + 8),
+             d = *(uint32_t *)(load_buf + 12);
+    if (w != W3 || h != H3 || d != D3) return -2;
+    const uint8_t *q = load_buf + 16, *s = q + N3, *b = s + N3, *tn = b + N3;
+    const uint8_t *hp = tn + N3; // u16le
+    for (int32_t i = 0; i < N3; i++) {
+        g_rd[i].quanta = q[i]; g_rd[i].spin = s[i];
+        g_rd[i].buffer = b[i]; g_rd[i].tension = tn[i];
+        g_rd[i].heat = (uint16_t)(hp[2 * i] | (hp[2 * i + 1] << 8));
+    }
+    return 0;
+}
+EMSCRIPTEN_KEEPALIVE uint8_t *fcc_rg_pointer(void) { return rg_buf; }
+// Repack {q,s} from the canonical flat state — call fcc_collect() first
+// after chunked runs so g_rd is current.
+EMSCRIPTEN_KEEPALIVE void fcc_rg_refresh(void) {
+    for (int32_t i = 0; i < N3; i++) {
+        rg_buf[2 * i] = g_rd[i].quanta;
+        rg_buf[2 * i + 1] = g_rd[i].spin;
+    }
+}
+
 // Telemetry snapshot (flat array is canonical — call fcc_collect() first
 // after chunked runs).
 EMSCRIPTEN_KEEPALIVE double fcc_total_quanta(void) {

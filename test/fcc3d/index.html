@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>FCC3D test</title>
+<style>
+  body { margin:0; background:#05050d; }
+  .fcc-viewer { position:relative; height:100vh; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+  .fcc-hud { position:absolute; top:8px; left:10px; font:11px monospace; color:#7fe; pointer-events:none; }
+  .fcc-controls { position:absolute; bottom:8px; left:10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font:11px monospace; color:#9ef; }
+</style></head><body>
+<div id="host" class="fcc-viewer">
+  <canvas></canvas>
+  <div class="fcc-hud" data-hud>booting…</div>
+  <div class="fcc-controls">
+    <button data-play>⏸</button><button data-step>⏭</button>
+    <button data-reset>↺</button><button data-knot>💥</button>
+    <input type="range" data-zmin min="0" max="39" value="0"><input type="range" data-zmax min="0" max="39" value="39">
+    <input type="range" data-qmin min="1" max="120" value="1"><input type="range" data-size min="20" max="150" value="55">
+    <select data-colormode><option value="1">spin</option><option value="0">density</option></select>
+    <select data-mode><option value="0">flat</option><option value="1">halo</option><option value="2">ordered</option></select>
+  </div>
+</div>
+<script type="module">
+  import { initFccViewer } from '/docs/.vitepress/fcc/main.js';
+  initFccViewer(document.getElementById('host'), {
+    wasmUrl: '/docs/public/wasm/wake/planck3.js',
+    stateUrl: '/docs/public/fcc/hopfion.p3st',
+  }).catch(e => { document.querySelector('[data-hud]').textContent = 'ERR ' + e.message; console.error(e); });
+</script>
+</body></html>
