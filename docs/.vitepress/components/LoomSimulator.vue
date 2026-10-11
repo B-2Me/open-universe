@@ -73,6 +73,7 @@ onUnmounted(() => {
         </select></label>
         <label class="loom-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
           <option value="2" selected>metabolism</option>
+          <option value="3">macro</option>
           <option value="1">spin class</option>
           <option value="0">density</option>
         </select></label>

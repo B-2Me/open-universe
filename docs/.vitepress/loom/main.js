@@ -46,7 +46,7 @@ uniform float u_z_center, u_z_thickness;  // tomographic slab (cell z)
 uniform float u_ghost_alpha;              // opacity outside the slab
 uniform float u_zscale;                   // 0.816
 uniform float u_qmin;                     // density floor to render
-uniform int u_colorMode;                  // 0=density 1=spin-class
+uniform int u_colorMode;                  // 0=density 1=spin 2=heat 3=macro
 out vec4 v_color;
 out vec2 v_uv;
 void main() {
@@ -97,11 +97,31 @@ void main() {
         :  h < 0.60 ? mix(c2, c3, (h - 0.40) * 5.0)
         :  h < 0.78 ? mix(c3, c4, (h - 0.60) * 5.56)
         :             mix(c4, c5, (h - 0.78) * 4.55)) * (0.35 + 0.85 * d);
+  } else if (u_colorMode == 3) {
+    // macro: the geometric layer (parity with the 2D engine's Macro view)
+    // sparse matter reads as dim slate structure; dense cores (q~>150)
+    // lift to cyan, saturated cores go white — the "shape" of the knot
+    // with thermal noise stripped away.
+    float m = pow(d, 0.7);
+    vec3 base = mix(vec3(0.05, 0.06, 0.11), vec3(0.42, 0.50, 0.60), m);
+    float core = smoothstep(0.52, 0.90, d);
+    vec3 corec = mix(vec3(0.15, 0.80, 0.90), vec3(0.90, 1.00, 1.00),
+                     smoothstep(0.75, 1.0, d));
+    rgb = mix(base, corec, core);
   } else {
-    // density: indigo depths -> cyan body -> white crest
-    float dd = pow(d, 0.8);
-    rgb = dd < 0.5 ? mix(vec3(0.03, 0.06, 0.30), vec3(0.10, 0.65, 1.00), dd * 2.0)
-                   : mix(vec3(0.10, 0.65, 1.00), vec3(0.95, 1.00, 0.95), (dd - 0.5) * 2.0);
+    // density: deep indigo -> blue -> cyan -> pale aqua -> white crest
+    float dd = pow(d, 0.7);
+    vec3 d0 = vec3(0.02, 0.03, 0.16);  // deep indigo
+    vec3 d1 = vec3(0.05, 0.16, 0.55);  // indigo-blue
+    vec3 d2 = vec3(0.00, 0.42, 0.85);  // blue
+    vec3 d3 = vec3(0.10, 0.75, 1.00);  // cyan
+    vec3 d4 = vec3(0.60, 0.95, 1.00);  // pale aqua
+    vec3 d5 = vec3(0.97, 1.00, 0.97);  // white crest
+    rgb = (dd < 0.22 ? mix(d0, d1, dd * 4.55)
+        :  dd < 0.44 ? mix(d1, d2, (dd - 0.22) * 4.55)
+        :  dd < 0.62 ? mix(d2, d3, (dd - 0.44) * 5.56)
+        :  dd < 0.80 ? mix(d3, d4, (dd - 0.62) * 5.56)
+        :              mix(d4, d5, (dd - 0.80) * 5.0));
   }
   v_color = vec4(rgb, alpha);
 }`;

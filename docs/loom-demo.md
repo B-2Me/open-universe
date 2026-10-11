@@ -25,7 +25,7 @@ And it's *running*. This is not a video — the little universe is ticking away 
 
 - **Drag** to orbit; **two-finger drag** pans, pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
 - **Focus menu** — quick camera framings: try **Equator slab** (a thin slice through the ring's waist) or **Core bore** (straight down the vortex's throat). The little axes orb on the right edge shows where you're looking; double-tap it to reset.
-- **View menu** — you're looking at *metabolism* (heat) by default; switch to **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole) or **density** for raw mass.
+- **View menu** — you're looking at *metabolism* (heat) by default; switch to **macro** for the clean geometric readout (dense cores glow cyan — the *shape* of the knot), **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole), or **density** for raw mass.
 - **⌖ (knot tool)** — tap it, then tap *on the structure itself* to inject a bolt of dense matter. It stays armed for repeat throws; tap ⌖ again to disarm. Every outcome is physics, not animation.
 - **⧉ / ⤺** — snapshot the universe, smash things into it, then rewind and try a different shot.
 - **Tuning** — open the sliders: **Slice** + **Width** turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); **Diss** and **Heat** are the substrate's metabolism knobs — crank Dissipation down and matter lingers, drop the thermal ceiling and knots detonate.
