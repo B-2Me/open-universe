@@ -62,14 +62,23 @@ onUnmounted(() => {
         <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
       </div>
 
-      <label class="loom-field"><span>View</span><select data-preset aria-label="View preset" title="Camera preset">
-        <option value="full"    selected>Full torus</option>
-        <option value="side">Side profile</option>
-        <option value="equator">Equator slab</option>
-        <option value="bore">Core bore</option>
-        <option value="core">Deep core</option>
-        <option value="lattice">Lattice plane</option>
-      </select></label>
+      <div class="loom-well loom-selects">
+        <label class="loom-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+          <option value="full"    selected>Full torus</option>
+          <option value="side">Side profile</option>
+          <option value="equator">Equator slab</option>
+          <option value="bore">Core bore</option>
+          <option value="core">Deep core</option>
+          <option value="lattice">Lattice plane</option>
+        </select></label>
+        <label class="loom-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
+          <option value="2" selected>metabolism</option>
+          <option value="1">spin class</option>
+          <option value="0">density</option>
+        </select></label>
+      </div>
+
+      <button class="loom-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="loom-well loom-sliders">
         <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
@@ -80,12 +89,6 @@ onUnmounted(() => {
         <label>Heat  <input type="range" data-therm   min="5" max="65" step="1" value="50"><output>50k</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>
-
-      <label class="loom-field"><span>Color</span><select data-colormode aria-label="Color mode" title="Color mode">
-        <option value="2" selected>metabolism</option>
-        <option value="1">spin class</option>
-        <option value="0">density</option>
-      </select></label>
     </div>
   </div>
 </template>
@@ -135,7 +138,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--loom-bevel-light);
   pointer-events: none;
   text-shadow: 0 0 4px #000;
-  word-break: break-all;
+  overflow-wrap: anywhere;
   z-index: 3;
 }
 
@@ -158,10 +161,12 @@ onUnmounted(() => {
 .loom-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .loom-simulator.dock-hidden .loom-dock { display: none; }
 
-/* orientation gizmo — Blender-style axes chip under the collapse toggle */
+/* orientation gizmo — Blender-style axes chip, right edge mid-height
+   (well clear of the ⚙ toggle it used to crowd) */
 .loom-gizmo {
   position: absolute;
-  top: 50px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 8px;
   width: 48px;
   height: 48px;
@@ -237,9 +242,39 @@ onUnmounted(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--loom-bevel-light),
     0 0 9px rgba(119, 255, 238, 0.3);
 }
+/* armed tool = filled accent — unmistakably different from a passive toggle */
+.loom-transport button.armed {
+  color: #04141c;
+  background: var(--loom-accent);
+  border-color: rgba(119, 255, 238, 0.8);
+  box-shadow: 0 0 14px rgba(119, 255, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
 .loom-transport button:disabled { opacity: 0.35; cursor: default; }
 
-/* dropdowns — labeled field + explicit chevron so they read as menus */
+/* tuning accordion — sliders stay collapsed until asked for */
+.loom-dock:not(.tune-open) .loom-sliders { display: none; }
+.loom-accbtn {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 12px;
+  font: 11px monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--loom-muted);
+  background: linear-gradient(180deg, var(--loom-btn-top), var(--loom-btn-bot));
+  border: 1px solid var(--loom-bevel-dark);
+  border-radius: 7px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--loom-bevel-light);
+  cursor: pointer;
+}
+.loom-accbtn:active { transform: scale(0.94); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); }
+.loom-dock.tune-open .loom-accbtn {
+  color: var(--loom-accent);
+  border-color: rgba(119, 255, 238, 0.45);
+}
+
+/* selects share one row — a well containing two labeled dropdowns */
+.loom-selects { flex-direction: row; }
 .loom-field {
   display: flex;
   align-items: center;

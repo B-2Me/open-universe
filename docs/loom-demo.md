@@ -19,7 +19,7 @@ And it's *running*. This is not a video — the little universe is ticking away 
 
 ## Play with it
 
-- **Drag** to orbit. It slowly rotates on its own if you leave it alone.
+- **Drag** to orbit; **two-finger drag** pans, pinch zooms. It slowly rotates on its own if you leave it alone.
 - **Slice** + **Width** — the torus becomes a living MRI scan. Drop the width to 1 and scrub through the lattice plane by plane.
 - **⌖ (knot tool)** — click it, then click *on the structure itself* to inject a bolt of dense matter. Watch the collision stir the vacuum; it may survive as a lump, spray apart, or get eaten by the ring. Every outcome is physics, not animation.
 - **⧉ / ⤺** — snapshot the universe, smash things into it, then rewind and try a different shot.

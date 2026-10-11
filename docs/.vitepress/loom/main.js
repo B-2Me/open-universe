@@ -180,9 +180,9 @@ export async function initLoomSimulator(root, opts = {}) {
     const d1 = { x: vx, y: vy * cph + vz * sph, z: -vy * sph + vz * cph };
     // Ry(-y): (x c - z s, y, x s + z c)
     const dW = { x: d1.x * cyw - d1.z * syw, y: d1.y, z: d1.x * syw + d1.z * cyw };
-    // camera world position = Ry(-yaw)*Rx(-pitch)*(0,0,dist)
+    // camera world position = Ry(-yaw)*Rx(-pitch)*(0,0,dist) + pan center
     const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
-    const cW = { x: -c1.z * syw, y: c1.y, z: c1.z * cyw };
+    const cW = { x: -c1.z * syw + cam.cx, y: c1.y + cam.cy, z: c1.z * cyw + cam.cz };
     // slice plane: world z = zCenter*0.816 - 16.3
     const pz = ui.zCenter * 0.816 - 16.3;
     if (Math.abs(dW.z) < 1e-3) return null;  // edge-on: plane never hit
@@ -257,12 +257,12 @@ export async function initLoomSimulator(root, opts = {}) {
   gl.blendFunc(gl.ONE, gl.ONE); // additive — order-independent point cloud
 
   // ---------- camera / controls ----------
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 95 };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 95, cx: 0, cy: 0, cz: 0 };
   const tgt = { ...cam };                 // preset targets (smooth lerp)
   // lastInteract in the past → turntable spins from the first frame
   let dirty = true, lastInteract = -1e4;
   const ptrs = new Map();
-  let lastPinch = 0, pinchRest = false;
+  let lastPinch = 0, lastMid = null, pinchRest = false;
   canvas.style.touchAction = 'none';
   const poke = () => { lastInteract = performance.now(); };
   let downPos = null;
@@ -289,13 +289,32 @@ export async function initLoomSimulator(root, opts = {}) {
       const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
       if (lastPinch) { tgt.dist = Math.max(20, Math.min(300, tgt.dist * lastPinch / d)); dirty = true; }
       lastPinch = d;
+      // two-finger pan: drag the look-at center along the camera's
+      // right/up axes (content follows the fingers)
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (lastMid) {
+        const dx = mid[0] - lastMid[0], dy = mid[1] - lastMid[1];
+        const s = cam.dist * 0.0016;
+        const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+        const cxp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+        const rx = cy, ry = sp * sy, rz = -cxp * sy;      // R·(1,0,0)
+        const ux = 0, uy = cxp, uz = sp;                  // R·(0,1,0)
+        tgt.cx += (dy * ux - dx * rx) * s;
+        tgt.cy += (dy * uy - dx * ry) * s;
+        tgt.cz += (dy * uz - dx * rz) * s;
+        const cl = v => Math.max(-80, Math.min(80, v));
+        tgt.cx = cl(tgt.cx); tgt.cy = cl(tgt.cy); tgt.cz = cl(tgt.cz);
+        dirty = true;
+      }
+      lastMid = mid;
     }
   });
   const endPtr = e => {
-    ptrs.delete(e.pointerId); lastPinch = 0;
+    ptrs.delete(e.pointerId); lastPinch = 0; lastMid = null;
     if (ptrs.size === 1) pinchRest = true;   // a pinch just collapsed
     else pinchRest = false;
-    // armed knot tool: a click (not a drag) places a knot on the slice plane
+    // armed knot tool: a click (not a drag) places a knot on the slice
+    // plane; the tool stays armed — tap ⌖ again to disarm
     if (ui.knotArm && downPos && ptrs.size === 0) {
       const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
       if (moved < 8) {
@@ -303,8 +322,8 @@ export async function initLoomSimulator(root, opts = {}) {
         if (cell) {
           injectKnot(cell.lx, cell.ly, cell.lz);
           upload(); dirty = true;
+          if (hud) hud.textContent = 'knot placed — ⌖ again to disarm';
         } else if (hud) hud.textContent = 'edge-on view — pick while the slice plane is facing you';
-        setKnotArm(false);
       }
     }
     downPos = null;
@@ -348,8 +367,8 @@ export async function initLoomSimulator(root, opts = {}) {
   const setKnotArm = (on) => {
     ui.knotArm = on;
     canvas.style.cursor = on ? 'crosshair' : '';
-    if (knotBtn) { knotBtn.classList.toggle('on', on); knotBtn.setAttribute('aria-pressed', String(on)); }
-    if (hud && on) hud.textContent = 'knot tool armed — click the lattice to place';
+    if (knotBtn) { knotBtn.classList.toggle('armed', on); knotBtn.setAttribute('aria-pressed', String(on)); }
+    if (hud && on) hud.textContent = 'knot tool armed — tap the lattice to place · ⌖ to cancel';
   };
   bind('[data-knot]', 'click', () => setKnotArm(!ui.knotArm));
   bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; if (hud) hud.textContent = 'snapshot saved'; });
@@ -376,6 +395,11 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
+  bind('[data-tune]', 'click', e => {
+    const dock = root.querySelector('.loom-dock');
+    const open = dock?.classList.toggle('tune-open');
+    e.currentTarget.setAttribute('aria-expanded', String(!!open));
+  });
   const zoomEl = root.querySelector('[data-zoom]');
   const syncZoom = () => {           // wheel/pinch/preset moved dist externally
     if (!zoomEl) return;
@@ -440,7 +464,7 @@ export async function initLoomSimulator(root, opts = {}) {
   const applyPreset = (name) => {
     const p = PRESETS[name];
     if (!p) return;
-    Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist });
+    Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist, cx: 0, cy: 0, cz: 0 });
     ui.zCenter = p.zCenter; ui.zThick = p.zThick;
     setRange('[data-zcenter]', ui.zCenter); setRange('[data-zthick]', ui.zThick);
     poke(); dirty = true;
@@ -472,11 +496,15 @@ export async function initLoomSimulator(root, opts = {}) {
     if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
 
     // smooth camera lerp toward preset/manual targets
-    if (cam.yaw !== tgt.yaw || cam.pitch !== tgt.pitch || cam.dist !== tgt.dist) {
+    if (cam.yaw !== tgt.yaw || cam.pitch !== tgt.pitch || cam.dist !== tgt.dist
+        || cam.cx !== tgt.cx || cam.cy !== tgt.cy || cam.cz !== tgt.cz) {
       const k = Math.min(1, dt * 0.012);
       cam.yaw += (tgt.yaw - cam.yaw) * k;
       cam.pitch += (tgt.pitch - cam.pitch) * k;
       cam.dist += (tgt.dist - cam.dist) * k;
+      cam.cx += (tgt.cx - cam.cx) * k;
+      cam.cy += (tgt.cy - cam.cy) * k;
+      cam.cz += (tgt.cz - cam.cz) * k;
       dirty = true;
     }
 
@@ -498,7 +526,9 @@ export async function initLoomSimulator(root, opts = {}) {
     resize();
     if (dirty) {
       const proj = m4.persp(0.9, canvas.width / Math.max(1, canvas.height), 1, 600);
-      const view = m4.mul(m4.translate(0, 0, -cam.dist), m4.mul(m4.rotX(cam.pitch), m4.rotY(cam.yaw)));
+      const view = m4.mul(m4.translate(0, 0, -cam.dist),
+        m4.mul(m4.rotX(cam.pitch), m4.mul(m4.rotY(cam.yaw),
+          m4.translate(-cam.cx, -cam.cy, -cam.cz))));
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0.02, 0.02, 0.05, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -516,7 +546,7 @@ export async function initLoomSimulator(root, opts = {}) {
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
-      hud.textContent = `q=${wasm._planck3_total_quanta().toLocaleString()} / ${N3.toLocaleString()} · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
+      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/400k · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
     }
   };
   raf = requestAnimationFrame(frame);

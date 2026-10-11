@@ -17,7 +17,7 @@
   .loom-hud { position:absolute; top:8px; left:8px; max-width:calc(100% - 64px); padding:4px 10px; font:11px monospace; color:var(--loom-accent); background:rgba(8,10,20,.6); border:1px solid var(--loom-bevel-light); border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 var(--loom-bevel-light); pointer-events:none; word-break:break-all; z-index:3; }
   .loom-uitoggle { position:absolute; top:8px; right:8px; width:34px; height:34px; font:14px monospace; color:var(--loom-muted); background:var(--loom-panel); border:1px solid var(--loom-bevel-dark); border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.5), inset 0 1px 0 var(--loom-bevel-light); z-index:3; }
   .loom-uitoggle:active { box-shadow:inset 0 2px 6px rgba(0,0,0,.6); transform:scale(.96); }
-  .loom-gizmo { position:absolute; top:50px; right:8px; width:48px; height:48px; border-radius:50%; background:rgba(8,10,20,.6); border:1px solid var(--loom-bevel-light); box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 var(--loom-bevel-light); cursor:pointer; touch-action:none; z-index:3; }
+  .loom-gizmo { position:absolute; top:50%; transform:translateY(-50%); right:8px; width:48px; height:48px; border-radius:50%; background:rgba(8,10,20,.6); border:1px solid var(--loom-bevel-light); box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 var(--loom-bevel-light); cursor:pointer; touch-action:none; z-index:3; }
   .loom-simulator.dock-hidden .loom-dock { display:none; }
   .loom-dock { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); max-width:calc(100% - 16px); padding:7px 10px; display:flex; flex-wrap:wrap; justify-content:center; gap:6px 10px; align-items:center; background:var(--loom-panel); border:1px solid var(--loom-bevel-dark); border-radius:14px; box-shadow:0 14px 34px rgba(0,0,0,.6), inset 0 1px 0 var(--loom-bevel-light); backdrop-filter:blur(8px); z-index:3; }
   .loom-well { display:flex; align-items:center; gap:6px; padding:3px 8px; background:var(--loom-well); border:1px solid var(--loom-bevel-dark); border-radius:10px; box-shadow:inset 0 2px 7px rgba(0,0,0,.65), 0 1px 0 rgba(160,200,255,.07); }
@@ -26,7 +26,13 @@
   .loom-transport button, .loom-dock select { min-width:34px; min-height:34px; padding:0 10px; font:13px monospace; color:var(--loom-muted); background:linear-gradient(180deg, var(--loom-btn-top), var(--loom-btn-bot)); border:1px solid var(--loom-bevel-dark); border-radius:7px; box-shadow:0 2px 5px rgba(0,0,0,.5), inset 0 1px 0 var(--loom-bevel-light); cursor:pointer; }
   .loom-transport button:active { transform:scale(.94); box-shadow:inset 0 2px 6px rgba(0,0,0,.6); }
   .loom-transport button.on { color:var(--loom-accent); border-color:rgba(119,255,238,.45); box-shadow:0 2px 5px rgba(0,0,0,.5), inset 0 1px 0 var(--loom-bevel-light), 0 0 9px rgba(119,255,238,.3); }
+  .loom-transport button.armed { color:#04141c; background:var(--loom-accent); border-color:rgba(119,255,238,.8); box-shadow:0 0 14px rgba(119,255,238,.45), inset 0 1px 0 rgba(255,255,255,.35); }
   .loom-transport button:disabled { opacity:.35; cursor:default; }
+  .loom-selects { flex-direction:row; }
+  .loom-dock:not(.tune-open) .loom-sliders { display:none; }
+  .loom-accbtn { min-width:34px; min-height:34px; padding:0 12px; font:11px monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--loom-muted); background:linear-gradient(180deg, var(--loom-btn-top), var(--loom-btn-bot)); border:1px solid var(--loom-bevel-dark); border-radius:7px; box-shadow:0 2px 5px rgba(0,0,0,.5), inset 0 1px 0 var(--loom-bevel-light); cursor:pointer; }
+  .loom-accbtn:active { transform:scale(.94); box-shadow:inset 0 2px 6px rgba(0,0,0,.6); }
+  .loom-dock.tune-open .loom-accbtn { color:var(--loom-accent); border-color:rgba(119,255,238,.45); }
   .loom-field { display:flex; align-items:center; gap:6px; font:11px monospace; color:var(--loom-muted); white-space:nowrap; }
   .loom-field > span { font-size:10px; letter-spacing:.08em; text-transform:uppercase; opacity:.75; }
   .loom-dock select { appearance:none; -webkit-appearance:none; padding-right:22px; font-size:11px; min-height:30px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6'%3E%3Cpath d='M0 0l4 6 4-6z' fill='%239eefff'/%3E%3C/svg%3E"), linear-gradient(180deg, var(--loom-btn-top), var(--loom-btn-bot)); background-repeat:no-repeat; background-position:right 8px center, 0 0; }
@@ -59,11 +65,15 @@
       <button data-snap title="Snapshot">⧉</button>
       <button data-unsnap title="Restore" disabled>⤺</button>
     </div>
-    <label class="loom-field"><span>View</span><select data-preset title="Camera preset">
-      <option value="full">Full torus</option><option value="side">Side profile</option>
-      <option value="equator">Equator slab</option><option value="bore">Core bore</option>
-      <option value="core">Deep core</option><option value="lattice">Lattice plane</option>
-    </select></label>
+    <div class="loom-well loom-selects">
+      <label class="loom-field"><span>Focus</span><select data-preset title="Camera focus preset">
+        <option value="full">Full torus</option><option value="side">Side profile</option>
+        <option value="equator">Equator slab</option><option value="bore">Core bore</option>
+        <option value="core">Deep core</option><option value="lattice">Lattice plane</option>
+      </select></label>
+      <label class="loom-field"><span>View</span><select data-colormode title="Data view"><option value="2" selected>metabolism</option><option value="1">spin class</option><option value="0">density</option></select></label>
+    </div>
+    <button class="loom-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
     <div class="loom-well loom-sliders">
       <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
       <label>Width <input type="range" data-zthick min="1" max="40" step="1" value="40"><output>40</output></label>
@@ -73,7 +83,6 @@
       <label>Heat <input type="range" data-therm min="5" max="65" step="1" value="50"><output>50k</output></label>
       <label>Zoom <input type="range" data-zoom min="20" max="300" step="1" value="95"><output>95</output></label>
     </div>
-    <label class="loom-field"><span>Color</span><select data-colormode title="Color mode"><option value="2" selected>metabolism</option><option value="1">spin class</option><option value="0">density</option></select></label>
   </div>
 </div>
 <script type="module">
