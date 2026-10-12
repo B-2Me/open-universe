@@ -32,9 +32,10 @@ This assumes a frictionless, perfectly scalable universe. But when we measure ph
 
 The substrate is not a metaphor — it runs. These are the live engines and the measured dictionary behind every claim on this site:
 
-*   **[Langevin's Wake](/wake-demo)** — the 2D Planck Field engine, live in your browser. Hexagonal routing, deadlocks, knot circulation, and the scenario suite every "measured" claim in the research log was recorded against.
 *   **[Hopf's Loom](/loom-demo)** — the 3D True-FCC engine, live in your browser. A 400,000-node volume renderer over the same physics — tomographic slices, spin-class coloring, and a stable multi-loop Hopfion you can orbit.
 *   **[The Hopfion Zoo](/zoo)** — the measured particle dictionary. Thirty-seven stable rest-mass geometries found by sweeping the engine's configuration space — every specimen a real 256³ simulation result, inspectable in 3D.
+
+*(Langevin's Wake, the earlier 2D engine that produced the research log's first measurements, remains live at [/wake-demo](/wake-demo) as a legacy instrument.)*
 
 ## The Laboratory
 
