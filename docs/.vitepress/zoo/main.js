@@ -13,6 +13,7 @@ import vtkMouseCameraTrackballRotateManipulator from '@kitware/vtk.js/Interactio
 import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
 import vtkMouseCameraTrackballZoomToMouseManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator';
 import vtkGestureCameraManipulator from '@kitware/vtk.js/Interaction/Manipulators/GestureCameraManipulator';
+import vtkInteractorStyleManipulator from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
 
 // Spin-class palette — the same visual language as Hopf's Loom:
 // equatorial (toroidal) warm gold, zenith cyan, nadir violet, dead slate.
@@ -107,12 +108,13 @@ export function initZoo(host, base = '/') {
   // never be lost off-screen; distance is clamped per-frame to the
   // model's bounds so you can't zoom into empty space either.
   const interactor = renderWindow.getInteractor();
-  const istyle = interactor.getInteractorStyle();
-  istyle.removeAllManipulators();
+  const istyle = vtkInteractorStyleManipulator.newInstance();
   istyle.addMouseManipulator(vtkMouseCameraTrackballRotateManipulator.newInstance({ button: 1 }));
   istyle.addMouseManipulator(vtkMouseCameraTrackballZoomManipulator.newInstance({ button: 3 }));
   istyle.addMouseManipulator(vtkMouseCameraTrackballZoomToMouseManipulator.newInstance({ scrollEnabled: true }));
-  istyle.addMouseManipulator(vtkGestureCameraManipulator.newInstance({ rotateEnabled: true, pinchEnabled: true, panEnabled: false }));
+  const gesture = vtkGestureCameraManipulator.newInstance({ rotateEnabled: true, pinchEnabled: true, panEnabled: false });
+  (istyle.addGestureManipulator || istyle.addMouseManipulator).call(istyle, gesture);
+  interactor.setInteractorStyle(istyle);
 
   // Orientation gizmo — ParaView-style axes chip, click to snap views.
   const axes = vtkAxesActor.newInstance();
