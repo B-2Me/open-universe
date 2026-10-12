@@ -88,7 +88,6 @@ onUnmounted(() => {
       <button class="cbtn cbtn-gizmo" @click="zoo?.reset()" title="Orientation — click to reset view">
         <canvas data-gizmo width="72" height="72"></canvas>
       </button>
-      <button class="cbtn" @click="zoo?.reset()" title="Reset view">⤾</button>
       <button class="cbtn" :class="{ on: preset === 'orbit' }" @click="setPreset('orbit')" title="¾ view">¾</button>
       <button class="cbtn" :class="{ on: preset === 'top' }" @click="setPreset('top')" title="Top-down">TOP</button>
       <button class="cbtn" :class="{ on: preset === 'side' }" @click="setPreset('side')" title="Edge-on">SIDE</button>
