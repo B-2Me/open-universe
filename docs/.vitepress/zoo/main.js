@@ -184,10 +184,17 @@ export function initZoo(host, base = '/') {
       const dx = p[0] - focal[0], dy = p[1] - focal[1], dz = p[2] - focal[2];
       const r = Math.hypot(dx, dy), dist = Math.hypot(dx, dy, dz) || 1;
       const el = Math.atan2(dz, r), target = 0.42;
-      if (Math.abs(el - target) > 0.005) {
+      // Rebuild position from spherical coords — never divide by cos(el),
+      // which singularizes near the poles. And near a pole azimuth is
+      // meaningless anyway, so leave the camera alone there.
+      if (r > dist * 0.05 && Math.abs(el - target) > 0.005) {
         const el2 = el + (target - el) * 0.03;
-        const f = Math.cos(el2) / Math.cos(el);
-        cam.setPosition(focal[0] + dx * f, focal[1] + dy * f, focal[2] + dist * Math.sin(el2));
+        const az = Math.atan2(dy, dx);
+        cam.setPosition(
+          focal[0] + dist * Math.cos(el2) * Math.cos(az),
+          focal[1] + dist * Math.cos(el2) * Math.sin(az),
+          focal[2] + dist * Math.sin(el2),
+        );
       }
     }
     renderWindow.render();
