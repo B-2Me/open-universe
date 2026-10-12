@@ -134,6 +134,17 @@ html.dark body {
   margin-left: 6px !important;
 }
 
+/* The '…' extra flyout (768–1279px only) carries margin-right:-12px —
+   a pull VitePress designed to be absorbed by the wrapper's 32px
+   padding (or .content's padding-right on has-sidebar bars). Our 8px
+   wrapper padding can't cover it, so the button bled 4px past the
+   viewport → horizontal scrollbar on every page at 768–959px and on
+   layout:page pages (Loom/Wake/Zoo/home) up to 1279px. Cap the pull
+   to what the padding can absorb. */
+.VPNavBarExtra {
+  margin-right: -8px !important;
+}
+
 /* ---------------------------------------------------
    Content Padding & Dead Space Removal for Iframe
 --------------------------------------------------- */
