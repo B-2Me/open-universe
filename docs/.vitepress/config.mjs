@@ -21,23 +21,33 @@ const instrumentItems = [
   { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
 ]
 
-// Interference is a section, not a page: the narrative link becomes a
-// dropdown that carries the sub-pages and the instruments.
-const navBar = readingOrder.map(item =>
-  item.link === '/interference'
-    ? {
-        text: 'Interference',
-        items: [
-          { text: 'Overview', link: '/interference' },
-          { text: 'Theoretical Audits', link: '/interference/audits' },
-          { text: 'Predictive Roadmap', link: '/interference/roadmap' },
-          { text: 'The Open Frontier', link: '/interference/frontier' },
-          { text: 'Audio Sessions', link: '/interference/sessions' },
-          { text: 'Instruments', items: instrumentItems }
-        ]
-      }
-    : item
-)
+// Sections, not pages: Source+Math fold into a Theory dropdown and
+// Interference becomes a dropdown carrying its sub-pages + instruments.
+// Keeps the bar at 6 entries so the overflow button can't clip.
+const navBar = readingOrder.flatMap(item => {
+  if (item.link === '/source')
+    return [{
+      text: 'Theory',
+      items: [
+        { text: 'Source · the substrate model', link: '/source' },
+        { text: 'Math · the formalism', link: '/math' }
+      ]
+    }]
+  if (item.link === '/math') return []
+  if (item.link === '/interference')
+    return [{
+      text: 'Interference',
+      items: [
+        { text: 'Overview', link: '/interference' },
+        { text: 'Theoretical Audits', link: '/interference/audits' },
+        { text: 'Predictive Roadmap', link: '/interference/roadmap' },
+        { text: 'The Open Frontier', link: '/interference/frontier' },
+        { text: 'Audio Sessions', link: '/interference/sessions' },
+        { text: 'Instruments', items: instrumentItems }
+      ]
+    }]
+  return [item]
+})
 
 export default defineConfig({
   title: "The Open Universe",
