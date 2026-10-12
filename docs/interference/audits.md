@@ -1,6 +1,10 @@
 ---
 title: Theoretical Audits
+audio: /audio/audits.mp3
 ---
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # Laboratory Interference: The Theoretical Audits
 

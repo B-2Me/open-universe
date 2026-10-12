@@ -1,6 +1,10 @@
 ---
 title: Audio Sessions
+audio: /audio/sessions.mp3
 ---
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # Planned Audio Sessions
 

@@ -1,6 +1,10 @@
 ---
 title: Predictive Roadmap
+audio: /audio/roadmap.mp3
 ---
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Predictive Roadmap: Beyond the Standard Model
 

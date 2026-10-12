@@ -1,6 +1,10 @@
 ---
 title: The Theory
+audio: /audio/theory.mp3
 ---
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Theory
 

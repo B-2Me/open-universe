@@ -1,6 +1,10 @@
 ---
 title: The Open Frontier
+audio: /audio/frontier.mp3
 ---
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Open Frontier: Adjacency Expansion
 
