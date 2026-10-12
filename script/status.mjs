@@ -97,6 +97,17 @@ function render() {
   if (live?.started && done.length < total)
     console.log(`  uptime: ${fmtDur(Date.now() - live.started)} since launch`);
 
+  // ---- orchestration queue — stage heartbeat from logs/queue-status.json ----
+  let queue = null;
+  try { queue = JSON.parse(readFileSync(join(ROOT, 'logs', 'queue-status.json'), 'utf8')); } catch {}
+  if (queue) {
+    const qAge = Date.now() - queue.ts;
+    const qFill = Math.round(28 * queue.idx / Math.max(1, queue.total));
+    console.log('  JOB QUEUE');
+    console.log(`  [${'█'.repeat(qFill)}${'░'.repeat(28 - qFill)}] ${queue.idx}/${queue.total} — stage: ${queue.stage}` +
+      ` (${queue.stages.join(' → ')})${qAge < 120000 ? '' : ' [STALE]'}`);
+  }
+
   // ---- boost basin (Phase 5) — separate heartbeat, same pattern ----
   let boost = null;
   try { boost = JSON.parse(readFileSync(join(ROOT, 'logs', 'boost-status.json'), 'utf8')); } catch {}
@@ -115,20 +126,30 @@ function render() {
     console.log(`  age:    heartbeat ${fmtDur(bAge)} ago`);
   }
 
-  // ---- collision matrix (Phase 6) — same heartbeat pattern ----
+  // ---- collision matrix (Phase 6) — scenario progress + heartbeat ----
   let col = null;
   try { col = JSON.parse(readFileSync(join(ROOT, 'logs', 'collide-status.json'), 'utf8')); } catch {}
-  if (col) {
-    const cAge = Date.now() - col.ts;
+  let colCfg = { scenarios: [] }, colRes = [];
+  try { colCfg = JSON.parse(readFileSync(resolve(ROOT, String(arg('collide-config', 'config/collide-matrix.json'))), 'utf8')); } catch {}
+  try { colRes = JSON.parse(readFileSync(join(ROOT, 'logs', 'collide-results.json'), 'utf8')); } catch {}
+  const colNames = new Set((colCfg.scenarios ?? []).map(s => s.name));
+  const colTotal = colNames.size;
+  if (col || colTotal) {
+    const cAge = col ? Date.now() - col.ts : Infinity;
     const cAlive = cAge < 120000;
+    const colDoneRes = colRes.filter(r => colNames.size === 0 || colNames.has(r.name));
+    const cFill = Math.round(28 * colDoneRes.length / Math.max(1, colTotal));
+    const verdicts = {};
+    for (const r of colDoneRes) verdicts[r.verdict] = (verdicts[r.verdict] ?? 0) + 1;
     console.log('  COLLISION MATRIX');
-    console.log(`  run:    ${col.scenario}`);
-    if (col.phase === 'ticking') {
-      console.log(`  live:   tick ${col.t} gap=${col.gap ?? '—'} merged=${col.merged}${cAlive ? '' : ' [STALE heartbeat]'}`);
-    } else {
-      console.log(`  state:  ${col.phase}${col.verdict ? ' — ' + col.verdict : ''}${cAlive ? '' : ' [STALE heartbeat]'}`);
+    console.log(`  [${'█'.repeat(cFill)}${'░'.repeat(28 - cFill)}] ${colDoneRes.length}/${colTotal} scenarios` +
+      (colDoneRes.length ? ` — ${Object.entries(verdicts).map(([k, v]) => `${v} ${k}`).join(', ')}` : ''));
+    if (col?.phase === 'ticking') {
+      console.log(`  live:   ${col.scenario} tick ${col.t} gap=${col.gap ?? '—'} merged=${col.merged}${cAlive ? '' : ' [STALE heartbeat]'}`);
+    } else if (col) {
+      console.log(`  state:  ${col.scenario} — ${col.phase}${col.verdict ? ': ' + col.verdict : ''}${cAlive ? '' : ' [STALE heartbeat]'}`);
     }
-    console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
+    if (col) console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
   }
   console.log('');
 }
