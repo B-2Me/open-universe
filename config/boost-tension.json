@@ -1,0 +1,11 @@
+{
+  "seed": "hopfion_32_8",
+  "vector": 3,
+  "duration_ticks": 500,
+  "flux_profile": {
+    "quanta": { "type": "constant", "value": 0 },
+    "tension": { "type": "adsr", "peak": 20, "attack": 50, "sustain": 100, "release": 50 },
+    "spin": { "type": "constant", "value": 0 },
+    "heat": { "type": "constant", "value": 0 }
+  }
+}
