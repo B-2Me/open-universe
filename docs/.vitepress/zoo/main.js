@@ -127,13 +127,23 @@ export function initZoo(host, base = '/') {
   gizmo.setEnabled(true);
   gizmo.setInteractive(true);
 
-  // Knot framing state — focal point pinned to the model centroid.
+  // Knot framing state — focal point pinned to the model centroid, view-up
+  // locked to +Z (the torus axis). Azimuth orbits then hold a fixed
+  // elevation: the flat torus can never degenerate to an edge-on sliver
+  // mid-rotation.
   let focal = [0, 0, 0], diag = 100;
   const resetView = () => {
-    renderer.resetCamera();
     const cam = renderer.getActiveCamera();
-    cam.setDistance(cam.getDistance() * 1.15);
+    cam.setViewUp(0, 0, 1);
+    const d = diag * 1.55;
+    const az = 0.55, el = 0.42; // product-shot angle, matches the Loom's pitch
+    cam.setPosition(
+      focal[0] + d * Math.cos(el) * Math.cos(az),
+      focal[1] + d * Math.cos(el) * Math.sin(az),
+      focal[2] + d * Math.sin(el),
+    );
     cam.setFocalPoint(...focal);
+    renderer.resetCameraClippingRange();
     renderWindow.render();
   };
 
@@ -161,7 +171,20 @@ export function initZoo(host, base = '/') {
     const minD = diag * 0.25, maxD = diag * 5;
     const d = cam.getDistance();
     if (d < minD || d > maxD) cam.setDistance(Math.min(maxD, Math.max(minD, d)));
-    if (autoRotate && performance.now() - lastInteract > 1200) cam.azimuth(0.12);
+    if (autoRotate && performance.now() - lastInteract > 1200) {
+      cam.azimuth(0.12);
+      // Ease elevation back toward the product angle — a manual drag to
+      // grazing incidence shouldn't leave the turntable orbiting edge-on.
+      const p = cam.getPosition();
+      const dx = p[0] - focal[0], dy = p[1] - focal[1], dz = p[2] - focal[2];
+      const r = Math.hypot(dx, dy), dist = Math.hypot(dx, dy, dz) || 1;
+      const el = Math.atan2(dz, r), target = 0.42;
+      if (Math.abs(el - target) > 0.005) {
+        const el2 = el + (target - el) * 0.03;
+        const f = Math.cos(el2) / Math.cos(el);
+        cam.setPosition(focal[0] + dx * f, focal[1] + dy * f, focal[2] + dist * Math.sin(el2));
+      }
+    }
     renderWindow.render();
     requestAnimationFrame(spin);
   };
