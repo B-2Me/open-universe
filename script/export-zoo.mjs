@@ -46,7 +46,8 @@ const WASM_JS = resolve(ROOT, 'docs/public/wasm/loom/planck3.js');
 if (!existsSync(DICT)) { console.error(`no dictionary at ${DICT}`); process.exit(1); }
 if (!existsSync(WASM_JS)) { console.error('wasm glue not found — run src/build.sh'); process.exit(1); }
 const dict = JSON.parse(readFileSync(DICT, 'utf8'));
-const stable = (dict.entries ?? []).filter(e => e.verdict === 'stable');
+const ONLY = arg('only', null) ? String(arg('only')).split(',') : null;
+const stable = (dict.entries ?? []).filter(e => e.verdict === 'stable' && (!ONLY || ONLY.includes(e.name)));
 if (!stable.length) { console.error('no stable entries'); process.exit(1); }
 
 const glueSrc = readFileSync(WASM_JS, 'utf8');
@@ -124,9 +125,19 @@ for (const e of stable) {
   });
   console.log(`  ${e.name}: ${cells.length} cells → ${(bin.length / 1024).toFixed(0)}KB .bin + .vtk`);
 }
-manifest.sort((a, b) => a.mass - b.mass);
-writeFileSync(join(OUT_WEB, 'index.json'), JSON.stringify({
+// Merge with any prior manifest so --only runs patch, not clobber.
+const idxPath = join(OUT_WEB, 'index.json');
+let all = manifest;
+if (existsSync(idxPath)) {
+  try {
+    const prior = JSON.parse(readFileSync(idxPath, 'utf8')).knots ?? [];
+    const fresh = new Set(manifest.map(m => m.name));
+    all = [...prior.filter(m => !fresh.has(m.name)), ...manifest];
+  } catch {}
+}
+all.sort((a, b) => a.mass - b.mass);
+writeFileSync(idxPath, JSON.stringify({
   generated: new Date().toISOString(), settle: SETTLE,
-  diss: dict.diss, limit: dict.limit, knots: manifest,
+  diss: dict.diss, limit: dict.limit, knots: all,
 }, null, 2));
-console.log(`\n${manifest.length} knots → docs/public/zoo/ (${manifest.reduce((a, m) => a + m.mass, 0).toLocaleString()}q total dictionary mass)`);
+console.log(`\n${manifest.length} exported · ${all.length} in manifest → docs/public/zoo/`);
