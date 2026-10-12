@@ -106,7 +106,7 @@ onUnmounted(() => {
     <div class="zoo-index" :class="{ closed: !railOpen }">
       <button class="zoo-index-title" @click="railOpen = !railOpen"
               :title="railOpen ? 'Collapse specimens' : 'Expand specimens'">
-        <span class="caret" :class="{ open: railOpen }">▸</span>
+        <span class="caret" :class="{ open: railOpen }"></span>
         SPECIMENS · {{ knots.length }}
       </button>
       <div class="zoo-rows" v-show="railOpen">
@@ -311,8 +311,10 @@ onUnmounted(() => {
 }
 .zoo-index-title .caret {
   display: inline-block;
-  font-size: 8px;
-  color: #9ef;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid #9ef;
   transition: transform 0.15s;
 }
 .zoo-index-title .caret.open { transform: rotate(90deg); }

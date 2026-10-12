@@ -260,8 +260,8 @@ export function initZoo(host, base = '/') {
     if (ptrs.size === 1) {
       if (prev.btn === 2) orbit.dist *= Math.exp(dy * 0.006);
       else {
-        orbit.az += dx * 0.006;
-        orbit.el = Math.max(-1.5, Math.min(1.5, orbit.el - dy * 0.006));
+        orbit.az -= dx * 0.006;
+        orbit.el = Math.max(-1.5, Math.min(1.5, orbit.el + dy * 0.006));
       }
       applyOrbit();
     } else if (ptrs.size === 2) {
