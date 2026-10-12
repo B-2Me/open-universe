@@ -1,9 +1,6 @@
 ---
 title: The Planck Field
 audio: /audio/field.mp3
-next:
-  text: 'Interface'
-  link: '/interface'
 ---
 
 <ClientOnly>
