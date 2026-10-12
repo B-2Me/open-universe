@@ -1,0 +1,9 @@
+{
+  "seeds": "seeds256",
+  "ticks": 400,
+  "sample": 50,
+  "diss": 15,
+  "limit": 50000,
+  "mode": 0,
+  "out": "knot_dictionary.json"
+}

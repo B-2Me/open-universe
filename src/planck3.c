@@ -47,10 +47,12 @@
 #endif
 
 // --- Geometry ---
-#define W3 (100)
-#define H3 (100)
-#define D3 (40)
-#define N3 (W3 * H3 * D3)
+// Runtime-dimensioned grid (RFC-051): planck3_init() keeps the canonical
+// 100x100x40 browser substrate; planck3_init_dims(w,h,d) re-scales for
+// headless harness runs (the 256^3 asymptotic-freedom arena). All
+// buffers are heap-allocated at init — a 16.7M-node grid wants ~200MB
+// of node state and cannot live in static storage.
+static int32_t W3 = 100, H3 = 100, D3 = 40, N3 = 0;
 
 // --- Physics constants (canonical — mirror engine-sim.mjs) ---
 #define DEADLOCK (200)
@@ -87,6 +89,13 @@ typedef struct {
 
 static Node3 *g_rd = NULL, *g_wr = NULL;
 static uint32_t cur_tick = 0;
+
+// Lazily-allocated bulk buffers (declared early — init_dims frees them).
+static uint8_t *load_buf = NULL, *rg_buf = NULL;
+static Node3 *save_buf = NULL;
+static int save_valid = 0;
+// Fitness telemetry for headless sweeps: unwind events + sprayed mass.
+static uint64_t spray_events = 0, spray_quanta = 0;
 
 // Deterministic floor noise (replaces Math.random — same 1..3 range,
 // reproducible across runs; never touches mass channels).
@@ -253,6 +262,7 @@ static inline void planck3_node_tick(int32_t gidx,
     int nh2 = ch - 12 * hshare3(ch) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
     if (nh2 > g_thermal_limit && nq2 > 0) {
         // Unwind: the knot unspools into neighbor buffers (spray).
+        spray_events++; spray_quanta += (uint64_t)(nq2 + nb2);
         int share = (nq2 + nb2) / 12;
         for (int d = 1; d <= 12; d++) {
             if (key[d] < 0) continue;
@@ -319,25 +329,35 @@ static void tick_flat3(void) {
 // ---------------------------------------------------------
 // Chunked engine: 20^3 interior + 1-node ghost ring = 22^3 block.
 // ---------------------------------------------------------
-#define CW (20)
-#define CB (CW + 2)
-#define NCX (W3 / CW)          // 5
-#define NCY (H3 / CW)          // 5
-#define NCZ (D3 / CW)          // 2
-#define NCHUNK (NCX * NCY * NCZ) // 50
-#define BVOL (CB * CB * CB)    // 10648
-#define IVOL (CW * CW * CW)    // 8000
+#define CW (g_cw)
+#define CB (g_cb)
+#define NCX (g_ncx)
+#define NCY (g_ncy)
+#define NCZ (g_ncz)
+#define NCHUNK (g_nchunk)
+#define BVOL (g_bvol)
+#define IVOL (g_ivol)
+
+// Chunk geometry is runtime: g_cw is the largest divisor of all three
+// dims in [4,20] (20 for 100x100x40, 16 for 256^3). If no such divisor
+// exists the chunked engines are unavailable and g_cw stays 0 — flat
+// mode is always the fallback.
+#define CW_MAX (20)
+#define CW_MIN (4)
+static int g_cw = 0, g_cb = 0, g_ncx = 0, g_ncy = 0, g_ncz = 0;
+static int32_t g_nchunk = 0, g_bvol = 0, g_ivol = 0;
 
 typedef struct {
-    Node3 rd[BVOL]; // interior + ghost ring (read state)
-    Node3 wr[IVOL]; // interior only (write state)
+    Node3 *rd;      // interior + ghost ring (read state), g_bvol cells
+    Node3 *wr;      // interior only (write state), g_ivol cells
     int x0, y0, z0; // global coord of interior cell (0,0,0)
 } Chunk3;
 
 static Chunk3 *chunks = NULL;
+static Node3 *chunk_rd_pool = NULL, *chunk_wr_pool = NULL;
 
-static inline int bpos(int bx, int by, int bz) { return (bz * CB + by) * CB + bx; }
-static inline int ipos(int lx, int ly, int lz) { return (lz * CW + ly) * CW + lx; }
+static inline int bpos(int bx, int by, int bz) { return (bz * g_cb + by) * g_cb + bx; }
+static inline int ipos(int lx, int ly, int lz) { return (lz * g_cw + ly) * g_cw + lx; }
 
 // Global coordinate of a block position within chunk c (x,y wrap; z may
 // land out of range — callers check before use).
@@ -484,23 +504,94 @@ static void tick_ordered3(void) {
     }
 }
 
-EMSCRIPTEN_KEEPALIVE void planck3_init(void) {
-    planck3_tables_init();
-    if (!g_rd) { g_rd = calloc(N3, sizeof(Node3)); g_wr = calloc(N3, sizeof(Node3)); }
+// Largest common divisor of (w,h,d) inside [CW_MIN, CW_MAX] — the chunk
+// edge length. 0 when none exists (chunked engines unavailable there).
+static int pick_cw(int w, int h, int d) {
+    for (int cw = CW_MAX; cw >= CW_MIN; cw--)
+        if (w % cw == 0 && h % cw == 0 && d % cw == 0) return cw;
+    return 0;
+}
+
+static void planck3_free_all(void) {
+    free(g_rd); g_rd = NULL;
+    free(g_wr); g_wr = NULL;
+    free(chunks); chunks = NULL;
+    free(chunk_rd_pool); chunk_rd_pool = NULL;
+    free(chunk_wr_pool); chunk_wr_pool = NULL;
+    free(load_buf); load_buf = NULL;
+    free(rg_buf); rg_buf = NULL;
+    free(save_buf); save_buf = NULL;
+    save_valid = 0;
+}
+
+// Chunk pools are lazy — a 256^3 flat run shouldn't pay ~250MB for a
+// storage layout it never ticks.
+static int chunks_ensure(void) {
+    if (g_cw == 0) return -1;
     if (!chunks) {
         chunks = calloc(NCHUNK, sizeof(Chunk3));
+        chunk_rd_pool = calloc(NCHUNK * (int32_t)BVOL, sizeof(Node3));
+        chunk_wr_pool = calloc(NCHUNK * (int32_t)IVOL, sizeof(Node3));
+        if (!chunks || !chunk_rd_pool || !chunk_wr_pool) return -2;
         for (int cz = 0; cz < NCZ; cz++)
             for (int cy = 0; cy < NCY; cy++)
                 for (int cx = 0; cx < NCX; cx++) {
-                    Chunk3 *c = &chunks[(cz * NCY + cy) * NCX + cx];
+                    int32_t ci = ((int32_t)cz * NCY + cy) * NCX + cx;
+                    Chunk3 *c = &chunks[ci];
+                    c->rd = chunk_rd_pool + ci * BVOL;
+                    c->wr = chunk_wr_pool + ci * IVOL;
                     c->x0 = cx * CW; c->y0 = cy * CW; c->z0 = cz * CW;
                 }
     }
+    return 0;
+}
+
+static int tables_done = 0;
+
+// Re-dimension the universe. Frees every prior allocation; dims must be
+// set before any tick/load call. Returns 0 ok, -1 bad dims, -2 OOM.
+EMSCRIPTEN_KEEPALIVE int planck3_init_dims(int w, int h, int d) {
+    if (w <= 0 || h <= 0 || d <= 0 || (int64_t)w * h * d > INT32_MAX) return -1;
+    if (!tables_done) { planck3_tables_init(); tables_done = 1; }
+    planck3_free_all();
+    W3 = w; H3 = h; D3 = d; N3 = W3 * H3 * D3;
+    g_cw = pick_cw(W3, H3, D3);
+    g_cb = g_cw + 2;
+    if (g_cw) {
+        g_ncx = W3 / g_cw; g_ncy = H3 / g_cw; g_ncz = D3 / g_cw;
+        g_nchunk = g_ncx * g_ncy * g_ncz;
+        g_bvol = g_cb * g_cb * g_cb;
+        g_ivol = g_cw * g_cw * g_cw;
+    } else {
+        g_ncx = g_ncy = g_ncz = 0;
+        g_nchunk = g_bvol = g_ivol = 0;
+    }
+    g_rd = calloc(N3, sizeof(Node3));
+    g_wr = calloc(N3, sizeof(Node3));
+    if (!g_rd || !g_wr) { planck3_free_all(); return -2; }
+    cur_tick = 0;
+    rng_state = 0x9E3779B9u;
+    spray_events = 0; spray_quanta = 0;
+    return 0;
+}
+
+EMSCRIPTEN_KEEPALIVE void planck3_init(void) {
+    if (!g_rd) planck3_init_dims(100, 100, 40);
     cur_tick = 0;
     rng_state = 0x9E3779B9u;
 }
 
-EMSCRIPTEN_KEEPALIVE void planck3_set_mode(int mode) { chunk_mode = mode; } // 0=flat 1=halo 2=ordered
+// 0=flat 1=halo 2=ordered; returns the mode actually selected (-1 if a
+// chunked mode was requested on a non-divisible grid — flat fallback).
+EMSCRIPTEN_KEEPALIVE int planck3_set_mode(int mode) {
+    if (mode != 0 && chunks_ensure() != 0) { chunk_mode = 0; return -1; }
+    chunk_mode = mode;
+    return mode;
+}
+EMSCRIPTEN_KEEPALIVE int planck3_chunk_size(void) { return g_cw; }
+EMSCRIPTEN_KEEPALIVE int32_t planck3_dim(int axis) {
+    return axis == 0 ? W3 : axis == 1 ? H3 : D3;
+}
 
 EMSCRIPTEN_KEEPALIVE void planck3_set_node(int32_t i, int q, int s, int h, int b, int tn) {
     g_rd[i].quanta = (uint8_t)q; g_rd[i].spin = (uint8_t)s;
@@ -538,8 +629,10 @@ static void chunks_to_flat(void) {
     }
 }
 
-EMSCRIPTEN_KEEPALIVE void planck3_prepare(void) { if (chunk_mode) chunks_from_flat(); }
-EMSCRIPTEN_KEEPALIVE void planck3_collect(void) { if (chunk_mode) chunks_to_flat(); }
+EMSCRIPTEN_KEEPALIVE void planck3_prepare(void) {
+    if (chunk_mode && chunks_ensure() == 0) chunks_from_flat();
+}
+EMSCRIPTEN_KEEPALIVE void planck3_collect(void) { if (chunk_mode && chunks) chunks_to_flat(); }
 
 EMSCRIPTEN_KEEPALIVE void planck3_tick(void) {
     if (chunk_mode == 1) tick_chunk3();
@@ -550,7 +643,9 @@ EMSCRIPTEN_KEEPALIVE void planck3_tick(void) {
 // Direct access for the test driver / wasm bulk state moves.
 EMSCRIPTEN_KEEPALIVE uint8_t *planck3_state_pointer(void) { return (uint8_t *)g_rd; }
 EMSCRIPTEN_KEEPALIVE int32_t planck3_node_count(void) { return N3; }
-EMSCRIPTEN_KEEPALIVE int32_t planck3_dims(void) { return (W3 << 16) | (H3 << 8) | D3; }
+// Packed dims in 10-bit fields (w<<20|h<<10|d — 256 would overflow the
+// old 8-bit packing). Prefer planck3_dim(axis) for clarity.
+EMSCRIPTEN_KEEPALIVE int32_t planck3_dims(void) { return (W3 << 20) | (H3 << 10) | D3; }
 
 // ---------------------------------------------------------
 // Browser pipeline (RFC-050): bulk state I/O + RG8 texture buffer.
@@ -558,10 +653,10 @@ EMSCRIPTEN_KEEPALIVE int32_t planck3_dims(void) { return (W3 << 16) | (H3 << 8) 
 // one memory copy, no per-node ccall overhead. rg_buf packs {q,s} per
 // node for gl.texSubImage3D(RG8) uploads straight from wasm memory.
 // ---------------------------------------------------------
-static uint8_t load_buf[16 + N3 * 6]; // P3ST header + payload
-static uint8_t rg_buf[N3 * 2];
-
-EMSCRIPTEN_KEEPALIVE uint8_t *planck3_load_pointer(void) { return load_buf; }
+EMSCRIPTEN_KEEPALIVE uint8_t *planck3_load_pointer(void) {
+    if (!load_buf) load_buf = malloc(16 + (size_t)N3 * 6);
+    return load_buf;
+}
 EMSCRIPTEN_KEEPALIVE int planck3_load_commit(void) {
     if (memcmp(load_buf, "P3ST", 4)) return -1;
     uint32_t w = *(uint32_t *)(load_buf + 4), h = *(uint32_t *)(load_buf + 8),
@@ -576,7 +671,10 @@ EMSCRIPTEN_KEEPALIVE int planck3_load_commit(void) {
     }
     return 0;
 }
-EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) { return rg_buf; }
+EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) {
+    if (!rg_buf) rg_buf = malloc((size_t)N3 * 2);
+    return rg_buf;
+}
 // Repack {q,s} from the canonical flat state — call planck3_collect() first
 // after chunked runs so g_rd is current.
 EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
@@ -613,12 +711,15 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_thermal_limit(int limit) { g_thermal_limit
 
 // Snapshot/restore — the Loom analog of Wake's undo: freeze a frame,
 // collide it, rewind.
-static Node3 save_buf[N3];
-static int save_valid = 0;
-EMSCRIPTEN_KEEPALIVE void planck3_save(void) { memcpy(save_buf, g_rd, sizeof(save_buf)); save_valid = 1; }
+EMSCRIPTEN_KEEPALIVE void planck3_save(void) {
+    if (!save_buf) save_buf = malloc((size_t)N3 * sizeof(Node3));
+    if (!save_buf) return;
+    memcpy(save_buf, g_rd, (size_t)N3 * sizeof(Node3));
+    save_valid = 1;
+}
 EMSCRIPTEN_KEEPALIVE int planck3_restore(void) {
-    if (!save_valid) return -1;
-    memcpy(g_rd, save_buf, sizeof(save_buf));
+    if (!save_valid || !save_buf) return -1;
+    memcpy(g_rd, save_buf, (size_t)N3 * sizeof(Node3));
     return 0;
 }
 
@@ -634,3 +735,13 @@ EMSCRIPTEN_KEEPALIVE double planck3_deadlocked(void) {
     for (int i = 0; i < N3; i++) if (g_rd[i].quanta + g_rd[i].buffer > DEADLOCK) n++;
     return n;
 }
+
+// Headless-sweep fitness telemetry: unwind sprays, live-cell census.
+EMSCRIPTEN_KEEPALIVE double planck3_spray_events(void) { return (double)spray_events; }
+EMSCRIPTEN_KEEPALIVE double planck3_spray_quanta(void) { return (double)spray_quanta; }
+EMSCRIPTEN_KEEPALIVE double planck3_live_cells(void) {
+    double n = 0;
+    for (int32_t i = 0; i < N3; i++) if (g_rd[i].quanta > 0) n++;
+    return n;
+}
+EMSCRIPTEN_KEEPALIVE void planck3_reset_stats(void) { spray_events = 0; spray_quanta = 0; }

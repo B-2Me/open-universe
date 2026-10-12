@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+/*
+ * status.mjs — read-only dashboard for a running (or finished) sweep.
+ *
+ *   node script/status.mjs [--config=config/full-sweep.json]
+ *                          [--out=knot_dictionary.json]
+ *                          [--watch=30]   (re-render every N sec)
+ *
+ * Reads the sweep config to know the candidate universe, merges it
+ * with knot_dictionary.json for completed measurements, and reads
+ * logs/status.json for the live mid-candidate heartbeat. Prints a
+ * progress bar, yield rate, latest stable discovery, and an ETA from
+ * measured per-candidate wall time.
+ */
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { join, resolve, basename } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
+const arg = (k, d) => {
+  const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
+  return m ? (m.includes('=') ? m.split('=')[1] : true) : d;
+};
+
+const CFG_PATH = resolve(ROOT, String(arg('config', 'config/full-sweep.json')));
+const OUT = resolve(ROOT, String(arg('out', 'knot_dictionary.json')));
+const WATCH = parseInt(arg('watch', '0'));
+
+const fmtDur = (ms) => {
+  if (!isFinite(ms) || ms < 0) return '?';
+  const s = Math.round(ms / 1000);
+  return s >= 3600 ? `${(s / 3600).toFixed(1)}h` : s >= 60 ? `${Math.floor(s / 60)}m${s % 60}s` : `${s}s`;
+};
+const fmtMs = (ms) => fmtDur(ms);
+
+function render() {
+  // ---- candidate universe from the sweep config ----
+  let cfg = {}, candNames = [];
+  try { cfg = JSON.parse(readFileSync(CFG_PATH, 'utf8')); }
+  catch { console.log(`no sweep config at ${CFG_PATH}`); }
+  const seedsDir = resolve(ROOT, cfg.seeds || 'seeds');
+  try {
+    const all = statSync(seedsDir).isDirectory()
+      ? readdirSync(seedsDir).filter(f => f.startsWith('hopfion') && f.endsWith('.json')).map(f => basename(f, '.json'))
+      : [basename(seedsDir, '.json')];
+    const only = cfg.only ? String(cfg.only).split(',') : null;
+    candNames = only ? all.filter(n => only.includes(n)) : all;
+  } catch { /* dir may not exist yet */ }
+
+  // ---- completed measurements ----
+  const dict = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : { entries: [] };
+  const ticks = cfg.ticks ?? dict.ticks ?? 400;
+  const diss = cfg.diss ?? dict.diss, limit = cfg.limit ?? dict.limit, mode = cfg.mode ?? dict.mode ?? 0;
+  const sigOf = (e) => e.sig || `${e.name}|${e.dims?.join('x')}|t${ticks}|d${diss}|l${limit}|m${mode}`;
+  const entries = dict.entries || [];
+  const doneNames = new Set(entries.filter(e => candNames.length === 0 || candNames.includes(e.name)).map(e => e.name));
+  const done = candNames.length ? entries.filter(e => doneNames.has(e.name)) : entries;
+  const total = candNames.length || entries.length;
+  const stable = done.filter(e => e.verdict === 'stable');
+  const failed = done.filter(e => e.verdict !== 'stable');
+
+  // ---- live heartbeat ----
+  let live = null;
+  const hbPath = join(ROOT, 'logs', 'status.json');
+  try { live = JSON.parse(readFileSync(hbPath, 'utf8')); } catch {}
+  const liveAge = live ? Date.now() - live.ts : Infinity;
+  const isAlive = live && liveAge < 120000; // heartbeat fresher than 2min
+
+  // ---- render ----
+  const pct = total ? Math.round(100 * done.length / total) : 0;
+  const barW = 28, fill = Math.round(barW * done.length / Math.max(1, total));
+  console.log('\n  KNOT DICTIONARY SWEEP');
+  console.log(`  [${'█'.repeat(fill)}${'░'.repeat(barW - fill)}] ${pct}% (${done.length}/${total} candidates)`);
+
+  const yieldPct = done.length ? Math.round(100 * stable.length / done.length) : 0;
+  console.log(`  yield: ${stable.length} stable / ${failed.length} unraveled (${yieldPct}% of evaluated)`);
+
+  const latest = stable.length ? stable[stable.length - 1] : done[done.length - 1];
+  if (latest) console.log(`  latest: ${latest.name} — mass ${latest.massEnd?.toLocaleString()}q, ` +
+    `r=(${latest.radiusXY},${latest.radiusZ}), ${latest.verdict}, ${latest.loops} loops`);
+
+  if (live && live.phase === 'ticking') {
+    const tPct = Math.round(100 * live.t / (live.config?.ticks || ticks));
+    const tele = live.q != null ? ` q=${(live.q / 1e6).toFixed(2)}M dead=${live.dead}` : '';
+    console.log(`  live:   ${live.candidate} ticking ${live.t}/${live.config?.ticks || ticks} (${tPct}%)${tele}${isAlive ? '' : ' [STALE heartbeat]'}`);
+  } else if (live && live.candidate) {
+    console.log(`  live:   ${live.candidate} — ${live.phase}${isAlive ? '' : ' [STALE heartbeat]'}`);
+  }
+
+  // ETA: mean measured ms per candidate from the dictionary
+  const timed = done.filter(e => e.ms > 0);
+  if (timed.length && done.length < total) {
+    const avg = timed.reduce((a, e) => a + e.ms, 0) / timed.length;
+    const rem = total - done.length;
+    console.log(`  pace:   ${fmtMs(avg)}/candidate · ~${fmtDur(avg * rem)} remaining (${rem} left)`);
+  }
+  if (live?.started && done.length < total)
+    console.log(`  uptime: ${fmtDur(Date.now() - live.started)} since launch`);
+  console.log('');
+}
+
+if (WATCH > 0) { render(); setInterval(render, WATCH * 1000); }
+else render();

@@ -13,8 +13,6 @@
  * (x + 0.5·(y&1), y·√3/2) with z scaled by √(2/3)≈0.816.
  */
 
-const W3 = 100, H3 = 100, D3 = 40, N3 = W3 * H3 * D3;
-
 // ---------- minimal mat4 (column-major, OpenGL order) ----------
 const m4 = {
   mul(a, b) {
@@ -49,11 +47,13 @@ uniform float u_qmin;                     // density floor to render
 uniform int u_colorMode;                  // 0=density 1=spin 2=heat 3=macro
 out vec4 v_color;
 out vec2 v_uv;
+uniform int u_nx, u_ny, u_nxy, u_step;   // strided grid decode
+uniform vec3 u_centroid;
 void main() {
   int id = gl_InstanceID;
-  int x = id % 100;
-  int y = (id / 100) % 100;
-  int z = id / 10000;
+  int x = (id % u_nx) * u_step;
+  int y = ((id / u_nx) % u_ny) * u_step;
+  int z = (id / u_nxy) * u_step;
   vec2 rg = texelFetch(u_vol, ivec3(x, y, z), 0).rg;
   float q = rg.r * 255.0;
   float s = rg.g * 255.0;
@@ -67,7 +67,7 @@ void main() {
   // hex-plane embed + z compress (true-FCC layer spacing ~0.816)
   vec3 p = vec3(float(x) + 0.5 * float(y & 1), float(y) * 0.8660254,
                 float(z) * u_zscale);
-  p -= vec3(50.0, 43.3, 16.3);            // lattice centroid
+  p -= u_centroid;                        // lattice centroid
   vec4 mv = u_mvp * vec4(p, 1.0);
   float ps = u_size * (0.6 + 1.6 * q / 255.0);
   mv.xy += a_corner * ps;                 // billboard in view space
@@ -157,14 +157,25 @@ export async function initLoomSimulator(root, opts = {}) {
     });
   if (hud) hud.textContent = 'instantiating wasm…';
   const wasm = await createPlanck3();
-  wasm._planck3_init();
+  // Runtime dims: the engine defaults to 100x100x40; an explicit
+  // opts.dims re-scales (headless harnesses run 256^3).
+  if (opts.dims) {
+    const [w, h, d] = opts.dims;
+    if (wasm._planck3_init_dims(w, h, d) !== 0)
+      { hud.textContent = `grid ${w}x${h}x${d} rejected by engine`; return () => {}; }
+  } else wasm._planck3_init();
   wasm._planck3_set_mode(0); // flat — canonical deterministic baseline
-  const heap = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
+  const W3 = wasm._planck3_dim(0), H3 = wasm._planck3_dim(1),
+        D3 = wasm._planck3_dim(2), N3 = W3 * H3 * D3;
+  // lattice centroid in embedding coords (hex plane + zscale)
+  const cenX = W3 * 0.5, cenY = H3 * 0.4330127, cenZ = D3 * 0.408;
+
 
   const loadState = async (url) => {
     const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
     if (bytes.length !== 16 + N3 * 6) throw new Error(`state size ${bytes.length} (${url})`);
-    heap.set(bytes, wasm._planck3_load_pointer());
+    const lp = wasm._planck3_load_pointer(); // malloc can grow memory — wrap after
+    new Uint8Array(wasm.wasmMemory.buffer).set(bytes, lp);
     const rc = wasm._planck3_load_commit();
     if (rc !== 0) throw new Error(`planck3_load_commit rc=${rc}`);
   };
@@ -203,14 +214,14 @@ export async function initLoomSimulator(root, opts = {}) {
     // camera world position = Ry(-yaw)*Rx(-pitch)*(0,0,dist) + pan center
     const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
     const cW = { x: -c1.z * syw + cam.cx, y: c1.y + cam.cy, z: c1.z * cyw + cam.cz };
-    // slice plane: world z = zCenter*0.816 - 16.3
-    const pz = ui.zCenter * 0.816 - 16.3;
+    // slice plane: world z = zCenter*0.816 - cenZ
+    const pz = ui.zCenter * 0.816 - cenZ;
     if (Math.abs(dW.z) < 1e-3) return null;  // edge-on: plane never hit
     const t = (pz - cW.z) / dW.z;
     if (t <= 0) return null;
     const wx = cW.x + t * dW.x, wy = cW.y + t * dW.y;
-    const ly = Math.round((wy + 43.3) / 0.8660254);
-    const lx = Math.round(wx + 50 - 0.5 * (ly & 1));
+    const ly = Math.round((wy + cenY) / 0.8660254);
+    const lx = Math.round(wx + cenX - 0.5 * (ly & 1));
     return { lx, ly, lz: ui.zCenter };
   };
 
@@ -232,9 +243,16 @@ export async function initLoomSimulator(root, opts = {}) {
 
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
-    'u_ghost_alpha', 'u_zscale', 'u_qmin', 'u_colorMode'])
+    'u_ghost_alpha', 'u_zscale', 'u_qmin', 'u_colorMode',
+    'u_nx', 'u_ny', 'u_nxy', 'u_step', 'u_centroid'])
     U[n] = gl.getUniformLocation(prog, n);
 
+  // Hardware safe-fail: the whole lattice lives in one RG8 3D texture.
+  const maxTex = gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);
+  if (Math.max(W3, H3, D3) > maxTex) {
+    hud.textContent = `grid ${W3}x${H3}x${D3} exceeds GL 3D texture limit (${maxTex})`;
+    return () => {};
+  }
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_3D, tex);
   gl.texImage3D(gl.TEXTURE_3D, 0, gl.RG8, W3, H3, D3, 0, gl.RG, gl.UNSIGNED_BYTE, null);
@@ -372,10 +390,28 @@ export async function initLoomSimulator(root, opts = {}) {
   // ---------- state / UI ----------
   const ui = {
     playing: true, tickMs: 80, budget: 12, tick: 0,
-    zCenter: 20, zThick: 40, ghostAlpha: 0.06,
+    zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
     qmin: 1, size: 0.55, colorMode: 2, zscale: 0.816,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     knotArm: false,
+  };
+  // sync tuning-slider bounds with the engine's actual depth
+  for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
+    const el = root.querySelector(sel);
+    if (el) { el.max = max; el.value = val;
+      const o = el.parentElement?.querySelector('output'); if (o) o.value = val; }
+  }
+  // render stride: subsample the lattice when the instance count would
+  // crush the GPU (headless-scale grids / weak mobile GPUs). Adjusts on
+  // a SUSTAINED window only — a warmup dip (shader compile, first
+  // texture upload) must never permanently coarsen the picture, and a
+  // recovered GPU refines back to full density.
+  let rStep = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
+  let lowT = null, highT = null;
+  const bootT = performance.now();
+  const strideInfo = () => {
+    const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
+    return { nx, ny, nxy: nx * ny, count: nx * ny * nz };
   };
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
@@ -470,12 +506,12 @@ export async function initLoomSimulator(root, opts = {}) {
 
   // quick-view presets: smooth-lerp camera + jump slice values
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 95,  zCenter: 20, zThick: 40 },
-    equator: { yaw: 0.7,  pitch: 0.18, dist: 95,  zCenter: 20, zThick: 4 },
-    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 95,  zCenter: 20, zThick: 40 },
-    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 95,  zCenter: 20, zThick: 1 },
-    side:    { yaw: 0.7,  pitch: 0.05, dist: 105, zCenter: 20, zThick: 40 },
-    core:    { yaw: 0.9,  pitch: 0.9,  dist: 55,  zCenter: 20, zThick: 8 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 95,  zCenter: D3 >> 1, zThick: D3 },
+    equator: { yaw: 0.7,  pitch: 0.18, dist: 95,  zCenter: D3 >> 1, zThick: 4 },
+    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 95,  zCenter: D3 >> 1, zThick: D3 },
+    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 95,  zCenter: D3 >> 1, zThick: 1 },
+    side:    { yaw: 0.7,  pitch: 0.05, dist: 105, zCenter: D3 >> 1, zThick: D3 },
+    core:    { yaw: 0.9,  pitch: 0.9,  dist: 55,  zCenter: D3 >> 1, zThick: 8 },
   };
   const setRange = (sel, v) => {
     const el = root.querySelector(sel);
@@ -511,6 +547,22 @@ export async function initLoomSimulator(root, opts = {}) {
     raf = requestAnimationFrame(frame);
     const dt = now - lastT; lastT = now;
     fps = fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05;
+
+    // adaptive safe-fail: sustained <20fps past warmup means the
+    // instance count is crushing the GPU — coarsen the render stride
+    // rather than freeze the tab. Sustained >50fps refines back.
+    // (The engine ticks at full fidelity regardless.)
+    if (now - bootT < 4000) lowT = null;
+    else if (fps > 1 && fps < 20) {
+      lowT = lowT || now; highT = null;
+      if (now - lowT > 2500 && rStep < 4) { rStep *= 2; lowT = null; dirty = true; }
+    } else {
+      lowT = null;
+      if (fps > 50 && rStep > 1) {
+        highT = highT || now;
+        if (now - highT > 5000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
+      } else highT = null;
+    }
 
     // auto-turntable: resume after 4 s of pointer inactivity
     if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
@@ -560,13 +612,17 @@ export async function initLoomSimulator(root, opts = {}) {
       gl.uniform1f(U.u_zscale, ui.zscale);
       gl.uniform1f(U.u_qmin, ui.qmin);
       gl.uniform1i(U.u_colorMode, ui.colorMode);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, N3);
+      const si = strideInfo();
+      gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
+      gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
+      gl.uniform3f(U.u_centroid, cenX, cenY, cenZ);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
       syncZoom();
       drawGizmo();
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
-      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/400k · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
+      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
     }
   };
   raf = requestAnimationFrame(frame);

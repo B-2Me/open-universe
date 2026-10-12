@@ -26,6 +26,60 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
          /tmp/p3t /src/test/loom/t0.bin 60 /src/test/loom/t400.bin"
 ```
 
+## Phase 4 headless harness (particle dictionary)
+
+- `script/pathfinder.mjs` — standalone DFS loop-hunter on the 12-port
+  graph (Phase-Lock ≤60° per hop, memoized closure, same-shell gate).
+  Reproduces the canonical 19-loop/27,971-cell Hopfion at
+  `--w=100 --h=100 --d=40 --r0=25 --r1=9` exactly. Writes
+  `seeds/hopfion_<R0>_<R1>.json`.
+- `script/sweep.mjs` — loads seed JSONs into `planck3.wasm` via the
+  P3ST bulk channel, ticks under a chosen `--diss`/`--limit`, and
+  records a `knot_dictionary.json` (verdict, invariant mass, RMS
+  cross-section radius, spray/deadlock telemetry, per-window series).
+- Engine dims are runtime: `planck3_init()` = 100×100×40 (browser),
+  `planck3_init_dims(w,h,d)` rescales (256³ verified natively +
+  wasm, ~1.7–2.5 s/tick flat). Chunk size auto-picks the largest
+  common divisor ≤20 (20 → 100³, 16 → 256³); non-divisible grids
+  disable chunk modes and flat is the fallback. Bulk buffers
+  (load/rg/save/chunk pools) are lazy — wasm memory can grow after
+  ANY pointer call, so wrap `wasmMemory.buffer` only after pointer
+  calls, never cache a view across them.
+- Typical workflow: `node script/pathfinder.mjs --r0=32,64 --r1=8,16`
+  then `node script/sweep.mjs --seeds=seeds --ticks=400`.
+  Bounded pilot: `node script/sweep.mjs --config=config/pilot-sweep.json`.
+- Resume is built in: the dictionary is atomically rewritten after
+  every candidate; re-running skips entries whose signature
+  (name|dims|ticks|diss|limit|mode) already exists. `--fresh` ignores
+  prior entries. `--only=a,b` curates a subset; `--config=x.json`
+  supplies defaults (CLI wins). Sweeps run in plain Node — no
+  container needed, so a "restart" is just re-running the command.
+- `script/status.mjs` — read-only dashboard. Prints progress bar,
+  stable/unraveled yield, latest stable discovery, per-candidate
+  timing + ETA from `logs/status.json` (heartbeat written per tick
+  by sweep.mjs; stale >2min ⇒ check the process). Usage:
+  `node script/status.mjs --config=config/full-sweep.json`.
+- Background launch on Windows: `nohup … &` under Git Bash does NOT
+  survive the spawning session — the child dies silently. Detach
+  via PowerShell instead (BelowNormal ≈ nice -n 19):
+
+```powershell
+$p = Start-Process node 'script/sweep.mjs --config=config/full-sweep.json' `
+  -WorkingDirectory <repo> -WindowStyle Hidden `
+  -RedirectStandardOutput logs\sweep.log -RedirectStandardError logs\sweep.err -PassThru
+$p.PriorityClass = 'BelowNormal'
+Write-Output $p.Id > logs/sweep.pid
+```
+
+## Generated artifacts — never commit
+
+`seeds/`, `knot_dictionary.json`, `docs/public/audio/` (Kokoro TTS
+mp3s + sync maps), and all wasm outputs are generated, not source.
+The deploy workflow regenerates audio per deploy and ships it via
+`dist/` — it is NOT committed back (kept out to stop repo bloat).
+To hear narration locally, run `npm run generate-audio` (needs the
+Kokoro pipeline); without it the Listen chip appears but can't play.
+
 ## Docs build
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`

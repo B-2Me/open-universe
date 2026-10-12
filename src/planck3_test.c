@@ -16,8 +16,9 @@
 #include <string.h>
 #include <time.h>
 
-void planck3_init(void);
-void planck3_set_mode(int);
+int planck3_init_dims(int, int, int);
+int planck3_set_mode(int);
+int planck3_chunk_size(void);
 void planck3_set_node(int32_t, int, int, int, int, int);
 void planck3_prepare(void);
 void planck3_collect(void);
@@ -29,7 +30,7 @@ double planck3_deadlocked(void);
 
 typedef struct { uint8_t q, s; uint16_t h; uint8_t b, tn; } Rec;
 
-static Rec *load_state(const char *path, int32_t *n_out) {
+static Rec *load_state(const char *path, int32_t *n_out, int *dims_out) {
     FILE *f = fopen(path, "rb");
     if (!f) { fprintf(stderr, "open %s failed\n", path); exit(1); }
     uint8_t head[16];
@@ -37,6 +38,7 @@ static Rec *load_state(const char *path, int32_t *n_out) {
         fprintf(stderr, "%s: bad magic\n", path); exit(1);
     }
     uint32_t w = *(uint32_t *)(head + 4), h = *(uint32_t *)(head + 8), d = *(uint32_t *)(head + 12);
+    if (dims_out) { dims_out[0] = (int)w; dims_out[1] = (int)h; dims_out[2] = (int)d; }
     int32_t n = (int32_t)(w * h * d);
     uint8_t *q = malloc(n), *s = malloc(n), *b = malloc(n), *tn = malloc(n);
     uint16_t *hh = malloc(n * 2);
@@ -65,14 +67,19 @@ static double now_s(void) { return (double)clock() / CLOCKS_PER_SEC; }
 int main(int argc, char **argv) {
     if (argc < 3) { fprintf(stderr, "usage: %s state.bin ticks [ref.bin]\n", argv[0]); return 1; }
     int32_t n;
-    Rec *init = load_state(argv[1], &n);
+    int dims[3] = {0, 0, 0}, rdims[3] = {0, 0, 0};
+    Rec *init = load_state(argv[1], &n, dims);
     int ticks = atoi(argv[2]);
     Rec *ref = NULL;
     int32_t rn = 0;
-    if (argc > 3) ref = load_state(argv[3], &rn);
-    if (n != planck3_node_count() || (ref && rn != n)) { fprintf(stderr, "dim mismatch\n"); return 1; }
-
-    planck3_init();
+    if (argc > 3) ref = load_state(argv[3], &rn, rdims);
+    if (planck3_init_dims(dims[0], dims[1], dims[2]) != 0) { fprintf(stderr, "init_dims failed\n"); return 1; }
+    if (n != planck3_node_count() || (ref && (rn != n || memcmp(dims, rdims, sizeof dims)))) {
+        fprintf(stderr, "dim mismatch\n"); return 1;
+    }
+    if (planck3_chunk_size() == 0)
+        printf("note: dims %dx%dx%d not chunk-divisible — chunked engines skipped\n",
+               dims[0], dims[1], dims[2]);
 
     // --- flat run ---
     planck3_set_mode(0);
@@ -84,48 +91,49 @@ int main(int argc, char **argv) {
     printf("flat   %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
            ticks, planck3_total_quanta(), planck3_deadlocked(), flat_s);
 
-    // --- chunked run ---
-    planck3_set_mode(1);
-    inject(init, n); planck3_prepare();
-    t0 = now_s();
-    for (int t = 0; t < ticks; t++) planck3_tick();
-    double chunk_s = now_s() - t0;
-    planck3_collect();
-    Rec *chunk = snapshot(n);
-    printf("chunk  %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
-           ticks, planck3_total_quanta(), planck3_deadlocked(), chunk_s);
+    int dif = -1, hdif = 0, hmax = 0, odif = -1;
+    double chunk_s = 0, ord_s = 0;
+    if (planck3_chunk_size() > 0) {
+        // --- chunked run ---
+        planck3_set_mode(1);
+        inject(init, n); planck3_prepare();
+        t0 = now_s();
+        for (int t = 0; t < ticks; t++) planck3_tick();
+        chunk_s = now_s() - t0;
+        planck3_collect();
+        Rec *chunk = snapshot(n);
+        printf("chunk  %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
+               ticks, planck3_total_quanta(), planck3_deadlocked(), chunk_s);
 
-    // --- ordered-chunk run (exact in all regimes) ---
-    planck3_set_mode(2);
-    inject(init, n); planck3_prepare();
-    t0 = now_s();
-    for (int t = 0; t < ticks; t++) planck3_tick();
-    double ord_s = now_s() - t0;
-    planck3_collect();
-    Rec *ord = snapshot(n);
-    printf("ordchk %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
-           ticks, planck3_total_quanta(), planck3_deadlocked(), ord_s);
+        // --- ordered-chunk run (exact in all regimes) ---
+        planck3_set_mode(2);
+        inject(init, n); planck3_prepare();
+        t0 = now_s();
+        for (int t = 0; t < ticks; t++) planck3_tick();
+        ord_s = now_s() - t0;
+        planck3_collect();
+        Rec *ord = snapshot(n);
+        printf("ordchk %d ticks: totQ=%.0f dead=%.0f (%.3fs)\n",
+               ticks, planck3_total_quanta(), planck3_deadlocked(), ord_s);
 
-    // --- chunked vs flat: mass-channel fields must be byte-identical ---
-    int dif = 0, hdif = 0, hmax = 0;
-    for (int32_t i = 0; i < n; i++) {
-        if (flat[i].q != chunk[i].q || flat[i].s != chunk[i].s ||
-            flat[i].b != chunk[i].b || flat[i].tn != chunk[i].tn) {
-            if (dif < 10) printf("  DIFF cell %d: flat(%d,%d,%d,%d) chunk(%d,%d,%d,%d)\n",
-                i, flat[i].q, flat[i].s, flat[i].b, flat[i].tn,
-                chunk[i].q, chunk[i].s, chunk[i].b, chunk[i].tn);
-            dif++;
+        // --- chunked vs flat: mass channels must be byte-identical ---
+        dif = odif = 0;
+        for (int32_t i = 0; i < n; i++) {
+            if (flat[i].q != chunk[i].q || flat[i].s != chunk[i].s ||
+                flat[i].b != chunk[i].b || flat[i].tn != chunk[i].tn) {
+                if (dif < 10) printf("  DIFF cell %d: flat(%d,%d,%d,%d) chunk(%d,%d,%d,%d)\n",
+                    i, flat[i].q, flat[i].s, flat[i].b, flat[i].tn,
+                    chunk[i].q, chunk[i].s, chunk[i].b, chunk[i].tn);
+                dif++;
+            }
+            int dh = abs((int)flat[i].h - (int)chunk[i].h);
+            if (dh) { hdif++; if (dh > hmax) hmax = dh; }
+            if (flat[i].q != ord[i].q || flat[i].s != ord[i].s ||
+                flat[i].b != ord[i].b || flat[i].tn != ord[i].tn) odif++;
         }
-        int dh = abs((int)flat[i].h - (int)chunk[i].h);
-        if (dh) { hdif++; if (dh > hmax) hmax = dh; }
+        printf("chunk-vs-flat: %d mass-channel diffs, %d heat diffs (max %d)\n", dif, hdif, hmax);
+        printf("ordchk-vs-flat: %d mass-channel diffs\n", odif);
     }
-    int odif = 0;
-    for (int32_t i = 0; i < n; i++) {
-        if (flat[i].q != ord[i].q || flat[i].s != ord[i].s ||
-            flat[i].b != ord[i].b || flat[i].tn != ord[i].tn) odif++;
-    }
-    printf("chunk-vs-flat: %d mass-channel diffs, %d heat diffs (max %d)\n", dif, hdif, hmax);
-    printf("ordchk-vs-flat: %d mass-channel diffs\n", odif);
 
     // --- vs JS final-state reference ---
     if (ref) {
@@ -144,7 +152,10 @@ int main(int argc, char **argv) {
         printf("flat-vs-js: %d mass-channel diffs, heat max diff %d\n", rdif, rhmax);
     }
 
-    printf("perf: flat %.3fs | halo %.3fs (%.2fx) | ordered %.3fs (%.2fx)\n",
-           flat_s, chunk_s, flat_s / chunk_s, ord_s, flat_s / ord_s);
+    if (dif >= 0)
+        printf("perf: flat %.3fs | halo %.3fs (%.2fx) | ordered %.3fs (%.2fx)\n",
+               flat_s, chunk_s, flat_s / chunk_s, ord_s, flat_s / ord_s);
+    else
+        printf("perf: flat %.3fs (chunk modes unavailable on this grid)\n", flat_s);
     return 0;
 }
