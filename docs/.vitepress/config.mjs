@@ -9,7 +9,6 @@ const readingOrder = [
   { text: 'Interface', link: '/interface' },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
-  { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
   { text: 'Intent', link: '/intent' }
 ]
@@ -29,11 +28,13 @@ const navBar = readingOrder.flatMap(item => {
     return [{
       text: 'Theory',
       items: [
+        { text: 'Overview', link: '/theory' },
+        { text: 'Paradoxes · the anomalies', link: '/paradox' },
         { text: 'Source · the substrate model', link: '/source' },
         { text: 'Math · the formalism', link: '/math' }
       ]
     }]
-  if (item.link === '/math') return []
+  if (item.link === '/math' || item.link === '/paradox') return []
   if (item.link === '/interference')
     return [{
       text: 'Interference',
@@ -48,6 +49,19 @@ const navBar = readingOrder.flatMap(item => {
     }]
   return [item]
 })
+
+// Shared section sidebar for the Theory pages.
+const theorySidebar = [
+  {
+    text: 'Theory',
+    items: [
+      { text: 'Overview', link: '/theory' },
+      { text: 'Paradoxes · the anomalies', link: '/paradox' },
+      { text: 'Source · the substrate model', link: '/source' },
+      { text: 'Math · the formalism', link: '/math' }
+    ]
+  }
+]
 
 export default defineConfig({
   title: "The Open Universe",
@@ -95,8 +109,13 @@ export default defineConfig({
   themeConfig: {
     nav: navBar,
 
-    // Section sidebar — shows on /interference and its sub-pages.
+    // Section sidebars — the Theory arc (Overview→Paradoxes→Source→Math)
+    // and the Interference section (sub-pages + instruments).
     sidebar: {
+      '/theory': theorySidebar,
+      '/paradox': theorySidebar,
+      '/source': theorySidebar,
+      '/math': theorySidebar,
       '/interference': [
         {
           text: 'Interference',
