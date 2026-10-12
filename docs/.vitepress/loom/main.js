@@ -183,14 +183,40 @@ export async function initLoomSimulator(root, opts = {}) {
   await loadState(stateUrl);
   if (hud) hud.textContent = 'state loaded';
 
-  // Inject an 8^3 saturated knot centred on a lattice cell.
+  // Inject a current loop centred on a lattice cell — NOT a saturated
+  // blob. A q=255 block deadlocks instantly: every cell's forward port
+  // faces a saturated neighbour (occupancy > DEADLOCK=200) so nothing
+  // can ever flow — the "knot" reads as frozen mass because it IS. And
+  // heat=3000 blew the metabolism palette's scene normalization, so the
+  // ambient field blacked out at the same time. This ring instead sets
+  // tangential spin registers at q=110 (100% receivable — below the
+  // deadlock threshold even when the whole packet arrives), so the mass
+  // circulates around the ring and self-heats: a living vortex seed.
+  const EQ_PORTS = [[256, 0], [128, 222], [-128, 222], [-256, 0], [-128, -222], [128, -222]];
+  const tangSpin = (dx, dy) => {
+    const l = Math.hypot(dx, dy) || 1;
+    const tx = -dy / l, ty = dx / l;            // CCW tangent
+    let best = 1, bd = -Infinity;
+    for (let i = 0; i < 6; i++) {
+      const d = EQ_PORTS[i][0] * tx + EQ_PORTS[i][1] * ty;
+      if (d > bd) { bd = d; best = i + 1; }
+    }
+    return best;
+  };
   const injectKnot = (lx = 44, ly = 44, lz = 20) => {
-    for (let z = lz - 4; z < lz + 4; z++)
-      for (let y = ly - 4; y < ly + 4; y++)
-        for (let x = lx - 4; x < lx + 4; x++) {
-          if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
-          wasm._planck3_set_node((z * H3 + y) * W3 + x, 255, 1, 3000, 0, 0);
-        }
+    for (const r of [5, 4]) {                    // two concentric rings
+      const steps = Math.ceil(2 * Math.PI * r) + 1;
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * 2 * Math.PI;
+        const x = Math.round(lx + r * Math.cos(a));
+        const y = Math.round(ly + r * Math.sin(a));
+        if (x < 0 || x >= W3 || y < 0 || y >= H3 || lz < 0 || lz >= D3) continue;
+        wasm._planck3_set_node(
+          (lz * H3 + y) * W3 + x,
+          110, tangSpin(x - lx, y - ly), 200, 0, 0,
+        );
+      }
+    }
   };
 
   // Camera ray through a canvas pixel -> lattice cell on the current
