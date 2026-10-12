@@ -9,12 +9,14 @@ const readingOrder = [
   { text: 'Interface', link: '/interface' },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
+  { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
   { text: 'Intent', link: '/intent' }
 ]
 
 // Interactive instruments — they live under Interference, not beside it.
 const instrumentItems = [
+  { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
   { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
   { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
 ]
@@ -99,6 +101,7 @@ export default defineConfig({
         {
           text: 'Instruments',
           items: [
+            { text: "Langevin's Wake", link: '/wake-demo' },
             { text: "Hopf's Loom", link: '/loom-demo' },
             { text: 'Hopfion Zoo', link: '/zoo' }
           ]
