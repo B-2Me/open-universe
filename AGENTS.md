@@ -54,6 +54,15 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   prior entries. `--only=a,b` curates a subset; `--config=x.json`
   supplies defaults (CLI wins). Sweeps run in plain Node — no
   container needed, so a "restart" is just re-running the command.
+- `script/boost.mjs` — kinematic interference basin: couples fluxes
+  (quanta/tension/spin/heat) through the 24 axis+polarity vectors
+  mapped to boundary walls, driven by constant/sine/ADSR envelopes.
+  Telemetry = skeleton centroid (surviving painted cells inside the
+  live component — immune to wall-flood and accretion bias), rolling
+  v10 velocity, knot mass retain, painted coherence. Run:
+  `node script/boost.mjs --config=config/boost-pilot.json`.
+  Results land in `logs/boost-<seed>-v<vector>.json`; heartbeat in
+  `logs/boost-status.json` (separate from the sweep's status.json).
 - `script/status.mjs` — read-only dashboard. Prints progress bar,
   stable/unraveled yield, latest stable discovery, per-candidate
   timing + ETA from `logs/status.json` (heartbeat written per tick
