@@ -33,8 +33,8 @@ const LIGHT = (() => {
 // need distinct palettes or they read as the same bland blue knot.
 const buildAuroraLut = () => {
   const lut = vtkColorTransferFunction.newInstance();
-  lut.addRGBPoint(0, 0.02, 0.10, 0.30);
-  lut.addRGBPoint(60, 0.05, 0.35, 0.85);
+  lut.addRGBPoint(0, 0.04, 0.24, 0.42);   // deep teal — lifted off the void
+  lut.addRGBPoint(60, 0.02, 0.50, 0.85);
   lut.addRGBPoint(140, 0.15, 0.90, 1.0);
   lut.addRGBPoint(200, 0.70, 1.0, 0.90);
   lut.addRGBPoint(255, 1.0, 1.0, 1.0);
@@ -42,11 +42,11 @@ const buildAuroraLut = () => {
 };
 const buildEmberLut = () => {
   const lut = vtkColorTransferFunction.newInstance();
-  lut.addRGBPoint(0, 0.10, 0.02, 0.04);
-  lut.addRGBPoint(60, 0.45, 0.08, 0.06);
-  lut.addRGBPoint(140, 0.95, 0.35, 0.08);
-  lut.addRGBPoint(200, 1.0, 0.72, 0.25);
-  lut.addRGBPoint(255, 1.0, 0.96, 0.82);
+  lut.addRGBPoint(0, 0.10, 0.03, 0.05);
+  lut.addRGBPoint(60, 0.38, 0.09, 0.07);
+  lut.addRGBPoint(140, 0.78, 0.30, 0.10);
+  lut.addRGBPoint(200, 0.88, 0.58, 0.28);
+  lut.addRGBPoint(255, 0.95, 0.85, 0.62);  // warm cream, not blown-out white
   return lut;
 };
 
@@ -96,6 +96,9 @@ const parseBin = (buf) => {
     const lam = Math.max(0, (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) / nl);
     tension[i] = Math.min(255, 255 * (0.15 + 0.55 * Math.sqrt((tension[i] - tMin) / tR) + 0.30 * lam));
     quanta[i] = Math.min(255, 255 * (0.15 + 0.55 * (Math.log1p(quanta[i]) / lq) + 0.30 * lam));
+    // Accreted flood mass sits behind the skeleton in spin mode; keep it
+    // recessed in scalar modes too so the painted structure dominates.
+    if (!painted[i]) { tension[i] *= 0.22; quanta[i] *= 0.22; }
   }
   const pd = vtkPolyData.newInstance();
   pd.getPoints().setData(pts, 3);
