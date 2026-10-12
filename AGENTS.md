@@ -54,6 +54,22 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   prior entries. `--only=a,b` curates a subset; `--config=x.json`
   supplies defaults (CLI wins). Sweeps run in plain Node — no
   container needed, so a "restart" is just re-running the command.
+- `script/status.mjs` — read-only dashboard. Prints progress bar,
+  stable/unraveled yield, latest stable discovery, per-candidate
+  timing + ETA from `logs/status.json` (heartbeat written per tick
+  by sweep.mjs; stale >2min ⇒ check the process). Usage:
+  `node script/status.mjs --config=config/full-sweep.json`.
+- Background launch on Windows: `nohup … &` under Git Bash does NOT
+  survive the spawning session — the child dies silently. Detach
+  via PowerShell instead (BelowNormal ≈ nice -n 19):
+
+```powershell
+$p = Start-Process node 'script/sweep.mjs --config=config/full-sweep.json' `
+  -WorkingDirectory <repo> -WindowStyle Hidden `
+  -RedirectStandardOutput logs\sweep.log -RedirectStandardError logs\sweep.err -PassThru
+$p.PriorityClass = 'BelowNormal'
+Write-Output $p.Id > logs/sweep.pid
+```
 
 ## Generated artifacts — never commit
 

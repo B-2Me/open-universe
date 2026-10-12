@@ -1,0 +1,10 @@
+{
+  "seeds": "seeds",
+  "only": "hopfion_20_7,hopfion_25_9,hopfion_30_9,hopfion_25_11",
+  "ticks": 5,
+  "sample": 5,
+  "diss": 15,
+  "limit": 50000,
+  "mode": 0,
+  "out": "knot_dictionary.json"
+}

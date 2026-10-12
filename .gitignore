@@ -19,3 +19,5 @@ knot_dictionary.json.tmp
 # Generated TTS narration + sync maps (CI regenerates per deploy —
 # same category as the wasm artifacts, not source)
 docs/public/audio/
+seeds256/
+logs/

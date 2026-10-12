@@ -32,7 +32,7 @@
  * crashed/killed run picks up where it left off, not from zero.
  */
 import { createRequire } from 'node:module';
-import { readFileSync, readdirSync, writeFileSync, renameSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, renameSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -138,6 +138,16 @@ const flush = () => {  // atomic rewrite — safe against a kill mid-candidate
   writeFileSync(OUT + '.tmp', JSON.stringify(dict, null, 2));
   renameSync(OUT + '.tmp', OUT);
 };
+// Live heartbeat for script/status.mjs — rewritten every telemetry
+// window so an observer sees mid-candidate progress, not just
+// completed entries.
+const LOGDIR = resolve(ROOT, 'logs');
+mkdirSync(LOGDIR, { recursive: true });
+const sweepStart = Date.now();
+const hb = (extra) => writeFileSync(join(LOGDIR, 'status.json'), JSON.stringify({
+  ts: Date.now(), started: sweepStart, config: { ticks: TICKS, sample: SAMPLE, diss: DISS, limit: LIMIT, mode: MODE },
+  total: files.length, completed: done.size, ...extra,
+}, null, 2));
 console.log(`sweep: ${files.length} candidates × ${TICKS} ticks · diss=${DISS} limit=${LIMIT} mode=${MODE}`);
 for (const f of files) {
   const seed = JSON.parse(readFileSync(f, 'utf8'));
@@ -153,6 +163,7 @@ for (const f of files) {
   wasm._planck3_set_mode(MODE);
   wasm._planck3_reset_stats();
   // bulk-load the painted state through the P3ST channel
+  hb({ candidate: name, phase: 'loading', t: 0 });
   const blob = packState(w, h, d, seed.cells, seed.q, seed.heat);
   const loadPtr = wasm._planck3_load_pointer();   // malloc may grow memory — wrap AFTER
   heap8().set(blob, loadPtr);
@@ -161,14 +172,19 @@ for (const f of files) {
 
   const q0 = wasm._planck3_total_quanta();
   const live0 = wasm._planck3_live_cells();
+  hb({ candidate: name, phase: 'start', t: 0 });
   const series = [];
   let stableTail = true;
   for (let t = SAMPLE; t <= TICKS; t += SAMPLE) {
-    for (let k = 0; k < SAMPLE; k++) wasm._planck3_tick();
+    for (let k = 0; k < SAMPLE; k++) {
+      wasm._planck3_tick();
+      hb({ candidate: name, phase: 'ticking', t: t - SAMPLE + k + 1 });
+    }
     if (MODE !== 0) wasm._planck3_collect();
     const q = wasm._planck3_total_quanta();
     const dead = wasm._planck3_deadlocked();
     series.push({ t, q: Math.round(q), dead });
+    hb({ candidate: name, phase: 'ticking', t, q: Math.round(q), dead });
     if (t > TICKS * 0.5 && series.length >= 2) {
       const prev = series[series.length - 2].q;
       if (Math.abs(q - prev) / Math.max(1, prev) > 0.05) stableTail = false;
@@ -196,6 +212,7 @@ for (const f of files) {
   dict.entries.push(rec);
   done.add(s);
   flush(); // checkpoint — the dictionary survives a kill right now
+  hb({ candidate: name, phase: 'done', verdict });
   console.log(`${verdict === 'stable' ? 'PASS' : 'FAIL'} ${rec.name}: mass ${rec.mass0}→${rec.massEnd} ` +
     `(${retain.toFixed(2)}) live ${live0}→${geo.live} r=(${geo.rxy},${geo.rz}) ` +
     `dead=${dead} spray=${rec.sprayEvents}/${Math.round(spray)} (${rec.ms}ms)`);
