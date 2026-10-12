@@ -7,6 +7,10 @@
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(242, 239, 233, 0.75);
   --vp-c-bg-soft: rgba(232, 228, 219, 0.85);
+  /* Elevated surfaces (nav flyouts, menus) — must be opaque: --vp-c-bg is
+     transparent so the page art shows through, which leaves dropdown text
+     unreadable. */
+  --vp-c-bg-elv: #f2efe9;
 
   --vp-nav-bg-color: rgba(252, 251, 249, 0.88);
   --vp-local-nav-bg-color: rgba(252, 251, 249, 0.88);
@@ -22,6 +26,8 @@ html.dark {
   --vp-c-bg: transparent; 
   --vp-c-bg-alt: rgba(22, 28, 22, 0.75);
   --vp-c-bg-soft: rgba(26, 34, 26, 0.85);
+  /* Elevated surfaces (nav flyouts, menus) — opaque dark panel. */
+  --vp-c-bg-elv: #161d16;
 
   --vp-nav-bg-color: rgba(15, 20, 15, 0.88);
   --vp-local-nav-bg-color: rgba(15, 20, 15, 0.88);
