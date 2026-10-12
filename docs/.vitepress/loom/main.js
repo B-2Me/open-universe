@@ -658,7 +658,10 @@ export async function initLoomSimulator(root, opts = {}) {
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
-      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
+      // T̄ = mean heat over occupied cells; ⌈⌉ = smoothed palette ceiling.
+      // A flash is physical when T̄ spikes; if only ⌈⌉ moves it's the
+      // normalization adapting.
+      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()} · T̄${wasm._planck3_mean_heat().toFixed(0)} ⌈${wasm._planck3_rg_hmax()}⌉`;
     }
   };
   raf = requestAnimationFrame(frame);

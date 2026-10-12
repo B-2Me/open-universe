@@ -727,6 +727,16 @@ EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
 }
 
 EMSCRIPTEN_KEEPALIVE void planck3_set_dissipation(int rate) { g_dissipation = rate; }
+// Telemetry for the metabolism view: expose the smoothed palette bounds
+// and the mean live-occupancy heat so the HUD can show whether a flash
+// is physical (mean spikes) or instrumental (only the cap moved).
+EMSCRIPTEN_KEEPALIVE int planck3_rg_hmin(void) { return agc_lo; }
+EMSCRIPTEN_KEEPALIVE int planck3_rg_hmax(void) { return agc_hi; }
+EMSCRIPTEN_KEEPALIVE double planck3_mean_heat(void) {
+    double s = 0; int n = 0;
+    for (int32_t i = 0; i < N3; i++) if (g_rd[i].quanta > 0) { s += g_rd[i].heat; n++; }
+    return n ? s / n : 0;
+}
 EMSCRIPTEN_KEEPALIVE void planck3_set_thermal_limit(int limit) { g_thermal_limit = limit; }
 
 // Snapshot/restore — the Loom analog of Wake's undo: freeze a frame,
