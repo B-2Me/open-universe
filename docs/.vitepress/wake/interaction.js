@@ -212,7 +212,9 @@ export class InteractionManager {
                 e.clientY < rect.top || e.clientY > rect.bottom) return;
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            this.zoomAtPoint(e.clientX, e.clientY, this.zoom + delta);
+            // Anchor at the canvas center, not the cursor — the field
+            // stays put under zoom regardless of where the pointer rests.
+            this.zoomAtPoint(rect.left + rect.width / 2, rect.top + rect.height / 2, this.zoom + delta);
             this.constrainView();
         }, { passive: false, signal: sig });
 

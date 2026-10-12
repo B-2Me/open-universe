@@ -9,13 +9,9 @@ import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
 import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
 import vtkAxesActor from '@kitware/vtk.js/Rendering/Core/AxesActor';
-import vtkMouseCameraTrackballRotateManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballRotateManipulator';
-import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
-import vtkMouseCameraTrackballZoomToMouseManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator';
-import vtkGestureCameraManipulator from '@kitware/vtk.js/Interaction/Manipulators/GestureCameraManipulator';
+import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 import vtkInteractorStyleManipulator from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
 import vtkPlane from '@kitware/vtk.js/Common/DataModel/Plane';
-import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 
 // Spin-class palette — the same visual language as Hopf's Loom:
 // equatorial (toroidal) warm gold, zenith cyan, nadir violet, dead slate.
@@ -117,17 +113,15 @@ export function initZoo(host, base = '/') {
   renderer.addActor(halo);
   renderer.addActor(actor);
 
-  // --- controls: rotate + zoom only. Pan is removed so the knot can
-  // never be lost off-screen; distance is clamped per-frame to the
-  // model's bounds so you can't zoom into empty space either.
+  // --- controls: hand-rolled orbit, same model as Hopf's Loom. All
+  // camera motion derives from an explicit { az, el, dist } state driven
+  // by pointer *deltas* — every drag feels like a grab at the viewport
+  // center. vtk's trackball manipulators project the cursor onto a
+  // virtual sphere, so edge drags pivoted differently than center drags
+  // and zoom-to-mouse let the knot drift off-axis. Empty manipulator
+  // style = vtk's default trackball is disabled; the camera is ours.
   const interactor = renderWindow.getInteractor();
-  const istyle = vtkInteractorStyleManipulator.newInstance();
-  istyle.addMouseManipulator(vtkMouseCameraTrackballRotateManipulator.newInstance({ button: 1 }));
-  istyle.addMouseManipulator(vtkMouseCameraTrackballZoomManipulator.newInstance({ button: 3 }));
-  istyle.addMouseManipulator(vtkMouseCameraTrackballZoomToMouseManipulator.newInstance({ scrollEnabled: true }));
-  const gesture = vtkGestureCameraManipulator.newInstance({ rotateEnabled: true, pinchEnabled: true, panEnabled: false });
-  (istyle.addGestureManipulator || istyle.addMouseManipulator).call(istyle, gesture);
-  interactor.setInteractorStyle(istyle);
+  interactor.setInteractorStyle(vtkInteractorStyleManipulator.newInstance());
 
   // Orientation gizmo — ParaView-style axes chip, click to snap views.
   let gizmo = null;
@@ -145,34 +139,40 @@ export function initZoo(host, base = '/') {
     if (gizmo.setInteractive) gizmo.setInteractive(true);
   } catch { /* gizmo is cosmetic — never let it sink the viewer */ }
 
-  // Knot framing state — focal point pinned to the model centroid, view-up
-  // locked to +Z (the torus axis). Azimuth orbits then hold a fixed
-  // elevation: the flat torus can never degenerate to an edge-on sliver
-  // mid-rotation.
+  // Orbit state — the single source of truth for the camera. `applyOrbit`
+  // rebuilds position/focal every call, so the camera can never drift:
+  // no pan, no focal displacement, distance always inside the envelope.
   let focal = [0, 0, 0], diag = 100, bounds = null, currentPd = null;
+  const orbit = { az: 0.55, el: 0.42, dist: 100 };
   let elTarget = 0.42; // elevation the turntable eases back toward
-  const placeCam = (az, el, d) => {
+  const clampD = (v) => Math.min(diag * 3.5, Math.max(diag * 0.2, v));
+  const applyOrbit = () => {
+    orbit.dist = clampD(orbit.dist);
     const cam = renderer.getActiveCamera();
     cam.setViewUp(0, 0, 1);
     cam.setPosition(
-      focal[0] + d * Math.cos(el) * Math.cos(az),
-      focal[1] + d * Math.cos(el) * Math.sin(az),
-      focal[2] + d * Math.sin(el),
+      focal[0] + orbit.dist * Math.cos(orbit.el) * Math.cos(orbit.az),
+      focal[1] + orbit.dist * Math.cos(orbit.el) * Math.sin(orbit.az),
+      focal[2] + orbit.dist * Math.sin(orbit.el),
     );
     cam.setFocalPoint(...focal);
-    elTarget = el;
     renderer.resetCameraClippingRange();
     renderWindow.render();
   };
-  const resetView = () => placeCam(0.55, 0.42, diag * 1.55);
 
-  // Quick-view presets — the Loom's "cross-section" angles.
+  // Quick-view presets — the Loom's "cross-section" angles. The selected
+  // preset is remembered: reset (double-click/tap, ⤾) returns to it
+  // rather than always forcing the default ¾ view.
   const PRESETS = { orbit: [0.55, 0.42], top: [0.55, 1.45], side: [0.55, 0.06], iso: [0.78, 0.62] };
+  let activePreset = 'orbit';
   const setPreset = (name) => {
     const p = PRESETS[name];
     if (!p) return;
-    placeCam(p[0], p[1], renderer.getActiveCamera().getDistance() || diag * 1.55);
+    activePreset = name;
+    orbit.az = p[0]; orbit.el = p[1]; elTarget = p[1];
+    applyOrbit();
   };
+  const resetView = () => setPreset(activePreset);
 
   // Scalar color modes — 'spin' uses the baked RGBA classes; tension and
   // quanta go through the aurora LUT.
@@ -207,58 +207,70 @@ export function initZoo(host, base = '/') {
   // Slow Z-axis turntable; resumes ~1.2s after the user stops dragging.
   let lastInteract = -1e4, disposed = false;
   const touch = () => { lastInteract = performance.now(); };
-  const dragTouch = (e) => { if (e.buttons) lastInteract = performance.now(); };
-  canvasHost.addEventListener('pointerdown', touch);
-  canvasHost.addEventListener('pointermove', dragTouch);
-  window.addEventListener('pointerup', touch);
-  canvasHost.addEventListener('dblclick', (e) => { e.preventDefault(); resetView(); });
-  let lastTap = 0; // double-tap reset for touch
-  canvasHost.addEventListener('pointerdown', () => {
-    const t = performance.now();
+
+  // Orbit input — deltas only, never cursor position:
+  //   left/primary drag  → azimuth + elevation
+  //   right drag         → vertical = zoom
+  //   wheel              → zoom (center-anchored by construction)
+  //   two-finger pinch   → zoom
+  const ptrs = new Map();
+  let lastPinch = 0, lastTap = 0;
+  canvasHost.style.touchAction = 'none';
+  canvasHost.addEventListener('contextmenu', (e) => e.preventDefault());
+  // iOS Safari fires gesture* events for pinch regardless of touch-action.
+  for (const g of ['gesturestart', 'gesturechange', 'gestureend'])
+    canvasHost.addEventListener(g, (e) => e.preventDefault());
+  canvasHost.addEventListener('pointerdown', (e) => {
+    touch();
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, btn: e.button });
+    canvasHost.setPointerCapture(e.pointerId);
+    const t = performance.now(); // double-tap → reset to selected preset
     if (t - lastTap < 330) resetView();
     lastTap = t;
   });
+  canvasHost.addEventListener('pointermove', (e) => {
+    const prev = ptrs.get(e.pointerId);
+    if (!prev) return;
+    touch();
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, btn: prev.btn });
+    const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+    if (ptrs.size === 1) {
+      if (prev.btn === 2) orbit.dist *= Math.exp(dy * 0.006);
+      else {
+        orbit.az += dx * 0.006;
+        orbit.el = Math.max(-1.5, Math.min(1.5, orbit.el + dy * 0.006));
+      }
+      applyOrbit();
+    } else if (ptrs.size === 2) {
+      const [a, b] = [...ptrs.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (lastPinch) orbit.dist *= lastPinch / d;
+      lastPinch = d;
+      applyOrbit();
+    }
+  });
+  const endPtr = (e) => { ptrs.delete(e.pointerId); lastPinch = 0; touch(); };
+  canvasHost.addEventListener('pointerup', endPtr);
+  canvasHost.addEventListener('pointercancel', endPtr);
+  canvasHost.addEventListener('wheel', (e) => {
+    e.preventDefault(); touch();
+    orbit.dist *= 1 + e.deltaY * 0.001;
+    applyOrbit();
+  }, { passive: false });
+  canvasHost.addEventListener('dblclick', (e) => { e.preventDefault(); resetView(); });
   let autoRotate = true;
   const spin = () => {
     if (disposed) return;
-    const cam = renderer.getActiveCamera();
-    // Keep the focal point and distance inside the knot's envelope —
-    // belt-and-suspenders on top of the removed pan manipulator.
-    cam.setFocalPoint(...focal);
-    // Clamp by scaling camera position along the focal ray — NOT
-    // cam.setDistance(), which in vtk.js moves the *focal point* and
-    // would fight the pin above every frame.
-    const cp = cam.getPosition();
-    const rdx = cp[0] - focal[0], rdy = cp[1] - focal[1], rdz = cp[2] - focal[2];
-    const rd = Math.hypot(rdx, rdy, rdz) || 1;
-    const minD = diag * 0.2, maxD = diag * 3.5;
-    if (rd < minD || rd > maxD) {
-      const nd = Math.min(maxD, Math.max(minD, rd)) / rd;
-      cam.setPosition(focal[0] + rdx * nd, focal[1] + rdy * nd, focal[2] + rdz * nd);
-      renderer.resetCameraClippingRange();
-    }
+    // The camera is rebuilt from orbit state every frame — no drift is
+    // possible: no pan, focal always pinned, distance always clamped.
     if (autoRotate && performance.now() - lastInteract > 1200) {
-      cam.azimuth(0.12);
-      // Ease elevation back toward the product angle — a manual drag to
-      // grazing incidence shouldn't leave the turntable orbiting edge-on.
-      const p = cam.getPosition();
-      const dx = p[0] - focal[0], dy = p[1] - focal[1], dz = p[2] - focal[2];
-      const r = Math.hypot(dx, dy), dist = Math.hypot(dx, dy, dz) || 1;
-      const el = Math.atan2(dz, r), target = elTarget;
-      // Rebuild position from spherical coords — never divide by cos(el),
-      // which singularizes near the poles. And near a pole azimuth is
-      // meaningless anyway, so leave the camera alone there.
-      if (r > dist * 0.05 && Math.abs(el - target) > 0.005) {
-        const el2 = el + (target - el) * 0.03;
-        const az = Math.atan2(dy, dx);
-        cam.setPosition(
-          focal[0] + dist * Math.cos(el2) * Math.cos(az),
-          focal[1] + dist * Math.cos(el2) * Math.sin(az),
-          focal[2] + dist * Math.sin(el2),
-        );
-      }
+      orbit.az += 0.0022;
+      // Ease elevation back toward the selected preset's angle so a
+      // manual drag to grazing incidence can't leave the turntable
+      // orbiting the flat torus edge-on.
+      orbit.el += (elTarget - orbit.el) * 0.03;
     }
-    renderWindow.render();
+    applyOrbit();
     requestAnimationFrame(spin);
   };
   requestAnimationFrame(spin);
@@ -278,6 +290,7 @@ export function initZoo(host, base = '/') {
     bounds = b;
     focal = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
     diag = Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4]) || 100;
+    orbit.dist = diag * 1.55;
     resetView();
   };
 
