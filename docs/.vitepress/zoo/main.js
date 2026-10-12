@@ -186,25 +186,47 @@ export function initZoo(host, base = '/') {
   };
 
   // Orbit state — the single source of truth for the camera. `applyOrbit`
-  // rebuilds position/focal every call, so the camera can never drift:
-  // no pan, no focal displacement, distance always inside the envelope.
+  // rebuilds position/focal every call, so the camera can never drift.
+  // `pan` is a bounded world-space offset of the look-at point: real pan
+  // without the knot ever leaving the neighborhood.
   let focal = [0, 0, 0], diag = 100, bounds = null, currentPd = null;
   const orbit = { az: 0.55, el: 0.42, dist: 100 };
+  let pan = [0, 0, 0];
   let elTarget = 0.42; // elevation the turntable eases back toward
   const clampD = (v) => Math.min(diag * 3.5, Math.max(diag * 0.2, v));
+  const clampPan = () => {
+    const pl = Math.hypot(pan[0], pan[1], pan[2]);
+    const maxP = diag * 0.5;
+    if (pl > maxP) for (let i = 0; i < 3; i++) pan[i] *= maxP / pl;
+  };
   const applyOrbit = () => {
     orbit.dist = clampD(orbit.dist);
+    clampPan();
+    const fx = focal[0] + pan[0], fy = focal[1] + pan[1], fz = focal[2] + pan[2];
     const cam = renderer.getActiveCamera();
     cam.setViewUp(0, 0, 1);
     cam.setPosition(
-      focal[0] + orbit.dist * Math.cos(orbit.el) * Math.cos(orbit.az),
-      focal[1] + orbit.dist * Math.cos(orbit.el) * Math.sin(orbit.az),
-      focal[2] + orbit.dist * Math.sin(orbit.el),
+      fx + orbit.dist * Math.cos(orbit.el) * Math.cos(orbit.az),
+      fy + orbit.dist * Math.cos(orbit.el) * Math.sin(orbit.az),
+      fz + orbit.dist * Math.sin(orbit.el),
     );
-    cam.setFocalPoint(...focal);
+    cam.setFocalPoint(fx, fy, fz);
     renderer.resetCameraClippingRange();
     renderWindow.render();
     drawGizmo(orbit, focal);
+  };
+  // Screen-space pan: drag dx,dy translates the look-at point along the
+  // camera's right/up axes so content follows the pointer.
+  const panBy = (dx, dy) => {
+    const s = orbit.dist * 0.0016;
+    const sa = Math.sin(orbit.az), ca = Math.cos(orbit.az);
+    const se = Math.sin(orbit.el), ce = Math.cos(orbit.el);
+    const rx = -sa, ry = ca;                 // camera right (z = 0)
+    const ux = -ca * se, uy = -sa * se, uz = ce; // camera up
+    pan[0] += (dy * ux - dx * rx) * s;
+    pan[1] += (dy * uy - dx * ry) * s;
+    pan[2] += (dy * uz) * s;
+    applyOrbit();
   };
 
   // Quick-view presets — the Loom's "cross-section" angles. CUT swaps the
@@ -219,6 +241,7 @@ export function initZoo(host, base = '/') {
     const p = PRESETS[name];
     if (!p) return;
     activePreset = name;
+    pan = [0, 0, 0];
     orbit.az = p[0]; orbit.el = p[1]; elTarget = p[1];
     for (const m of [mapper, haloMapper]) {
       m.removeAllClippingPlanes();
@@ -254,12 +277,13 @@ export function initZoo(host, base = '/') {
   const touch = () => { lastInteract = performance.now(); };
 
   // Orbit input — deltas only, never cursor position:
-  //   left/primary drag  → azimuth + elevation
-  //   right drag         → vertical = zoom
+  //   left/primary drag  → orbit (azimuth + elevation)
+  //   right/middle drag  → pan (bounded to half the model — the knot
+  //                        can drift off-center but never leave)
   //   wheel              → zoom (center-anchored by construction)
-  //   two-finger pinch   → zoom
+  //   two-finger drag    → pan; pinch → zoom
   const ptrs = new Map();
-  let lastPinch = 0, lastTap = 0;
+  let lastPinch = 0, lastMid = null, lastTap = 0;
   canvasHost.style.touchAction = 'none';
   canvasHost.addEventListener('contextmenu', (e) => e.preventDefault());
   // iOS Safari fires gesture* events for pinch regardless of touch-action.
@@ -280,21 +304,24 @@ export function initZoo(host, base = '/') {
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, btn: prev.btn });
     const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
     if (ptrs.size === 1) {
-      if (prev.btn === 2) orbit.dist *= Math.exp(dy * 0.006);
+      if (prev.btn === 1 || prev.btn === 2) panBy(dx, dy);
       else {
         orbit.az -= dx * 0.006;
         orbit.el = Math.max(-1.5, Math.min(1.5, orbit.el + dy * 0.006));
+        applyOrbit();
       }
-      applyOrbit();
     } else if (ptrs.size === 2) {
       const [a, b] = [...ptrs.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       if (lastPinch) orbit.dist *= lastPinch / d;
       lastPinch = d;
+      const mid = [(a.x + b.x) / 2, (a.y + b.y) / 2];
+      if (lastMid) panBy(mid[0] - lastMid[0], mid[1] - lastMid[1]);
+      lastMid = mid;
       applyOrbit();
     }
   });
-  const endPtr = (e) => { ptrs.delete(e.pointerId); lastPinch = 0; touch(); };
+  const endPtr = (e) => { ptrs.delete(e.pointerId); lastPinch = 0; lastMid = null; touch(); };
   canvasHost.addEventListener('pointerup', endPtr);
   canvasHost.addEventListener('pointercancel', endPtr);
   canvasHost.addEventListener('wheel', (e) => {
