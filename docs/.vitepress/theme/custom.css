@@ -105,6 +105,26 @@ html.dark body {
   text-align: center !important;
 }
 
+/* Dropdown group triggers — same compact type as the links. Min-width
+   instead of fixed: "Interference" is one unbreakable word, so it
+   needs ~95px; "Theory" shrinks back to the shared 72px baseline. */
+.VPNavBarMenuGroup .VPFlyout > .button {
+  min-width: 72px !important;
+  padding: 2px 6px !important;
+  justify-content: center !important;
+}
+.VPNavBarMenuGroup .VPFlyout > .button .text {
+  font-size: 12px !important;
+  line-height: 1.15 !important;
+  white-space: normal !important;
+  text-align: center !important;
+  justify-content: center !important;
+}
+.VPNavBarMenuGroup .VPFlyout > .button .text-icon {
+  font-size: 11px !important;
+  margin-left: 2px !important;
+}
+
 .VPNavBarTitle {
   padding-right: 8px !important;
 }

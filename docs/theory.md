@@ -22,6 +22,10 @@ The conceptual foundation: what the substrate *is*. Entropic gravity, actualizat
 
 The causal mathematics: what happens to the calculus when $\Delta x$ and $\Delta t$ have a hard floor. The continuous derivative dies; routing hops, impedance matrices, saturation thresholds, and bandwidth budgets replace it. Schrödinger, Born, Heisenberg, Feynman — each translated from geometry into network constraints.
 
+## 4. [The Interface](/interface) — the observer
+
+The payoff chapter: who the theory is *for*. A biological body is not a ghost piloting meat — it is the substrate's own recursive interface, a localized locus that forges its connection to the unfolding field. Geometry, on this read, is not the structure of the universe but the sensory compression an interface evolved to survive it — the dashboard, not the machine.
+
 ---
 
 *When you're ready to watch the substrate actually run, the instruments live under [Interference](/interference).*

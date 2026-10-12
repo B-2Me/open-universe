@@ -31,10 +31,11 @@ const navBar = readingOrder.flatMap(item => {
         { text: 'Overview', link: '/theory' },
         { text: 'Paradoxes · the anomalies', link: '/paradox' },
         { text: 'Source · the substrate model', link: '/source' },
-        { text: 'Math · the formalism', link: '/math' }
+        { text: 'Math · the formalism', link: '/math' },
+        { text: 'Interface · the observer', link: '/interface' }
       ]
     }]
-  if (item.link === '/math' || item.link === '/paradox') return []
+  if (item.link === '/math' || item.link === '/paradox' || item.link === '/interface') return []
   if (item.link === '/interference')
     return [{
       text: 'Interference',
@@ -58,7 +59,8 @@ const theorySidebar = [
       { text: 'Overview', link: '/theory' },
       { text: 'Paradoxes · the anomalies', link: '/paradox' },
       { text: 'Source · the substrate model', link: '/source' },
-      { text: 'Math · the formalism', link: '/math' }
+      { text: 'Math · the formalism', link: '/math' },
+      { text: 'Interface · the observer', link: '/interface' }
     ]
   }
 ]
@@ -109,13 +111,15 @@ export default defineConfig({
   themeConfig: {
     nav: navBar,
 
-    // Section sidebars — the Theory arc (Overview→Paradoxes→Source→Math)
-    // and the Interference section (sub-pages + instruments).
+    // Section sidebars — the Theory arc (Overview→Paradoxes→Source→
+    // Math→Interface) and the Interference section (sub-pages +
+    // instruments).
     sidebar: {
       '/theory': theorySidebar,
       '/paradox': theorySidebar,
       '/source': theorySidebar,
       '/math': theorySidebar,
+      '/interface': theorySidebar,
       '/interference': [
         {
           text: 'Interference',
