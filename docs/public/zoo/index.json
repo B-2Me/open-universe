@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-12T15:31:44.858Z",
+  "generated": "2026-10-12T16:27:37.098Z",
   "settle": 8,
   "diss": 15,
   "limit": 50000,
@@ -78,6 +78,22 @@
       "loops": 15,
       "radiusXY": 54.84,
       "radiusZ": 4.22,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_80_8",
+      "file": "hopfion_80_8.bin",
+      "cells": 22189,
+      "mass": 1331340,
+      "R0": 80,
+      "R1": 8,
+      "loops": 12,
+      "radiusXY": 78.68,
+      "radiusZ": 4.02,
       "dims": [
         256,
         256,
