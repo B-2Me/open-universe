@@ -14,7 +14,7 @@ hero:
       link: /loom-demo
     - theme: alt
       text: Visit the Hopfion Zoo
-      link: /zoo
+      link: /hopfion-zoo
 
 features:
   - title: Objective Thermodynamics

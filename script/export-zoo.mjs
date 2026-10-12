@@ -6,10 +6,10 @@
  * planck3.wasm, tick a few times to let ambient mass settle past the
  * painted skeleton, then write TWO artifacts:
  *
- *   logs/vtk/zoo/<name>.vtk        ParaView/provenance (gitignored)
- *   docs/public/zoo/<name>.bin     compact web frame (COMMITTED — see
- *                                  below)
- *   docs/public/zoo/index.json     manifest the Zoo page fetches
+ *   logs/vtk/zoo/<name>.vtk         ParaView/provenance (gitignored)
+ *   docs/public/hopfion/<name>.bin  compact web frame (COMMITTED — see
+ *                                   below)
+ *   docs/public/hopfion/index.json  manifest the Hopfion Zoo page fetches
  *
  * The .bin is generated data we commit on purpose: it cannot be built
  * in CI (needs gitignored seeds256/ + knot_dictionary.json), and it IS
@@ -39,7 +39,7 @@ const arg = (k, d) => {
 
 const DICT = resolve(ROOT, String(arg('dict', 'knot_dictionary.json')));
 const SETTLE = parseInt(arg('settle', '8'));
-const OUT_WEB = resolve(ROOT, 'docs/public/zoo');
+const OUT_WEB = resolve(ROOT, 'docs/public/hopfion');
 const OUT_VTK = resolve(ROOT, 'logs/vtk/zoo');
 const WASM_JS = resolve(ROOT, 'docs/public/wasm/loom/planck3.js');
 
@@ -114,7 +114,7 @@ for (const e of stable) {
 
   writeVtkFrame({
     file: join(OUT_VTK, `${e.name}.vtk`), w, h, d, statePtr, heap8,
-    masks: { a: painted }, tick: SETTLE, title: `zoo ${e.name}`,
+    masks: { a: painted }, tick: SETTLE, title: `hopfion ${e.name}`,
   });
 
   manifest.push({
@@ -140,4 +140,4 @@ writeFileSync(idxPath, JSON.stringify({
   generated: new Date().toISOString(), settle: SETTLE,
   diss: dict.diss, limit: dict.limit, knots: all,
 }, null, 2));
-console.log(`\n${manifest.length} exported · ${all.length} in manifest → docs/public/zoo/`);
+console.log(`\n${manifest.length} exported · ${all.length} in manifest → docs/public/hopfion/`);

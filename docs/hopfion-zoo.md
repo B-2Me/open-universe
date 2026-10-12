@@ -3,9 +3,9 @@ layout: page
 title: The Hopfion Zoo
 ---
 
-<ZooViewer />
+<HopfionViewer />
 
-<div class="zoo-doc vp-doc">
+<div class="hopfion-doc vp-doc">
 
 # The Hopfion Zoo
 

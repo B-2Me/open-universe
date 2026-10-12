@@ -17,7 +17,7 @@ const readingOrder = [
 const instrumentItems = [
   { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
   { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
-  { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
+  { text: 'Hopfion Zoo · dictionary', link: '/hopfion-zoo' }
 ]
 
 // Sections, not pages: Source+Math fold into a Theory dropdown and
@@ -132,7 +132,7 @@ export default defineConfig({
           items: [
             { text: "Langevin's Wake", link: '/wake-demo' },
             { text: "Hopf's Loom", link: '/loom-demo' },
-            { text: 'Hopfion Zoo', link: '/zoo' }
+            { text: 'Hopfion Zoo', link: '/hopfion-zoo' }
           ]
         }
       ]

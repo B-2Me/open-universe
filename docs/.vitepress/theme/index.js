@@ -3,7 +3,7 @@ import './custom.css'
 import StickyAudioPlayer from '../components/StickyAudioPlayer.vue'
 import WakeSimulator from '../components/WakeSimulator.vue'
 import LoomSimulator from '../components/LoomSimulator.vue'
-import ZooViewer from '../components/ZooViewer.vue'
+import HopfionViewer from '../components/HopfionViewer.vue'
 
 export default {
   extends: DefaultTheme,
@@ -11,6 +11,6 @@ export default {
     app.component('StickyAudioPlayer', StickyAudioPlayer);
     app.component('WakeSimulator', WakeSimulator);
     app.component('LoomSimulator', LoomSimulator);
-    app.component('ZooViewer', ZooViewer);
+    app.component('HopfionViewer', HopfionViewer);
   }
 }

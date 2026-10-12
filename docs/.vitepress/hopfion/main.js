@@ -1,5 +1,5 @@
-// Zoo renderer — vtk.js cinematic point-cloud view of dictionary knots.
-// initZoo(host) wires a full-screen vtk render window + auto-rotate and
+// Hopfion renderer — vtk.js cinematic point-cloud view of dictionary knots.
+// initHopfion(host) wires a full-screen vtk render window + auto-rotate and
 // returns { load(entry), dispose() }; the Vue shell drives selection.
 import '@kitware/vtk.js/Rendering/Profiles/Geometry';
 import vtkFullScreenRenderWindow from '@kitware/vtk.js/Rendering/Misc/FullScreenRenderWindow';
@@ -111,7 +111,7 @@ const parseBin = (buf) => {
   return { pd, w, h, d, n };
 };
 
-export function initZoo(host, base = '/') {
+export function initHopfion(host, base = '/') {
   const canvasHost = host.querySelector('[data-canvas]');
   const glwindow = vtkFullScreenRenderWindow.newInstance({
     container: canvasHost,
@@ -353,7 +353,7 @@ export function initZoo(host, base = '/') {
   const cache = new Map();
   const load = async (entry) => {
     if (!cache.has(entry.file)) {
-      const res = await fetch(`${base}zoo/${entry.file}`);
+      const res = await fetch(`${base}hopfion/${entry.file}`);
       if (!res.ok) throw new Error(`fetch ${entry.file}: ${res.status}`);
       cache.set(entry.file, parseBin(await res.arrayBuffer()));
     }

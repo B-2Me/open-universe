@@ -8,41 +8,41 @@ const current = ref(null)
 const spinning = ref(true)
 const railOpen = ref(true)
 const status = ref('booting…')
-let zoo = null
+let viewer = null
 
 const fmtMass = (q) => q >= 1e6 ? `${(q / 1e6).toFixed(2)}M` : q >= 1e3 ? `${(q / 1e3).toFixed(0)}k` : q
 const select = async (k) => {
   current.value = k
   status.value = 'loading…'
   try {
-    await zoo.load(k)
+    await viewer.load(k)
     status.value = 'ok'
   } catch (e) {
     status.value = 'ERR ' + (e?.message || e)
   }
 }
-const toggleSpin = () => { spinning.value = !spinning.value; zoo?.setAutoRotate(spinning.value) }
+const toggleSpin = () => { spinning.value = !spinning.value; viewer?.setAutoRotate(spinning.value) }
 
 const preset = ref('orbit')
-const setPreset = (p) => { preset.value = p; zoo?.setPreset(p) }
+const setPreset = (p) => { preset.value = p; viewer?.setPreset(p) }
 
 const colorModes = ['spin', 'tension', 'quanta']
 const colorMode = ref('spin')
 const cycleColor = () => {
   colorMode.value = colorModes[(colorModes.indexOf(colorMode.value) + 1) % colorModes.length]
-  zoo?.setColorMode(colorMode.value)
+  viewer?.setColorMode(colorMode.value)
 }
 
 onMounted(async () => {
-  document.body.classList.add('zoo-page')
+  document.body.classList.add('hopfion-page')
   if (matchMedia('(pointer: coarse)').matches) railOpen.value = false
   try {
-    const res = await fetch(withBase('/zoo/index.json'))
+    const res = await fetch(withBase('/hopfion/index.json'))
     const manifest = await res.json()
     knots.value = manifest.knots ?? []
     if (!knots.value.length) { status.value = 'dictionary empty — run script/export-zoo.mjs'; return }
-    const { initZoo } = await import('../zoo/main.js')
-    zoo = initZoo(host.value, withBase('/'))
+    const { initHopfion } = await import('../hopfion/main.js')
+    viewer = initHopfion(host.value, withBase('/'))
     // Heaviest knot front and center — the flagship.
     await select(knots.value[knots.value.length - 1])
   } catch (e) {
@@ -51,20 +51,20 @@ onMounted(async () => {
   }
 })
 onUnmounted(() => {
-  document.body.classList.remove('zoo-page')
-  zoo?.dispose()
+  document.body.classList.remove('hopfion-page')
+  viewer?.dispose()
 })
 </script>
 
 <template>
-  <div ref="host" class="zoo-sim">
-    <div class="zoo-canvas" data-canvas></div>
-    <div class="zoo-vignette" aria-hidden="true"></div>
+  <div ref="host" class="hopfion-sim">
+    <div class="hopfion-canvas" data-canvas></div>
+    <div class="hopfion-vignette" aria-hidden="true"></div>
 
-    <div class="zoo-card" data-hud>
+    <div class="hopfion-card" data-hud>
       <template v-if="current">
-        <div class="zoo-card-name">{{ current.name }}</div>
-        <div class="zoo-card-stats">
+        <div class="hopfion-card-name">{{ current.name }}</div>
+        <div class="hopfion-card-stats">
           <div><span>Mass</span><b>{{ fmtMass(current.mass) }}q</b></div>
           <div><span>Loops</span><b>{{ current.loops }}</b></div>
           <div><span>Aspect</span><b>{{ current.R0 }} : {{ current.R1 }}</b></div>
@@ -72,16 +72,16 @@ onUnmounted(() => {
           <div><span>Radius</span><b>{{ current.radiusXY }} × {{ current.radiusZ }}</b></div>
           <div><span>Grid</span><b>{{ current.dims.join('×') }}</b></div>
         </div>
-        <div class="zoo-legend">
+        <div class="hopfion-legend">
           <span><i class="eq"></i>equatorial</span>
           <span><i class="zen"></i>zenith</span>
           <span><i class="nad"></i>nadir</span>
         </div>
       </template>
-      <div v-if="status !== 'ok'" class="zoo-card-status">{{ status }}</div>
+      <div v-if="status !== 'ok'" class="hopfion-card-status">{{ status }}</div>
     </div>
-    <div class="zoo-ctrl">
-      <button class="cbtn cbtn-gizmo" @click="zoo?.reset()" title="Orientation — click to reset view">
+    <div class="hopfion-ctrl">
+      <button class="cbtn cbtn-gizmo" @click="viewer?.reset()" title="Orientation — click to reset view">
         <canvas data-gizmo width="72" height="72"></canvas>
       </button>
       <div class="cseg">
@@ -98,18 +98,18 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <div class="zoo-index" :class="{ closed: !railOpen }">
-      <button class="zoo-index-title" @click="railOpen = !railOpen"
+    <div class="hopfion-index" :class="{ closed: !railOpen }">
+      <button class="hopfion-index-title" @click="railOpen = !railOpen"
               :title="railOpen ? 'Collapse specimens' : 'Expand specimens'">
         <span class="caret" :class="{ open: railOpen }"></span>
         SPECIMENS · {{ knots.length }}
       </button>
-      <div class="zoo-rows" v-show="railOpen">
+      <div class="hopfion-rows" v-show="railOpen">
         <button v-for="k in knots" :key="k.name"
-                class="zoo-row" :class="{ on: current && current.name === k.name }"
+                class="hopfion-row" :class="{ on: current && current.name === k.name }"
                 @click="select(k)">
-          <span class="zoo-row-name">{{ k.name }}</span>
-          <span class="zoo-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
+          <span class="hopfion-row-name">{{ k.name }}</span>
+          <span class="hopfion-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
         </button>
       </div>
     </div>
@@ -117,7 +117,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.zoo-sim {
+.hopfion-sim {
   position: relative;
   height: 80vh;
   height: 80dvh;
@@ -129,11 +129,11 @@ onUnmounted(() => {
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
-.zoo-canvas { position: absolute; inset: 0; }
-.zoo-canvas :deep(canvas) { display: block; }
+.hopfion-canvas { position: absolute; inset: 0; }
+.hopfion-canvas :deep(canvas) { display: block; }
 
 /* Cinematic vignette — darkens the frame edges over the render. */
-.zoo-vignette {
+.hopfion-vignette {
   position: absolute; inset: 0; z-index: 2; pointer-events: none;
   background: radial-gradient(ellipse at center,
     transparent 42%,
@@ -141,7 +141,7 @@ onUnmounted(() => {
     rgba(2, 0, 10, 0.72) 100%);
 }
 
-.zoo-card {
+.hopfion-card {
   position: absolute;
   top: 10px; left: 10px;
   min-width: 172px;
@@ -156,7 +156,7 @@ onUnmounted(() => {
   pointer-events: none;
   z-index: 3;
 }
-.zoo-card-name {
+.hopfion-card-name {
   font-size: 13px;
   font-weight: 700;
   color: #7fe;
@@ -164,24 +164,24 @@ onUnmounted(() => {
   text-shadow: 0 0 8px rgba(0, 229, 255, 0.45);
   margin-bottom: 6px;
 }
-.zoo-card-stats {
+.hopfion-card-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 12px;
 }
-.zoo-card-stats span {
+.hopfion-card-stats span {
   display: block;
   font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #7fd89a;
 }
-.zoo-card-stats b {
+.hopfion-card-stats b {
   font-size: 11px;
   font-weight: 600;
   color: #e8fff0;
 }
-.zoo-legend {
+.hopfion-legend {
   display: flex;
   gap: 10px;
   margin-top: 8px;
@@ -190,20 +190,20 @@ onUnmounted(() => {
   font-size: 9px;
   color: #b9c8e8;
 }
-.zoo-legend i {
+.hopfion-legend i {
   display: inline-block;
   width: 8px; height: 8px;
   border-radius: 50%;
   margin-right: 4px;
   vertical-align: -1px;
 }
-.zoo-legend .eq { background: #ffa040; box-shadow: 0 0 6px #ffa04088; }
-.zoo-legend .zen { background: #26d9ff; box-shadow: 0 0 6px #26d9ff88; }
-.zoo-legend .nad { background: #a770ff; box-shadow: 0 0 6px #a770ff88; }
-.zoo-card-status { color: #ffb0a0; margin-top: 4px; }
+.hopfion-legend .eq { background: #ffa040; box-shadow: 0 0 6px #ffa04088; }
+.hopfion-legend .zen { background: #26d9ff; box-shadow: 0 0 6px #26d9ff88; }
+.hopfion-legend .nad { background: #a770ff; box-shadow: 0 0 6px #a770ff88; }
+.hopfion-card-status { color: #ffb0a0; margin-top: 4px; }
 
 /* ── control bar (bottom center) ── */
-.zoo-ctrl {
+.hopfion-ctrl {
   position: absolute;
   left: 50%; bottom: 12px;
   transform: translateX(-50%);
@@ -283,7 +283,7 @@ onUnmounted(() => {
 .cbtn-color.tension { background: rgba(38, 217, 255, 0.13); border-color: rgba(38, 217, 255, 0.45); }
 .cbtn-color.quanta  { background: rgba(167, 112, 255, 0.16); border-color: rgba(167, 112, 255, 0.5); }
 
-.zoo-index {
+.hopfion-index {
   position: absolute;
   top: 10px; right: 10px;
   width: 172px;
@@ -298,12 +298,12 @@ onUnmounted(() => {
   z-index: 3;
 }
 /* Collapsed = the header row alone, a small pill in the corner. */
-.zoo-index.closed {
+.hopfion-index.closed {
   width: auto;
   max-height: none;
   border-radius: 10px;
 }
-.zoo-index-title {
+.hopfion-index-title {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -316,7 +316,7 @@ onUnmounted(() => {
   cursor: pointer;
   white-space: nowrap;
 }
-.zoo-index-title .caret {
+.hopfion-index-title .caret {
   display: inline-block;
   width: 0; height: 0;
   border-top: 5px solid transparent;
@@ -324,13 +324,13 @@ onUnmounted(() => {
   border-left: 7px solid #9ef;
   transition: transform 0.15s;
 }
-.zoo-index-title .caret.open { transform: rotate(90deg); }
-.zoo-rows {
+.hopfion-index-title .caret.open { transform: rotate(90deg); }
+.hopfion-rows {
   overflow-y: auto;
   padding: 0 6px 8px;
   scrollbar-width: thin;
 }
-.zoo-row {
+.hopfion-row {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -346,31 +346,31 @@ onUnmounted(() => {
   cursor: pointer;
   text-align: left;
 }
-.zoo-row:hover { background: rgba(34, 49, 79, 0.55); }
-.zoo-row.on {
+.hopfion-row:hover { background: rgba(34, 49, 79, 0.55); }
+.hopfion-row.on {
   color: #7fe;
   background: rgba(119, 255, 238, 0.08);
   border-color: rgba(119, 255, 238, 0.4);
 }
-.zoo-row-meta { font-size: 9px; opacity: 0.65; }
+.hopfion-row-meta { font-size: 9px; opacity: 0.65; }
 
 @media (pointer: coarse) {
-  .zoo-sim {
+  .hopfion-sim {
     height: 100vh;
     height: calc(100dvh - var(--vp-nav-height, 64px));
     min-height: 0;
     max-width: none;
     border-radius: 0;
   }
-  .zoo-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .hopfion-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
 
 <style>
-.zoo-page { overflow-x: hidden; background: #03010a; }
-.zoo-page .VPDocFooter, .zoo-page .VPBackToTop { display: none !important; }
+.hopfion-page { overflow-x: hidden; background: #03010a; }
+.hopfion-page .VPDocFooter, .hopfion-page .VPBackToTop { display: none !important; }
 @media (pointer: coarse) {
-  .zoo-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
+  .hopfion-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
 }
-.zoo-page .zoo-doc { max-width: 768px; margin: 0 auto; padding: 24px 24px 72px; }
+.hopfion-page .hopfion-doc { max-width: 768px; margin: 0 auto; padding: 24px 24px 72px; }
 </style>
