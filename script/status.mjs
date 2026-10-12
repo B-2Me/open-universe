@@ -96,6 +96,24 @@ function render() {
   }
   if (live?.started && done.length < total)
     console.log(`  uptime: ${fmtDur(Date.now() - live.started)} since launch`);
+
+  // ---- boost basin (Phase 5) — separate heartbeat, same pattern ----
+  let boost = null;
+  try { boost = JSON.parse(readFileSync(join(ROOT, 'logs', 'boost-status.json'), 'utf8')); } catch {}
+  if (boost) {
+    const bAge = Date.now() - boost.ts;
+    const bAlive = bAge < 120000;
+    console.log('  BOOST BASIN');
+    console.log(`  run:    ${boost.seed} vector ${boost.vector} dir (${boost.dir}) · ${boost.ticks} ticks`);
+    if (boost.phase === 'ticking') {
+      const bPct = Math.round(100 * boost.t / boost.ticks);
+      console.log(`  live:   tick ${boost.t}/${boost.ticks} (${bPct}%) knot=(${boost.kx},${boost.ky},${boost.kz}) ` +
+        `knotRetain=${boost.knotRetain} coherence=${boost.coherence}${bAlive ? '' : ' [STALE heartbeat]'}`);
+    } else {
+      console.log(`  state:  ${boost.phase}${boost.verdict ? ' — ' + boost.verdict : ''}${bAlive ? '' : ' [STALE heartbeat]'}`);
+    }
+    console.log(`  age:    heartbeat ${fmtDur(bAge)} ago`);
+  }
   console.log('');
 }
 
