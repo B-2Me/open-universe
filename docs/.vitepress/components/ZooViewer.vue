@@ -16,7 +16,7 @@ const select = async (k) => {
   status.value = 'loading…'
   try {
     await zoo.load(k)
-    status.value = `${k.name} · ${fmtMass(k.mass)}q · ${k.loops} loops · r=(${k.radiusXY}, ${k.radiusZ})`
+    status.value = 'ok'
   } catch (e) {
     status.value = 'ERR ' + (e?.message || e)
   }
@@ -51,7 +51,25 @@ onUnmounted(() => {
     <div class="zoo-canvas" data-canvas></div>
     <div class="zoo-vignette" aria-hidden="true"></div>
 
-    <div class="zoo-hud" data-hud>{{ status }}</div>
+    <div class="zoo-card" data-hud>
+      <template v-if="current">
+        <div class="zoo-card-name">{{ current.name }}</div>
+        <div class="zoo-card-stats">
+          <div><span>Mass</span><b>{{ fmtMass(current.mass) }}q</b></div>
+          <div><span>Loops</span><b>{{ current.loops }}</b></div>
+          <div><span>Aspect</span><b>{{ current.R0 }} : {{ current.R1 }}</b></div>
+          <div><span>Cells</span><b>{{ current.cells.toLocaleString() }}</b></div>
+          <div><span>Radius</span><b>{{ current.radiusXY }} × {{ current.radiusZ }}</b></div>
+          <div><span>Grid</span><b>{{ current.dims.join('×') }}</b></div>
+        </div>
+        <div class="zoo-legend">
+          <span><i class="eq"></i>equatorial</span>
+          <span><i class="zen"></i>zenith</span>
+          <span><i class="nad"></i>nadir</span>
+        </div>
+      </template>
+      <div v-if="status !== 'ok'" class="zoo-card-status">{{ status }}</div>
+    </div>
     <button class="zoo-rotate" :class="{ on: spinning }" @click="toggleSpin"
             title="Auto-rotate" aria-label="Toggle auto-rotate">⟳</button>
 
@@ -94,21 +112,66 @@ onUnmounted(() => {
     rgba(2, 0, 10, 0.72) 100%);
 }
 
-.zoo-hud {
+.zoo-card {
   position: absolute;
   top: 10px; left: 10px;
-  padding: 5px 12px;
+  min-width: 172px;
+  padding: 10px 14px 12px;
   font: 11px/1.5 monospace;
-  color: #7fe;
-  background: rgba(8, 6, 22, 0.55);
+  color: #9ef;
+  background: rgba(8, 6, 22, 0.62);
   border: 1px solid rgba(160, 200, 255, 0.16);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
   pointer-events: none;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
   z-index: 3;
 }
+.zoo-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7fe;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.45);
+  margin-bottom: 6px;
+}
+.zoo-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+.zoo-card-stats span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5f6f9a;
+}
+.zoo-card-stats b {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cfe0ff;
+}
+.zoo-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(160, 200, 255, 0.12);
+  font-size: 9px;
+  color: #8fa3d8;
+}
+.zoo-legend i {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+.zoo-legend .eq { background: #ffa040; box-shadow: 0 0 6px #ffa04088; }
+.zoo-legend .zen { background: #26d9ff; box-shadow: 0 0 6px #26d9ff88; }
+.zoo-legend .nad { background: #a770ff; box-shadow: 0 0 6px #a770ff88; }
+.zoo-card-status { color: #ffb0a0; margin-top: 4px; }
 
 .zoo-rotate {
   position: absolute;

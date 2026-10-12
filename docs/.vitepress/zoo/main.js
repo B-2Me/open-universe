@@ -7,6 +7,12 @@ import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
 import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
 import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
+import vtkAxesActor from '@kitware/vtk.js/Rendering/Core/AxesActor';
+import vtkMouseCameraTrackballRotateManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballRotateManipulator';
+import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
+import vtkMouseCameraTrackballZoomToMouseManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator';
+import vtkGestureCameraManipulator from '@kitware/vtk.js/Interaction/Manipulators/GestureCameraManipulator';
 
 // Spin-class palette — the same visual language as Hopf's Loom:
 // equatorial (toroidal) warm gold, zenith cyan, nadir violet, dead slate.
@@ -97,17 +103,65 @@ export function initZoo(host, base = '/') {
   renderer.addActor(halo);
   renderer.addActor(actor);
 
-  // Slow Z-axis turntable; pauses while the user drags. DOM pointer
-  // events are the reliable signal — vtk interactor style events vary.
-  let rotating = true, disposed = false;
-  const down = () => { rotating = false; };
-  const up = () => { rotating = true; };
-  canvasHost.addEventListener('pointerdown', down);
-  window.addEventListener('pointerup', up);
+  // --- controls: rotate + zoom only. Pan is removed so the knot can
+  // never be lost off-screen; distance is clamped per-frame to the
+  // model's bounds so you can't zoom into empty space either.
+  const interactor = renderWindow.getInteractor();
+  const istyle = interactor.getInteractorStyle();
+  istyle.removeAllManipulators();
+  istyle.addMouseManipulator(vtkMouseCameraTrackballRotateManipulator.newInstance({ button: 1 }));
+  istyle.addMouseManipulator(vtkMouseCameraTrackballZoomManipulator.newInstance({ button: 3 }));
+  istyle.addMouseManipulator(vtkMouseCameraTrackballZoomToMouseManipulator.newInstance({ scrollEnabled: true }));
+  istyle.addMouseManipulator(vtkGestureCameraManipulator.newInstance({ rotateEnabled: true, pinchEnabled: true, panEnabled: false }));
+
+  // Orientation gizmo — ParaView-style axes chip, click to snap views.
+  const axes = vtkAxesActor.newInstance();
+  const gizmo = vtkOrientationMarkerWidget.newInstance({
+    actor: axes,
+    interactor,
+    viewportCorner: vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
+    viewportSize: 0.12,
+    minPixelSize: 72,
+    maxPixelSize: 160,
+  });
+  gizmo.setEnabled(true);
+  gizmo.setInteractive(true);
+
+  // Knot framing state — focal point pinned to the model centroid.
+  let focal = [0, 0, 0], diag = 100;
+  const resetView = () => {
+    renderer.resetCamera();
+    const cam = renderer.getActiveCamera();
+    cam.setDistance(cam.getDistance() * 1.15);
+    cam.setFocalPoint(...focal);
+    renderWindow.render();
+  };
+
+  // Slow Z-axis turntable; resumes ~1.2s after the user stops dragging.
+  let lastInteract = -1e4, disposed = false;
+  const touch = () => { lastInteract = performance.now(); };
+  const dragTouch = (e) => { if (e.buttons) lastInteract = performance.now(); };
+  canvasHost.addEventListener('pointerdown', touch);
+  canvasHost.addEventListener('pointermove', dragTouch);
+  window.addEventListener('pointerup', touch);
+  canvasHost.addEventListener('dblclick', (e) => { e.preventDefault(); resetView(); });
+  let lastTap = 0; // double-tap reset for touch
+  canvasHost.addEventListener('pointerdown', () => {
+    const t = performance.now();
+    if (t - lastTap < 330) resetView();
+    lastTap = t;
+  });
   let autoRotate = true;
   const spin = () => {
     if (disposed) return;
-    if (autoRotate && rotating) renderer.getActiveCamera().azimuth(0.12);
+    const cam = renderer.getActiveCamera();
+    // Keep the focal point and distance inside the knot's envelope —
+    // belt-and-suspenders on top of the removed pan manipulator.
+    cam.setFocalPoint(...focal);
+    const minD = diag * 0.25, maxD = diag * 5;
+    const d = cam.getDistance();
+    if (d < minD || d > maxD) cam.setDistance(Math.min(maxD, Math.max(minD, d)));
+    if (autoRotate && performance.now() - lastInteract > 1200) cam.azimuth(0.12);
     renderWindow.render();
     requestAnimationFrame(spin);
   };
@@ -123,11 +177,10 @@ export function initZoo(host, base = '/') {
     const { pd } = cache.get(entry.file);
     mapper.setInputData(pd);
     haloMapper.setInputData(pd);
-    renderer.resetCamera();
-    // Frame with breathing room — resetCamera hugs the bounding box.
-    const cam = renderer.getActiveCamera();
-    cam.setDistance(cam.getDistance() * 1.15);
-    renderWindow.render();
+    const b = pd.getBounds();
+    focal = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
+    diag = Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4]) || 100;
+    resetView();
   };
 
   return {
@@ -135,8 +188,7 @@ export function initZoo(host, base = '/') {
     setAutoRotate(v) { autoRotate = v; },
     dispose() {
       disposed = true;
-      canvasHost.removeEventListener('pointerdown', down);
-      window.removeEventListener('pointerup', up);
+      gizmo.setEnabled(false);
       glwindow.delete();
     },
   };
