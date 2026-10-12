@@ -9,14 +9,16 @@ import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
 import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 
-// Cinematic tension ramp: deep indigo → cyan → hot pink → white crest.
+// Cinematic tension ramp: violet floor → electric blue → cyan → pink → white.
+// The floor is deliberately lifted — the raw knot is mostly low-tension mass
+// and a near-black floor reads as "unlit" against the void.
 const buildLut = () => {
   const lut = vtkColorTransferFunction.newInstance();
-  lut.addRGBPoint(0, 0.03, 0.01, 0.12);
-  lut.addRGBPoint(60, 0.0, 0.25, 0.65);
-  lut.addRGBPoint(140, 0.0, 0.85, 0.95);
-  lut.addRGBPoint(200, 0.85, 0.35, 0.95);
-  lut.addRGBPoint(255, 1.0, 0.95, 1.0);
+  lut.addRGBPoint(0, 0.14, 0.06, 0.42);
+  lut.addRGBPoint(60, 0.12, 0.40, 0.95);
+  lut.addRGBPoint(140, 0.20, 0.95, 1.0);
+  lut.addRGBPoint(200, 0.95, 0.42, 1.0);
+  lut.addRGBPoint(255, 1.0, 0.98, 1.0);
   return lut;
 };
 
@@ -28,20 +30,27 @@ const parseBin = (buf) => {
   const raw = new Uint8Array(buf, 20);
   const pts = new Float32Array(n * 3), verts = new Uint32Array(n * 2);
   const tension = new Float32Array(n), quanta = new Float32Array(n), painted = new Float32Array(n);
+  let tMax = 1;
   for (let i = 0; i < n; i++) {
     const o = i * 7;
     pts[i * 3] = raw[o]; pts[i * 3 + 1] = raw[o + 1]; pts[i * 3 + 2] = raw[o + 2];
     verts[i * 2] = 1; verts[i * 2 + 1] = i;
     quanta[i] = raw[o + 3]; tension[i] = raw[o + 5]; painted[i] = raw[o + 6];
+    if (tension[i] > tMax) tMax = tension[i];
   }
+  // sqrt-normalized display scalar: spreads the low-tension detail where
+  // most of the knot's mass actually sits, so the LUT doesn't collapse to
+  // its dark floor.
+  const glow = new Float32Array(n);
+  for (let i = 0; i < n; i++) glow[i] = 255 * Math.sqrt(tension[i] / tMax);
   const pd = vtkPolyData.newInstance();
   pd.getPoints().setData(pts, 3);
   pd.getVerts().setData(verts);
-  for (const [name, vals] of [['tension', tension], ['quanta', quanta], ['painted', painted]]) {
+  for (const [name, vals] of [['tension', tension], ['quanta', quanta], ['painted', painted], ['glow', glow]]) {
     const arr = vtkDataArray.newInstance({ name, values: vals, numberOfComponents: 1 });
     pd.getPointData().addArray(arr);
   }
-  pd.getPointData().setActiveScalars('tension');
+  pd.getPointData().setActiveScalars('glow');
   return { pd, w, h, d, n };
 };
 
@@ -53,14 +62,24 @@ export function initZoo(host, base = '/') {
   });
   const renderer = glwindow.getRenderer();
   const renderWindow = glwindow.getRenderWindow();
-  const actor = vtkActor.newInstance();
-  actor.getProperty().setPointSize(3);
-  actor.getProperty().setOpacity(0.95);
-  const mapper = vtkMapper.newInstance();
   const lut = buildLut();
-  mapper.setLookupTable(lut);
-  mapper.setUseLookupTableScalarRange(true);
+  const newMapper = () => {
+    const m = vtkMapper.newInstance();
+    m.setLookupTable(lut);
+    m.setUseLookupTableScalarRange(true);
+    return m;
+  };
+  // Crisp core + a wide faint halo pass — cheap bloom stand-in.
+  const mapper = newMapper(), haloMapper = newMapper();
+  const actor = vtkActor.newInstance();
+  actor.getProperty().setPointSize(2.5);
+  actor.getProperty().setOpacity(0.95);
   actor.setMapper(mapper);
+  const halo = vtkActor.newInstance();
+  halo.getProperty().setPointSize(8);
+  halo.getProperty().setOpacity(0.10);
+  halo.setMapper(haloMapper);
+  renderer.addActor(halo);
   renderer.addActor(actor);
 
   // Slow Z-axis turntable; pauses while the user drags. DOM pointer
@@ -88,7 +107,11 @@ export function initZoo(host, base = '/') {
     }
     const { pd } = cache.get(entry.file);
     mapper.setInputData(pd);
+    haloMapper.setInputData(pd);
     renderer.resetCamera();
+    // Frame with breathing room — resetCamera hugs the bounding box.
+    const cam = renderer.getActiveCamera();
+    cam.setDistance(cam.getDistance() * 1.15);
     renderWindow.render();
   };
 

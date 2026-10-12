@@ -49,6 +49,7 @@ onUnmounted(() => {
 <template>
   <div ref="host" class="zoo-sim">
     <div class="zoo-canvas" data-canvas></div>
+    <div class="zoo-vignette" aria-hidden="true"></div>
 
     <div class="zoo-hud" data-hud>{{ status }}</div>
     <button class="zoo-rotate" :class="{ on: spinning }" @click="toggleSpin"
@@ -83,6 +84,15 @@ onUnmounted(() => {
 }
 .zoo-canvas { position: absolute; inset: 0; }
 .zoo-canvas :deep(canvas) { display: block; }
+
+/* Cinematic vignette — darkens the frame edges over the render. */
+.zoo-vignette {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 42%,
+    rgba(4, 1, 14, 0.38) 78%,
+    rgba(2, 0, 10, 0.72) 100%);
+}
 
 .zoo-hud {
   position: absolute;
@@ -187,6 +197,7 @@ onUnmounted(() => {
 </style>
 
 <style>
+.zoo-page { overflow-x: hidden; }
 .zoo-page .VPDocFooter, .zoo-page .VPBackToTop { display: none !important; }
 @media (pointer: coarse) {
   .zoo-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }

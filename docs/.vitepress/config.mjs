@@ -71,6 +71,22 @@ export default defineConfig({
   themeConfig: {
     nav: [...readingOrder, instruments],
 
+    // Section sidebar — shows on /interference and its sub-pages.
+    sidebar: {
+      '/interference': [
+        {
+          text: 'Interference',
+          items: [
+            { text: 'Overview', link: '/interference' },
+            { text: 'Theoretical Audits', link: '/interference/audits' },
+            { text: 'Predictive Roadmap', link: '/interference/roadmap' },
+            { text: 'The Open Frontier', link: '/interference/frontier' },
+            { text: 'Audio Sessions', link: '/interference/sessions' }
+          ]
+        }
+      ]
+    },
+
     footer: {
       copyright: 'The Open Universe Audit'
     },
