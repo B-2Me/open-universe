@@ -6,6 +6,7 @@ const host = ref(null)
 const knots = ref([])
 const current = ref(null)
 const spinning = ref(true)
+const railOpen = ref(true)
 const status = ref('booting…')
 let zoo = null
 
@@ -24,6 +25,7 @@ const toggleSpin = () => { spinning.value = !spinning.value; zoo?.setAutoRotate(
 
 onMounted(async () => {
   document.body.classList.add('zoo-page')
+  if (matchMedia('(pointer: coarse)').matches) railOpen.value = false
   try {
     const res = await fetch(withBase('/zoo/index.json'))
     const manifest = await res.json()
@@ -52,12 +54,15 @@ onUnmounted(() => {
     <button class="zoo-rotate" :class="{ on: spinning }" @click="toggleSpin"
             title="Auto-rotate" aria-label="Toggle auto-rotate">⟳</button>
 
-    <div class="zoo-rail">
+    <button class="zoo-indexbtn" @click="railOpen = !railOpen"
+            :title="railOpen ? 'Hide specimens' : 'Show specimens'">≡</button>
+    <div class="zoo-index" :class="{ closed: !railOpen }">
+      <div class="zoo-index-title">SPECIMENS · {{ knots.length }}</div>
       <button v-for="k in knots" :key="k.name"
-              class="zoo-chip" :class="{ on: current && current.name === k.name }"
-              @click="select(k)" :title="`${k.name} — ${fmtMass(k.mass)}q, ${k.loops} loops`">
-        <span class="zoo-chip-name">{{ k.name.replace('hopfion_', '') }}</span>
-        <span class="zoo-chip-mass">{{ fmtMass(k.mass) }}</span>
+              class="zoo-row" :class="{ on: current && current.name === k.name }"
+              @click="select(k)">
+        <span class="zoo-row-name">{{ k.name }}</span>
+        <span class="zoo-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
       </button>
     </div>
   </div>
@@ -110,15 +115,25 @@ onUnmounted(() => {
 }
 .zoo-rotate.on { color: #7fe; border-color: rgba(119, 255, 238, 0.5); box-shadow: 0 0 12px rgba(119, 255, 238, 0.25); }
 
-.zoo-rail {
+.zoo-indexbtn {
   position: absolute;
-  left: 50%; bottom: 12px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  max-width: calc(100% - 20px);
-  padding: 8px 10px;
-  overflow-x: auto;
+  top: 10px; right: 56px;
+  width: 38px; height: 38px;
+  font: 16px/1 monospace;
+  color: #9ef;
+  background: rgba(8, 6, 22, 0.55);
+  border: 1px solid rgba(160, 200, 255, 0.16);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  z-index: 3;
+}
+.zoo-index {
+  position: absolute;
+  top: 54px; right: 10px; bottom: 12px;
+  width: 172px;
+  overflow-y: auto;
+  padding: 8px 6px;
   scrollbar-width: thin;
   background: rgba(8, 6, 22, 0.55);
   border: 1px solid rgba(160, 200, 255, 0.16);
@@ -126,29 +141,38 @@ onUnmounted(() => {
   backdrop-filter: blur(12px);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
   z-index: 3;
+  transition: transform 0.22s, opacity 0.22s;
 }
-.zoo-chip {
+.zoo-index.closed { transform: translateX(120%); opacity: 0; pointer-events: none; }
+.zoo-index-title {
+  font: 700 9px monospace;
+  letter-spacing: 0.14em;
+  color: #587;
+  padding: 2px 8px 8px;
+}
+.zoo-row {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 1px;
-  min-width: 58px;
+  width: 100%;
   padding: 6px 8px;
+  margin-bottom: 2px;
   font: 11px monospace;
   color: #9ef;
-  background: linear-gradient(180deg, rgba(34, 49, 79, 0.9), rgba(19, 28, 48, 0.9));
-  border: 1px solid rgba(0, 0, 0, 0.65);
-  border-radius: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
-  white-space: nowrap;
+  text-align: left;
 }
-.zoo-chip.on {
-  color: #04141c;
-  background: #7fe;
-  border-color: rgba(119, 255, 238, 0.8);
-  box-shadow: 0 0 14px rgba(119, 255, 238, 0.4);
+.zoo-row:hover { background: rgba(34, 49, 79, 0.55); }
+.zoo-row.on {
+  color: #7fe;
+  background: rgba(119, 255, 238, 0.08);
+  border-color: rgba(119, 255, 238, 0.4);
 }
-.zoo-chip-mass { font-size: 9px; opacity: 0.75; }
+.zoo-row-meta { font-size: 9px; opacity: 0.65; }
 
 @media (pointer: coarse) {
   .zoo-sim {
@@ -158,7 +182,7 @@ onUnmounted(() => {
     max-width: none;
     border-radius: 0;
   }
-  .zoo-rail { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .zoo-index { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
 

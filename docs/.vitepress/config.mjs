@@ -11,9 +11,19 @@ const readingOrder = [
   { text: 'Math', link: '/math' },
   { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
-  { text: 'Intent', link: '/intent' },
-  { text: 'Zoo', link: '/zoo' }
+  { text: 'Intent', link: '/intent' }
 ]
+
+// Interactive instruments — kept out of the narrative reading order so the
+// top bar stays linear. This is where experiment/test pages accumulate.
+const instruments = {
+  text: 'Instruments',
+  items: [
+    { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
+    { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
+    { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
+  ]
+}
 
 export default defineConfig({
   title: "The Open Universe",
@@ -59,7 +69,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    nav: readingOrder,
+    nav: [...readingOrder, instruments],
 
     footer: {
       copyright: 'The Open Universe Audit'

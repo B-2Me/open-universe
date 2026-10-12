@@ -63,11 +63,13 @@ export function initZoo(host, base = '/') {
   actor.setMapper(mapper);
   renderer.addActor(actor);
 
-  // Slow Z-axis turntable; pauses while the user drags.
+  // Slow Z-axis turntable; pauses while the user drags. DOM pointer
+  // events are the reliable signal — vtk interactor style events vary.
   let rotating = true, disposed = false;
-  const interactor = renderWindow.getInteractor();
-  interactor.onStartInteractionEvent(() => { rotating = false; });
-  interactor.onEndInteractionEvent(() => { rotating = true; });
+  const down = () => { rotating = false; };
+  const up = () => { rotating = true; };
+  canvasHost.addEventListener('pointerdown', down);
+  window.addEventListener('pointerup', up);
   let autoRotate = true;
   const spin = () => {
     if (disposed) return;
@@ -95,6 +97,8 @@ export function initZoo(host, base = '/') {
     setAutoRotate(v) { autoRotate = v; },
     dispose() {
       disposed = true;
+      canvasHost.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointerup', up);
       glwindow.delete();
     },
   };
