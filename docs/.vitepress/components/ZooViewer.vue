@@ -145,12 +145,12 @@ onUnmounted(() => {
   font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #5f6f9a;
+  color: #7fd89a;
 }
 .zoo-card-stats b {
   font-size: 11px;
   font-weight: 600;
-  color: #cfe0ff;
+  color: #e8fff0;
 }
 .zoo-legend {
   display: flex;
@@ -159,7 +159,7 @@ onUnmounted(() => {
   padding-top: 7px;
   border-top: 1px solid rgba(160, 200, 255, 0.12);
   font-size: 9px;
-  color: #8fa3d8;
+  color: #b9c8e8;
 }
 .zoo-legend i {
   display: inline-block;
@@ -220,7 +220,7 @@ onUnmounted(() => {
 .zoo-index-title {
   font: 700 9px monospace;
   letter-spacing: 0.14em;
-  color: #587;
+  color: #7fd89a;
   padding: 2px 8px 8px;
 }
 .zoo-row {

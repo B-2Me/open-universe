@@ -124,9 +124,9 @@ export function initZoo(host, base = '/') {
       actor: axes,
       interactor,
       viewportCorner: vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
-      viewportSize: 0.12,
-      minPixelSize: 72,
-      maxPixelSize: 160,
+      viewportSize: 0.15,
+      minPixelSize: 90,
+      maxPixelSize: 190,
     });
     gizmo.setEnabled(true);
     if (gizmo.setInteractive) gizmo.setInteractive(true);
