@@ -11,8 +11,10 @@
  *
  *   node script/sweep.mjs --seeds=seeds [--ticks=400] [options]
  *
- * Options:
+ * Options (CLI > --config file > defaults):
  *   --seeds=seeds       seed JSON file or directory of them
+ *   --only=a,b,c        curate: only these seed names
+ *   --config=x.json     options file (same keys as flags)
  *   --ticks=400         ticks per candidate
  *   --sample=25         telemetry window
  *   --diss=15           dissipation (engine knob)
@@ -21,29 +23,41 @@
  *   --pass-retain=0.85  min final/initial mass ratio to pass
  *   --pass-spray=0.05   max sprayed-mass fraction of initial mass
  *   --out=knot_dictionary.json
+ *   --fresh             ignore prior dictionary entries (default: resume)
  *   --wasm=docs/public/wasm/loom/planck3.js
+ *
+ * Resume: the dictionary is rewritten atomically after EVERY candidate.
+ * Re-running the same command skips entries whose signature
+ * (name|dims|ticks|diss|limit|mode) already passed or failed — so a
+ * crashed/killed run picks up where it left off, not from zero.
  */
 import { createRequire } from 'node:module';
-import { readFileSync, readdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, renameSync, existsSync, statSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 
-const arg = (k, d) => {
+const arg = (k) => {
   const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
-  return m ? (m.includes('=') ? m.split('=')[1] : true) : d;
+  return m ? (m.includes('=') ? m.split('=')[1] : true) : undefined;
 };
-const num = (k, d) => parseFloat(arg(k, d));
+// --config=x.json seeds defaults; CLI flags always win.
+const cfgPath = arg('config');
+const CFG = cfgPath ? JSON.parse(readFileSync(resolve(ROOT, String(cfgPath)), 'utf8')) : {};
+const opt = (k, d) => { const v = arg(k); return v !== undefined ? v : (CFG[k] !== undefined ? CFG[k] : d); };
+const num = (k, d) => parseFloat(opt(k, d));
 
-const SEEDS = resolve(ROOT, String(arg('seeds', 'seeds')));
+const SEEDS = resolve(ROOT, String(opt('seeds', 'seeds')));
 const TICKS = num('ticks', 400), SAMPLE = num('sample', 25);
 const DISS = num('diss', 15), LIMIT = num('limit', 50000);
 const MODE = num('mode', 0);
 const PASS_RETAIN = num('pass-retain', 0.85), PASS_SPRAY = num('pass-spray', 0.05);
-const OUT = resolve(ROOT, String(arg('out', 'knot_dictionary.json')));
-const WASM_JS = resolve(ROOT, String(arg('wasm', 'docs/public/wasm/loom/planck3.js')));
+const OUT = resolve(ROOT, String(opt('out', 'knot_dictionary.json')));
+const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
+const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
+const FRESH = !!arg('fresh');
 
 // ---------- load the engine ----------
 // The repo is "type": "module", so a plain require() would treat the
@@ -62,9 +76,10 @@ const wasm = await createPlanck3();
 const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer); // fresh view — growth detaches old ones
 
 // ---------- seed enumeration ----------
-const files = statSync(SEEDS).isDirectory()
+let files = statSync(SEEDS).isDirectory()
   ? readdirSync(SEEDS).filter(f => f.startsWith('hopfion') && f.endsWith('.json')).map(f => join(SEEDS, f))
   : [SEEDS];
+if (ONLY) files = files.filter(f => ONLY.includes(basename(f, '.json')));
 if (!files.length) { console.error(`no seed geometries under ${SEEDS}`); process.exit(1); }
 
 // P3ST pack: 16B header + q,s,b,tn byte planes + u16le heat plane.
@@ -106,14 +121,33 @@ const probe = (w, h, n, statePtr) => {
 };
 
 // ---------- sweep ----------
-const dict = { generated: new Date().toISOString(), ticks: TICKS, diss: DISS, limit: LIMIT, mode: MODE, entries: [] };
+// Resume: merge a prior dictionary and skip signature-matched entries.
+// A signature pins the run parameters — same name under different
+// physics is a different measurement, not a duplicate.
+const sig = (name, dims) => `${name}|${dims.join('x')}|t${TICKS}|d${DISS}|l${LIMIT}|m${MODE}`;
+let dict = { generated: new Date().toISOString(), ticks: TICKS, diss: DISS, limit: LIMIT, mode: MODE, entries: [] };
+const done = new Set();
+if (!FRESH && existsSync(OUT)) {
+  try {
+    dict = JSON.parse(readFileSync(OUT, 'utf8'));
+    for (const e of dict.entries ?? []) if (e.sig) done.add(e.sig);
+    if (done.size) console.log(`resume: ${done.size} completed entries loaded from ${OUT}`);
+  } catch { console.warn(`could not parse prior ${OUT} — starting fresh`); }
+}
+const flush = () => {  // atomic rewrite — safe against a kill mid-candidate
+  writeFileSync(OUT + '.tmp', JSON.stringify(dict, null, 2));
+  renameSync(OUT + '.tmp', OUT);
+};
 console.log(`sweep: ${files.length} candidates × ${TICKS} ticks · diss=${DISS} limit=${LIMIT} mode=${MODE}`);
 for (const f of files) {
   const seed = JSON.parse(readFileSync(f, 'utf8'));
   const [w, h, d] = seed.dims;
+  const name = seed.name || basename(f, '.json');
+  const s = sig(name, seed.dims);
+  if (done.has(s)) { console.log(`SKIP ${name} — already in dictionary`); continue; }
   const n = w * h * d;
   const t0 = Date.now();
-  if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error(`${seed.name}: init_dims rejected`); continue; }
+  if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error(`${name}: init_dims rejected`); continue; }
   wasm._planck3_set_dissipation(DISS);
   wasm._planck3_set_thermal_limit(LIMIT);
   wasm._planck3_set_mode(MODE);
@@ -122,7 +156,7 @@ for (const f of files) {
   const blob = packState(w, h, d, seed.cells, seed.q, seed.heat);
   const loadPtr = wasm._planck3_load_pointer();   // malloc may grow memory — wrap AFTER
   heap8().set(blob, loadPtr);
-  if (wasm._planck3_load_commit() !== 0) { console.error(`${seed.name}: load_commit rejected`); continue; }
+  if (wasm._planck3_load_commit() !== 0) { console.error(`${name}: load_commit rejected`); continue; }
   wasm._planck3_prepare();
 
   const q0 = wasm._planck3_total_quanta();
@@ -151,7 +185,7 @@ for (const f of files) {
   const verdict = retain >= PASS_RETAIN && liveRetain >= 0.8 &&
                   spray <= q0 * PASS_SPRAY && stableTail ? 'stable' : 'unraveled';
   const rec = {
-    name: seed.name || basename(f, '.json'), dims: seed.dims, R0: seed.R0, R1: seed.R1,
+    sig: s, name, dims: seed.dims, R0: seed.R0, R1: seed.R1,
     painted: seed.painted ?? seed.cells.length, loops: seed.loops,
     mass0: Math.round(q0), massEnd: Math.round(qEnd), retain: +retain.toFixed(3),
     live0, liveEnd: geo.live, radiusXY: geo.rxy, radiusZ: geo.rz,
@@ -160,10 +194,12 @@ for (const f of files) {
     verdict, ms: Date.now() - t0, series,
   };
   dict.entries.push(rec);
+  done.add(s);
+  flush(); // checkpoint — the dictionary survives a kill right now
   console.log(`${verdict === 'stable' ? 'PASS' : 'FAIL'} ${rec.name}: mass ${rec.mass0}→${rec.massEnd} ` +
     `(${retain.toFixed(2)}) live ${live0}→${geo.live} r=(${geo.rxy},${geo.rz}) ` +
     `dead=${dead} spray=${rec.sprayEvents}/${Math.round(spray)} (${rec.ms}ms)`);
 }
-writeFileSync(OUT, JSON.stringify(dict, null, 2));
+flush();
 const pass = dict.entries.filter(e => e.verdict === 'stable').length;
 console.log(`\n${pass}/${dict.entries.length} stable knots → ${OUT}`);

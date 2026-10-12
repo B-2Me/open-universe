@@ -47,6 +47,13 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   calls, never cache a view across them.
 - Typical workflow: `node script/pathfinder.mjs --r0=32,64 --r1=8,16`
   then `node script/sweep.mjs --seeds=seeds --ticks=400`.
+  Bounded pilot: `node script/sweep.mjs --config=config/pilot-sweep.json`.
+- Resume is built in: the dictionary is atomically rewritten after
+  every candidate; re-running skips entries whose signature
+  (name|dims|ticks|diss|limit|mode) already exists. `--fresh` ignores
+  prior entries. `--only=a,b` curates a subset; `--config=x.json`
+  supplies defaults (CLI wins). Sweeps run in plain Node — no
+  container needed, so a "restart" is just re-running the command.
 
 ## Docs build
 
