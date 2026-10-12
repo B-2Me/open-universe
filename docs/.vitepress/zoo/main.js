@@ -7,22 +7,19 @@ import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
 import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
 import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
-import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 
-// Aurora ramp: deep navy → royal blue → cyan → mint → white crest.
-// No violet family — the void background is indigo, and purple-on-purple
-// has no contrast. Cyan/white reads luminous against it.
-const buildLut = () => {
-  const lut = vtkColorTransferFunction.newInstance();
-  lut.addRGBPoint(0, 0.02, 0.10, 0.30);
-  lut.addRGBPoint(60, 0.05, 0.35, 0.85);
-  lut.addRGBPoint(140, 0.15, 0.90, 1.0);
-  lut.addRGBPoint(200, 0.70, 1.0, 0.90);
-  lut.addRGBPoint(255, 1.0, 1.0, 1.0);
-  return lut;
-};
+// Spin-class palette — the same visual language as Hopf's Loom:
+// equatorial (toroidal) warm gold, zenith cyan, nadir violet, dead slate.
+// Slight per-port variation keeps each class from reading as a flat fill.
+const SPIN_RGB = [
+  [0.20, 0.22, 0.38],                                     // 0 dead
+  [1.00, 0.55, 0.10], [1.00, 0.68, 0.20], [1.00, 0.48, 0.12], // 1-3 equatorial
+  [1.00, 0.62, 0.16], [1.00, 0.75, 0.28], [0.95, 0.58, 0.10], // 4-6 equatorial
+  [0.10, 0.85, 1.00], [0.30, 0.95, 0.95], [0.15, 0.75, 1.00], // 7-9 zenith
+  [0.70, 0.40, 1.00], [0.58, 0.45, 1.00], [0.80, 0.35, 0.92], // 10-12 nadir
+];
 
-// Fake key light, fixed in world space. Baked into the display scalar so
+// Fake key light, fixed in world space. Baked into the per-point color so
 // the flat point sprites pick up real depth cues — lit limb vs shadow limb.
 const LIGHT = (() => {
   const l = Math.hypot(0.4, 0.55, 0.72);
@@ -45,28 +42,31 @@ const parseBin = (buf) => {
     quanta[i] = raw[o + 3]; tension[i] = raw[o + 5]; painted[i] = raw[o + 6];
     if (tension[i] > tMax) tMax = tension[i];
   }
-  // Display scalar: sqrt-normalized tension (spreads the low-tension detail
-  // where most knot mass sits) lifted off zero, then shaded by a lambert
-  // term around the knot's bbox center — gives the blob real geometry.
+  // Per-point RGBA: spin-class hue × lambert shade (bbox-center normals vs
+  // the key light) × a soft tension luminance. Direct scalars — no LUT.
   let cx = 0, cy = 0, cz = 0;
   for (let i = 0; i < n; i++) { cx += pts[i * 3]; cy += pts[i * 3 + 1]; cz += pts[i * 3 + 2]; }
   cx /= n; cy /= n; cz /= n;
-  const glow = new Float32Array(n);
+  const colors = new Uint8Array(n * 4);
   for (let i = 0; i < n; i++) {
     const nx = pts[i * 3] - cx, ny = pts[i * 3 + 1] - cy, nz = pts[i * 3 + 2] - cz;
     const nl = Math.hypot(nx, ny, nz) || 1;
     const lam = Math.max(0, (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) / nl);
-    const base = 0.15 + 0.85 * Math.sqrt(tension[i] / tMax);
-    glow[i] = 255 * base * (0.45 + 0.55 * lam);
+    const shade = (0.40 + 0.60 * lam) * (0.78 + 0.22 * Math.sqrt(tension[i] / tMax));
+    const rgb = SPIN_RGB[Math.min(raw[i * 7 + 4], 12)];
+    colors[i * 4] = Math.min(255, rgb[0] * shade * 255);
+    colors[i * 4 + 1] = Math.min(255, rgb[1] * shade * 255);
+    colors[i * 4 + 2] = Math.min(255, rgb[2] * shade * 255);
+    colors[i * 4 + 3] = painted[i] ? 255 : 60;
   }
   const pd = vtkPolyData.newInstance();
   pd.getPoints().setData(pts, 3);
   pd.getVerts().setData(verts);
-  for (const [name, vals] of [['tension', tension], ['quanta', quanta], ['painted', painted], ['glow', glow]]) {
-    const arr = vtkDataArray.newInstance({ name, values: vals, numberOfComponents: 1 });
+  for (const [name, vals, nc] of [['tension', tension, 1], ['quanta', quanta, 1], ['painted', painted, 1], ['colors', colors, 4]]) {
+    const arr = vtkDataArray.newInstance({ name, values: vals, numberOfComponents: nc });
     pd.getPointData().addArray(arr);
   }
-  pd.getPointData().setActiveScalars('glow');
+  pd.getPointData().setActiveScalars('colors');
   return { pd, w, h, d, n };
 };
 
@@ -78,11 +78,10 @@ export function initZoo(host, base = '/') {
   });
   const renderer = glwindow.getRenderer();
   const renderWindow = glwindow.getRenderWindow();
-  const lut = buildLut();
   const newMapper = () => {
     const m = vtkMapper.newInstance();
-    m.setLookupTable(lut);
-    m.setUseLookupTableScalarRange(true);
+    m.setColorModeToDirectScalars();
+    m.setScalarVisibility(true);
     return m;
   };
   // Crisp core + a wide faint halo pass — cheap bloom stand-in.

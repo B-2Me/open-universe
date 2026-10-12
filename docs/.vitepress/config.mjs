@@ -14,16 +14,30 @@ const readingOrder = [
   { text: 'Intent', link: '/intent' }
 ]
 
-// Interactive instruments — kept out of the narrative reading order so the
-// top bar stays linear. This is where experiment/test pages accumulate.
-const instruments = {
-  text: 'Instruments',
-  items: [
-    { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
-    { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
-    { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
-  ]
-}
+// Interactive instruments — they live under Interference, not beside it.
+const instrumentItems = [
+  { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
+  { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
+  { text: 'Hopfion Zoo · dictionary', link: '/zoo' }
+]
+
+// Interference is a section, not a page: the narrative link becomes a
+// dropdown that carries the sub-pages and the instruments.
+const navBar = readingOrder.map(item =>
+  item.link === '/interference'
+    ? {
+        text: 'Interference',
+        items: [
+          { text: 'Overview', link: '/interference' },
+          { text: 'Theoretical Audits', link: '/interference/audits' },
+          { text: 'Predictive Roadmap', link: '/interference/roadmap' },
+          { text: 'The Open Frontier', link: '/interference/frontier' },
+          { text: 'Audio Sessions', link: '/interference/sessions' },
+          { text: 'Instruments', items: instrumentItems }
+        ]
+      }
+    : item
+)
 
 export default defineConfig({
   title: "The Open Universe",
@@ -69,7 +83,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    nav: [...readingOrder, instruments],
+    nav: navBar,
 
     // Section sidebar — shows on /interference and its sub-pages.
     sidebar: {
@@ -82,6 +96,14 @@ export default defineConfig({
             { text: 'Predictive Roadmap', link: '/interference/roadmap' },
             { text: 'The Open Frontier', link: '/interference/frontier' },
             { text: 'Audio Sessions', link: '/interference/sessions' }
+          ]
+        },
+        {
+          text: 'Instruments',
+          items: [
+            { text: "Langevin's Wake", link: '/wake-demo' },
+            { text: "Hopf's Loom", link: '/loom-demo' },
+            { text: 'Hopfion Zoo', link: '/zoo' }
           ]
         }
       ]
