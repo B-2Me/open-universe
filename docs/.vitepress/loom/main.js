@@ -146,8 +146,20 @@ export async function initLoomSimulator(root, opts = {}) {
   const hud = root.querySelector('[data-hud]');
   if (!gl) { hud.textContent = 'WebGL2 unavailable'; return () => {}; }
 
+  // Transient status line under the HUD — metrics own the HUD, so
+  // event messages live here and self-clear instead of being stomped
+  // by the per-frame write. ms=0 pins until the next message.
+  const statusEl = root.querySelector('[data-status]');
+  let statusTimer = 0;
+  const say = (msg, ms = 3000) => {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    clearTimeout(statusTimer);
+    statusTimer = ms > 0 ? setTimeout(() => { statusEl.textContent = ''; }, ms) : 0;
+  };
+
   // ---------- wasm ----------
-  if (hud) hud.textContent = 'loading engine…';
+  say('loading engine…');
   if (typeof createPlanck3 === 'undefined')
     await new Promise((res, rej) => {
       const sc = document.createElement('script');
@@ -155,7 +167,7 @@ export async function initLoomSimulator(root, opts = {}) {
       sc.onerror = () => rej(new Error('planck3.js load failed: ' + wasmUrl));
       document.head.appendChild(sc);
     });
-  if (hud) hud.textContent = 'instantiating wasm…';
+  say('instantiating wasm…');
   const wasm = await createPlanck3();
   // Runtime dims: the engine defaults to 100x100x40; an explicit
   // opts.dims re-scales (headless harnesses run 256^3).
@@ -179,9 +191,9 @@ export async function initLoomSimulator(root, opts = {}) {
     const rc = wasm._planck3_load_commit();
     if (rc !== 0) throw new Error(`planck3_load_commit rc=${rc}`);
   };
-  if (hud) hud.textContent = 'loading state…';
+  say('loading state…');
   await loadState(stateUrl);
-  if (hud) hud.textContent = 'state loaded';
+  say('state loaded', 2000);
 
   // Inject a current loop centred on a lattice cell — NOT a saturated
   // blob. A q=255 block deadlocks instantly: every cell's forward port
@@ -300,7 +312,7 @@ export async function initLoomSimulator(root, opts = {}) {
   // re-init on restore rather than freeze on a black canvas.
   canvas.addEventListener('webglcontextlost', e => {
     e.preventDefault();
-    if (hud) hud.textContent = 'GPU context lost — restarting…';
+    say('GPU context lost — restarting…', 5000);
   });
   canvas.addEventListener('webglcontextrestored', () => {
     root.dispatchEvent(new CustomEvent('loom:reinit'));
@@ -386,8 +398,8 @@ export async function initLoomSimulator(root, opts = {}) {
         if (cell) {
           injectKnot(cell.lx, cell.ly, cell.lz);
           upload(); dirty = true;
-          if (hud) hud.textContent = 'knot placed — ⌖ again to disarm';
-        } else if (hud) hud.textContent = 'edge-on view — pick while the slice plane is facing you';
+          say('knot placed — ⌖ again to disarm');
+        } else say('edge-on view — pick while the slice plane is facing you', 4500);
       }
     }
     downPos = null;
@@ -455,10 +467,11 @@ export async function initLoomSimulator(root, opts = {}) {
     ui.knotArm = on;
     canvas.style.cursor = on ? 'crosshair' : '';
     if (knotBtn) { knotBtn.classList.toggle('armed', on); knotBtn.setAttribute('aria-pressed', String(on)); }
-    if (hud && on) hud.textContent = 'knot tool armed — tap the lattice to place · ⌖ to cancel';
+    // Armed hint persists while armed (ms=0 pins); disarm clears it.
+    say(on ? 'knot tool armed — tap the lattice to place · ⌖ to cancel' : '', 0);
   };
   bind('[data-knot]', 'click', () => setKnotArm(!ui.knotArm));
-  bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; if (hud) hud.textContent = 'snapshot saved'; });
+  bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; say('snapshot saved', 2500); });
   bind('[data-unsnap]', 'click', () => { if (wasm._planck3_restore() === 0) { upload(); dirty = true; } });
   bind('[data-diss]', 'input', e => { wasm._planck3_set_dissipation(+e.target.value); readout(e); });
   bind('[data-therm]', 'input', e => {
@@ -660,8 +673,11 @@ export async function initLoomSimulator(root, opts = {}) {
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
       // T̄ = mean heat over occupied cells; ⌈⌉ = smoothed palette ceiling.
       // A flash is physical when T̄ spikes; if only ⌈⌉ moves it's the
-      // normalization adapting.
-      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()} · T̄${wasm._planck3_mean_heat().toFixed(0)} ⌈${wasm._planck3_rg_hmax()}⌉`;
+      // normalization adapting. ?. guards: a stale cached wasm lacking
+      // these exports must not kill the render loop.
+      const mh = wasm._planck3_mean_heat?.();
+      const hi = wasm._planck3_rg_hmax?.();
+      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()} · T̄${mh == null ? '—' : mh.toFixed(0)} ⌈${hi == null || hi < 0 ? '—' : hi}⌉`;
     }
   };
   raf = requestAnimationFrame(frame);
