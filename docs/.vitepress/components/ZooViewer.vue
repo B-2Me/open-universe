@@ -197,7 +197,7 @@ onUnmounted(() => {
 </style>
 
 <style>
-.zoo-page { overflow-x: hidden; }
+.zoo-page { overflow-x: hidden; background: #03010a; }
 .zoo-page .VPDocFooter, .zoo-page .VPBackToTop { display: none !important; }
 @media (pointer: coarse) {
   .zoo-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
