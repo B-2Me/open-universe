@@ -174,17 +174,18 @@ for (const f of files) {
   const live0 = wasm._planck3_live_cells();
   hb({ candidate: name, phase: 'start', t: 0 });
   const series = [];
-  let stableTail = true;
+  let stableTail = true, lastQ, lastDead;
   for (let t = SAMPLE; t <= TICKS; t += SAMPLE) {
     for (let k = 0; k < SAMPLE; k++) {
       wasm._planck3_tick();
-      hb({ candidate: name, phase: 'ticking', t: t - SAMPLE + k + 1 });
+      hb({ candidate: name, phase: 'ticking', t: t - SAMPLE + k + 1, q: lastQ, dead: lastDead });
     }
     if (MODE !== 0) wasm._planck3_collect();
     const q = wasm._planck3_total_quanta();
     const dead = wasm._planck3_deadlocked();
-    series.push({ t, q: Math.round(q), dead });
-    hb({ candidate: name, phase: 'ticking', t, q: Math.round(q), dead });
+    lastQ = Math.round(q); lastDead = dead;
+    series.push({ t, q: lastQ, dead });
+    hb({ candidate: name, phase: 'ticking', t, q: lastQ, dead });
     if (t > TICKS * 0.5 && series.length >= 2) {
       const prev = series[series.length - 2].q;
       if (Math.abs(q - prev) / Math.max(1, prev) > 0.05) stableTail = false;

@@ -81,8 +81,8 @@ function render() {
 
   if (live && live.phase === 'ticking') {
     const tPct = Math.round(100 * live.t / (live.config?.ticks || ticks));
-    console.log(`  live:   ${live.candidate} ticking ${live.t}/${live.config?.ticks || ticks} (${tPct}%) ` +
-      `q=${(live.q / 1e6).toFixed(2)}M dead=${live.dead} ${isAlive ? '' : '[STALE heartbeat]'}`);
+    const tele = live.q != null ? ` q=${(live.q / 1e6).toFixed(2)}M dead=${live.dead}` : '';
+    console.log(`  live:   ${live.candidate} ticking ${live.t}/${live.config?.ticks || ticks} (${tPct}%)${tele}${isAlive ? '' : ' [STALE heartbeat]'}`);
   } else if (live && live.candidate) {
     console.log(`  live:   ${live.candidate} — ${live.phase}${isAlive ? '' : ' [STALE heartbeat]'}`);
   }
