@@ -114,6 +114,22 @@ function render() {
     }
     console.log(`  age:    heartbeat ${fmtDur(bAge)} ago`);
   }
+
+  // ---- collision matrix (Phase 6) — same heartbeat pattern ----
+  let col = null;
+  try { col = JSON.parse(readFileSync(join(ROOT, 'logs', 'collide-status.json'), 'utf8')); } catch {}
+  if (col) {
+    const cAge = Date.now() - col.ts;
+    const cAlive = cAge < 120000;
+    console.log('  COLLISION MATRIX');
+    console.log(`  run:    ${col.scenario}`);
+    if (col.phase === 'ticking') {
+      console.log(`  live:   tick ${col.t} gap=${col.gap ?? '—'} merged=${col.merged}${cAlive ? '' : ' [STALE heartbeat]'}`);
+    } else {
+      console.log(`  state:  ${col.phase}${col.verdict ? ' — ' + col.verdict : ''}${cAlive ? '' : ' [STALE heartbeat]'}`);
+    }
+    console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
+  }
   console.log('');
 }
 

@@ -63,6 +63,14 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   `node script/boost.mjs --config=config/boost-pilot.json`.
   Results land in `logs/boost-<seed>-v<vector>.json`; heartbeat in
   `logs/boost-status.json` (separate from the sweep's status.json).
+- `script/collide.mjs` — S-Matrix harness: dual-spawns two dictionary
+  knots ±`separation` along an FCC axis (0-11 → ports 1-12), applies a
+  symmetric tension pinch at both ends, and classifies the aftermath
+  (elastic_bounce / fusion / annihilation / asymmetric / degraded) via
+  dual painted-mask BFS — knot allegiance is load-time provenance, the
+  6-byte node has no ID register. Run:
+  `node script/collide.mjs --config=config/collide-matrix.json`.
+  Results → logs/collide-<name>.json + collide-results.json.
 - `script/status.mjs` — read-only dashboard. Prints progress bar,
   stable/unraveled yield, latest stable discovery, per-candidate
   timing + ETA from `logs/status.json` (heartbeat written per tick

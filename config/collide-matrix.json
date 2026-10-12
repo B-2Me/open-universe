@@ -1,0 +1,20 @@
+{
+  "duration_ticks": 1000,
+  "pinch_tension": { "type": "adsr", "peak": 20, "attack": 50, "sustain": 800, "release": 150 },
+  "scenarios": [
+    {
+      "name": "symmetric_equatorial_headon",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0
+    },
+    {
+      "name": "asymmetric_diagonal_glancing",
+      "seed_A": "hopfion_72_16",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 4,
+      "impact_parameter": 15
+    }
+  ]
+}
