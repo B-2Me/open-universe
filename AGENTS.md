@@ -77,8 +77,12 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   by sweep.mjs; stale >2min ⇒ check the process). Usage:
   `node script/status.mjs --config=config/full-sweep.json`.
 - Background launch on Windows: `nohup … &` under Git Bash does NOT
-  survive the spawning session — the child dies silently. Detach
-  via PowerShell instead (BelowNormal ≈ nice -n 19):
+  survive the spawning session — and worse, `echo $!` captures the MSYS
+  wrapper PID, which dies while the real node.exe orphan keeps running
+  (we had two sweeps ping-pong-flushing knot_dictionary.json). Detach
+  via PowerShell instead (BelowNormal ≈ nice -n 19), and if output
+  looks like it's regressing, check for duplicate processes:
+  `Get-CimInstance Win32_Process -Filter "name='node.exe'"`
 
 ```powershell
 $p = Start-Process node 'script/sweep.mjs --config=config/full-sweep.json' `
