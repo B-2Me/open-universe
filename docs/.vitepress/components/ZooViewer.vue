@@ -84,18 +84,23 @@ onUnmounted(() => {
       </template>
       <div v-if="status !== 'ok'" class="zoo-card-status">{{ status }}</div>
     </div>
-    <button class="zoo-rotate" :class="{ on: spinning }" @click="toggleSpin"
-            title="Auto-rotate" aria-label="Toggle auto-rotate">⟳</button>
-
     <div class="zoo-ctrl">
+      <button class="cbtn cbtn-gizmo" @click="zoo?.reset()" title="Orientation — click to reset view">
+        <canvas data-gizmo width="72" height="72"></canvas>
+      </button>
       <button class="cbtn" @click="zoo?.reset()" title="Reset view">⤾</button>
       <button class="cbtn" :class="{ on: preset === 'orbit' }" @click="setPreset('orbit')" title="¾ view">¾</button>
       <button class="cbtn" :class="{ on: preset === 'top' }" @click="setPreset('top')" title="Top-down">TOP</button>
       <button class="cbtn" :class="{ on: preset === 'side' }" @click="setPreset('side')" title="Edge-on">SIDE</button>
+      <button class="cbtn" :class="{ on: spinning }" @click="toggleSpin" title="Auto-rotate">
+        <i class="lvl"></i>⟳
+      </button>
       <button class="cbtn cbtn-color" @click="cycleColor" :title="'Color by ' + colorMode">
         <i :class="colorMode"></i>{{ colorMode }}
       </button>
-      <button class="cbtn" :class="{ on: clipOn }" @click="clipOn = !clipOn; applyClip()" title="Z cross-section">Z✂</button>
+      <button class="cbtn" :class="{ on: clipOn }" @click="clipOn = !clipOn; applyClip()" title="Z cross-section">
+        <i class="lvl"></i>Z✂
+      </button>
       <input v-if="clipOn" class="zoo-slider" type="range" min="2" max="98" v-model.number="clipT" @input="applyClip">
     </div>
 
@@ -199,21 +204,6 @@ onUnmounted(() => {
 .zoo-legend .nad { background: #a770ff; box-shadow: 0 0 6px #a770ff88; }
 .zoo-card-status { color: #ffb0a0; margin-top: 4px; }
 
-.zoo-rotate {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 38px; height: 38px;
-  font: 16px monospace;
-  color: #9ef;
-  background: rgba(8, 6, 22, 0.55);
-  border: 1px solid rgba(160, 200, 255, 0.16);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  z-index: 3;
-}
-.zoo-rotate.on { color: #7fe; border-color: rgba(119, 255, 238, 0.5); box-shadow: 0 0 12px rgba(119, 255, 238, 0.25); }
-
 /* ── control bar (bottom center) ── */
 .zoo-ctrl {
   position: absolute;
@@ -249,6 +239,24 @@ onUnmounted(() => {
   border-color: rgba(119, 255, 238, 0.55);
   box-shadow: 0 0 10px rgba(119, 255, 238, 0.2);
 }
+.cbtn-gizmo { padding: 0 3px; }
+.cbtn-gizmo canvas { width: 30px; height: 30px; display: block; }
+/* level-bubble toggle indicator — hollow ring off, filled glow on */
+.cbtn .lvl {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: 0;
+  border: 1px solid #7fb0d8;
+  background: transparent;
+  transition: all 0.15s;
+}
+.cbtn.on .lvl {
+  background: #7fe;
+  border-color: #7fe;
+  box-shadow: 0 0 7px rgba(119, 255, 238, 0.9);
+}
 .cbtn-color i {
   display: inline-block;
   width: 8px; height: 8px;
@@ -267,7 +275,7 @@ onUnmounted(() => {
 
 .zoo-indexbtn {
   position: absolute;
-  top: 10px; right: 56px;
+  top: 10px; right: 10px;
   width: 38px; height: 38px;
   font: 16px/1 monospace;
   color: #9ef;

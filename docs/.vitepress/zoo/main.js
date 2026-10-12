@@ -7,8 +7,6 @@ import vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
 import vtkMapper from '@kitware/vtk.js/Rendering/Core/Mapper';
 import vtkPolyData from '@kitware/vtk.js/Common/DataModel/PolyData';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
-import vtkOrientationMarkerWidget from '@kitware/vtk.js/Interaction/Widgets/OrientationMarkerWidget';
-import vtkAxesActor from '@kitware/vtk.js/Rendering/Core/AxesActor';
 import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 import vtkInteractorStyleManipulator from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
 import vtkPlane from '@kitware/vtk.js/Common/DataModel/Plane';
@@ -123,21 +121,45 @@ export function initZoo(host, base = '/') {
   const interactor = renderWindow.getInteractor();
   interactor.setInteractorStyle(vtkInteractorStyleManipulator.newInstance());
 
-  // Orientation gizmo — ParaView-style axes chip, click to snap views.
-  let gizmo = null;
-  try {
-    const axes = vtkAxesActor.newInstance();
-    gizmo = vtkOrientationMarkerWidget.newInstance({
-      actor: axes,
-      interactor,
-      viewportCorner: vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
-      viewportSize: 0.15,
-      minPixelSize: 90,
-      maxPixelSize: 190,
-    });
-    gizmo.setEnabled(true);
-    if (gizmo.setInteractive) gizmo.setInteractive(true);
-  } catch { /* gizmo is cosmetic — never let it sink the viewer */ }
+  // Orientation gizmo — a tiny canvas in the toolbar projecting the XYZ
+  // axes through the camera basis. The camera is fully described by the
+  // orbit state below, so this is cheap and drift-proof — and it removes
+  // the vtk OrientationMarkerWidget, whose API shape kept drifting
+  // between vtk.js versions.
+  const gizmoCv = host.querySelector('[data-gizmo]');
+  const gctx = gizmoCv?.getContext('2d');
+  const drawGizmo = (orbit, focal) => {
+    if (!gctx) return;
+    const s = gizmoCv.width, c = s / 2, R = s * 0.36;
+    const sa = Math.sin(orbit.az), ca = Math.cos(orbit.az);
+    const se = Math.sin(orbit.el), ce = Math.cos(orbit.el);
+    // Camera basis for view-up +Z: right = (-sa, ca, 0),
+    // up = (-ca·se, -sa·se, ce), fwd = -(ce·ca, ce·sa, se).
+    const AXES = [[1, 0, 0, '#ff9a5c'], [0, 1, 0, '#7dffb0'], [0, 0, 1, '#56c8ff']];
+    const items = AXES.map(([x, y, z, col]) => ({
+      col,
+      sx: -x * sa + y * ca,
+      sy: -(x * ca + y * sa) * se + z * ce,
+      depth: -ce * (x * ca + y * sa) - z * se, // >0 → pointing at viewer
+    })).sort((a, b) => a.depth - b.depth);    // far axes drawn first
+    gctx.clearRect(0, 0, s, s);
+    for (const it of items) {
+      const front = it.depth > 0;
+      gctx.globalAlpha = front ? 1 : 0.3;
+      gctx.strokeStyle = it.col;
+      gctx.lineWidth = 2.2;
+      gctx.lineCap = 'round';
+      gctx.beginPath();
+      gctx.moveTo(c, c);
+      gctx.lineTo(c + it.sx * R, c - it.sy * R);
+      gctx.stroke();
+      gctx.fillStyle = it.col;
+      gctx.beginPath();
+      gctx.arc(c + it.sx * R, c - it.sy * R, front ? 3.4 : 2.2, 0, 7);
+      gctx.fill();
+    }
+    gctx.globalAlpha = 1;
+  };
 
   // Orbit state — the single source of truth for the camera. `applyOrbit`
   // rebuilds position/focal every call, so the camera can never drift:
@@ -158,6 +180,7 @@ export function initZoo(host, base = '/') {
     cam.setFocalPoint(...focal);
     renderer.resetCameraClippingRange();
     renderWindow.render();
+    drawGizmo(orbit, focal);
   };
 
   // Quick-view presets — the Loom's "cross-section" angles. The selected
@@ -303,7 +326,6 @@ export function initZoo(host, base = '/') {
     reset: resetView,
     dispose() {
       disposed = true;
-      gizmo?.setEnabled(false);
       glwindow.delete();
     },
   };
