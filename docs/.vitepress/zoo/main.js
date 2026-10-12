@@ -225,9 +225,18 @@ export function initZoo(host, base = '/') {
     // Keep the focal point and distance inside the knot's envelope —
     // belt-and-suspenders on top of the removed pan manipulator.
     cam.setFocalPoint(...focal);
-    const minD = diag * 0.25, maxD = diag * 5;
-    const d = cam.getDistance();
-    if (d < minD || d > maxD) cam.setDistance(Math.min(maxD, Math.max(minD, d)));
+    // Clamp by scaling camera position along the focal ray — NOT
+    // cam.setDistance(), which in vtk.js moves the *focal point* and
+    // would fight the pin above every frame.
+    const cp = cam.getPosition();
+    const rdx = cp[0] - focal[0], rdy = cp[1] - focal[1], rdz = cp[2] - focal[2];
+    const rd = Math.hypot(rdx, rdy, rdz) || 1;
+    const minD = diag * 0.2, maxD = diag * 3.5;
+    if (rd < minD || rd > maxD) {
+      const nd = Math.min(maxD, Math.max(minD, rd)) / rd;
+      cam.setPosition(focal[0] + rdx * nd, focal[1] + rdy * nd, focal[2] + rdz * nd);
+      renderer.resetCameraClippingRange();
+    }
     if (autoRotate && performance.now() - lastInteract > 1200) {
       cam.azimuth(0.12);
       // Ease elevation back toward the product angle — a manual drag to
