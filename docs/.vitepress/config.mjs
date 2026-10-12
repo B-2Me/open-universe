@@ -11,7 +11,8 @@ const readingOrder = [
   { text: 'Math', link: '/math' },
   { text: 'Paradoxes', link: '/paradox' },
   { text: 'Interference', link: '/interference' },
-  { text: 'Intent', link: '/intent' }
+  { text: 'Intent', link: '/intent' },
+  { text: 'Zoo', link: '/zoo' }
 ]
 
 export default defineConfig({
