@@ -117,17 +117,20 @@ export function initZoo(host, base = '/') {
   interactor.setInteractorStyle(istyle);
 
   // Orientation gizmo — ParaView-style axes chip, click to snap views.
-  const axes = vtkAxesActor.newInstance();
-  const gizmo = vtkOrientationMarkerWidget.newInstance({
-    actor: axes,
-    interactor,
-    viewportCorner: vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
-    viewportSize: 0.12,
-    minPixelSize: 72,
-    maxPixelSize: 160,
-  });
-  gizmo.setEnabled(true);
-  gizmo.setInteractive(true);
+  let gizmo = null;
+  try {
+    const axes = vtkAxesActor.newInstance();
+    gizmo = vtkOrientationMarkerWidget.newInstance({
+      actor: axes,
+      interactor,
+      viewportCorner: vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
+      viewportSize: 0.12,
+      minPixelSize: 72,
+      maxPixelSize: 160,
+    });
+    gizmo.setEnabled(true);
+    if (gizmo.setInteractive) gizmo.setInteractive(true);
+  } catch { /* gizmo is cosmetic — never let it sink the viewer */ }
 
   // Knot framing state — focal point pinned to the model centroid, view-up
   // locked to +Z (the torus axis). Azimuth orbits then hold a fixed
@@ -213,7 +216,7 @@ export function initZoo(host, base = '/') {
     setAutoRotate(v) { autoRotate = v; },
     dispose() {
       disposed = true;
-      gizmo.setEnabled(false);
+      gizmo?.setEnabled(false);
       glwindow.delete();
     },
   };
