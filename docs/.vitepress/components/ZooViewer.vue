@@ -23,6 +23,20 @@ const select = async (k) => {
 }
 const toggleSpin = () => { spinning.value = !spinning.value; zoo?.setAutoRotate(spinning.value) }
 
+const preset = ref('orbit')
+const setPreset = (p) => { preset.value = p; zoo?.setPreset(p) }
+
+const colorModes = ['spin', 'tension', 'quanta']
+const colorMode = ref('spin')
+const cycleColor = () => {
+  colorMode.value = colorModes[(colorModes.indexOf(colorMode.value) + 1) % colorModes.length]
+  zoo?.setColorMode(colorMode.value)
+}
+
+const clipOn = ref(false)
+const clipT = ref(50)
+const applyClip = () => zoo?.setClip(clipOn.value, clipT.value / 100)
+
 onMounted(async () => {
   document.body.classList.add('zoo-page')
   if (matchMedia('(pointer: coarse)').matches) railOpen.value = false
@@ -72,6 +86,18 @@ onUnmounted(() => {
     </div>
     <button class="zoo-rotate" :class="{ on: spinning }" @click="toggleSpin"
             title="Auto-rotate" aria-label="Toggle auto-rotate">⟳</button>
+
+    <div class="zoo-ctrl">
+      <button class="cbtn" @click="zoo?.reset()" title="Reset view">⤾</button>
+      <button class="cbtn" :class="{ on: preset === 'orbit' }" @click="setPreset('orbit')" title="¾ view">¾</button>
+      <button class="cbtn" :class="{ on: preset === 'top' }" @click="setPreset('top')" title="Top-down">TOP</button>
+      <button class="cbtn" :class="{ on: preset === 'side' }" @click="setPreset('side')" title="Edge-on">SIDE</button>
+      <button class="cbtn cbtn-color" @click="cycleColor" :title="'Color by ' + colorMode">
+        <i :class="colorMode"></i>{{ colorMode }}
+      </button>
+      <button class="cbtn" :class="{ on: clipOn }" @click="clipOn = !clipOn; applyClip()" title="Z cross-section">Z✂</button>
+      <input v-if="clipOn" class="zoo-slider" type="range" min="2" max="98" v-model.number="clipT" @input="applyClip">
+    </div>
 
     <button class="zoo-indexbtn" @click="railOpen = !railOpen"
             :title="railOpen ? 'Hide specimens' : 'Show specimens'">≡</button>
@@ -188,6 +214,57 @@ onUnmounted(() => {
 }
 .zoo-rotate.on { color: #7fe; border-color: rgba(119, 255, 238, 0.5); box-shadow: 0 0 12px rgba(119, 255, 238, 0.25); }
 
+/* ── control bar (bottom center) ── */
+.zoo-ctrl {
+  position: absolute;
+  left: 50%; bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(8, 6, 22, 0.62);
+  border: 1px solid rgba(160, 200, 255, 0.16);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 4;
+}
+.cbtn {
+  min-width: 38px; height: 38px;
+  padding: 0 9px;
+  font: 700 10px monospace;
+  letter-spacing: 0.06em;
+  color: #9ef;
+  background: rgba(30, 40, 80, 0.35);
+  border: 1px solid rgba(160, 200, 255, 0.14);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cbtn:hover { border-color: rgba(119, 255, 238, 0.5); color: #7fe; }
+.cbtn.on {
+  color: #7fe;
+  background: rgba(119, 255, 238, 0.12);
+  border-color: rgba(119, 255, 238, 0.55);
+  box-shadow: 0 0 10px rgba(119, 255, 238, 0.2);
+}
+.cbtn-color i {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+.cbtn-color i.spin { background: #ffa040; box-shadow: 0 0 6px #ffa040; }
+.cbtn-color i.tension { background: #26d9ff; box-shadow: 0 0 6px #26d9ff; }
+.cbtn-color i.quanta { background: #a770ff; box-shadow: 0 0 6px #a770ff; }
+.zoo-slider {
+  width: 90px;
+  accent-color: #7fe;
+  cursor: pointer;
+}
+
 .zoo-indexbtn {
   position: absolute;
   top: 10px; right: 56px;
@@ -256,6 +333,7 @@ onUnmounted(() => {
     border-radius: 0;
   }
   .zoo-index { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .zoo-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
 

@@ -14,6 +14,8 @@ import vtkMouseCameraTrackballZoomManipulator from '@kitware/vtk.js/Interaction/
 import vtkMouseCameraTrackballZoomToMouseManipulator from '@kitware/vtk.js/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator';
 import vtkGestureCameraManipulator from '@kitware/vtk.js/Interaction/Manipulators/GestureCameraManipulator';
 import vtkInteractorStyleManipulator from '@kitware/vtk.js/Interaction/Style/InteractorStyleManipulator';
+import vtkPlane from '@kitware/vtk.js/Common/DataModel/Plane';
+import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 
 // Spin-class palette — the same visual language as Hopf's Loom:
 // equatorial (toroidal) warm gold, zenith cyan, nadir violet, dead slate.
@@ -32,6 +34,17 @@ const LIGHT = (() => {
   const l = Math.hypot(0.4, 0.55, 0.72);
   return [0.4 / l, 0.55 / l, 0.72 / l];
 })();
+
+// Aurora ramp for the scalar color modes (tension / quanta).
+const buildLut = () => {
+  const lut = vtkColorTransferFunction.newInstance();
+  lut.addRGBPoint(0, 0.02, 0.10, 0.30);
+  lut.addRGBPoint(60, 0.05, 0.35, 0.85);
+  lut.addRGBPoint(140, 0.15, 0.90, 1.0);
+  lut.addRGBPoint(200, 0.70, 1.0, 0.90);
+  lut.addRGBPoint(255, 1.0, 1.0, 1.0);
+  return lut;
+};
 
 const parseBin = (buf) => {
   const dv = new DataView(buf);
@@ -136,19 +149,58 @@ export function initZoo(host, base = '/') {
   // locked to +Z (the torus axis). Azimuth orbits then hold a fixed
   // elevation: the flat torus can never degenerate to an edge-on sliver
   // mid-rotation.
-  let focal = [0, 0, 0], diag = 100;
-  const resetView = () => {
+  let focal = [0, 0, 0], diag = 100, bounds = null, currentPd = null;
+  let elTarget = 0.42; // elevation the turntable eases back toward
+  const placeCam = (az, el, d) => {
     const cam = renderer.getActiveCamera();
     cam.setViewUp(0, 0, 1);
-    const d = diag * 1.55;
-    const az = 0.55, el = 0.42; // product-shot angle, matches the Loom's pitch
     cam.setPosition(
       focal[0] + d * Math.cos(el) * Math.cos(az),
       focal[1] + d * Math.cos(el) * Math.sin(az),
       focal[2] + d * Math.sin(el),
     );
     cam.setFocalPoint(...focal);
+    elTarget = el;
     renderer.resetCameraClippingRange();
+    renderWindow.render();
+  };
+  const resetView = () => placeCam(0.55, 0.42, diag * 1.55);
+
+  // Quick-view presets — the Loom's "cross-section" angles.
+  const PRESETS = { orbit: [0.55, 0.42], top: [0.55, 1.45], side: [0.55, 0.06], iso: [0.78, 0.62] };
+  const setPreset = (name) => {
+    const p = PRESETS[name];
+    if (!p) return;
+    placeCam(p[0], p[1], renderer.getActiveCamera().getDistance() || diag * 1.55);
+  };
+
+  // Scalar color modes — 'spin' uses the baked RGBA classes; tension and
+  // quanta go through the aurora LUT.
+  const lut = buildLut();
+  const setColorMode = (mode) => {
+    if (!currentPd) return;
+    for (const m of [mapper, haloMapper]) {
+      if (mode === 'spin') m.setColorModeToDirectScalars();
+      else {
+        m.setColorModeToMapScalars();
+        m.setLookupTable(lut);
+        m.setUseLookupTableScalarRange(true);
+      }
+    }
+    currentPd.getPointData().setActiveScalars(mode === 'spin' ? 'colors' : mode);
+    renderWindow.render();
+  };
+
+  // Z-slice clip plane — a live cross-section through the torus.
+  const clipPlane = vtkPlane.newInstance({ normal: [0, 0, 1], origin: [0, 0, 0] });
+  const setClip = (on, t) => {
+    for (const m of [mapper, haloMapper]) {
+      m.removeAllClippingPlanes();
+      if (on && bounds) {
+        clipPlane.setOrigin(0, 0, bounds[4] + t * (bounds[5] - bounds[4]));
+        m.addClippingPlane(clipPlane);
+      }
+    }
     renderWindow.render();
   };
 
@@ -183,7 +235,7 @@ export function initZoo(host, base = '/') {
       const p = cam.getPosition();
       const dx = p[0] - focal[0], dy = p[1] - focal[1], dz = p[2] - focal[2];
       const r = Math.hypot(dx, dy), dist = Math.hypot(dx, dy, dz) || 1;
-      const el = Math.atan2(dz, r), target = 0.42;
+      const el = Math.atan2(dz, r), target = elTarget;
       // Rebuild position from spherical coords — never divide by cos(el),
       // which singularizes near the poles. And near a pole azimuth is
       // meaningless anyway, so leave the camera alone there.
@@ -212,7 +264,9 @@ export function initZoo(host, base = '/') {
     const { pd } = cache.get(entry.file);
     mapper.setInputData(pd);
     haloMapper.setInputData(pd);
+    currentPd = pd;
     const b = pd.getBounds();
+    bounds = b;
     focal = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
     diag = Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4]) || 100;
     resetView();
@@ -221,6 +275,10 @@ export function initZoo(host, base = '/') {
   return {
     load,
     setAutoRotate(v) { autoRotate = v; },
+    setPreset,
+    setColorMode,
+    setClip,
+    reset: resetView,
     dispose() {
       disposed = true;
       gizmo?.setEnabled(false);
