@@ -146,8 +146,20 @@ export async function initLoomSimulator(root, opts = {}) {
   const hud = root.querySelector('[data-hud]');
   if (!gl) { hud.textContent = 'WebGL2 unavailable'; return () => {}; }
 
+  // Transient status line under the HUD — metrics own the HUD, so
+  // event messages live here and self-clear instead of being stomped
+  // by the per-frame write. ms=0 pins until the next message.
+  const statusEl = root.querySelector('[data-status]');
+  let statusTimer = 0;
+  const say = (msg, ms = 3000) => {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    clearTimeout(statusTimer);
+    statusTimer = ms > 0 ? setTimeout(() => { statusEl.textContent = ''; }, ms) : 0;
+  };
+
   // ---------- wasm ----------
-  if (hud) hud.textContent = 'loading engine…';
+  say('loading engine…');
   if (typeof createPlanck3 === 'undefined')
     await new Promise((res, rej) => {
       const sc = document.createElement('script');
@@ -155,7 +167,7 @@ export async function initLoomSimulator(root, opts = {}) {
       sc.onerror = () => rej(new Error('planck3.js load failed: ' + wasmUrl));
       document.head.appendChild(sc);
     });
-  if (hud) hud.textContent = 'instantiating wasm…';
+  say('instantiating wasm…');
   const wasm = await createPlanck3();
   // Runtime dims: the engine defaults to 100x100x40; an explicit
   // opts.dims re-scales (headless harnesses run 256^3).
@@ -179,18 +191,44 @@ export async function initLoomSimulator(root, opts = {}) {
     const rc = wasm._planck3_load_commit();
     if (rc !== 0) throw new Error(`planck3_load_commit rc=${rc}`);
   };
-  if (hud) hud.textContent = 'loading state…';
+  say('loading state…');
   await loadState(stateUrl);
-  if (hud) hud.textContent = 'state loaded';
+  say('state loaded', 2000);
 
-  // Inject an 8^3 saturated knot centred on a lattice cell.
+  // Inject a current loop centred on a lattice cell — NOT a saturated
+  // blob. A q=255 block deadlocks instantly: every cell's forward port
+  // faces a saturated neighbour (occupancy > DEADLOCK=200) so nothing
+  // can ever flow — the "knot" reads as frozen mass because it IS. And
+  // heat=3000 blew the metabolism palette's scene normalization, so the
+  // ambient field blacked out at the same time. This ring instead sets
+  // tangential spin registers at q=110 (100% receivable — below the
+  // deadlock threshold even when the whole packet arrives), so the mass
+  // circulates around the ring and self-heats: a living vortex seed.
+  const EQ_PORTS = [[256, 0], [128, 222], [-128, 222], [-256, 0], [-128, -222], [128, -222]];
+  const tangSpin = (dx, dy) => {
+    const l = Math.hypot(dx, dy) || 1;
+    const tx = -dy / l, ty = dx / l;            // CCW tangent
+    let best = 1, bd = -Infinity;
+    for (let i = 0; i < 6; i++) {
+      const d = EQ_PORTS[i][0] * tx + EQ_PORTS[i][1] * ty;
+      if (d > bd) { bd = d; best = i + 1; }
+    }
+    return best;
+  };
   const injectKnot = (lx = 44, ly = 44, lz = 20) => {
-    for (let z = lz - 4; z < lz + 4; z++)
-      for (let y = ly - 4; y < ly + 4; y++)
-        for (let x = lx - 4; x < lx + 4; x++) {
-          if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
-          wasm._planck3_set_node((z * H3 + y) * W3 + x, 255, 1, 3000, 0, 0);
-        }
+    for (const r of [5, 4]) {                    // two concentric rings
+      const steps = Math.ceil(2 * Math.PI * r) + 1;
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * 2 * Math.PI;
+        const x = Math.round(lx + r * Math.cos(a));
+        const y = Math.round(ly + r * Math.sin(a));
+        if (x < 0 || x >= W3 || y < 0 || y >= H3 || lz < 0 || lz >= D3) continue;
+        wasm._planck3_set_node(
+          (lz * H3 + y) * W3 + x,
+          110, tangSpin(x - lx, y - ly), 200, 0, 0,
+        );
+      }
+    }
   };
 
   // Camera ray through a canvas pixel -> lattice cell on the current
@@ -274,7 +312,7 @@ export async function initLoomSimulator(root, opts = {}) {
   // re-init on restore rather than freeze on a black canvas.
   canvas.addEventListener('webglcontextlost', e => {
     e.preventDefault();
-    if (hud) hud.textContent = 'GPU context lost — restarting…';
+    say('GPU context lost — restarting…', 5000);
   });
   canvas.addEventListener('webglcontextrestored', () => {
     root.dispatchEvent(new CustomEvent('loom:reinit'));
@@ -360,8 +398,8 @@ export async function initLoomSimulator(root, opts = {}) {
         if (cell) {
           injectKnot(cell.lx, cell.ly, cell.lz);
           upload(); dirty = true;
-          if (hud) hud.textContent = 'knot placed — ⌖ again to disarm';
-        } else if (hud) hud.textContent = 'edge-on view — pick while the slice plane is facing you';
+          say('knot placed — ⌖ again to disarm');
+        } else say('edge-on view — pick while the slice plane is facing you', 4500);
       }
     }
     downPos = null;
@@ -406,8 +444,9 @@ export async function initLoomSimulator(root, opts = {}) {
   // a SUSTAINED window only — a warmup dip (shader compile, first
   // texture upload) must never permanently coarsen the picture, and a
   // recovered GPU refines back to full density.
-  let rStep = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
-  let lowT = null, highT = null;
+  const rStep0 = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
+  let rStep = rStep0;
+  let lowT = null, highT = null, lastSpent = 0;
   const bootT = performance.now();
   const strideInfo = () => {
     const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
@@ -418,16 +457,21 @@ export async function initLoomSimulator(root, opts = {}) {
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
   bind('[data-play]', 'click', e => { ui.playing = !ui.playing; e.target.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => { wasm._planck3_tick(); ui.tick++; upload(); dirty = true; });
-  bind('[data-reset]', 'click', async () => { await loadState(stateUrl); ui.tick = 0; upload(); dirty = true; });
+  bind('[data-reset]', 'click', async () => {
+    await loadState(stateUrl); ui.tick = 0;
+    rStep = rStep0; lowT = highT = null;   // restore render density too
+    upload(); dirty = true;
+  });
   const knotBtn = root.querySelector('[data-knot]');
   const setKnotArm = (on) => {
     ui.knotArm = on;
     canvas.style.cursor = on ? 'crosshair' : '';
     if (knotBtn) { knotBtn.classList.toggle('armed', on); knotBtn.setAttribute('aria-pressed', String(on)); }
-    if (hud && on) hud.textContent = 'knot tool armed — tap the lattice to place · ⌖ to cancel';
+    // Armed hint persists while armed (ms=0 pins); disarm clears it.
+    say(on ? 'knot tool armed — tap the lattice to place · ⌖ to cancel' : '', 0);
   };
   bind('[data-knot]', 'click', () => setKnotArm(!ui.knotArm));
-  bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; if (hud) hud.textContent = 'snapshot saved'; });
+  bind('[data-snap]', 'click', () => { wasm._planck3_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; say('snapshot saved', 2500); });
   bind('[data-unsnap]', 'click', () => { if (wasm._planck3_restore() === 0) { upload(); dirty = true; } });
   bind('[data-diss]', 'input', e => { wasm._planck3_set_dissipation(+e.target.value); readout(e); });
   bind('[data-therm]', 'input', e => {
@@ -548,19 +592,23 @@ export async function initLoomSimulator(root, opts = {}) {
     const dt = now - lastT; lastT = now;
     fps = fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05;
 
-    // adaptive safe-fail: sustained <20fps past warmup means the
-    // instance count is crushing the GPU — coarsen the render stride
-    // rather than freeze the tab. Sustained >50fps refines back.
-    // (The engine ticks at full fidelity regardless.)
-    if (now - bootT < 4000) lowT = null;
-    else if (fps > 1 && fps < 20) {
+    // adaptive safe-fail: coarsen only when the *render* is the
+    // bottleneck. Physics eats up to ui.budget ms of every frame, so raw
+    // fps can't tell GPU load from CPU load — a slow tick (e.g. another
+    // process hogging the CPU) would falsely coarsen, and the fps>50
+    // refine gate could never fire while playing. Measure the residual
+    // frame cost instead; refine when the render is cheap or the frame
+    // is vsync-bound with headroom.
+    const renderMs = Math.max(1, dt - lastSpent);
+    if (now - bootT < 4000) { lowT = null; highT = null; }
+    else if (renderMs > 30) {
       lowT = lowT || now; highT = null;
       if (now - lowT > 2500 && rStep < 4) { rStep *= 2; lowT = null; dirty = true; }
     } else {
       lowT = null;
-      if (fps > 50 && rStep > 1) {
+      if ((renderMs < 14 || fps > 55) && rStep > 1) {
         highT = highT || now;
-        if (now - highT > 5000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
+        if (now - highT > 4000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
       } else highT = null;
     }
 
@@ -592,8 +640,9 @@ export async function initLoomSimulator(root, opts = {}) {
         ui.tickMs = ui.tickMs * 0.9 + ms * 0.1;
         if (ui.tickMs > ui.budget) break; // single tick already over budget
       }
+      lastSpent = spent;   // render-cost estimator reads this next frame
       upload(); dirty = true;
-    }
+    } else lastSpent = 0;
 
     resize();
     if (dirty) {
@@ -622,7 +671,13 @@ export async function initLoomSimulator(root, opts = {}) {
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
-      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()}`;
+      // T̄ = mean heat over occupied cells; ⌈⌉ = smoothed palette ceiling.
+      // A flash is physical when T̄ spikes; if only ⌈⌉ moves it's the
+      // normalization adapting. ?. guards: a stale cached wasm lacking
+      // these exports must not kill the render loop.
+      const mh = wasm._planck3_mean_heat?.();
+      const hi = wasm._planck3_rg_hmax?.();
+      hud.textContent = `q=${(wasm._planck3_total_quanta() / 1e6).toFixed(2)}M/${(N3 / 1e6).toFixed(1)}M · t${ui.tick} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t · knots=${wasm._planck3_deadlocked()} · T̄${mh == null ? '—' : mh.toFixed(0)} ⌈${hi == null || hi < 0 ? '—' : hi}⌉`;
     }
   };
   raf = requestAnimationFrame(frame);

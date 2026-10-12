@@ -40,6 +40,8 @@ onUnmounted(() => {
 
     <!-- telemetry chip -->
     <div class="loom-hud" data-hud>booting…</div>
+    <!-- transient status line under the telemetry chip — empty = hidden -->
+    <div class="loom-status" data-status></div>
 
     <!-- always-visible collapse toggle -->
     <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
@@ -145,6 +147,25 @@ onUnmounted(() => {
   overflow-wrap: anywhere;
   z-index: 3;
 }
+
+/* transient status line — sits under the telemetry chip, never competes
+   with it. :empty hides it, so clearing text is the whole off-switch. */
+.loom-status {
+  position: absolute;
+  top: 38px;
+  left: 8px;
+  max-width: calc(100% - 64px);
+  padding: 3px 9px;
+  font: 10px/1.4 monospace;
+  color: var(--loom-muted);
+  background: rgba(8, 10, 20, 0.45);
+  border: 1px solid rgba(160, 200, 255, 0.12);
+  border-radius: 7px;
+  pointer-events: none;
+  text-shadow: 0 0 4px #000;
+  z-index: 3;
+}
+.loom-status:empty { display: none; }
 
 /* collapse toggle — small, always visible */
 .loom-uitoggle {

@@ -1,0 +1,600 @@
+{
+  "generated": "2026-10-12T16:27:37.098Z",
+  "settle": 8,
+  "diss": 15,
+  "limit": 50000,
+  "knots": [
+    {
+      "name": "hopfion_20_7",
+      "file": "hopfion_20_7.bin",
+      "cells": 11514,
+      "mass": 690840,
+      "R0": 20,
+      "R1": 7,
+      "loops": 9,
+      "radiusXY": 21.23,
+      "radiusZ": 3.87,
+      "dims": [
+        100,
+        100,
+        40
+      ]
+    },
+    {
+      "name": "hopfion_24_8",
+      "file": "hopfion_24_8.bin",
+      "cells": 17108,
+      "mass": 1026480,
+      "R0": 24,
+      "R1": 8,
+      "loops": 13,
+      "radiusXY": 25.12,
+      "radiusZ": 4.34,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_40_8",
+      "file": "hopfion_40_8.bin",
+      "cells": 19816,
+      "mass": 1188960,
+      "R0": 40,
+      "R1": 8,
+      "loops": 15,
+      "radiusXY": 40.29,
+      "radiusZ": 4.39,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_32_8",
+      "file": "hopfion_32_8.bin",
+      "cells": 20952,
+      "mass": 1257120,
+      "R0": 32,
+      "R1": 8,
+      "loops": 14,
+      "radiusXY": 32.77,
+      "radiusZ": 4.44,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_56_8",
+      "file": "hopfion_56_8.bin",
+      "cells": 22045,
+      "mass": 1322700,
+      "R0": 56,
+      "R1": 8,
+      "loops": 15,
+      "radiusXY": 54.84,
+      "radiusZ": 4.22,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_80_8",
+      "file": "hopfion_80_8.bin",
+      "cells": 22189,
+      "mass": 1331340,
+      "R0": 80,
+      "R1": 8,
+      "loops": 12,
+      "radiusXY": 78.68,
+      "radiusZ": 4.02,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_64_8",
+      "file": "hopfion_64_8.bin",
+      "cells": 22454,
+      "mass": 1347240,
+      "R0": 64,
+      "R1": 8,
+      "loops": 14,
+      "radiusXY": 62.71,
+      "radiusZ": 3.9,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_20_9",
+      "file": "hopfion_20_9.bin",
+      "cells": 23150,
+      "mass": 1389000,
+      "R0": 20,
+      "R1": 9,
+      "loops": 19,
+      "radiusXY": 21.93,
+      "radiusZ": 5.31,
+      "dims": [
+        100,
+        100,
+        40
+      ]
+    },
+    {
+      "name": "hopfion_72_8",
+      "file": "hopfion_72_8.bin",
+      "cells": 24332,
+      "mass": 1459920,
+      "R0": 72,
+      "R1": 8,
+      "loops": 13,
+      "radiusXY": 70.26,
+      "radiusZ": 4.26,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_48_8",
+      "file": "hopfion_48_8.bin",
+      "cells": 24898,
+      "mass": 1493880,
+      "R0": 48,
+      "R1": 8,
+      "loops": 14,
+      "radiusXY": 48.14,
+      "radiusZ": 4.27,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_30_9",
+      "file": "hopfion_30_9.bin",
+      "cells": 26786,
+      "mass": 1607160,
+      "R0": 30,
+      "R1": 9,
+      "loops": 17,
+      "radiusXY": 30.86,
+      "radiusZ": 5.46,
+      "dims": [
+        100,
+        100,
+        40
+      ]
+    },
+    {
+      "name": "hopfion_25_9",
+      "file": "hopfion_25_9.bin",
+      "cells": 27971,
+      "mass": 1678260,
+      "R0": 25,
+      "R1": 9,
+      "loops": 19,
+      "radiusXY": 26.44,
+      "radiusZ": 5.3,
+      "dims": [
+        100,
+        100,
+        40
+      ]
+    },
+    {
+      "name": "hopfion_24_12",
+      "file": "hopfion_24_12.bin",
+      "cells": 34996,
+      "mass": 2099760,
+      "R0": 24,
+      "R1": 12,
+      "loops": 24,
+      "radiusXY": 25.71,
+      "radiusZ": 6.32,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_30_12",
+      "file": "hopfion_30_12.bin",
+      "cells": 44120,
+      "mass": 2647200,
+      "R0": 30,
+      "R1": 12,
+      "loops": 26,
+      "radiusXY": 31.85,
+      "radiusZ": 6.53,
+      "dims": [
+        100,
+        100,
+        40
+      ]
+    },
+    {
+      "name": "hopfion_40_12",
+      "file": "hopfion_40_12.bin",
+      "cells": 44604,
+      "mass": 2676240,
+      "R0": 40,
+      "R1": 12,
+      "loops": 30,
+      "radiusXY": 40.57,
+      "radiusZ": 6.16,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_32_12",
+      "file": "hopfion_32_12.bin",
+      "cells": 45998,
+      "mass": 2759880,
+      "R0": 32,
+      "R1": 12,
+      "loops": 30,
+      "radiusXY": 33.61,
+      "radiusZ": 6.37,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_56_12",
+      "file": "hopfion_56_12.bin",
+      "cells": 46718,
+      "mass": 2803080,
+      "R0": 56,
+      "R1": 12,
+      "loops": 30,
+      "radiusXY": 55.68,
+      "radiusZ": 6.15,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_48_12",
+      "file": "hopfion_48_12.bin",
+      "cells": 51229,
+      "mass": 3073740,
+      "R0": 48,
+      "R1": 12,
+      "loops": 31,
+      "radiusXY": 48.03,
+      "radiusZ": 6.29,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_80_12",
+      "file": "hopfion_80_12.bin",
+      "cells": 52685,
+      "mass": 3161100,
+      "R0": 80,
+      "R1": 12,
+      "loops": 30,
+      "radiusXY": 78.77,
+      "radiusZ": 6.25,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_72_12",
+      "file": "hopfion_72_12.bin",
+      "cells": 55800,
+      "mass": 3348000,
+      "R0": 72,
+      "R1": 12,
+      "loops": 32,
+      "radiusXY": 70.48,
+      "radiusZ": 6.39,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_64_12",
+      "file": "hopfion_64_12.bin",
+      "cells": 56610,
+      "mass": 3396600,
+      "R0": 64,
+      "R1": 12,
+      "loops": 36,
+      "radiusXY": 64.17,
+      "radiusZ": 6.45,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_24_16",
+      "file": "hopfion_24_16.bin",
+      "cells": 65611,
+      "mass": 3936660,
+      "R0": 24,
+      "R1": 16,
+      "loops": 40,
+      "radiusXY": 27.44,
+      "radiusZ": 8.24,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_32_16",
+      "file": "hopfion_32_16.bin",
+      "cells": 66149,
+      "mass": 3968940,
+      "R0": 32,
+      "R1": 16,
+      "loops": 39,
+      "radiusXY": 33.99,
+      "radiusZ": 8.16,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_40_16",
+      "file": "hopfion_40_16.bin",
+      "cells": 72749,
+      "mass": 4364940,
+      "R0": 40,
+      "R1": 16,
+      "loops": 45,
+      "radiusXY": 40.92,
+      "radiusZ": 8.01,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_48_16",
+      "file": "hopfion_48_16.bin",
+      "cells": 74691,
+      "mass": 4481460,
+      "R0": 48,
+      "R1": 16,
+      "loops": 42,
+      "radiusXY": 48.43,
+      "radiusZ": 7.73,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_56_16",
+      "file": "hopfion_56_16.bin",
+      "cells": 76782,
+      "mass": 4606920,
+      "R0": 56,
+      "R1": 16,
+      "loops": 43,
+      "radiusXY": 55.39,
+      "radiusZ": 7.81,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_72_16",
+      "file": "hopfion_72_16.bin",
+      "cells": 87341,
+      "mass": 5240460,
+      "R0": 72,
+      "R1": 16,
+      "loops": 52,
+      "radiusXY": 71.02,
+      "radiusZ": 7.98,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_80_16",
+      "file": "hopfion_80_16.bin",
+      "cells": 94709,
+      "mass": 5682540,
+      "R0": 80,
+      "R1": 16,
+      "loops": 58,
+      "radiusXY": 79.8,
+      "radiusZ": 8.03,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_64_16",
+      "file": "hopfion_64_16.bin",
+      "cells": 95099,
+      "mass": 5705940,
+      "R0": 64,
+      "R1": 16,
+      "loops": 53,
+      "radiusXY": 64.02,
+      "radiusZ": 7.98,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_24_20",
+      "file": "hopfion_24_20.bin",
+      "cells": 121169,
+      "mass": 7270140,
+      "R0": 24,
+      "R1": 20,
+      "loops": 71,
+      "radiusXY": 30.32,
+      "radiusZ": 10.53,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_48_20",
+      "file": "hopfion_48_20.bin",
+      "cells": 122690,
+      "mass": 7361400,
+      "R0": 48,
+      "R1": 20,
+      "loops": 75,
+      "radiusXY": 48.74,
+      "radiusZ": 10.13,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_40_20",
+      "file": "hopfion_40_20.bin",
+      "cells": 127822,
+      "mass": 7669320,
+      "R0": 40,
+      "R1": 20,
+      "loops": 75,
+      "radiusXY": 42.21,
+      "radiusZ": 10.49,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_56_20",
+      "file": "hopfion_56_20.bin",
+      "cells": 129299,
+      "mass": 7757940,
+      "R0": 56,
+      "R1": 20,
+      "loops": 78,
+      "radiusXY": 55.65,
+      "radiusZ": 10.17,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_72_20",
+      "file": "hopfion_72_20.bin",
+      "cells": 131884,
+      "mass": 7913040,
+      "R0": 72,
+      "R1": 20,
+      "loops": 74,
+      "radiusXY": 70.75,
+      "radiusZ": 10.03,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_32_20",
+      "file": "hopfion_32_20.bin",
+      "cells": 133077,
+      "mass": 7984620,
+      "R0": 32,
+      "R1": 20,
+      "loops": 81,
+      "radiusXY": 37.16,
+      "radiusZ": 10.6,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_64_20",
+      "file": "hopfion_64_20.bin",
+      "cells": 134997,
+      "mass": 8099820,
+      "R0": 64,
+      "R1": 20,
+      "loops": 77,
+      "radiusXY": 64.2,
+      "radiusZ": 9.83,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    },
+    {
+      "name": "hopfion_80_20",
+      "file": "hopfion_80_20.bin",
+      "cells": 154345,
+      "mass": 9260700,
+      "R0": 80,
+      "R1": 20,
+      "loops": 85,
+      "radiusXY": 80.04,
+      "radiusZ": 9.81,
+      "dims": [
+        256,
+        256,
+        256
+      ]
+    }
+  ]
+}

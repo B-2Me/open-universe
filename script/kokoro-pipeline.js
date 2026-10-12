@@ -102,9 +102,13 @@ function sanitizeTextForTTS(text) {
   return sanitized.trim();
 }
 
+// Pages that get no narration: the landing hero and the live
+// instruments (the Tools — simulators, not prose).
+const SKIP = new Set(['index', 'loom-demo', 'wake-demo', 'hopfion-zoo']);
+
 async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');
-  if (filename === 'index') return; 
+  if (SKIP.has(filename)) return;
 
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
   const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
@@ -204,12 +208,21 @@ async function processFile(filePath) {
   console.log(`Successfully generated audio and sync map for ${filename}`);
 }
 
+// Recursive walk — section pages like docs/interference/*.md are prose
+// too and deserve narration. Basenames must stay unique: <name>.mp3 is
+// flat inside docs/public/audio/.
+async function* walk(dir) {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.') || entry.name === 'public' || entry.name === 'node_modules') continue;
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) yield* walk(p);
+    else if (entry.name.endsWith('.md')) yield p;
+  }
+}
+
 async function run() {
-  const files = await fs.readdir(CONTENT_DIR);
-  for (const file of files) {
-    if (file.endsWith('.md')) {
-      await processFile(path.join(CONTENT_DIR, file));
-    }
+  for await (const filePath of walk(CONTENT_DIR)) {
+    await processFile(filePath);
   }
 }
 

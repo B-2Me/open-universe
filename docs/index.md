@@ -10,14 +10,11 @@ hero:
       text: Enter The Planck Field
       link: /field
     - theme: alt
-      text: Stress-Test the Paradoxes
-      link: /paradox
-    - theme: alt
-      text: Run the Sandbox Engine
-      link: /wake-demo
-    - theme: alt
       text: Weave Hopf's Loom
       link: /loom-demo
+    - theme: alt
+      text: Visit the Hopfion Zoo
+      link: /hopfion-zoo
 
 features:
   - title: Objective Thermodynamics

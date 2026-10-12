@@ -4,14 +4,69 @@ import mathjax3 from 'markdown-it-mathjax3'
 
 const pkg = createRequire(import.meta.url)('../../package.json')
 
+// One sequence drives three surfaces: the navbar folds it into
+// dropdowns, the sidebars repeat each section's items, and
+// transformPageData turns it into prev/next footers — so reading
+// order and navigation order can never diverge again.
 const readingOrder = [
   { text: 'Planck Field', link: '/field' },
-  { text: 'Interface', link: '/interface' },
+  { text: 'Theory', link: '/theory' },
+  { text: 'Paradoxes', link: '/paradox' },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
-  { text: 'Paradoxes', link: '/paradox' },
+  { text: 'Interface', link: '/interface' },
   { text: 'Interference', link: '/interference' },
+  { text: 'Theoretical Audits', link: '/interference/audits' },
+  { text: 'Predictive Roadmap', link: '/interference/roadmap' },
+  { text: 'The Open Frontier', link: '/interference/frontier' },
+  { text: 'Audio Sessions', link: '/interference/sessions' },
+  { text: "Langevin's Wake", link: '/wake-demo' },
+  { text: "Hopf's Loom", link: '/loom-demo' },
+  { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
   { text: 'Intent', link: '/intent' }
+]
+
+const theoryItems = [
+  { text: 'Overview', link: '/theory' },
+  { text: 'Paradoxes · the anomalies', link: '/paradox' },
+  { text: 'Source · the substrate model', link: '/source' },
+  { text: 'Math · the formalism', link: '/math' },
+  { text: 'Interface · the observer', link: '/interface' }
+]
+
+const interferenceItems = [
+  { text: 'Overview', link: '/interference' },
+  { text: 'Theoretical Audits', link: '/interference/audits' },
+  { text: 'Predictive Roadmap', link: '/interference/roadmap' },
+  { text: 'The Open Frontier', link: '/interference/frontier' },
+  { text: 'Audio Sessions', link: '/interference/sessions' }
+]
+
+// Interactive instruments — they live under Interference, not beside it.
+const instrumentItems = [
+  { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
+  { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
+  { text: 'Hopfion Zoo · dictionary', link: '/hopfion-zoo' }
+]
+
+// Top bar = section heads only. Everything else in readingOrder is
+// dropdown content, so the map whitelists the two standalone links —
+// a new page added to readingOrder can't leak into the top bar.
+const navBar = readingOrder.flatMap(item => {
+  if (item.link === '/theory')
+    return [{ text: 'Theory', items: theoryItems }]
+  if (item.link === '/interference')
+    return [{ text: 'Interference', items: [...interferenceItems, { text: 'Instruments', items: instrumentItems }] }]
+  return (item.link === '/field' || item.link === '/intent') ? [item] : []
+})
+
+// Shared section sidebars — same items as the dropdowns (sidebar
+// labels drop the '· description' suffix).
+const theorySidebar = [{ text: 'Theory', items: theoryItems }]
+
+const interferenceSidebar = [
+  { text: 'Interference', items: interferenceItems },
+  { text: 'Instruments', items: instrumentItems.map(({ text, link }) => ({ text: text.split(' · ')[0], link })) }
 ]
 
 export default defineConfig({
@@ -58,7 +113,19 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    nav: readingOrder,
+    nav: navBar,
+
+    // Section sidebars — the Theory arc (Overview→Paradoxes→Source→
+    // Math→Interface) and the Interference section (sub-pages +
+    // instruments).
+    sidebar: {
+      '/theory': theorySidebar,
+      '/paradox': theorySidebar,
+      '/source': theorySidebar,
+      '/math': theorySidebar,
+      '/interface': theorySidebar,
+      '/interference': interferenceSidebar
+    },
 
     footer: {
       copyright: 'The Open Universe Audit'

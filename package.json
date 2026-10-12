@@ -12,6 +12,7 @@
     "generate-audio": "node script/kokoro-pipeline.js"
   },
   "dependencies": {
+    "@kitware/vtk.js": "^32.6.0",
     "markdown-it-mathjax3": "latest",
     "vitepress": "latest",
     "vue": "latest"
