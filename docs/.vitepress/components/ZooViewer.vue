@@ -104,16 +104,20 @@ onUnmounted(() => {
       <input v-if="clipOn" class="zoo-slider" type="range" min="2" max="98" v-model.number="clipT" @input="applyClip">
     </div>
 
-    <button class="zoo-indexbtn" @click="railOpen = !railOpen"
-            :title="railOpen ? 'Hide specimens' : 'Show specimens'">≡</button>
     <div class="zoo-index" :class="{ closed: !railOpen }">
-      <div class="zoo-index-title">SPECIMENS · {{ knots.length }}</div>
-      <button v-for="k in knots" :key="k.name"
-              class="zoo-row" :class="{ on: current && current.name === k.name }"
-              @click="select(k)">
-        <span class="zoo-row-name">{{ k.name }}</span>
-        <span class="zoo-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
+      <button class="zoo-index-title" @click="railOpen = !railOpen"
+              :title="railOpen ? 'Collapse specimens' : 'Expand specimens'">
+        <span class="caret" :class="{ open: railOpen }">▸</span>
+        SPECIMENS · {{ knots.length }}
       </button>
+      <div class="zoo-rows" v-show="railOpen">
+        <button v-for="k in knots" :key="k.name"
+                class="zoo-row" :class="{ on: current && current.name === k.name }"
+                @click="select(k)">
+          <span class="zoo-row-name">{{ k.name }}</span>
+          <span class="zoo-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -273,40 +277,50 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.zoo-indexbtn {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 38px; height: 38px;
-  font: 16px/1 monospace;
-  color: #9ef;
-  background: rgba(8, 6, 22, 0.55);
-  border: 1px solid rgba(160, 200, 255, 0.16);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  z-index: 3;
-}
 .zoo-index {
   position: absolute;
-  top: 54px; right: 10px; bottom: 12px;
+  top: 10px; right: 10px;
   width: 172px;
-  overflow-y: auto;
-  padding: 8px 6px;
-  scrollbar-width: thin;
+  max-height: calc(100% - 22px);
+  display: flex;
+  flex-direction: column;
   background: rgba(8, 6, 22, 0.55);
   border: 1px solid rgba(160, 200, 255, 0.16);
   border-radius: 14px;
   backdrop-filter: blur(12px);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
   z-index: 3;
-  transition: transform 0.22s, opacity 0.22s;
 }
-.zoo-index.closed { transform: translateX(120%); opacity: 0; pointer-events: none; }
+/* Collapsed = the header row alone, a small pill in the corner. */
+.zoo-index.closed {
+  width: auto;
+  max-height: none;
+  border-radius: 10px;
+}
 .zoo-index-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
   font: 700 9px monospace;
   letter-spacing: 0.14em;
   color: #7fd89a;
-  padding: 2px 8px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.zoo-index-title .caret {
+  display: inline-block;
+  font-size: 8px;
+  color: #9ef;
+  transition: transform 0.15s;
+}
+.zoo-index-title .caret.open { transform: rotate(90deg); }
+.zoo-rows {
+  overflow-y: auto;
+  padding: 0 6px 8px;
+  scrollbar-width: thin;
 }
 .zoo-row {
   display: flex;
@@ -340,7 +354,6 @@ onUnmounted(() => {
     max-width: none;
     border-radius: 0;
   }
-  .zoo-index { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   .zoo-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
