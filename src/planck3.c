@@ -92,6 +92,7 @@ static uint32_t cur_tick = 0;
 
 // Lazily-allocated bulk buffers (declared early — init_dims frees them).
 static uint8_t *load_buf = NULL, *rg_buf = NULL;
+static int agc_lo = -1, agc_hi = -1; // smoothed palette bounds (rg mode 1)
 static Node3 *save_buf = NULL;
 static int save_valid = 0;
 // Fitness telemetry for headless sweeps: unwind events + sprayed mass.
@@ -669,6 +670,7 @@ EMSCRIPTEN_KEEPALIVE int planck3_load_commit(void) {
         g_rd[i].buffer = b[i]; g_rd[i].tension = tn[i];
         g_rd[i].heat = (uint16_t)(hp[2 * i] | (hp[2 * i + 1] << 8));
     }
+    agc_lo = agc_hi = -1; // scene swap — palette re-seeds on next frame
     return 0;
 }
 EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) {
@@ -679,21 +681,39 @@ EMSCRIPTEN_KEEPALIVE uint8_t *planck3_rg_pointer(void) {
 // after chunked runs so g_rd is current.
 EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
     if (mode == 1) {
-        // Thermal-camera normalization: spread the live heat range of
-        // rendered (q>0) cells across the full byte so internal structure
-        // resolves regardless of absolute temperature. Fixed /16 scaling
-        // collapsed the whole donut into a few values.
-        int hmin = 65535, hmax = 0;
+        // Thermal-camera AGC. A raw min/max lets a single injection spike
+        // seize the scale: hmax re-pins globally, every cell remaps in one
+        // frame (the flash) and the bulk compresses into a palette sliver
+        // (the variety loss). Percentile bounds tie the scale to the
+        // *bulk* of live cells — the top ~0.5% saturate white instead of
+        // capturing the range — and a leaky integrator smooths the bounds
+        // so normalization shifts read as a pulse, not a snap.
+        int hmin = 65535, occ = 0;
+        uint32_t hist[1024] = {0};
         for (int32_t i = 0; i < N3; i++) {
             if (g_rd[i].quanta > 0) {
                 int h = g_rd[i].heat;
                 if (h < hmin) hmin = h;
-                if (h > hmax) hmax = h;
+                hist[h >> 6]++;
+                occ++;
             }
         }
-        int span = hmax > hmin ? hmax - hmin : 1;
+        int hmax = hmin + 1;
+        if (occ > 0) {
+            uint32_t top = (uint32_t)(occ / 200), acc = 0; // top 0.5% clips
+            if (top < 1) top = 1;
+            for (int b = 1023; b >= 0; b--) {
+                acc += hist[b];
+                if (acc >= top) { hmax = (b << 6) + 63; break; }
+            }
+            if (hmax <= hmin) hmax = hmin + 1;
+        }
+        if (agc_lo < 0) { agc_lo = hmin; agc_hi = hmax; }
+        else { agc_lo += (hmin - agc_lo) / 8; agc_hi += (hmax - agc_hi) / 8; }
+        int span = agc_hi > agc_lo ? agc_hi - agc_lo : 1;
+        int lo = agc_lo;
         for (int32_t i = 0; i < N3; i++) {
-            int d = (int)g_rd[i].heat - hmin;
+            int d = (int)g_rd[i].heat - lo;
             if (d < 0) d = 0; else if (d > span) d = span;
             rg_buf[2 * i] = g_rd[i].quanta;
             rg_buf[2 * i + 1] = (uint8_t)(d * 255 / span);
@@ -720,6 +740,7 @@ EMSCRIPTEN_KEEPALIVE void planck3_save(void) {
 EMSCRIPTEN_KEEPALIVE int planck3_restore(void) {
     if (!save_valid || !save_buf) return -1;
     memcpy(g_rd, save_buf, (size_t)N3 * sizeof(Node3));
+    agc_lo = agc_hi = -1;
     return 0;
 }
 
