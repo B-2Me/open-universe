@@ -33,10 +33,6 @@ const cycleColor = () => {
   zoo?.setColorMode(colorMode.value)
 }
 
-const clipOn = ref(false)
-const clipT = ref(50)
-const applyClip = () => zoo?.setClip(clipOn.value, clipT.value / 100)
-
 onMounted(async () => {
   document.body.classList.add('zoo-page')
   if (matchMedia('(pointer: coarse)').matches) railOpen.value = false
@@ -88,19 +84,18 @@ onUnmounted(() => {
       <button class="cbtn cbtn-gizmo" @click="zoo?.reset()" title="Orientation — click to reset view">
         <canvas data-gizmo width="72" height="72"></canvas>
       </button>
-      <button class="cbtn" :class="{ on: preset === 'orbit' }" @click="setPreset('orbit')" title="¾ view">¾</button>
-      <button class="cbtn" :class="{ on: preset === 'top' }" @click="setPreset('top')" title="Top-down">TOP</button>
-      <button class="cbtn" :class="{ on: preset === 'side' }" @click="setPreset('side')" title="Edge-on">SIDE</button>
-      <button class="cbtn" :class="{ on: spinning }" @click="toggleSpin" title="Auto-rotate">
-        <i class="lvl"></i>⟳
+      <div class="cseg">
+        <button class="cbtn" :class="{ on: preset === 'orbit' }" @click="setPreset('orbit')" title="¾ view">¾</button>
+        <button class="cbtn" :class="{ on: preset === 'top' }" @click="setPreset('top')" title="Top-down">TOP</button>
+        <button class="cbtn" :class="{ on: preset === 'side' }" @click="setPreset('side')" title="Edge-on">SIDE</button>
+        <button class="cbtn" :class="{ on: preset === 'cut' }" @click="setPreset('cut')" title="Slice open — see inside">CUT</button>
+      </div>
+      <button class="cbtn cbtn-tog" :class="{ on: spinning }" @click="toggleSpin" title="Auto-rotate">
+        ⟳<i class="pl"></i>
       </button>
-      <button class="cbtn cbtn-color" @click="cycleColor" :title="'Color by ' + colorMode">
-        <i :class="colorMode"></i>{{ colorMode }}
+      <button class="cbtn cbtn-color" :class="colorMode" @click="cycleColor" :title="'Color by ' + colorMode">
+        {{ colorMode }}
       </button>
-      <button class="cbtn" :class="{ on: clipOn }" @click="clipOn = !clipOn; applyClip()" title="Z cross-section">
-        <i class="lvl"></i>Z✂
-      </button>
-      <input v-if="clipOn" class="zoo-slider" type="range" min="2" max="98" v-model.number="clipT" @input="applyClip">
     </div>
 
     <div class="zoo-index" :class="{ closed: !railOpen }">
@@ -244,37 +239,49 @@ onUnmounted(() => {
 }
 .cbtn-gizmo { padding: 0 3px; }
 .cbtn-gizmo canvas { width: 30px; height: 30px; display: block; }
-/* level-bubble toggle indicator — hollow ring off, filled glow on */
-.cbtn .lvl {
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: 0;
+/* Segmented view selector — the presets are mutually exclusive, so they
+   share one pill instead of looking like four independent buttons. */
+.cseg {
+  display: flex;
+  border: 1px solid rgba(160, 200, 255, 0.14);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cseg .cbtn { border: none; border-radius: 0; }
+.cseg .cbtn + .cbtn { border-left: 1px solid rgba(160, 200, 255, 0.14); }
+/* Toggle pill — a level bar *under* the icon, clearly part of the
+   button: hollow when off, filled when on. */
+.cbtn-tog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+}
+.cbtn-tog .pl {
+  display: block;
+  width: 16px; height: 4px;
+  border-radius: 2px;
   border: 1px solid #7fb0d8;
   background: transparent;
   transition: all 0.15s;
 }
-.cbtn.on .lvl {
+.cbtn-tog.on .pl {
   background: #7fe;
   border-color: #7fe;
   box-shadow: 0 0 7px rgba(119, 255, 238, 0.9);
 }
-.cbtn-color i {
-  display: inline-block;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: -1px;
+/* Color-mode cycler — fixed width so the label swap can't resize the
+   button; the background tint carries the state, not a dot. */
+.cbtn-color {
+  min-width: 92px;
+  text-align: center;
+  text-transform: uppercase;
 }
-.cbtn-color i.spin { background: #ffa040; box-shadow: 0 0 6px #ffa040; }
-.cbtn-color i.tension { background: #26d9ff; box-shadow: 0 0 6px #26d9ff; }
-.cbtn-color i.quanta { background: #a770ff; box-shadow: 0 0 6px #a770ff; }
-.zoo-slider {
-  width: 90px;
-  accent-color: #7fe;
-  cursor: pointer;
-}
+.cbtn-color.spin    { background: rgba(255, 160, 64, 0.14); border-color: rgba(255, 160, 64, 0.45); }
+.cbtn-color.tension { background: rgba(38, 217, 255, 0.13); border-color: rgba(38, 217, 255, 0.45); }
+.cbtn-color.quanta  { background: rgba(167, 112, 255, 0.16); border-color: rgba(167, 112, 255, 0.5); }
 
 .zoo-index {
   position: absolute;

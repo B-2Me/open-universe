@@ -29,14 +29,24 @@ const LIGHT = (() => {
   return [0.4 / l, 0.55 / l, 0.72 / l];
 })();
 
-// Aurora ramp for the scalar color modes (tension / quanta).
-const buildLut = () => {
+// Aurora ramp for tension, ember ramp for quanta — the two scalar modes
+// need distinct palettes or they read as the same bland blue knot.
+const buildAuroraLut = () => {
   const lut = vtkColorTransferFunction.newInstance();
   lut.addRGBPoint(0, 0.02, 0.10, 0.30);
   lut.addRGBPoint(60, 0.05, 0.35, 0.85);
   lut.addRGBPoint(140, 0.15, 0.90, 1.0);
   lut.addRGBPoint(200, 0.70, 1.0, 0.90);
   lut.addRGBPoint(255, 1.0, 1.0, 1.0);
+  return lut;
+};
+const buildEmberLut = () => {
+  const lut = vtkColorTransferFunction.newInstance();
+  lut.addRGBPoint(0, 0.10, 0.02, 0.04);
+  lut.addRGBPoint(60, 0.45, 0.08, 0.06);
+  lut.addRGBPoint(140, 0.95, 0.35, 0.08);
+  lut.addRGBPoint(200, 1.0, 0.72, 0.25);
+  lut.addRGBPoint(255, 1.0, 0.96, 0.82);
   return lut;
 };
 
@@ -48,13 +58,15 @@ const parseBin = (buf) => {
   const raw = new Uint8Array(buf, 20);
   const pts = new Float32Array(n * 3), verts = new Uint32Array(n * 2);
   const tension = new Float32Array(n), quanta = new Float32Array(n), painted = new Float32Array(n);
-  let tMax = 1;
+  let tMin = 255, tMax = 1, qMax = 1;
   for (let i = 0; i < n; i++) {
     const o = i * 7;
     pts[i * 3] = raw[o]; pts[i * 3 + 1] = raw[o + 1]; pts[i * 3 + 2] = raw[o + 2];
     verts[i * 2] = 1; verts[i * 2 + 1] = i;
     quanta[i] = raw[o + 3]; tension[i] = raw[o + 5]; painted[i] = raw[o + 6];
     if (tension[i] > tMax) tMax = tension[i];
+    if (tension[i] < tMin) tMin = tension[i];
+    if (quanta[i] > qMax) qMax = quanta[i];
   }
   // Per-point RGBA: spin-class hue × lambert shade (bbox-center normals vs
   // the key light) × a soft tension luminance. Direct scalars — no LUT.
@@ -72,6 +84,18 @@ const parseBin = (buf) => {
     colors[i * 4 + 1] = Math.min(255, rgb[1] * shade * 255);
     colors[i * 4 + 2] = Math.min(255, rgb[2] * shade * 255);
     colors[i * 4 + 3] = painted[i] ? 255 : 60;
+  }
+  // Scalar display modes: compress the real spread across most of the
+  // ramp (sqrt for tension, log for quanta — settled knots cluster hard)
+  // and fold in the same lambert term so the field has surface texture
+  // even where the underlying scalar is nearly uniform.
+  const tR = (tMax - tMin) || 1, lq = Math.log1p(qMax) || 1;
+  for (let i = 0; i < n; i++) {
+    const nx = pts[i * 3] - cx, ny = pts[i * 3 + 1] - cy, nz = pts[i * 3 + 2] - cz;
+    const nl = Math.hypot(nx, ny, nz) || 1;
+    const lam = Math.max(0, (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) / nl);
+    tension[i] = Math.min(255, 255 * (0.15 + 0.55 * Math.sqrt((tension[i] - tMin) / tR) + 0.30 * lam));
+    quanta[i] = Math.min(255, 255 * (0.15 + 0.55 * (Math.log1p(quanta[i]) / lq) + 0.30 * lam));
   }
   const pd = vtkPolyData.newInstance();
   pd.getPoints().setData(pts, 3);
@@ -183,47 +207,45 @@ export function initZoo(host, base = '/') {
     drawGizmo(orbit, focal);
   };
 
-  // Quick-view presets — the Loom's "cross-section" angles. The selected
-  // preset is remembered: reset (double-click/tap, ⤾) returns to it
+  // Quick-view presets — the Loom's "cross-section" angles. CUT swaps the
+  // mystery slider for a single honest action: a side-on view with the
+  // top half clipped away, exposing the torus interior. The selected
+  // preset is remembered: reset (double-click/tap, gizmo) returns to it
   // rather than always forcing the default ¾ view.
-  const PRESETS = { orbit: [0.55, 0.42], top: [0.55, 1.45], side: [0.55, 0.06], iso: [0.78, 0.62] };
+  const clipPlane = vtkPlane.newInstance({ normal: [0, 0, 1], origin: [0, 0, 0] });
+  const PRESETS = { orbit: [0.55, 0.42], top: [0.55, 1.45], side: [0.55, 0.06], cut: [0.55, 0.5] };
   let activePreset = 'orbit';
   const setPreset = (name) => {
     const p = PRESETS[name];
     if (!p) return;
     activePreset = name;
     orbit.az = p[0]; orbit.el = p[1]; elTarget = p[1];
+    for (const m of [mapper, haloMapper]) {
+      m.removeAllClippingPlanes();
+      if (name === 'cut' && bounds) {
+        clipPlane.setOrigin(0, 0, (bounds[4] + bounds[5]) / 2);
+        m.addClippingPlane(clipPlane);
+      }
+    }
     applyOrbit();
   };
   const resetView = () => setPreset(activePreset);
 
   // Scalar color modes — 'spin' uses the baked RGBA classes; tension and
-  // quanta go through the aurora LUT.
-  const lut = buildLut();
+  // quanta map through separate LUTs (aurora / ember) so the modes can't
+  // be mistaken for each other.
+  const aurora = buildAuroraLut(), ember = buildEmberLut();
   const setColorMode = (mode) => {
     if (!currentPd) return;
     for (const m of [mapper, haloMapper]) {
       if (mode === 'spin') m.setColorModeToDirectScalars();
       else {
         m.setColorModeToMapScalars();
-        m.setLookupTable(lut);
+        m.setLookupTable(mode === 'quanta' ? ember : aurora);
         m.setUseLookupTableScalarRange(true);
       }
     }
     currentPd.getPointData().setActiveScalars(mode === 'spin' ? 'colors' : mode);
-    renderWindow.render();
-  };
-
-  // Z-slice clip plane — a live cross-section through the torus.
-  const clipPlane = vtkPlane.newInstance({ normal: [0, 0, 1], origin: [0, 0, 0] });
-  const setClip = (on, t) => {
-    for (const m of [mapper, haloMapper]) {
-      m.removeAllClippingPlanes();
-      if (on && bounds) {
-        clipPlane.setOrigin(0, 0, bounds[4] + t * (bounds[5] - bounds[4]));
-        m.addClippingPlane(clipPlane);
-      }
-    }
     renderWindow.render();
   };
 
@@ -322,7 +344,6 @@ export function initZoo(host, base = '/') {
     setAutoRotate(v) { autoRotate = v; },
     setPreset,
     setColorMode,
-    setClip,
     reset: resetView,
     dispose() {
       disposed = true;
