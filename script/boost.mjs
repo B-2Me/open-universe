@@ -36,6 +36,7 @@
  * (retain >= 0.95). Result JSON → logs/boost-<seed>-v<vector>.json.
  */
 import { createRequire } from 'node:module';
+import { writeVtkFrame } from './vtk.mjs';
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,6 +59,7 @@ const TICKS = num('duration_ticks', num('ticks', 500));
 const SKIN = num('wall_skin', 1);
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
 const FLUX = CFG.flux_profile ?? {};
+const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
 
 // ---------- wave envelope evaluator f(t) ----------
@@ -278,7 +280,15 @@ const trail = [skel0];                           // rolling window for v10
 const series = [];
 let cLast = c0, aborted = false;
 const t0ms = Date.now();
+const VTK_DIR = VTK_EVERY ? join(LOGDIR, 'vtk', `boost-${seed.name || SEED_NAME}-v${VECTOR}`) : null;
+if (VTK_DIR) mkdirSync(VTK_DIR, { recursive: true });
 for (let t = 0; t < TICKS; t++) {
+  if (VTK_DIR && t % VTK_EVERY === 0)
+    writeVtkFrame({
+      file: join(VTK_DIR, `frame_${String(t).padStart(5, '0')}.vtk`),
+      w, h, d, statePtr, heap8, masks: { a: painted }, tick: t,
+      title: `boost ${seed.name || SEED_NAME} v${VECTOR}`,
+    });
   inject(t);
   wasm._planck3_tick();
   const c = census();

@@ -71,6 +71,13 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   6-byte node has no ID register. Run:
   `node script/collide.mjs --config=config/collide-matrix.json`.
   Results → logs/collide-<name>.json + collide-results.json.
+- `script/vtk.mjs` — shared sparse VTK exporter (ASCII POLYDATA point
+  cloud, live cells only): quanta / tension / painted (1=A, 2=B, 0
+  accreted) / flow_vector (spin port → unit FCC vector). Wire with
+  `--vtk-interval=N` (or `vtk_interval` in config); frames land in
+  `logs/vtk/<run>/frame_NNNNN.vtk` — open the folder in ParaView as a
+  time series. The 2D engine's dense STRUCTURED_POINTS export lives in
+  planck.c (generate_vtk); sparse is the right topology for 16.7M nodes.
 - `script/status.mjs` — read-only dashboard. Prints progress bar,
   stable/unraveled yield, latest stable discovery, per-candidate
   timing + ETA from `logs/status.json` (heartbeat written per tick

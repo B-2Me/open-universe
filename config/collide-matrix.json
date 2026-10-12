@@ -1,6 +1,12 @@
 {
   "duration_ticks": 1000,
-  "pinch_tension": { "type": "adsr", "peak": 20, "attack": 50, "sustain": 800, "release": 150 },
+  "pinch_tension": {
+    "type": "adsr",
+    "peak": 20,
+    "attack": 50,
+    "sustain": 800,
+    "release": 150
+  },
   "scenarios": [
     {
       "name": "symmetric_equatorial_headon",
@@ -16,5 +22,6 @@
       "fcc_axis": 4,
       "impact_parameter": 15
     }
-  ]
+  ],
+  "vtk_interval": 25
 }

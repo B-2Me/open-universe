@@ -3,9 +3,26 @@
   "vector": 3,
   "duration_ticks": 500,
   "flux_profile": {
-    "quanta": { "type": "adsr", "peak": 2, "attack": 50, "sustain": 100, "release": 50 },
-    "tension": { "type": "sine", "amplitude": 5, "period": 20 },
-    "spin": { "type": "constant", "value": 0 },
-    "heat": { "type": "constant", "value": 0 }
-  }
+    "quanta": {
+      "type": "adsr",
+      "peak": 2,
+      "attack": 50,
+      "sustain": 100,
+      "release": 50
+    },
+    "tension": {
+      "type": "sine",
+      "amplitude": 5,
+      "period": 20
+    },
+    "spin": {
+      "type": "constant",
+      "value": 0
+    },
+    "heat": {
+      "type": "constant",
+      "value": 0
+    }
+  },
+  "vtk_interval": 20
 }

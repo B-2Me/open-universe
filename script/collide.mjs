@@ -36,6 +36,7 @@
  * logs/collide-<name>.json; appended summary → logs/collide-results.json.
  */
 import { createRequire } from 'node:module';
+import { writeVtkFrame } from './vtk.mjs';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,6 +56,7 @@ const TICKS = num('duration_ticks', 1000);
 const SEP = num('separation', 64);
 const PINCH = CFG.pinch_tension ?? 20;
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
+const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
 const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
 
@@ -297,8 +299,16 @@ for (const sc of scenarios) {
         (c0.merged ? c0.compA.skelB : c0.compB.skelB).z - c0.compA.skelA.z)
     : null;
   const t0ms = Date.now();
+  const VTK_DIR = VTK_EVERY ? join(LOGDIR, 'vtk', `collide-${sc.name}`) : null;
+  if (VTK_DIR) mkdirSync(VTK_DIR, { recursive: true });
   let aborted = false;
   for (let t = 0; t < TICKS; t++) {
+    if (VTK_DIR && t % VTK_EVERY === 0)
+      writeVtkFrame({
+        file: join(VTK_DIR, `frame_${String(t).padStart(5, '0')}.vtk`),
+        w, h, d, statePtr, heap8, masks: { a: paintedA, b: paintedB }, tick: t,
+        title: `collide ${sc.name} axis${axis} b${b}`,
+      });
     pinch(t);
     wasm._planck3_tick();
     const c = census();
