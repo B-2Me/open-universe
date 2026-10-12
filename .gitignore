@@ -10,3 +10,12 @@ docs/public/wasm/loom/planck3.wasm
 node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+
+# Generated experiment data (reproducible, not source)
+seeds/
+knot_dictionary.json
+knot_dictionary.json.tmp
+
+# Generated TTS narration + sync maps (CI regenerates per deploy —
+# same category as the wasm artifacts, not source)
+docs/public/audio/

@@ -55,6 +55,15 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   supplies defaults (CLI wins). Sweeps run in plain Node — no
   container needed, so a "restart" is just re-running the command.
 
+## Generated artifacts — never commit
+
+`seeds/`, `knot_dictionary.json`, `docs/public/audio/` (Kokoro TTS
+mp3s + sync maps), and all wasm outputs are generated, not source.
+The deploy workflow regenerates audio per deploy and ships it via
+`dist/` — it is NOT committed back (kept out to stop repo bloat).
+To hear narration locally, run `npm run generate-audio` (needs the
+Kokoro pipeline); without it the Listen chip appears but can't play.
+
 ## Docs build
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { withBase } from 'vitepress'
 
 const props = defineProps({
@@ -8,6 +8,14 @@ const props = defineProps({
 
 const audioRef = ref(null)
 const wrapperRef = ref(null)
+// Collapsed by default: a "Listen" chip expands into the playback
+// controller on first click (user gesture also licenses autoplay).
+const isListening = ref(false)
+const startListening = async () => {
+  isListening.value = true
+  await nextTick()
+  audioRef.value?.play().catch(() => {})
+}
 let animationFrameId = null
 let isMounted = true
 
@@ -192,9 +200,22 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Original Audio Injector -->
+  <!-- Audio injector: collapsed "Listen" chip -> full controller -->
   <div ref="wrapperRef" class="embedded-audio-wrapper" v-if="audioSrc">
-    <audio ref="audioRef" controls preload="metadata">
+    <button
+      v-show="!isListening"
+      class="listen-btn"
+      @click="startListening"
+      aria-label="Listen to a narrated reading of this page"
+      title="Listen — narrated audio for this page"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <!-- ear with signal arcs (material "hearing") -->
+        <path d="M17 20c-.29 0-.56-.06-.76-.15-.71-.37-1.21-.88-1.71-2.38-.51-1.56-1.47-2.29-2.39-3-.79-.62-1.61-1.24-2.32-2.53C9.29 10.48 9 9.3 9 8c0-2.8 2.2-5 5-5s5 2.2 5 5h2c0-3.93-3.07-7-7-7S7 4.07 7 8c0 1.26.38 2.65 1.07 3.9.91 1.65 1.98 2.48 2.85 3.15.81.62 1.39 1.07 1.71 2.05.6 1.82 1.37 2.84 2.73 3.55.51.23 1.07.35 1.64.35 2.21 0 4-1.79 4-4h-2c0 1.1-.9 2-2 2zM7.64 2.64 6.22 1.22C4.23 3.21 3 5.96 3 9s1.23 5.79 3.22 7.78l1.41-1.41C6.01 13.74 5 11.49 5 9s1.01-4.74 2.64-6.36zM11.5 9c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5z"/>
+      </svg>
+      <span>Listen</span>
+    </button>
+    <audio v-show="isListening" ref="audioRef" controls preload="metadata">
       <source :src="withBase(audioSrc)" type="audio/mpeg">
     </audio>
   </div>
@@ -251,6 +272,30 @@ onUnmounted(() => {
   width: 100%;
   height: 28px;
   outline: none;
+}
+
+.listen-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.listen-btn:hover {
+  color: var(--vp-c-brand);
+  border-color: var(--vp-c-brand);
+  background: var(--vp-c-default-soft);
 }
 
 /* New Floating Controls Styles */

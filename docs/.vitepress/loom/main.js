@@ -402,9 +402,13 @@ export async function initLoomSimulator(root, opts = {}) {
       const o = el.parentElement?.querySelector('output'); if (o) o.value = val; }
   }
   // render stride: subsample the lattice when the instance count would
-  // crush the GPU (headless-scale grids / weak mobile GPUs). Raised
-  // adaptively if fps drops below a usable threshold.
+  // crush the GPU (headless-scale grids / weak mobile GPUs). Adjusts on
+  // a SUSTAINED window only — a warmup dip (shader compile, first
+  // texture upload) must never permanently coarsen the picture, and a
+  // recovered GPU refines back to full density.
   let rStep = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
+  let lowT = null, highT = null;
+  const bootT = performance.now();
   const strideInfo = () => {
     const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
     return { nx, ny, nxy: nx * ny, count: nx * ny * nz };
@@ -544,10 +548,21 @@ export async function initLoomSimulator(root, opts = {}) {
     const dt = now - lastT; lastT = now;
     fps = fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05;
 
-    // adaptive safe-fail: sub-24fps means the instance count is crushing
-    // the GPU — coarsen the render stride rather than freeze the tab
-    // (engine keeps ticking at full fidelity regardless).
-    if (fps > 1 && fps < 24 && rStep < 4) { rStep *= 2; dirty = true; }
+    // adaptive safe-fail: sustained <20fps past warmup means the
+    // instance count is crushing the GPU — coarsen the render stride
+    // rather than freeze the tab. Sustained >50fps refines back.
+    // (The engine ticks at full fidelity regardless.)
+    if (now - bootT < 4000) lowT = null;
+    else if (fps > 1 && fps < 20) {
+      lowT = lowT || now; highT = null;
+      if (now - lowT > 2500 && rStep < 4) { rStep *= 2; lowT = null; dirty = true; }
+    } else {
+      lowT = null;
+      if (fps > 50 && rStep > 1) {
+        highT = highT || now;
+        if (now - highT > 5000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
+      } else highT = null;
+    }
 
     // auto-turntable: resume after 4 s of pointer inactivity
     if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
