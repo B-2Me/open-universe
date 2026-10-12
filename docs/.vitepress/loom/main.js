@@ -406,8 +406,9 @@ export async function initLoomSimulator(root, opts = {}) {
   // a SUSTAINED window only — a warmup dip (shader compile, first
   // texture upload) must never permanently coarsen the picture, and a
   // recovered GPU refines back to full density.
-  let rStep = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
-  let lowT = null, highT = null;
+  const rStep0 = N3 > 16e6 ? 4 : N3 > 4e6 ? 2 : 1;
+  let rStep = rStep0;
+  let lowT = null, highT = null, lastSpent = 0;
   const bootT = performance.now();
   const strideInfo = () => {
     const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
@@ -418,7 +419,11 @@ export async function initLoomSimulator(root, opts = {}) {
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
   bind('[data-play]', 'click', e => { ui.playing = !ui.playing; e.target.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => { wasm._planck3_tick(); ui.tick++; upload(); dirty = true; });
-  bind('[data-reset]', 'click', async () => { await loadState(stateUrl); ui.tick = 0; upload(); dirty = true; });
+  bind('[data-reset]', 'click', async () => {
+    await loadState(stateUrl); ui.tick = 0;
+    rStep = rStep0; lowT = highT = null;   // restore render density too
+    upload(); dirty = true;
+  });
   const knotBtn = root.querySelector('[data-knot]');
   const setKnotArm = (on) => {
     ui.knotArm = on;
@@ -548,19 +553,23 @@ export async function initLoomSimulator(root, opts = {}) {
     const dt = now - lastT; lastT = now;
     fps = fps * 0.95 + (1000 / Math.max(1, dt)) * 0.05;
 
-    // adaptive safe-fail: sustained <20fps past warmup means the
-    // instance count is crushing the GPU — coarsen the render stride
-    // rather than freeze the tab. Sustained >50fps refines back.
-    // (The engine ticks at full fidelity regardless.)
-    if (now - bootT < 4000) lowT = null;
-    else if (fps > 1 && fps < 20) {
+    // adaptive safe-fail: coarsen only when the *render* is the
+    // bottleneck. Physics eats up to ui.budget ms of every frame, so raw
+    // fps can't tell GPU load from CPU load — a slow tick (e.g. another
+    // process hogging the CPU) would falsely coarsen, and the fps>50
+    // refine gate could never fire while playing. Measure the residual
+    // frame cost instead; refine when the render is cheap or the frame
+    // is vsync-bound with headroom.
+    const renderMs = Math.max(1, dt - lastSpent);
+    if (now - bootT < 4000) { lowT = null; highT = null; }
+    else if (renderMs > 30) {
       lowT = lowT || now; highT = null;
       if (now - lowT > 2500 && rStep < 4) { rStep *= 2; lowT = null; dirty = true; }
     } else {
       lowT = null;
-      if (fps > 50 && rStep > 1) {
+      if ((renderMs < 14 || fps > 55) && rStep > 1) {
         highT = highT || now;
-        if (now - highT > 5000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
+        if (now - highT > 4000) { rStep = Math.max(1, rStep / 2); highT = null; dirty = true; }
       } else highT = null;
     }
 
@@ -592,8 +601,9 @@ export async function initLoomSimulator(root, opts = {}) {
         ui.tickMs = ui.tickMs * 0.9 + ms * 0.1;
         if (ui.tickMs > ui.budget) break; // single tick already over budget
       }
+      lastSpent = spent;   // render-cost estimator reads this next frame
       upload(); dirty = true;
-    }
+    } else lastSpent = 0;
 
     resize();
     if (dirty) {
