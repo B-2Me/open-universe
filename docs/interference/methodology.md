@@ -67,11 +67,12 @@ Time advances in discrete ticks $t \to t + 1$. The engine supports three memory 
 
 ## 4. Causal Thermodynamics & Cold Matter Inversion
 
-A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does **not** represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. The core transition loop is strictly deterministic. Instead, the engine implements **Causal Thermodynamics**—an exact, hop-by-hop integer accounting of directional routing impedance and finite node bandwidth.
+A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does not represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. In classical continuum physics, standard parabolic heat and fluid equations (Fourier and Navier-Stokes) unphysically permit infinite propagation speeds, forcing relativists and aerospace engineers to bolt on second-order hyperbolic delay patches (such as Maxwell-Cattaneo or Israel-Stewart "extended causal thermodynamics") to prevent thermal flux from outrunning the speed of light. On our discrete 12-neighbor lattice, causal transport ($c = 1\text{ hop / tick}$) is native to the adjacency graph by construction—requiring zero differential relaxation patches—and implements **Discrete Causal Thermodynamics**: an exact, PRNG-free integer accounting of directional routing impedance and finite node bandwidth.
 
-| Property | Classical Statistical Thermodynamics | Discrete Causal Thermodynamics (`planck3.c`) |
+| Property | Classical / Continuum Thermodynamics | Discrete Causal Thermodynamics (`planck3.c`) |
 | :--- | :--- | :--- |
 | **Microscopic Basis** | Probabilistic ensemble over continuous phase space ($\mathbb{R}^{6N}$). | Deterministic integer state transitions on a 12-port FCC lattice. |
+| **Causal Speed Limit** | Infinite in classical Fourier/Navier-Stokes; patched via hyperbolic $\tau$ delay terms in Israel-Stewart. | Native $c = 1\text{ hop / tick}$ (`FLOW_CAP`) enforced by neighbor adjacency. |
 | **Origin of Heat ($h$)** | Random microscopic kinetic jitter ($k_B T$). | Exact integer residual of angular port misalignment ($\Phi$) and hop friction ($\mu$). |
 | **Cooling Mechanism** | Passive statistical diffusion into an infinite external reservoir. | Local per-tick quadrature bandwidth allocation (`BWF_LUT`). |
 | **Equilibrium Fate of Solitons** | Entropic dissipation into uniform thermal noise unless externally pumped. | **Cold Matter Inversion:** Zero-friction ($\Delta\theta \le 60^\circ$) phase-locked cores quench to the thermal floor. |
