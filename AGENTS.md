@@ -45,6 +45,11 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   (load/rg/save/chunk pools) are lazy — wasm memory can grow after
   ANY pointer call, so wrap `wasmMemory.buffer` only after pointer
   calls, never cache a view across them.
+- `planck3_state_pointer()` is STABLE: flat mode publishes into a
+  fixed `g_rd` via memcpy-back (no buffer swap — the swap silently
+  invalidated a cached JS pointer every other tick). Refetching per
+  tick is still harmless and keeps harnesses robust; what is NOT ok
+  is caching `wasmMemory.buffer` across pointer calls (see above).
 - Typical workflow: `node script/pathfinder.mjs --r0=32,64 --r1=8,16`
   then `node script/sweep.mjs --seeds=seeds --ticks=400`.
   Bounded pilot: `node script/sweep.mjs --config=config/pilot-sweep.json`.

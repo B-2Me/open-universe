@@ -1,0 +1,32 @@
+{
+  "duration_ticks": 200,
+  "separation": 64,
+  "pinch_tension": 0,
+  "vtk_interval": 25,
+  "scenarios": [
+    {
+      "name": "boost_a06",
+      "seed_A": "hopfion_25_9",
+      "seed_B": "hopfion_25_9",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "boost_A": "1,0,0,0.6"
+    },
+    {
+      "name": "boost_a10",
+      "seed_A": "hopfion_25_9",
+      "seed_B": "hopfion_25_9",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "boost_A": "1,0,0,1.0"
+    },
+    {
+      "name": "boost_a15",
+      "seed_A": "hopfion_25_9",
+      "seed_B": "hopfion_25_9",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "boost_A": "1,0,0,1.5"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "duration_ticks": 200,
+  "separation": 100,
+  "pinch_tension": 0,
+  "vtk_interval": 25,
+  "scenarios": [
+    {
+      "name": "flight_a05",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "boost_A": "1,0,0,0.5"
+    },
+    {
+      "name": "flight_a10",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "boost_A": "1,0,0,1.0"
+    }
+  ]
+}

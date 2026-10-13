@@ -1,0 +1,48 @@
+{
+  "duration_ticks": 1000,
+  "pinch_tension": {
+    "type": "adsr",
+    "peak": 20,
+    "attack": 50,
+    "sustain": 800,
+    "release": 150
+  },
+  "scenarios": [
+    {
+      "name": "bsweep_b02",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 2
+    },
+    {
+      "name": "bsweep_b04",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 4
+    },
+    {
+      "name": "bsweep_b08",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 8
+    },
+    {
+      "name": "bsweep_b12",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 12
+    },
+    {
+      "name": "symmetric_swapped",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 3,
+      "impact_parameter": 0
+    }
+  ],
+  "vtk_interval": 25
+}

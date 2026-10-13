@@ -30,7 +30,11 @@
  *   grid bounds), center (default dims/2), diss/limit/mode, scenarios[]:
  *     name, seed_A, seed_B, fcc_axis (0-11 → ports 1-12, undirected:
  *     spawn offsets go ± the port direction), impact_parameter
- *     (lateral cells along an orthogonal vector, applied to B).
+ *     (lateral cells along an orthogonal vector, applied to B),
+ *     boost_A / boost_B (optional "dx,dy,dz,mag" — blends a uniform
+ *     drift vector into every cell's spin register, re-quantized to
+ *     the nearest FCC port; mag is in port units, 1.0 = full port
+ *     strength. CLI --boostA=/--boostB= override all scenarios).
  *
  * Heartbeat → logs/collide-status.json; per-scenario result →
  * logs/collide-<name>.json; appended summary → logs/collide-results.json.
@@ -97,6 +101,40 @@ const orthoOf = (u) => {
     u[0] * ref[1] - u[1] * ref[0],
   ];
   return unit(cr);
+};
+
+// Galilean boost: add a uniform drift vector to each cell's circulation
+// spin and re-quantize to the nearest FCC port (max dot product). Spin
+// is the momentum carrier — if the lattice supports translation, the
+// knot should advect along dir at ~mag hops/tick without shredding.
+// spec: "dx,dy,dz,mag" or {dir:[x,y,z], mag} — mag in port units (1.0
+// ≈ the spin register's own strength).
+const parseBoost = (spec) => {
+  if (!spec) return null;
+  let dir, mag;
+  if (typeof spec === 'string') {
+    const a = spec.split(',').map(Number);
+    dir = a.slice(0, 3); mag = a[3];
+  } else { dir = spec.dir; mag = spec.mag; }
+  if (!dir || !mag || !dir.some(c => c)) return null;
+  const u = unit(dir);
+  return u.map(c => c * mag * 256);               // V3 fixed-point scale
+};
+const applyBoost = (cells, dv) => {
+  if (!dv) return cells;
+  let changed = 0;
+  const out = cells.map(([x, y, z, s]) => {
+    const v = V3[s] || [0, 0, 0];
+    const nv = [v[0] + dv[0], v[1] + dv[1], v[2] + dv[2]];
+    let best = s, bd = -Infinity;
+    for (let p = 1; p <= 12; p++) {
+      const dd = nv[0] * V3[p][0] + nv[1] * V3[p][1] + nv[2] * V3[p][2];
+      if (dd > bd) { bd = dd; best = p; }
+    }
+    if (best !== s) changed++;
+    return [x, y, z, best];
+  });
+  return { cells: out, changed };
 };
 
 // Boundary slab for a signed axis component — shared with boost.mjs.
@@ -182,6 +220,17 @@ for (const sc of scenarios) {
       Math.round(x + c[0] - ac[0]), Math.round(y + c[1] - ac[1]), Math.round(z + c[2] - ac[2]), sp]);
   };
   const cellsA = move(seedA, cA), cellsB = move(seedB, cB);
+
+  // Galilean boost: uniform drift blended into the circulation spins.
+  // CLI flag overrides the per-scenario spec. The boosted knot's
+  // painted mask is unchanged — translation (if any) shows up as
+  // skeleton-centroid drift in the series.
+  const boostA = parseBoost(arg('boostA') ?? sc.boost_A);
+  const boostB = parseBoost(arg('boostB') ?? sc.boost_B);
+  let bA = null, bB = null;
+  if (boostA) { const r = applyBoost(cellsA, boostA); cellsA.splice(0, cellsA.length, ...r.cells); bA = r.changed; }
+  if (boostB) { const r = applyBoost(cellsB, boostB); cellsB.splice(0, cellsB.length, ...r.cells); bB = r.changed; }
+
   const paintedA = new Uint8Array(n), paintedB = new Uint8Array(n);
   let overlap = 0;
   for (const [x, y, z] of cellsA) paintedA[(z * h + y) * w + x] = 1;
@@ -212,7 +261,10 @@ for (const sc of scenarios) {
   heap8().set(buf, loadPtr);
   if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); continue; }
   wasm._planck3_prepare();
-  const statePtr = wasm._planck3_state_pointer();
+  // g_rd/g_wr swap every tick — re-fetch after each _planck3_tick() or
+  // pinch writes land in the write buffer half the time (silently eaten)
+  // and census reads a one-tick-stale frame on alternate ticks.
+  let statePtr = wasm._planck3_state_pointer();
   const q0 = wasm._planck3_total_quanta();
 
   // Pinch walls: both ends of the axis (same mapping as boost — a wall
@@ -249,11 +301,12 @@ for (const sc of scenarios) {
     visit.fill(0);
     let head = 0, tail = 0, live = 0, q = 0;
     let pA = 0, pB = 0, ax = 0, ay = 0, az = 0, bx = 0, by = 0, bz = 0;
+    let lx = 0, ly = 0, lz = 0;                 // live-component centroid
     queue[tail++] = seedIdx; visit[seedIdx] = 1;
     while (head < tail) {
       const i = queue[head++];
       const x = i % w, y = ((i % (h * w)) / w) | 0, z = (i / (h * w)) | 0;
-      live++; q += mem[statePtr + i * 6];
+      live++; q += mem[statePtr + i * 6]; lx += x; ly += y; lz += z;
       if (paintedA[i]) { pA++; ax += x; ay += y; az += z; }
       if (paintedB[i]) { pB++; bx += x; by += y; bz += z; }
       for (const [dx, dy, dz] of NB) {
@@ -265,6 +318,10 @@ for (const sc of scenarios) {
     }
     return {
       live, q, paintedA: pA, paintedB: pB,
+      // Live centroid: follows a translating knot — the painted skeleton
+      // stays at spawn, so boost/flight reads as retain→0 while THIS
+      // keeps tracking the actual structure.
+      lcent: live ? { x: +(lx / live).toFixed(2), y: +(ly / live).toFixed(2), z: +(lz / live).toFixed(2) } : null,
       skelA: pA ? { x: ax / pA, y: ay / pA, z: az / pA } : null,
       skelB: pB ? { x: bx / pB, y: by / pB, z: bz / pB } : null,
     };
@@ -286,7 +343,8 @@ for (const sc of scenarios) {
 
   console.log(`\ncollide: ${sc.name} ${w}x${h}x${d} axis ${axis} dir (${u.map(c => c.toFixed(2))}) ` +
     `b=${b} sep=${SEP} pinch=${JSON.stringify(PINCH)}`);
-  console.log(`  A=${sc.seed_A}@${cA.map(Math.round)} (${cellsA.length} cells)  B=${sc.seed_B}@${cB.map(Math.round)} (${cellsB.length} cells)` +
+  console.log(`  A=${sc.seed_A}@${cA.map(Math.round)} (${cellsA.length} cells${bA !== null ? `, boost→${bA} requantized` : ''})  ` +
+    `B=${sc.seed_B}@${cB.map(Math.round)} (${cellsB.length} cells${bB !== null ? `, boost→${bB} requantized` : ''})` +
     `  walls ${pinchWalls[0].length}+${pinchWalls[1].length}`);
 
   const origA = cellsA.length, origB = cellsB.length;
@@ -311,6 +369,7 @@ for (const sc of scenarios) {
       });
     pinch(t);
     wasm._planck3_tick();
+    statePtr = wasm._planck3_state_pointer();   // buffer swap — see above
     const c = census();
     const q = wasm._planck3_total_quanta();
     const aS = c.compA?.skelA, bS = c.merged ? c.compA?.skelB : c.compB?.skelB;
@@ -318,8 +377,8 @@ for (const sc of scenarios) {
     const rec = {
       t, merged: !!c.merged, live: c.live, q: Math.round(q),
       gap: gap === null ? null : +gap.toFixed(2),
-      a: c.compA ? { live: c.compA.live, painted: c.compA.paintedA, q: c.compA.q } : null,
-      b: c.merged ? { insideA: c.compA.paintedB } : c.compB ? { live: c.compB.live, painted: c.compB.paintedB, q: c.compB.q } : null,
+      a: c.compA ? { live: c.compA.live, painted: c.compA.paintedA, q: c.compA.q, lcent: c.compA.lcent } : null,
+      b: c.merged ? { insideA: c.compA.paintedB } : c.compB ? { live: c.compB.live, painted: c.compB.paintedB, q: c.compB.q, lcent: c.compB.lcent } : null,
       ax: aS ? +aS.x.toFixed(2) : null, ay: aS ? +aS.y.toFixed(2) : null,
       bx: bS ? +bS.x.toFixed(2) : null, by: bS ? +bS.y.toFixed(2) : null,
     };
@@ -348,6 +407,8 @@ for (const sc of scenarios) {
 
   const out = {
     scenario: sc.name, seeds: [sc.seed_A, sc.seed_B], axis, b,
+    boostA: arg('boostA') ?? sc.boost_A ?? null, boostB: arg('boostB') ?? sc.boost_B ?? null,
+    boostCellsA: bA, boostCellsB: bB,
     spawnA: cA.map(Math.round), spawnB: cB.map(Math.round), dims: [w, h, d],
     ticks: series.length, pinch: PINCH, diss: DISS, limit: LIMIT,
     verdict, retainA: +retA.toFixed(4), retainB: +retB.toFixed(4),

@@ -185,7 +185,10 @@ heap8().set(packState(), loadPtr);
 if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); process.exit(1); }
 wasm._planck3_prepare();
 
-const statePtr = wasm._planck3_state_pointer();
+// g_rd/g_wr swap every tick — re-fetch after each _planck3_tick() or
+// wall injects land in the write buffer half the time (silently eaten)
+// and census reads a one-tick-stale frame on alternate ticks.
+let statePtr = wasm._planck3_state_pointer();
 const q0 = wasm._planck3_total_quanta();
 
 // Register layout per node (6 bytes): u8 quanta, u8 spin, u16le heat,
@@ -291,6 +294,7 @@ for (let t = 0; t < TICKS; t++) {
     });
   inject(t);
   wasm._planck3_tick();
+  statePtr = wasm._planck3_state_pointer();     // buffer swap — see above
   const c = census();
   if (!c || !c.knot) { aborted = true; console.log(`t${t}: knot dissolved — aborting`); break; }
   const skel = c.knot.skeleton ?? c.knot;        // fall back to blob centroid if skeleton emptied

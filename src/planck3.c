@@ -324,7 +324,15 @@ static void tick_flat3(void) {
             }
         }
     }
-    Node3 *t = g_rd; g_rd = g_wr; g_wr = t;
+    // Publish into the FIXED g_rd buffer — a pointer swap would be cheaper
+    // (one memcpy/tick ≈ 1-2% overhead) but g_rd doubles as the exported
+    // state buffer: planck3_state_pointer() hands JS a raw address, and a
+    // swap silently invalidates it every other tick (writes land in the
+    // retired buffer, reads see a one-tick-stale frame — it bit three
+    // headless harnesses). Copying back keeps that pointer permanently
+    // valid. Mid-tick shear pushes into g_rd are within-tick visibility
+    // only and are overwritten here — same as the swap discarded them.
+    memcpy(g_rd, g_wr, (size_t)N3 * sizeof(Node3));
 }
 
 // ---------------------------------------------------------
