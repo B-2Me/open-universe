@@ -30,7 +30,6 @@ The site is structured as an audit: state the thesis, stress-test it against the
 | [**The Interference**](docs/interference.md) (`interference.md`) | Predict → Interfere → Measure; the lab hub and the separation-of-scales argument |
 | [**Theoretical Audits**](docs/interference/audits.md) (`interference/audits.md`) | Five audits translating each legacy paradox into a testable lab procedure |
 | [**Methodology & Reproducibility**](docs/interference/methodology.md) (`interference/methodology.md`) | The formal spec — FCC lattice invariants, the 6-byte `Node3` state space, the transition operator, discrete causal thermodynamics, and the reproduction suite for every empirical claim |
-| [**The Utility of Causal Simulation**](docs/interference/usefulness.md) (`interference/usefulness.md`) | Why run lattice engines at all — the regimes where continuous calculus is a lossy compression that fails, and the scale-free laws the engine extracts |
 | [**Predictive Roadmap**](docs/interference/roadmap.md) (`interference/roadmap.md`) | The path from working simulator to a direct benchmark against collider telemetry |
 | [**The Open Frontier**](docs/interference/frontier.md) (`interference/frontier.md`) | The research log — every measured experiment, falsified hypothesis, and engine RFC, including the results that failed |
 | [**Audio Sessions**](docs/interference/sessions.md) (`interference/sessions.md`) | The living syllabus for the podcast companion |
