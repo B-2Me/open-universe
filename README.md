@@ -169,5 +169,3 @@ Shipped: brush footprint preview + touch lift, wake lock, IndexedDB autosave, PW
 
 - **The Framework & Written Content:** © 2026 Nathan / btwo.me. All rights reserved.
 - **The C/WASM Engine Source Code:** Released under the MIT License.
-
- 
