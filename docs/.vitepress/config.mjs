@@ -16,37 +16,39 @@ const readingOrder = [
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' },
   { text: 'Interference', link: '/interference' },
-  { text: 'Theoretical Audits', link: '/interference/audits' },
-  { text: 'Predictive Roadmap', link: '/interference/roadmap' },
-  { text: 'The Open Frontier', link: '/interference/frontier' },
-  { text: 'Audio Sessions', link: '/interference/sessions' },
-  { text: "Langevin's Wake", link: '/wake-demo' },
+  { text: 'Audits', link: '/interference/audits' },
+  { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Frontier', link: '/interference/frontier' },
+
   { text: "Hopf's Loom", link: '/loom-demo' },
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
+  { text: "Langevin's Wake", link: '/wake-demo' },
+  
+  { text: 'Audiocast', link: '/interference/sessions' },
   { text: 'Intent', link: '/intent' }
 ]
 
 const theoryItems = [
   { text: 'Overview', link: '/theory' },
-  { text: 'Paradoxes · the anomalies', link: '/paradox' },
-  { text: 'Source · the substrate model', link: '/source' },
-  { text: 'Math · the formalism', link: '/math' },
-  { text: 'Interface · the observer', link: '/interface' }
+  { text: 'Paradoxes', link: '/paradox' },
+  { text: 'Source', link: '/source' },
+  { text: 'Math', link: '/math' },
+  { text: 'Interface', link: '/interface' }
 ]
 
 const interferenceItems = [
   { text: 'Overview', link: '/interference' },
-  { text: 'Theoretical Audits', link: '/interference/audits' },
-  { text: 'Predictive Roadmap', link: '/interference/roadmap' },
-  { text: 'The Open Frontier', link: '/interference/frontier' },
-  { text: 'Audio Sessions', link: '/interference/sessions' }
+  { text: 'Audits', link: '/interference/audits' },
+  { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Frontier', link: '/interference/frontier' },
+  { text: 'Podcast', link: '/interference/sessions' }
 ]
 
 // Interactive instruments — they live under Interference, not beside it.
 const instrumentItems = [
-  { text: "Langevin's Wake · 2D engine", link: '/wake-demo' },
-  { text: "Hopf's Loom · 3D engine", link: '/loom-demo' },
-  { text: 'Hopfion Zoo · dictionary', link: '/hopfion-zoo' }
+  { text: "Hopf's Loom · 3D Engine", link: '/loom-demo' },
+  { text: 'Hopfion Zoo · 3D Knots', link: '/hopfion-zoo' },
+  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is
