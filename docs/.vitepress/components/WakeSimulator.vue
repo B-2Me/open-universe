@@ -404,4 +404,12 @@ onUnmounted(() => {
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* Tool pages suppress the floating back-to-top chip — it overlays the
+   control areas when the page scrolls (Loom/Zoo do the same via their
+   body classes; :has() is the reliable hook for this component). */
+html:has(.wake-sandbox) .VPBackToTop,
+html:has(.wake-sandbox) .VPDocFooter {
+  display: none !important;
+}
 </style>

@@ -392,12 +392,16 @@ onUnmounted(() => {
   }
   .loom-sliders input[type='range'] { width: 90px; height: 40px; }
   .loom-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
+}
 
-  /* mobile: the canvas IS the app — fill the viewport under the nav bar,
-     edge to edge, and clear the iPhone home-indicator strip */
+/* mobile + narrow windows: the canvas IS the app — fill the viewport
+   under the nav bar, edge to edge. svh (not dvh) always reserves the
+   browser's URL-bar strip, so the dock can't slide below the fold when
+   chrome collapses; the 12px margin clears the home indicator. */
+@media (pointer: coarse), (max-width: 820px) {
   .loom-simulator {
-    height: 100vh;
-    height: calc(100dvh - var(--vp-nav-height, 64px));
+    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
+    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
     min-height: 0;
     max-width: none;
     border-radius: 0;
@@ -405,6 +409,16 @@ onUnmounted(() => {
   .loom-dock {
     bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 8px);
+  }
+}
+
+/* short viewports of any kind (wide but landscape-short, split-screen):
+   same fit — min-height yields instead of pushing the dock off-screen */
+@media (max-height: 640px) {
+  .loom-simulator {
+    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
+    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
+    min-height: 0;
   }
 }
 </style>
@@ -421,7 +435,7 @@ onUnmounted(() => {
 html:has(.loom-simulator) {
   overscroll-behavior: none;
 }
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 820px) {
   .loom-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
 }
 /* Page prose: doc typography + article width, same as the rest of the site.

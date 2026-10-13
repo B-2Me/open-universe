@@ -354,22 +354,35 @@ onUnmounted(() => {
 }
 .hopfion-row-meta { font-size: 9px; opacity: 0.65; }
 
-@media (pointer: coarse) {
+/* mobile + narrow windows: svh (not dvh) always reserves the browser's
+   URL-bar strip, so the control bar can't slide below the fold when
+   chrome collapses; the 12px margin clears the home indicator. */
+@media (pointer: coarse), (max-width: 820px) {
   .hopfion-sim {
-    height: 100vh;
-    height: calc(100dvh - var(--vp-nav-height, 64px));
+    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
+    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
     min-height: 0;
     max-width: none;
     border-radius: 0;
   }
   .hopfion-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* short viewports of any kind: same fit — min-height yields instead of
+   pushing the control bar off-screen */
+@media (max-height: 640px) {
+  .hopfion-sim {
+    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
+    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
+    min-height: 0;
+  }
+}
 </style>
 
 <style>
 .hopfion-page { overflow-x: hidden; background: #03010a; }
 .hopfion-page .VPDocFooter, .hopfion-page .VPBackToTop { display: none !important; }
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 820px) {
   .hopfion-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
 }
 .hopfion-page .hopfion-doc { max-width: 768px; margin: 0 auto; padding: 24px 24px 72px; }
