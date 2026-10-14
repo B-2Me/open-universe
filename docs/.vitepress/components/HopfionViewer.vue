@@ -33,8 +33,22 @@ const cycleColor = () => {
   viewer?.setColorMode(colorMode.value)
 }
 
+/* The control bar lives inside the canvas, and canvas touch gestures
+   capture scrolling — so the sim must never be taller than the visible
+   area above it. Measure the element's document offset and feed the
+   CSS var, rather than guessing --vp-nav-height + margins. */
+const fit = () => {
+  const el = host.value
+  if (!el) return
+  el.style.setProperty('--tool-top', `${Math.round(el.getBoundingClientRect().top + window.scrollY)}px`)
+}
+
 onMounted(async () => {
   document.body.classList.add('hopfion-page')
+  fit()
+  requestAnimationFrame(fit)
+  window.addEventListener('resize', fit)
+  window.addEventListener('load', fit)
   if (matchMedia('(pointer: coarse)').matches) railOpen.value = false
   try {
     const res = await fetch(withBase('/hopfion/index.json'))
@@ -52,6 +66,8 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   document.body.classList.remove('hopfion-page')
+  window.removeEventListener('resize', fit)
+  window.removeEventListener('load', fit)
   viewer?.dispose()
 })
 </script>
@@ -119,8 +135,11 @@ onUnmounted(() => {
 <style scoped>
 .hopfion-sim {
   position: relative;
-  height: 80vh;
-  height: 80dvh;
+  /* --tool-top is the element's measured document offset (set on mount);
+     svh always reserves the browser URL-bar strip, so the control bar
+     can't slide below the fold when chrome collapses. */
+  height: calc(100vh - var(--tool-top, 76px) - 8px);
+  height: calc(100svh - var(--tool-top, 76px) - 8px);
   min-height: 480px;
   max-width: 1200px;
   margin: 0 auto;
@@ -354,13 +373,11 @@ onUnmounted(() => {
 }
 .hopfion-row-meta { font-size: 9px; opacity: 0.65; }
 
-/* mobile + narrow windows: svh (not dvh) always reserves the browser's
-   URL-bar strip, so the control bar can't slide below the fold when
-   chrome collapses; the 12px margin clears the home indicator. */
+/* mobile + narrow windows: the canvas IS the app — edge to edge. The
+   measured --tool-top height already pins the control bar inside the
+   viewport; the 8px remainder clears the home indicator. */
 @media (pointer: coarse), (max-width: 820px) {
   .hopfion-sim {
-    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
-    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
     min-height: 0;
     max-width: none;
     border-radius: 0;
@@ -371,17 +388,21 @@ onUnmounted(() => {
 /* short viewports of any kind: same fit — min-height yields instead of
    pushing the control bar off-screen */
 @media (max-height: 640px) {
-  .hopfion-sim {
-    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
-    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
-    min-height: 0;
-  }
+  .hopfion-sim { min-height: 0; }
 }
 </style>
 
 <style>
 .hopfion-page { overflow-x: hidden; background: #03010a; }
-.hopfion-page .VPDocFooter, .hopfion-page .VPBackToTop { display: none !important; }
+/* .VPLocalNav carries the outline dropdown + "Return to top" button —
+   hiding the whole strip also reclaims ~48px above the canvas that the
+   svh calculation assumed it owned. */
+.hopfion-page .VPDocFooter,
+.hopfion-page .VPBackToTop,
+.hopfion-page .VPLocalNav,
+.hopfion-page .aside-top {
+  display: none !important;
+}
 @media (pointer: coarse), (max-width: 820px) {
   .hopfion-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
 }

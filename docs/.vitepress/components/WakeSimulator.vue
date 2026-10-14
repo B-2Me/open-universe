@@ -405,10 +405,12 @@ onUnmounted(() => {
   justify-content: center !important;
 }
 
-/* Tool pages suppress the floating back-to-top chip — it overlays the
-   control areas when the page scrolls (Loom/Zoo do the same via their
-   body classes; :has() is the reliable hook for this component). */
+/* Tool pages suppress the floating back-to-top chip and the local-nav
+   strip (outline dropdown + "Return to top" button) — both overlay the
+   control areas and the strip eats ~48px of canvas height (Loom/Zoo do
+   the same via their body classes; :has() is the reliable hook here). */
 html:has(.wake-sandbox) .VPBackToTop,
+html:has(.wake-sandbox) .VPLocalNav,
 html:has(.wake-sandbox) .VPDocFooter {
   display: none !important;
 }

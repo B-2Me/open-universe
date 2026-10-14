@@ -4,8 +4,22 @@ import { onMounted, onUnmounted, ref } from 'vue'
 const host = ref(null)
 let cleanup = null, boot = null
 
+/* The dock lives inside the canvas, and canvas touch gestures capture
+   scrolling — so the simulator must never be taller than the visible
+   area above it. Measure the element's document offset and feed the
+   CSS var, rather than guessing --vp-nav-height + margins. */
+const fit = () => {
+  const el = host.value
+  if (!el) return
+  el.style.setProperty('--tool-top', `${Math.round(el.getBoundingClientRect().top + window.scrollY)}px`)
+}
+
 onMounted(async () => {
   document.body.classList.add('loom-page')
+  fit()
+  requestAnimationFrame(fit)
+  window.addEventListener('resize', fit)
+  window.addEventListener('load', fit)
   const hud = host.value?.querySelector('[data-hud]')
   try {
     var { initLoomSimulator } = await import('../loom/main.js')
@@ -29,6 +43,8 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   document.body.classList.remove('loom-page')
+  window.removeEventListener('resize', fit)
+  window.removeEventListener('load', fit)
   host.value?.removeEventListener('loom:reinit', boot)
   if (typeof cleanup === 'function') cleanup()
 })
@@ -109,8 +125,11 @@ onUnmounted(() => {
   --loom-accent: #7fe;
   --loom-muted: #9ef;
   position: relative;
-  height: 75vh;
-  height: 75dvh;
+  /* --tool-top is the element's measured document offset (set on mount);
+     svh always reserves the browser URL-bar strip, so the dock can't
+     slide below the fold when chrome collapses. */
+  height: calc(100vh - var(--tool-top, 76px) - 8px);
+  height: calc(100svh - var(--tool-top, 76px) - 8px);
   min-height: 520px;
   max-width: 1200px;
   margin: 0 auto;                     /* HUD/⚙/gizmo align to the canvas
@@ -394,14 +413,11 @@ onUnmounted(() => {
   .loom-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
 }
 
-/* mobile + narrow windows: the canvas IS the app — fill the viewport
-   under the nav bar, edge to edge. svh (not dvh) always reserves the
-   browser's URL-bar strip, so the dock can't slide below the fold when
-   chrome collapses; the 12px margin clears the home indicator. */
+/* mobile + narrow windows: the canvas IS the app — edge to edge. The
+   measured --tool-top height already pins the dock inside the viewport;
+   the 8px remainder clears the home indicator. */
 @media (pointer: coarse), (max-width: 820px) {
   .loom-simulator {
-    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
-    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
     min-height: 0;
     max-width: none;
     border-radius: 0;
@@ -415,19 +431,18 @@ onUnmounted(() => {
 /* short viewports of any kind (wide but landscape-short, split-screen):
    same fit — min-height yields instead of pushing the dock off-screen */
 @media (max-height: 640px) {
-  .loom-simulator {
-    height: calc(100vh - var(--vp-nav-height, 64px) - 12px);
-    height: calc(100svh - var(--vp-nav-height, 64px) - 12px);
-    min-height: 0;
-  }
+  .loom-simulator { min-height: 0; }
 }
 </style>
 
 <style>
-/* Suppress VitePress chrome that overlays the simulator dock. */
+/* Suppress VitePress chrome that overlays or displaces the simulator —
+   .VPLocalNav is the strip carrying the outline dropdown and the
+   "Return to top" button; it sits above the canvas and consumes ~48px
+   of the viewport the svh calculation assumed it owned. */
 .loom-page .VPDocFooter,
 .loom-page .VPBackToTop,
-.loom-page .VPLocalNavOutlineDropdown,
+.loom-page .VPLocalNav,
 .loom-page .aside-top {
   display: none !important;
 }
