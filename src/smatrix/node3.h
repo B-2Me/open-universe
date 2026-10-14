@@ -35,7 +35,7 @@
 // GPU node: same register set as Node3 (u8 q, u8 spin, u16 heat,
 // u8 buffer, u8 tension) padded to 8B for aligned access. The two
 // pad bytes are unused — kept zeroed.
-struct __align__(8) SmNode {
+struct alignas(8) SmNode {
     uint8_t  quanta;
     uint8_t  spin;
     uint16_t heat;

@@ -14,6 +14,7 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -114,7 +115,7 @@ static bool readHeaders(SOCKET s, std::string &method, std::string &path,
     std::string line;
     while (std::getline(hs, line)) {
         if (line.size() > 16 && _strnicmp(line.c_str(), "content-length:", 15) == 0)
-            contentLen = _strtoll(line.c_str() + 15, nullptr, 10);
+            contentLen = strtoll(line.c_str() + 15, nullptr, 10);
     }
     return true;
 }
