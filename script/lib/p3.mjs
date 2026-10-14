@@ -153,7 +153,8 @@ export const packLoad = (w, h, d) => {
 // choose — the wasm heap view is wrapped AFTER the pointer call since
 // malloc may grow memory and detach earlier views).
 export const commitLoad = (wasm, buf) => {
-  wasm.heap8().set(buf, wasm._planck3_load_pointer());
+  const ptr = wasm._planck3_load_pointer();   // may malloc → grow → detach
+  wasm.heap8().set(buf, ptr);                 // wrap the view AFTER
   if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); return false; }
   wasm._planck3_prepare();
   return true;
