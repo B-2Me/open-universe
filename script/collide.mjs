@@ -238,6 +238,17 @@ for (const sc of scenarios) {
     const i = (z * h + y) * w + x;
     if (paintedA[i]) overlap++; else paintedB[i] = 1;
   }
+  // Separation guard: overlapping spawn masks mean the knots are already
+  // touching at t=0 — every downstream verdict ("fusion" by halo bridge
+  // or otherwise) is then measuring a spawn artifact, not a collision.
+  // Default: record invalid_spawn and skip. --allow-overlap overrides
+  // (e.g. for deliberate merger-into-remnant studies).
+  if (overlap && !arg('allow-overlap')) {
+    console.log(`${sc.name}: SKIP — ${overlap} cells overlap at spawn (use --allow-overlap to force)`);
+    results.push({ scenario: sc.name, seeds: [sc.seed_A, sc.seed_B], verdict: 'invalid_spawn', overlap });
+    writeFileSync(resultsPath, JSON.stringify(results, null, 2));
+    continue;
+  }
   if (overlap) console.log(`${sc.name}: WARN ${overlap} cells overlap between seeds (A wins)`);
 
   // Init engine + P3ST bulk-load of both knots.
