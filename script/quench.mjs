@@ -50,23 +50,16 @@
  * Results → logs/quench-l<level>.json + logs/quench-results.json.
  * Heartbeat → logs/quench-status.json.
  */
-import { createRequire } from 'node:module';
 import { writeVtkFrame } from './vtk.mjs';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import {
+  ROOT, LOGDIR, loadConfig, opts, loadPlanck3, initEngine,
+  packLoad, commitLoad, heartbeat,
+} from './lib/p3.mjs';
 
-const require = createRequire(import.meta.url);
-const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-
-const arg = (k) => {
-  const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
-  return m ? (m.includes('=') ? m.split('=')[1] : true) : undefined;
-};
-const cfgPath = arg('config');
-const CFG = cfgPath ? JSON.parse(readFileSync(resolve(ROOT, String(cfgPath)), 'utf8')) : {};
-const opt = (k, d) => { const v = arg(k); return v !== undefined ? v : (CFG[k] !== undefined ? CFG[k] : d); };
-const num = (k, d) => parseFloat(opt(k, d));
+const CFG = loadConfig();
+const { opt, num } = opts(CFG);
 
 const DIMS = String(opt('dims', '100,100,40')).split(',').map(Number);
 const WARM = num('warm', 100), WARM_MAX = num('warm_max', num('warm-max', 4 * WARM));
@@ -79,27 +72,16 @@ const GAP = num('gap', 24);                   // control window offset in +y
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
 const SYNC = num('sync', 0);
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));
-const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
+const WASM_JS = String(opt('wasm', 'docs/public/wasm/loom/planck3.js'));
 
 const [w, h, d] = DIMS, n = w * h * d;
 const cx = w >> 1, cy = h >> 1, cz = d >> 1;
 
 // ---------- load engine ----------
-if (!existsSync(WASM_JS)) { console.error(`wasm glue not found: ${WASM_JS} — run src/build.sh first`); process.exit(1); }
-const glueSrc = readFileSync(WASM_JS, 'utf8');
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  glueSrc)(mod, mod.exports, createRequire(WASM_JS), resolve(WASM_JS, '..'), WASM_JS);
-const createPlanck3 = mod.exports;
-if (typeof createPlanck3 !== 'function') { console.error('glue did not export createPlanck3'); process.exit(1); }
-const wasm = await createPlanck3();
-const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer);
+const wasm = await loadPlanck3(WASM_JS);
+const heap8 = wasm.heap8;
 
-const LOGDIR = resolve(ROOT, 'logs');
-mkdirSync(LOGDIR, { recursive: true });
-const hb = (extra) => writeFileSync(join(LOGDIR, 'quench-status.json'), JSON.stringify({
-  ts: Date.now(), ...extra,
-}, null, 2));
+const hb = heartbeat('quench-status.json');
 
 // ---------- geometry ----------
 const idx = (x, y, z) => (z * h + y) * w + x;
@@ -138,24 +120,12 @@ const results = existsSync(resultsPath) ? JSON.parse(readFileSync(resultsPath, '
 
 // ---------- run each load level ----------
 for (const level of LEVELS) {
-  if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'); continue; }
-  wasm._planck3_set_dissipation(DISS);
-  wasm._planck3_set_thermal_limit(LIMIT);
-  wasm._planck3_set_mode(MODE);
-  if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
-  wasm._planck3_reset_stats();
+  if (!initEngine(wasm, { w, h, d, diss: DISS, limit: LIMIT, mode: MODE, sync: SYNC })) continue;
 
   // Empty-vacuum load: P3ST blob with zeroed channels (no seed needed —
   // the beam paints its own channel; probes paint heat at t=WARM).
-  const buf = new Uint8Array(16 + n * 6);
-  const dv = new DataView(buf.buffer);
-  buf.set([0x50, 0x33, 0x53, 0x54]);
-  dv.setUint32(4, w, true); dv.setUint32(8, h, true); dv.setUint32(12, d, true);
   hb({ phase: 'loading', level });
-  const loadPtr = wasm._planck3_load_pointer();
-  heap8().set(buf, loadPtr);
-  if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); continue; }
-  wasm._planck3_prepare();
+  if (!commitLoad(wasm, packLoad(w, h, d).buf)) continue;
   // IMPORTANT: g_rd/g_wr swap every tick — the pointer alternates between
   // two fixed buffers. It MUST be re-fetched after each _planck3_tick(),
   // else inject() writes land in the write buffer half the time (silently

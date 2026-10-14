@@ -39,22 +39,17 @@
  * Heartbeat → logs/collide-status.json; per-scenario result →
  * logs/collide-<name>.json; appended summary → logs/collide-results.json.
  */
-import { createRequire } from 'node:module';
 import { writeVtkFrame } from './vtk.mjs';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {
+  ROOT, LOGDIR, arg, loadConfig, opts, loadPlanck3, initEngine,
+  V3, packLoad, commitLoad, heartbeat,
+} from './lib/p3.mjs';
 
-const require = createRequire(import.meta.url);
-const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-
-const arg = (k) => {
-  const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
-  return m ? (m.includes('=') ? m.split('=')[1] : true) : undefined;
-};
-const CFG = JSON.parse(readFileSync(resolve(ROOT, String(arg('config') ?? 'config/collide-matrix.json')), 'utf8'));
-const opt = (k, d) => { const v = arg(k); return v !== undefined ? v : (CFG[k] !== undefined ? CFG[k] : d); };
-const num = (k, d) => parseFloat(opt(k, d));
+const CFG_PATH = String(arg('config') ?? 'config/collide-matrix.json');
+const CFG = loadConfig('config/collide-matrix.json');
+const { opt, num } = opts(CFG);
 
 const TICKS = num('duration_ticks', 1000);
 const SEP = num('separation', 64);
@@ -63,7 +58,7 @@ const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0)
 const SYNC = num('sync', 0);           // synchronous update (deferred pushes)
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
 const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
-const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
+const WASM_JS = String(opt('wasm', 'docs/public/wasm/loom/planck3.js'));
 
 // pinch_tension accepts a scalar (→ constant envelope) or an envelope
 // object with the same evaluator grammar as boost.mjs.
@@ -84,15 +79,7 @@ const envelope = (t, p) => {
   }
 };
 
-// ---------- FCC axis geometry (same port table as engine-sim) ----------
-const HEX_MX = [0, 256, 128, -128, -256, -128, 128];
-const HEX_MY = [0, 0, 222, 222, 0, -222, -222];
-const FZ = 209, FP = 148;
-const V3 = [null];
-for (let s = 1; s <= 6; s++) V3.push([HEX_MX[s], HEX_MY[s], 0]);
-for (const d of [1, 3, 5]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), FZ]);
-for (const d of [2, 4, 6]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), -FZ]);
-
+// ---------- FCC axis geometry (V3 port table from the shared lib) ----
 const unit = (v) => { const L = Math.hypot(...v); return v.map(c => c / L); };
 const orthoOf = (u) => {
   const ref = Math.abs(u[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
@@ -151,21 +138,10 @@ const wallIndices = (w, h, d, sign, axis, skin = 1) => {
 };
 
 // ---------- engine load ----------
-if (!existsSync(WASM_JS)) { console.error(`wasm glue not found: ${WASM_JS} — run src/build.sh first`); process.exit(1); }
-const glueSrc = readFileSync(WASM_JS, 'utf8');
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  glueSrc)(mod, mod.exports, createRequire(WASM_JS), resolve(WASM_JS, '..'), WASM_JS);
-const createPlanck3 = mod.exports;
-if (typeof createPlanck3 !== 'function') { console.error('glue did not export createPlanck3'); process.exit(1); }
-const wasm = await createPlanck3();
-const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer);
+const wasm = await loadPlanck3(WASM_JS);
+const heap8 = wasm.heap8;
 
-const LOGDIR = resolve(ROOT, 'logs');
-mkdirSync(LOGDIR, { recursive: true });
-const hb = (extra) => writeFileSync(join(LOGDIR, 'collide-status.json'), JSON.stringify({
-  ts: Date.now(), ...extra,
-}, null, 2));
+const hb = heartbeat('collide-status.json', { config: CFG_PATH });
 
 const seedFile = (name) => [name, `seeds256/${name}.json`, `seeds/${name}.json`]
   .map(p => resolve(ROOT, p)).find(existsSync);
@@ -253,27 +229,14 @@ for (const sc of scenarios) {
   if (overlap) console.log(`${sc.name}: WARN ${overlap} cells overlap between seeds (A wins)`);
 
   // Init engine + P3ST bulk-load of both knots.
-  if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'); continue; }
-  wasm._planck3_set_dissipation(DISS);
-  wasm._planck3_set_thermal_limit(LIMIT);
-  wasm._planck3_set_mode(MODE);
-  if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
-  wasm._planck3_reset_stats();
-  const buf = new Uint8Array(16 + n * 6);
-  const dv = new DataView(buf.buffer);
-  buf.set([0x50, 0x33, 0x53, 0x54]);
-  dv.setUint32(4, w, true); dv.setUint32(8, h, true); dv.setUint32(12, d, true);
-  const qp = buf.subarray(16, 16 + n), sp = buf.subarray(16 + n, 16 + 2 * n);
-  const hp = new DataView(buf.buffer, 16 + 4 * n, 2 * n);
+  if (!initEngine(wasm, { w, h, d, diss: DISS, limit: LIMIT, mode: MODE, sync: SYNC })) continue;
+  const { buf, q: qp, s: sp, heat: hp } = packLoad(w, h, d);
   for (const [x, y, z, s] of [...cellsA, ...cellsB]) {
     const i = (z * h + y) * w + x;
     qp[i] = seedA.q; sp[i] = s; hp.setUint16(2 * i, seedA.heat, true);
   }
   hb({ scenario: sc.name, phase: 'loading', t: 0 });
-  const loadPtr = wasm._planck3_load_pointer();   // malloc may grow memory — wrap AFTER
-  heap8().set(buf, loadPtr);
-  if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); continue; }
-  wasm._planck3_prepare();
+  if (!commitLoad(wasm, buf)) continue;
   // g_rd/g_wr swap every tick — re-fetch after each _planck3_tick() or
   // pinch writes land in the write buffer half the time (silently eaten)
   // and census reads a one-tick-stale frame on alternate ticks.

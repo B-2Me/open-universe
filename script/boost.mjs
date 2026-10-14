@@ -35,23 +35,16 @@
  * angle off the injected axis (chiral shear signature), and survival
  * (retain >= 0.95). Result JSON → logs/boost-<seed>-v<vector>.json.
  */
-import { createRequire } from 'node:module';
 import { writeVtkFrame } from './vtk.mjs';
-import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
-import { join, resolve, basename } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import {
+  ROOT, LOGDIR, loadConfig, opts, loadPlanck3, initEngine,
+  V3, packLoad, commitLoad, heartbeat,
+} from './lib/p3.mjs';
 
-const require = createRequire(import.meta.url);
-const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-
-const arg = (k) => {
-  const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
-  return m ? (m.includes('=') ? m.split('=')[1] : true) : undefined;
-};
-const cfgPath = arg('config');
-const CFG = cfgPath ? JSON.parse(readFileSync(resolve(ROOT, String(cfgPath)), 'utf8')) : {};
-const opt = (k, d) => { const v = arg(k); return v !== undefined ? v : (CFG[k] !== undefined ? CFG[k] : d); };
-const num = (k, d) => parseFloat(opt(k, d));
+const CFG = loadConfig();
+const { opt, num } = opts(CFG);
 
 const SEED_NAME = String(opt('seed', 'hopfion_25_9'));
 const VECTOR = num('vector', 1);               // 0-23; default port 2 (+X+Y) inflow
@@ -61,7 +54,7 @@ const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0)
 const SYNC = num('sync', 0);
 const FLUX = CFG.flux_profile ?? {};
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
-const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
+const WASM_JS = String(opt('wasm', 'docs/public/wasm/loom/planck3.js'));
 
 // ---------- wave envelope evaluator f(t) ----------
 const envelope = (t, p) => {
@@ -81,15 +74,8 @@ const envelope = (t, p) => {
 };
 
 // ---------- 24-vector → boundary-face map ----------
-// Same fixed-point port table as engine-sim.mjs / planck3.c.
-const HEX_MX = [0, 256, 128, -128, -256, -128, 128];
-const HEX_MY = [0, 0, 222, 222, 0, -222, -222];
-const FZ = 209, FP = 148;                       // √(2/3)·256, (1/√3)·256
-const V3 = [null];
-for (let s = 1; s <= 6; s++) V3.push([HEX_MX[s], HEX_MY[s], 0]);
-for (const d of [1, 3, 5]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), FZ]);
-for (const d of [2, 4, 6]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), -FZ]);
-
+// Port vectors come from the shared lib (same fixed-point table as
+// engine-sim.mjs / planck3.c: √(2/3)·256 axial, (1/√3)·256 planar).
 const PORT = (VECTOR % 12) + 1;                 // axis → port 1-12
 const POL = VECTOR < 12 ? 1 : -1;               // polarity: inflow vs reverse
 const DIR = V3[PORT].map(c => Math.sign(c) * POL);
@@ -121,15 +107,8 @@ const wallIndices = (w, h, d, sign, axis) => {
 };
 
 // ---------- load engine + seed ----------
-if (!existsSync(WASM_JS)) { console.error(`wasm glue not found: ${WASM_JS} — run src/build.sh first`); process.exit(1); }
-const glueSrc = readFileSync(WASM_JS, 'utf8');
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  glueSrc)(mod, mod.exports, createRequire(WASM_JS), resolve(WASM_JS, '..'), WASM_JS);
-const createPlanck3 = mod.exports;
-if (typeof createPlanck3 !== 'function') { console.error('glue did not export createPlanck3'); process.exit(1); }
-const wasm = await createPlanck3();
-const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer); // fresh view — growth detaches old ones
+const wasm = await loadPlanck3(WASM_JS);
+const heap8 = wasm.heap8; // fresh view — growth detaches old ones
 
 const seedPath = [SEED_NAME, `seeds256/${SEED_NAME}.json`, `seeds/${SEED_NAME}.json`]
   .map(p => resolve(ROOT, p)).find(existsSync);
@@ -154,38 +133,20 @@ for (let a = 0; a < 3; a++) {
 }
 
 // ---------- run ----------
-const LOGDIR = resolve(ROOT, 'logs');
-mkdirSync(LOGDIR, { recursive: true });
-const hb = (extra) => writeFileSync(join(LOGDIR, 'boost-status.json'), JSON.stringify({
-  ts: Date.now(), seed: seed.name || SEED_NAME, vector: VECTOR, dir: DIR, ticks: TICKS, ...extra,
-}, null, 2));
+const hb = heartbeat('boost-status.json', {
+  seed: seed.name || SEED_NAME, vector: VECTOR, dir: DIR, ticks: TICKS,
+});
 
-if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'); process.exit(1); }
-wasm._planck3_set_dissipation(DISS);
-wasm._planck3_set_thermal_limit(LIMIT);
-wasm._planck3_set_mode(MODE);
-if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
-wasm._planck3_reset_stats();
+if (!initEngine(wasm, { w, h, d, diss: DISS, limit: LIMIT, mode: MODE, sync: SYNC })) process.exit(1);
 
 // P3ST bulk-load (same channel as sweep.mjs).
-const packState = () => {
-  const buf = new Uint8Array(16 + n * 6);
-  const dv = new DataView(buf.buffer);
-  buf.set([0x50, 0x33, 0x53, 0x54]);
-  dv.setUint32(4, w, true); dv.setUint32(8, h, true); dv.setUint32(12, d, true);
-  const q = buf.subarray(16, 16 + n), s = buf.subarray(16 + n, 16 + 2 * n);
-  const hp = new DataView(buf.buffer, 16 + 4 * n, 2 * n);
-  for (const [x, y, z, sp] of seed.cells) {
-    const i = (z * h + y) * w + x;
-    q[i] = seed.q; s[i] = sp; hp.setUint16(2 * i, seed.heat, true);
-  }
-  return buf;
-};
+const { buf, q: qp, s: sp2, heat: hp2 } = packLoad(w, h, d);
+for (const [x, y, z, s] of seed.cells) {
+  const i = (z * h + y) * w + x;
+  qp[i] = seed.q; sp2[i] = s; hp2.setUint16(2 * i, seed.heat, true);
+}
 hb({ phase: 'loading', t: 0 });
-const loadPtr = wasm._planck3_load_pointer();    // malloc may grow memory — wrap AFTER
-heap8().set(packState(), loadPtr);
-if (wasm._planck3_load_commit() !== 0) { console.error('load_commit rejected'); process.exit(1); }
-wasm._planck3_prepare();
+if (!commitLoad(wasm, buf)) process.exit(1);
 
 // g_rd/g_wr swap every tick — re-fetch after each _planck3_tick() or
 // wall injects land in the write buffer half the time (silently eaten)

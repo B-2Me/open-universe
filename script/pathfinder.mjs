@@ -30,6 +30,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { HOFF, ZU as ZU3, ZD as ZD3, V3 } from './lib/p3.mjs';
 
 // ---------- args ----------
 const arg = (k, d) => {
@@ -55,13 +56,8 @@ const DFSMAX = num('dfsmax', 2000000);
 const TW = num('tw', 1), PW = num('pw', 1);
 const OUT = String(arg('out', 'seeds'));
 
-// ---------- substrate tables (ported from planck3.c / engine-sim.mjs) ---
-const HOFF = [
-  [[0,0],[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]], // even rows
-  [[0,0],[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]    // odd rows
-];
+// ---------- substrate tables (shared lib — ported from planck3.c) ----
 const HINV = [0, 4, 5, 6, 1, 2, 3];
-const ZU3 = [1, 3, 5], ZD3 = [2, 4, 6];
 // Per-parity port offsets (dx,dy,dz) — arithmetic NT3 replacement.
 const POFF = [[], []];
 for (let par = 0; par < 2; par++) {
@@ -71,11 +67,8 @@ for (let par = 0; par < 2; par++) {
     POFF[par][10 + j] = [HOFF[par][ZD3[j]][0], HOFF[par][ZD3[j]][1], -1];
   }
 }
-// Baked unit port vectors (x256) — identical to planck3.c V3.
-const V3 = [null,
-  [256,0,0],[128,222,0],[-128,222,0],[-256,0,0],[-128,-222,0],[128,-222,0],
-  [148,0,209],[-74,128,209],[-74,-128,209],
-  [74,128,-209],[-148,0,-209],[74,-128,-209]];
+// V3 unit port vectors (x256) come from the shared lib — identical to
+// planck3.c (baked check: [148,0,209],[−74,128,209],[74,−128,−209]).
 const BACK3 = [0, 4, 5, 6, 1, 2, 3, 11, 12, 10, 9, 7, 8];
 const dotV = (a, b) => (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) >> 8;
 const DOTS = [new Int16Array(13)];

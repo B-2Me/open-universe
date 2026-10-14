@@ -31,23 +31,12 @@
  * (name|dims|ticks|diss|limit|mode) already passed or failed — so a
  * crashed/killed run picks up where it left off, not from zero.
  */
-import { createRequire } from 'node:module';
-import { readFileSync, readdirSync, writeFileSync, renameSync, existsSync, statSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, renameSync, existsSync, statSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { ROOT, LOGDIR, arg, loadConfig, opts, loadPlanck3, packLoad, commitLoad, heartbeat } from './lib/p3.mjs';
 
-const require = createRequire(import.meta.url);
-const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
-
-const arg = (k) => {
-  const m = process.argv.find(a => a === `--${k}` || a.startsWith(`--${k}=`));
-  return m ? (m.includes('=') ? m.split('=')[1] : true) : undefined;
-};
-// --config=x.json seeds defaults; CLI flags always win.
-const cfgPath = arg('config');
-const CFG = cfgPath ? JSON.parse(readFileSync(resolve(ROOT, String(cfgPath)), 'utf8')) : {};
-const opt = (k, d) => { const v = arg(k); return v !== undefined ? v : (CFG[k] !== undefined ? CFG[k] : d); };
-const num = (k, d) => parseFloat(opt(k, d));
+const CFG = loadConfig();
+const { opt, num } = opts(CFG);
 
 const SEEDS = resolve(ROOT, String(opt('seeds', 'seeds')));
 const TICKS = num('ticks', 400), SAMPLE = num('sample', 25);
@@ -56,25 +45,12 @@ const MODE = num('mode', 0);
 const SYNC = num('sync', 0);           // synchronous update (deferred pushes)
 const PASS_RETAIN = num('pass-retain', 0.85), PASS_SPRAY = num('pass-spray', 0.05);
 const OUT = resolve(ROOT, String(opt('out', 'knot_dictionary.json')));
-const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
+const WASM_JS = String(opt('wasm', 'docs/public/wasm/loom/planck3.js'));
 const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
 const FRESH = !!arg('fresh');
 
-// ---------- load the engine ----------
-// The repo is "type": "module", so a plain require() would treat the
-// Emscripten glue as ESM and its module.exports tail would never run.
-// Wrap the source in a Function with CJS bindings instead — the glue
-// resolves planck3.wasm via its own __dirname.
-if (!existsSync(WASM_JS)) { console.error(`wasm glue not found: ${WASM_JS} — run src/build.sh first`); process.exit(1); }
-const glueSrc = readFileSync(WASM_JS, 'utf8');
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  glueSrc)(mod, mod.exports, createRequire(WASM_JS),
-  resolve(WASM_JS, '..'), WASM_JS);
-const createPlanck3 = mod.exports;
-if (typeof createPlanck3 !== 'function') { console.error('glue did not export createPlanck3'); process.exit(1); }
-const wasm = await createPlanck3();
-const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer); // fresh view — growth detaches old ones
+const wasm = await loadPlanck3(WASM_JS);
+const heap8 = wasm.heap8; // fresh view — growth detaches old ones
 
 // ---------- seed enumeration ----------
 let files = statSync(SEEDS).isDirectory()
@@ -83,18 +59,12 @@ let files = statSync(SEEDS).isDirectory()
 if (ONLY) files = files.filter(f => ONLY.includes(basename(f, '.json')));
 if (!files.length) { console.error(`no seed geometries under ${SEEDS}`); process.exit(1); }
 
-// P3ST pack: 16B header + q,s,b,tn byte planes + u16le heat plane.
+// P3ST pack via shared lib: fills q/s/heat planes per painted cell.
 const packState = (w, h, d, cells, q0, h0) => {
-  const n = w * h * d;
-  const buf = new Uint8Array(16 + n * 6);
-  const dv = new DataView(buf.buffer);
-  buf.set([0x50, 0x33, 0x53, 0x54]); // "P3ST"
-  dv.setUint32(4, w, true); dv.setUint32(8, h, true); dv.setUint32(12, d, true);
-  const q = buf.subarray(16, 16 + n), s = buf.subarray(16 + n, 16 + 2 * n);
-  const hp = new DataView(buf.buffer, 16 + 4 * n, 2 * n);
+  const { buf, q, s, heat } = packLoad(w, h, d);
   for (const [x, y, z, sp] of cells) {
     const i = (z * h + y) * w + x;
-    q[i] = q0; s[i] = sp; hp.setUint16(2 * i, h0, true);
+    q[i] = q0; s[i] = sp; heat.setUint16(2 * i, h0, true);
   }
   return buf;
 };
@@ -144,13 +114,12 @@ const flush = () => {  // atomic rewrite — safe against a kill mid-candidate
 // Live heartbeat for script/status.mjs — rewritten every telemetry
 // window so an observer sees mid-candidate progress, not just
 // completed entries.
-const LOGDIR = resolve(ROOT, 'logs');
-mkdirSync(LOGDIR, { recursive: true });
 const sweepStart = Date.now();
-const hb = (extra) => writeFileSync(join(LOGDIR, 'status.json'), JSON.stringify({
-  ts: Date.now(), started: sweepStart, config: { ticks: TICKS, sample: SAMPLE, diss: DISS, limit: LIMIT, mode: MODE },
-  total: files.length, completed: done.size, ...extra,
-}, null, 2));
+const hbBase = () => ({
+  started: sweepStart, config: { ticks: TICKS, sample: SAMPLE, diss: DISS, limit: LIMIT, mode: MODE },
+  total: files.length, completed: done.size,
+});
+const hb = (extra) => heartbeat('status.json', hbBase())(extra);
 console.log(`sweep: ${files.length} candidates × ${TICKS} ticks · diss=${DISS} limit=${LIMIT} mode=${MODE}`);
 for (const f of files) {
   const seed = JSON.parse(readFileSync(f, 'utf8'));
@@ -169,10 +138,7 @@ for (const f of files) {
   // bulk-load the painted state through the P3ST channel
   hb({ candidate: name, phase: 'loading', t: 0 });
   const blob = packState(w, h, d, seed.cells, seed.q, seed.heat);
-  const loadPtr = wasm._planck3_load_pointer();   // malloc may grow memory — wrap AFTER
-  heap8().set(blob, loadPtr);
-  if (wasm._planck3_load_commit() !== 0) { console.error(`${name}: load_commit rejected`); continue; }
-  wasm._planck3_prepare();
+  if (!commitLoad(wasm, blob)) { console.error(`${name}: load_commit rejected`); continue; }
 
   const q0 = wasm._planck3_total_quanta();
   const live0 = wasm._planck3_live_cells();

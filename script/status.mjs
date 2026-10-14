@@ -25,6 +25,9 @@ const arg = (k, d) => {
 const CFG_PATH = resolve(ROOT, String(arg('config', 'config/full-sweep.json')));
 const OUT = resolve(ROOT, String(arg('out', 'knot_dictionary.json')));
 const WATCH = parseInt(arg('watch', '0'));
+const SHOW_ALL = !!arg('all', false);
+const FRESH_MS = 600000; // heartbeats older than this collapse/hide
+const tickRate = {};     // scenario → {t, ts} — ETA from watch-mode deltas
 
 const fmtDur = (ms) => {
   if (!isFinite(ms) || ms < 0) return '?';
@@ -34,6 +37,9 @@ const fmtDur = (ms) => {
 const fmtMs = (ms) => fmtDur(ms);
 
 function render() {
+  const _lines = [];
+  const console = { log: (s = '') => _lines.push(String(s)) };
+
   // ---- candidate universe from the sweep config ----
   let cfg = {}, candNames = [];
   try { cfg = JSON.parse(readFileSync(CFG_PATH, 'utf8')); }
@@ -79,12 +85,14 @@ function render() {
   if (latest) console.log(`  latest: ${latest.name} — mass ${latest.massEnd?.toLocaleString()}q, ` +
     `r=(${latest.radiusXY},${latest.radiusZ}), ${latest.verdict}, ${latest.loops} loops`);
 
-  if (live && live.phase === 'ticking') {
-    const tPct = Math.round(100 * live.t / (live.config?.ticks || ticks));
-    const tele = live.q != null ? ` q=${(live.q / 1e6).toFixed(2)}M dead=${live.dead}` : '';
-    console.log(`  live:   ${live.candidate} ticking ${live.t}/${live.config?.ticks || ticks} (${tPct}%)${tele}${isAlive ? '' : ' [STALE heartbeat]'}`);
-  } else if (live && live.candidate) {
-    console.log(`  live:   ${live.candidate} — ${live.phase}${isAlive ? '' : ' [STALE heartbeat]'}`);
+  if (live && (isAlive || SHOW_ALL)) {
+    if (live.phase === 'ticking') {
+      const tPct = Math.round(100 * live.t / (live.config?.ticks || ticks));
+      const tele = live.q != null ? ` q=${(live.q / 1e6).toFixed(2)}M dead=${live.dead}` : '';
+      console.log(`  live:   ${live.candidate} ticking ${live.t}/${live.config?.ticks || ticks} (${tPct}%)${tele}${isAlive ? '' : ' [STALE heartbeat]'}`);
+    } else if (live.candidate) {
+      console.log(`  live:   ${live.candidate} — ${live.phase}${isAlive ? '' : ' [STALE heartbeat]'}`);
+    }
   }
 
   // ETA: mean measured ms per candidate from the dictionary
@@ -114,6 +122,7 @@ function render() {
   if (boost) {
     const bAge = Date.now() - boost.ts;
     const bAlive = bAge < 120000;
+    if (bAge < FRESH_MS || SHOW_ALL) {
     console.log('  BOOST BASIN');
     console.log(`  run:    ${boost.seed} vector ${boost.vector} dir (${boost.dir}) · ${boost.ticks} ticks`);
     if (boost.phase === 'ticking') {
@@ -124,13 +133,30 @@ function render() {
       console.log(`  state:  ${boost.phase}${boost.verdict ? ' — ' + boost.verdict : ''}${bAlive ? '' : ' [STALE heartbeat]'}`);
     }
     console.log(`  age:    heartbeat ${fmtDur(bAge)} ago`);
+    }
   }
 
   // ---- collision matrix (Phase 6) — scenario progress + heartbeat ----
   let col = null;
   try { col = JSON.parse(readFileSync(join(ROOT, 'logs', 'collide-status.json'), 'utf8')); } catch {}
   let colCfg = { scenarios: [] }, colRes = [];
-  try { colCfg = JSON.parse(readFileSync(resolve(ROOT, String(arg('collide-config', 'config/collide-matrix.json'))), 'utf8')); } catch {}
+  // Resolve the active config: explicit flag > heartbeat's own config
+  // field > whichever config/collide-*.json contains the live scenario
+  // > matrix default.
+  const colCfgPaths = [String(arg('collide-config', ''))].filter(Boolean);
+  if (col?.config) colCfgPaths.push(col.config);
+  let collFiles = [];
+  try { collFiles = readdirSync(resolve(ROOT, 'config')).filter(f => f.startsWith('collide-') && f.endsWith('.json')); } catch {}
+  for (const f of collFiles) {
+    try {
+      const c = JSON.parse(readFileSync(resolve(ROOT, 'config', f), 'utf8'));
+      if (col?.scenario && (c.scenarios ?? []).some(s => s.name === col.scenario)) colCfgPaths.push(`config/${f}`);
+    } catch {}
+  }
+  colCfgPaths.push('config/collide-matrix.json');
+  for (const p of colCfgPaths) {
+    try { colCfg = JSON.parse(readFileSync(resolve(ROOT, p), 'utf8')); break; } catch {}
+  }
   try { colRes = JSON.parse(readFileSync(join(ROOT, 'logs', 'collide-results.json'), 'utf8')); } catch {}
   const colNames = new Set((colCfg.scenarios ?? []).map(s => s.name));
   const colTotal = colNames.size;
@@ -138,18 +164,39 @@ function render() {
     const cAge = col ? Date.now() - col.ts : Infinity;
     const cAlive = cAge < 120000;
     const colDoneRes = colRes.filter(r => colNames.size === 0 || colNames.has(r.name));
-    const cFill = Math.round(28 * colDoneRes.length / Math.max(1, colTotal));
+    // Intra-scenario progress: a ticking scenario contributes its tick
+    // fraction; total ticks from scenario override or config duration_ticks.
+    let frac = 0, liveTotal = 0;
+    if (col?.phase === 'ticking' && col.t != null && (colNames.size === 0 || colNames.has(col.scenario))) {
+      const sc = (colCfg.scenarios ?? []).find(s => s.name === col.scenario);
+      liveTotal = sc?.ticks ?? colCfg.duration_ticks ?? 1000;
+      frac = Math.min(1, col.t / liveTotal);
+    }
+    const colProg = Math.min(colTotal, colDoneRes.length + frac);
+    const cFill = Math.round(28 * colProg / Math.max(1, colTotal));
     const verdicts = {};
     for (const r of colDoneRes) verdicts[r.verdict] = (verdicts[r.verdict] ?? 0) + 1;
     console.log('  COLLISION MATRIX');
-    console.log(`  [${'█'.repeat(cFill)}${'░'.repeat(28 - cFill)}] ${colDoneRes.length}/${colTotal} scenarios` +
+    console.log(`  [${'█'.repeat(cFill)}${'░'.repeat(28 - cFill)}] ${colProg.toFixed(1)}/${colTotal} scenarios` +
       (colDoneRes.length ? ` — ${Object.entries(verdicts).map(([k, v]) => `${v} ${k}`).join(', ')}` : ''));
-    if (col?.phase === 'ticking') {
-      console.log(`  live:   ${col.scenario} tick ${col.t} gap=${col.gap ?? '—'} merged=${col.merged}${cAlive ? '' : ' [STALE heartbeat]'}`);
-    } else if (col) {
-      console.log(`  state:  ${col.scenario} — ${col.phase}${col.verdict ? ': ' + col.verdict : ''}${cAlive ? '' : ' [STALE heartbeat]'}`);
+    if (col && (cAge < FRESH_MS || SHOW_ALL)) {
+      if (col.phase === 'ticking') {
+        // ETA from observed tick rate between watch renders (prevTick is
+        // module state; first render has no rate yet).
+        let eta = '';
+        const prev = tickRate[col.scenario];
+        if (prev && col.t > prev.t) {
+          const msPerTick = (col.ts - prev.ts) / (col.t - prev.t);
+          if (liveTotal) eta = ` · ~${fmtDur(msPerTick * (liveTotal - col.t))} left`;
+        }
+        tickRate[col.scenario] = { t: col.t, ts: col.ts };
+        const tPct = liveTotal ? ` ${Math.round(100 * col.t / liveTotal)}%` : '';
+        console.log(`  live:   ${col.scenario} tick ${col.t}/${liveTotal || '?'}${tPct} gap=${col.gap ?? '—'} merged=${col.merged}${eta}${cAlive ? '' : ' [STALE heartbeat]'}`);
+      } else {
+        console.log(`  state:  ${col.scenario} — ${col.phase}${col.verdict ? ': ' + col.verdict : ''}${cAlive ? '' : ' [STALE heartbeat]'}`);
+      }
+      console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
     }
-    if (col) console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
   }
 
   // ---- other experiment heartbeats (quench / anneal / fountain / ...) ----
@@ -163,9 +210,14 @@ function render() {
   for (const f of hbFiles) {
     try { runs.push({ f, d: JSON.parse(readFileSync(join(ROOT, 'logs', f), 'utf8')) }); } catch {}
   }
-  if (runs.length) {
+  // Fresh heartbeats (<10min) always show; finished/stale runs collapse
+  // into a count unless --all.
+  const fresh = runs.filter(r => Date.now() - (r.d.ts ?? 0) < FRESH_MS);
+  const stale = runs.length - fresh.length;
+  const visible = SHOW_ALL ? runs : fresh;
+  if (visible.length || stale) {
     console.log('  EXPERIMENT FLEET');
-    for (const { f, d } of runs) {
+    for (const { f, d } of visible) {
       const age = Date.now() - (d.ts ?? 0);
       const alive = age < 120000;
       const label = f.replace('-status.json', '');
@@ -177,9 +229,22 @@ function render() {
         if (d[k] != null) bits.push(`${k}=${d[k]}`);
       console.log(`  ${name} [${label}] ${bits.join(' ')}${alive ? '' : ' [STALE]'}`);
     }
+    if (stale && !SHOW_ALL) console.log(`  …${stale} finished/stale runs hidden (--all to show)`);
   }
   console.log('');
+  return _lines.join('\n');
 }
 
-if (WATCH > 0) { render(); setInterval(render, WATCH * 1000); }
-else render();
+// In-place redraw on a TTY (ANSI cursor-home + erase-to-end — no scroll
+// spam); plain append when piped.
+let drawn = false;
+const draw = () => {
+  const s = render();
+  if (!process.stdout.isTTY) { process.stdout.write(s + '\n'); return; }
+  const stamp = `  ${new Date().toLocaleTimeString()} — refresh ${WATCH}s, Ctrl+C to exit`;
+  process.stdout.write((drawn ? '\x1b[H' : '\x1b[2J\x1b[H') + s + '\n' + stamp + '\x1b[0J');
+  drawn = true;
+};
+
+if (WATCH > 0) { draw(); setInterval(draw, WATCH * 1000); }
+else process.stdout.write(render() + '\n');

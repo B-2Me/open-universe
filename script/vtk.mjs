@@ -26,15 +26,10 @@
  * topology: dense is right for 2D, sparse is right for 16.7M nodes.
  */
 import { writeFileSync } from 'node:fs';
+import { V3 } from './lib/p3.mjs';
 
-// Fixed-point port table — same constants as engine-sim.mjs / planck3.c.
-const HEX_MX = [0, 256, 128, -128, -256, -128, 128];
-const HEX_MY = [0, 0, 222, 222, 0, -222, -222];
-const FZ = 209, FP = 148;                        // √(2/3)·256, (1/√3)·256
-const V3 = [null];
-for (let s = 1; s <= 6; s++) V3.push([HEX_MX[s], HEX_MY[s], 0]);
-for (const d of [1, 3, 5]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), FZ]);
-for (const d of [2, 4, 6]) V3.push([Math.round(HEX_MX[d] * FP / 256), Math.round(HEX_MY[d] * FP / 256), -FZ]);
+// V3 fixed-point port table comes from the shared lib (same constants
+// as engine-sim.mjs / planck3.c: √(2/3)·256 axial, (1/√3)·256 planar).
 // Normalized to unit vectors for ParaView glyphs (fixed-point magnitude
 // ≈256, exact normalization keeps arrow lengths uniform).
 const UV3 = [null];
