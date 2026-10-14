@@ -24,7 +24,7 @@ const arg = (k, d) => {
 
 const CFG_PATH = resolve(ROOT, String(arg('config', 'config/full-sweep.json')));
 const OUT = resolve(ROOT, String(arg('out', 'knot_dictionary.json')));
-const WATCH = parseInt(arg('watch', '0'));
+const WATCH = (() => { const v = arg('watch', 0); return v === true ? 5 : parseInt(v); })();
 const SHOW_ALL = !!arg('all', false);
 const FRESH_MS = 600000; // heartbeats older than this collapse/hide
 const tickRate = {};     // scenario → {t, ts} — ETA from watch-mode deltas

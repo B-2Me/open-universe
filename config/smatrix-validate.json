@@ -1,0 +1,17 @@
+{
+  "dims": "100,100,40",
+  "batch": 1,
+  "ticks": 400,
+  "dump_every": 100,
+  "diss": 15,
+  "limit": 50000,
+  "separation": 0,
+  "pinch_tension": 0,
+  "scenarios": [
+    {
+      "name": "survival_h25_9",
+      "seed_A": "hopfion_25_9",
+      "fcc_axis": 0
+    }
+  ]
+}

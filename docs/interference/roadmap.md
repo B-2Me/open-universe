@@ -23,3 +23,10 @@ A 400,000-node grid is enough to prove a single knot is stable, but fundamentall
 
 ## Step 4: The CERN Benchmark (The LSZ Reduction)
 With a populated particle dictionary, locked parameters, and a $256^3$ arena, we script the collisions. We fire Knot A at Knot B at specific velocity offsets. We measure the exact node radius where they shear and accrete (Cross-Section). We log the exact amount of `quanta` that un-knots and sprays out as radiation (Missing Transverse Energy). By running this thousands of times to generate statistical branching ratios, we can test the grid's raw integer spray directly against the raw debris telemetry from the CERN Open Data Portal.
+
+## Step 5: Astrophysical & Cosmological Signatures
+Once the local S-Matrix and particle dictionary are mapped via the CERN Benchmark, the framework scales up to macro-observables. Because the Planck Field is intrinsically chiral (possessing a native screw axis), this discrete parity violation must cast a macroscopic shadow across the universe. The final phase of the roadmap tests the substrate against astrophysics:
+
+*   **Cosmic Microwave Background (CMB) Birefringence:** Measuring the EB cross-power spectrum of the CMB to confirm the universal rotation angle predicted by a chiral vacuum.
+*   **Gravitational Wave Polarization:** Utilizing Pulsar Timing Arrays and the LISA mission to hunt for the predicted net circular polarization in the Stochastic Gravitational Wave Background.
+*   **Baryogenesis Validation:** Using the S-Matrix divergence between chiral Hopfions and anti-Hopfions to mathematically model the early-universe thermalization rate, proving matter survived strictly due to geometric alignment with the substrate's grain.

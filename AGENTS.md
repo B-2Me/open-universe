@@ -92,6 +92,24 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   `logs/vtk/<run>/frame_NNNNN.vtk` — open the folder in ParaView as a
   time series. The 2D engine's dense STRUCTURED_POINTS export lives in
   planck.c (generate_vtk); sparse is the right topology for 16.7M nodes.
+- `src/smatrix/` — CUDA port of the planck3 tick (sync semantics only —
+  deferred pushes become atomicAdds into a u16 accumulator plane, a
+  publish kernel clamps to `min(255, nb2+Σ)`; provably identical since
+  pushes are all-positive). Ping-pong swap replaces the memcpy-back.
+  Batches stack independent grids in one flat launch. Build with
+  `build.bat` (`nvcc -O3 -arch=sm_86 -cudart=static` — the exe needs
+  only the NVIDIA driver on the runner machine). `smatrix serve
+  --port=N` is the LAN listener: `POST /job` (streams SMX1 blob to
+  disk), `GET /status`, `/result/<id>`, `/state/<id>/<b>`,
+  `/file/<id>/<name>`. `smatrix run <job.smx>` runs locally.
+  `script/smatrix_pack.mjs` emits the binary job + a `.meta.json`
+  provenance sidecar (painted A/B masks — the node has no ID
+  register); `script/smatrix_submit.mjs --config=… --host=<ip>`
+  packs + pushes, `--watch` polls heartbeats, `--pull` fetches
+  status + latest per-batch states into `logs/smx-job-<id>/`.
+  Validation gate: `config/smatrix-validate.json` (batch=1
+  hopfion_25_9, 400t) must reproduce the wasm `--sync` run —
+  1,678,260 mass / 27,971 live, stable.
 - `script/status.mjs` — read-only dashboard. Prints progress bar,
   stable/unraveled yield, latest stable discovery, per-candidate
   timing + ETA from `logs/status.json` (heartbeat written per tick

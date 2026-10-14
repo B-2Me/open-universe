@@ -1,0 +1,16 @@
+{
+  "dims": "100,100,40",
+  "batch": 4,
+  "ticks": 60,
+  "dump_every": 20,
+  "diss": 15,
+  "limit": 50000,
+  "separation": 30,
+  "allow_overlap": true,
+  "pinch_tension": 20,
+  "scenarios": [
+    { "name": "b0",  "seed_A": "hopfion_25_9", "seed_B": "hopfion_25_9", "fcc_axis": 0, "impact_parameter": 0 },
+    { "name": "b5",  "seed_A": "hopfion_25_9", "seed_B": "hopfion_25_9", "fcc_axis": 0, "impact_parameter": 5 },
+    { "name": "ax1", "seed_A": "hopfion_25_9", "seed_B": "hopfion_25_9", "fcc_axis": 1, "impact_parameter": 0 }
+  ]
+}
