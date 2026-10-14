@@ -235,14 +235,21 @@ function render() {
   return _lines.join('\n');
 }
 
-// In-place redraw on a TTY (ANSI cursor-home + erase-to-end — no scroll
-// spam); plain append when piped.
+// In-place redraw on a TTY: cursor-home, then each line written with an
+// erase-to-EOL so shorter replacement lines can't leave stale tails, a
+// final erase-to-end clears surplus rows from longer previous frames,
+// and lines are clamped to the terminal width so wrapping can't shift
+// the row cursor. Plain append when piped.
 let drawn = false;
 const draw = () => {
   const s = render();
   if (!process.stdout.isTTY) { process.stdout.write(s + '\n'); return; }
+  const cols = process.stdout.columns || 120;
   const stamp = `  ${new Date().toLocaleTimeString()} — refresh ${WATCH}s, Ctrl+C to exit`;
-  process.stdout.write((drawn ? '\x1b[H' : '\x1b[2J\x1b[H') + s + '\n' + stamp + '\x1b[0J');
+  const body = (s + '\n' + stamp).split('\n')
+    .map(l => l.length > cols ? l.slice(0, cols) : l)
+    .join('\x1b[K\n');
+  process.stdout.write((drawn ? '\x1b[H' : '\x1b[2J\x1b[H') + body + '\x1b[K\x1b[0J');
   drawn = true;
 };
 
