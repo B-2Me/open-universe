@@ -111,6 +111,7 @@ if emcc planck3.c \
     '_planck3_mean_heat',
     '_planck3_set_dissipation',
     '_planck3_set_thermal_limit',
+    '_planck3_set_sync',
     '_planck3_save',
     '_planck3_restore'
   ]" \

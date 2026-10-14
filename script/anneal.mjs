@@ -50,6 +50,7 @@ const SEED = String(opt('seed', 'hopfion_25_9'));
 const ARC = num('arc', 0.75);                 // fraction of the cycle kept
 const TICKS = num('ticks', num('duration_ticks', 300));
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
+const SYNC = num('sync', 0);
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
 
 // Per-parity port offsets — verbatim from planck3.c HOFF/POFF (index 0
@@ -128,6 +129,7 @@ if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'
 wasm._planck3_set_dissipation(DISS);
 wasm._planck3_set_thermal_limit(LIMIT);
 wasm._planck3_set_mode(MODE);
+if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
 wasm._planck3_reset_stats();
 
 const buf = new Uint8Array(16 + n * 6);
@@ -216,6 +218,6 @@ const out = {
   head: cellSet.get(headI), tail: cellSet.get(tailI),
   ms: Date.now() - t0ms, series,
 };
-const outPath = join(LOGDIR, `anneal-${SEED}-${String(ARC).replace('.', 'p')}.json`);
+const outPath = join(LOGDIR, `anneal-${SEED}-${String(ARC).replace('.', 'p')}${SYNC ? '-sync' : ''}.json`);
 writeFileSync(outPath, JSON.stringify(out, null, 2));
 console.log(`\n→ ${outPath}`);

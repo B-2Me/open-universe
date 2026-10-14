@@ -151,6 +151,33 @@ function render() {
     }
     if (col) console.log(`  age:    heartbeat ${fmtDur(cAge)} ago`);
   }
+
+  // ---- other experiment heartbeats (quench / anneal / fountain / ...) ----
+  // Every harness writes logs/<name>-status.json; anything not rendered
+  // above is reported here generically. One file per run, so parallel
+  // fountain probes each get their own line.
+  const COVERED = new Set(['status.json', 'queue-status.json', 'boost-status.json', 'collide-status.json']);
+  let hbFiles = [];
+  try { hbFiles = readdirSync(join(ROOT, 'logs')).filter(f => f.endsWith('-status.json') && !COVERED.has(f)); } catch {}
+  const runs = [];
+  for (const f of hbFiles) {
+    try { runs.push({ f, d: JSON.parse(readFileSync(join(ROOT, 'logs', f), 'utf8')) }); } catch {}
+  }
+  if (runs.length) {
+    console.log('  EXPERIMENT FLEET');
+    for (const { f, d } of runs) {
+      const age = Date.now() - (d.ts ?? 0);
+      const alive = age < 120000;
+      const label = f.replace('-status.json', '');
+      const name = d.scenario ?? d.seed ?? d.mode ?? label;
+      const bits = [];
+      if (d.phase === 'ticking' && d.t != null) bits.push(`t${d.t}${d.ticks ? '/' + d.ticks : ''}`);
+      else if (d.phase) bits.push(d.phase);
+      for (const k of ['live', 'arcLive', 'freeEnds', 'maxCycle', 'nCycles', 'gap', 'hA', 'level'])
+        if (d[k] != null) bits.push(`${k}=${d[k]}`);
+      console.log(`  ${name} [${label}] ${bits.join(' ')}${alive ? '' : ' [STALE]'}`);
+    }
+  }
   console.log('');
 }
 

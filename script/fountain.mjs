@@ -125,8 +125,8 @@ const heap8 = () => new Uint8Array(wasm.wasmMemory.buffer);
 const LOGDIR = resolve(ROOT, 'logs');
 mkdirSync(LOGDIR, { recursive: true });
 const tag = MODE === 'ring'
-  ? `ring-r${RADIUS}-b${String(BIAS).replace('.', 'p')}-l${LEVEL}${FOAM ? '-f' + FOAM : ''}${PINCH ? '-p' + PINCH : ''}${PTENSION ? '-t' + PTENSION : ''}`
-  : `tail-${SEED}-${String(ARC).replace('.', 'p')}-l${LEVEL}${FOAM ? '-f' + FOAM : ''}${PINCH ? '-p' + PINCH : ''}${PTENSION ? '-t' + PTENSION : ''}`;
+  ? `ring-r${RADIUS}-b${String(BIAS).replace('.', 'p')}-l${LEVEL}${FOAM ? '-f' + FOAM : ''}${PINCH ? '-p' + PINCH : ''}${PTENSION ? '-t' + PTENSION : ''}${num('sync', 0) ? '-sync' : ''}`
+  : `tail-${SEED}-${String(ARC).replace('.', 'p')}-l${LEVEL}${FOAM ? '-f' + FOAM : ''}${PINCH ? '-p' + PINCH : ''}${PTENSION ? '-t' + PTENSION : ''}${num('sync', 0) ? '-sync' : ''}`;
 const hb = (extra) => writeFileSync(join(LOGDIR, `fountain-${tag}-status.json`), JSON.stringify({ ts: Date.now(), mode: MODE, ...extra }, null, 2));
 
 // ---------- build source set ----------
@@ -204,6 +204,7 @@ if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'
 wasm._planck3_set_dissipation(DISS);
 wasm._planck3_set_thermal_limit(LIMIT);
 wasm._planck3_set_mode(EMODE);
+if (wasm._planck3_set_sync) wasm._planck3_set_sync(num('sync', 0));
 wasm._planck3_reset_stats();
 
 const buf = new Uint8Array(16 + n * 6);

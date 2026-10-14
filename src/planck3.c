@@ -90,6 +90,42 @@ typedef struct {
 static Node3 *g_rd = NULL, *g_wr = NULL;
 static uint32_t cur_tick = 0;
 
+// Synchronous update mode (planck3_set_sync). When enabled, the two
+// mid-tick push sites (tension-shear divert, thermal-unwind spray) defer
+// their buffer deposits into a queue instead of writing g_rd in-place.
+// Legacy path writes straight into g_rd: pushes are visible to
+// later-scanned cells within the tick (row-major scan-order bias —
+// measured as the asymmetric erosion in collide.mjs symmetric_swapped)
+// and are then silently discarded by the publish memcpy (mass leak).
+// Deferred pushes flush into g_wr post-sweep: uniform within-tick reads,
+// and the diverted mass actually persists into the next state.
+static int g_sync = 0;
+static int32_t *pq_key = NULL;
+static uint8_t *pq_amt = NULL;
+static size_t pq_n = 0, pq_cap = 0;
+static void pushq_add(int32_t key, int amt) {
+    if (amt <= 0) return;
+    if (pq_n == pq_cap) {
+        size_t nc = pq_cap ? pq_cap * 2 : 4096;
+        int32_t *nk = (int32_t *)realloc(pq_key, nc * sizeof(int32_t));
+        uint8_t *na = (uint8_t *)realloc(pq_amt, nc);
+        if (!nk || !na) { free(nk); free(na); return; } // OOM: drop push
+        pq_key = nk; pq_amt = na; pq_cap = nc;
+    }
+    pq_key[pq_n] = key; pq_amt[pq_n] = (uint8_t)(amt > 255 ? 255 : amt); pq_n++;
+}
+// Flush deferred pushes into g_wr (call AFTER the node sweep, BEFORE the
+// publish memcpy so they join the next state). Clamps against the
+// freshly-computed buffer — target's own nb2 plus all inbound pushes.
+static void pushq_flush(void) {
+    for (size_t i = 0; i < pq_n; i++) {
+        int room = 255 - g_wr[pq_key[i]].buffer;
+        int add = pq_amt[i] < room ? pq_amt[i] : room;
+        g_wr[pq_key[i]].buffer += (uint8_t)add;
+    }
+    pq_n = 0;
+}
+
 // Lazily-allocated bulk buffers (declared early — init_dims frees them).
 static uint8_t *load_buf = NULL, *rg_buf = NULL;
 static int agc_lo = -1, agc_hi = -1; // smoothed palette bounds (rg mode 1)
@@ -232,12 +268,17 @@ static inline void planck3_node_tick(int32_t gidx,
     // Tension shear: arrivals >>4 deflect into the up-gradient flowing
     // neighbor's buffer — owner write, so later-ticked cells see it.
     if (gKey >= 0 && incoming > 0 && T_DIVERT < 16) {
-        Node3 *tgt = resolve(ctx, gKey);
-        int room = 255 - tgt->buffer;
         int push = incoming >> T_DIVERT;
-        if (push > room) push = room;
-        incoming -= push;
-        tgt->buffer += (uint8_t)push;
+        if (g_sync) {
+            pushq_add(gKey, push);
+            incoming -= push;
+        } else {
+            Node3 *tgt = resolve(ctx, gKey);
+            int room = 255 - tgt->buffer;
+            if (push > room) push = room;
+            incoming -= push;
+            tgt->buffer += (uint8_t)push;
+        }
     }
 
     int nb2 = cb + incoming;
@@ -267,6 +308,7 @@ static inline void planck3_node_tick(int32_t gidx,
         int share = (nq2 + nb2) / 12;
         for (int d = 1; d <= 12; d++) {
             if (key[d] < 0) continue;
+            if (g_sync) { pushq_add(key[d], share); continue; }
             Node3 *tgt = resolve(ctx, key[d]);
             int add = 255 - tgt->buffer;
             if (share < add) add = share;
@@ -324,6 +366,7 @@ static void tick_flat3(void) {
             }
         }
     }
+    if (g_sync) pushq_flush();
     // Publish into the FIXED g_rd buffer — a pointer swap would be cheaper
     // (one memcpy/tick ≈ 1-2% overhead) but g_rd doubles as the exported
     // state buffer: planck3_state_pointer() hands JS a raw address, and a
@@ -530,6 +573,9 @@ static void planck3_free_all(void) {
     free(load_buf); load_buf = NULL;
     free(rg_buf); rg_buf = NULL;
     free(save_buf); save_buf = NULL;
+    free(pq_key); pq_key = NULL;
+    free(pq_amt); pq_amt = NULL;
+    pq_n = pq_cap = 0;
     save_valid = 0;
 }
 
@@ -735,6 +781,9 @@ EMSCRIPTEN_KEEPALIVE void planck3_rg_refresh(int mode) {
 }
 
 EMSCRIPTEN_KEEPALIVE void planck3_set_dissipation(int rate) { g_dissipation = rate; }
+// Synchronous-update toggle: see g_sync comment above. Flat mode only —
+// chunk ticks keep the legacy mid-tick resolve path.
+EMSCRIPTEN_KEEPALIVE void planck3_set_sync(int on) { g_sync = !!on; pq_n = 0; }
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).

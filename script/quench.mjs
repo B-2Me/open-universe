@@ -77,6 +77,7 @@ const LOAD = String(opt('load', 'beam'));
 const BEAM_HW = num('beam_hw', 4);            // half-width → (2hw+1)² cross-section
 const GAP = num('gap', 24);                   // control window offset in +y
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
+const SYNC = num('sync', 0);
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
 
@@ -132,7 +133,7 @@ if (cy + GAP + BEAM_HW >= h) { console.error(`control window out of bounds (h=${
 const inBeam = new Uint8Array(n);
 for (const i of probeA) inBeam[i] = 1;
 
-const resultsPath = join(LOGDIR, 'quench-results.json');
+const resultsPath = join(LOGDIR, `quench-results${SYNC ? '-sync' : ''}.json`);
 const results = existsSync(resultsPath) ? JSON.parse(readFileSync(resultsPath, 'utf8')) : [];
 
 // ---------- run each load level ----------
@@ -141,6 +142,7 @@ for (const level of LEVELS) {
   wasm._planck3_set_dissipation(DISS);
   wasm._planck3_set_thermal_limit(LIMIT);
   wasm._planck3_set_mode(MODE);
+  if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
   wasm._planck3_reset_stats();
 
   // Empty-vacuum load: P3ST blob with zeroed channels (no seed needed —
@@ -302,8 +304,8 @@ for (const level of LEVELS) {
     probes: { a: probeA.length, b: probeB.length },
     baseline: { a: blA, b: blB }, hEq, load: LOAD, fitA, fitB, ms: Date.now() - t0ms, warm, series,
   };
-  writeFileSync(join(LOGDIR, `quench-l${level}.json`), JSON.stringify(out, null, 2));
-  results.push({ level, load: LOAD, retainA: fitA?.retained, retainB: fitB?.retained, hEq, converged, warmTicks });
+  writeFileSync(join(LOGDIR, `quench-l${level}${SYNC ? '-sync' : ''}.json`), JSON.stringify(out, null, 2));
+  results.push({ level, load: LOAD, sync: SYNC, retainA: fitA?.retained, retainB: fitB?.retained, hEq, converged, warmTicks });
   writeFileSync(resultsPath, JSON.stringify(results, null, 2));
   hb({ level, phase: 'done', fitA, fitB });
 }

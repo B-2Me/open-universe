@@ -53,6 +53,7 @@ const SEEDS = resolve(ROOT, String(opt('seeds', 'seeds')));
 const TICKS = num('ticks', 400), SAMPLE = num('sample', 25);
 const DISS = num('diss', 15), LIMIT = num('limit', 50000);
 const MODE = num('mode', 0);
+const SYNC = num('sync', 0);           // synchronous update (deferred pushes)
 const PASS_RETAIN = num('pass-retain', 0.85), PASS_SPRAY = num('pass-spray', 0.05);
 const OUT = resolve(ROOT, String(opt('out', 'knot_dictionary.json')));
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
@@ -124,7 +125,9 @@ const probe = (w, h, n, statePtr) => {
 // Resume: merge a prior dictionary and skip signature-matched entries.
 // A signature pins the run parameters — same name under different
 // physics is a different measurement, not a duplicate.
-const sig = (name, dims) => `${name}|${dims.join('x')}|t${TICKS}|d${DISS}|l${LIMIT}|m${MODE}`;
+// Sync runs get a distinct signature so they can't collide with (or
+// impersonate) legacy entries; legacy sigs stay byte-identical.
+const sig = (name, dims) => `${name}|${dims.join('x')}|t${TICKS}|d${DISS}|l${LIMIT}|m${MODE}${SYNC ? '|y1' : ''}`;
 let dict = { generated: new Date().toISOString(), ticks: TICKS, diss: DISS, limit: LIMIT, mode: MODE, entries: [] };
 const done = new Set();
 if (!FRESH && existsSync(OUT)) {
@@ -161,6 +164,7 @@ for (const f of files) {
   wasm._planck3_set_dissipation(DISS);
   wasm._planck3_set_thermal_limit(LIMIT);
   wasm._planck3_set_mode(MODE);
+  if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
   wasm._planck3_reset_stats();
   // bulk-load the painted state through the P3ST channel
   hb({ candidate: name, phase: 'loading', t: 0 });

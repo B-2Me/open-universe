@@ -58,6 +58,7 @@ const VECTOR = num('vector', 1);               // 0-23; default port 2 (+X+Y) in
 const TICKS = num('duration_ticks', num('ticks', 500));
 const SKIN = num('wall_skin', 1);
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
+const SYNC = num('sync', 0);
 const FLUX = CFG.flux_profile ?? {};
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
@@ -163,6 +164,7 @@ if (wasm._planck3_init_dims(w, h, d) !== 0) { console.error('init_dims rejected'
 wasm._planck3_set_dissipation(DISS);
 wasm._planck3_set_thermal_limit(LIMIT);
 wasm._planck3_set_mode(MODE);
+if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
 wasm._planck3_reset_stats();
 
 // P3ST bulk-load (same channel as sweep.mjs).
@@ -349,7 +351,7 @@ const rec = {
   coherence: +(cLast.knot.painted / paintedAlive).toFixed(4),
   verdict, ms: Date.now() - t0ms, series,
 };
-const out = join(LOGDIR, `boost-${rec.seed}-v${VECTOR}.json`);
+const out = join(LOGDIR, `boost-${rec.seed}-v${VECTOR}${SYNC ? '-sync' : ''}.json`);
 writeFileSync(out, JSON.stringify(rec, null, 2));
 hb({ phase: 'done', verdict });
 console.log(`→ ${out}`);

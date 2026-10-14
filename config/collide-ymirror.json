@@ -1,0 +1,20 @@
+{
+  "duration_ticks": 1000,
+  "pinch_tension": { "type": "adsr", "peak": 20, "attack": 50, "sustain": 800, "release": 150 },
+  "scenarios": [
+    {
+      "name": "ymirror_axis1",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 1,
+      "impact_parameter": 0
+    },
+    {
+      "name": "ymirror_axis5",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 5,
+      "impact_parameter": 0
+    }
+  ]
+}

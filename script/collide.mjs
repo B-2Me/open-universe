@@ -60,6 +60,7 @@ const TICKS = num('duration_ticks', 1000);
 const SEP = num('separation', 64);
 const PINCH = CFG.pinch_tension ?? 20;
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
+const SYNC = num('sync', 0);           // synchronous update (deferred pushes)
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
 const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
 const WASM_JS = resolve(ROOT, String(opt('wasm', 'docs/public/wasm/loom/planck3.js')));
@@ -256,6 +257,7 @@ for (const sc of scenarios) {
   wasm._planck3_set_dissipation(DISS);
   wasm._planck3_set_thermal_limit(LIMIT);
   wasm._planck3_set_mode(MODE);
+  if (wasm._planck3_set_sync) wasm._planck3_set_sync(SYNC);
   wasm._planck3_reset_stats();
   const buf = new Uint8Array(16 + n * 6);
   const dv = new DataView(buf.buffer);
@@ -428,7 +430,7 @@ for (const sc of scenarios) {
     aborted, ms: Date.now() - t0ms, series,
   };
   writeFileSync(join(LOGDIR, `collide-${sc.name}.json`), JSON.stringify(out, null, 2));
-  results.push({ name: sc.name, axis, b, verdict, retainA: out.retainA, retainB: out.retainB });
+  results.push({ name: sc.name, axis, b, verdict, retainA: out.retainA, retainB: out.retainB, sync: SYNC });
   writeFileSync(resultsPath, JSON.stringify(results, null, 2));
   hb({ scenario: sc.name, phase: 'done', verdict });
 }
