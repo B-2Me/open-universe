@@ -21,6 +21,11 @@
  *   diss, limit         engine knobs
  *   separation, pinch_tension   spawn + wall forcing (same semantics
  *                       as collide.mjs: constant per-tick wall add)
+ *   absorb_margin       sponge-shell thickness (default 0 = periodic
+ *                       x/y + z hard wall; >0 drains q/buf + halves heat
+ *                       on the shell each tick — open boundary, kills
+ *                       wraparound contamination; absorbed mass lands
+ *                       in counter slot 2 → status.json "absorbed")
  *   scenarios[]         { name, seed_A, seed_B, fcc_axis,
  *                         impact_parameter, boost_A, boost_B }
  *                       seed_B may be omitted (single-knot survival job)
@@ -38,6 +43,7 @@ const TICKS = num('ticks', 1000), DUMP = num('dump_every', num('dumpEvery', 0));
 const DISS = num('diss', 15), LIMIT = num('limit', 50000);
 const SEP = num('separation', 64);
 const PINCH = num('pinch_tension', 0);
+const MARGIN = num('absorb_margin', 0);   // sponge shell — open boundary
 const OUT = String(opt('out', 'job.smx'));
 const ALLOW_OVERLAP = !!opt('allow_overlap', false);
 
@@ -187,7 +193,7 @@ header.writeUInt32LE(BATCH, 8);
 header.writeUInt32LE(W, 12); header.writeUInt32LE(H, 16); header.writeUInt32LE(D, 20);
 header.writeUInt32LE(TICKS, 24); header.writeUInt32LE(DUMP, 28);
 header.writeUInt32LE(allForce.length, 32);
-header.writeUInt32LE(0, 36);           // reserved
+header.writeUInt32LE(MARGIN, 36);      // absorb_margin (was: reserved)
 header.writeInt32LE(DISS, 40);
 header.writeInt32LE(LIMIT, 44);
 
@@ -221,6 +227,7 @@ writeFileSync(OUT, out);
 // post-run classification reads this file.
 const meta = {
   dims: DIMS, ticks: TICKS, diss: DISS, limit: LIMIT, batch: BATCH,
+  absorb_margin: MARGIN,
   batches: batches.map((b, i) => ({
     batch: i, name: b.name, axis: b.axis, impact: b.b, seeds: b.seeds,
     painted: b.counts, maskA: b.maskA, maskB: b.maskB,

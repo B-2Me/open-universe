@@ -44,7 +44,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   ROOT, LOGDIR, arg, loadConfig, opts, loadPlanck3, initEngine,
-  V3, packLoad, commitLoad, heartbeat,
+  V3, packLoad, commitLoad, heartbeat, makeDrain,
 } from './lib/p3.mjs';
 
 const CFG_PATH = String(arg('config') ?? 'config/collide-matrix.json');
@@ -57,6 +57,10 @@ const PINCH = CFG.pinch_tension ?? 20;
 const DISS = num('diss', 15), LIMIT = num('limit', 50000), MODE = num('mode', 0);
 const SYNC = num('sync', 0);           // synchronous update (deferred pushes)
 const VTK_EVERY = num('vtk-interval', num('vtk_interval', 0));   // 0 = off
+// Sponge shell (cells) drained each tick — open-boundary semantics:
+// stops periodic wraparound spray re-entering the arena from behind.
+// Absorbed mass is counted per tick (missing-transverse-energy channel).
+const ABSORB = num('absorb_margin', 0);
 const ONLY = opt('only', null) ? String(opt('only')).split(',') : null;
 const WASM_JS = String(opt('wasm', 'docs/public/wasm/loom/planck3.js'));
 
@@ -324,6 +328,8 @@ for (const sc of scenarios) {
     `  walls ${pinchWalls[0].length}+${pinchWalls[1].length}`);
 
   const origA = cellsA.length, origB = cellsB.length;
+  const drain = makeDrain(w, h, d, ABSORB);
+  let absorbedTotal = 0;
   const series = [];
   let c0 = census(), cLast = c0;
   const gap0 = c0.compA?.skelA && (c0.merged ? c0.compA.skelB : c0.compB?.skelB)
@@ -343,6 +349,7 @@ for (const sc of scenarios) {
         w, h, d, statePtr, heap8, masks: { a: paintedA, b: paintedB }, tick: t,
         title: `collide ${sc.name} axis${axis} b${b}`,
       });
+    if (drain) absorbedTotal += drain.apply(heap8(), statePtr);
     pinch(t);
     wasm._planck3_tick();
     statePtr = wasm._planck3_state_pointer();   // buffer swap — see above
@@ -351,7 +358,7 @@ for (const sc of scenarios) {
     const aS = c.compA?.skelA, bS = c.merged ? c.compA?.skelB : c.compB?.skelB;
     const gap = aS && bS ? Math.hypot(bS.x - aS.x, bS.y - aS.y, bS.z - aS.z) : null;
     const rec = {
-      t, merged: !!c.merged, live: c.live, q: Math.round(q),
+      t, merged: !!c.merged, live: c.live, q: Math.round(q), absorbed: absorbedTotal,
       gap: gap === null ? null : +gap.toFixed(2),
       a: c.compA ? { live: c.compA.live, painted: c.compA.paintedA, q: c.compA.q, lcent: c.compA.lcent } : null,
       b: c.merged ? { insideA: c.compA.paintedB } : c.compB ? { live: c.compB.live, painted: c.compB.paintedB, q: c.compB.q, lcent: c.compB.lcent } : null,
@@ -387,6 +394,7 @@ for (const sc of scenarios) {
     boostCellsA: bA, boostCellsB: bB,
     spawnA: cA.map(Math.round), spawnB: cB.map(Math.round), dims: [w, h, d],
     ticks: series.length, pinch: PINCH, diss: DISS, limit: LIMIT,
+    absorb_margin: ABSORB, absorbed: absorbedTotal,
     verdict, retainA: +retA.toFixed(4), retainB: +retB.toFixed(4),
     mass0: Math.round(q0), massEnd: Math.round(qEnd),
     gap0: gap0 === null ? null : +gap0.toFixed(2),

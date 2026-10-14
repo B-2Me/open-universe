@@ -214,6 +214,28 @@ __global__ void smx_publish_kernel(SmNode *__restrict__ wr,
     wr[gid].buffer = push[gid] > 255 ? 255 : (uint8_t)push[gid];
 }
 
+// Absorbing boundary: drain q/buf and damp heat on each batch's outer
+// `margin` shell, pre-tick on the READ state (same slot as force).
+// Absorbed mass is counted — the missing-transverse-energy channel.
+__global__ void smx_drain_kernel(SmNode *__restrict__ rd,
+                                 uint64_t *__restrict__ absorbed,
+                                 int64_t total, int margin) {
+    int64_t gid = (int64_t)blockIdx.x * blockDim.x + threadIdx.x;
+    if (gid >= total) return;
+    int32_t i = (int32_t)(gid % c_N3);
+    int32_t z = i / (c_H * c_W);
+    int32_t rem = i - z * c_H * c_W;
+    int32_t y = rem / c_W, x = rem - y * c_W;
+    if (x >= margin && x < c_W - margin &&
+        y >= margin && y < c_H - margin &&
+        z >= margin && z < c_D - margin) return;
+    SmNode *p = &rd[gid];
+    uint32_t m = p->quanta + p->buffer;
+    if (m) atomicAdd(absorbed, (uint64_t)m);
+    p->quanta = 0; p->buffer = 0;
+    p->heat >>= 1;
+}
+
 // Sparse persistent forcing (pinch walls): add to pinned registers with
 // the same clamps collide.mjs applies between ticks.
 __global__ void smx_force_kernel(SmNode *__restrict__ rd,
@@ -235,10 +257,10 @@ extern "C" {
 
 static SmNode *d_rd = 0, *d_wr = 0;
 static uint16_t *d_push = 0;
-static uint64_t *d_counters = 0;   // [0]=spray_events [1]=spray_quanta
+static uint64_t *d_counters = 0;   // [0]=spray_events [1]=spray_quanta [2]=absorbed
 static uint32_t *d_fIdx = 0;
 static uint8_t *d_fSpin = 0, *d_fTens = 0, *d_fQuant = 0;
-static int gW = 0, gH = 0, gD = 0, gN3 = 0, gBatch = 0, gNForce = 0;
+static int gW = 0, gH = 0, gD = 0, gN3 = 0, gBatch = 0, gNForce = 0, gMargin = 0;
 static uint32_t gTick = 0;
 
 int smx_init(int w, int h, int d, int batch, int diss, int limit) {
@@ -293,12 +315,14 @@ int smx_init(int w, int h, int d, int batch, int diss, int limit) {
     cudaMalloc(&d_rd, total * sizeof(SmNode));
     cudaMalloc(&d_wr, total * sizeof(SmNode));
     cudaMalloc(&d_push, total * sizeof(uint16_t));
-    cudaMalloc(&d_counters, 2 * sizeof(uint64_t));
-    cudaMemset(d_counters, 0, 2 * sizeof(uint64_t));
+    cudaMalloc(&d_counters, 3 * sizeof(uint64_t));   // [2] = absorbed mass
+    cudaMemset(d_counters, 0, 3 * sizeof(uint64_t));
     cudaMemset(d_rd, 0, total * sizeof(SmNode));
     cudaMemset(d_wr, 0, total * sizeof(SmNode));
     return (cudaGetLastError() == cudaSuccess) ? 0 : -1;
 }
+
+int smx_set_drain(int margin) { gMargin = margin; return 0; }
 
 int smx_set_force(const uint32_t *idx, const uint8_t *spin,
                   const uint8_t *tens, const uint8_t *quant, int n) {
@@ -340,6 +364,8 @@ void smx_tick(void) {
     int64_t blocks = (total + threads - 1) / threads;
     if (gNForce > 0)
         smx_force_kernel<<<(gNForce + 255) / 256, 256>>>(d_rd, d_fIdx, d_fSpin, d_fTens, d_fQuant, gNForce);
+    if (gMargin > 0)
+        smx_drain_kernel<<<(int)blocks, threads>>>(d_rd, d_counters + 2, total, gMargin);
     smx_tick_kernel<<<(int)blocks, threads>>>(d_rd, d_wr, d_push,
                                             d_counters, d_counters + 1, total, gTick);
     smx_publish_kernel<<<(int)blocks, threads>>>(d_wr, d_push, total);
@@ -361,10 +387,10 @@ int smx_dump(int batchIdx, uint8_t *p3st) {
     return 0;
 }
 
-int smx_counters(uint64_t *ev, uint64_t *q) {
-    uint64_t c[2];
+int smx_counters(uint64_t *ev, uint64_t *q, uint64_t *absorbed) {
+    uint64_t c[3];
     cudaMemcpy(c, d_counters, sizeof(c), cudaMemcpyDeviceToHost);
-    *ev = c[0]; *q = c[1];
+    *ev = c[0]; *q = c[1]; *absorbed = c[2];
     return 0;
 }
 

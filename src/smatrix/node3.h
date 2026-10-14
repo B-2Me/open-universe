@@ -52,7 +52,12 @@ struct __align__(8) SmNode {
 //   u32  ticks      run length
 //   u32  dumpEvery  write a state snapshot every N ticks (0 = final only)
 //   u32  nForce     sparse force-list entries total (0 = none)
-//   u32  reserved
+//   u32  absorb_margin   sponge shell thickness (0 = periodic x/y + z wall,
+//                        legacy physics; >0 = drain q/buf + damp heat on
+//                        every batch's outer shell each tick — the open-
+//                        boundary fix for wraparound spray contamination.
+//                        Absorbed mass accumulates in counter slot 2 —
+//                        the missing-transverse-energy channel.)
 //   header tail: i32 diss, i32 limit (appended after reserved — v1.1 fields)
 //   per batch:  { u8 axis; u8 pad; int16 impact_milli; f32 phase; u8 name[32] } = 40B
 //   force list:  nForce × { u32 gidx (GLOBAL: batch-local index + batch*N3);

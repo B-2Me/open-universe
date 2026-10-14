@@ -96,6 +96,40 @@ export const nearestPort = (dx, dy, dz) => {
   return best;
 };
 
+// ---------- absorbing boundary (sponge) --------------------------------
+// makeDrain(w,h,d,margin) → precomputed boundary-shell index list plus an
+// apply(mem,statePtr) that zeroes quanta+buffer and halves heat on those
+// cells, returning the absorbed mass. Apply in the same pre-tick slot as
+// the pinch (writes to the published state the next tick reads).
+//
+// Why drain instead of wall: x/y wrap and z already is a wall — mass at
+// a dead port deadlocks→shunts→sprays back inward, so a hard boundary
+// reflects diffusely. Draining approximates free space: radiation that
+// leaves the arena never returns. The absorbed count is the missing-
+// transverse-energy channel — report it, don't drop it.
+export const makeDrain = (w, h, d, margin = 0) => {
+  if (!margin) return null;
+  const idx = [];
+  for (let z = 0; z < d; z++) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (x < margin || x >= w - margin || y < margin || y >= h - margin ||
+        z < margin || z >= d - margin)
+      idx.push((z * h + y) * w + x);
+  }
+  const apply = (mem, statePtr) => {
+    let absorbed = 0;
+    for (const i of idx) {
+      const p = statePtr + i * 6;
+      absorbed += mem[p] + mem[p + 4];             // quanta + buffer
+      mem[p] = 0; mem[p + 4] = 0;
+      const hv = mem[p + 2] | (mem[p + 3] << 8);   // damp thermal glare
+      const nh = hv >> 1;
+      mem[p + 2] = nh & 255; mem[p + 3] = nh >> 8;
+    }
+    return absorbed;
+  };
+  return { idx, apply, count: idx.length };
+};
+
 // ---------- P3ST bulk-load packing ------------------------------------
 // Blob: magic 'P3ST' + w/h/d u32le + n×u8 quanta + n×u8 spin +
 // n×u16le heat (+ n×u8 buffer + n×u8 tension when 6-channel).
