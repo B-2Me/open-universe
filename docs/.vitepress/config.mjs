@@ -4,10 +4,9 @@ import mathjax3 from 'markdown-it-mathjax3'
 
 const pkg = createRequire(import.meta.url)('../../package.json')
 
-// One sequence drives three surfaces: the navbar folds it into
-// dropdowns, the sidebars repeat each section's items, and
-// transformPageData turns it into prev/next footers — so reading
-// order and navigation order can never diverge again.
+// One sequence drives two surfaces: the navbar folds it into
+// dropdowns, and transformPageData turns it into prev/next footers —
+// so reading order and navigation order can never diverge again.
 const readingOrder = [
   { text: 'Planck Field', link: '/field' },
   { text: 'Theory', link: '/theory' },
@@ -74,14 +73,8 @@ const navBar = readingOrder.flatMap(item => {
   return (item.link === '/field' || item.link === '/intent') ? [item] : []
 })
 
-// Shared section sidebars — same items as the dropdowns (sidebar
-// labels drop the '· description' suffix).
-const theorySidebar = [{ text: 'Theory', items: theoryItems }]
-
-const interferenceSidebar = [
-  { text: 'Interference', items: interferenceItems },
-  { text: 'Instruments', items: instrumentItems.map(({ text, link }) => ({ text: text.split(' · ')[0], link })) }
-]
+// No sidebars — navbar dropdowns + prev/next footers carry the whole
+// information architecture.
 
 export default defineConfig({
   title: "The Open Universe",
@@ -128,18 +121,6 @@ export default defineConfig({
 
   themeConfig: {
     nav: navBar,
-
-    // Section sidebars — the Theory arc (Overview→Paradoxes→Source→
-    // Math→Interface) and the Interference section (sub-pages +
-    // instruments).
-    sidebar: {
-      '/theory': theorySidebar,
-      '/paradox': theorySidebar,
-      '/source': theorySidebar,
-      '/math': theorySidebar,
-      '/interface': theorySidebar,
-      '/interference': interferenceSidebar
-    },
 
     footer: {
       copyright: 'The Open Universe Audit'
