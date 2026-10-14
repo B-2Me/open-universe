@@ -28,6 +28,15 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
 
 ## Phase 4 headless harness (particle dictionary)
 
+- `script/lib/p3.mjs` — shared plumbing every harness imports:
+  `loadPlanck3` (glue eval + `wasm.heap8()` view helper), `initEngine`
+  (dims/diss/limit/mode/sync + reset_stats), `arg`/`loadConfig`/`opts`
+  (--flag/--k=v over --config JSON), `HOFF`/`ZU`/`ZD`/`step` FCC table,
+  `V3`/`nearestPort` fixed-point port vectors, `packLoad`/`commitLoad`
+  (P3ST q,s,b,tn,hp blob → pointer→copy→commit→prepare), `heartbeat`,
+  `makeCensus` (live/freeEnds/maxCycle), `extractCycles` (seed
+  spin-cycle digraph). Don't re-copy these into new scripts.
+
 - `script/pathfinder.mjs` — standalone DFS loop-hunter on the 12-port
   graph (Phase-Lock ≤60° per hop, memoized closure, same-shell gate).
   Reproduces the canonical 19-loop/27,971-cell Hopfion at
