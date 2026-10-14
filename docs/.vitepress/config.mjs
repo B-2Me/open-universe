@@ -12,6 +12,10 @@ const readingOrder = [
   { text: 'Planck Field', link: '/field' },
   { text: 'Theory', link: '/theory' },
   { text: 'Paradoxes', link: '/paradox' },
+  { text: 'Quantum Floor', link: '/paradox/quantum' },
+  { text: 'Relativistic Horizon', link: '/paradox/relativistic' },
+  { text: 'Macro-Scale', link: '/paradox/macro' },
+  { text: 'Abstract Illusions', link: '/paradox/abstract' },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' },
@@ -28,9 +32,17 @@ const readingOrder = [
   { text: 'Intent', link: '/intent' }
 ]
 
+const paradoxItems = [
+  { text: 'Overview', link: '/paradox' },
+  { text: 'Quantum Floor', link: '/paradox/quantum' },
+  { text: 'Relativistic Horizon', link: '/paradox/relativistic' },
+  { text: 'Macro-Scale', link: '/paradox/macro' },
+  { text: 'Abstract Illusions', link: '/paradox/abstract' }
+]
+
 const theoryItems = [
   { text: 'Overview', link: '/theory' },
-  { text: 'Paradoxes', link: '/paradox' },
+  { text: 'Paradoxes', items: paradoxItems },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' }
