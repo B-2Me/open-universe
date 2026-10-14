@@ -141,7 +141,7 @@ int runJob(const char *jobPath, const char *outDir) {
     for (uint32_t b = 0; b < j.batch; b++) dumpBatch(j, outDir, b, j.ticks);
     uint64_t ev, q, ab; smx_counters(&ev, &q, &ab);
     writeStatus(outDir, "done", j.ticks, ev, q, ab);
-    fprintf(stderr, "smatrix: done — spray %llu events / %llu quanta, absorbed %llu\n",
+    fprintf(stderr, "smatrix: done - spray %llu events / %llu quanta, absorbed %llu\n",
             (unsigned long long)ev, (unsigned long long)q, (unsigned long long)ab);
     smx_free();
     return 0;

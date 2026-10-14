@@ -249,7 +249,7 @@ int httpServe(uint16_t port, const char *jobsDir, const char *bindAddr) {
         fprintf(stderr, "bind/listen failed on port %u\n", port); return 1;
     }
     char bound[64]; inet_ntop(AF_INET, &a.sin_addr, bound, sizeof(bound));
-    fprintf(stderr, "smatrixd listening on %s:%u — jobs dir %s\n", bound, port, jobsDir);
+    fprintf(stderr, "smatrixd listening on %s:%u - jobs dir %s\n", bound, port, jobsDir);
     std::thread(workerMain).detach();
     for (;;) {
         SOCKET c = accept(ls, nullptr, nullptr);
