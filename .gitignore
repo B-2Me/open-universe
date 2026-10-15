@@ -21,3 +21,7 @@ knot_dictionary.json.tmp
 docs/public/audio/
 seeds256/
 logs/
+
+# smatrix build outputs
+src/smatrix/smatrix.exe
+src/smatrix/*.obj
