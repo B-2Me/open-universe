@@ -34,7 +34,8 @@ const once = async () => {
   if (st?.phase && st.phase !== 'idle') {
     line += `  ${st.phase} t=${st.t ?? '?'}` +
       (st.sprayEvents != null ? ` spray=${st.sprayEvents}/${st.sprayQuanta}` : '') +
-      (st.absorbed != null ? ` absorbed=${(+st.absorbed).toLocaleString()}` : '');
+      (st.absorbed != null ? ` absorbed=${(+st.absorbed).toLocaleString()}` : '') +
+      (st.absorbedPer ? `  per=[${st.absorbedPer.slice(0, 12).map(v => (+v).toLocaleString()).join(',')}${st.absorbedPer.length > 12 ? ',…' : ''}]` : '');
     if (st.ts) {
       const age = Math.round((Date.now() - st.ts) / 1000);
       line += `  (${age}s ago${age > 120 ? ' — STALE' : ''})`;

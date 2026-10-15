@@ -25,6 +25,7 @@ extern "C" {
     void smx_tick(void);
     int  smx_dump(int batchIdx, uint8_t *p3st);
     int  smx_counters(uint64_t *ev, uint64_t *q, uint64_t *absorbed);
+    int  smx_absorbed_per(uint64_t *out, int nb);
     uint32_t smx_tick_id(void);
     void smx_free(void);
 }
@@ -74,7 +75,8 @@ static bool loadJob(const char *path, Job &j) {
 
 // Write tmp + rename so /status GETs never serve a torn heartbeat.
 static void writeStatus(const fs::path &dir, const char *phase, uint32_t t,
-                        uint64_t sprayEv, uint64_t sprayQ, uint64_t absorbed) {
+                        uint64_t sprayEv, uint64_t sprayQ, uint64_t absorbed,
+                        const uint64_t *absPer = nullptr, int nPer = 0) {
     fs::path tmp = dir / "status.tmp", dst = dir / "status.json";
     {
         std::ofstream o(tmp);
@@ -82,7 +84,13 @@ static void writeStatus(const fs::path &dir, const char *phase, uint32_t t,
             std::chrono::system_clock::now().time_since_epoch()).count();
         o << "{\n  \"ts\": " << ms << ",\n  \"runner\": \"smatrix\",\n  \"phase\": \"" << phase << "\",\n"
           << "  \"t\": " << t << ",\n  \"sprayEvents\": " << sprayEv << ",\n  \"sprayQuanta\": " << sprayQ
-          << ",\n  \"absorbed\": " << absorbed << "\n}\n";
+          << ",\n  \"absorbed\": " << absorbed;
+        if (absPer && nPer > 0) {
+            o << ",\n  \"absorbedPer\": [";
+            for (int i = 0; i < nPer; i++) o << (i ? "," : "") << absPer[i];
+            o << "]";
+        }
+        o << "\n}\n";
     }
     std::error_code ec;
     fs::rename(tmp, dst, ec);
@@ -132,7 +140,9 @@ int runJob(const char *jobPath, const char *outDir) {
             for (uint32_t b = 0; b < j.batch; b++) dumpBatch(j, outDir, b, t);
         if (t % 100 == 0) {
             uint64_t ev, q, ab; smx_counters(&ev, &q, &ab);
-            writeStatus(outDir, "ticking", t, ev, q, ab);
+            std::vector<uint64_t> ap(j.batch);
+            smx_absorbed_per(ap.data(), (int)j.batch);
+            writeStatus(outDir, "ticking", t, ev, q, ab, ap.data(), (int)j.batch);
             auto el = std::chrono::duration_cast<std::chrono::seconds>(
                 std::chrono::steady_clock::now() - t0).count();
             fprintf(stderr, "  t%u (%llds)\n", t, (long long)el);
@@ -140,7 +150,9 @@ int runJob(const char *jobPath, const char *outDir) {
     }
     for (uint32_t b = 0; b < j.batch; b++) dumpBatch(j, outDir, b, j.ticks);
     uint64_t ev, q, ab; smx_counters(&ev, &q, &ab);
-    writeStatus(outDir, "done", j.ticks, ev, q, ab);
+    std::vector<uint64_t> ap(j.batch);
+    smx_absorbed_per(ap.data(), (int)j.batch);
+    writeStatus(outDir, "done", j.ticks, ev, q, ab, ap.data(), (int)j.batch);
     fprintf(stderr, "smatrix: done - spray %llu events / %llu quanta, absorbed %llu\n",
             (unsigned long long)ev, (unsigned long long)q, (unsigned long long)ab);
     smx_free();
