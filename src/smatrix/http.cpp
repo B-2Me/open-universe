@@ -362,6 +362,22 @@ int httpServe(uint16_t port, const char *jobsDir, const char *bindAddr) {
         throw std::runtime_error(m);
     });
     g_jobsDir = jobsDir;
+    // Resume ids past any existing job_N dirs — a restart must not reuse
+    // an id: stale status.json would fake "done" and old state blobs
+    // would masquerade as the new job's pull artifacts.
+    {
+        int mx = 0;
+        std::error_code ec;
+        for (const auto &e : fs::directory_iterator(g_jobsDir, ec)) {
+            const std::string n = e.path().filename().string();
+            if (n.rfind("job_", 0) == 0) {
+                int v = atoi(n.c_str() + 4);
+                if (v > mx) mx = v;
+            }
+        }
+        g_nextId = mx + 1;
+        fprintf(stderr, "smatrixd: next job id %d\n", g_nextId);
+    }
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) { fprintf(stderr, "WSAStartup failed\n"); return 1; }
     SOCKET ls = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
