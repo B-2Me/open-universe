@@ -5,7 +5,7 @@ rem
 rem   -arch=sm_86        RTX 3060
 rem   -cudart=static     self-contained exe — GPU box needs only the driver
 rem   -O3                host opt; device math is all-integer anyway
-nvcc -O3 -std=c++17 -arch=sm_86 -cudart=static ^
+nvcc -O3 -std=c++17 -Xcompiler /EHa -arch=sm_86 -cudart=static ^
      -o smatrix.exe ^
      kernel.cu runner.cpp http.cpp main.cpp ^
      -lws2_32

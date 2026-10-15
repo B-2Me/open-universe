@@ -26,6 +26,8 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <exception>
+#include <eh.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -46,17 +48,29 @@ static std::atomic<bool> g_stop{false};
 static void workerMain() {
     for (;;) {
         QJob j;
-        {
-            std::unique_lock<std::mutex> lk(g_mu);
-            g_cv.wait(lk, [] { return g_stop || !g_queue.empty(); });
-            if (g_stop) return;
-            j = g_queue.front(); g_queue.pop();
-            g_runningId = j.id;
+        try {
+            {
+                std::unique_lock<std::mutex> lk(g_mu);
+                g_cv.wait(lk, [] { return g_stop || !g_queue.empty(); });
+                if (g_stop) return;
+                j = g_queue.front(); g_queue.pop();
+                g_runningId = j.id;
+            }
+            fs::path dir = g_jobsDir / ("job_" + std::to_string(j.id));
+            fprintf(stderr, "worker: starting job %d\n", j.id);
+            runJob(j.file.string().c_str(), dir.string().c_str());
+            fprintf(stderr, "worker: job %d finished\n", j.id);
+            std::lock_guard<std::mutex> lk(g_mu);
+            g_runningId = -1;
+        } catch (const std::exception &e) {
+            fprintf(stderr, "worker: exception: %s\n", e.what());
+            std::lock_guard<std::mutex> lk(g_mu);
+            g_runningId = -1;
+        } catch (...) {
+            fprintf(stderr, "worker: unknown exception\n");
+            std::lock_guard<std::mutex> lk(g_mu);
+            g_runningId = -1;
         }
-        fs::path dir = g_jobsDir / ("job_" + std::to_string(j.id));
-        runJob(j.file.string().c_str(), dir.string().c_str());
-        std::lock_guard<std::mutex> lk(g_mu);
-        g_runningId = -1;
     }
 }
 
@@ -123,15 +137,41 @@ static bool readHeaders(SOCKET s, std::string &method, std::string &path,
 static void handleRequest(SOCKET s, std::string &method, std::string &path,
                           std::string &rest, long long clen);
 
+static void handleConn(SOCKET s);
+
+// SEH wrapper — no C++-object locals allowed in a __try function, so it
+// wraps handleConn. GetExceptionCode() tells us whether we're looking at
+// an AV (0xC0000005), a stack overflow (0xC00000FD), a misaligned/stack-
+// cookie fault, or a C++ exception escaping where it shouldn't
+// (0xE06D7363) — catch(...) under /EHa hides which.
+static void handleConnSeh(SOCKET s) {
+    __try {
+        handleConn(s);
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        fprintf(stderr, "conn SEH 0x%08lx\n", GetExceptionCode());
+        closesocket(s);
+    }
+}
+
+static void sehXlat(unsigned code, EXCEPTION_POINTERS *) {
+    char m[64]; snprintf(m, sizeof(m), "structured exception 0x%08x", code);
+    throw std::runtime_error(m);
+}
+
 static void handleConn(SOCKET s) {
+    _set_se_translator(sehXlat);   // translator registration is per-thread
     std::string method, path, rest;
     long long clen = 0;
     try {
         if (!readHeaders(s, method, path, clen, rest)) { closesocket(s); return; }
+        fprintf(stderr, ">> %s %s (clen=%lld)\n", method.c_str(), path.c_str(), clen);
         handleRequest(s, method, path, rest, clen);
+        fprintf(stderr, "<< done %s\n", path.c_str());
+    } catch (const std::exception &e) {
+        fprintf(stderr, "conn exception: %s\n", e.what());
+        try { closesocket(s); } catch (...) {}
     } catch (...) {
-        // An uncaught fs/thread exception in a detached thread is
-        // std::terminate — never let one bad request kill the listener.
+        fprintf(stderr, "conn exception: unknown\n");
         try { closesocket(s); } catch (...) {}
     }
 }
@@ -150,12 +190,15 @@ static void handleRequest(SOCKET s, std::string &method, std::string &path,
         std::ofstream o(fp, std::ios::binary);
         long long got = 0;
         if (!rest.empty()) { o.write(rest.data(), rest.size()); got += (long long)rest.size(); }
-        char tmp[1 << 20];
+        // Heap, not stack — a 1MB array in this frame overflows a
+        // detached thread's default stack at function entry (stack probe
+        // trips the guard page: 0xC00000FD before the first statement).
+        std::vector<char> tmp(1 << 20);
         while (got < clen) {
-            int want = (int)std::min<long long>(sizeof(tmp), clen - got);
-            int n = recv(s, tmp, want, 0);
+            int want = (int)std::min<long long>((long long)tmp.size(), clen - got);
+            int n = recv(s, tmp.data(), want, 0);
             if (n <= 0) break;
-            o.write(tmp, n); got += n;
+            o.write(tmp.data(), n); got += n;
         }
         o.close();
         if (got != clen) { reply(s, 400, "application/json", "{\"error\":\"truncated body\"}"); closesocket(s); return; }
@@ -230,6 +273,19 @@ static void handleRequest(SOCKET s, std::string &method, std::string &path,
 }
 
 int httpServe(uint16_t port, const char *jobsDir, const char *bindAddr) {
+    // A silent abort in a detached thread looks like "the exe bails out".
+    // Name every death before it happens.
+    std::set_terminate([] {
+        fprintf(stderr, "FATAL: std::terminate (uncaught exception in a thread)\n");
+        fflush(stderr);
+        abort();
+    });
+    // Turn access violations / structured exceptions into C++ exceptions
+    // so the per-conn handlers above can log them instead of dying blind.
+    _set_se_translator([](unsigned code, EXCEPTION_POINTERS *) {
+        char m[64]; snprintf(m, sizeof(m), "structured exception 0x%08x", code);
+        throw std::runtime_error(m);
+    });
     g_jobsDir = jobsDir;
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) { fprintf(stderr, "WSAStartup failed\n"); return 1; }
@@ -251,10 +307,21 @@ int httpServe(uint16_t port, const char *jobsDir, const char *bindAddr) {
     char bound[64]; inet_ntop(AF_INET, &a.sin_addr, bound, sizeof(bound));
     fprintf(stderr, "smatrixd listening on %s:%u - jobs dir %s\n", bound, port, jobsDir);
     std::thread(workerMain).detach();
+    fprintf(stderr, "smatrixd ready\n");
     for (;;) {
         SOCKET c = accept(ls, nullptr, nullptr);
-        if (c == INVALID_SOCKET) continue;
-        std::thread(handleConn, c).detach();
+        if (c == INVALID_SOCKET) {
+            fprintf(stderr, "accept failed: wsa=%d\n", WSAGetLastError());
+            Sleep(50);
+            continue;
+        }
+        fprintf(stderr, "accept: socket %llu\n", (unsigned long long)c);
+        try {
+            std::thread(handleConnSeh, c).detach();
+        } catch (const std::exception &e) {
+            fprintf(stderr, "thread spawn failed: %s\n", e.what());
+            closesocket(c);
+        }
     }
     return 0;
 }
