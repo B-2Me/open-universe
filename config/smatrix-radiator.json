@@ -1,0 +1,31 @@
+{
+  "dims": [128, 128, 128],
+  "ticks": 1000,
+  "dump_every": 100,
+  "diss": 15,
+  "limit": 50000,
+  "absorb_margin": 8,
+  "pinch_tension": 0,
+
+  "scenarios": [
+    {
+      "name": "rad_dumb",
+      "block": { "pos": [40, 64, 64], "r": 10, "q": 255, "heat": 45000 }
+    },
+    {
+      "name": "rad_normal",
+      "block": { "pos": [40, 64, 64], "r": 10, "q": 255, "heat": 45000 },
+      "emit": [{ "plane": [0, 24, 24], "dir": [-1, 0, 0], "quant": 0 }]
+    },
+    {
+      "name": "rad_chiral",
+      "block": { "pos": [40, 64, 64], "r": 10, "q": 255, "heat": 45000 },
+      "emit": [{ "plane": [0, 24, 24], "dir": [-1, 0, 1], "quant": 0 }]
+    },
+    {
+      "name": "rad_antichiral",
+      "block": { "pos": [40, 64, 64], "r": 10, "q": 255, "heat": 45000 },
+      "emit": [{ "plane": [0, 24, 24], "dir": [-1, 0, -1], "quant": 0 }]
+    }
+  ]
+}

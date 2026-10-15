@@ -92,8 +92,11 @@ const applyBoost = (cells, dv) => {
 
 // ---- build one batch's state planes + force list ----
 const buildBatch = (sc) => {
-  const seedA = loadSeed(sc.seed_A);
+  const seedA = sc.seed_A ? loadSeed(sc.seed_A) : null;
   const seedB = sc.seed_B ? loadSeed(sc.seed_B) : null;
+  if (!seedA && !seedB && !sc.block) {
+    console.error(`  ${sc.name}: needs seed_A, seed_B, or block`); process.exit(1);
+  }
   const axis = Math.min(11, Math.max(0, sc.fcc_axis ?? 0));
   const u = unit(V3[axis + 1]), o = orthoOf(u);
   const center = CFG.center ?? [W / 2, H / 2, D / 2];
@@ -117,31 +120,33 @@ const buildBatch = (sc) => {
   // axis. Drives `overlap` (fraction of combined axis-extent overlapped).
   const axExt = (seed) => { const r = extent(seed);
     return Math.abs(u[0]) * r[0] + Math.abs(u[1]) * r[1] + Math.abs(u[2]) * r[2]; };
-  // overlap f ⇒ centers 2·sep apart = (1-f)·(axExtA+axExtB)
-  let sep = sc.separation ?? SEP;
-  if (sc.overlap != null)
-    sep = (1 - sc.overlap) * (axExt(seedA) + (seedB ? axExt(seedB) : 0)) / 2;
-  // clr_A: place the knot hugging the −x wall so its nearest cell sits
-  // `clr_A` cells from the boundary (erosion-reach probe). clr_B hugs +x.
-  let cA, cB = null;
-  if (sc.clr_A != null) cA = [sc.clr_A + extent(seedA)[0], H / 2, D / 2];
-  else if (!seedB) cA = [...center];          // single knots sit centered
-  else cA = center.map((v, a) => v - sep * u[a]);
-  if (seedB) {
-    if (sc.clr_B != null) cB = [W - sc.clr_B - extent(seedB)[0], H / 2, D / 2];
-    else cB = center.map((v, a) => v + sep * u[a] + b * o[a]);
-  }
-  cA = clampC(cA, extent(seedA));
-  if (cB) cB = clampC(cB, extent(seedB));
+  let cellsA = [], cellsB = [], cA = null, cB = null;
+  if (seedA || seedB) {
+    // overlap f ⇒ centers 2·sep apart = (1-f)·(axExtA+axExtB)
+    let sep = sc.separation ?? SEP;
+    if (sc.overlap != null)
+      sep = (1 - sc.overlap) * (axExt(seedA) + (seedB ? axExt(seedB) : 0)) / 2;
+    // clr_A: place the knot hugging the −x wall so its nearest cell sits
+    // `clr_A` cells from the boundary (erosion-reach probe). clr_B hugs +x.
+    if (sc.clr_A != null) cA = [sc.clr_A + extent(seedA)[0], H / 2, D / 2];
+    else if (!seedB) cA = [...center];          // single knots sit centered
+    else cA = center.map((v, a) => v - sep * u[a]);
+    if (seedB) {
+      if (sc.clr_B != null) cB = [W - sc.clr_B - extent(seedB)[0], H / 2, D / 2];
+      else cB = center.map((v, a) => v + sep * u[a] + b * o[a]);
+    }
+    cA = clampC(cA, extent(seedA));
+    if (cB) cB = clampC(cB, extent(seedB));
 
-  const move = (seed, c) => {
-    const [sw, sh, sd] = seed.dims;
-    const ac = [sw / 2, sh / 2, sd / 2];
-    return seed.cells.map(([x, y, z, s]) =>
-      [Math.round(x + c[0] - ac[0]), Math.round(y + c[1] - ac[1]), Math.round(z + c[2] - ac[2]), s]);
-  };
-  let cellsA = move(seedA, cA);
-  let cellsB = seedB ? move(seedB, cB) : [];
+    const move = (seed, c) => {
+      const [sw, sh, sd] = seed.dims;
+      const ac = [sw / 2, sh / 2, sd / 2];
+      return seed.cells.map(([x, y, z, s]) =>
+        [Math.round(x + c[0] - ac[0]), Math.round(y + c[1] - ac[1]), Math.round(z + c[2] - ac[2]), s]);
+    };
+    cellsA = seedA ? move(seedA, cA) : [];
+    cellsB = seedB ? move(seedB, cB) : [];
+  }
 
   // Wounds — two distinct failure geometries:
   //   wound: f   topological cut — delete a contiguous f-fraction arc of
@@ -169,6 +174,21 @@ const buildBatch = (sc) => {
 
   const bst = parseBoost(sc.boost_A ?? null);  if (bst) cellsA = applyBoost(cellsA, bst);
   const bstB = parseBoost(sc.boost_B ?? null); if (bstB) cellsB = applyBoost(cellsB, bstB);
+
+  // block: { pos:[x,y,z], r, q, heat, spin? } — a painted sphere of
+  // inert cells (spin=0 by default: outbound routing is spin-gated, so
+  // the only vent channel is thermal unwind spray — a "hot chip").
+  // Painted into maskA so block retention is a clean depletion metric.
+  const blockCells = [];
+  if (sc.block) {
+    const bk = sc.block;
+    for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if ((x - bk.pos[0]) ** 2 + (y - bk.pos[1]) ** 2 + (z - bk.pos[2]) ** 2 > bk.r * bk.r) continue;
+      if (x < MARGIN + 1 || x >= W - MARGIN - 1 || y < MARGIN + 1 || y >= H - MARGIN - 1 || z < MARGIN + 1 || z >= D - MARGIN - 1) continue;
+      blockCells.push([x, y, z, bk.spin ?? 0]);
+    }
+    cellsA = [...cellsA, ...blockCells];
+  }
 
   // Provenance (collide.mjs semantics, verbatim): contested cells are
   // claimed by maskA but get B's state written — B is listed second in
@@ -198,10 +218,17 @@ const buildBatch = (sc) => {
   // State planes in runner order: q[n], s[n], heat16[2n], buf[n], tn[n].
   const planes = Buffer.alloc(N * 6);
   const q = planes.subarray(0, N), s = planes.subarray(N, 2 * N);
+  const seedQ = seedA?.q ?? 80, seedHeat = seedA?.heat ?? 400;
   for (const [x, y, z, sp] of [...cellsA, ...cellsB]) {
     const i = (z * H + y) * W + x;
-    q[i] = seedA.q ?? 80; s[i] = sp;
-    planes.writeUInt16LE(seedA.heat ?? 400, 2 * N + 2 * i);
+    q[i] = seedQ; s[i] = sp;
+    planes.writeUInt16LE(seedHeat, 2 * N + 2 * i);
+  }
+  // block cells override seed defaults (hot: their own q/heat)
+  if (sc.block) for (const [x, y, z] of blockCells) {
+    const i = (z * H + y) * W + x;
+    q[i] = sc.block.q ?? 255;
+    planes.writeUInt16LE(sc.block.heat ?? 400, 2 * N + 2 * i);
   }
   // kick: { buf, cells:'A'|'B'|'AB', hemi:[dx,dy,dz] } — write buffer
   // mass into knot cells at spawn. hemi restricts to the half of the
@@ -225,11 +252,11 @@ const buildBatch = (sc) => {
   // slug: { dir, off, len, w, q, at:'A' } — a compact rod of driven
   // cells aimed at the knot: quanta with spins locked on dir. Unpainted
   // (provenance-clean); tests momentum transfer vs erosion.
-  if (sc.slug) {
+  if (sc.slug && cA) {
     const sg = sc.slug;
     const dir = unit(sg.dir);
     const tc = sg.at === 'B' && cB ? cB : cA;
-    const tExt = (sg.at === 'B' && seedB ? axExt(seedB) : axExt(seedA));
+    const tExt = (sg.at === 'B' && seedB ? axExt(seedB) : (seedA ? axExt(seedA) : 0));
     const r0 = tc.map((v, a) => v - dir[a] * (tExt + (sg.off ?? 12)));
     const e2 = [Math.abs(dir[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]];
     const e1 = unit([dir[1] * e2[0][2] - dir[2] * e2[0][1], dir[2] * e2[0][0] - dir[0] * e2[0][2], dir[0] * e2[0][1] - dir[1] * e2[0][0]]);
@@ -279,17 +306,20 @@ const buildBatch = (sc) => {
     const sp = nearestPort(...dir.map(v => v * 256));
     let en = 0;
     for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      if ((x - em.pos[0]) ** 2 + (y - em.pos[1]) ** 2 + (z - em.pos[2]) ** 2 > (em.r ?? 6) ** 2) continue;
-      force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 8, mod: em.mod ?? 0 });
+      const inside = em.plane
+        ? (v => v >= em.plane[1] && v <= em.plane[2])([x, y, z][em.plane[0]])
+        : (x - em.pos[0]) ** 2 + (y - em.pos[1]) ** 2 + (z - em.pos[2]) ** 2 <= (em.r ?? 6) ** 2;
+      if (!inside) continue;
+      force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
       en++;
     }
-    console.log(`  ${sc.name}: emitter ${en} cells mod=${em.mod ?? 0} q+${em.quant ?? 8}`);
+    console.log(`  ${sc.name}: emitter ${en} cells mod=${em.mod ?? 0} q+${em.quant ?? 0} spin=${sp}`);
   }
   return { planes, force, axis, b, name: String(sc.name ?? 'run').slice(0, 31),
            spec: { overlap: sc.overlap, clr_A: sc.clr_A, clr_B: sc.clr_B,
                    wound_A: sc.wound_A, wound_B: sc.wound_B, bite_A: sc.bite_A,
                    bite_B: sc.bite_B, kick: sc.kick, slug: sc.slug, emit: sc.emit,
-                   pinch: PINCH_SC },
+                   block: sc.block, pinch: PINCH_SC },
            maskA: [...paintedA], maskB: [...maskB],
            seeds: [sc.seed_A, sc.seed_B ?? null], counts: [cellsA.length, cellsB.length] };
 };
