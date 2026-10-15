@@ -303,7 +303,7 @@ const buildBatch = (sc) => {
   }
   for (const em of sc.emit ?? []) {
     const dir = unit(em.dir ?? [1, 0, 0]);
-    const sp = nearestPort(...dir.map(v => v * 256));
+    const sp = em.spin !== undefined ? em.spin : nearestPort(...dir.map(v => v * 256));
     let en = 0;
     for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       const inside = em.plane

@@ -31,9 +31,71 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+#include "puff.h"
+
 int runJob(const char *jobPath, const char *outDir);   // runner.cpp
 
 namespace fs = std::filesystem;
+
+// ---------------- SMXZ block-gzip job container ----------------
+// POST /job accepts raw SMX1 or an SMXZ container:
+//   "SMXZ" u32 nblocks; per block: u32 ulen, u32 clen, gzip-member[clen].
+// Multi-GB jobs are mostly zeros and gzip ~200x — blocks keep inflate
+// single-shot (puff holds no resumable state across calls).
+static uint32_t rd32(const unsigned char *p) {
+    return (uint32_t)p[0] | ((uint32_t)p[1] << 8)
+         | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
+}
+
+// Strip the gzip member wrapper and inflate the deflate payload.
+static int inflateBlock(const unsigned char *src, unsigned long srclen,
+                        unsigned char *dst, unsigned long dstlen) {
+    if (srclen < 18 || src[0] != 0x1f || src[1] != 0x8b) return -20;
+    unsigned long off = 10;
+    unsigned flg = src[3];
+    if (flg & 4) { unsigned x = src[off] | ((unsigned)src[off + 1] << 8); off += 2 + x; }
+    if (flg & 8)  { while (off < srclen && src[off]) off++; off++; }
+    if (flg & 16) { while (off < srclen && src[off]) off++; off++; }
+    if (flg & 2)  off += 2;
+    if (off > srclen - 8 || off < 10) return -21;
+    unsigned long dl = dstlen, sl = srclen - 8 - off;
+    int e = puff(dst, &dl, src + off, &sl);
+    return e != 0 ? e : (dl != dstlen ? -22 : 0);
+}
+
+static bool isSmxz(const fs::path &fp) {
+    std::ifstream in(fp, std::ios::binary);
+    char m[4] = {0, 0, 0, 0};
+    in.read(m, 4);
+    return in.gcount() == 4 && memcmp(m, "SMXZ", 4) == 0;
+}
+
+static int smxzInflate(const fs::path &src, const fs::path &dst) {
+    std::ifstream in(src, std::ios::binary);
+    char hdr[8];
+    in.read(hdr, 8);
+    if (in.gcount() != 8 || memcmp(hdr, "SMXZ", 4) != 0) return -1;
+    uint32_t nb = rd32((const unsigned char *)hdr + 4);
+    if (nb == 0 || nb > (1u << 16)) return -2;
+    std::ofstream out(dst, std::ios::binary);
+    for (uint32_t b = 0; b < nb; b++) {
+        char bh[8];
+        in.read(bh, 8);
+        if (in.gcount() != 8) return -3;
+        uint32_t ulen = rd32((const unsigned char *)bh);
+        uint32_t clen = rd32((const unsigned char *)bh + 4);
+        if (ulen > (1u << 28) || clen > (1u << 28)) return -4;
+        std::vector<unsigned char> cbuf(clen), ubuf(ulen);
+        in.read((char *)cbuf.data(), clen);
+        if (in.gcount() != (std::streamsize)clen) return -5;
+        int e = inflateBlock(cbuf.data(), clen, ubuf.data(), ulen);
+        if (e != 0) { fprintf(stderr, "smxz: block %u inflate err %d\n", b, e); return e; }
+        out.write((char *)ubuf.data(), ulen);
+        if (!out) return -6;
+    }
+    out.close();
+    return out ? 0 : -7;
+}
 
 // ---------------- job queue ----------------
 struct QJob { int id; fs::path file; };
@@ -202,6 +264,19 @@ static void handleRequest(SOCKET s, std::string &method, std::string &path,
         }
         o.close();
         if (got != clen) { reply(s, 400, "application/json", "{\"error\":\"truncated body\"}"); closesocket(s); return; }
+        // Block-gzip container → inflate to the plain .smx the runner reads.
+        if (isSmxz(fp)) {
+            fs::path dec = fp; dec += ".dec";
+            int e = smxzInflate(fp, dec);
+            if (e != 0) {
+                fs::remove(fp); fs::remove(dec);
+                fprintf(stderr, "job %d: smxz inflate failed (%d)\n", id, e);
+                reply(s, 400, "application/json", "{\"error\":\"bad smxz container\"}");
+                closesocket(s); return;
+            }
+            fs::rename(dec, fp);
+            fprintf(stderr, "job %d: smxz inflated\n", id);
+        }
         { std::lock_guard<std::mutex> lk(g_mu); g_queue.push({id, fp}); }
         g_cv.notify_one();
         reply(s, 200, "application/json", "{\"id\":" + std::to_string(id) + ",\"queued\":true}");
