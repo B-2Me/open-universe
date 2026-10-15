@@ -30,7 +30,7 @@
  *                         impact_parameter, boost_A, boost_B }
  *                       seed_B may be omitted (single-knot survival job)
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, openSync, writeSync, closeSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT, loadConfig, opts, V3, nearestPort } from './lib/p3.mjs';
 
@@ -87,6 +87,7 @@ const buildBatch = (sc) => {
   const u = unit(V3[axis + 1]), o = orthoOf(u);
   const center = CFG.center ?? [W / 2, H / 2, D / 2];
   const b = sc.impact_parameter ?? 0;
+  const sep = sc.separation ?? SEP;          // per-scenario spawn distance
 
   // Seeds are authored around their OWN grid's center (seed.dims/2,
   // not the job grid's — collide.mjs measured both against seed dims
@@ -98,9 +99,12 @@ const buildBatch = (sc) => {
       for (let a = 0; a < 3; a++) r[a] = Math.max(r[a], Math.abs([x, y, z][a] - m[a]));
     return r.map(v => Math.ceil(v));
   };
-  const clampC = (c, r) => c.map((v, a) => Math.min(DIMS[a] - r[a] - 1, Math.max(r[a], v)));
-  const cA = clampC(center.map((v, a) => v - SEP * u[a]), extent(seedA));
-  const cB = seedB ? clampC(center.map((v, a) => v + SEP * u[a] + b * o[a]), extent(seedB)) : null;
+  // MARGIN+1 inset: spawning inside the sponge shell would get drained
+  // on the first tick — the clamp must keep knot cells clear of it.
+  const clampC = (c, r) => c.map((v, a) =>
+    Math.min(DIMS[a] - r[a] - MARGIN - 1, Math.max(r[a] + MARGIN + 1, v)));
+  const cA = clampC(center.map((v, a) => v - sep * u[a]), extent(seedA));
+  const cB = seedB ? clampC(center.map((v, a) => v + sep * u[a] + b * o[a]), extent(seedB)) : null;
 
   const move = (seed, c) => {
     const [sw, sh, sd] = seed.dims;
@@ -219,8 +223,11 @@ allForce.forEach((f, k) => {
   fbuf.writeUInt8(f.quant, o + 6);
 });
 
-const out = Buffer.concat([header, scen, fbuf, ...batches.map(b => b.planes)]);
-writeFileSync(OUT, out);
+// Streamed — a 32×256³ job is ~3.2GB, over Node's single-buffer write cap.
+const fd = openSync(OUT, 'w');
+for (const chunk of [header, scen, fbuf, ...batches.map(b => b.planes)])
+  writeSync(fd, chunk);
+closeSync(fd);
 
 // Sidecar: provenance masks + metadata per batch — the runner's state
 // dumps carry no knot identity (same constraint as collide.mjs), so
@@ -234,5 +241,5 @@ const meta = {
   })),
 };
 writeFileSync(OUT + '.meta.json', JSON.stringify(meta));
-console.log(`→ ${OUT}  (${(out.length / 1e6).toFixed(1)} MB — ${BATCH} batches × ${N * 6} B, ${allForce.length} force pts)`);
+console.log(`→ ${OUT}  (${(BATCH * N * 6 / 1e6).toFixed(0)} MB — ${BATCH} batches × ${N * 6} B, ${allForce.length} force pts)`);
 console.log(`→ ${OUT}.meta.json  (${meta.batches.length} batch provenance records)`);

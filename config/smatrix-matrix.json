@@ -1,0 +1,260 @@
+{
+  "dims": "256,256,256",
+  "batch": 32,
+  "ticks": 1000,
+  "dump_every": 100,
+  "diss": 15,
+  "limit": 50000,
+  "pinch_tension": 20,
+  "absorb_margin": 8,
+  "scenarios": [
+    {
+      "name": "self_24_8",
+      "seed_A": "hopfion_24_8",
+      "seed_B": "hopfion_24_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 48
+    },
+    {
+      "name": "self_24_12",
+      "seed_A": "hopfion_24_12",
+      "seed_B": "hopfion_24_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 53
+    },
+    {
+      "name": "self_32_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 56
+    },
+    {
+      "name": "self_24_16",
+      "seed_A": "hopfion_24_16",
+      "seed_B": "hopfion_24_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 57
+    },
+    {
+      "name": "self_24_20",
+      "seed_A": "hopfion_24_20",
+      "seed_B": "hopfion_24_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 61
+    },
+    {
+      "name": "self_32_12",
+      "seed_A": "hopfion_32_12",
+      "seed_B": "hopfion_32_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 61
+    },
+    {
+      "name": "self_40_8",
+      "seed_A": "hopfion_40_8",
+      "seed_B": "hopfion_40_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 64
+    },
+    {
+      "name": "self_32_16",
+      "seed_A": "hopfion_32_16",
+      "seed_B": "hopfion_32_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 65
+    },
+    {
+      "name": "self_40_12",
+      "seed_A": "hopfion_40_12",
+      "seed_B": "hopfion_40_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 69
+    },
+    {
+      "name": "self_32_20",
+      "seed_A": "hopfion_32_20",
+      "seed_B": "hopfion_32_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 69
+    },
+    {
+      "name": "self_48_8",
+      "seed_A": "hopfion_48_8",
+      "seed_B": "hopfion_48_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 72
+    },
+    {
+      "name": "self_40_16",
+      "seed_A": "hopfion_40_16",
+      "seed_B": "hopfion_40_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 73
+    },
+    {
+      "name": "x32_24_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_24_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 44
+    },
+    {
+      "name": "x32_24_12",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_24_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 47
+    },
+    {
+      "name": "x32_32_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 48
+    },
+    {
+      "name": "x32_24_16",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_24_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 49
+    },
+    {
+      "name": "x32_24_20",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_24_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 51
+    },
+    {
+      "name": "x32_32_12",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 51
+    },
+    {
+      "name": "x32_40_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_40_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 52
+    },
+    {
+      "name": "x32_32_16",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 53
+    },
+    {
+      "name": "x32_40_12",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_40_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 55
+    },
+    {
+      "name": "x32_32_20",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_32_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 55
+    },
+    {
+      "name": "x32_48_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_48_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 56
+    },
+    {
+      "name": "x32_40_16",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_40_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 57
+    },
+    {
+      "name": "touch_48_12",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_48_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 52
+    },
+    {
+      "name": "touch_40_20",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_40_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 52
+    },
+    {
+      "name": "touch_56_8",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_56_8",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 53
+    },
+    {
+      "name": "touch_48_16",
+      "seed_A": "hopfion_32_8",
+      "seed_B": "hopfion_48_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0,
+      "separation": 54
+    },
+    {
+      "name": "surv_56_20",
+      "seed_A": "hopfion_56_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0
+    },
+    {
+      "name": "surv_64_16",
+      "seed_A": "hopfion_64_16",
+      "fcc_axis": 0,
+      "impact_parameter": 0
+    },
+    {
+      "name": "surv_72_12",
+      "seed_A": "hopfion_72_12",
+      "fcc_axis": 0,
+      "impact_parameter": 0
+    },
+    {
+      "name": "surv_80_20",
+      "seed_A": "hopfion_80_20",
+      "fcc_axis": 0,
+      "impact_parameter": 0
+    }
+  ]
+}
