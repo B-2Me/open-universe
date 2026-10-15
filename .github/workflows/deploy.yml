@@ -50,6 +50,16 @@ jobs:
 
       # Audio is generated per-deploy and shipped via dist — it is a
       # build artifact (gitignored like the wasm), never committed back.
+      # Restore the previous run's artifacts so the pipeline's
+      # content-hash skip can regenerate only changed pages — the TTS
+      # endpoint lands real load on the shared GPU box.
+      - name: Restore audio cache
+        uses: actions/cache@v4
+        with:
+          path: docs/public/audio
+          key: kokoro-audio-${{ hashFiles('docs/**/*.md') }}
+          restore-keys: kokoro-audio-
+
       - name: Run Kokoro Audio Pipeline
         run: npm run generate-audio
 

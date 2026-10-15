@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
@@ -112,31 +113,48 @@ async function processFile(filePath) {
 
   const finalAudioPath = path.join(AUDIO_OUT_DIR, `${filename}.mp3`);
   const syncMapPath = path.join(SYNC_MAP_DIR, `${filename}.json`);
-
-  try {
-    const mdStat = await fs.stat(filePath);
-    const mp3Stat = await fs.stat(finalAudioPath);
-    const syncMapStat = await fs.stat(syncMapPath);
-    
-    // Check Git commit time to bypass the GitHub Actions bulk-download timestamp issue.
-    // Fallback to local file system time if the file isn't tracked in git yet.
-    const mdTime = getGitCommitTimeMs(filePath) ?? mdStat.mtimeMs;
-    const mp3Time = getGitCommitTimeMs(finalAudioPath) ?? mp3Stat.mtimeMs;
-    const syncMapTime = getGitCommitTimeMs(syncMapPath) ?? syncMapStat.mtimeMs;
-    
-    if (mp3Time >= mdTime && syncMapTime >= mdTime) {
-      console.log(`Skipping ${filename} (Audio and sync map are up to date)`);
-      return;
-    }
-  } catch (err) {
-    // If the mp3 or sync map doesn't exist at all, fs.stat throws, and we proceed to generate.
-  }
+  const hashPath = path.join(SYNC_MAP_DIR, `${filename}.hash`);
 
   const content = await fs.readFile(filePath, 'utf-8');
   const bodyContent = content.replace(/^[\s\uFEFF]*---\r?\n[\s\S]*?\r?\n---/, '');
 
   const parsedAST = remark().parse(bodyContent);
   const rawNodes = getRenderableNodes({ children: parsedAST.children });
+
+  // Content-hash skip: the sync map records the hash of the exact text
+  // that was narrated, so a cached artifact regenerates only when the
+  // prose actually changed — mtime races (CI checkout, cache restore)
+  // can't misfire either way.
+  const textHash = (() => {
+    const h = crypto.createHash('sha256');
+    for (const node of rawNodes) h.update(sanitizeTextForTTS(extractText(node)) || '');
+    return h.digest('hex').slice(0, 16);
+  })();
+
+  try {
+    const [prevHash] = await Promise.all([
+      fs.readFile(hashPath, 'utf-8'), fs.stat(finalAudioPath), fs.stat(syncMapPath),
+    ]);
+    if (prevHash.trim() === textHash) {
+      console.log(`Skipping ${filename} (content unchanged)`);
+      return;
+    }
+  } catch (err) {
+    // Missing hash/mp3/map → fall through to the legacy mtime check,
+    // after which the new .hash sidecar takes over.
+    try {
+      const mdStat = await fs.stat(filePath);
+      const mp3Stat = await fs.stat(finalAudioPath);
+      const syncMapStat = await fs.stat(syncMapPath);
+      const mdTime = getGitCommitTimeMs(filePath) ?? mdStat.mtimeMs;
+      const mp3Time = getGitCommitTimeMs(finalAudioPath) ?? mp3Stat.mtimeMs;
+      const syncMapTime = getGitCommitTimeMs(syncMapPath) ?? syncMapStat.mtimeMs;
+      if (mp3Time >= mdTime && syncMapTime >= mdTime) {
+        console.log(`Skipping ${filename} (legacy mtime up to date)`);
+        return;
+      }
+    } catch (e) { /* missing artifact → generate */ }
+  }
   
   const contentNodes = [];
 
@@ -195,6 +213,7 @@ async function processFile(filePath) {
   }
 
   await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
+  await fs.writeFile(hashPath, textHash + '\n');
 
   let updatedContent = content;
   if (!updatedContent.includes('audio: ')) {
