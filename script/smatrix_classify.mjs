@@ -19,6 +19,7 @@
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { step } from './lib/p3.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => {
   const m = a.match(/^--([^=]+)(?:=(.*))?$/); return m ? [m[1], m[2] ?? true] : null;
@@ -65,12 +66,48 @@ const compFrom = (liveArr, maskA, maskB, seedIdx) => {
            lcent: live ? [lx / live, ly / live, lz / live].map(v => +v.toFixed(2)) : null };
 };
 
+// Spin-cycle digraph on the live state — same logic as extractCycles but
+// over the dumped planes: a live cell's successor is the cell its spin
+// port points at (if that target is also live). Tells a re-tied remnant
+// (closed cycles survive) from dead debris (free ends everywhere).
+const cycVisit = new Uint8Array(N), cycSeen = new Int32Array(N);
+const cycleCensus = (q, s) => {
+  cycVisit.fill(0); cycSeen.fill(-1);
+  let freeEnds = 0, maxCycle = 0, nCycles = 0;
+  for (let i = 0; i < N; i++) {
+    if (!q[i] || cycVisit[i]) continue;
+    // walk the chain from i; record path positions for cycle recovery
+    let cur = i; const path = [];
+    while (cur >= 0 && !cycVisit[cur] && cycSeen[cur] < 0) {
+      cycSeen[cur] = path.length; path.push(cur);
+      const x = cur % W, y = ((cur % (H * W)) / W) | 0, z = (cur / (H * W)) | 0;
+      const sp = s[cur];
+      cur = -1;
+      if (sp) {
+        const [nx, ny, nz] = step(x, y, z, sp);
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && nz >= 0 && nz < D) {
+          const ni = (nz * H + ny) * W + nx;
+          if (q[ni]) cur = ni;
+        }
+      }
+    }
+    let isFree = false;
+    if (cur >= 0 && cycSeen[cur] >= 0) {
+      const len = path.length - cycSeen[cur];
+      nCycles++; if (len > maxCycle) maxCycle = len;
+    } else if (cur < 0) isFree = true;   // chain ended off-lattice/dead
+    for (const j of path) { cycVisit[j] = 1; cycSeen[j] = -1; }
+    if (isFree) freeEnds++;
+  }
+  return { freeEnds, maxCycle, nCycles };
+};
+
 const results = [];
 for (const b of meta.batches) {
   const p = resolve(jobDir, `batch_${String(b.batch).padStart(2, '0')}.smxst`);
   if (!existsSync(p)) { console.log(`batch ${b.batch} ${b.name}: state not pulled yet`); continue; }
   const buf = readFileSync(p);
-  const q = buf.subarray(0, N);
+  const q = buf.subarray(0, N), s = buf.subarray(N, 2 * N);
   const liveArr = { q };
   const maskA = new Uint8Array(N), maskB = new Uint8Array(N);
   for (const i of b.maskA) maskA[i] = 1;
@@ -99,12 +136,15 @@ for (const b of meta.batches) {
   else if (retA >= 0.9 && retB >= 0.9) verdict = 'elastic_bounce';
   else verdict = 'degraded';
 
+  const cyc = cycleCensus(q, s);
   console.log(`${String(b.batch).padStart(2)} ${b.name.padEnd(14)} ${verdict.padEnd(13)}` +
     ` live=${live} mass=${mass} retainA=${retA.toFixed(4)}` +
-    (retB === null ? '' : ` retainB=${retB.toFixed(4)}`));
+    (retB === null ? '' : ` retainB=${retB.toFixed(4)}`) +
+    ` cycles=${cyc.nCycles}/${cyc.maxCycle} freeEnds=${cyc.freeEnds}`);
   results.push({ batch: b.batch, name: b.name, seeds: b.seeds, axis: b.axis,
                  verdict, retainA: +retA.toFixed(4), retainB: retB === null ? null : +retB.toFixed(4),
-                 live, mass, paintedA: origA, paintedB: origB });
+                 live, mass, paintedA: origA, paintedB: origB,
+                 spec: b.spec ?? null, cycles: cyc });
 }
 writeFileSync(jobDir + '-results.json', JSON.stringify({ jobDir, meta: metaPath, results }, null, 2));
 console.log(`\n→ ${jobDir}-results.json (${results.length} classified)`);

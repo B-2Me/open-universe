@@ -29,10 +29,21 @@
  *   scenarios[]         { name, seed_A, seed_B, fcc_axis,
  *                         impact_parameter, boost_A, boost_B }
  *                       seed_B may be omitted (single-knot survival job)
+ *   Per-scenario experiment fields:
+ *     separation / overlap   explicit sep, or target overlap fraction
+ *                            of combined axis-extent (0=just touching)
+ *     clr_A / clr_B          hug −x/+x wall: nearest knot cell at that
+ *                            x-coord (drain-erosion reach probe)
+ *     wound_A/B: f           cut contiguous f-arc of the longest cycle
+ *     bite_A/B: f            delete top-f fraction of cells along +axis
+ *     kick: {buf,cells,hemi} buffer mass injected into knot cells
+ *     slug: {dir,off,len,w,q} rod of spin-locked projectile cells
+ *     emit: [{pos,r,dir,quant,mod}] driven emitter cells (mod=period)
+ *     pinch                  per-scenario wall tension override
  */
 import { readFileSync, writeFileSync, existsSync, openSync, writeSync, closeSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ROOT, loadConfig, opts, V3, nearestPort } from './lib/p3.mjs';
+import { ROOT, loadConfig, opts, V3, nearestPort, extractCycles } from './lib/p3.mjs';
 
 const CFG = loadConfig();
 const { opt, num } = opts(CFG);
@@ -87,7 +98,6 @@ const buildBatch = (sc) => {
   const u = unit(V3[axis + 1]), o = orthoOf(u);
   const center = CFG.center ?? [W / 2, H / 2, D / 2];
   const b = sc.impact_parameter ?? 0;
-  const sep = sc.separation ?? SEP;          // per-scenario spawn distance
 
   // Seeds are authored around their OWN grid's center (seed.dims/2,
   // not the job grid's — collide.mjs measured both against seed dims
@@ -103,8 +113,26 @@ const buildBatch = (sc) => {
   // on the first tick — the clamp must keep knot cells clear of it.
   const clampC = (c, r) => c.map((v, a) =>
     Math.min(DIMS[a] - r[a] - MARGIN - 1, Math.max(r[a] + MARGIN + 1, v)));
-  const cA = clampC(center.map((v, a) => v - sep * u[a]), extent(seedA));
-  const cB = seedB ? clampC(center.map((v, a) => v + sep * u[a] + b * o[a]), extent(seedB)) : null;
+  // Axis-projected extent: how far the knot reaches along the separation
+  // axis. Drives `overlap` (fraction of combined axis-extent overlapped).
+  const axExt = (seed) => { const r = extent(seed);
+    return Math.abs(u[0]) * r[0] + Math.abs(u[1]) * r[1] + Math.abs(u[2]) * r[2]; };
+  // overlap f ⇒ centers 2·sep apart = (1-f)·(axExtA+axExtB)
+  let sep = sc.separation ?? SEP;
+  if (sc.overlap != null)
+    sep = (1 - sc.overlap) * (axExt(seedA) + (seedB ? axExt(seedB) : 0)) / 2;
+  // clr_A: place the knot hugging the −x wall so its nearest cell sits
+  // `clr_A` cells from the boundary (erosion-reach probe). clr_B hugs +x.
+  let cA, cB = null;
+  if (sc.clr_A != null) cA = [sc.clr_A + extent(seedA)[0], H / 2, D / 2];
+  else if (!seedB) cA = [...center];          // single knots sit centered
+  else cA = center.map((v, a) => v - sep * u[a]);
+  if (seedB) {
+    if (sc.clr_B != null) cB = [W - sc.clr_B - extent(seedB)[0], H / 2, D / 2];
+    else cB = center.map((v, a) => v + sep * u[a] + b * o[a]);
+  }
+  cA = clampC(cA, extent(seedA));
+  if (cB) cB = clampC(cB, extent(seedB));
 
   const move = (seed, c) => {
     const [sw, sh, sd] = seed.dims;
@@ -114,6 +142,31 @@ const buildBatch = (sc) => {
   };
   let cellsA = move(seedA, cA);
   let cellsB = seedB ? move(seedB, cB) : [];
+
+  // Wounds — two distinct failure geometries:
+  //   wound: f   topological cut — delete a contiguous f-fraction arc of
+  //              the longest spin-cycle (anneal.mjs semantics). Tests the
+  //              repair threshold and whether wounds re-tie differently.
+  //   bite:  f   spatial cap — delete the f-fraction of cells with the
+  //              highest projection along +u (drain-erosion geometry).
+  const cutIdx = ([x, y, z]) => (z * H + y) * W + x;
+  const wound = (cells, f) => {
+    const { cycles } = extractCycles(cells, W, H, D);
+    if (!cycles.length) return cells;
+    const dead = new Set(cycles[0].slice(0, Math.round(cycles[0].length * f)));
+    return cells.filter(c => !dead.has(cutIdx(c)));
+  };
+  const bite = (cells, f, dir = u) => {
+    const keep = Math.round(cells.length * (1 - f));
+    return [...cells].sort((a2, b2) =>
+      (a2[0] * dir[0] + a2[1] * dir[1] + a2[2] * dir[2]) -
+      (b2[0] * dir[0] + b2[1] * dir[1] + b2[2] * dir[2])).slice(0, keep);
+  };
+  if (sc.wound_A) cellsA = wound(cellsA, sc.wound_A);
+  if (sc.wound_B) cellsB = wound(cellsB, sc.wound_B);
+  if (sc.bite_A) cellsA = bite(cellsA, sc.bite_A, sc.bite_dir_A);
+  if (sc.bite_B) cellsB = bite(cellsB, sc.bite_B, sc.bite_dir_B);
+
   const bst = parseBoost(sc.boost_A ?? null);  if (bst) cellsA = applyBoost(cellsA, bst);
   const bstB = parseBoost(sc.boost_B ?? null); if (bstB) cellsB = applyBoost(cellsB, bstB);
 
@@ -150,9 +203,62 @@ const buildBatch = (sc) => {
     q[i] = seedA.q ?? 80; s[i] = sp;
     planes.writeUInt16LE(seedA.heat ?? 400, 2 * N + 2 * i);
   }
-  // Force list: pinch walls on both axis ends (tension add per tick).
+  // kick: { buf, cells:'A'|'B'|'AB', hemi:[dx,dy,dz] } — write buffer
+  // mass into knot cells at spawn. hemi restricts to the half of the
+  // knot on the +hemi side of its centroid — a directional impulse.
+  // (Isotropic buf surge = uniform overcharge control; hemispheric =
+  // does a one-tick momentum pulse translate or shred?)
+  if (sc.kick) {
+    const bufP = planes.subarray(4 * N, 5 * N);
+    const targets = sc.kick.cells === 'B' ? [cellsB] : sc.kick.cells === 'AB' ? [cellsA, cellsB] : [cellsA];
+    for (const cells of targets) {
+      if (!cells.length) continue;
+      let cx = 0, cy = 0, cz = 0;
+      for (const [x, y, z] of cells) { cx += x; cy += y; cz += z; }
+      cx /= cells.length; cy /= cells.length; cz /= cells.length;
+      for (const [x, y, z] of cells) {
+        if (sc.kick.hemi && (x - cx) * sc.kick.hemi[0] + (y - cy) * sc.kick.hemi[1] + (z - cz) * sc.kick.hemi[2] < 0) continue;
+        bufP[(z * H + y) * W + x] = Math.min(255, sc.kick.buf ?? 60);
+      }
+    }
+  }
+  // slug: { dir, off, len, w, q, at:'A' } — a compact rod of driven
+  // cells aimed at the knot: quanta with spins locked on dir. Unpainted
+  // (provenance-clean); tests momentum transfer vs erosion.
+  if (sc.slug) {
+    const sg = sc.slug;
+    const dir = unit(sg.dir);
+    const tc = sg.at === 'B' && cB ? cB : cA;
+    const tExt = (sg.at === 'B' && seedB ? axExt(seedB) : axExt(seedA));
+    const r0 = tc.map((v, a) => v - dir[a] * (tExt + (sg.off ?? 12)));
+    const e2 = [Math.abs(dir[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]];
+    const e1 = unit([dir[1] * e2[0][2] - dir[2] * e2[0][1], dir[2] * e2[0][0] - dir[0] * e2[0][2], dir[0] * e2[0][1] - dir[1] * e2[0][0]]);
+    const e2v = unit([dir[1] * e1[2] - dir[2] * e1[1], dir[2] * e1[0] - dir[0] * e1[2], dir[0] * e1[1] - dir[1] * e1[0]]);
+    const sp = nearestPort(...dir.map(v => v * 256));
+    const painted = new Set([...cellsA, ...cellsB].map(cutIdx));
+    const half = (sg.w ?? 3) / 2;
+    let slugN = 0;
+    for (let t = 0; t < (sg.len ?? 24); t++)
+      for (let a1 = -Math.ceil(half); a1 <= Math.ceil(half); a1++)
+        for (let a2 = -Math.ceil(half); a2 <= Math.ceil(half); a2++) {
+          if (a1 * a1 + a2 * a2 > half * half) continue;
+          const x = Math.round(r0[0] - dir[0] * t + e1[0] * a1 + e2v[0] * a2);
+          const y = Math.round(r0[1] - dir[1] * t + e1[1] * a1 + e2v[1] * a2);
+          const z = Math.round(r0[2] - dir[2] * t + e1[2] * a1 + e2v[2] * a2);
+          if (x < MARGIN + 1 || x >= W - MARGIN - 1 || y < MARGIN + 1 || y >= H - MARGIN - 1 || z < MARGIN + 1 || z >= D - MARGIN - 1) continue;
+          const i = (z * H + y) * W + x;
+          if (painted.has(i)) continue;
+          q[i] = sg.q ?? 80; s[i] = sp; slugN++;
+        }
+    console.log(`  ${sc.name}: slug ${slugN} cells, spin=${sp}`);
+  }
+  // Force list: pinch walls on both axis ends (tension add per tick),
+  // plus per-scenario emitters — a disc of force-driven cells that
+  // re-assert spin + inject quanta, optionally square-wave modulated
+  // (emit.mod = period in ticks; the acoustic/resonant drive channel).
   const force = [];
-  if (PINCH > 0) {
+  const PINCH_SC = sc.pinch ?? PINCH;
+  if (PINCH_SC > 0) {
     const DIR = u.map(Math.sign);
     const seen = new Set();
     for (const pol of [1, -1]) for (let a = 0; a < 3; a++) {
@@ -164,11 +270,26 @@ const buildBatch = (sc) => {
         const i = (z * H + y) * W + x;
         if (seen.has(i)) continue;
         seen.add(i);
-        force.push({ i, spin: 0, tens: PINCH, quant: 0 });
+        force.push({ i, spin: 0, tens: PINCH_SC, quant: 0, mod: 0 });
       }
     }
   }
+  for (const em of sc.emit ?? []) {
+    const dir = unit(em.dir ?? [1, 0, 0]);
+    const sp = nearestPort(...dir.map(v => v * 256));
+    let en = 0;
+    for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if ((x - em.pos[0]) ** 2 + (y - em.pos[1]) ** 2 + (z - em.pos[2]) ** 2 > (em.r ?? 6) ** 2) continue;
+      force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 8, mod: em.mod ?? 0 });
+      en++;
+    }
+    console.log(`  ${sc.name}: emitter ${en} cells mod=${em.mod ?? 0} q+${em.quant ?? 8}`);
+  }
   return { planes, force, axis, b, name: String(sc.name ?? 'run').slice(0, 31),
+           spec: { overlap: sc.overlap, clr_A: sc.clr_A, clr_B: sc.clr_B,
+                   wound_A: sc.wound_A, wound_B: sc.wound_B, bite_A: sc.bite_A,
+                   bite_B: sc.bite_B, kick: sc.kick, slug: sc.slug, emit: sc.emit,
+                   pinch: PINCH_SC },
            maskA: [...paintedA], maskB: [...maskB],
            seeds: [sc.seed_A, sc.seed_B ?? null], counts: [cellsA.length, cellsB.length] };
 };
@@ -213,7 +334,8 @@ for (let bi = 0; bi < BATCH; bi++) {
   scen.write(r.name, o + 8, 31, 'ascii');
 }
 
-// Force list (8B each): u32 global idx, u8 spin, u8 tension, u8 quanta, pad
+// Force list (8B each): u32 global idx, u8 spin, u8 tension, u8 quanta,
+// u8 mod (0 = every tick; p>0 = 50%-duty square wave at period p)
 const fbuf = Buffer.alloc(allForce.length * 8);
 allForce.forEach((f, k) => {
   const o = k * 8;
@@ -221,6 +343,7 @@ allForce.forEach((f, k) => {
   fbuf.writeUInt8(f.spin, o + 4);
   fbuf.writeUInt8(f.tens, o + 5);
   fbuf.writeUInt8(f.quant, o + 6);
+  fbuf.writeUInt8(f.mod ?? 0, o + 7);
 });
 
 // Streamed — a 32×256³ job is ~3.2GB, over Node's single-buffer write cap.
@@ -237,7 +360,7 @@ const meta = {
   absorb_margin: MARGIN,
   batches: batches.map((b, i) => ({
     batch: i, name: b.name, axis: b.axis, impact: b.b, seeds: b.seeds,
-    painted: b.counts, maskA: b.maskA, maskB: b.maskB,
+    painted: b.counts, spec: b.spec ?? null, maskA: b.maskA, maskB: b.maskB,
   })),
 };
 writeFileSync(OUT + '.meta.json', JSON.stringify(meta));

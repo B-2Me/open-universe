@@ -18,7 +18,8 @@
 extern "C" {
     int  smx_init(int w, int h, int d, int batch, int diss, int limit);
     int  smx_set_force(const uint32_t *idx, const uint8_t *spin,
-                       const uint8_t *tens, const uint8_t *quant, int n);
+                       const uint8_t *tens, const uint8_t *quant,
+                       const uint8_t *mod, int n);
     int  smx_set_drain(int margin);
     int  smx_load(int batchIdx, const uint8_t *p3st);
     void smx_tick(void);
@@ -37,7 +38,7 @@ struct Job {
     int32_t diss = 15, limit = 50000;
     std::vector<Scenario> scenarios;
     std::vector<uint32_t> fIdx;
-    std::vector<uint8_t> fSpin, fTens, fQuant;
+    std::vector<uint8_t> fSpin, fTens, fQuant, fMod;
     std::vector<uint8_t> states;       // batch × n*6 bytes
     size_t n() const { return (size_t)w * h * d; }
     size_t blobBytes() const { return n() * 6; }
@@ -62,11 +63,9 @@ static bool loadJob(const char *path, Job &j) {
     j.scenarios.resize(j.batch);
     f.read((char *)j.scenarios.data(), j.batch * sizeof(Scenario));
     j.fIdx.resize(nForce); j.fSpin.resize(nForce);
-    j.fTens.resize(nForce); j.fQuant.resize(nForce);
-    for (uint32_t i = 0; i < nForce; i++) {
-        uint8_t pad;
-        rd(f, j.fIdx[i]); rd(f, j.fSpin[i]); rd(f, j.fTens[i]); rd(f, j.fQuant[i]); rd(f, pad);
-    }
+    j.fTens.resize(nForce); j.fQuant.resize(nForce); j.fMod.resize(nForce);
+    for (uint32_t i = 0; i < nForce; i++)
+        rd(f, j.fIdx[i]), rd(f, j.fSpin[i]), rd(f, j.fTens[i]), rd(f, j.fQuant[i]), rd(f, j.fMod[i]);
     j.states.resize(j.batch * j.blobBytes());
     f.read((char *)j.states.data(), j.states.size());
     if (!f) { fprintf(stderr, "job truncated: expected %zu state bytes\n", j.states.size()); return false; }
@@ -116,7 +115,8 @@ int runJob(const char *jobPath, const char *outDir) {
     }
     if (j.absorbMargin) smx_set_drain((int)j.absorbMargin);
     if (!j.fIdx.empty())
-        smx_set_force(j.fIdx.data(), j.fSpin.data(), j.fTens.data(), j.fQuant.data(), (int)j.fIdx.size());
+        smx_set_force(j.fIdx.data(), j.fSpin.data(), j.fTens.data(), j.fQuant.data(),
+                      j.fMod.data(), (int)j.fIdx.size());
     for (uint32_t b = 0; b < j.batch; b++)
         if (smx_load(b, j.states.data() + b * j.blobBytes()) != 0) {
             fprintf(stderr, "smx_load failed batch %u\n", b);

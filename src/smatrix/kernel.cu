@@ -256,16 +256,21 @@ __global__ void smx_drain_kernel(SmNode *__restrict__ rd,
     p->heat >>= 1;
 }
 
-// Sparse persistent forcing (pinch walls): add to pinned registers with
-// the same clamps collide.mjs applies between ticks.
+// Sparse persistent forcing (pinch walls / emitters): add to pinned
+// registers with the same clamps collide.mjs applies between ticks.
+// fMod: 0 = every tick; p > 0 = square wave — on while tick%p < p/2
+// (resonant/acoustic drive probing; backward compat: pad byte was 0).
 __global__ void smx_force_kernel(SmNode *__restrict__ rd,
                                  const uint32_t *__restrict__ fIdx,
                                  const uint8_t *__restrict__ fSpin,
                                  const uint8_t *__restrict__ fTens,
                                  const uint8_t *__restrict__ fQuant,
-                                 int nForce) {
+                                 const uint8_t *__restrict__ fMod,
+                                 int nForce, uint32_t tick) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= nForce) return;
+    uint8_t m = fMod[i];
+    if (m && ((tick % m) << 1) >= m) return;   // off-phase of the period
     SmNode *p = &rd[fIdx[i]];
     if (fQuant[i]) { int v = p->quanta + fQuant[i]; p->quanta = v > 255 ? 255 : v; }
     if (fTens[i])  { int v = p->tension + fTens[i]; p->tension = v > 255 ? 255 : v; }
@@ -279,7 +284,7 @@ static SmNode *d_rd = 0, *d_wr = 0;
 static uint16_t *d_push = 0;
 static uint64_t *d_counters = 0;   // [0]=spray_events [1]=spray_quanta [2]=absorbed
 static uint32_t *d_fIdx = 0;
-static uint8_t *d_fSpin = 0, *d_fTens = 0, *d_fQuant = 0;
+static uint8_t *d_fSpin = 0, *d_fTens = 0, *d_fQuant = 0, *d_fMod = 0;
 static int gW = 0, gH = 0, gD = 0, gN3 = 0, gBatch = 0, gNForce = 0, gMargin = 0;
 static uint32_t gTick = 0;
 
@@ -348,17 +353,20 @@ int smx_init(int w, int h, int d, int batch, int diss, int limit) {
 int smx_set_drain(int margin) { gMargin = margin; return 0; }
 
 int smx_set_force(const uint32_t *idx, const uint8_t *spin,
-                  const uint8_t *tens, const uint8_t *quant, int n) {
+                  const uint8_t *tens, const uint8_t *quant,
+                  const uint8_t *mod, int n) {
     gNForce = n;
     if (!n) return 0;
     cudaMalloc(&d_fIdx, n * sizeof(uint32_t));
     cudaMalloc(&d_fSpin, n);
     cudaMalloc(&d_fTens, n);
     cudaMalloc(&d_fQuant, n);
+    cudaMalloc(&d_fMod, n);
     cudaMemcpy(d_fIdx, idx, n * sizeof(uint32_t), cudaMemcpyHostToDevice);
     cudaMemcpy(d_fSpin, spin, n, cudaMemcpyHostToDevice);
     cudaMemcpy(d_fTens, tens, n, cudaMemcpyHostToDevice);
     cudaMemcpy(d_fQuant, quant, n, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_fMod, mod, n, cudaMemcpyHostToDevice);
     return (cudaGetLastError() == cudaSuccess) ? 0 : -1;
 }
 
@@ -386,7 +394,7 @@ void smx_tick(void) {
     int threads = 256;
     int64_t blocks = (total + threads - 1) / threads;
     if (gNForce > 0)
-        smx_force_kernel<<<(gNForce + 255) / 256, 256>>>(d_rd, d_fIdx, d_fSpin, d_fTens, d_fQuant, gNForce);
+        smx_force_kernel<<<(gNForce + 255) / 256, 256>>>(d_rd, d_fIdx, d_fSpin, d_fTens, d_fQuant, d_fMod, gNForce, gTick);
     if (gMargin > 0)
         smx_drain_kernel<<<(int)blocks, threads>>>(d_rd, d_counters + 2, total, gMargin);
     smx_tick_kernel<<<(int)blocks, threads>>>(d_rd, d_wr, d_push,
