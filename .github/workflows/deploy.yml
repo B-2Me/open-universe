@@ -3,6 +3,19 @@ name: Deploy Open Universe to GitHub Pages
 on:
   push:
     branches: [main]
+    # Only rebuild the site when site inputs actually change — the Kokoro
+    # audio step lands real GPU load on the shared 3060 box, so a
+    # src/smatrix or script-only push must not trigger a TTS storm.
+    paths:
+      - 'docs/**'
+      - 'src/planck.c'
+      - 'src/planck3.c'
+      - 'src/engine-sim.mjs'
+      - 'src/build.sh'
+      - 'script/kokoro-pipeline.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
