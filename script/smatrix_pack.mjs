@@ -140,8 +140,13 @@ const buildBatch = (sc) => {
       if (sc.clr_B != null) cB = [W - sc.clr_B - extent(seedB)[0], H / 2, D / 2];
       else cB = center.map((v, a) => v + sep * u[a] + b * o[a]);
     }
-    cA = clampC(cA, extent(seedA));
-    if (cB) cB = clampC(cB, extent(seedB));
+    // Explicit centers beat the separation algebra — needed when knots
+    // must sit at arbitrary positions (e.g., upstream/downstream of a
+    // shared flow corridor rather than symmetric about grid center).
+    if (sc.pos_A) cA = sc.pos_A;
+    if (sc.pos_B) cB = sc.pos_B;
+    if (seedA && cA) cA = clampC(cA, extent(seedA));
+    if (seedB && cB) cB = clampC(cB, extent(seedB));
 
     const move = (seed, c) => {
       const [sw, sh, sd] = seed.dims;
@@ -366,6 +371,32 @@ const buildBatch = (sc) => {
         force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
         en++;
       }
+    } else if (em.rect) {
+      // rect emitter: a bounded patch on one plane — {axis, at,
+      // u:[lo,hi], v:[lo,hi], stride} — single-cell force points on a
+      // stride grid; u/v map to the two axes other than `axis`.
+      const rc = em.rect, pa = rc.axis ?? 0, stride = rc.stride ?? 1;
+      const a1 = (pa + 1) % 3, a2 = (pa + 2) % 3;
+      for (let uu = rc.u[0]; uu <= rc.u[1]; uu += stride)
+        for (let vv = rc.v[0]; vv <= rc.v[1]; vv += stride) {
+          const p = [0, 0, 0];
+          p[pa] = rc.at; p[a1] = uu; p[a2] = vv;
+          force.push({ i: (p[2] * H + p[1]) * W + p[0], spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
+          en++;
+        }
+    } else if (em.rect) {
+      // rect emitter: a bounded patch on one plane — {axis, at,
+      // u:[lo,hi], v:[lo,hi], stride} — single-cell force points on a
+      // stride grid; u/v map to the two axes other than `axis`.
+      const rc = em.rect, pa = rc.axis ?? 0, stride = rc.stride ?? 1;
+      const a1 = (pa + 1) % 3, a2 = (pa + 2) % 3;
+      for (let uu = rc.u[0]; uu <= rc.u[1]; uu += stride)
+        for (let vv = rc.v[0]; vv <= rc.v[1]; vv += stride) {
+          const p = [0, 0, 0];
+          p[pa] = rc.at; p[a1] = uu; p[a2] = vv;
+          force.push({ i: (p[2] * H + p[1]) * W + p[0], spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
+          en++;
+        }
     } else {
       // ball emitter: scan only its bounding box, not the whole grid
       const r = em.r ?? 6, r2 = r * r;

@@ -1,0 +1,28 @@
+{
+  "name": "smx-v10-shadow",
+  "dims": [256, 256, 256],
+  "ticks": 1000,
+  "dump_every": 50,
+  "absorb_margin": 8,
+  "diss": 15,
+  "limit": 50000,
+  "comment": "v10: dark-knot coupling via a shared medium. A +x beam (rect emitter x=40, y 88-168, z 140-204, stride 4, q=4) grazes the top face of knots A (x=100) and B (x=196, downstream in A's wake). If B's live-mass/retention differs from the beamB single-knot control, the upstream knot's wake is shadowing or enhancing the downstream knot's feed — the closest this substrate gets to force-at-a-distance. beam0 calibrates the corridor's ambient flow; duo_noring + vac_knot are independence/regression baselines.",
+  "scenarios": [
+    { "name": "beam2", "seed_A": "hopfion_32_8", "pos_A": [100, 128, 128],
+      "seed_B": "hopfion_32_8", "pos_B": [196, 128, 128],
+      "emit": [ { "dir": [1, 0, 0], "quant": 4, "mod": 0,
+                  "rect": { "axis": 0, "at": 40, "u": [88, 168], "v": [140, 204], "stride": 4 } } ] },
+    { "name": "beamA", "seed_A": "hopfion_32_8", "pos_A": [100, 128, 128],
+      "emit": [ { "dir": [1, 0, 0], "quant": 4, "mod": 0,
+                  "rect": { "axis": 0, "at": 40, "u": [88, 168], "v": [140, 204], "stride": 4 } } ] },
+    { "name": "beamB", "seed_B": "hopfion_32_8", "pos_B": [196, 128, 128],
+      "emit": [ { "dir": [1, 0, 0], "quant": 4, "mod": 0,
+                  "rect": { "axis": 0, "at": 40, "u": [88, 168], "v": [140, 204], "stride": 4 } } ] },
+    { "name": "beam0",
+      "emit": [ { "dir": [1, 0, 0], "quant": 4, "mod": 0,
+                  "rect": { "axis": 0, "at": 40, "u": [88, 168], "v": [140, 204], "stride": 4 } } ] },
+    { "name": "duo_noring", "seed_A": "hopfion_32_8", "pos_A": [100, 128, 128],
+      "seed_B": "hopfion_32_8", "pos_B": [196, 128, 128] },
+    { "name": "vac_knot", "seed_A": "hopfion_32_8" }
+  ]
+}
