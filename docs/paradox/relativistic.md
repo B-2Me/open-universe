@@ -17,7 +17,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ---
 
 ## 2. The Reversibility Paradox (The Arrow of Time)
-**The Paradox:** Almost all the fundamental equations of classical physics and relativity are "time-reversible." The math works perfectly fine whether time flows forward or backward. Yet, in measured reality, time *only* flows one way. A dropped teacup shatters; it never spontaneously reassembles. Why does time have a hard, one-way arrow if the core equations don't demand it?
+**The Paradox:** Almost all the fundamental equations of classical physics and relativity are "time-reversible." The math works perfectly fine whether time flows forward or backward. Yet, in measured reality, time *only* flows one way. A dropped teacup shatters; it never spontaneously reassembles. How does a hard, one-way thermodynamic arrow emerge from equations that don't demand it?
 
 **The Planck Field Reconciliation:** The block universe treats time as a spatial dimension—a highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
 *   But the universe is a **zero-storage active field**. There is no static archive holding the "past." 

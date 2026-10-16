@@ -10,7 +10,7 @@ This repository is that argument made executable: a set of essays auditing the l
 
 ## The Framework
 
-The site is structured as an audit: state the thesis, stress-test it against the paradoxes, ground it in the vanguard literature, then hand you the instrument. Navigation follows the same arc — **Theory** (the argument) → **Interference** (the lab) → **Intent** (why it exists).
+The site is structured as an audit: state the thesis, stress-test it against the paradoxes, ground it in the vanguard literature, then hand you the instrument. Navigation follows the same arc — **Theory** (the argument) → **Interference** (the lab) → **Intent** (the design rationale).
 
 ### Theory — the argument
 

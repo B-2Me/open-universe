@@ -51,9 +51,10 @@ Simulating high-traffic congestion basins allows us to measure the exact non-lin
 ### B. Topological Selection Rules
 Differential equations on a continuous manifold permit infinitely many smooth vortex shapes that quickly smear out under numerical diffusivity. A discrete causal lattice enforces strict **topological quantization**. 
 
-Our simulations have already established two universal selection laws that hold regardless of grid scale:
+Our simulations have already established three universal selection laws that hold regardless of grid scale:
 1. **Streamline Closure by Construction:** Approximate tangent fields inevitably cross, nucleate deadlock beads ("vortex necklaces"), and tear apart; only exact in-degree-1 closed cycles survive without loss.
 2. **Substrate Parity Freedom:** A 12-neighbor Hexagonal Close-Packed (`HCP`, A-B-A-B) lattice frustrates 3D poloidal return paths via layer-parity inversion, whereas a parity-free A-B-C **True Face-Centered Cubic (FCC)** lattice locks 3D Hopfions indefinitely.
+3. **Lattice Locking (Peierls–Nabarro pinning):** Bound structures are fixed points, not drifting objects. In the 536-million-node GPU campaigns, intact knots exit 1000 ticks byte-identical to spawn — centroid drift 0.0, 100% painted retention — while tension walls, momentum kicks, and spin boosts all fail to translate them. On a discrete substrate, motion is not the default state requiring explanation; it is the anomaly requiring injection. Matter erodes, sprays, and reconstitutes — it does not advect.
 
 These are structural theorems discovered empirically through the engine. They tell physicists and materials scientists *which* crystal symmetries and flow topologies can host stable 3D solitons before a physical experiment is ever built.
 

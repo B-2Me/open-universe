@@ -19,7 +19,7 @@ At the scale of biology and chemistry, legacy models ignore the thermodynamic pr
 ---
 
 ## 2. The Experience Paradox (The Hard Problem of Consciousness)
-**The Paradox:** Classical neuroscience can map exactly how a brain processes a signal from the optic nerve to the visual cortex. But it cannot explain why that process *feels* like anything. Why does a specific electrical pattern generate the subjective experience of seeing the color red? 
+**The Paradox:** Classical neuroscience can map exactly how a brain processes a signal from the optic nerve to the visual cortex. But it cannot explain why that process *feels* like anything. How does a specific electrical pattern produce the subjective experience of seeing the color red? 
 
 **The Planck Field Reconciliation:** Both materialist and dualist camps fail because they assume the universe is made of dead matter processing abstract data. 
 *   In a process ontology, the brain is not a machine processing static files. It is an active, metabolic boundary continuously fighting to stay synchronized with the flow of becoming.

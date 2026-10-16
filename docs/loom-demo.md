@@ -30,9 +30,9 @@ And it's *running*. This is not a video — the little universe is ticking away 
 - **⧉ / ⤺** — snapshot the universe, disrupt the traffic patterns, then rewind and try a different perturbation.
 - **Tuning** — open the sliders: **Slice** + **Width** turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); **Diss** and **Heat** are the substrate's metabolism knobs — crank Dissipation down and routing patterns linger, drop the thermal ceiling and the structures violently blow out.
 
-## Why it matters
+## How Topological Closure Occurs
 
-On the older substrates this routing pattern was impossible — every attempt to paint a 3D topology decayed or collapsed within seconds. This one maintained its coherence because it was *woven*, not painted: its flow was exact-traced cell-to-cell around closed loops, like thread on a loom, until every strand perfectly meshed with its origin. That's the name. Whether the thermodynamic routing in our universe works this exact way is an open question — but here, closed-loop weaving is what allows a macroscopic boundary to persistently re-render itself.
+On the older substrates this routing pattern was impossible — continuously painted 3D topologies decayed or collapsed within seconds. This one maintains its coherence because it was *woven*, not painted: its flow was exact-traced cell-to-cell around closed loops, like thread on a loom, until every strand perfectly meshed with its origin. That's the name. Whether the thermodynamic routing in our universe works this exact way is an open question — but here, closed-loop weaving is what allows a macroscopic boundary to persistently re-render itself.
 
 ::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts
 
@@ -42,7 +42,7 @@ On the older substrates this routing pattern was impossible — every attempt to
 - **Engine:** `src/planck3.c` compiled to WebAssembly — the same register set as the 2D engine (8-bit quanta, 8-bit spin, 16-bit heat, buffer, tension), same canonical physics: Phase Lock, FLOW_CAP routing, occupancy congestion, tension divert, unwind spray, quadrature dissipation.
 - **Falsifiability:** the C port is **bit-identical** to the JS harness on all mass channels over 400 ticks (verified natively and in Wasm — `test/loom/t0.bin`/`t400.bin` regression vectors).
 
-### The pipeline (why it's fast)
+### The pipeline (the zero-copy path)
 
 `quanta`+`spin` are packed into an RG8 buffer *inside* the Wasm heap (`planck3_rg_refresh`) and uploaded per tick via `gl.texSubImage3D` — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries **scene-normalized heat** (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.
 

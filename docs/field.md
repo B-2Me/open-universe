@@ -73,7 +73,7 @@ When physicists create perfectly coherent, frictionless topological states of ma
 
 Matter is not a solid object inserted into the field; matter is what happens when the field knots itself up. Mass is simply a localized zone of extreme relational tension. 
 
-In the language of Nobel laureate Ilya Prigogine, these localized boundaries are **dissipative structures**. When a system attempts to maintain its boundary against the redistributing pressure of the wider field, it requires continuous thermodynamic effort. 
+In the language of Nobel laureate Ilya Prigogine, these localized boundaries are **dissipative structures**. For a localized boundary to persist against the redistributing pressure of the wider field, it must continuously dissipate thermodynamic exhaust. 
 
 Legacy physics obscures this friction by relying on pure, abstract mathematics. Abstractions like the Wiener process model random motion as frictionless, infinitely jagged paths. But math lacks mass and thermodynamic dissipation. To accurately map these processes, we must subject these mathematical abstractions to a process of **Gradient Descent** into the natural world. 
 

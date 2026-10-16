@@ -143,7 +143,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ---
 
 ## 15. The Overlap Paradox (The Pauli Exclusion Principle)
-**The Paradox:** The Pauli Exclusion Principle states that two identical fermions (like electrons) cannot occupy the same quantum state simultaneously. Standard physics uses antisymmetric wave functions to mathematically forbid them from overlapping, but struggles to explain why nature physically prevents it.
+**The Paradox:** The Pauli Exclusion Principle states that two identical fermions (like electrons) cannot occupy the same quantum state simultaneously. Standard physics uses antisymmetric wave functions to mathematically forbid them from overlapping, but struggles to model the mechanical constraint that prevents it.
 
 **The Planck Field Reconciliation:** In a discrete network, fermions don't overlap because a single network switch can only handle so much traffic before it drops packets. 
 *   An electron is a massive, circulating topological waveguide. 

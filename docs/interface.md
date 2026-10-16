@@ -60,7 +60,7 @@ To drive the interface properly, we must understand how causality actually works
 
 ## The Spatial Demand (Biological Bias)
 
-If causality at the fundamental level encompasses phase shifts, charge transfers, and non-spatial state changes, why do we intuitively insist that the universe *must* be made of tiny billiard balls moving through space? 
+If causality at the fundamental level encompasses phase shifts, charge transfers, and non-spatial state changes, how does a biological interface come to insist that the universe *must* be made of tiny billiard balls moving through space? 
 
 Because the Local Interface demands it. 
 
