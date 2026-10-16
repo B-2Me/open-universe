@@ -1,0 +1,16 @@
+{
+  "name": "smx-spectro",
+  "dims": [128, 128, 128],
+  "ticks": 500,
+  "dump_every": 2,
+  "absorb_margin": 8,
+  "diss": 15,
+  "limit": 50000,
+  "comment": "Passive spectroscopy: dense per-5-tick state dumps on UNFED knots -> offline FFT of quanta/heat time series finds the structures' natural oscillation modes before we choose drive periods. 4 different seeds so the spectrum is surveyed across knot sizes. 128^3 fits hopfion_32_8's 81x80x17 extent with ~16-cell margin clearance (v2 showed this seed's halo survives at clr9).",
+  "scenarios": [
+    { "name": "sp_32_8",  "seed_A": "hopfion_32_8",  "fcc_axis": 0 },
+    { "name": "sp_24_8",  "seed_A": "hopfion_24_8",  "fcc_axis": 0 },
+    { "name": "sp_40_8",  "seed_A": "hopfion_40_8",  "fcc_axis": 0 },
+    { "name": "sp_48_16", "seed_A": "hopfion_48_16", "fcc_axis": 0 }
+  ]
+}
