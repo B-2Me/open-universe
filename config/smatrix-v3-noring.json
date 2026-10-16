@@ -1,0 +1,615 @@
+{
+  "name": "smx-v3-noring",
+  "dims": [
+    256,
+    256,
+    256
+  ],
+  "ticks": 1000,
+  "dump_every": 250,
+  "absorb_margin": 8,
+  "diss": 15,
+  "limit": 50000,
+  "comment": "v3 bisect: face/rim grazes only, no ring emitters (isolate the job-9 wedge trigger).",
+  "scenarios": [
+    {
+      "name": "ctl_nofeed",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0
+    },
+    {
+      "name": "gz04_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            132
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz04_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            132
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz04_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            132
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz08_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            136
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz08_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            136
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz08_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            136
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz12_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            140
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz12_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            140
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz12_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            140
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz16_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            144
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz16_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            144
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz16_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            144
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz20_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            148
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz20_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            148
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz20_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            148
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz28_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            156
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz28_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            156
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz28_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            156
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gz36_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            164
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gz36_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            164
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gz36_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            128,
+            164
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gy32_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            160,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gy32_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            160,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gy32_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            160,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    },
+    {
+      "name": "gy44_p0",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            172,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 4,
+          "mod": 0
+        }
+      ]
+    },
+    {
+      "name": "gy44_p4",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            172,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 4
+        }
+      ]
+    },
+    {
+      "name": "gy44_p16",
+      "seed_A": "hopfion_32_8",
+      "fcc_axis": 0,
+      "emit": [
+        {
+          "pos": [
+            60,
+            172,
+            128
+          ],
+          "r": 6,
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "quant": 8,
+          "mod": 16
+        }
+      ]
+    }
+  ]
+}
