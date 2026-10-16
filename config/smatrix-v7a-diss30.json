@@ -1,0 +1,28 @@
+{
+ "dims": [
+  256,
+  256,
+  256
+ ],
+ "ticks": 1000,
+ "dump_every": 50,
+ "absorb_margin": 8,
+ "limit": 50000,
+ "name": "smx-v7a-diss30",
+ "diss": 30,
+ "comment": "Fray-rate vs dissipation: bare 50% arc + 25% arc isolates of hopfion_32_8 longest cycle. Does upstream-tip starvation rate scale with diss?",
+ "scenarios": [
+  {
+   "name": "arc50_ctl",
+   "seed_A": "hopfion_32_8",
+   "arc_A": 0.5,
+   "fcc_axis": 0
+  },
+  {
+   "name": "arc25_ctl",
+   "seed_A": "hopfion_32_8",
+   "arc_A": 0.25,
+   "fcc_axis": 0
+  }
+ ]
+}
