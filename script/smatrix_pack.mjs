@@ -35,6 +35,7 @@
  *     clr_A / clr_B          hug −x/+x wall: nearest knot cell at that
  *                            x-coord (drain-erosion reach probe)
  *     wound_A/B: f           cut contiguous f-arc of the longest cycle
+ *     arc_A/B: f             keep ONLY an f-arc of the longest cycle (anneal isolate)
  *     bite_A/B: f            delete top-f fraction of cells along +axis
  *     kick: {buf,cells,hemi} buffer mass injected into knot cells
  *     slug: {dir,off,len,w,q} rod of spin-locked projectile cells
@@ -161,6 +162,16 @@ const buildBatch = (sc) => {
     const dead = new Set(cycles[0].slice(0, Math.round(cycles[0].length * f)));
     return cells.filter(c => !dead.has(cutIdx(c)));
   };
+  //   arc: f   nucleation probe — keep ONLY a contiguous f-fraction
+  //            arc of the longest cycle (anneal.mjs's bare-arc isolate).
+  //            Everything else is deleted: tests whether driven flux can
+  //            scaffold an open chain into closure.
+  const arc = (cells, f) => {
+    const { cycles } = extractCycles(cells, W, H, D);
+    if (!cycles.length) return cells;
+    const keep = new Set(cycles[0].slice(0, Math.max(8, Math.round(cycles[0].length * f))));
+    return cells.filter(c => keep.has(cutIdx(c)));
+  };
   const bite = (cells, f, dir = u) => {
     const keep = Math.round(cells.length * (1 - f));
     return [...cells].sort((a2, b2) =>
@@ -169,6 +180,8 @@ const buildBatch = (sc) => {
   };
   if (sc.wound_A) cellsA = wound(cellsA, sc.wound_A);
   if (sc.wound_B) cellsB = wound(cellsB, sc.wound_B);
+  if (sc.arc_A) cellsA = arc(cellsA, sc.arc_A);
+  if (sc.arc_B) cellsB = arc(cellsB, sc.arc_B);
   if (sc.bite_A) cellsA = bite(cellsA, sc.bite_A, sc.bite_dir_A);
   if (sc.bite_B) cellsB = bite(cellsB, sc.bite_B, sc.bite_dir_B);
 
