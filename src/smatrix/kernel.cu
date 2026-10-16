@@ -73,29 +73,18 @@ __device__ static inline uint32_t smx_hash(int32_t i, uint32_t t) {
     return r;
 }
 
-// CUDA has no 16-bit atomicAdd (max overload is u32). Emulate u16 add on
-// the push plane via packed-u32 CAS — two cells per word, little-endian
-// halves. Contention is bounded (a cell receives <=13 writers: its own
-// buffer + 12 neighbors), and the u16 sum can never exceed 3315, so the
-// saturate branch is dead-code insurance only.
-__device__ static inline void smx_push_add(uint16_t *p, unsigned int v) {
-    uintptr_t a = reinterpret_cast<uintptr_t>(p);
-    unsigned int *w = reinterpret_cast<unsigned int*>(a & ~uintptr_t(3));
-    const unsigned int sh = (a & 2) ? 16 : 0;
-    unsigned int old = *w, assumed;
-    do {
-        assumed = old;
-        unsigned int s = ((assumed >> sh) & 0xFFFFu) + v;
-        if (s > 0xFFFFu) s = 0xFFFFu;
-        old = atomicCAS(w, assumed,
-                        (assumed & ~(0xFFFFu << sh)) | (s << sh));
-    } while (old != assumed);
+// Push plane is u32 per cell — native atomicAdd, no CAS retry loop.
+// (The earlier packed-u16-via-CAS scheme could retry-storm under
+// sustained spray from emitter-saturated regions.) Sum stays <=3315
+// by construction (<=13 writers, each <=255) — no wrap concern.
+__device__ static inline void smx_push_add(uint32_t *p, unsigned int v) {
+    atomicAdd(p, v);
 }
 
 // ---- the node kernel: pure read g_rd → write g_wr, pushes via atomic
 __global__ void smx_tick_kernel(const SmNode *__restrict__ rd,
                                 SmNode *__restrict__ wr,
-                                uint16_t *__restrict__ push,
+                                uint32_t *__restrict__ push,
                                 uint64_t *sprayEv, uint64_t *sprayQ,
                                 int batchN3, uint32_t tick) {
     int64_t gid = (int64_t)blockIdx.x * blockDim.x + threadIdx.x;
@@ -227,7 +216,7 @@ __global__ void smx_tick_kernel(const SmNode *__restrict__ rd,
 }
 
 __global__ void smx_publish_kernel(SmNode *__restrict__ wr,
-                                   const uint16_t *__restrict__ push,
+                                   const uint32_t *__restrict__ push,
                                    int64_t total) {
     int64_t gid = (int64_t)blockIdx.x * blockDim.x + threadIdx.x;
     if (gid >= total) return;
@@ -285,7 +274,7 @@ __global__ void smx_force_kernel(SmNode *__restrict__ rd,
 extern "C" {
 
 static SmNode *d_rd = 0, *d_wr = 0;
-static uint16_t *d_push = 0;
+static uint32_t *d_push = 0;
 static uint64_t *d_counters = 0;   // [0]=spray_events [1]=spray_quanta [2]=absorbed
 static uint64_t *d_absPer = 0;     // [batch] = absorbed mass per batch
 static uint32_t *d_fIdx = 0;
@@ -347,7 +336,7 @@ int smx_init(int w, int h, int d, int batch, int diss, int limit) {
     // Pad to even count — the packed-u32 CAS on the last odd cell
     // touches the neighbouring halfword, which must be in-bounds.
     const int64_t pushN = (total + 1) & ~(int64_t)1;
-    cudaMalloc(&d_push, pushN * sizeof(uint16_t));
+    cudaMalloc(&d_push, pushN * sizeof(uint32_t));
     cudaMalloc(&d_counters, 3 * sizeof(uint64_t));   // [2] = absorbed mass
     cudaMemset(d_counters, 0, 3 * sizeof(uint64_t));
     cudaMalloc(&d_absPer, batch * sizeof(uint64_t));
@@ -397,7 +386,7 @@ int smx_load(int batchIdx, const uint8_t *p3st) {
 void smx_tick(void) {
     gTick++;
     int64_t total = (int64_t)gN3 * gBatch;
-    cudaMemsetAsync(d_push, 0, ((total + 1) & ~(int64_t)1) * sizeof(uint16_t));
+    cudaMemsetAsync(d_push, 0, ((total + 1) & ~(int64_t)1) * sizeof(uint32_t));
     int threads = 256;
     int64_t blocks = (total + threads - 1) / threads;
     if (gNForce > 0)
@@ -408,6 +397,10 @@ void smx_tick(void) {
                                             d_counters, d_counters + 1, total, gTick);
     smx_publish_kernel<<<(int)blocks, threads>>>(d_wr, d_push, total);
     std::swap(d_rd, d_wr);                       // zero-cost publish
+    cudaError_t err = cudaGetLastError();        // launch-config errors only (no sync)
+    static int errSeen = 0;
+    if (err != cudaSuccess && !errSeen) { errSeen = 1;
+        fprintf(stderr, "smx_tick: cuda error t%u: %s\n", gTick, cudaGetErrorString(err)); }
 }
 
 // Read back batch state into a 6-byte-plane P3ST-style blob (no header).
