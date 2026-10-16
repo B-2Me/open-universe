@@ -100,6 +100,13 @@ static uint32_t cur_tick = 0;
 // Deferred pushes flush into g_wr post-sweep: uniform within-tick reads,
 // and the diverted mass actually persists into the next state.
 static int g_sync = 0;
+// Transverse induction (+curl, RFC-050 candidate): a neighbor's outbound
+// jet that is NOT aimed at us torques our momentum along J x r — the
+// discrete Biot-Savart term the canonical update lacks. g_curl_div is
+// the strength shift (0 = off, 3 = 1/8 of direct inflow momentum);
+// g_curl_vac restricts the torque to spinless cells (cs==0) so authored
+// topology can never be perturbed by passing flux.
+static int g_curl_div = 0, g_curl_vac = 0;
 static int32_t *pq_key = NULL;
 static uint8_t *pq_amt = NULL;
 static size_t pq_n = 0, pq_cap = 0;
@@ -257,6 +264,23 @@ static inline void planck3_node_tick(int32_t gidx,
             }
         }
         if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
+
+        // Induction: self is a lateral observer of np's jet when np fires
+        // along ns and that port does not point back at us (ns!=BACK3[d]
+        // excludes the incoming case, already counted above). The curl at
+        // self's position is J x r = V3[ns] x V3[BACK3[d]] — r is our
+        // offset from the jet measured in the jet cell's frame. Feeding
+        // it into mx/my/mz lets the existing dom->spin re-aim align us
+        // tangentially: vacuum cells adjacent to a jet organize into
+        // circulation around the flow.
+        if (g_curl_div && (!g_curl_vac || cs == 0)
+            && nq > 0 && ns != 0 && ns != BACK3[d]) {
+            int sent = nq > FLOW_CAP ? FLOW_CAP : nq;
+            const int16_t *rv = V3[BACK3[d]];
+            mx += ((int32_t)(V3[ns][1] * rv[2] - V3[ns][2] * rv[1]) * sent) >> (8 + g_curl_div);
+            my += ((int32_t)(V3[ns][2] * rv[0] - V3[ns][0] * rv[2]) * sent) >> (8 + g_curl_div);
+            mz += ((int32_t)(V3[ns][0] * rv[1] - V3[ns][1] * rv[0]) * sent) >> (8 + g_curl_div);
+        }
     }
 
     int nq2 = cq, shunt = 0;
@@ -784,6 +808,11 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_dissipation(int rate) { g_dissipation = ra
 // Synchronous-update toggle: see g_sync comment above. Flat mode only —
 // chunk ticks keep the legacy mid-tick resolve path.
 EMSCRIPTEN_KEEPALIVE void planck3_set_sync(int on) { g_sync = !!on; pq_n = 0; }
+// +curl transverse induction: div=0 off; div>0 = strength shift (3 ≈ 1/8
+// of direct inflow momentum); vac=1 restricts to spinless cells.
+EMSCRIPTEN_KEEPALIVE void planck3_set_curl(int div, int vac) {
+    g_curl_div = div; g_curl_vac = !!vac;
+}
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).

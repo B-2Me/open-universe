@@ -18,6 +18,7 @@
 
 int planck3_init_dims(int, int, int);
 int planck3_set_mode(int);
+void planck3_set_curl(int, int);
 int planck3_chunk_size(void);
 void planck3_set_node(int32_t, int, int, int, int, int);
 void planck3_prepare(void);
@@ -81,6 +82,13 @@ int main(int argc, char **argv) {
         printf("note: dims %dx%dx%d not chunk-divisible — chunked engines skipped\n",
                dims[0], dims[1], dims[2]);
 
+    // +curl induction knobs via env: P3_CURL=<div> P3_CURLV=1
+    {
+        const char *cd = getenv("P3_CURL"), *cv = getenv("P3_CURLV");
+        int div = cd ? atoi(cd) : 0, vac = cv ? atoi(cv) : 0;
+        if (div || vac) printf("curl: div=%d vac=%d\n", div, vac);
+        planck3_set_curl(div, vac);
+    }
     // --- flat run ---
     planck3_set_mode(0);
     inject(init, n); planck3_prepare();
@@ -133,6 +141,26 @@ int main(int argc, char **argv) {
         }
         printf("chunk-vs-flat: %d mass-channel diffs, %d heat diffs (max %d)\n", dif, hdif, hmax);
         printf("ordchk-vs-flat: %d mass-channel diffs\n", odif);
+    }
+
+    // Optional final-state dump for offline census (P3_DUMP=path).
+    {
+        const char *dp = getenv("P3_DUMP");
+        if (dp) {
+            FILE *f = fopen(dp, "wb");
+            if (f) {
+                uint8_t head[16] = {'P', '3', 'S', 'T', 0,0,0,0, 0,0,0,0, 0,0,0,0};
+                *(uint32_t *)(head + 4) = dims[0]; *(uint32_t *)(head + 8) = dims[1];
+                *(uint32_t *)(head + 12) = dims[2];
+                fwrite(head, 1, 16, f);
+                for (int32_t i = 0; i < n; i++) fwrite(&flat[i].q, 1, 1, f);
+                for (int32_t i = 0; i < n; i++) fwrite(&flat[i].s, 1, 1, f);
+                for (int32_t i = 0; i < n; i++) fwrite(&flat[i].b, 1, 1, f);
+                for (int32_t i = 0; i < n; i++) fwrite(&flat[i].tn, 1, 1, f);
+                for (int32_t i = 0; i < n; i++) fwrite(&flat[i].h, 2, 1, f);
+                fclose(f);
+            }
+        }
     }
 
     // --- vs JS final-state reference ---
