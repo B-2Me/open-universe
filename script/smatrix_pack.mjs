@@ -162,14 +162,18 @@ const buildBatch = (sc) => {
     const dead = new Set(cycles[0].slice(0, Math.round(cycles[0].length * f)));
     return cells.filter(c => !dead.has(cutIdx(c)));
   };
-  //   arc: f   nucleation probe — keep ONLY a contiguous f-fraction
+  //   arc: f | [start,f]   nucleation probe — keep ONLY a contiguous
   //            arc of the longest cycle (anneal.mjs's bare-arc isolate).
-  //            Everything else is deleted: tests whether driven flux can
-  //            scaffold an open chain into closure.
-  const arc = (cells, f) => {
+  //            Ranged form takes cycle[start..start+f] — complementary
+  //            halves of one loop spawn two open chains whose ends sit
+  //            junction-gap apart (arc–arc retying test).
+  const arc = (cells, af) => {
+    const [st, f] = Array.isArray(af) ? af : [0, af];
     const { cycles } = extractCycles(cells, W, H, D);
     if (!cycles.length) return cells;
-    const keep = new Set(cycles[0].slice(0, Math.max(8, Math.round(cycles[0].length * f))));
+    const cyc = cycles[0];
+    const keep = new Set(cyc.slice(Math.round(cyc.length * st),
+      Math.round(cyc.length * (st + f))));
     return cells.filter(c => keep.has(cutIdx(c)));
   };
   const bite = (cells, f, dir = u) => {

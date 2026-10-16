@@ -1,0 +1,91 @@
+{
+ "name": "smx-v6-arcrety",
+ "dims": [
+  256,
+  256,
+  256
+ ],
+ "ticks": 1000,
+ "dump_every": 50,
+ "absorb_margin": 8,
+ "diss": 15,
+ "limit": 50000,
+ "comment": "Arc-arc contact retying: two complementary halves of the longest 2001-cycle spawned in place with junction gaps of 0/5/10/20/40 cells. maskA/maskB = arc provenance. Discriminator: fusion verdict (live component holding A+B) + a reclosed cycle containing BOTH masks = contact-mediated topological synthesis; freeEnds at junctions vs ~1 cell/tick end-fray = the open-chain death clock.",
+ "scenarios": [
+  {
+   "name": "seam0",
+   "seed_A": "hopfion_32_8",
+   "arc_A": [
+    0,
+    0.5
+   ],
+   "seed_B": "hopfion_32_8",
+   "arc_B": [
+    0.5,
+    0.5
+   ],
+   "fcc_axis": 0,
+   "separation": 0
+  },
+  {
+   "name": "gap05",
+   "seed_A": "hopfion_32_8",
+   "arc_A": [
+    0.002499,
+    0.497501
+   ],
+   "seed_B": "hopfion_32_8",
+   "arc_B": [
+    0.502499,
+    0.497501
+   ],
+   "fcc_axis": 0,
+   "separation": 0
+  },
+  {
+   "name": "gap10",
+   "seed_A": "hopfion_32_8",
+   "arc_A": [
+    0.004998,
+    0.495002
+   ],
+   "seed_B": "hopfion_32_8",
+   "arc_B": [
+    0.504998,
+    0.495002
+   ],
+   "fcc_axis": 0,
+   "separation": 0
+  },
+  {
+   "name": "gap20",
+   "seed_A": "hopfion_32_8",
+   "arc_A": [
+    0.009995,
+    0.490005
+   ],
+   "seed_B": "hopfion_32_8",
+   "arc_B": [
+    0.509995,
+    0.490005
+   ],
+   "fcc_axis": 0,
+   "separation": 0
+  },
+  {
+   "name": "gap40",
+   "seed_A": "hopfion_32_8",
+   "arc_A": [
+    0.01999,
+    0.48001
+   ],
+   "seed_B": "hopfion_32_8",
+   "arc_B": [
+    0.51999,
+    0.48001
+   ],
+   "fcc_axis": 0,
+   "separation": 0
+  }
+ ]
+}
