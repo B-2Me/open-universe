@@ -6,6 +6,9 @@
  *   GET  /status        latest job status.json (heartbeat schema)
  *   GET  /result/<id>   job dir listing + status + counters
  *   GET  /state/<id>/<b>  raw batch-state blob (6B/node planes)
+ *   GET  /disk          free space on the jobs volume
+ *   DELETE /job/<id>    drop one finished job's dir + upload
+ *   POST /purge         drop every job not running or queued
  *
  * POST bodies stream straight to disk — a 32-batch 256³ job is ~3.2GB,
  * so nothing is buffered in memory.
@@ -21,6 +24,7 @@
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <set>
 #include <atomic>
 #include <condition_variable>
 #include <filesystem>
@@ -100,6 +104,7 @@ static int smxzInflate(const fs::path &src, const fs::path &dst) {
 // ---------------- job queue ----------------
 struct QJob { int id; fs::path file; };
 static std::queue<QJob> g_queue;
+static std::set<int> g_queued;          // ids parked in g_queue (mirror)
 static std::mutex g_mu;
 static std::condition_variable g_cv;
 static int g_nextId = 1;
@@ -116,12 +121,16 @@ static void workerMain() {
                 g_cv.wait(lk, [] { return g_stop || !g_queue.empty(); });
                 if (g_stop) return;
                 j = g_queue.front(); g_queue.pop();
+                g_queued.erase(j.id);
                 g_runningId = j.id;
             }
             fs::path dir = g_jobsDir / ("job_" + std::to_string(j.id));
             fprintf(stderr, "worker: starting job %d\n", j.id);
             runJob(j.file.string().c_str(), dir.string().c_str());
             fprintf(stderr, "worker: job %d finished\n", j.id);
+            // The upload blob is dead weight once the run ends — dumps are
+            // the artifacts that matter. A 256³ job's .smx runs ~600MB.
+            { std::error_code ec; fs::remove(j.file, ec); }
             std::lock_guard<std::mutex> lk(g_mu);
             g_runningId = -1;
         } catch (const std::exception &e) {
@@ -277,7 +286,7 @@ static void handleRequest(SOCKET s, std::string &method, std::string &path,
             fs::rename(dec, fp);
             fprintf(stderr, "job %d: smxz inflated\n", id);
         }
-        { std::lock_guard<std::mutex> lk(g_mu); g_queue.push({id, fp}); }
+        { std::lock_guard<std::mutex> lk(g_mu); g_queue.push({id, fp}); g_queued.insert(id); }
         g_cv.notify_one();
         reply(s, 200, "application/json", "{\"id\":" + std::to_string(id) + ",\"queued\":true}");
     } else if (method == "GET" && path == "/status") {
@@ -336,6 +345,64 @@ static void handleRequest(SOCKET s, std::string &method, std::string &path,
             if (!best.empty()) sendFile(s, best, "application/octet-stream");
             else reply(s, 404, "application/json", "{}");
         } else reply(s, 400, "application/json", "{}");
+    } else if (method == "GET" && path == "/disk") {
+        std::error_code ec;
+        auto sp = fs::space(g_jobsDir, ec);
+        if (ec) reply(s, 400, "application/json", "{\"error\":\"space query failed\"}");
+        else reply(s, 200, "application/json",
+                   "{\"capacity\":" + std::to_string((long long)sp.capacity) +
+                   ",\"free\":" + std::to_string((long long)sp.free) +
+                   ",\"available\":" + std::to_string((long long)sp.available) + "}");
+    } else if (method == "DELETE" && path.rfind("/job/", 0) == 0) {
+        // Refuse to yank a job the worker is touching.
+        int id = atoi(path.c_str() + 5);
+        {
+            std::lock_guard<std::mutex> lk(g_mu);
+            if (id == g_runningId || g_queued.count(id)) {
+                reply(s, 400, "application/json", "{\"error\":\"job active or queued\"}");
+                closesocket(s); return;
+            }
+        }
+        std::error_code ec;
+        fs::path dir = g_jobsDir / ("job_" + std::to_string(id));
+        fs::path smx = g_jobsDir / ("job_" + std::to_string(id) + ".smx");
+        uint64_t freed = 0;
+        if (fs::exists(dir, ec)) {
+            for (auto &e : fs::recursive_directory_iterator(dir, ec))
+                if (e.is_regular_file(ec)) freed += e.file_size(ec);
+            fs::remove_all(dir, ec);
+        }
+        if (fs::exists(smx, ec)) { freed += fs::file_size(smx, ec); fs::remove(smx, ec); }
+        reply(s, 200, "application/json",
+              "{\"id\":" + std::to_string(id) + ",\"freed\":" + std::to_string(freed) + "}");
+    } else if (method == "POST" && path == "/purge") {
+        // Drop every finished job's output dir + upload. job_N.smx and
+        // job_N.smx.dec share the "job_N" prefix, so atoi picks the id.
+        std::set<int> keep;
+        {
+            std::lock_guard<std::mutex> lk(g_mu);
+            keep = g_queued;
+            if (g_runningId >= 0) keep.insert(g_runningId);
+        }
+        std::error_code ec;
+        uint64_t freed = 0; int dropped = 0;
+        for (auto &e : fs::directory_iterator(g_jobsDir, ec)) {
+            const std::string n = e.path().filename().string();
+            if (n.rfind("job_", 0) != 0) continue;
+            int id = atoi(n.c_str() + 4);
+            if (keep.count(id)) continue;
+            if (e.is_directory(ec)) {
+                for (auto &f : fs::recursive_directory_iterator(e.path(), ec))
+                    if (f.is_regular_file(ec)) freed += f.file_size(ec);
+            } else if (e.is_regular_file(ec)) {
+                freed += e.file_size(ec);
+            }
+            fs::remove_all(e.path(), ec);
+            dropped++;
+        }
+        reply(s, 200, "application/json",
+              "{\"dropped\":" + std::to_string(dropped) +
+              ",\"freed\":" + std::to_string(freed) + "}");
     } else if (method == "GET" && (path == "/" || path == "/health")) {
         std::lock_guard<std::mutex> lk(g_mu);
         reply(s, 200, "application/json",

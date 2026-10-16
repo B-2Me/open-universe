@@ -101,7 +101,11 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   only the NVIDIA driver on the runner machine). `smatrix serve
   --port=N` is the LAN listener: `POST /job` (streams SMX1 blob to
   disk), `GET /status`, `/result/<id>`, `/state/<id>/<b>`,
-  `/file/<id>/<name>`. `smatrix run <job.smx>` runs locally.
+  `/file/<id>/<name>`, `GET /disk` (free bytes on the jobs volume),
+  `DELETE /job/<id>` and `POST /purge` (drop finished job dirs +
+  uploads — refused for running/queued jobs). Upload `.smx` blobs
+  auto-delete when the run finishes. `smatrix run <job.smx>` runs
+  locally.
   `script/smatrix_pack.mjs` emits the binary job + a `.meta.json`
   provenance sidecar (painted A/B masks — the node has no ID
   register); `script/smatrix_submit.mjs --config=… --host=<ip>`

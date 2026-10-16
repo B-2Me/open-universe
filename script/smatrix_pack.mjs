@@ -95,8 +95,8 @@ const applyBoost = (cells, dv) => {
 const buildBatch = (sc) => {
   const seedA = sc.seed_A ? loadSeed(sc.seed_A) : null;
   const seedB = sc.seed_B ? loadSeed(sc.seed_B) : null;
-  if (!seedA && !seedB && !sc.block) {
-    console.error(`  ${sc.name}: needs seed_A, seed_B, or block`); process.exit(1);
+  if (!seedA && !seedB && !sc.block && !(sc.emit && sc.emit.length)) {
+    console.error(`  ${sc.name}: needs seed_A, seed_B, block, or emit`); process.exit(1);
   }
   const axis = Math.min(11, Math.max(0, sc.fcc_axis ?? 0));
   const u = unit(V3[axis + 1]), o = orthoOf(u);
@@ -322,16 +322,32 @@ const buildBatch = (sc) => {
     const dir = unit(em.dir ?? [1, 0, 0]);
     const sp = em.spin !== undefined ? em.spin : nearestPort(...dir.map(v => v * 256));
     let en = 0;
-    for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const inside = em.plane
-        ? (v => v >= em.plane[1] && v <= em.plane[2])([x, y, z][em.plane[0]])
-        : (x - em.pos[0]) ** 2 + (y - em.pos[1]) ** 2 + (z - em.pos[2]) ** 2 <= (em.r ?? 6) ** 2;
-      if (!inside) continue;
-      force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
-      en++;
+    if (em.plane) {
+      // plane emitter: [axis, lo, hi] slab — still needs the full sweep
+      const [pa, lo, hi] = em.plane;
+      for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const v = [x, y, z][pa];
+        if (v < lo || v > hi) continue;
+        force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
+        en++;
+      }
+    } else {
+      // ball emitter: scan only its bounding box, not the whole grid
+      const r = em.r ?? 6, r2 = r * r;
+      const [cx, cy, cz] = em.pos;
+      for (let z = Math.max(0, cz - r); z <= Math.min(D - 1, cz + r); z++)
+        for (let y = Math.max(0, cy - r); y <= Math.min(H - 1, cy + r); y++)
+          for (let x = Math.max(0, cx - r); x <= Math.min(W - 1, cx + r); x++) {
+            if ((x - cx) ** 2 + (y - cy) ** 2 + (z - cz) ** 2 > r2) continue;
+            force.push({ i: (z * H + y) * W + x, spin: sp, tens: 0, quant: em.quant ?? 0, mod: em.mod ?? 0 });
+            en++;
+          }
     }
-    console.log(`  ${sc.name}: emitter ${en} cells mod=${em.mod ?? 0} q+${em.quant ?? 0} spin=${sp}`);
+    if ((sc.emit ?? []).length <= 16)
+      console.log(`  ${sc.name}: emitter ${en} cells mod=${em.mod ?? 0} q+${em.quant ?? 0} spin=${sp}`);
   }
+  if ((sc.emit ?? []).length > 16)
+    console.log(`  ${sc.name}: ${sc.emit.length} emitters (${force.length} force pts total)`);
   return { planes, force, axis, b, name: String(sc.name ?? 'run').slice(0, 31),
            spec: { overlap: sc.overlap, clr_A: sc.clr_A, clr_B: sc.clr_B,
                    wound_A: sc.wound_A, wound_B: sc.wound_B, bite_A: sc.bite_A,

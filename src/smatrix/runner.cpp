@@ -102,8 +102,10 @@ static bool dumpBatch(const Job &j, const fs::path &dir, int b, uint32_t t) {
     smx_dump(b, blob.data());
     char name[64];
     snprintf(name, sizeof(name), "batch_%02d_t%05u.smxst", b, t);
-    std::ofstream o(dir / name, std::ios::binary);
+    fs::path fp = dir / name;
+    std::ofstream o(fp, std::ios::binary);
     o.write((char *)blob.data(), blob.size());
+    if (!o) { std::error_code ec; fs::remove(fp, ec); }   // no 0-byte stubs
     return !!o;
 }
 
@@ -115,6 +117,17 @@ int runJob(const char *jobPath, const char *outDir) {
     fs::create_directories(outDir);
     fprintf(stderr, "smatrix: %ux%ux%u x%u batches, %u ticks, %zu force pts, margin=%u, diss=%d limit=%d\n",
             j.w, j.h, j.d, j.batch, j.ticks, j.fIdx.size(), j.absorbMargin, j.diss, j.limit);
+    {
+        // Every dump is blobBytes — exact, not sparse. Total them up and
+        // warn if the volume can't hold the whole run before we start.
+        uint64_t nDumps = (j.dumpEvery ? j.ticks / j.dumpEvery : 0) + 1;
+        uint64_t need = nDumps * j.batch * j.blobBytes();
+        std::error_code ec;
+        auto sp = fs::space(outDir, ec);
+        if (!ec && sp.available < need)
+            fprintf(stderr, "smatrix: WARNING - dumps need %llu bytes, only %llu free\n",
+                    (unsigned long long)need, (unsigned long long)sp.available);
+    }
 
     if (smx_init(j.w, j.h, j.d, j.batch, j.diss, j.limit) != 0) {
         fprintf(stderr, "smx_init failed (VRAM?)\n");
@@ -136,8 +149,19 @@ int runJob(const char *jobPath, const char *outDir) {
     auto t0 = std::chrono::steady_clock::now();
     for (uint32_t t = 1; t <= j.ticks; t++) {
         smx_tick();
-        if (j.dumpEvery && t % j.dumpEvery == 0)
-            for (uint32_t b = 0; b < j.batch; b++) dumpBatch(j, outDir, b, t);
+        if (j.dumpEvery && t % j.dumpEvery == 0) {
+            bool ok = true;
+            for (uint32_t b = 0; b < j.batch; b++) ok &= dumpBatch(j, outDir, b, t);
+            if (!ok) {
+                // Disk full or worse — a stub dump is worthless; stop
+                // burning GPU time so the failure is immediate and loud.
+                fprintf(stderr, "smatrix: dump failed at t%u (disk full?) - aborting\n", t);
+                uint64_t ev, q, ab; smx_counters(&ev, &q, &ab);
+                writeStatus(outDir, "error", t, ev, q, ab);
+                smx_free();
+                return 1;
+            }
+        }
         if (t % 100 == 0) {
             uint64_t ev, q, ab; smx_counters(&ev, &q, &ab);
             std::vector<uint64_t> ap(j.batch);
