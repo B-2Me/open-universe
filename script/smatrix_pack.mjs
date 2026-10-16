@@ -40,6 +40,10 @@
  *     kick: {buf,cells,hemi} buffer mass injected into knot cells
  *     slug: {dir,off,len,w,q} rod of spin-locked projectile cells
  *     emit: [{pos,r,dir,quant,mod}] driven emitter cells (mod=period)
+ *     random_fill: {box:[x0,y0,z0,x1,y1,z1]|null, density:0..1,
+ *                   q:[lo,hi]|int, heat:int, spin:'random'|'none'|port,
+ *                   seed:int}  hot-random condensation init (quench arm);
+ *                   fills only still-empty cells so it can overlay seeds
  *     pinch                  per-scenario wall tension override
  */
 import { readFileSync, writeFileSync, existsSync, openSync, writeSync, closeSync } from 'node:fs';
@@ -95,8 +99,8 @@ const applyBoost = (cells, dv) => {
 const buildBatch = (sc) => {
   const seedA = sc.seed_A ? loadSeed(sc.seed_A) : null;
   const seedB = sc.seed_B ? loadSeed(sc.seed_B) : null;
-  if (!seedA && !seedB && !sc.block && !(sc.emit && sc.emit.length)) {
-    console.error(`  ${sc.name}: needs seed_A, seed_B, block, or emit`); process.exit(1);
+  if (!seedA && !seedB && !sc.block && !sc.random_fill && !(sc.emit && sc.emit.length)) {
+    console.error(`  ${sc.name}: needs seed_A, seed_B, block, random_fill, or emit`); process.exit(1);
   }
   const axis = Math.min(11, Math.max(0, sc.fcc_axis ?? 0));
   const u = unit(V3[axis + 1]), o = orthoOf(u);
@@ -247,6 +251,37 @@ const buildBatch = (sc) => {
     q[i] = sc.block.q ?? 255;
     planes.writeUInt16LE(sc.block.heat ?? 400, 2 * N + 2 * i);
   }
+  // random_fill: hot-dense condensation init — Bernoulli fill over a box
+  // (default: interior minus sponge) with uniform q in [lo,hi] and spins
+  // either random ports or none. Unpainted: nucleation is measured from
+  // the dump's cycle census, not provenance. Seeded PRNG = reproducible.
+  let fillN = 0;
+  if (sc.random_fill) {
+    const rf = sc.random_fill;
+    let rngS = (rf.seed ?? 1) >>> 0;
+    const rng = () => {
+      rngS = (rngS + 0x6D2B79F5) >>> 0;
+      let t = rngS;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const [x0, y0, z0, x1, y1, z1] = rf.box ??
+      [MARGIN + 1, MARGIN + 1, MARGIN + 1, W - MARGIN - 2, H - MARGIN - 2, D - MARGIN - 2];
+    const [qlo, qhi] = Array.isArray(rf.q) ? rf.q : [rf.q ?? 60, rf.q ?? 60];
+    const heat = rf.heat ?? 400, spin = rf.spin ?? 'random';
+    const dens = rf.density ?? 0.25;
+    for (let z = z0; z <= z1; z++) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      if (rng() >= dens) continue;
+      const i = (z * H + y) * W + x;
+      if (q[i]) continue;                      // never overwrite authored cells
+      q[i] = Math.min(255, Math.round(qlo + rng() * (qhi - qlo)));
+      s[i] = spin === 'random' ? 1 + Math.floor(rng() * 12) : spin === 'none' ? 0 : spin;
+      planes.writeUInt16LE(heat, 2 * N + 2 * i);
+      fillN++;
+    }
+    console.log(`  ${sc.name}: random_fill ${fillN} cells (density ${dens}, q ${qlo}–${qhi}, heat ${heat}, spin ${spin})`);
+  }
   // kick: { buf, cells:'A'|'B'|'AB', hemi:[dx,dy,dz] } — write buffer
   // mass into knot cells at spawn. hemi restricts to the half of the
   // knot on the +hemi side of its centroid — a directional impulse.
@@ -352,7 +387,7 @@ const buildBatch = (sc) => {
            spec: { overlap: sc.overlap, clr_A: sc.clr_A, clr_B: sc.clr_B,
                    wound_A: sc.wound_A, wound_B: sc.wound_B, bite_A: sc.bite_A,
                    bite_B: sc.bite_B, kick: sc.kick, slug: sc.slug, emit: sc.emit,
-                   block: sc.block, pinch: PINCH_SC },
+                   block: sc.block, random_fill: sc.random_fill, pinch: PINCH_SC },
            maskA: [...paintedA], maskB: [...maskB],
            seeds: [sc.seed_A, sc.seed_B ?? null], counts: [cellsA.length, cellsB.length] };
 };

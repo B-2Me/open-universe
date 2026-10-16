@@ -1,0 +1,23 @@
+{
+  "name": "smx-v9-quench",
+  "dims": [256, 256, 256],
+  "ticks": 1000,
+  "dump_every": 50,
+  "absorb_margin": 8,
+  "diss": 15,
+  "limit": 50000,
+  "comment": "v9: break the Hopfion monoculture. Quench arm — random hot dense fill drains into the sponge: do closed cycles condense out of a cooling substrate, or is closure only authored? Composite arm — nested concentric tori (24_8 inside 64_8's throat) and a tangent side-by-side pair test cross-provenance multi-body stability. vac_knot is the regression control.",
+  "scenarios": [
+    { "name": "quench_hi",
+      "random_fill": { "density": 0.25, "q": [40, 100], "heat": 1000, "spin": "random", "seed": 101 } },
+    { "name": "quench_lo",
+      "random_fill": { "density": 0.08, "q": [40, 100], "heat": 1000, "spin": "random", "seed": 202 } },
+    { "name": "quench_sat",
+      "random_fill": { "density": 0.50, "q": [100, 200], "heat": 1500, "spin": "random", "seed": 303 } },
+    { "name": "nest_24_64", "seed_A": "hopfion_24_8", "seed_B": "hopfion_64_8",
+      "separation": 0, "fcc_axis": 0 },
+    { "name": "pair_gap", "seed_A": "hopfion_32_8", "seed_B": "hopfion_32_8",
+      "overlap": -0.06, "fcc_axis": 0 },
+    { "name": "vac_knot", "seed_A": "hopfion_32_8" }
+  ]
+}

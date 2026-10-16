@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 /*
- * script/smx_v8_census.mjs — time-series census over job-22 v8 dumps.
+ * script/smx_v8_census.mjs — time-series census over a pulled job's dumps.
  * Per batch x dump: live, mass, freeEnds, nCycles, maxCycle, painted-A
  * survival. Same spin-cycle digraph as smatrix_classify.mjs.
+ *   node script/smx_v8_census.mjs --job-dir=logs/smx-job-XX --meta=logs/foo.smx.meta.json
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { step } from './lib/p3.mjs';
 
-const jobDir = resolve('logs/smx-job-22-v8-bath');
-const meta = JSON.parse(readFileSync('logs/smx-v8-bath.smx.meta.json', 'utf8'));
+const args = Object.fromEntries(process.argv.slice(2).map(a => {
+  const m = a.match(/^--([^=]+)(?:=(.*))?$/); return m ? [m[1], m[2] ?? true] : null;
+}).filter(Boolean));
+const jobDir = resolve(args['job-dir'] ?? 'logs/smx-job-22-v8-bath');
+const meta = JSON.parse(readFileSync(args.meta ?? 'logs/smx-v8-bath.smx.meta.json', 'utf8'));
 const [W, H, D] = meta.dims, N = W * H * D;
 
 const cycVisit = new Uint8Array(N), cycSeen = new Int32Array(N);
