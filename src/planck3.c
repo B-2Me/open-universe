@@ -130,6 +130,36 @@ static int g_sync = 0;
 // additionally screens receivers already aligned with the jet
 // (DOTS[ns][cs]>=128 — a current's own field does no work on itself).
 static int g_curl_div = 0, g_curl_vac = 0, g_curl_scr = 0;
+
+// --- M2 closed-box ledger audit (compile -DP3_AUDIT) ---
+// Per-branch NET deltas to the integer ledger L = Σ(quanta+buffer+heat).
+// Mass deletions count negative, ex-nihilo heat positive, dissipation
+// negative. Predicted drift = Σcounters (DL_BLEED excluded: 1:1
+// buffer->heat conversion, net 0). Zero cost when disabled.
+#ifdef P3_AUDIT
+enum {
+    DL_FIRED = 0,// -sent: sender deducted (mass leaves cell, in flight)
+    DL_PULLED,   // +sent: receiver accepted the pull (mass arrives)
+    DL_PUSH,     // -amt: divert/spray push deleted (legacy memcpy clobber | sync clip)
+    DL_SPRAYREM, // -(S%12): spray share truncation remainder
+    DL_SPRAYW,   // -share: spray share aimed at an absent z-neighbor
+    DL_BACKP,    // +9*ovf net: overflow mass->heat at KINETIC_BACKPRESSURE
+    DL_BLEED,    // informational: buffer bleed mass->heat 1:1 (ledger net 0)
+    DL_FRICTION, // +heat: sent*KINETIC_BASE + misalignment term (ex nihilo)
+    DL_SHUNT,    // +heat: cq*KINETIC_SHUNT deadlock pump (ex nihilo)
+    DL_GEN,      // +heat: nq2*QUANTA_HEAT_GEN quiescent generation (ex nihilo)
+    DL_FLOOR,    // +heat: rng floor top-up when nh2 < HEAT_FLOOR
+    DL_DISS,     // -heat: dissipation cooling
+    DL_WALLHEAT, // -heat: shares emitted toward absent z-neighbors
+    DL_HEATCLAMP,// +/-heat: spray HEAT_MAX override + uint16 wrap on write
+    DL_N
+};
+static int64_t g_audit[DL_N];
+#define AUDIT(i, v) g_audit[i] += (int64_t)(v)
+#else
+#define AUDIT(i, v)
+#endif
+
 static int32_t *pq_key = NULL;
 static uint8_t *pq_amt = NULL;
 static size_t pq_n = 0, pq_cap = 0;
@@ -152,6 +182,7 @@ static void pushq_flush(void) {
         int room = 255 - g_wr[pq_key[i]].buffer;
         int add = pq_amt[i] < room ? pq_amt[i] : room;
         g_wr[pq_key[i]].buffer += (uint8_t)add;
+        AUDIT(DL_PUSH, add - pq_amt[i]); // clipped remainder dies
     }
     pq_n = 0;
 }
@@ -267,11 +298,11 @@ static inline void planck3_node_tick(int32_t gidx,
     // from transport momentum: p2 (the leak port) answers fields, never
     // the loop's own curvature — dom would differ from cs at every bend.
     int32_t fx = 0, fy = 0, fz = 0, cx = 0, cy = 0, cz = 0;
-    int tSum = 0, gx = 0, gy = 0, gz_ = 0, gKey = -1, gMaxD = 0;
+    int tSum = 0, gx = 0, gy = 0, gz_ = 0, gKey = -1, gMaxD = 0, walls = 0;
     const int feelsTension = (cq > 0 && cs != 0);
 
     for (int d = 1; d <= 12; d++) {
-        if (key[d] < 0) continue; // hard z-surface — no channel
+        if (key[d] < 0) { walls++; continue; } // hard z-surface — no channel
         const Node3 *np = nb[d];
         heatSum += hshare3(np->heat);
         int nOcc = np->quanta + np->buffer;
@@ -284,19 +315,24 @@ static inline void planck3_node_tick(int32_t gidx,
         if (nq > 0 && ns == BACK3[d]) {
             int sent = nq > FLOW_CAP ? FLOW_CAP : nq;
             if (g_split > 0 && np2 != 0) sent -= sent >> g_split;
-            kin += sent * KINETIC_BASE;
-            if (cq > 0 && cs != 0) kin += sent * ((256 - DOTS[ns][cs]) >> 6);
+            int fr = sent * KINETIC_BASE;
+            if (cq > 0 && cs != 0) fr += sent * ((256 - DOTS[ns][cs]) >> 6);
+            AUDIT(DL_FRICTION, fr);
+            kin += fr;
             if (cq + cb <= DEADLOCK) {
                 incoming += sent;
+                AUDIT(DL_PULLED, sent);
                 mx -= V3[d][0] * sent; my -= V3[d][1] * sent; mz -= V3[d][2] * sent;
             }
         } else if (g_split > 0 && nq > 0 && np2 == BACK3[d]) {
             // Secondary-leak pull: neighbor vents (sent>>g_split) our way.
             int sent = (nq > FLOW_CAP ? FLOW_CAP : nq) >> g_split;
             if (sent > 0) {
+                AUDIT(DL_FRICTION, sent * KINETIC_BASE);
                 kin += sent * KINETIC_BASE;
                 if (cq + cb <= DEADLOCK) {
                     incoming += sent;
+                    AUDIT(DL_PULLED, sent);
                     mx -= V3[d][0] * sent; my -= V3[d][1] * sent; mz -= V3[d][2] * sent;
                 }
             }
@@ -326,8 +362,12 @@ static inline void planck3_node_tick(int32_t gidx,
 
     int nq2 = cq, shunt = 0;
     if (cq > 0 && cs != 0) {
-        if (!deadlocked) nq2 = cq - (cq > FLOW_CAP ? FLOW_CAP : cq);
-        else { shunt = 1; kin += cq * KINETIC_SHUNT; }
+        if (!deadlocked) {
+            int fired = cq > FLOW_CAP ? FLOW_CAP : cq;
+            AUDIT(DL_FIRED, -fired);
+            nq2 = cq - fired;
+        }
+        else { shunt = 1; AUDIT(DL_SHUNT, cq * KINETIC_SHUNT); kin += cq * KINETIC_SHUNT; }
     }
     // Sender recoil: firing along cs reacts -V3[cs] * (sent>>g_recoil).
     // At shift 0 the reaction exactly cancels forward momentum.
@@ -349,14 +389,15 @@ static inline void planck3_node_tick(int32_t gidx,
             if (push > room) push = room;
             incoming -= push;
             tgt->buffer += (uint8_t)push;
+            AUDIT(DL_PUSH, -push); // legacy: publish memcpy discards it
         }
     }
 
     int nb2 = cb + incoming;
-    if (nb2 > 255) { kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
+    if (nb2 > 255) { AUDIT(DL_BACKP, (nb2 - 255) * (KINETIC_BACKPRESSURE - 1)); kin += (nb2 - 255) * KINETIC_BACKPRESSURE; nb2 = 255; }
     int take = nb2 < 255 - nq2 ? nb2 : 255 - nq2;
     nq2 += take; nb2 -= take;
-    if (nb2 > 0) { int bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed; }
+    if (nb2 > 0) { int bleed = nb2 >> BUFDECAY; nb2 -= bleed; AUDIT(DL_BLEED, bleed); kin += bleed; }
 
     int ntn = tn0 - 12 * tshare3(tn0) + tSum - (tn0 >> T_DECAY)
             + ((cq + cb) > g_temit_min ? ((cq + cb) >> T_EMIT) : 0);
@@ -375,23 +416,30 @@ static inline void planck3_node_tick(int32_t gidx,
     if (routing > FCC_BW) routing = FCC_BW;
 
     int nh2 = ch - 12 * hshare3(ch) + heatSum + kin + nq2 * QUANTA_HEAT_GEN;
+    AUDIT(DL_GEN, nq2 * QUANTA_HEAT_GEN);
+    AUDIT(DL_WALLHEAT, -walls * hshare3(ch));
     if (nh2 > g_thermal_limit && nq2 > 0) {
         // Unwind: the knot unspools into neighbor buffers (spray).
         spray_events++; spray_quanta += (uint64_t)(nq2 + nb2);
         int share = (nq2 + nb2) / 12;
+        AUDIT(DL_SPRAYREM, -(nq2 + nb2) % 12);
         for (int d = 1; d <= 12; d++) {
-            if (key[d] < 0) continue;
+            if (key[d] < 0) { AUDIT(DL_SPRAYW, -share); continue; }
             if (g_sync) { pushq_add(key[d], share); continue; }
             Node3 *tgt = resolve(ctx, key[d]);
             int add = 255 - tgt->buffer;
             if (share < add) add = share;
             tgt->buffer += (uint8_t)add;
+            AUDIT(DL_PUSH, -share); // legacy: publish memcpy discards it
         }
+        AUDIT(DL_HEATCLAMP, HEAT_MAX - nh2);
         nh2 = HEAT_MAX; nq2 = 0; dom = 0; shunt = 1; nb2 = 0;
     } else {
         int ts = nh2 / TEMP_SCALAR_DIV;
-        nh2 -= (int)(((int64_t)(1 + ts * ts) * g_dissipation * BWF3_LUT[routing]) >> 8);
-        if (nh2 < HEAT_FLOOR) nh2 = 1 + (int)(rng_next() % 3);
+        int cool = (int)(((int64_t)(1 + ts * ts) * g_dissipation * BWF3_LUT[routing]) >> 8);
+        AUDIT(DL_DISS, -cool);
+        nh2 -= cool;
+        if (nh2 < HEAT_FLOOR) { int fl = 1 + (int)(rng_next() % 3); AUDIT(DL_FLOOR, fl - nh2); nh2 = fl; }
     }
 
     int ns2 = dom != 0 ? dom : cs;
@@ -411,6 +459,9 @@ static inline void planck3_node_tick(int32_t gidx,
               && (((uint32_t)gidx * 2654435761u + cur_tick * 40503u) & 255u) < (uint32_t)g_split_duty)
              ? fdom : 0;
 
+#ifdef P3_AUDIT
+    if (nh2 > 65535 || nh2 < 0) AUDIT(DL_HEATCLAMP, (int)(uint16_t)nh2 - nh2);
+#endif
     out->quanta = (uint8_t)nq2;
     out->spin = (uint8_t)(ns2 | (p2 << 4));
     out->heat = (uint16_t)nh2;
@@ -881,6 +932,25 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_recoil(int s) { g_recoil = s; }
 EMSCRIPTEN_KEEPALIVE void planck3_set_split(int s) { g_split = s; }
 // Leak duty 0..255 hash-lottery (canonical 255 = every eligible tick).
 EMSCRIPTEN_KEEPALIVE void planck3_set_split_duty(int d) { g_split_duty = d; }
+// M2 ledger-audit counters (populated only when built with -DP3_AUDIT).
+EMSCRIPTEN_KEEPALIVE int planck3_audit_count(void) {
+#ifdef P3_AUDIT
+    return DL_N;
+#else
+    return 0;
+#endif
+}
+EMSCRIPTEN_KEEPALIVE int64_t planck3_audit(int i) {
+#ifdef P3_AUDIT
+    if (i >= 0 && i < DL_N) return g_audit[i];
+#endif
+    (void)i; return 0;
+}
+EMSCRIPTEN_KEEPALIVE void planck3_audit_reset(void) {
+#ifdef P3_AUDIT
+    memset(g_audit, 0, sizeof g_audit);
+#endif
+}
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).
