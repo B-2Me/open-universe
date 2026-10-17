@@ -19,11 +19,11 @@ for (const f of process.argv.slice(2)) {
   const liveSet = new Set();
   for (let i = 0; i < n; i++) {
     if (q[i]) { live++; mass += q[i]; liveSet.add(i); }
-    else if (s[i]) spunDead++;
+    else if (s[i] & 15) spunDead++;
   }
   let freeEnds = 0;
   for (const i of liveSet) {
-    const sp = s[i];
+    const sp = s[i] & 15;
     if (!sp) { freeEnds++; continue; }
     const [x, y, z] = dec(i);
     const c = step(x, y, z, sp);
@@ -38,7 +38,7 @@ for (const f of process.argv.slice(2)) {
     let cur = i, hops = 0;
     while (cur >= 0 && !seen.has(cur) && !seen2.has(cur) && hops < 5000) {
       seen.set(cur, path.length); path.push(cur); seen2.add(cur); hops++;
-      const sp = s[cur];
+      const sp = s[cur] & 15;
       if (!sp) { cur = -1; break; }
       const [x, y, z] = dec(cur);
       const c = step(x, y, z, sp);

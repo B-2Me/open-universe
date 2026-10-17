@@ -22,6 +22,8 @@ void planck3_set_curl(int, int);
 void planck3_set_trate(int);
 void planck3_set_temit(int);
 void planck3_set_recoil(int);
+void planck3_set_split(int);
+void planck3_set_split_duty(int);
 int planck3_chunk_size(void);
 void planck3_set_node(int32_t, int, int, int, int, int);
 void planck3_prepare(void);
@@ -97,6 +99,9 @@ int main(int argc, char **argv) {
         if (te) { int m = atoi(te); printf("temit_min: %d\n", m); planck3_set_temit(m); }
         const char *rc = getenv("P3_RECOIL");
         if (rc) { int s = atoi(rc); printf("recoil: >>%d\n", s); planck3_set_recoil(s); }
+        const char *sp = getenv("P3_SPLIT"), *sd = getenv("P3_SDUTY");
+        if (sd) { int d = atoi(sd); printf("split_duty: %d/256\n", d); planck3_set_split_duty(d); }
+        if (sp) { int s = atoi(sp); printf("split: >>%d\n", s); planck3_set_split(s); }
     }
     // --- flat run ---
     planck3_set_mode(0);

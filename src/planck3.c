@@ -90,6 +90,15 @@ static int g_temit_min = T_EMIT_MIN;
 // -V3[cs] * (sent >> g_recoil) — Newton's third law at fractional
 // strength, the missing conservation term vs LGA/LBM lineage.
 static int g_recoil = 0;
+// Integer flux partitioning (RFC — Peierls-Nabarro relief): the spin
+// byte packs two 4-bit ports, p1 = spin&15 (primary waveguide) and
+// p2 = spin>>4 (secondary leak). When phase lock suppresses a tilt
+// (field wants a different port but lock holds), p2 = field direction
+// vents sent>>g_split that way. g_split_duty (0..255 hash lottery)
+// time-multiplexes activation — effective fraction = duty/256 * 2^-split,
+// since a fixed shift alone can't go below 1/256 sent without zeroing.
+// 0 = off (canonical single-port winner-take-all).
+static int g_split = 0, g_split_duty = 255;
 
 typedef struct {
     uint8_t quanta;
@@ -243,7 +252,7 @@ typedef Node3 *(*resolve_fn)(void *ctx, int32_t key);
 static inline void planck3_node_tick(int32_t gidx,
                                  const Node3 *self, const Node3 *nb[13], const int32_t key[13],
                                  resolve_fn resolve, void *ctx, Node3 *out) {
-    int cq = self->quanta, cs = self->spin, ch = self->heat, tn0 = self->tension;
+    int cq = self->quanta, cs = self->spin & 15, ch = self->heat, tn0 = self->tension;
     int cb = self->buffer;
 
     int deadlocked = 0;
@@ -254,6 +263,10 @@ static inline void planck3_node_tick(int32_t gidx,
 
     int heatSum = 0, kin = 0, maxCong = 0, congSpin = cs, incoming = 0;
     int32_t mx = 0, my = 0, mz = 0;
+    // External-field momentum (curl torque + tension pull) tracked apart
+    // from transport momentum: p2 (the leak port) answers fields, never
+    // the loop's own curvature — dom would differ from cs at every bend.
+    int32_t fx = 0, fy = 0, fz = 0, cx = 0, cy = 0, cz = 0;
     int tSum = 0, gx = 0, gy = 0, gz_ = 0, gKey = -1, gMaxD = 0;
     const int feelsTension = (cq > 0 && cs != 0);
 
@@ -264,17 +277,28 @@ static inline void planck3_node_tick(int32_t gidx,
         int nOcc = np->quanta + np->buffer;
         tSum += tshare3(np->tension);
         int gd = np->tension - tn0;
-        if (gd > gMaxD && np->spin != 0) { gMaxD = gd; gKey = key[d]; }
+        if (gd > gMaxD && (np->spin & 15) != 0) { gMaxD = gd; gKey = key[d]; }
         if (feelsTension) { gx += V3[d][0] * gd; gy += V3[d][1] * gd; gz_ += V3[d][2] * gd; }
 
-        int nq = np->quanta, ns = np->spin;
+        int nq = np->quanta, ns = np->spin & 15, np2 = np->spin >> 4;
         if (nq > 0 && ns == BACK3[d]) {
             int sent = nq > FLOW_CAP ? FLOW_CAP : nq;
+            if (g_split > 0 && np2 != 0) sent -= sent >> g_split;
             kin += sent * KINETIC_BASE;
             if (cq > 0 && cs != 0) kin += sent * ((256 - DOTS[ns][cs]) >> 6);
             if (cq + cb <= DEADLOCK) {
                 incoming += sent;
                 mx -= V3[d][0] * sent; my -= V3[d][1] * sent; mz -= V3[d][2] * sent;
+            }
+        } else if (g_split > 0 && nq > 0 && np2 == BACK3[d]) {
+            // Secondary-leak pull: neighbor vents (sent>>g_split) our way.
+            int sent = (nq > FLOW_CAP ? FLOW_CAP : nq) >> g_split;
+            if (sent > 0) {
+                kin += sent * KINETIC_BASE;
+                if (cq + cb <= DEADLOCK) {
+                    incoming += sent;
+                    mx -= V3[d][0] * sent; my -= V3[d][1] * sent; mz -= V3[d][2] * sent;
+                }
             }
         }
         if (nOcc > maxCong && nOcc <= DEADLOCK) { maxCong = nOcc; congSpin = d; }
@@ -292,9 +316,11 @@ static inline void planck3_node_tick(int32_t gidx,
             && nq > 0 && ns != 0 && ns != BACK3[d]) {
             int sent = nq > FLOW_CAP ? FLOW_CAP : nq;
             const int16_t *rv = V3[BACK3[d]];
-            mx += ((int32_t)(V3[ns][1] * rv[2] - V3[ns][2] * rv[1]) * sent) >> (8 + g_curl_div);
-            my += ((int32_t)(V3[ns][2] * rv[0] - V3[ns][0] * rv[2]) * sent) >> (8 + g_curl_div);
-            mz += ((int32_t)(V3[ns][0] * rv[1] - V3[ns][1] * rv[0]) * sent) >> (8 + g_curl_div);
+            cx = ((int32_t)(V3[ns][1] * rv[2] - V3[ns][2] * rv[1]) * sent) >> (8 + g_curl_div);
+            cy = ((int32_t)(V3[ns][2] * rv[0] - V3[ns][0] * rv[2]) * sent) >> (8 + g_curl_div);
+            cz = ((int32_t)(V3[ns][0] * rv[1] - V3[ns][1] * rv[0]) * sent) >> (8 + g_curl_div);
+            fx += cx; fy += cy; fz += cz;
+            mx += cx; my += cy; mz += cz;
         }
     }
 
@@ -340,6 +366,7 @@ static inline void planck3_node_tick(int32_t gidx,
     // Runtime overridable via g_t_rate (planck3_set_trate).
     if ((((uint32_t)gidx * 2654435761u + cur_tick * 40503u) & 255u) < (uint32_t)g_t_rate) {
         gx <<= T_PULL; gy <<= T_PULL; gz_ <<= T_PULL;
+        fx += gx; fy += gy; fz += gz_;
     } else { gx = 0; gy = 0; gz_ = 0; }
 
     int dom = dir3(mx + gx, my + gy, mz + gz_);
@@ -375,8 +402,17 @@ static inline void planck3_node_tick(int32_t gidx,
         else ns2 = DOTS[cs][dom] >= 128 ? cs : dom;
     } else ns2 = dom;
 
+    // Flux partition: when phase lock holds (ns2==cs) but an external
+    // field (curl/tension pull) wanted a different direction, vent the
+    // residual through p2 = field direction (high nibble). Loop curvature
+    // never triggers it — fx/fy/fz carries only field momentum.
+    int fdom = (fx || fy || fz) ? dir3(fx, fy, fz) : 0;
+    int p2 = (g_split > 0 && cs != 0 && ns2 == cs && fdom != 0 && fdom != cs
+              && (((uint32_t)gidx * 2654435761u + cur_tick * 40503u) & 255u) < (uint32_t)g_split_duty)
+             ? fdom : 0;
+
     out->quanta = (uint8_t)nq2;
-    out->spin = (uint8_t)ns2;
+    out->spin = (uint8_t)(ns2 | (p2 << 4));
     out->heat = (uint16_t)nh2;
     out->buffer = (uint8_t)nb2;
     out->tension = (uint8_t)ntn;
@@ -841,6 +877,10 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_trate(int r) { g_t_rate = r; }
 EMSCRIPTEN_KEEPALIVE void planck3_set_temit(int m) { g_temit_min = m; }
 // Sender recoil shift (0 = off; N → reaction = sent >> N).
 EMSCRIPTEN_KEEPALIVE void planck3_set_recoil(int s) { g_recoil = s; }
+// Flux-partition leak shift (0 = off; N → secondary port vents sent>>N).
+EMSCRIPTEN_KEEPALIVE void planck3_set_split(int s) { g_split = s; }
+// Leak duty 0..255 hash-lottery (canonical 255 = every eligible tick).
+EMSCRIPTEN_KEEPALIVE void planck3_set_split_duty(int d) { g_split_duty = d; }
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).
