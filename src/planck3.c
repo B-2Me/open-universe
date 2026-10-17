@@ -78,6 +78,10 @@ static int g_thermal_limit = KNOB_LIMIT;
 #define T_PULL (4)
 #define T_RATE (0)
 #define T_DIVERT (4)
+// Runtime-overridable tension-gradient gate (was: compile-time T_RATE,
+// canonical 0). g_t_rate is the per-cell-per-tick duty (0..255 of the
+// hash lottery) for adding the up-tension-gradient pull to momentum.
+static int g_t_rate = T_RATE;
 
 typedef struct {
     uint8_t quanta;
@@ -316,7 +320,8 @@ static inline void planck3_node_tick(int32_t gidx,
     if (ntn < 0) ntn = 0;
     if (ntn > 255) ntn = 255;
     // T_RATE=0 canonical — the hash gate is ported verbatim anyway.
-    if ((((uint32_t)gidx * 2654435761u + cur_tick * 40503u) & 255u) < T_RATE) {
+    // Runtime overridable via g_t_rate (planck3_set_trate).
+    if ((((uint32_t)gidx * 2654435761u + cur_tick * 40503u) & 255u) < (uint32_t)g_t_rate) {
         gx <<= T_PULL; gy <<= T_PULL; gz_ <<= T_PULL;
     } else { gx = 0; gy = 0; gz_ = 0; }
 
@@ -813,6 +818,8 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_sync(int on) { g_sync = !!on; pq_n = 0; }
 EMSCRIPTEN_KEEPALIVE void planck3_set_curl(int div, int vac) {
     g_curl_div = div; g_curl_vac = !!vac;
 }
+// Tension-gradient pull duty override (0..255; canonical 0 = off).
+EMSCRIPTEN_KEEPALIVE void planck3_set_trate(int r) { g_t_rate = r; }
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).
