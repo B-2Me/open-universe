@@ -82,6 +82,14 @@ static int g_thermal_limit = KNOB_LIMIT;
 // canonical 0). g_t_rate is the per-cell-per-tick duty (0..255 of the
 // hash lottery) for adding the up-tension-gradient pull to momentum.
 static int g_t_rate = T_RATE;
+// Runtime-overridable tension-emission threshold (canonical 200 — only
+// congested cells emit, making tension a jam signal). Lower values let
+// ordinary matter source a scalar field.
+static int g_temit_min = T_EMIT_MIN;
+// Sender recoil shift (0 = off): a cell firing along cs gets momentum
+// -V3[cs] * (sent >> g_recoil) — Newton's third law at fractional
+// strength, the missing conservation term vs LGA/LBM lineage.
+static int g_recoil = 0;
 
 typedef struct {
     uint8_t quanta;
@@ -295,6 +303,12 @@ static inline void planck3_node_tick(int32_t gidx,
         if (!deadlocked) nq2 = cq - (cq > FLOW_CAP ? FLOW_CAP : cq);
         else { shunt = 1; kin += cq * KINETIC_SHUNT; }
     }
+    // Sender recoil: firing along cs reacts -V3[cs] * (sent>>g_recoil).
+    // At shift 0 the reaction exactly cancels forward momentum.
+    if (g_recoil > 0 && cs != 0 && !deadlocked && cq > 0) {
+        int r = (cq > FLOW_CAP ? FLOW_CAP : cq) >> g_recoil;
+        mx -= V3[cs][0] * r; my -= V3[cs][1] * r; mz -= V3[cs][2] * r;
+    }
 
     // Tension shear: arrivals >>4 deflect into the up-gradient flowing
     // neighbor's buffer — owner write, so later-ticked cells see it.
@@ -319,7 +333,7 @@ static inline void planck3_node_tick(int32_t gidx,
     if (nb2 > 0) { int bleed = nb2 >> BUFDECAY; nb2 -= bleed; kin += bleed; }
 
     int ntn = tn0 - 12 * tshare3(tn0) + tSum - (tn0 >> T_DECAY)
-            + ((cq + cb) > T_EMIT_MIN ? ((cq + cb) >> T_EMIT) : 0);
+            + ((cq + cb) > g_temit_min ? ((cq + cb) >> T_EMIT) : 0);
     if (ntn < 0) ntn = 0;
     if (ntn > 255) ntn = 255;
     // T_RATE=0 canonical — the hash gate is ported verbatim anyway.
@@ -823,6 +837,10 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_curl(int div, int vac) {
 }
 // Tension-gradient pull duty override (0..255; canonical 0 = off).
 EMSCRIPTEN_KEEPALIVE void planck3_set_trate(int r) { g_t_rate = r; }
+// Tension-emission threshold override (canonical 200).
+EMSCRIPTEN_KEEPALIVE void planck3_set_temit(int m) { g_temit_min = m; }
+// Sender recoil shift (0 = off; N → reaction = sent >> N).
+EMSCRIPTEN_KEEPALIVE void planck3_set_recoil(int s) { g_recoil = s; }
 // Telemetry for the metabolism view: expose the smoothed palette bounds
 // and the mean live-occupancy heat so the HUD can show whether a flash
 // is physical (mean spikes) or instrumental (only the cap moved).
