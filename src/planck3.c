@@ -109,8 +109,10 @@ static int g_sync = 0;
 // discrete Biot-Savart term the canonical update lacks. g_curl_div is
 // the strength shift (0 = off, 3 = 1/8 of direct inflow momentum);
 // g_curl_vac restricts the torque to spinless cells (cs==0) so authored
-// topology can never be perturbed by passing flux.
-static int g_curl_div = 0, g_curl_vac = 0;
+// topology can never be perturbed by passing flux; bit1 (g_curl_scr)
+// additionally screens receivers already aligned with the jet
+// (DOTS[ns][cs]>=128 — a current's own field does no work on itself).
+static int g_curl_div = 0, g_curl_vac = 0, g_curl_scr = 0;
 static int32_t *pq_key = NULL;
 static uint8_t *pq_amt = NULL;
 static size_t pq_n = 0, pq_cap = 0;
@@ -278,6 +280,7 @@ static inline void planck3_node_tick(int32_t gidx,
         // tangentially: vacuum cells adjacent to a jet organize into
         // circulation around the flow.
         if (g_curl_div && (!g_curl_vac || cs == 0)
+            && (!g_curl_scr || cs == 0 || DOTS[ns][cs] < 128)
             && nq > 0 && ns != 0 && ns != BACK3[d]) {
             int sent = nq > FLOW_CAP ? FLOW_CAP : nq;
             const int16_t *rv = V3[BACK3[d]];
@@ -816,7 +819,7 @@ EMSCRIPTEN_KEEPALIVE void planck3_set_sync(int on) { g_sync = !!on; pq_n = 0; }
 // +curl transverse induction: div=0 off; div>0 = strength shift (3 ≈ 1/8
 // of direct inflow momentum); vac=1 restricts to spinless cells.
 EMSCRIPTEN_KEEPALIVE void planck3_set_curl(int div, int vac) {
-    g_curl_div = div; g_curl_vac = !!vac;
+    g_curl_div = div; g_curl_vac = vac & 1; g_curl_scr = (vac & 2) != 0;
 }
 // Tension-gradient pull duty override (0..255; canonical 0 = off).
 EMSCRIPTEN_KEEPALIVE void planck3_set_trate(int r) { g_t_rate = r; }
