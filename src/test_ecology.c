@@ -147,16 +147,16 @@ int main(int argc, char **argv) {
     }
     printf("# total cycle clusters=%d\n", nc);
 
-    // dump state trajectories of the first few small cycle clusters
-    int shown = 0;
-    for (int32_t i = 0; i < n && shown < 6; i++) {
-        if (cl[i] != CL_CYCLE || tau[i] != 4) continue;
+    // dump every CYCLE cell's spin set (which ports appear in its history)
+    printf("# cycle-cell spin sets:\n");
+    for (int32_t i = 0; i < n; i++) {
+        if (cl[i] != CL_CYCLE) continue;
+        int spins = 0;
+        for (int t = 0; t < K; t++) spins |= 1 << (hist[i][t] >> 8);
         int iz = i / (H * W), iy = (i / W) % H, ix = i % W;
-        printf("# cell (%d,%d,%d) tau=4 hist:", ix, iy, iz);
-        for (int t = K - 10; t < K; t++)
-            printf(" %d,%d", hist[i][t] & 0xFF, hist[i][t] >> 8);
+        printf("#   (%2d,%2d,%2d) tau=%d spins=", ix, iy, iz, tau[i]);
+        for (int s = 0; s <= 12; s++) if (spins & (1 << s)) printf("%d ", s);
         printf("\n");
-        shown++;
     }
     return 0;
 }
