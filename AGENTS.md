@@ -135,6 +135,25 @@ $p.PriorityClass = 'BelowNormal'
 Write-Output $p.Id > logs/sweep.pid
 ```
 
+## Headless physics harnesses (src/test_*.c)
+
+- `test_conservation.c` — M2 closed-box ledger audit. Needs `-DP3_AUDIT`
+  on planck3.c for the 14 per-branch ledger-delta counters (zeroed cost
+  when off). Sync mode: attribution residual is exactly 0; legacy mode
+  carries a known order-dependent push-absorption residual.
+- `test_cavity.c` — M3 thermalization + exact separable 40³ DFT spectrum.
+- `test_tof.c` — M4 ballistic pulse; v_g = 1 link/tick isotropic, z-walls
+  reflect via deadlock→REV3.
+- `test_doubleslit.c` — M5 slit apparatus: barrier = q=255 s=0 deadlock
+  plane; detector = harness-drained absorbing plane; P3_TEMIT=300 silences
+  wall tension (else T_DIVERT captures slit-mouth packets).
+- Apparatus rules learned the hard way: `planck3_set_node` between ticks
+  mutates g_rd = sustained emitter / absorber. Emitters must inject
+  q ≤ FLOW_CAP — denser sources congestion-divert receiver spins back at
+  the pack (self-scatter ping-pong). Sustained beams self-jam by packet
+  coalescence — pulse sparsely (≥4-tick spacing). x/y are a torus: bounced
+  traffic wraps — put a drain plane upstream of the wrap.
+
 ## Generated artifacts — never commit
 
 `seeds/`, `knot_dictionary.json`, `docs/public/audio/` (Kokoro TTS
