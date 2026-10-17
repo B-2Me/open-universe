@@ -16,7 +16,11 @@
 // never re-arms, so probes 2..N would pass a dead pixel silently. Fix:
 // pulse i is emitted at z = z0 + 2i -> fresh primed pixel every pulse.
 //
-// Usage: test_slitapd <ticks> <geom> <cfg> <q_probe> <period> <npulse> [dt]
+// Usage: test_slitapd <ticks> <geom> <cfg> <q_probe> <period> <npulse> [dt] [bzshift]
+//   bzshift: shift B's per-pulse z index — needed for the phase-revival test:
+//   with dt=k*period, B pulse m co-arrives with A pulse m+k, whose crossing
+//   sits at z0+2(m+k). bzshift=k makes B_m use that crossing -> the delayed
+//   pairing actually co-occupies a cell. (v=1: dt mod period == path diff.)
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +78,7 @@ int main(int argc, char **argv) {
     int period  = argc > 5 ? atoi(argv[5]) : 20;
     int npulse  = argc > 6 ? atoi(argv[6]) : 16;
     int dt      = argc > 7 ? atoi(argv[7]) : 0;
+    int bzshift = argc > 8 ? atoi(argv[8]) : 0;
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init_dims failed\n"); return 1; }
     planck3_set_mode(0);
@@ -126,7 +131,7 @@ int main(int argc, char **argv) {
         int fireA = cfg != 1 && period > 0 && t % period == 0 && t / period < npulse;
         int fB    = cfg != 0 && period > 0 && t >= dt && (t - dt) % period == 0 && (t - dt) / period < npulse;
         if (fireA) { planck3_set_node(idx(ax, ay, az + 2 * (t / period)), q_probe, as, 0, 0, 0); fired++; }
-        if (fB)    { planck3_set_node(idx(bx, by, bz + 2 * ((t - dt) / period)), q_probe, bs, 0, 0, 0); fired++; }
+        if (fB)    { planck3_set_node(idx(bx, by, bz + 2 * ((t - dt) / period + bzshift)), q_probe, bs, 0, 0, 0); fired++; }
 
         // geom1: watch crossing cell C_i=(60,20,az+2i) during its arrival window
         if (geom == 1) {
