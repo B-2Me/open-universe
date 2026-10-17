@@ -168,5 +168,58 @@ int main(int argc, char **argv) {
         for (int s = 0; s <= 12; s++) if (spins & (1 << s)) printf("%d ", s);
         printf("\n");
     }
+
+    // Wild-dimer audit (M16 follow-up): a dimer is two tau=4 cores
+    // 2 hops apart along one axis sharing the middle lobe cell.
+    // Signature: middle cell is CYCLE and its spin history shows BOTH
+    // directions of the axis (returns to each core). Port offsets are
+    // parity-dependent hex-row offsets (mirrors planck3.c HOFF/ZU/ZD).
+    static const int8_t HOFF_[2][7][2] = {
+        {{0,0},{1,0},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1}},
+        {{0,0},{1,0},{1,1},{0,1},{-1,0},{0,-1},{1,-1}}
+    };
+    static const uint8_t ZU_[3] = {1, 3, 5}, ZD_[3] = {2, 4, 6};
+    static const uint8_t BK[13] = {0, 4, 5, 6, 1, 2, 3, 11, 12, 10, 9, 7, 8};
+    int ndimer = 0;
+    for (int32_t i = 0; i < n; i++) {
+        if (cl[i] != CL_CYCLE || tau[i] != 4) continue;
+        int iz = i / (H * W), iy = (i / W) % H, ix = i % W;
+        // core-like: fires BOTH directions of some axis (lobes carry one)
+        int ispins = 0;
+        for (int t = 0; t < K; t++) ispins |= 1 << (hist[i][t] >> 8);
+        for (int p = 1; p <= 12; p++) {
+            // hop 1: i -> m
+            int px, py, pz;
+            if (p <= 6)        { px = HOFF_[iy & 1][p][0];      py = HOFF_[iy & 1][p][1];      pz = 0; }
+            else if (p <= 9)   { px = HOFF_[iy & 1][ZU_[p-7]][0]; py = HOFF_[iy & 1][ZU_[p-7]][1]; pz = 1; }
+            else               { px = HOFF_[iy & 1][ZD_[p-10]][0]; py = HOFF_[iy & 1][ZD_[p-10]][1]; pz = -1; }
+            int mx = ix + px, my = iy + py, mz = iz + pz;
+            if (mx < 0 || mx >= W || my < 0 || my >= H || mz < 0 || mz >= D) continue;
+            // hop 2: m -> j (parity of m's row)
+            int px2, py2, pz2;
+            if (p <= 6)        { px2 = HOFF_[my & 1][p][0];      py2 = HOFF_[my & 1][p][1];      pz2 = 0; }
+            else if (p <= 9)   { px2 = HOFF_[my & 1][ZU_[p-7]][0]; py2 = HOFF_[my & 1][ZU_[p-7]][1]; pz2 = 1; }
+            else               { px2 = HOFF_[my & 1][ZD_[p-10]][0]; py2 = HOFF_[my & 1][ZD_[p-10]][1]; pz2 = -1; }
+            int jx = mx + px2, jy = my + py2, jz = mz + pz2;
+            if (jx < 0 || jx >= W || jy < 0 || jy >= H || jz < 0 || jz >= D) continue;
+            int32_t mi = (mz * H + my) * W + mx;
+            int32_t ji = (jz * H + jy) * W + jx;
+            if (cl[mi] != CL_CYCLE || cl[ji] != CL_CYCLE || tau[ji] != 4) continue;
+            // endpoint j must be a real core: fires both axis directions
+            int jspins = 0;
+            for (int t = 0; t < K; t++) jspins |= 1 << (hist[ji][t] >> 8);
+            if (!(jspins & (1 << p)) || !(jspins & (1 << BK[p]))) continue;
+            // shared lobe m must carry both axis directions too
+            int mspins = 0;
+            for (int t = 0; t < K; t++) mspins |= 1 << (hist[mi][t] >> 8);
+            if (!(mspins & (1 << p)) || !(mspins & (1 << BK[p]))) continue;
+            // i itself must fire both directions of THIS axis
+            if (!(ispins & (1 << p)) || !(ispins & (1 << BK[p]))) continue;
+            printf("# DIMER? core (%d,%d,%d) -- lobe (%d,%d,%d) spins=%d,%d -- core (%d,%d,%d) port=%d\n",
+                   ix, iy, iz, mx, my, mz, p, BK[p], jx, jy, jz, p);
+            ndimer++;
+        }
+    }
+    printf("# wild dimers found: %d\n", ndimer);
     return 0;
 }

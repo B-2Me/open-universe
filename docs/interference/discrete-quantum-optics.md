@@ -4,7 +4,7 @@ title: Discrete Quantum Optics
 
 # Discrete Quantum Optics on the Planck Substrate
 
-*Consolidated synthesis of the grounded-measurement campaign (M1–M16) against `src/planck3.c`. Every claim below is backed by a committed headless harness; the full narrative detail lives in [The Open Frontier](./frontier.md). This document states the verified mechanics, the measured phase diagram, the emergent-species census, and the proven-absent channels — no speculation.*
+*Consolidated synthesis of the grounded-measurement campaign (M1–M17) against `src/planck3.c`. Every claim below is backed by a committed headless harness; the full narrative detail lives in [The Open Frontier](./frontier.md). This document states the verified mechanics, the measured phase diagram, the emergent-species census, and the proven-absent channels — no speculation.*
 
 ## The Substrate
 
@@ -36,6 +36,7 @@ title: Discrete Quantum Optics
 | M14 | `test_ecology.c` | Thermal bath spontaneously nucleates the same breather species — substrate is fertile |
 | M15 | `test_osc.c` (train), `test_ecology.c` (seed) | Planck program: breathers are dark (zero emission), resonate only via phase-locking (τ_p≡0 mod 4 → repeated integration until DEADLOCK ionization), and die under dense seeding + flux — E=hν inexpressible because τ is geometric, not energetic |
 | M16 | `test_couple.c` | Breather–breather coupling: d=2 shared lobe yields a phase-selective bond — Δφ∈{1,3} stable dimer molecule (5-cell τ=4 cycle, multiplexed lobe, alive at t=1000), Δφ=0 mutual annihilation (fusion→255 saturation), Δφ=2 asymmetric lobe-theft kill; d≥3 strictly independent at all Δφ — no entrainment, no long-range force; Δφ is conserved for free pairs |
+| M17 | `test_ecology.c` (audit), `test_drift.c` | Wild-dimer audit: zero molecules in the M14 census (strict signature; earlier loose hits were monomer false-positives). Drift tests: all asymmetric seeds collapse or freeze — velocity spectrum is strictly {0 structures, 1 packets}; no duty-cycle sub-light matter exists |
 
 ## The Measured Phase Diagram
 
@@ -62,7 +63,7 @@ The same three gates explain cavity condensation (M3), media transparency/chokin
 
 Spontaneous — no seeding, canonical tension ON. The universe makes its own atoms: two-species condensate of frozen mass + ticking mass.
 
-Lab-seeded only (M16): the **dimer breather** — two cores sharing one lobe by phase-division multiplexing; bonds only at Δφ∈{1,3} (shared-cell single-occupancy rule; Δφ=0 annihilates, Δφ=2 kills asymmetrically). Whether wild nucleation produces dimers is open.
+Lab-seeded only (M16/M17): the **dimer breather** — two cores sharing one lobe by phase-division multiplexing; bonds only at Δφ∈{1,3} (shared-cell single-occupancy rule; Δφ=0 annihilates, Δφ=2 kills asymmetrically). M17 audit found zero wild dimers — nucleation makes monomers, molecules require precise collision assembly.
 
 ## Proven-Absent Channels
 
@@ -77,6 +78,7 @@ Lab-seeded only (M16): the **dimer breather** — two cores sharing one lobe by 
 | Reusable single-pixel detector | absent | M10 — APD pixels and oscillator pixels are single-shot |
 | E = hν (action–frequency coupling) | absent | M15 — breather τ is geometric (lobe distance); mass sits in the congestion band regardless of τ; the only "quantum" is FLOW_CAP=160 per emission |
 | Entrainment / long-range coupling | absent | M16 — pairs at d≥3 conserve seeded Δφ exactly; interaction is all-or-nothing co-occupancy, never weak drift |
+| Sub-light structures (0<v<1 matter) | absent | M17 — asymmetric breather seeds collapse or deadlock-freeze; congestion capture always re-anchors to the same cell; v∈{0,1} |
 
 ## What "Phase" Means Here (the three-layer taxonomy)
 
