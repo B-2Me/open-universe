@@ -16,7 +16,10 @@
 //              reflected (packet exits x<58 -x, drains at x=0) — and
 //              whether the tau=2 cycle survives, rephases, or dies.
 //
-// Usage: test_osc <ticks> <t2> <q2>
+// Usage: test_osc <ticks> <t2> <q2> [interval] [npulse]
+//   interval>0: probe2 becomes a TRAIN — q2 packet fired every <interval>
+//   ticks starting at t2, npulse times (resonance sweep: a train hits a
+//   fixed internal phase iff interval mod 4 == 0).
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +48,8 @@ int main(int argc, char **argv) {
     int ticks = argc > 1 ? atoi(argv[1]) : 200;
     int t2    = argc > 2 ? atoi(argv[2]) : 60;
     int q2    = argc > 3 ? atoi(argv[3]) : 20;
+    int tper  = argc > 4 ? atoi(argv[4]) : 0;
+    int npulse= argc > 5 ? atoi(argv[5]) : 8;
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init_dims failed\n"); return 1; }
     planck3_set_mode(0);
@@ -62,9 +67,11 @@ int main(int argc, char **argv) {
     int64_t drained = 0;
     int probeFired = 0;
     for (int t = 0; t <= ticks; t++) {
-        if (!probeFired && t == t2) {
+        int doFire = tper > 0 ? (t >= t2 && (t - t2) % tper == 0 && probeFired < npulse)
+                            : (!probeFired && t == t2);
+        if (doFire) {
             planck3_set_node(idx(EX, CY, CZ), q2, 1, 0, 0, 0);
-            probeFired = 1;
+            probeFired++;
         }
 
         // region dump: cells x in [55,68] on the beamline

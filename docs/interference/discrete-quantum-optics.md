@@ -34,6 +34,7 @@ title: Discrete Quantum Optics
 | M12 | `test_osc.c` | Bound oscillator = 4-state two-lobe breather; arrival phase mod 4 selects among 4 scattering outcome classes — a phase-sensitive junction |
 | M13 | `test_oscarray.c` | Phase-graded breather array → spatial transmission comb (D,B,D,B…) on the APD wall; fringe lives in transmission, not clicks |
 | M14 | `test_ecology.c` | Thermal bath spontaneously nucleates the same breather species — substrate is fertile |
+| M15 | `test_osc.c` (train), `test_ecology.c` (seed) | Planck program: breathers are dark (zero emission), resonate only via phase-locking (τ_p≡0 mod 4 → repeated integration until DEADLOCK ionization), and die under dense seeding + flux — E=hν inexpressible because τ is geometric, not energetic |
 
 ## The Measured Phase Diagram
 
@@ -71,6 +72,7 @@ Spontaneous — no seeding, canonical tension ON. The universe makes its own ato
 | Inertia (threshold to motion) | absent | M7 — any nonzero probe mobilizes an admissible lump |
 | Energy conservation | absent | M2 — driven-dissipative heat sector; mass, not energy, is conserved |
 | Reusable single-pixel detector | absent | M10 — APD pixels and oscillator pixels are single-shot |
+| E = hν (action–frequency coupling) | absent | M15 — breather τ is geometric (lobe distance); mass sits in the congestion band regardless of τ; the only "quantum" is FLOW_CAP=160 per emission |
 
 ## What "Phase" Means Here (the three-layer taxonomy)
 

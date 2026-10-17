@@ -1,7 +1,11 @@
 // test_ecology.c — M14: does the thermalized cavity spontaneously
 // nucleate limit-cycle structures, or is all condensed mass dead lumps?
 //
-//   test_ecology <thermo_ticks> [window]
+//   test_ecology <thermo_ticks> [window] [nbreather]
+//   nbreather>0: before the hotspot, seed a 6-spaced grid of breathers
+//   ((x,y,20):200,s4 bootstraps the tau=4 two-lobe cycle) at z=20 —
+//   tests whether a dense resonator population survives flux and
+//   reshapes the condensate (Planck Step 3).
 //
 // Same apparatus as M3: 40^3 closed box, central hotspot (r<5 ball,
 // q=150, random spins, h=400), canonical defaults (tension ON — the
@@ -44,6 +48,7 @@ enum { CL_EMPTY, CL_LUMP, CL_CYCLE, CL_TRANS };
 int main(int argc, char **argv) {
     int thermo = argc > 1 ? atoi(argv[1]) : 2000;
     int K      = argc > 2 ? atoi(argv[2]) : 24;
+    int nbseed = argc > 3 ? atoi(argv[3]) : 0;
     if (K > MAXW) K = MAXW;
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init_dims failed\n"); return 1; }
@@ -58,8 +63,13 @@ int main(int argc, char **argv) {
             planck3_set_node((z * H + y) * W + x, 150, 1 + (rng >> 16) % 12, 400, 0, 0);
         }
     }
+    // optional breather population at z=20, 6-spaced grid (lobe-safe)
+    int nseeded = 0;
+    for (int gy = 6; gy < H && nseeded < nbseed; gy += 6)
+        for (int gx = 6; gx < W && nseeded < nbseed; gx += 6, nseeded++)
+            planck3_set_node((20 * H + gy) * W + gx, 200, 4, 0, 0, 0);
     planck3_prepare();
-    printf("# test_ecology thermo=%d window=%d\n", thermo, K);
+    printf("# test_ecology thermo=%d window=%d breathers_seeded=%d\n", thermo, K, nseeded);
 
     const Rec *st = (const Rec *)planck3_state_pointer();
     int32_t n = planck3_node_count();
