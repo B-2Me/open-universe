@@ -18,6 +18,7 @@ const readingOrder = [
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' },
+  { text: 'Vanguard', link: '/vanguard' },
   { text: 'Interference', link: '/interference' },
   { text: 'Audits', link: '/interference/audits' },
   { text: 'Roadmap', link: '/interference/roadmap' },
@@ -44,7 +45,8 @@ const theoryItems = [
   { text: 'Paradoxes', items: paradoxItems },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
-  { text: 'Interface', link: '/interface' }
+  { text: 'Interface', link: '/interface' },
+  { text: 'Vanguard', link: '/vanguard' }
 ]
 
 const interferenceItems = [

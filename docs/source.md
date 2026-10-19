@@ -163,6 +163,8 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 
 ---
 
+> **Deep dive:** the six-pillar expansion of this audit — 't Hooft, Lamb & Hobson, Rovelli, Markopoulou & Smolin, Heisenberg–Euler–Schwinger, and Hoffman — with primary works and per-pillar divergence analysis, lives on the [Vanguard Lineage](/vanguard) page.
+
 ## VIII. Translation Guide: Substance Ontology to Process Ontology
 
 To navigate the site without falling back into mechanistic traps, use the following translation framework when encountering legacy terminology:
