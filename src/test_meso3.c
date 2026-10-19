@@ -25,6 +25,7 @@ uint32_t meso3_get(int x, int y, int z);
 void     meso3_set(int x, int y, int z, uint32_t mask);
 void     meso3_totals(uint64_t *, int64_t *, int64_t *, int64_t *);
 void     meso3_channel_hist(uint64_t *);
+void     meso3_collmode(int);
 int      meso3_nch(void);
 const int (*meso3_cv(void))[3];
 
@@ -139,6 +140,115 @@ static void equipartition(int ticks) {
     shell_tensor();
 }
 
+/* weighted 4th-rank ratio from the channel histogram:
+ *   R = Σ n_c cx^4 / (3 Σ n_c cx²cy²)   — isotropy needs R = 1 */
+static double wt_tensor(void) {
+    const int (*cv)[3] = meso3_cv();
+    uint64_t hist[19];
+    meso3_channel_hist(hist);
+    double s4 = 0, s22 = 0;
+    for (int c = 0; c < NCH_ - 1; c++) {
+        s4  += (double)hist[c] * cv[c][0] * cv[c][0] * cv[c][0] * cv[c][0];
+        s22 += (double)hist[c] * cv[c][0] * cv[c][0] * cv[c][1] * cv[c][1];
+    }
+    return s22 > 0 ? s4 / (3 * s22) : 0;
+}
+
+static void randfill2(double pf, double pa) {
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        uint32_t m = 0;
+        for (int c = 0; c < 12; c++)
+            if ((trnd() & 0xFFFF) < (uint32_t)(pf * 65536)) m |= 1u << c;
+        for (int c = 12; c < NCH_ - 1; c++)
+            if ((trnd() & 0xFFFF) < (uint32_t)(pa * 65536)) m |= 1u << c;
+        if ((trnd() & 0xFFFF) < (uint32_t)(pf * 65536)) m |= 1u << (NCH_ - 1);
+        if (m) meso3_set(x, y, z, m);
+    }
+}
+
+/* T5: seed the axial shell at 1/8 face density; watch whether the weighted
+ * tensor ratio holds ~1.0 or drifts back to the equal-occupancy 3.33. */
+static void shell_weight(int mode, const char *tag) {
+    meso3_clear();
+    meso3_collmode(mode);
+    randfill2(0.20, 0.025);
+    printf("T5 %s: t=0 R=%.3f", tag, wt_tensor());
+    for (int t = 1; t <= 400; t++) {
+        meso3_tick();
+        if (t == 50 || t == 100 || t == 200 || t == 400)
+            printf("  t=%d R=%.3f", t, wt_tensor());
+    }
+    printf("\n");
+    meso3_collmode(0);
+}
+
+/* T6: counter-flow under the forward-biased table (mode 2) */
+static void counterflow2(void) {
+    meso3_clear();
+    meso3_collmode(2);
+    uint32_t fwd = (1u << 0) | (1u << 1);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        if (x >= 4 && x <= 7)   meso3_set(x, y, z, 1u << 0);
+        if (x >= 32 && x <= 35) meso3_set(x, y, z, 1u << 1);
+    }
+    for (int t = 0; t < 60; t++) meso3_tick();
+    uint64_t mass; int64_t px, py, pz;
+    meso3_totals(&mass, &px, &py, &pz);
+    uint64_t onb = chan_pop(fwd);
+    printf("T6 fwd-biased counter-flow: on-beam=%llu (%.1f%%) rest=%llu\n",
+           (unsigned long long)onb, 100.0 * onb / mass,
+           (unsigned long long)chan_pop(1u << (NCH_ - 1)));
+    meso3_collmode(0);
+}
+
+/* T7 Galilean probe — seed biased equilibrium with drift along the (1,1,0)
+ * face diagonal (u_x = u_y = u/√2), equilibrate, extract
+ *   g(ρ) = Π_xy / (M u_x u_y),  Π_xy = Σ n_c cx cy.
+ * FHP theory for Boolean LGA: g(d) = (1-2d)/(1-d) → 0 at half-filling. */
+static void galilean(double dfill, double s, int mode, const char *tag) {
+    const int (*cv)[3] = meso3_cv();
+    meso3_clear();
+    meso3_collmode(mode);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        uint32_t m = 0;
+        for (int c = 0; c < NCH_ - 1; c++) {
+            double bias = s * (cv[c][0] + cv[c][1]) / sqrt(2.0);
+            double p = dfill * (1.0 + bias);
+            if (p > 1) p = 1;
+            if ((trnd() & 0xFFFF) < (uint32_t)(p * 65536)) m |= 1u << c;
+        }
+        if ((trnd() & 0xFFFF) < (uint32_t)(dfill * 65536)) m |= 1u << (NCH_ - 1);
+        if (m) meso3_set(x, y, z, m);
+    }
+    for (int t = 0; t < 400; t++) meso3_tick();
+
+    uint64_t hist[19];
+    meso3_channel_hist(hist);
+    double M = 0, Px = 0, Py = 0, Pxy = 0;
+    for (int c = 0; c < NCH_ - 1; c++) {
+        double n = (double)hist[c];
+        M += n;
+        Px += n * cv[c][0];
+        Py += n * cv[c][1];
+        Pxy += n * cv[c][0] * cv[c][1];
+    }
+    M += (double)hist[NCH_ - 1];
+    double ux = Px / M, uy = Py / M;
+    double g = (M * ux * uy != 0) ? Pxy / (M * ux * uy) : 0;
+    printf("T7 %s d=%.2f: M=%.0f u=(%.4f,%.4f) Pxy=%.0f → g=%.3f  [FHP (1-2d)/(1-d)=%.3f]\n",
+           tag, dfill, M, ux, uy, Pxy, g, (1 - 2 * dfill) / (1 - dfill));
+    meso3_collmode(0);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -157,6 +267,26 @@ int main(void) {
     randfill(0.20);
     ledger(300, "D3Q19 randfill 20%");
     equipartition(400);
+
+    printf("# --- shell weighting (w_axial/w_face = 1/8 target, R iso = 1.0) ---\n");
+    shell_weight(0, "D3Q19 1/8-seeded, cyclic table");
+    shell_weight(1, "D3Q19 1/8-seeded, shell-weighted table");
+
+    printf("# --- forward-biased collision (mode 2, D3Q13) ---\n");
+    NCH_ = 13;
+    if (meso3_init(W, H, D, 0)) { printf("init fail\n"); return 1; }
+    counterflow2();
+
+    printf("# --- Galilean probe: g(ρ) = Pxy/(M ux uy), FHP curve (1-2d)/(1-d) ---\n");
+    for (double d = 0.1; d <= 0.9; d += 0.2)
+        galilean(d, 0.25, 0, "D3Q13 cyclic");
+    galilean(0.5, 0.25, 2, "D3Q13 fwd-bias");
+
+    printf("# --- Galilean probe on D3Q19 shell-weighted table ---\n");
+    NCH_ = 19;
+    if (meso3_init(W, H, D, 1)) { printf("init fail\n"); return 1; }
+    for (double d = 0.1; d <= 0.5; d += 0.2)
+        galilean(d, 0.25, 1, "D3Q19 shell8");
 
     return 0;
 }

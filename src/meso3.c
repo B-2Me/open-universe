@@ -43,6 +43,14 @@ static int      CV[19][3];           /* channel momentum vectors (integer) */
 static uint32_t *mA, *mB;            /* ping-pong mask planes */
 static uint32_t *TABLE;
 
+/* class structure for stochastic collision modes */
+static int      COLLMODE;            /* 0=cyclic 1=shell8 2=forward-bias */
+static uint32_t NCLS;
+static uint32_t *CID;                /* class id per input mask */
+static uint32_t *CMEM;               /* flattened member masks */
+static uint16_t *CWGT;               /* member weight (axial bits → 256>>3n) */
+static uint32_t *COFF, *CLEN;        /* per-class offset/length into CMEM */
+
 static uint32_t rng3 = 0x9E3779B9u;
 static inline uint32_t rng_next3(void) {
     rng3 ^= rng3 << 13; rng3 ^= rng3 >> 17; rng3 ^= rng3 << 5;
@@ -81,15 +89,34 @@ static void build_table(void) {
     }
     qsort(kv, NMASKS, sizeof(uint64_t), cmp_u64);
 
-    uint32_t i = 0;
+    /* count classes, then fill member lists + shell weights */
+    uint32_t ncls = 0;
+    for (uint32_t i = 0; i < NMASKS; i++)
+        if (i == 0 || (kv[i] >> 32) != (kv[i - 1] >> 32)) ncls++;
+    NCLS = ncls;
+    CID  = malloc(sizeof(uint32_t) * NMASKS);
+    CMEM = malloc(sizeof(uint32_t) * NMASKS);
+    CWGT = malloc(sizeof(uint16_t) * NMASKS);
+    COFF = malloc(sizeof(uint32_t) * ncls);
+    CLEN = malloc(sizeof(uint32_t) * ncls);
+
+    uint32_t i = 0, cid = 0, off = 0;
     while (i < NMASKS) {
         uint64_t key = kv[i] >> 32;
         uint32_t j = i;
         while (j < NMASKS && (kv[j] >> 32) == key) {
-            cls[j - i] = (uint32_t)(kv[j] & 0xFFFFFFFFu);
+            uint32_t m = (uint32_t)(kv[j] & 0xFFFFFFFFu);
+            cls[j - i] = m;
+            CID[m] = cid;
+            CMEM[off + j - i] = m;
+            /* shell weight: 1 for pure face/rest, 1/8 per axial bit */
+            int na = 0;
+            for (int c = 12; c < NMOV; c++) if (m & (1u << c)) na++;
+            CWGT[off + j - i] = (uint16_t)(na > 2 ? 1 : (256 >> (3 * na)));
             j++;
         }
         uint32_t len = j - i;
+        COFF[cid] = off; CLEN[cid] = len; off += len;
         if (len == 1) {
             TABLE[cls[0]] = cls[0];              /* ballistic singleton */
         } else {
@@ -100,9 +127,33 @@ static void build_table(void) {
             for (uint32_t k = 0; k < len; k++)
                 TABLE[cls[k]] = cls[(k + 1) % len];
         }
-        i = j;
+        i = j; cid++;
     }
     free(kv); free(cls);
+}
+
+void meso3_collmode(int mode) { COLLMODE = mode; }
+
+/* stochastic pick within the input's class. Mode 1: weight ∝ (1/8)^(axial
+ * bits) — sustains the w_axial/w_face = 1/8 ensemble weight the 4th-rank
+ * isotropy condition requires. Mode 2: 7/8 identity (forward exit), else
+ * uniform class member — biases head-on traffic toward ballistic transit.
+ * Output is always a class member, so conservation stays exact. */
+static uint32_t collide_one(uint32_t m) {
+    uint32_t cid = CID[m], off = COFF[cid], len = CLEN[cid];
+    if (len == 1) return m;
+    if (COLLMODE == 2) {
+        if (rng_next3() % 8 < 7) return m;
+        return CMEM[off + rng_next3() % len];
+    }
+    uint32_t tot = 0;
+    for (uint32_t k = 0; k < len; k++) tot += CWGT[off + k];
+    uint32_t r = rng_next3() % tot;
+    for (uint32_t k = 0; k < len; k++) {
+        if (r < CWGT[off + k]) return CMEM[off + k];
+        r -= CWGT[off + k];
+    }
+    return m;
 }
 
 /* ---- engine ------------------------------------------------------------ */
@@ -141,8 +192,13 @@ void meso3_set(int x, int y, int z, uint32_t mask) {
 }
 
 void meso3_tick(void) {
-    for (int i = 0; i < N3m; i++)
-        if (mA[i]) mA[i] = TABLE[mA[i]];
+    if (COLLMODE == 0) {
+        for (int i = 0; i < N3m; i++)
+            if (mA[i]) mA[i] = TABLE[mA[i]];
+    } else {
+        for (int i = 0; i < N3m; i++)
+            if (mA[i]) mA[i] = collide_one(mA[i]);
+    }
 
     memset(mB, 0, sizeof(uint32_t) * N3m);
     for (int z = 0; z < D3m; z++)
