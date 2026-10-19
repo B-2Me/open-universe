@@ -96,3 +96,21 @@ Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic s
 *   **The Photon as Linear Traffic:** Light is purely un-anchored, linear relational tension cascading forward at the absolute hardware limit ($c$). It contains no mass because it requires zero localized routing cycles.
 *   **Absorption (Buffer Surge):** When a photon strikes an electron's circulating slipstream, the raw `quanta` surges the local buffer. To prevent catastrophic phase friction, the electron must physically expand into a wider, higher-capacity geometric waveguide (a higher orbital).
 *   **Emission (Thermodynamic Ejection):** When ambient environmental tension pushes back against the artificially inflated slipstream, the grid crushes the electron back down into a tighter geometric valley. The excess routing capacity is cleanly sheared off as an exact, quantized chunk. This localized spray of excess capacity unwinds and propagates outward as a photon. Spectral lines are strictly discrete because they represent the exact geometric difference between two fixed 12-port waveguides.
+
+> **Provenance note (M1–M18 campaign):** the per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure — they predate the grounded measurement campaign and are retained as a target for the mesoscale engine. What the substrate has actually produced is documented below.
+
+### 4. The Measured Species Hierarchy (planck3.c, M12–M18)
+
+The discrete substrate's emergent matter, as actually measured — every entry verified by a headless harness, none hand-authored:
+
+| Species | Period | Cells | Status |
+| :--- | :--- | :--- | :--- |
+| **Dead lump** | — | 1 | Inert s=0 momentum trap; ~85% of condensed mass at cavity equilibrium (M14) |
+| **Spin-locked filament** | τ=1 | chain | 1-D deadlock-frozen packet queues; armed but immobile (M14) |
+| **Boundary shuttle** | τ=2 | 1–2 | wall-reflection microcycles, mostly edge-adjacent (M14) |
+| **Monomer breather** | τ=4 | 3 | the "atom": core + two lobes, congestion-captured ejecta; nucleates spontaneously in turbulence on five lattice axes (M12, M14) |
+| **Dimer breather** | τ=4 | 5 | the "molecule": two cores sharing one lobe by phase-division multiplexing; bonds only at Δφ ∈ {1,3} — a discrete exclusion rule, not a force (M16) |
+
+*   **Shedding reality check (M15):** an isolated breather is **dark matter** — zero spontaneous flux over 75 full cycles; its ejecta is recaptured every period. It sheds mass only when an incoming probe pushes a lobe or core past `DEADLOCK`, whereupon it ionizes completely. True action–frequency coupling (E = hν) does not exist at the single-spin bedrock: breather period is geometric (hop distance), not energetic. That boundary is precisely where `planck3.c` hands off to `meso3.c`.
+*   **The exclusion principle, native:** at shared-lobe contact (d=2), pairs annihilate at Δφ = 0 (core-cell intrusion → saturation) and kill asymmetrically at Δφ = 2 (lobe fusion → theft); only Δφ ∈ {1,3} schedules coexist — bonding as timetable, not potential well.
+*   **The scale buffer:** an atom is not a node — at bedrock grain, each elementary structure is buffered by ~10^74 open vacuum cells (order-of-magnitude scale argument, not a measurement). This is why collision events are elastic rather than shredding: the relational neighborhood is astronomically sparse relative to the condensed object.
