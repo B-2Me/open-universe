@@ -115,6 +115,8 @@ Before isolating the 37 stable 3D Hopfion eigenstates on the True FCC lattice, f
 * **Planar Z-Relief Channels [RFC-045 / RFC-046, `+zshadow` / `+zhopfion`]:** Out-of-plane overflow drains suppressed deadlock knots (`fdead` $\to 0.015$) but bled $43\%\text{–}83\%$ of band mass because displaced re-entry destroyed toroidal-poloidal winding topology.
 * **HCP Parity Frustration [RFC-047]:** On an A-B-A-B stacked-hex 12-port grid, layer-alternating vertical azimuths deleted required descent ports on even layers (`0/29` lock-tolerant closures), necessitating the parity-free A-B-C **True FCC** lattice [RFC-048].
 
+> **Continuation note:** this summary ends with the Hopfion-dictionary era. The subsequent M1–M18 grounded-measurement campaign (conservation, cavity equilibration, detector avalanches, arrival-phase interferometry, breather clocks, ecology census, molecular binding, and the absent-channel proofs) is logged in [The Open Frontier](/interference/frontier) and consolidated in [Discrete Quantum Optics](/interference/discrete-quantum-optics). Its central finding reframes §4.3: the substrate's dominant spontaneous attractors are not topological solitons but τ=4 congestion-captured breathers, τ=1 spin-locked filaments, and scheduling-exclusion dimers — all anchored at v=0 (M17).
+
 ---
 
 ## 7. Deterministic Reproduction Suite
