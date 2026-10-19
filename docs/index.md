@@ -10,11 +10,11 @@ hero:
       text: Enter The Planck Field
       link: /field
     - theme: alt
-      text: Weave Hopf's Loom
-      link: /loom-demo
+      text: Audit the Paradoxes
+      link: /paradox
     - theme: alt
-      text: Visit the Hopfion Zoo
-      link: /hopfion-zoo
+      text: The Empirical Laboratory
+      link: /interference
 
 features:
   - title: Objective Thermodynamics
@@ -46,3 +46,24 @@ We are stepping out of the frozen block universe, abandoning the illusion of sta
 The universe does not calculate geometry; it resolves thermodynamic gradients. There are no objects; there are only relational boundaries. There is no empty space; there is only the active, zero-storage substrate.
 
 Welcome to a thermodynamic universe.
+
+---
+
+## Exploring the Architecture
+
+The investigation is organized into four core pillars, progressing from empirical anomalies to laboratory telemetry:
+
+*   **[The Observational Paradoxes](/paradox):** Stress-testing legacy models across quantum, relativistic, macro-biological, and abstract mathematical breakdowns—showing how insoluble paradoxes resolve into expected behaviors of a discrete network.
+*   **[The Substrate & The Field](/field):** Grounding physical ontology in discrete causal mechanics, memoryless synchronous updates, and the transition from free flux ($c$) to bound localized circulation.
+*   **[The Formal Mathematical Machinery](/math):** Universality class analysis, lattice invariants on the 12-port True-FCC grid, discrete causal thermodynamics, and the exact tensor isotropy bounds.
+*   **[The Empirical Laboratory](/interference):** Direct telemetry from the C engine test harness (Milestones M1–M18), falsified hypotheses, discrete quantum optics, and the mesoscale roadmap.
+
+---
+
+### Interactive Visualizers & Demos
+
+*For visual exploration of discrete lattice dynamics in the browser:*
+
+*   **[Hopf's Loom](/loom-demo):** A 400,000-node WebGL2 volume visualizer demonstrating topological circulation on the True-FCC lattice.
+*   **[The Hopfion Zoo](/hopfion-zoo):** A geometric archive of stable resting structures explored during early 3D parameter sweeps.
+*   **[Langevin's Wake](/wake-demo):** A 2D interactive canvas demonstration of discrete routing and wake dynamics.
