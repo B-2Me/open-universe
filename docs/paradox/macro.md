@@ -26,6 +26,8 @@ At the scale of biology and chemistry, legacy models ignore the thermodynamic pr
 *   Information is a physical constraint. Simulating the future and forcing biological architecture to alter its trajectory requires intense thermodynamic dissipation.
 *   The "feeling" of consciousness—the qualia of the color red, the sensation of pain, the experience of a thought—is not a magical ghost. **It is the literal thermodynamic friction of actualization.** You don't *have* an experience; you *are* the physical friction of the interface sustaining its own recursive loop.
 
+*   **Substrate grounding (Aspirational / interpretive):** maps the observer to a localized thermodynamic dissipation boundary (the Hayles Loop); no neurological or macro-scale integration has been simulated on substrate.
+
 ---
 
 ## 3. The Interaction Paradox (Mind-Body Dualism)
@@ -42,6 +44,8 @@ At the scale of biology and chemistry, legacy models ignore the thermodynamic pr
 **The Paradox:** Every living organism on Earth exclusively uses left-handed (L) amino acids to build proteins, and right-handed (D) sugars for DNA/RNA. When synthesized in a standard chemistry lab, the laws of continuous physics dictate that you get a perfect 50/50 "racemic" mixture. Standard science assumes life randomly flipped a coin billions of years ago and got stuck with left-handed molecules.
 
 **The Planck Field Reconciliation:** The coin isn't fair. The vacuum itself is not a symmetric void; it is a discrete ABC-stacked FCC lattice with a native screw axis. Because the physical routing geometry of the universe possesses a literal "grain," assembling a left-handed topological molecule requires slightly less thermodynamic routing effort than forcing a right-handed one against the grain of the vacuum. The baseline friction of spacetime naturally biases the biological assembly path.
+
+*   **Substrate grounding (Framework-consistent):** rooted in the True-FCC lattice's native 12-port screw-axis asymmetry; lattice-induced enantiomeric excess has not been measured in nucleation runs.
 
 ---
 

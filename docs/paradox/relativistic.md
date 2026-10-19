@@ -74,6 +74,8 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 *   **Gravity (General Relativity):** A massive body is a dense tension knot. A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.
 *   Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its finite processing bandwidth was maxed out fighting gravity or routing data.
 
+*   **Substrate grounding (Measured boundary limit — M4, M12, M17):** continuous intermediate velocities (0 < v < 1) need mesoscale multi-speed channels, but the substrate enforces the extreme binary boundary of the vector budget ($C_{max}^2 = C_s^2 + C_i^2$) exactly: free flux allocates 100% of bandwidth to spatial translation (v=1, no internal clock), while bound breathers allocate 100% to internal cycling (τ=4, v=0).
+
 ---
 
 ## 8. The Expansion Paradox (Cosmological Redshift & Supernovae)
@@ -85,3 +87,5 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 *   Because the nodes are busy, the *trailing* edge of the pulse encounters a saturated network and experiences microscopic queuing delay (latency). 
 *   Over billions of light-years and trillions of discrete actualizations, this latency compounds. The wave loses energy to thermodynamic friction (redshift), and the physical distance between the front and back of the pulse physically widens due to network drag. 
 *   We aren't watching expanding space; we are watching a macroscopic video buffer. The event arrives in slow motion because it was spooled through the finite bandwidth of a discrete substrate.
+
+*   **Substrate grounding (Aspirational / framework hypothesis):** accumulated queuing latency is a mesoscale-continuum target; on the bare `planck3.c` substrate, vacuum transmission is strictly ballistic and dispersion-free (M4).

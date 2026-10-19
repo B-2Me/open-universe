@@ -17,6 +17,8 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   "Measurement" is not a passive, weightless gaze. A measurement is a physical collision causing localized relational tension to accumulate ($Q_{pending}$). 
 *   The wave function does not collapse probabilistically; it resolves deterministically when the local routing buffer hits the absolute saturation threshold of the hardware: $\text{If } Q_{pending} \ge FLOW\_CAP, \text{ then } \text{Actualize}(x, t)$. You aren't "looking" at a particle; your detector forced the local grid to exceed its capacity, forcing it to precipitate a state to satisfy the collision.
 
+*   **Substrate grounding (Measured in part — M9/M10):** the APD cascade confirms that sub-threshold un-actualized flux (q=3) deterministically triggers macroscopic click amplification (q≈160) once local capacity saturates at an armed boundary; single-quantum antibunching remains unresolved.
+
 ---
 
 ## 2. The Locality Paradox (Quantum Entanglement & Bell's Theorem)
@@ -37,6 +39,8 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   A photon is not a tiny flying bowling ball. It is an un-actualized relational potential.
 *   As it propagates through the field without being measured, it hasn't actualized into a specific geometric point because the substrate has no relational requirement to render its exact locus. 
 *   The moment a detector is introduced, the physical constraints of the collision dictate the actualization of a localized state. The "particle" isn't a hidden bullet revealing itself; it is the instantaneous actualization of the event.
+
+*   **Substrate grounding (Measured — M4, M5, M10, M11):** individual flux packets propagate ballistically at v=1 with zero self-interference; the "wave" is strictly an ensemble histogram of arrival timing and coincidence combs across discrete detector cells.
 
 ---
 
@@ -98,6 +102,8 @@ Here is how the active substrate resolves the core quantum paradoxes.
 - The photon never "decided" to be a particle or a wave in the past; it propagated purely as un-actualized relational potential. 
 - Because the photon remained un-actualized, the timeline wasn't altered. The detector simply forced the actualization of the entire relational event *in the present moment*. You didn't change history; you just forced the field to resolve a pending tension right now.
 
+*   **Substrate grounding (Framework-consistent / architectural):** zero-storage Markovian updates (t → t+1) forbid caching or back-propagation of past states by construction; path superposition itself is inexpressible on the single-spin substrate.
+
 ---
 
 ## 10. The Subjectivity Paradox (Wigner’s Friend)
@@ -150,3 +156,5 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   If you attempt to force two of these deadlocked structures into the exact same spatial locus, the incoming un-actualized potential ($Q_{in}$) instantly exceeds the absolute flow capacity of the local grid ($DEADLOCK\_QUANTA$). 
 *   Furthermore, if their topological spins are forced into the same slipstream, they clash. This generates a massive spike in metabolic dissipation ($\Phi$), triggering immediate momentum cancellation and violent physical repulsion. 
 *   Fermions cannot share a state because doing so requires more relational bandwidth than the hardware of the Planck Field is physically capable of providing at a single node.
+
+*   **Substrate grounding (Measured — M16):** breather-dimer stability enforces a discrete phase-exclusion schedule — Δφ ∈ {1,3} bonds, Δφ = 0 destroys both cores through capacity saturation — demonstrating exclusion as a native routing-table saturation constraint.
