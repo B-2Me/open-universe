@@ -134,6 +134,18 @@ $$\text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;\vert{}\; 
 
 "Scaling the universe to 3D" is not stacking sheets; it is widening the local routing table in the same flat array. A macro-object on a 12-neighbor graph is just a denser knot resolving thermodynamic friction across more channels — and the added channels give congestion somewhere else to go, which is precisely where 3D gravity (routing overflow) would live.
 
+### Universality Classes and the Mesoscale Bridge
+
+The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice:
+
+- **The Verified Microscopic Bedrock:** exact mass-current conservation (`fired ≡ pulled`, M2), ballistic v=1 light-cone propagation (M4), classical Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff (M3), threshold avalanche detection (M9), and discrete timing-comb interferometry (M11).
+- **The Universality Class Boundary:** the single-spin winner-take-all constraint enforces a rigid kinematic invariant, v ∈ {0, 1} (M17). Light moves at c = 1; all bound matter (lumps, filaments, breathers, dimers) is permanently anchored at v = 0. Lacking linear field superposition and fractional coupling, the single-spin bedrock coarse-grains into an *alternate* discrete universe — not standard continuum electrodynamics.
+- **The Multi-Channel Mesoscale Specification (`meso3.c` target):** bridging the ~40-order-of-magnitude gap between Planck hops and laboratory observation requires the integer Lattice-Gas Automaton (FHP-class) universality class:
+    - **Single-ownership edge arrays** — each link stored once (or under an owner-endpoint convention), eliminating the duplicated-state reconciliation bugs the sync-mode push ledger had to fight.
+    - **Multi-channel link allocation (f₁…f₁₂)** — directional integer populations per link, permitting counter-flow and clean wave crossing without forced fusion.
+    - **Sub-hop edge residence** — flux dwelling within a link across ticks natively unlocks continuous sub-light velocity (v ∈ [0,1)) as a fractional duty cycle.
+    - **The D3Q13 isotropy bound:** the twelve single-speed FCC vectors {±1,±1,0} fail strict 4th-rank tensor isotropy (Σv_x⁴ = 8 ≠ 12 = 3Σv_x²v_y²). A rest channel (v=0) is a useful internal-clock buffer, but it contributes zero to every velocity moment — it cannot repair the tensor. Continuum rotational invariance requires multi-speed shells or verified per-channel collision weighting.
+
 ## The Operational Translation Matrix
 
 To out-predict the Standard Model, we must discard its continuous geometric maps while preserving its raw experimental data. We do not need to prove the 12-port lattice disappears; we only need to prove that the lattice's discrete outputs (`quanta`, `heat`, `yield`, `deadlocks`) match the raw telemetry spitting out of CERN detectors before legacy physicists apply their spatial approximations to it.
