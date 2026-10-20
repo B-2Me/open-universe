@@ -117,4 +117,17 @@ Three-phase protocol (drive t<200 → quiet 200–600 → re-illuminate 600–90
 
 This is the metastable regime M34 showed was missing: bound mass that *persists* without drive, *decays* under flux, and *responds* to re-feeding — the cold-rock phenomenology (stable in vacuum, ablatable near a flux source), achieved with two flag-gated rules on native channels and zero registers.
 
-**Observational anchor — the Yarkovsky effect.** Real bound matter exchanging momentum with the vacuum through asymmetric thermal venting is measured physics: a rotating asteroid parks absorbed sunlight as surface heat (trapped because vacuum conducts nothing), then radiates it anisotropically — afternoon-side infrared photons carry vector momentum p=E/c, producing measurable orbital drift (radar-confirmed on 6489 Golevka; OSIRIS-REx on Bennu). This is the macroscopic proof-of-class for the M35 mechanism: *resting mass + directional radiative outflow = momentum exchange*, no Hilbert space required. **Not yet reproduced on the lattice:** our remnant emits to a random channel (isotropic, zero net recoil). A testable analog would gate emission direction on the incident carrier direction and measure centroid drift of the lump — queued as the next experiment.
+**Observational anchor — the Yarkovsky effect.** Real bound matter exchanging momentum with the vacuum through asymmetric thermal venting is measured physics: a rotating asteroid parks absorbed sunlight as surface heat (trapped because vacuum conducts nothing), then radiates it anisotropically — afternoon-side infrared photons carry vector momentum p=E/c, producing measurable orbital drift (radar-confirmed on 6489 Golevka; OSIRIS-REx on Bennu). This is the macroscopic proof-of-class for the M35 mechanism: *resting mass + directional radiative outflow = momentum exchange*, no Hilbert space required.
+
+### M36 — asymmetric illumination: the lump migrates (ablation drift, not recoil)
+
+Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed at (22.0, 22.1, 22.0) to ±0.01 for 400 ticks), then **one-sided carrier re-illumination** (only spokes traveling +x, or only −x) 600–1200, tracking the parked-mass centroid.
+
+| Illumination | restCM x-drift over 600 ticks | Remnant mass |
+|---|---|---|
+| carriers +x (beam hits −x face) | 22.00 → **21.67** (−0.33) | 1991 → ~1220 (−38%) |
+| carriers −x (beam hits +x face) | 22.00 → **22.45** (+0.45) | 1991 → ~1220 (−39%) |
+
+**Measured:** asymmetric illumination produces persistent directional locomotion — the lump creeps **toward the beam source** at ~0.0005 cells/tick while shedding ~40% of its mass. Mechanism is ablation-front retreat, not photon-recoil: carriers entering the lit face transit the lump and unlock emission throughout, but mass leaves preferentially downstream — the far side erodes faster, shifting the centroid against the illumination gradient. (Our boil-off emits to a *random* moving channel, so true Yarkovsky recoil — direction-correlated emission — remains untested; a directed-emit variant is the queued refinement.)
+
+This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.

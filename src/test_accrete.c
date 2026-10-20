@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
     int fric   = argc > 12 ? atoi(argv[12]) : 0; /* IFRIC transit-drag density cap */
     int fricm  = argc > 13 ? atoi(argv[13]) : 0; /* rest inert + boil rate 1/4k */
     int resume = argc > 14 ? atoi(argv[14]) : 0; /* re-illuminate after t=resume */
+    int side   = argc > 15 ? atoi(argv[15]) : 0; /* resume-phase one-sided drive: +1=x>0, -1=x<0 */
 
     if (meso3i_init(W, H, D, 1)) { fprintf(stderr, "init fail\n"); return 1; }
     NCH = meso3i_nch(); NMOV = NCH - 1;
@@ -154,17 +155,35 @@ int main(int argc, char **argv) {
         for (int z = 0; z < D; z++)
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++) tot += node_mass(x, y, z);
-        if (t % 25 == 0 || t == ticks)
+        /* rest-mass centroid within r2<=64 of C (the parked lump) */
+        double cmx = 0, cmy = 0, cmz = 0; uint64_t cmm = 0;
+        for (int z = 0; z < D; z++)
+        for (int y = 0; y < H; y++)
+        for (int x = 0; x < W; x++) {
+            if (!isite(x, y, z)) continue;
+            int dx = x - CX, dy = y - CY, dz = z - CZ;
+            if (dx * dx + dy * dy + dz * dz > 64) continue;
+            uint32_t m = meso3i_get(x, y, z, NCH - 1);
+            cmx += (double)m * x; cmy += (double)m * y; cmz += (double)m * z;
+            cmm += m;
+        }
+        if (t % 25 == 0 || t == ticks) {
             printf("t=%4d | %4u | %3u | %5u | %5u(%u pol) | %4.1f | %u %u %u | %5u | %lld dz=%lld xy=%lld\n",
                    t, rhoC, qc, infl, outC, outpol,
                    rhoC ? 100.0 * restC / rhoC : 0,
                    sh[0], sh[1], sh[2], qtot,
                    (long long)injected,
                    (long long)dz_face, (long long)dxy_face);
+            if (cmm) printf("        restCM=(%.2f,%.2f,%.2f) mass=%llu\n",
+                            cmx / cmm, cmy / cmm, cmz / cmm,
+                            (unsigned long long)cmm);
+        }
         /* drive: inject on each spoke */
         int drive_on = (!cut || t < cut || (resume && t >= resume));
         if (t % period == 0 && t < ticks && drive_on) {
+            int resume_phase = resume && t >= resume;
             for (int c = 0; c < NMOV; c++) {
+                if (resume_phase && side && cv(c, 0) * side <= 0) continue; /* one-sided re-illumination */
                 if (spokes == 1 && cv(c, 2) != 0) continue;   /* equatorial only */
                 if (spokes == 2 && cv(c, 2) == 0) continue;   /* polar only */
                 int sx = CX - RAY * cv(c, 0), sy = CY - RAY * cv(c, 1),
