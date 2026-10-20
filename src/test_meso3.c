@@ -41,6 +41,7 @@ void     meso3i_qdir(int);
 void     meso3i_field(int, int, int, int);
 void     meso3i_qcap(int);
 void     meso3i_pset(int, int, int, uint8_t);
+void     meso3i_reflect(int);
 uint8_t  meso3i_qget(int x, int y, int z);
 void     meso3i_qset(int x, int y, int z, uint8_t v);
 void     meso3i_tick(void);
@@ -840,6 +841,54 @@ static void t18(int grad, int cap, int mode, const char *tag) {
     meso3i_qmode(0); meso3i_qdir(-1); meso3i_qcap(0);
 }
 
+/* T20: peristaltic locomotion — isotropic swell + elastic bounce +
+ * asymmetric recondensation.  qmode 8 dumps all Q to random channels
+ * on beat 0; IREFL makes saturated destinations refuse the hop and
+ * reverse the quantum to the antipodal channel (the elastic wall);
+ * phase-gated capture re-parks mass preferentially at receptive
+ * forward nodes.  Does the breathing cycle step the lump coherently? */
+static void t20(int refl, int grad, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
+    meso3i_qmode(8); meso3i_qdir(-1); meso3i_qcap(0);
+    meso3i_reflect(refl); meso3i_field(0, 0, 0, 0);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++)
+        meso3i_pset(x, y, z, grad ? (x & 3) : 0);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, 8); seed += 8;
+    }
+    printf("T20 %s refl=%d grad=%d (Q-seed=%d):\n", tag, refl, grad, seed);
+    for (int t = 0; t <= 400; t++) {
+        if (t % 40 == 0) {
+            uint64_t qtot = 0, mtot = 0; double sx = 0, cx = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                qtot += q;
+                sx += q * sin(2 * M_PI * x / W);
+                cx += q * cos(2 * M_PI * x / W);
+                for (int c = 0; c < INCH_i; c++)
+                    mtot += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+            }
+            double R = qtot ? hypot(sx, cx) / qtot : 0;
+            double xc = qtot ? atan2(sx, cx) * W / (2 * M_PI) : 0;
+            if (xc < 0) xc += W;
+            printf("  t=%d Q=%llu x̄c=%.2f R=%.3f chan=%llu\n", t,
+                   (unsigned long long)qtot, xc, R,
+                   (unsigned long long)mtot);
+        }
+        if (t < 400) meso3i_tick();
+    }
+    meso3i_qmode(0); meso3i_reflect(0);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -962,6 +1011,12 @@ int main(void) {
     printf("# --- T19 self-focusing: capture ~ 1+Q (mass attracts mass) ---\n");
     t18(1, 0, 7, "focus");        /* free pump + Q-weighted capture */
     t18(1, 2, 7, "focus+prop");   /* + excess-proportional pump */
+
+    printf("# --- T20 peristaltic locomotion: swell-bounce-deflate ---\n");
+    t20(0, 1, "no-wall");         /* control: swell, no elastic bounce */
+    t20(8, 1, "wall-8");          /* bounce at mass>=8 + phase capture */
+    t20(4, 1, "wall-4");          /* tighter wall */
+    t20(4, 0, "wall-4-flat");     /* flat phase: symmetric collapse */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

@@ -55,6 +55,7 @@ static int      IFLD;                /* external-field weight strength */
 static int      IFV[3];              /* field vector (components -1,0,+1) */
 static int      IQCAP;               /* Q overflow capacity (mode>=5) */
 static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
+static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
@@ -145,6 +146,7 @@ void meso3i_field(int fx, int fy, int fz, int f) {
     IFV[0] = fx; IFV[1] = fy; IFV[2] = fz; IFLD = f;
 }
 void meso3i_qcap(int c) { IQCAP = c; }
+void meso3i_reflect(int cap) { IREFL = cap; }
 void meso3i_pset(int x, int y, int z, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
@@ -396,7 +398,13 @@ void meso3i_tick(void) {
             int qmin = IQCAP ? IQCAP + 1 : 2;
             if (!onbeat || iQ[s] < qmin) continue;
             uint8_t *n = iA + (size_t)s * INCH;
-            if (IQMODE >= 3 && IDIR >= 0) {
+            if (IQMODE >= 8) {
+                /* peristaltic swell: dump ALL Q isotropically into
+                 * random moving channels — the expansion beat */
+                int nq = iQ[s];
+                for (int u = 0; u < nq; u++) n[irnd() % IMOV]++;
+                iQ[s] = 0;
+            } else if (IQMODE >= 3 && IDIR >= 0) {
                 /* emit count: 1/beat baseline; with IQCAP, proportional
                  * to excess above cap (max 4) — peak pumps, thin edges
                  * hold — rate ∝ local Q-height */
@@ -465,6 +473,17 @@ void meso3i_tick(void) {
             if (qcapture(ni)) {
                 uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
                 iQ[ni] = q > 255 ? 255 : (uint8_t)q;
+                continue;
+            }
+            if (IREFL && (int)(iR[ni] + iQ[ni]) >= IREFL) {
+                /* elastic wall (congestion refusal, planck3 DEADLOCK
+                 * analog): hop refused — quantum reverses to the
+                 * antipodal channel at source; momentum flip absorbed
+                 * by the wall (flagged).  c^1 = antipode in the
+                 * direction tables. */
+                int di = si * INCH + (c ^ 1);
+                uint32_t v = iB[di] + n[c];
+                iB[di] = v > 255 ? 255 : (uint8_t)v;
                 continue;
             }
             int di = ni * INCH + c;
