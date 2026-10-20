@@ -156,7 +156,14 @@ void meso3i_pset(int x, int y, int z, uint8_t v) {
  * an upstream emitter's beat-0 at the same global tick when phi ~ x). */
 static int qcapture(int ni) {
     if (IQMODE < 4) return 0;
-    if (IQMODE >= 6) return ((ITICK + iPH[ni]) & 3) == 2;
+    if (IQMODE >= 6) {
+        if (((ITICK + iPH[ni]) & 3) != 2) return 0;
+        /* mode 7: mass-attracts-mass — capture probability ~ (1+Q)/16.
+         * Peak pulls flux in, thin periphery mostly lets it pass —
+         * the discrete self-focusing term */
+        if (IQMODE >= 7) return (int)(irnd() % 16) < (int)iQ[ni] + 1;
+        return 1;
+    }
     return iQ[ni] > 0;
 }
 uint8_t meso3i_qget(int x, int y, int z) {

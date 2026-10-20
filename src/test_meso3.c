@@ -799,10 +799,10 @@ static void halo_profile(int cx0, int cy0, int cz0) {
  * conveyor as T17, but a node emits only the excess above IQCAP: thin
  * regions hoard mass, peaks pump — does the packet hold its shape?
  * Coherence metric: circular concentration R in [0,1] and width sigma. */
-static void t18(int grad, int cap, const char *tag) {
+static void t18(int grad, int cap, int mode, const char *tag) {
     meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
     meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
-    meso3i_qmode(6); meso3i_qdir(0); meso3i_qcap(cap);
+    meso3i_qmode(mode); meso3i_qdir(0); meso3i_qcap(cap);
     meso3i_field(0, 0, 0, 0);
     for (int z = 0; z < D; z++)
     for (int y = 0; y < H; y++)
@@ -814,7 +814,7 @@ static void t18(int grad, int cap, const char *tag) {
         if ((x + y + 20) & 1) continue;
         meso3i_qset(x, y, 20, 8); seed += 8;
     }
-    printf("T18 %s cap=%d (Q-seed=%d):\n", tag, cap, seed);
+    printf("T18 %s mode=%d cap=%d (Q-seed=%d):\n", tag, mode, cap, seed);
     for (int t = 0; t <= 400; t++) {
         if (t % 80 == 0) {
             uint64_t qtot = 0; double sx = 0, cx = 0;
@@ -954,10 +954,14 @@ int main(void) {
     t17(1, "grad-x");          /* phi = x mod 4 conveyor */
 
     printf("# --- T18 soliton test: capacity-thresholded emission ---\n");
-    t18(1, 4, "thresh-4");     /* hoard to 4, pump excess */
-    t18(1, 6, "thresh-6");     /* hoard to 6 */
-    t18(1, 2, "prop-2");       /* rate ~ excess>2 (max 4/beat) */
-    t18(1, 1, "prop-1");       /* rate ~ excess>1 */
+    t18(1, 4, 6, "thresh-4");     /* hoard to 4, pump excess */
+    t18(1, 6, 6, "thresh-6");     /* hoard to 6 */
+    t18(1, 2, 6, "prop-2");       /* rate ~ excess>2 (max 4/beat) */
+    t18(1, 1, 6, "prop-1");       /* rate ~ excess>1 */
+
+    printf("# --- T19 self-focusing: capture ~ 1+Q (mass attracts mass) ---\n");
+    t18(1, 0, 7, "focus");        /* free pump + Q-weighted capture */
+    t18(1, 2, 7, "focus+prop");   /* + excess-proportional pump */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
