@@ -68,13 +68,17 @@ static uint32_t node_mass(int x, int y, int z) {
     return m;
 }
 
+static int64_t dz_face, dxy_face;   /* cumulative drain split: z-faces vs sides */
 static void drain_edge(void) {
     for (int z = 0; z < D; z++)
     for (int y = 0; y < H; y++)
     for (int x = 0; x < W; x++) {
         if (!isite(x, y, z)) continue;
-        if (x >= EDGE && x < W - EDGE && y >= EDGE && y < H - EDGE &&
-            z >= EDGE && z < D - EDGE) continue;
+        int dzf = (z < EDGE || z >= D - EDGE);
+        int dxy = (x < EDGE || x >= W - EDGE || y < EDGE || y >= H - EDGE);
+        if (!dzf && !dxy) continue;
+        uint32_t m = node_mass(x, y, z);
+        if (dzf) dz_face += m; else dxy_face += m;
         for (int c = 0; c < NCH; c++) meso3i_set(x, y, z, c, 0);
     }
 }
@@ -88,6 +92,7 @@ int main(int argc, char **argv) {
     int cut    = argc > 6 ? atoi(argv[6]) : 0;
     int gate   = argc > 7 ? atoi(argv[7]) : 0;
     int RAY    = argc > 8 ? atoi(argv[8]) : 10;
+    int spokes = argc > 9 ? atoi(argv[9]) : 0;  /* 0=all, 1=equatorial(dz=0), 2=polar(dz!=0) */
 
     if (meso3i_init(W, H, D, 1)) { fprintf(stderr, "init fail\n"); return 1; }
     NCH = meso3i_nch(); NMOV = NCH - 1;
@@ -106,11 +111,12 @@ int main(int argc, char **argv) {
         uint32_t infl = 0;
         for (int c = 0; c < NMOV; c++)
             infl += meso3i_get(CX - cv(c, 0), CY - cv(c, 1), CZ - cv(c, 2), c);
-        uint32_t rhoC = 0, restC = 0;
+        uint32_t rhoC = 0, restC = 0, outpol = 0;
         for (int c = 0; c < NCH; c++) {
             uint32_t v = meso3i_get(CX, CY, CZ, c);
             rhoC += v;
             if (c == NCH - 1) restC = v;
+            else if (cv(c, 2) != 0) outpol += v;   /* z-moving channels */
         }
         uint32_t outC = rhoC - restC;
         uint32_t qc = meso3i_qget(CX, CY, CZ);
@@ -137,15 +143,17 @@ int main(int argc, char **argv) {
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++) tot += node_mass(x, y, z);
         if (t % 25 == 0 || t == ticks)
-            printf("t=%4d | %4u | %3u | %5u | %5u | %4.1f | %u %u %u | %5u | %lld %lld\n",
-                   t, rhoC, qc, infl, outC,
+            printf("t=%4d | %4u | %3u | %5u | %5u(%u pol) | %4.1f | %u %u %u | %5u | %lld dz=%lld xy=%lld\n",
+                   t, rhoC, qc, infl, outC, outpol,
                    rhoC ? 100.0 * restC / rhoC : 0,
                    sh[0], sh[1], sh[2], qtot,
                    (long long)injected,
-                   (long long)(injected - (int64_t)tot));
+                   (long long)dz_face, (long long)dxy_face);
         /* drive: inject on each spoke */
         if (t % period == 0 && t < ticks && (!cut || t < cut)) {
             for (int c = 0; c < NMOV; c++) {
+                if (spokes == 1 && cv(c, 2) != 0) continue;   /* equatorial only */
+                if (spokes == 2 && cv(c, 2) == 0) continue;   /* polar only */
                 int sx = CX - RAY * cv(c, 0), sy = CY - RAY * cv(c, 1),
                     sz = CZ - RAY * cv(c, 2);
                 for (int u = 0; u < rate; u++)

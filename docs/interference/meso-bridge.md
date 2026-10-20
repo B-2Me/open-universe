@@ -44,4 +44,9 @@ title: The Multi-Channel Bridge
 
 **The accretion law:** accretion and outflow are separable channels. Native collisions give outflow-only; a condensation ratchet gives accretion-only; the structure that both accretes *and* vents requires both channels open — and lives strictly inside the gradient (dissipative, Prigogine-class), while accretion-without-venting produces frozen bound deposits.
 
+### M32b — asymmetric drive and core scaling
+
+- **Jet test (equatorial spokes only, dz=0 channels):** no collimated polar outflow — z-moving channels at C read zero outflow share; drained mass splits ~42% z-faces / 58% side-faces, consistent with isotropic diffusion downstream, not bipolar jets. Equatorial accretion does not select a vent axis.
+- **Core-size scaling (isotropic condense+emit):** rate=1–2 → sub-threshold, no sustained core; rate=4 → Q_C≈30 plateau; rate=8 → Q_C≈180 still climbing at t=300; rate=16 → saturates at the u8 cap (255). **The driven core's size follows the feed rate, bounded by register saturation — there is an onset threshold (between rate 2 and 4) and a hard ceiling, not a linear law.**
+
 *Q-register (M22–M24, M32) results are engineered rule-family experiments — measured on the multichannel substrate but not its native collision mechanics.*
