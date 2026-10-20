@@ -403,6 +403,11 @@ int main(void) {
     for (double d = 0.1; d <= 0.9; d += 0.2)
         igalilean(d, 0.25, 0, "int D3Q13");
 
+    printf("# --- T8b u->0 convergence of the g plateau (int D3Q13, d=0.3) ---\n");
+    for (double s = 0.05; s <= 0.26; s += 0.10)
+        igalilean(0.30, s, 0, "int D3Q13 u-sweep");
+    igalilean(0.30, 0.02, 0, "int D3Q13 u-sweep");
+
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
     if (meso3i_init(W, H, D, 1)) { printf("init fail\n"); return 1; }
