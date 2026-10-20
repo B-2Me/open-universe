@@ -146,4 +146,10 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 
 **The honest limit:** drift ~0.0004 cells/tick vs. evaporative lifetime ~2500 ticks — the lumps die ~1 cell short of contact. No merger observed; no repulsion; no orbit. Two-body "gravity" exists here but is weak and mortal — a qualitative force-analog, not yet chemistry.
 
+### M37b — merger at contact: trivially stable, structurally inert
+
+Seeding two lumps at sep≤2 (overlapping halos) produces a single connected blob that decays exactly like a lone lump — smooth, symmetric, no fragmentation, but also no coalescence signature: no density spike, no reconfiguration, no ejecta. **Rest-channel mass is passive** — adjacent parked heat is just adjacent parked heat. Lumps have no internal structure to fail or succeed at cohering, no surface tension, no binding energy to release.
+
+**Interpretation:** the "matter" here is a heat deposit, not a droplet. Coalescence is degenerate (two touching deposits ARE one deposit), which means the interaction vocabulary is currently limited to *ablative* coupling — lumps affect each other only through the flux they exchange, never through contact. A real merger physics (cohesion, surface tension, binding-energy release) would need structure inside the lump that contact can rearrange — the rest channel is too simple a state to carry it.
+
 This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
