@@ -104,8 +104,22 @@ int main(int argc, char **argv) {
                     if (!on) spill += st[idx(x, y, z)].q + st[idx(x, y, z)].b;
                 }
         double rot = ring ? atan2(ry, rx) * 57.29577951308232 : 0;
-        printf("t=%3d | ring=%4d lead=c%d(q%d) rot=%6.1f spill=%d\n",
+        printf("t=%3d | ring=%4d lead=c%d(q%d) rot=%6.1f spill=%d",
                t, ring, lead, leadq, rot, spill);
+        /* packet trace: every occupied non-ring cell in the window */
+        for (int z = 15; z <= 25; z++)
+            for (int y = 10; y <= 30; y++)
+                for (int x = 50; x <= 72; x++) {
+                    int on = 0;
+                    for (int i = 0; i < NL; i++)
+                        if (x == LOOP[i][0] && y == LOOP[i][1] &&
+                            z == loop_z[i]) on = 1;
+                    const Rec *r = &st[idx(x, y, z)];
+                    if (!on && r->q + r->b > 0)
+                        printf(" esc@(%d,%d,%d)q%ds%d", x, y, z,
+                               r->q + r->b, r->s & 15);
+                }
+        printf("\n");
         for (int z = 0; z < D; z++)
             for (int y = 0; y < H; y++) {
                 const Rec *r = &st[idx(0, y, z)];
