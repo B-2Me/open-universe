@@ -86,3 +86,19 @@ Two pieces were needed — drag alone (inert off) parked 50–93% of ρ_C in res
 **Correction (verified):** the first run's "bound remnant" was a code-path artifact — the boil-off loop sat behind `collide_node`'s `m < 2` early return, so pure-heat nodes could never radiate. With radiation moved ahead of the gate, the lump **fully boils away** after cutoff (resident →0, injected = drained). Self-trapping via re-parking does *not* hold: emitted quanta escape because surface nodes cool below the friction cap, and the cooling front propagates inward.
 
 **What M33 actually establishes:** transit friction gives a **channel-native dissipative core** — accretion and venting simultaneously, no register, no pair-condensation move — but it is drive-maintained like the Q core, not self-bound. The honest statement of the ontology as measured: *space-is-friction* produces the Prigogine structure natively (drag → parked heat → radiation), but permanence still requires either a true one-way sink or sustained throughput.
+
+### M34 — remnant decay law: exponential cooling, no metastable floor
+
+Swept boil rate (k = 1,4,16 → 1/4k per quantum/tick) and lump size (drive rate 4/8/16 → remnant masses ~5.5k/18k/44k at cutoff). `fric=8` throughout.
+
+| Drive | Boil | Lump @ cutoff | Cooling tail |
+|-------|------|---------------|--------------|
+| rate=4 | 1/4 | ~5.5k | gone by t≈300 (~100 ticks post-cut) |
+| rate=4 | 1/16 | ~6.9k | gone by t≈350 |
+| rate=4 | 1/64 | ~9.4k | tail to t≈650 |
+| rate=8 | 1/64 | ~18k | ρ_C 49→0 over ~450 ticks |
+| rate=16 | 1/64 | ~44k | ρ_C 228→0 over ~525 ticks |
+
+**The law:** ρ_C decay is smooth geometric (rate-16 tail: 228→207→167→143→110→87→61→…→0, ratio ≈0.75–0.8 per 25 ticks) — **pure exponential cooling**, no plateau, no stall, no critical-size floor. Cooling rate scales with boil constant; lifetime grows only **logarithmically** with lump mass (4× mass buys ~75 ticks). The self-shielding hypothesis fails: interior radiation escapes because the cooling front — surface drops below the friction cap first — propagates inward steadily rather than stalling.
+
+**Metastability verdict:** absent. The friction core is a candle, not a rock — its lifetime is proportional to how slowly it radiates, never self-sustaining. A metastable bound regime would need a mechanism that *suppresses* radiation below a threshold (e.g., density-gated emission, or emission cost) — an energy barrier the current rule set doesn't contain.
