@@ -62,3 +62,12 @@ Can pure channel dynamics condense without the Q register? The rest channel is a
 - Cutoff @ t=300: node empties fully (resident→56). Nothing bound.
 
 **Why it must fail:** the rest channel participates symmetrically in collisions — ICOND boosts rest *outputs*, but rest quanta are re-picked as *inputs* at the same rate. The weight shifts the equilibrium distribution; it cannot ratchet. This is M20a ergodicity one level up: every reversible or symmetrically-weighted rule thermalizes, so **an irreversible one-way move (2→Q) is not an implementation hack, it's a logical requirement for accretion**. The honest architectural question is where the arrow lives — Q-register, capacity ceiling, or absorb/remit cycle — not whether to have one.
+
+### M32d — capacity arrows (IREFL congestion refusal, u8 saturation)
+
+Gemini's candidate #2: can the hard capacity ceiling supply the irreversible arrow, with no Q register? Two capacity mechanisms tested:
+
+- **IREFL (congestion refusal):** nodes at ρ≥cap refuse inflow — quanta reverse antipodally at source (`meso3i_reflect`, flag-gated). At `refl=30/60` (above operating density): never fires, identical to native. At `refl=12` (below ρ_C≈20): fires constantly — and produces a **mirror**, not a trap: inflow ≈30/t arrives, ρ_C collapses to ~0, outflow →0 as mass bounces back up the spokes. Cutoff: full drain (resident→10). Refusal excludes rather than binds.
+- **u8 saturation (255 clamp):** unreachable in this regime — channel populations at C carry ~1–5 quanta each; saturation needs ~100× drive. And even where it fires (Q-emission writes), the clamp **destroys** overflow mass — a leak, not a condenser.
+
+**The arrow taxonomy, fully measured:** reversible move → equilibrium (native, ICOND); reflective boundary → exclusion (IREFL); destructive clamp → mass leak (u8). None accretes. The only measured accretion arrow remains the one-way `2→Q` move — the Q register stands as the minimal explicit implementation of what thermodynamics requires, not an arbitrary hack.
