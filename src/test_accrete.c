@@ -157,6 +157,7 @@ int main(int argc, char **argv) {
         for (int x = 0; x < W; x++) tot += node_mass(x, y, z);
         /* rest-mass centroid within r2<=64 of C (the parked lump) */
         double cmx = 0, cmy = 0, cmz = 0; uint64_t cmm = 0;
+        uint64_t mneg = 0, mpos = 0;         /* rest mass x<CX vs x>CX hemispheres */
         for (int z = 0; z < D; z++)
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++) {
@@ -166,6 +167,7 @@ int main(int argc, char **argv) {
             uint32_t m = meso3i_get(x, y, z, NCH - 1);
             cmx += (double)m * x; cmy += (double)m * y; cmz += (double)m * z;
             cmm += m;
+            if (x < CX) mneg += m; else if (x > CX) mpos += m;
         }
         if (t % 25 == 0 || t == ticks) {
             printf("t=%4d | %4u | %3u | %5u | %5u(%u pol) | %4.1f | %u %u %u | %5u | %lld dz=%lld xy=%lld\n",
@@ -174,9 +176,10 @@ int main(int argc, char **argv) {
                    sh[0], sh[1], sh[2], qtot,
                    (long long)injected,
                    (long long)dz_face, (long long)dxy_face);
-            if (cmm) printf("        restCM=(%.2f,%.2f,%.2f) mass=%llu\n",
+            if (cmm) printf("        restCM=(%.2f,%.2f,%.2f) mass=%llu hem-=%llu hem+=%llu\n",
                             cmx / cmm, cmy / cmm, cmz / cmm,
-                            (unsigned long long)cmm);
+                            (unsigned long long)cmm,
+                            (unsigned long long)mneg, (unsigned long long)mpos);
         }
         /* drive: inject on each spoke */
         int drive_on = (!cut || t < cut || (resume && t >= resume));

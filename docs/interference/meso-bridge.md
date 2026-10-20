@@ -130,4 +130,6 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 
 **Measured:** asymmetric illumination produces persistent directional locomotion — the lump creeps **toward the beam source** at ~0.0005 cells/tick while shedding ~40% of its mass. Mechanism is ablation-front retreat, not photon-recoil: carriers entering the lit face transit the lump and unlock emission throughout, but mass leaves preferentially downstream — the far side erodes faster, shifting the centroid against the illumination gradient. (Our boil-off emits to a *random* moving channel, so true Yarkovsky recoil — direction-correlated emission — remains untested; a directed-emit variant is the queued refinement.)
 
+**Hemisphere-resolved confirmation:** splitting parked mass at the centroid plane shows the lit hemisphere (beam-entry side) holds steady at ~480 (erosion exactly offset by drag-parked carriers) while the downstream hemisphere loses 43% (474→269). The "leading edge absorbs, trailing edge erodes" picture is direct evidence, not inference.
+
 This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
