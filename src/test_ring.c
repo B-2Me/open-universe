@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
     const char *ps = argc > 3 ? argv[3] : "000";
 
     int n = (mode == 0 || mode == 3 || mode == 4) ? 2
-          : (mode == 2 ? 1 : (mode == 6 ? 4 : 3));
-    int cores[4][3], ax[4], ph[4];
+          : (mode == 2 ? 1 : (mode >= 6 ? 4 + (mode >= 7) : 3));
+    int cores[5][3], ax[5], ph[5];
     if (mode == 2) {          /* solo breather, axis = first phase digit */
         cores[0][0] = 58; cores[0][1] = 19; cores[0][2] = 20;
         ax[0] = ps[0] - '0';
@@ -106,6 +106,23 @@ int main(int argc, char **argv) {
         cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 7;
         cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
         cores[3][0] = 58; cores[3][1] = 19; cores[3][2] = 20; ax[3] = 9;
+    } else if (mode == 7) {   /* schedule braid: ax7 3-chain + ax9 DIMER
+                               * threading the shared cell (59,20,19);
+                               * ax9 cores (58,19,20)+(58,17,22) bond along
+                               * the -y,+z climb */
+        cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 18; ax[0] = 7;
+        cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 7;
+        cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
+        cores[3][0] = 58; cores[3][1] = 19; cores[3][2] = 20; ax[3] = 9;
+        cores[4][0] = 58; cores[4][1] = 17; cores[4][2] = 22; ax[4] = 9;
+    } else if (mode == 8) {   /* mixed braid: ax7 tilted 3-chain + ax1
+                               * PLANAR dimer at z=19 sharing (59,20,19);
+                               * planar bonds can use ph3 = tilted dead slot */
+        cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 18; ax[0] = 7;
+        cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 7;
+        cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
+        cores[3][0] = 58; cores[3][1] = 20; cores[3][2] = 19; ax[3] = 1;
+        cores[4][0] = 60; cores[4][1] = 20; cores[4][2] = 19; ax[4] = 1;
     } else {                  /* closed triangle */
         cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 20; ax[0] = 1;
         cores[1][0] = 58; cores[1][1] = 19; cores[1][2] = 20; ax[1] = 2;
