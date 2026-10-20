@@ -38,6 +38,8 @@ void     meso3i_bias(int);
 void     meso3i_condense(int);
 void     meso3i_qmode(int);
 void     meso3i_qdir(int);
+void     meso3i_field(int, int, int, int);
+void     meso3i_qcap(int);
 uint8_t  meso3i_qget(int x, int y, int z);
 void     meso3i_qset(int x, int y, int z, uint8_t v);
 void     meso3i_tick(void);
@@ -638,6 +640,92 @@ static void t14(int mode, int gate, int qseed, const char *tag) {
     meso3i_qmode(0); meso3i_gate(0); meso3i_qdir(-1);
 }
 
+/* T15: falling lump — a seeded Q-core under a uniform +x external
+ * field (directional collision-weight bias — momentum injected by the
+ * field, not hidden).  qmode=4 gives isotropic pair emission + capture;
+ * the question is whether the FIELD advects the bound core (0<v<1)
+ * where self-propulsion could not. */
+static void t15(int field, int dir, int cap, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
+    meso3i_qmode(cap ? 5 : 4); meso3i_qdir(dir);
+    meso3i_qcap(cap);
+    meso3i_field(field ? 1 : 0, 0, 0, field);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, 8); seed += 8;
+    }
+    printf("T15 %s field=%d (Q-seed=%d):", tag, field, seed);
+    for (int t = 0; t <= 200; t++) {
+        if (t % 25 == 0 || t == 199) {
+            uint64_t qtot = 0; double qx = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                qtot += q; qx += q * x;
+            }
+            printf("  t=%d Q=%llu Qx̄=%.2f", t,
+                   (unsigned long long)qtot, qtot ? qx / qtot : 0);
+        }
+        if (t < 200) meso3i_tick();
+    }
+    uint64_t m; int64_t px, py, pz;
+    meso3i_totals(&m, &px, &py, &pz);
+    printf("  [channel m=%llu p=(%lld,%lld,%lld) — field injects p]\n",
+           (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
+    meso3i_qmode(0); meso3i_field(0, 0, 0, 0); meso3i_qcap(0);
+}
+
+/* T16: two-lump interaction — Q-cores at x~12 and x~28, emit+capture.
+ * Does lump A's emitted flux deposit momentum/mass at lump B — a
+ * field-mediated force between bound charges?  Track both centroids
+ * (x<20 vs x>20) and the separation d(t) = xB - xA. */
+static void t16(int qseed, int dir, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
+    meso3i_qmode(4); meso3i_qdir(dir); meso3i_field(0, 0, 0, 0);
+    int seed = 0;
+    for (int y = 18; y <= 22; y++)
+    for (int x = 10; x <= 14; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, qseed); seed += qseed;
+    }
+    for (int y = 18; y <= 22; y++)
+    for (int x = 26; x <= 30; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, qseed); seed += qseed;
+    }
+    printf("T16 %s qmode=4 (Q-seed=%d):", tag, seed);
+    for (int t = 0; t <= 200; t++) {
+        if (t % 25 == 0 || t == 199) {
+            uint64_t qa = 0, qb = 0; double xa = 0, xb = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                if (x < 20) { qa += q; xa += q * x; }
+                else        { qb += q; xb += q * x; }
+            }
+            double ca = qa ? xa / qa : 0, cb = qb ? xb / qb : 0;
+            printf("  t=%d QA=%llu xA=%.2f | QB=%llu xB=%.2f | d=%.2f", t,
+                   (unsigned long long)qa, ca,
+                   (unsigned long long)qb, cb,
+                   (qa && qb) ? cb - ca : 0);
+        }
+        if (t < 200) meso3i_tick();
+    }
+    uint64_t m; int64_t px, py, pz;
+    meso3i_totals(&m, &px, &py, &pz);
+    printf("  [channel m=%llu p=(%lld,%lld,%lld)]\n",
+           (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
+    meso3i_qmode(0);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -736,6 +824,16 @@ int main(void) {
     t14(2, 4, 8, "b-lump-emit");      /* seeded Q=8 + tau pair emission */
     meso3i_qdir(0); t14(3, 4, 8, "c-migrate"); /* directed emission +x */
     meso3i_qdir(0); t14(4, 4, 8, "d-advect");  /* emit + core capture */
+
+    printf("# --- T15 falling lump: external +x field advects a Q-core? ---\n");
+    t15(0, 0, 0, "control");       /* directed emit, no field — T14d */
+    t15(16, 0, 0, "field-only");   /* collision-bias field, no overflow */
+    t15(0, 0, 7, "overflow");      /* Q-cap conduction, no field */
+    t15(16, 0, 7, "ovf+field");    /* overflow steered by +x field */
+
+    printf("# --- T16 two-lump interaction: flux-mediated force ---\n");
+    t16(8, 0, "directed");     /* both lumps emit +x — A's flux reaches B */
+    t16(8, -1, "pair-emit");   /* isotropic emission control */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

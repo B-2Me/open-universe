@@ -51,6 +51,9 @@ static int      ICOND;               /* rest-condensation ratchet strength */
 static uint8_t *iQ;                  /* per-site core register (Path A) */
 static int      IQMODE;              /* 0 off, 1 condense, 2 +tau emit, 3 +dir */
 static int      IDIR = -1;           /* directed emission channel (mode 3) */
+static int      IFLD;                /* external-field weight strength */
+static int      IFV[3];              /* field vector (components -1,0,+1) */
+static int      IQCAP;               /* Q overflow capacity (mode>=5) */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
@@ -135,6 +138,10 @@ void meso3i_bias(int b) { IBIAS = b; }
 void meso3i_condense(int c) { ICOND = c; }
 void meso3i_qmode(int m) { IQMODE = m; }
 void meso3i_qdir(int c) { IDIR = c; }
+void meso3i_field(int fx, int fy, int fz, int f) {
+    IFV[0] = fx; IFV[1] = fy; IFV[2] = fz; IFLD = f;
+}
+void meso3i_qcap(int c) { IQCAP = c; }
 uint8_t meso3i_qget(int x, int y, int z) {
     return iQ[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))];
 }
@@ -187,7 +194,7 @@ static void collide_node(uint8_t *n, int si) {
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
     if (m < 2) return;
-    int attempts = IBIAS ? m : m >> 1;   /* biased regime: full coverage */
+    int attempts = (IBIAS || IFLD) ? m : m >> 1;   /* weighted: full coverage */
     if (!attempts) attempts = 1;
     int x = si % IW, y = (si / IW) % IH, z = si / (IW * IH);
     for (int a = 0; a < attempts; a++) {
@@ -222,14 +229,22 @@ static void collide_node(uint8_t *n, int si) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
                 if (!(pm & ipmask(c2) & ipmask(d2))) continue;
                 uint32_t w = 1;
-                if (IBIAS) {
+                if (IBIAS || IFLD) {
                     for (int q = 0; q < 2; q++) {
                         int cc = q ? d2 : c2;
                         if (cc == INCH - 1) { w += IBIAS * atti(iR[si]); continue; }
-                        int ni = iidx(iwrap(x + ICV[cc][0], IW),
-                                      iwrap(y + ICV[cc][1], IH),
-                                      iwrap(z + ICV[cc][2], ID));
-                        w += IBIAS * atti(iR[ni]);
+                        if (IBIAS) {
+                            int ni = iidx(iwrap(x + ICV[cc][0], IW),
+                                          iwrap(y + ICV[cc][1], IH),
+                                          iwrap(z + ICV[cc][2], ID));
+                            w += IBIAS * atti(iR[ni]);
+                        }
+                        if (IFLD) {   /* external field: boost field-aligned
+                                       * members — momentum injected, flagged */
+                            int dt = ICV[cc][0] * IFV[0] + ICV[cc][1] * IFV[1]
+                                   + ICV[cc][2] * IFV[2];
+                            if (dt > 0) w += IFLD * dt;
+                        }
                     }
                 }
                 if (ICOND && (c2 == INCH - 1 || d2 == INCH - 1))
@@ -242,9 +257,10 @@ static void collide_node(uint8_t *n, int si) {
             while (pick < nok - 1 && r >= wgt[pick]) { r -= wgt[pick]; pick++; }
             int k = ok[pick];
             ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
-        } else if (IBIAS) {
-            /* ungated node in biased regime: the domain wall acts on the
-             * bath side too — weight ALL group members by gradient pull */
+        } else if (IBIAS || IFLD) {
+            /* ungated node in weighted regime: the domain wall acts on the
+             * bath side too — weight ALL group members by gradient pull
+             * and/or external-field alignment */
             uint32_t wtot = 0, wgt[200];
             for (int k = 0; k < len; k++) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
@@ -252,10 +268,17 @@ static void collide_node(uint8_t *n, int si) {
                 for (int q = 0; q < 2; q++) {
                     int cc = q ? d2 : c2;
                     if (cc == INCH - 1) { w += IBIAS * atti(iR[si]); continue; }
-                    int ni = iidx(iwrap(x + ICV[cc][0], IW),
-                                  iwrap(y + ICV[cc][1], IH),
-                                  iwrap(z + ICV[cc][2], ID));
-                    w += IBIAS * atti(iR[ni]);
+                    if (IBIAS) {
+                        int ni = iidx(iwrap(x + ICV[cc][0], IW),
+                                      iwrap(y + ICV[cc][1], IH),
+                                      iwrap(z + ICV[cc][2], ID));
+                        w += IBIAS * atti(iR[ni]);
+                    }
+                    if (IFLD) {
+                        int dt = ICV[cc][0] * IFV[0] + ICV[cc][1] * IFV[1]
+                               + ICV[cc][2] * IFV[2];
+                        if (dt > 0) w += IFLD * dt;
+                    }
                 }
                 if (ICOND && (c2 == INCH - 1 || d2 == INCH - 1))
                     w += ICOND * atti(iR[si]);   /* rest-output ratchet */
@@ -350,6 +373,31 @@ void meso3i_tick(void) {
                 n[c]++; n[c ^ 1]++;         /* {c, -c} antipodal pair */
                 iQ[s] -= 2;
             }
+        }
+    }
+    /* 2c. Q overflow (mode>=5): core mass above IQCAP migrates one unit
+     * per tick to a neighbor's Q register — lowest-Q neighbor, field-
+     * aligned preferred (the capacity-overflow conduction analog) */
+    if (IQMODE >= 5 && IQCAP) {
+        for (int s = 0; s < IN; s++) {
+            if (iQ[s] <= IQCAP) continue;
+            int x = s % IW, y = (s / IW) % IH, z = s / (IW * IH);
+            int best = -1;
+            long bs = 0;
+            for (int c = 0; c < IMOV; c++) {
+                int ni = iidx(iwrap(x + ICV[c][0], IW),
+                              iwrap(y + ICV[c][1], IH),
+                              iwrap(z + ICV[c][2], ID));
+                long sc = iQ[ni];
+                if (IFLD) sc -= (long)IFLD *
+                    (ICV[c][0] * IFV[0] + ICV[c][1] * IFV[1] + ICV[c][2] * IFV[2]);
+                if (best < 0 || sc < bs) { best = c; bs = sc; }
+            }
+            if (best < 0) continue;
+            int ni = iidx(iwrap(x + ICV[best][0], IW),
+                          iwrap(y + ICV[best][1], IH),
+                          iwrap(z + ICV[best][2], ID));
+            iQ[s]--; iQ[ni]++;
         }
     }
     ITICK++;
