@@ -54,6 +54,7 @@ static int      IDIR = -1;           /* directed emission channel (mode 3) */
 static int      IFLD;                /* external-field weight strength */
 static int      IFV[3];              /* field vector (components -1,0,+1) */
 static int      IQCAP;               /* Q overflow capacity (mode>=5) */
+static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
@@ -120,7 +121,8 @@ int meso3i_init(int w, int h, int d, int axial) {
     iD = calloc((size_t)IN * 18 * IKMAX, sizeof(uint16_t));
     iR = malloc((size_t)IN * sizeof(uint32_t));
     iQ = calloc((size_t)IN, 1);
-    if (!iA || !iB || !iD || !iR || !iQ) return -2;
+    iPH = calloc((size_t)IN, 1);
+    if (!iA || !iB || !iD || !iR || !iQ || !iPH) return -2;
     build_pairs();
     return 0;
 }
@@ -129,6 +131,7 @@ void meso3i_clear(void) {
     memset(iA, 0, (size_t)IN * INCH);
     memset(iD, 0, (size_t)IN * 18 * IKMAX * sizeof(uint16_t));
     memset(iQ, 0, (size_t)IN);
+    memset(iPH, 0, (size_t)IN);
     ITICK = 0;
 }
 void meso3i_collmode(int m) { IMODE = m; }
@@ -142,6 +145,20 @@ void meso3i_field(int fx, int fy, int fz, int f) {
     IFV[0] = fx; IFV[1] = fy; IFV[2] = fz; IFLD = f;
 }
 void meso3i_qcap(int c) { IQCAP = c; }
+void meso3i_pset(int x, int y, int z, uint8_t v) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
+}
+
+/* mode>=4 capture: unconditionally at Q>0 nodes for modes 4-5; mode 6
+ * is phase-gated — a node captures arriving flux into Q only during its
+ * receptive beat (stream-phase clock (ITICK+iPH)&3 == 2, one beat after
+ * an upstream emitter's beat-0 at the same global tick when phi ~ x). */
+static int qcapture(int ni) {
+    if (IQMODE < 4) return 0;
+    if (IQMODE >= 6) return ((ITICK + iPH[ni]) & 3) == 2;
+    return iQ[ni] > 0;
+}
 uint8_t meso3i_qget(int x, int y, int z) {
     return iQ[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))];
 }
@@ -325,7 +342,7 @@ void meso3i_tick(void) {
                     int ny = iwrap(y + ICV[c][1], IH);
                     int nz = iwrap(z + ICV[c][2], ID);
                     int ni = iidx(nx, ny, nz);
-                    if (IQMODE >= 4 && iQ[ni] > 0) {
+                    if (qcapture(ni)) {
                         /* congestion capture: a Q-core absorbs arriving
                          * channel quanta into core mass (momentum is
                          * absorbed into the core register, flagged) */
@@ -357,12 +374,16 @@ void meso3i_tick(void) {
     for (int s = 0; s < IN; s++)
         collide_node(iA + (size_t)s * INCH, s);
 
-    /* 2b. Q emission clock (tau=4): mode 2 emits antipodal pairs
-     *    (momentum-neutral), mode 3 emits a directed single quantum in
-     *    IDIR (an emission event — momentum is flagged, not conserved) */
-    if (IQMODE >= 2 && (ITICK & 3) == 3) {
+    /* 2b. Q emission clock (tau=4): modes 2-5 fire on the global beat
+     *    (ITICK&3)==3; mode 6 is per-node phased — emit when the node's
+     *    own clock (ITICK+iPH)&3 == 0.  Mode 2 emits antipodal pairs
+     *    (momentum-neutral), mode>=3 with IDIR>=0 emits a directed
+     *    single quantum (emission event — momentum flagged) */
+    if (IQMODE >= 2) {
         for (int s = 0; s < IN; s++) {
-            if (iQ[s] < 2) continue;
+            int onbeat = IQMODE >= 6 ? ((ITICK + iPH[s]) & 3) == 0
+                                     : (ITICK & 3) == 3;
+            if (!onbeat || iQ[s] < 2) continue;
             uint8_t *n = iA + (size_t)s * INCH;
             if (IQMODE >= 3 && IDIR >= 0) {
                 n[IDIR]++;
@@ -422,7 +443,7 @@ void meso3i_tick(void) {
             int ny = iwrap(y + ICV[c][1], IH);
             int nz = iwrap(z + ICV[c][2], ID);
             int ni = iidx(nx, ny, nz);
-            if (IQMODE >= 4 && iQ[ni] > 0) {
+            if (qcapture(ni)) {
                 uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
                 iQ[ni] = q > 255 ? 255 : (uint8_t)q;
                 continue;

@@ -40,6 +40,7 @@ void     meso3i_qmode(int);
 void     meso3i_qdir(int);
 void     meso3i_field(int, int, int, int);
 void     meso3i_qcap(int);
+void     meso3i_pset(int, int, int, uint8_t);
 uint8_t  meso3i_qget(int x, int y, int z);
 void     meso3i_qset(int x, int y, int z, uint8_t v);
 void     meso3i_tick(void);
@@ -726,6 +727,52 @@ static void t16(int qseed, int dir, const char *tag) {
     meso3i_qmode(0);
 }
 
+/* T17: phase-graded lump — qmode 6 staggered emission + phase-gated
+ * capture.  phi = x mod 4 sets a spatial phase gradient (k = grad phi):
+ * emitters fire on beat 0 of their own clock, the +x neighbor is
+ * receptive on beat 2 of the same tick — a forward conveyor.  Compare
+ * flat-phase control (phi=0: simultaneous emit, T14d-style anchor). */
+static void t17(int grad, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
+    meso3i_qmode(6); meso3i_qdir(0); meso3i_qcap(0);
+    meso3i_field(0, 0, 0, 0);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++)
+        meso3i_pset(x, y, z, grad ? (x & 3) : 0);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, 8); seed += 8;
+    }
+    printf("T17 %s qmode=6 (Q-seed=%d):", tag, seed);
+    for (int t = 0; t <= 400; t++) {
+        if (t % 40 == 0) {
+            uint64_t qtot = 0, fwd = 0;
+            double sx = 0, cx = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                qtot += q;
+                sx += q * sin(2 * M_PI * x / W);
+                cx += q * cos(2 * M_PI * x / W);
+                if (x >= 30 || x <= 4) fwd += q;   /* forward wrap zone */
+            }
+            double xc = qtot ? atan2(sx, cx) * W / (2 * M_PI) : 0;
+            if (xc < 0) xc += W;
+            printf("  t=%d Q=%llu x̄c=%.2f fwd=%llu", t,
+                   (unsigned long long)qtot, xc, (unsigned long long)fwd);
+        }
+        if (t < 400) meso3i_tick();
+    }
+    printf("\n");
+    meso3i_qmode(0); meso3i_qdir(-1);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -834,6 +881,10 @@ int main(void) {
     printf("# --- T16 two-lump interaction: flux-mediated force ---\n");
     t16(8, 0, "directed");     /* both lumps emit +x — A's flux reaches B */
     t16(8, -1, "pair-emit");   /* isotropic emission control */
+
+    printf("# --- T17 phase-graded lump: conveyor drift v~1/4? ---\n");
+    t17(0, "flat-phase");      /* control: simultaneous emit */
+    t17(1, "grad-x");          /* phi = x mod 4 conveyor */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

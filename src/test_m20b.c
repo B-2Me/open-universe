@@ -270,10 +270,10 @@ static int minimal_d(int i, int j) {
     return d;
 }
 
-static void defect_probe(int field, const char *tag) {
+static void defect_probe(int field, int bar, const char *tag) {
     const int TRIALS = 300, STEPS = 2000;
     int annih = 0;
-    double sepsum[4] = {0}, driftp = 0, driftn = 0;
+    double sepsum[4] = {0}, driftp = 0, driftn = 0, life = 0;
     int   sepn[4] = {0}, ndefs[4] = {0};
     for (int tr = 0; tr < TRIALS; tr++) {
         st_t st = 0;
@@ -293,6 +293,7 @@ static void defect_probe(int field, const char *tag) {
             q[i] = in - 2;
         }
         double dp = 0, dn = 0;   /* cumulative +x drift of + / - defects */
+        int died = 0;
         for (int t = 0; t < STEPS; t++) {
             /* defect list */
             int defs[128], nd = 0, pv = -1, nv = -1;
@@ -301,7 +302,7 @@ static void defect_probe(int field, const char *tag) {
                     defs[nd++] = i;
                     if (q[i] > 0) pv = i; else nv = i;
                 }
-            if (!nd) { annih++; break; }
+            if (!nd) { annih++; died = 1; life += t; break; }
             int si = t / (STEPS / 4);
             if (pv >= 0 && nv >= 0) {
                 int dx = minimal_d(SX[pv], SX[nv]);
@@ -313,7 +314,7 @@ static void defect_probe(int field, const char *tag) {
             ndefs[si] += nd;
             /* pick a random charged vertex, list moves that lower |q| */
             int v = defs[rnd() % nd];
-            int cand[4], cw[4], nca = 0; uint32_t wtot = 0;
+            int cand[4], cw[4], cann[4], nca = 0; uint32_t wtot = 0;
             for (int k = 0; k < 4; k++) {
                 int b = BOND[v][k];
                 int bit = (int)((st >> b) & 1);
@@ -323,13 +324,17 @@ static void defect_probe(int field, const char *tag) {
                 int dx = minimal_d(SX[nb], SX[v]);
                 uint32_t w = 1;
                 if (field && q[v] * dx > 0) w += field;  /* + drifts +x, - drifts -x */
-                cand[nca] = b; cw[nca] = (int)w; wtot += w; nca++;
+                cand[nca] = b; cw[nca] = (int)w;
+                cann[nca] = (q[nb] == -q[v]);   /* lands on opposite charge */
+                wtot += w; nca++;
             }
             if (!nca) continue;
             uint32_t r = rnd() % wtot;
             int pick = 0;
             while (pick < nca - 1 && r >= (uint32_t)cw[pick]) { r -= cw[pick]; pick++; }
             int b = cand[pick];
+            /* recombination barrier: annihilation accepted at 1/(bar+1) */
+            if (cann[pick] && bar && rnd() % (bar + 1)) continue;
             int nb = (ASITE[b] == v) ? BSITE[b] : ASITE[b];
             int dx = minimal_d(SX[nb], SX[v]);
             if (q[v] > 0) dp += dx; else dn += dx;
@@ -344,12 +349,15 @@ static void defect_probe(int field, const char *tag) {
                 in += ((int)((st >> BOND[nb][k]) & 1) == BDIR[nb][k]);
             q[nb] = in - 2;
         }
+        if (!died) life += STEPS;
         driftp += dp; driftn += dn;
     }
-    printf("defect probe %s: %d trials, annihilated %d (%.0f%%)\n"
+    printf("defect probe %s: %d trials, annihilated %d (%.0f%%), "
+           "mean life %.0f steps\n"
            "  mean sep quartiles: %.2f %.2f %.2f %.2f\n"
            "  mean drift/defect: +q %+.2f sites, -q %+.2f sites\n",
            tag, TRIALS, annih, 100.0 * annih / TRIALS,
+           life / TRIALS,
            sepn[0] ? sepsum[0] / sepn[0] : 0,
            sepn[1] ? sepsum[1] / sepn[1] : 0,
            sepn[2] ? sepsum[2] / sepn[2] : 0,
@@ -371,9 +379,10 @@ int main(void) {
     if (cap_hit || ncnt > (1u << 21)) {
         printf("manifold >2M states — switching to sampled probe\n");
         sampled_probe();
-        defect_probe(0, "unbiased");
-        defect_probe(3, "+x bias F=3");
-        defect_probe(8, "+x bias F=8");
+        defect_probe(0, 0, "unbiased");
+        defect_probe(3, 0, "+x bias F=3");
+        defect_probe(3, 8, "+x F=3 + barrier=8");
+        defect_probe(0, 8, "barrier=8, no field");
         return 0;
     }
     sts = malloc(sizeof(st_t) * (ncnt ? ncnt : 1));
