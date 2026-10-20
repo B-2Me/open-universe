@@ -146,3 +146,11 @@ A discrete substrate on which **space is friction** produces, in order:
 4. The result: bound matter that **breathes while fed, sleeps in vacuum, wakes under light, migrates under anisotropic flux, and weakly attracts its neighbors through mutual radiation.**
 
 All of it lives on 19 integer channels per node, one rest bin, and two rules. All of it survives honest audit. The next rung — structured matter — is a state-representation question, not a flag question, and it is where the frontier now sits.
+
+---
+
+## Replay: The Life of a Lump
+
+A recorded run — real telemetry, not an animation mock: `test_replay` ran the canonical sequence (drive → cutoff → quiet → one-sided beam) and dumped every frame. Watch the convergent spokes feed a breathing amber core, the core freeze dead when the drive cuts at t=200, sit inert for 400 ticks of vacuum quiet, then creep toward the +x carrier beam at t=600 while its far side evaporates.
+
+<FrictionReplay />
