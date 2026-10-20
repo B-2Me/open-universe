@@ -29,6 +29,19 @@ void     meso3_collmode(int);
 int      meso3_nch(void);
 const int (*meso3_cv(void))[3];
 
+int      meso3i_init(int w, int h, int d, int axial);
+void     meso3i_clear(void);
+void     meso3i_collmode(int);
+void     meso3i_tick(void);
+uint8_t  meso3i_get(int x, int y, int z, int c);
+void     meso3i_set(int x, int y, int z, int c, uint8_t v);
+void     meso3i_totals(uint64_t *, int64_t *, int64_t *, int64_t *);
+void     meso3i_hist(uint64_t *);
+int      meso3i_nch(void);
+const int (*meso3i_cv(void))[3];
+
+static int INCH_i;
+
 static uint32_t trng = 12345u;
 static uint32_t trnd(void) {
     trng ^= trng << 13; trng ^= trng >> 17; trng ^= trng << 5;
@@ -249,6 +262,97 @@ static void galilean(double dfill, double s, int mode, const char *tag) {
     meso3_collmode(0);
 }
 
+/* ---- T8: integer-occupancy engine (meso3i) --------------------------- */
+
+static void irandfill(double d) {
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        for (int c = 0; c < INCH_i; c++) {
+            double r = d;
+            while (r >= 1.0) { meso3i_set(x, y, z, c, meso3i_get(x, y, z, c) + 1); r -= 1; }
+            if ((trnd() & 0xFFFF) < (uint32_t)(r * 65536))
+                meso3i_set(x, y, z, c, meso3i_get(x, y, z, c) + 1);
+        }
+    }
+}
+
+static void iledger(int ticks, const char *tag) {
+    uint64_t m0, m; int64_t px0, py0, pz0, px, py, pz;
+    meso3i_totals(&m0, &px0, &py0, &pz0);
+    int bad = 0;
+    for (int t = 0; t < ticks; t++) {
+        meso3i_tick();
+        meso3i_totals(&m, &px, &py, &pz);
+        if (m != m0 || px != px0 || py != py0 || pz != pz0) {
+            if (!bad)
+                printf("    first violation t=%d: dm=%lld dp=(%lld,%lld,%lld)\n",
+                       t + 1, (long long)(m - m0),
+                       (long long)(px - px0), (long long)(py - py0),
+                       (long long)(pz - pz0));
+            bad++;
+        }
+    }
+    printf("T8i ledger %s: mass=%llu p=(%lld,%lld,%lld) violations=%d/%d\n",
+           tag, (unsigned long long)m0,
+           (long long)px0, (long long)py0, (long long)pz0, bad, ticks);
+}
+
+static void igalilean(double dfill, double s, int mode, const char *tag) {
+    const int (*cv)[3] = meso3i_cv();
+    meso3i_clear();
+    meso3i_collmode(mode);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        for (int c = 0; c < INCH_i - 1; c++) {
+            double bias = s * (cv[c][0] + cv[c][1]) / sqrt(2.0);
+            double p = dfill * (1.0 + bias);
+            if (p > 1) p = 1;
+            if (p < 0) p = 0;
+            if ((trnd() & 0xFFFF) < (uint32_t)(p * 65536))
+                meso3i_set(x, y, z, c, 1);
+        }
+        if ((trnd() & 0xFFFF) < (uint32_t)(dfill * 65536))
+            meso3i_set(x, y, z, INCH_i - 1, 1);
+    }
+    for (int t = 0; t < 400; t++) meso3i_tick();
+
+    uint64_t hist[19];
+    meso3i_hist(hist);
+    double M = 0, Px = 0, Py = 0, Pxy = 0;
+    for (int c = 0; c < INCH_i - 1; c++) {
+        double n = (double)hist[c];
+        M += n;
+        Px += n * cv[c][0];
+        Py += n * cv[c][1];
+        Pxy += n * cv[c][0] * cv[c][1];
+    }
+    M += (double)hist[INCH_i - 1];
+    double ux = Px / M, uy = Py / M;
+    double g = (M * ux * uy != 0) ? Pxy / (M * ux * uy) : 0;
+    printf("T8i %s d=%.2f: M=%.0f u=(%.4f,%.4f) → g=%.3f\n",
+           tag, dfill, M, ux, uy, g);
+    meso3i_collmode(0);
+}
+
+static void iequipartition(int ticks) {
+    meso3i_clear();
+    irandfill(0.30);
+    for (int t = 0; t < ticks; t++) meso3i_tick();
+    uint64_t hist[19];
+    meso3i_hist(hist);
+    uint64_t tot = 0;
+    for (int c = 0; c < INCH_i; c++) tot += hist[c];
+    printf("T8i equipartition (axial=%d): mass=%llu chans=%d  [",
+           INCH_i == 19, (unsigned long long)tot, INCH_i);
+    for (int c = 0; c < INCH_i; c++)
+        printf("%s%.3f", c ? " " : "", hist[c] / (double)tot);
+    printf("]\n");
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -287,6 +391,26 @@ int main(void) {
     if (meso3_init(W, H, D, 1)) { printf("init fail\n"); return 1; }
     for (double d = 0.1; d <= 0.5; d += 0.2)
         galilean(d, 0.25, 1, "D3Q19 shell8");
+
+    printf("# === T8: integer-occupancy engine (meso3i, D3Q13) ===\n");
+    INCH_i = 13;
+    if (meso3i_init(W, H, D, 0)) { printf("init fail\n"); return 1; }
+    irandfill(0.30);
+    iledger(300, "int D3Q13 fill 30%");
+    iequipartition(400);
+
+    printf("# --- T8 Galilean sweep: does integer occupancy flatten g(rho)? ---\n");
+    for (double d = 0.1; d <= 0.9; d += 0.2)
+        igalilean(d, 0.25, 0, "int D3Q13");
+
+    printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
+    INCH_i = 19;
+    if (meso3i_init(W, H, D, 1)) { printf("init fail\n"); return 1; }
+    irandfill(0.30);
+    iledger(300, "int D3Q19 fill 30%");
+    iequipartition(400);
+    for (double d = 0.1; d <= 0.5; d += 0.2)
+        igalilean(d, 0.25, 1, "int D3Q19 shell8");
 
     return 0;
 }

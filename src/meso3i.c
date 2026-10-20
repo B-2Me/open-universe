@@ -1,0 +1,210 @@
+/* meso3i.c — M19b: integer-occupancy multi-channel lattice gas (True-FCC).
+ *
+ * Same even-parity FCC sublattice and channel set as meso3.c, but each
+ * channel holds a uint8 population (multi-quantum, Maxwell-Boltzmann-
+ * class statistics) instead of a Boolean bit.
+ *
+ * Collision operator: procedural pair-group shuffle. All unordered pairs
+ * {i,j} (i <= j, doubles and rest included) are grouped at init by the
+ * sum vector c_i + c_j. A collision picks two random quanta from the
+ * node, looks up their pair's equal-sum group, and replaces them with a
+ * selected member pair — mass and momentum conserved exactly per move.
+ * This covers balanced head-on swaps, axial<->face coupling
+ * ({(1,1,0),(1,-1,0)} <-> {(2,0,0),rest}), face triangulations, and
+ * rest-channel exchange in a single uniform rule.
+ *
+ * Modes: 0 uniform member pick, 1 shell-weighted (pair weight (1/8) per
+ * axial member), 2 forward-bias (7/8 keep the input pair).
+ */
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+static const int8_t IDIR12[12][3] = {
+    { 1, 1,0},{-1,-1,0},{ 1,-1,0},{-1, 1,0},
+    { 1,0, 1},{-1,0,-1},{ 1,0,-1},{-1,0, 1},
+    {0, 1, 1},{0,-1,-1},{0, 1,-1},{0,-1, 1}
+};
+static const int8_t IDIR6[6][3] = {
+    {2,0,0},{-2,0,0},{0,2,0},{0,-2,0},{0,0,2},{0,0,-2}
+};
+
+static int      IW, IH, ID, IN;
+static int      INCH, IMOV;          /* channels incl rest; moving chans */
+static uint8_t *iA, *iB;             /* site-major: [site*INCH + c] */
+static int      ICV[19][3];
+
+static int      IMODE;
+static int      INPAIR;              /* unordered pairs incl doubles */
+static uint16_t GID[19][19];         /* group id for pair (i<=j) */
+static uint8_t  GPAIRS[400][2];
+static uint16_t GWGT[400];
+static uint16_t GOFF[300], GLEN[300];
+static int      NGRP;
+
+static uint32_t irng = 0xC0FFEEu;
+static inline uint32_t irnd(void) {
+    irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
+    return irng;
+}
+
+static inline int isite(int x, int y, int z) { return ((x + y + z) & 1) == 0; }
+static inline int iidx(int x, int y, int z)  { return (z * IH + y) * IW + x; }
+static inline int iwrap(int v, int n)        { v %= n; return v < 0 ? v + n : v; }
+
+static void build_pairs(void) {
+    NGRP = 0; INPAIR = 0;
+    memset(GID, 0xFF, sizeof GID);
+    memset(GLEN, 0, sizeof GLEN);
+    memset(GOFF, 0, sizeof GOFF);
+    int8_t gsum[300][3];
+    uint16_t cur[300] = {0};
+    /* pass 1: count members per equal-sum group */
+    for (int i = 0; i < INCH; i++)
+    for (int j = i; j < INCH; j++) {
+        int sx = ICV[i][0] + ICV[j][0];
+        int sy = ICV[i][1] + ICV[j][1];
+        int sz = ICV[i][2] + ICV[j][2];
+        int g = -1;
+        for (int k = 0; k < NGRP; k++)
+            if (gsum[k][0] == sx && gsum[k][1] == sy && gsum[k][2] == sz) { g = k; break; }
+        if (g < 0) { g = NGRP++; gsum[g][0] = sx; gsum[g][1] = sy; gsum[g][2] = sz; }
+        GID[i][j] = (uint8_t)g;
+        GLEN[g]++; INPAIR++;
+    }
+    GOFF[0] = 0;
+    for (int g = 1; g < NGRP; g++) GOFF[g] = GOFF[g - 1] + GLEN[g - 1];
+    /* pass 2: place each pair into its group's contiguous run */
+    for (int i = 0; i < INCH; i++)
+    for (int j = i; j < INCH; j++) {
+        int g = GID[i][j];
+        int slot = GOFF[g] + cur[g]++;
+        GPAIRS[slot][0] = (uint8_t)i;
+        GPAIRS[slot][1] = (uint8_t)j;
+        int na = (i >= 12 && i < IMOV) + (j >= 12 && j < IMOV);
+        GWGT[slot] = (uint16_t)(na > 2 ? 1 : (256 >> (3 * na)));
+    }
+}
+
+int meso3i_init(int w, int h, int d, int axial) {
+    if ((w | h | d) & 1) return -1;
+    IW = w; IH = h; ID = d; IN = w * h * d;
+    IMOV = 12 + (axial ? 6 : 0);
+    INCH = IMOV + 1;
+    for (int c = 0; c < 12; c++) for (int k = 0; k < 3; k++) ICV[c][k] = IDIR12[c][k];
+    for (int c = 0; c < 6;  c++) for (int k = 0; k < 3; k++) ICV[12 + c][k] = IDIR6[c][k];
+    ICV[INCH - 1][0] = ICV[INCH - 1][1] = ICV[INCH - 1][2] = 0;
+    iA = calloc((size_t)IN * INCH, 1);
+    iB = calloc((size_t)IN * INCH, 1);
+    if (!iA || !iB) return -2;
+    build_pairs();
+    return 0;
+}
+
+void meso3i_clear(void) { memset(iA, 0, (size_t)IN * INCH); }
+void meso3i_collmode(int m) { IMODE = m; }
+
+uint8_t meso3i_get(int x, int y, int z, int c) {
+    return iA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * INCH + c];
+}
+void meso3i_set(int x, int y, int z, int c, uint8_t v) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (isite(x, y, z)) iA[iidx(x, y, z) * INCH + c] = v;
+}
+
+/* pick channel of the r-th quantum (0-based) in occupied-channel order */
+static int pick_chan(const uint8_t *n, int r, int skip) {
+    for (int c = 0; c < INCH; c++) {
+        int cnt = n[c] - (c == skip);
+        if (cnt <= 0) continue;
+        if (r < cnt) return c;
+        r -= cnt;
+    }
+    return -1;
+}
+
+static void collide_node(uint8_t *n) {
+    int m = 0;
+    for (int c = 0; c < INCH; c++) m += n[c];
+    if (m < 2) return;
+    int attempts = m >> 1;
+    if (!attempts) attempts = 1;
+    for (int a = 0; a < attempts; a++) {
+        int i = pick_chan(n, irnd() % m, -1);
+        int j = pick_chan(n, irnd() % (m - 1), i);
+        if (i < 0 || j < 0) continue;
+        int lo = i < j ? i : j, hi = i < j ? j : i;
+        int g = GID[lo][hi];
+        int len = GLEN[g];
+        if (len <= 1) continue;
+        int ko, lo2;
+        if (IMODE == 2 && irnd() % 8 < 7) continue;          /* forward bias */
+        if (IMODE == 1) {                                    /* shell weighted */
+            uint32_t tot = 0;
+            for (int k = 0; k < len; k++) tot += GWGT[GOFF[g] + k];
+            uint32_t r = tot ? irnd() % tot : 0;
+            int k = 0;
+            for (; k < len; k++) {
+                if (r < GWGT[GOFF[g] + k]) break;
+                r -= GWGT[GOFF[g] + k];
+            }
+            if (k == len) continue;
+            ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
+        } else {
+            int k = irnd() % len;
+            ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
+        }
+        n[i]--; n[j]--;
+        n[ko]++; n[lo2]++;
+    }
+}
+
+void meso3i_tick(void) {
+    for (int s = 0; s < IN; s++)
+        collide_node(iA + (size_t)s * INCH);
+
+    memset(iB, 0, (size_t)IN * INCH);
+    for (int z = 0; z < ID; z++)
+    for (int y = 0; y < IH; y++)
+    for (int x = 0; x < IW; x++) {
+        if (!isite(x, y, z)) continue;
+        uint8_t *n = iA + (size_t)iidx(x, y, z) * INCH;
+        iB[iidx(x, y, z) * INCH + INCH - 1] += n[INCH - 1];
+        for (int c = 0; c < IMOV; c++) {
+            if (!n[c]) continue;
+            int nx = iwrap(x + ICV[c][0], IW);
+            int ny = iwrap(y + ICV[c][1], IH);
+            int nz = iwrap(z + ICV[c][2], ID);
+            int di = iidx(nx, ny, nz) * INCH + c;
+            uint32_t v = iB[di] + n[c];
+            iB[di] = v > 255 ? 255 : (uint8_t)v;   /* hard cap safety */
+        }
+    }
+    uint8_t *t = iA; iA = iB; iB = t;
+}
+
+void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
+    uint64_t m = 0; int64_t x_ = 0, y_ = 0, z_ = 0;
+    for (int s = 0; s < IN; s++) {
+        const uint8_t *n = iA + (size_t)s * INCH;
+        for (int c = 0; c < INCH; c++) {
+            m += n[c];
+            x_ += (int64_t)n[c] * ICV[c][0];
+            y_ += (int64_t)n[c] * ICV[c][1];
+            z_ += (int64_t)n[c] * ICV[c][2];
+        }
+    }
+    *mass = m; *px = x_; *py = y_; *pz = z_;
+}
+
+void meso3i_hist(uint64_t *out) {
+    memset(out, 0, sizeof(uint64_t) * INCH);
+    for (int s = 0; s < IN; s++) {
+        const uint8_t *n = iA + (size_t)s * INCH;
+        for (int c = 0; c < INCH; c++) out[c] += n[c];
+    }
+}
+
+int meso3i_nch(void) { return INCH; }
+const int (*meso3i_cv(void))[3] { return (const int (*)[3])ICV; }
