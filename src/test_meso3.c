@@ -36,6 +36,10 @@ void     meso3i_dwell(int);
 void     meso3i_gate(int);
 void     meso3i_bias(int);
 void     meso3i_condense(int);
+void     meso3i_qmode(int);
+void     meso3i_qdir(int);
+uint8_t  meso3i_qget(int x, int y, int z);
+void     meso3i_qset(int x, int y, int z, uint8_t v);
 void     meso3i_tick(void);
 uint8_t  meso3i_get(int x, int y, int z, int c);
 uint32_t meso3i_edge(int x, int y, int z, int c);
@@ -584,6 +588,56 @@ static void t13_blob(int gate, int dwell) {
     meso3i_gate(0); meso3i_dwell(1);
 }
 
+/* T14: Path A — Q-register core hybrid.
+ *   a) moving-core condensation: dense m=8 patch under gate+Q —
+ *      does flux condense into a persistent Q-core as the shell
+ *      evaporates?  b) Q-lump under emit cycle: seeded Q=8/node with
+ *      tau-clock pair emission — equilibrium or evaporation?
+ *   c) directed migration: Q-lump + single-quantum emission along
+ *      ch0 — does the core centroid translate? (momentum flagged) */
+static void t14(int mode, int gate, int qseed, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(gate); meso3i_bias(0); meso3i_condense(0); meso3i_qmode(mode);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        if (qseed) {
+            meso3i_qset(x, y, 20, (uint8_t)qseed); seed += qseed;
+        } else {
+            for (int c = 0; c < 4; c++) meso3i_set(x, y, 20, c, 2), seed += 2;
+        }
+    }
+    printf("T14 %s qmode=%d gate=%d (seed=%d):", tag, mode, gate, seed);
+    for (int t = 0; t <= 200; t++) {
+        if (t % 25 == 0 || t == 199) {
+            uint64_t qtot = 0, qbox = 0, mbox = 0;
+            double qx = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                qtot += q; qx += q * x;
+                if (z == 20 && x >= 16 && x <= 24 && y >= 16 && y <= 24) {
+                    qbox += q;
+                    for (int c = 0; c < INCH_i; c++)
+                        mbox += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                }
+            }
+            printf("  t=%d Q=%llu Qbox=%llu Qx̄=%.1f box=%llu", t,
+                   (unsigned long long)qtot, (unsigned long long)qbox,
+                   qtot ? qx / qtot : 0, (unsigned long long)mbox);
+        }
+        if (t < 200) meso3i_tick();
+    }
+    uint64_t m; int64_t px, py, pz;
+    meso3i_totals(&m, &px, &py, &pz);
+    printf("  [channel m=%llu p=(%lld,%lld,%lld)]\n",
+           (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
+    meso3i_qmode(0); meso3i_gate(0); meso3i_qdir(-1);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -676,6 +730,12 @@ int main(void) {
     t13_blob(0, 1);   /* ungated control — expected isotropic dispersal */
     t13_blob(4, 1);   /* gate only */
     t13_blob(4, 2);   /* gate + dwell */
+
+    printf("# --- T14 Path A: Q-register core hybrid ---\n");
+    t14(1, 4, 0, "a-condense");       /* moving core -> Q condensation */
+    t14(2, 4, 8, "b-lump-emit");      /* seeded Q=8 + tau pair emission */
+    meso3i_qdir(0); t14(3, 4, 8, "c-migrate"); /* directed emission +x */
+    meso3i_qdir(0); t14(4, 4, 8, "d-advect");  /* emit + core capture */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

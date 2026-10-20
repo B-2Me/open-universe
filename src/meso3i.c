@@ -48,6 +48,10 @@ static int      IGATE;               /* rho_crit for planar gating; 0=off */
 static int      IBIAS;               /* density-gradient weight strength */
 static int      IRSAT = 8;           /* tent cap: density where pull cuts off */
 static int      ICOND;               /* rest-condensation ratchet strength */
+static uint8_t *iQ;                  /* per-site core register (Path A) */
+static int      IQMODE;              /* 0 off, 1 condense, 2 +tau emit, 3 +dir */
+static int      IDIR = -1;           /* directed emission channel (mode 3) */
+static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
 static uint16_t GID[19][19];         /* group id for pair (i<=j) */
@@ -112,7 +116,8 @@ int meso3i_init(int w, int h, int d, int axial) {
     iB = calloc((size_t)IN * INCH, 1);
     iD = calloc((size_t)IN * 18 * IKMAX, sizeof(uint16_t));
     iR = malloc((size_t)IN * sizeof(uint32_t));
-    if (!iA || !iB || !iD || !iR) return -2;
+    iQ = calloc((size_t)IN, 1);
+    if (!iA || !iB || !iD || !iR || !iQ) return -2;
     build_pairs();
     return 0;
 }
@@ -120,12 +125,23 @@ int meso3i_init(int w, int h, int d, int axial) {
 void meso3i_clear(void) {
     memset(iA, 0, (size_t)IN * INCH);
     memset(iD, 0, (size_t)IN * 18 * IKMAX * sizeof(uint16_t));
+    memset(iQ, 0, (size_t)IN);
+    ITICK = 0;
 }
 void meso3i_collmode(int m) { IMODE = m; }
 void meso3i_dwell(int k) { DWELL = k < 1 ? 1 : (k > IKMAX ? IKMAX : k); }
 void meso3i_gate(int crit) { IGATE = crit; IRSAT = crit ? 2 * crit : 8; }
 void meso3i_bias(int b) { IBIAS = b; }
 void meso3i_condense(int c) { ICOND = c; }
+void meso3i_qmode(int m) { IQMODE = m; }
+void meso3i_qdir(int c) { IDIR = c; }
+uint8_t meso3i_qget(int x, int y, int z) {
+    return iQ[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))];
+}
+void meso3i_qset(int x, int y, int z, uint8_t v) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (isite(x, y, z)) iQ[iidx(x, y, z)] = v;
+}
 
 /* saturation-tent attraction: linear pull up to IRSAT, zero beyond —
  * inward pressure at the domain wall, hard repulsion against runaway */
@@ -179,6 +195,17 @@ static void collide_node(uint8_t *n, int si) {
         int j = pick_chan(n, irnd() % (m - 1), i);
         if (i < 0 || j < 0) continue;
         int lo = i < j ? i : j, hi = i < j ? j : i;
+        /* Q condensation: at gated nodes an antipodal pair {c,-c} may
+         * convert to core mass (Q is outside the collision move family —
+         * the ratchet the rest channel lacked) */
+        if (IQMODE && i != j && ICV[i][0] + ICV[j][0] == 0 &&
+            ICV[i][1] + ICV[j][1] == 0 && ICV[i][2] + ICV[j][2] == 0 &&
+            (!IGATE || m >= IGATE) && irnd() % 2 == 0) {
+            n[i]--; n[j]--;
+            uint32_t q = iQ[si] + 2;
+            iQ[si] = q > 255 ? 255 : (uint8_t)q;
+            continue;
+        }
         int g = GID[lo][hi];
         int len = GLEN[g];
         if (len <= 1) continue;
@@ -274,9 +301,18 @@ void meso3i_tick(void) {
                     int nx = iwrap(x + ICV[c][0], IW);
                     int ny = iwrap(y + ICV[c][1], IH);
                     int nz = iwrap(z + ICV[c][2], ID);
-                    uint8_t *na = iA + (size_t)iidx(nx, ny, nz) * INCH;
-                    uint32_t v = na[c] + arr;
-                    na[c] = v > 255 ? 255 : (uint8_t)v;
+                    int ni = iidx(nx, ny, nz);
+                    if (IQMODE >= 4 && iQ[ni] > 0) {
+                        /* congestion capture: a Q-core absorbs arriving
+                         * channel quanta into core mass (momentum is
+                         * absorbed into the core register, flagged) */
+                        uint32_t q = iQ[ni] + arr;
+                        iQ[ni] = q > 255 ? 255 : (uint8_t)q;
+                    } else {
+                        uint8_t *na = iA + (size_t)ni * INCH;
+                        uint32_t v = na[c] + arr;
+                        na[c] = v > 255 ? 255 : (uint8_t)v;
+                    }
                 }
                 for (int j = 0; j < IKMAX - 1; j++)
                     ed[c * IKMAX + j] = ed[c * IKMAX + j + 1];
@@ -298,6 +334,26 @@ void meso3i_tick(void) {
     for (int s = 0; s < IN; s++)
         collide_node(iA + (size_t)s * INCH, s);
 
+    /* 2b. Q emission clock (tau=4): mode 2 emits antipodal pairs
+     *    (momentum-neutral), mode 3 emits a directed single quantum in
+     *    IDIR (an emission event — momentum is flagged, not conserved) */
+    if (IQMODE >= 2 && (ITICK & 3) == 3) {
+        for (int s = 0; s < IN; s++) {
+            if (iQ[s] < 2) continue;
+            uint8_t *n = iA + (size_t)s * INCH;
+            if (IQMODE >= 3 && IDIR >= 0) {
+                n[IDIR]++;
+                iQ[s]--;
+            } else {
+                int c = (int)(irnd() % 6) * 2 + (int)(irnd() & 1);
+                if (c >= IMOV) c %= IMOV;
+                n[c]++; n[c ^ 1]++;         /* {c, -c} antipodal pair */
+                iQ[s] -= 2;
+            }
+        }
+    }
+    ITICK++;
+
     /* 3. stream: rest stays; moving quanta go direct (DWELL=1) or into
      *    the edge delay line at stage DWELL-1 */
     memset(iB, 0, (size_t)IN * INCH);
@@ -317,7 +373,13 @@ void meso3i_tick(void) {
             int nx = iwrap(x + ICV[c][0], IW);
             int ny = iwrap(y + ICV[c][1], IH);
             int nz = iwrap(z + ICV[c][2], ID);
-            int di = iidx(nx, ny, nz) * INCH + c;
+            int ni = iidx(nx, ny, nz);
+            if (IQMODE >= 4 && iQ[ni] > 0) {
+                uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
+                iQ[ni] = q > 255 ? 255 : (uint8_t)q;
+                continue;
+            }
+            int di = ni * INCH + c;
             uint32_t v = iB[di] + n[c];
             iB[di] = v > 255 ? 255 : (uint8_t)v;   /* hard cap safety */
         }
