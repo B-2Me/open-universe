@@ -58,24 +58,29 @@ static int phase_of(int cq, int cs, int lq, int ls, int rq, int rs) {
 
 int main(int argc, char **argv) {
     int ticks = argc > 1 ? atoi(argv[1]) : 200;
-    int geom  = argc > 2 ? atoi(argv[2]) : 0;
-    int pA    = argc > 3 ? atoi(argv[3]) : 0;
-    int pB    = argc > 4 ? atoi(argv[4]) : 1;
-    int pC    = argc > 5 ? atoi(argv[5]) : 0;
-
-    int cores[3] = {58, 60, 62};
-    int phs[3]   = {pA, pB, pC};
-    if (geom == 1) { cores[0] = 58; cores[1] = 62; cores[2] = 66; }
+    /* usage: tri <ticks> <phases-string> — n cores at 58,60,62,...
+     * e.g. "010" = trimer, "0101" = tetramer, "0120" = mixed */
+    const char *ps = argc > 2 ? argv[2] : "010";
+    int pert_t = argc > 3 ? atoi(argv[3]) : -1;  /* tick to inject a phase */
+    int pert_c = argc > 4 ? atoi(argv[4]) : 1;   /* which core to perturb */
+    int pert_p = argc > 5 ? atoi(argv[5]) : -1;  /* injected phase, -1 = +2 */
+    int n = (int)strlen(ps);
+    if (n > 8) n = 8;
+    int cores[8], phs[8];
+    for (int i = 0; i < n; i++) {
+        cores[i] = 58 + 2 * i;
+        phs[i] = ps[i] - '0';
+    }
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init fail\n"); return 1; }
     planck3_set_mode(0);
     planck3_set_sync(1);
     planck3_set_temit(300);
 
-    for (int i = 0; i < 3; i++) seed_breather(cores[i], phs[i]);
+    for (int i = 0; i < n; i++) seed_breather(cores[i], phs[i]);
     planck3_prepare();
-    printf("# test_trimer geom=%d cores=(%d,%d,%d) phases=(%d,%d,%d)\n",
-           geom, cores[0], cores[1], cores[2], pA, pB, pC);
+    printf("# test_trimer n=%d phases=%s cores=(", n, ps);
+    for (int i = 0; i < n; i++) printf("%d%s", cores[i], i < n - 1 ? "," : ")\n");
 
     static uint16_t hist[24][K];
     const Rec *st = (const Rec *)planck3_state_pointer();
@@ -104,11 +109,14 @@ int main(int argc, char **argv) {
                     planck3_set_node(idx(0, y, z), 0, 0, 0, 0, 0);
                 }
             }
+        if (t == pert_t && pert_c < n) /* inject phase defect */
+            seed_breather(cores[pert_c],
+                          pert_p >= 0 ? pert_p : (phs[pert_c] + 2) % 4);
         if (t < ticks) planck3_tick();
         st = (const Rec *)planck3_state_pointer();
     }
 
-    for (int c = 0; c < 3; c++) {
+    for (int c = 0; c < n; c++) {
         int cx = cores[c] - X0;
         int qEnd = hist[cx][K - 1] & 0xFF;
         int sEnd = hist[cx][K - 1] >> 8;
