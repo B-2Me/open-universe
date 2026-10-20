@@ -390,8 +390,16 @@ void meso3i_tick(void) {
             if (!onbeat || iQ[s] < qmin) continue;
             uint8_t *n = iA + (size_t)s * INCH;
             if (IQMODE >= 3 && IDIR >= 0) {
-                n[IDIR]++;
-                iQ[s]--;
+                /* emit count: 1/beat baseline; with IQCAP, proportional
+                 * to excess above cap (max 4) — peak pumps, thin edges
+                 * hold — rate ∝ local Q-height */
+                int nemit = 1;
+                if (IQCAP) {
+                    nemit = iQ[s] - IQCAP;
+                    if (nemit > 4) nemit = 4;
+                }
+                n[IDIR] = n[IDIR] + nemit > 255 ? 255 : (uint8_t)(n[IDIR] + nemit);
+                iQ[s] -= nemit;
             } else {
                 int c = (int)(irnd() % 6) * 2 + (int)(irnd() & 1);
                 if (c >= IMOV) c %= IMOV;

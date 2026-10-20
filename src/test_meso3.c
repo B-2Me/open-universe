@@ -956,6 +956,8 @@ int main(void) {
     printf("# --- T18 soliton test: capacity-thresholded emission ---\n");
     t18(1, 4, "thresh-4");     /* hoard to 4, pump excess */
     t18(1, 6, "thresh-6");     /* hoard to 6 */
+    t18(1, 2, "prop-2");       /* rate ~ excess>2 (max 4/beat) */
+    t18(1, 1, "prop-1");       /* rate ~ excess>1 */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

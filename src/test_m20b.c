@@ -383,6 +383,11 @@ int main(void) {
         defect_probe(3, 0, "+x bias F=3");
         defect_probe(3, 8, "+x F=3 + barrier=8");
         defect_probe(0, 8, "barrier=8, no field");
+        /* mobility curve: drift rate vs field at barrier=8 */
+        defect_probe(1, 8, "mu F=1 bar=8");
+        defect_probe(2, 8, "mu F=2 bar=8");
+        defect_probe(4, 8, "mu F=4 bar=8");
+        defect_probe(8, 8, "mu F=8 bar=8");
         return 0;
     }
     sts = malloc(sizeof(st_t) * (ncnt ? ncnt : 1));
