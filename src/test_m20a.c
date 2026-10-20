@@ -104,15 +104,64 @@ static int sidx(uint64_t s) {
     return states[lo] == s ? lo : -1;
 }
 
+/* ---- move-subfamily filters (Route B screen) ---------------------------
+ * mode 0: unrestricted (baseline, M20a)
+ * mode 1: angular <=60 deg — exists a matching of out→in with cos>=1/2
+ *         (4*dot^2 >= mag_a*mag_b, dot>=0). Rest matches anything.
+ * mode 2: angular <=90 deg — dot>=0 only (no backward deflection).
+ * mode 3: rest-trapping — at least one side of the exchange contains rest.
+ * mode 4: planar circulation — both pairs share a common coordinate plane. */
+static int REST;
+
+static int dotc(int a, int b) {
+    return CV[a][0] * CV[b][0] + CV[a][1] * CV[b][1] + CV[a][2] * CV[b][2];
+}
+static int mag2(int c) { return dotc(c, c); }
+
+static int pmask(int c) {  /* coordinate planes containing channel c */
+    if (c == REST) return 7;
+    int x = CV[c][0], y = CV[c][1], z = CV[c][2];
+    int m = 0;
+    if (x && y) m |= 1;                 /* xy plane */
+    if (x && z) m |= 2;                 /* xz plane */
+    if (y && z) m |= 4;                 /* yz plane */
+    return m;
+}
+
+static int ang_ok(int in, int out, int sixty) {
+    if (in == REST || out == REST) return 1;   /* rest has no direction */
+    int d = dotc(in, out);
+    if (!sixty) return d >= 0;
+    return d > 0 && 4 * d * d >= mag2(in) * mag2(out);
+}
+
+static int ok_move(int mode, int a, int b, int c, int d) {
+    switch (mode) {
+    case 0: return 1;
+    case 1:
+        return (ang_ok(a, c, 1) && ang_ok(b, d, 1)) ||
+               (ang_ok(a, d, 1) && ang_ok(b, c, 1));
+    case 2:
+        return (ang_ok(a, c, 0) && ang_ok(b, d, 0)) ||
+               (ang_ok(a, d, 0) && ang_ok(b, c, 0));
+    case 3:
+        return a == REST || b == REST || c == REST || d == REST;
+    case 4:
+        return (pmask(a) & pmask(b) & pmask(c) & pmask(d)) != 0;
+    }
+    return 1;
+}
+
 /* ---- union-find over move edges ---------------------------------------- */
 
 static int *uf;
 static int ufind(int x) { while (uf[x] != x) { uf[x] = uf[uf[x]]; x = uf[x]; } return x; }
 static void uunion(int a, int b) { uf[ufind(a)] = ufind(b); }
 
-static void analyze_mass(int m, int axial) {
+static void analyze_mass(int m, int axial, int mode) {
     NMOV = 12 + (axial ? 6 : 0);
     NCH = NMOV + 1;
+    REST = NCH - 1;
     for (int c = 0; c < 12; c++) for (int k = 0; k < 3; k++) CV[c][k] = D12[c][k];
     for (int c = 0; c < 6;  c++) for (int k = 0; k < 3; k++) CV[12 + c][k] = D6[c][k];
     CV[NCH - 1][0] = CV[NCH - 1][1] = CV[NCH - 1][2] = 0;
@@ -145,6 +194,7 @@ static void analyze_mass(int m, int axial) {
             int g = GID[a][b];
             for (int k = 0; k < GLEN[g]; k++) {
                 int c = GPAIRS[GOFF[g] + k][0], d = GPAIRS[GOFF[g] + k][1];
+                if (!ok_move(mode, a, b, c, d)) continue;
                 int n2[19]; memcpy(n2, n, sizeof n2);
                 n2[a]--; n2[b]--; n2[c]++; n2[d]++;
                 int j = sidx(pack(n2));
@@ -187,15 +237,22 @@ static void analyze_mass(int m, int axial) {
             }
         }
     }
-    printf("m=%d %s: %d states, %d momentum classes, %d components total, "
+    printf("m=%d %s mode=%d: %d states, %d momentum classes, %d components total, "
            "%d classes with protected sectors\n",
-           m, axial ? "D3Q19" : "D3Q13", nstates, ncls, comps, multi);
+           m, axial ? "D3Q19" : "D3Q13", mode, nstates, ncls, comps, multi);
     free(states); free(ckey); free(uf);
 }
 
 int main(void) {
-    for (int axial = 0; axial <= 1; axial++)
-        for (int m = 2; m <= 4; m++)
-            analyze_mass(m, axial);
+    static const char *names[] = {
+        "full move family", "angular <=60", "angular <=90",
+        "rest-trapping", "planar circulation"
+    };
+    for (int mode = 0; mode <= 4; mode++) {
+        printf("# === mode %d: %s ===\n", mode, names[mode]);
+        for (int axial = 0; axial <= 1; axial++)
+            for (int m = 2; m <= 4; m++)
+                analyze_mass(m, axial, mode);
+    }
     return 0;
 }
