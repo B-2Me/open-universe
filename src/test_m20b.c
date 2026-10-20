@@ -255,6 +255,108 @@ static void sampled_probe(void) {
     free(seen);
 }
 
+/* ---- defect-sector probe: seeded monopole pair -------------------------
+ * A single-bond flip on an ice state creates a (+1,-1) defect pair on the
+ * bond's endpoints (in-degree 3 vs 1).  Defect dynamics: pick a charged
+ * vertex, flip an incident bond that lowers |q| — the defect hops to the
+ * neighbor (or annihilates onto an opposite charge).  Measures:
+ *   - annihilation fraction / survival of the pair
+ *   - mean separation vs time (deconfinement: does r grow/diffuse?)
+ *   - under a +x move bias, do the charges drift opposite directions? */
+static int minimal_d(int i, int j) {
+    int d = i - j;
+    if (d >  L / 2) d -= L;
+    if (d < -L / 2) d += L;
+    return d;
+}
+
+static void defect_probe(int field, const char *tag) {
+    const int TRIALS = 300, STEPS = 2000;
+    int annih = 0;
+    double sepsum[4] = {0}, driftp = 0, driftn = 0;
+    int   sepn[4] = {0}, ndefs[4] = {0};
+    for (int tr = 0; tr < TRIALS; tr++) {
+        st_t st = 0;
+        memset(VIN, 0, sizeof VIN);
+        for (int i = 0; i < NS; i++) VDONE[i] = 4;
+        if (!rs_rec(0, &st)) continue;
+        /* seed: flip one random bond -> adjacent (+1,-1) pair */
+        int b0 = (int)(rnd() % NB);
+        st ^= (st_t)1 << b0;
+        int q[128];
+        for (int i = 0; i < NS; i++) {
+            int in = 0;
+            for (int k = 0; k < 4; k++) {
+                int bit = (int)((st >> BOND[i][k]) & 1);
+                in += bit == BDIR[i][k];
+            }
+            q[i] = in - 2;
+        }
+        double dp = 0, dn = 0;   /* cumulative +x drift of + / - defects */
+        for (int t = 0; t < STEPS; t++) {
+            /* defect list */
+            int defs[128], nd = 0, pv = -1, nv = -1;
+            for (int i = 0; i < NS; i++)
+                if (q[i]) {
+                    defs[nd++] = i;
+                    if (q[i] > 0) pv = i; else nv = i;
+                }
+            if (!nd) { annih++; break; }
+            int si = t / (STEPS / 4);
+            if (pv >= 0 && nv >= 0) {
+                int dx = minimal_d(SX[pv], SX[nv]);
+                int dy = minimal_d(SY[pv], SY[nv]);
+                int dz = minimal_d(SZ[pv], SZ[nv]);
+                sepsum[si] += sqrt(dx * dx + dy * dy + dz * dz);
+                sepn[si]++;
+            }
+            ndefs[si] += nd;
+            /* pick a random charged vertex, list moves that lower |q| */
+            int v = defs[rnd() % nd];
+            int cand[4], cw[4], nca = 0; uint32_t wtot = 0;
+            for (int k = 0; k < 4; k++) {
+                int b = BOND[v][k];
+                int bit = (int)((st >> b) & 1);
+                int in_v = (bit == BDIR[v][k]);
+                if ((q[v] > 0 && !in_v) || (q[v] < 0 && in_v)) continue;
+                int nb = ADJ[v][k];
+                int dx = minimal_d(SX[nb], SX[v]);
+                uint32_t w = 1;
+                if (field && q[v] * dx > 0) w += field;  /* + drifts +x, - drifts -x */
+                cand[nca] = b; cw[nca] = (int)w; wtot += w; nca++;
+            }
+            if (!nca) continue;
+            uint32_t r = rnd() % wtot;
+            int pick = 0;
+            while (pick < nca - 1 && r >= (uint32_t)cw[pick]) { r -= cw[pick]; pick++; }
+            int b = cand[pick];
+            int nb = (ASITE[b] == v) ? BSITE[b] : ASITE[b];
+            int dx = minimal_d(SX[nb], SX[v]);
+            if (q[v] > 0) dp += dx; else dn += dx;
+            st ^= (st_t)1 << b;
+            /* recompute endpoint charges */
+            int in = 0;
+            for (int k = 0; k < 4; k++)
+                in += ((int)((st >> BOND[v][k]) & 1) == BDIR[v][k]);
+            q[v] = in - 2;
+            in = 0;
+            for (int k = 0; k < 4; k++)
+                in += ((int)((st >> BOND[nb][k]) & 1) == BDIR[nb][k]);
+            q[nb] = in - 2;
+        }
+        driftp += dp; driftn += dn;
+    }
+    printf("defect probe %s: %d trials, annihilated %d (%.0f%%)\n"
+           "  mean sep quartiles: %.2f %.2f %.2f %.2f\n"
+           "  mean drift/defect: +q %+.2f sites, -q %+.2f sites\n",
+           tag, TRIALS, annih, 100.0 * annih / TRIALS,
+           sepn[0] ? sepsum[0] / sepn[0] : 0,
+           sepn[1] ? sepsum[1] / sepn[1] : 0,
+           sepn[2] ? sepsum[2] / sepn[2] : 0,
+           sepn[3] ? sepsum[3] / sepn[3] : 0,
+           driftp / TRIALS, driftn / TRIALS);
+}
+
 int main(void) {
     build();
     find_cycles();
@@ -269,6 +371,9 @@ int main(void) {
     if (cap_hit || ncnt > (1u << 21)) {
         printf("manifold >2M states — switching to sampled probe\n");
         sampled_probe();
+        defect_probe(0, "unbiased");
+        defect_probe(3, "+x bias F=3");
+        defect_probe(8, "+x bias F=8");
         return 0;
     }
     sts = malloc(sizeof(st_t) * (ncnt ? ncnt : 1));
