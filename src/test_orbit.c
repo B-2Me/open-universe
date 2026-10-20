@@ -52,7 +52,9 @@ int main(int argc, char **argv) {
         int q = fill == 1 ? 200 : (fill == 2 ? (i % 2 ? 200 : 0) : (i == 0 ? 200 : 0));
         int h = 0, b = 0;
         if (fill == 3) { q = 60; h = 500; }   /* loom knot-seed density */
-        if (fill == 4 && i == 0) b = 200;     /* injected in-flight packet */
+        if (fill >= 4) q = 0;                  /* pure momentum injection */
+        if (fill == 4 && i == (argc > 4 ? atoi(argv[4]) : 0))
+            b = argc > 3 ? atoi(argv[3]) : 200;
         if (fill == 5) { q = 60; h = 500; if (i == 0) b = 200; } /* hot ring + packet */
         planck3_set_node(idx(LOOP[i][0], LOOP[i][1], ZL), q, LOOP[i][2], h, b, 0);
     }
