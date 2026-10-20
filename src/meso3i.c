@@ -45,6 +45,10 @@ static uint16_t *iD;                 /* [site][NMOV][IKMAX] */
 
 static int      IMODE;
 static int      IGATE;               /* rho_crit for planar gating; 0=off */
+static int      IBIAS;               /* density-gradient weight strength */
+static int      IRSAT = 8;           /* tent cap: density where pull cuts off */
+static int      ICOND;               /* rest-condensation ratchet strength */
+static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
 static uint16_t GID[19][19];         /* group id for pair (i<=j) */
 static uint8_t  GPAIRS[400][2];
@@ -107,7 +111,8 @@ int meso3i_init(int w, int h, int d, int axial) {
     iA = calloc((size_t)IN * INCH, 1);
     iB = calloc((size_t)IN * INCH, 1);
     iD = calloc((size_t)IN * 18 * IKMAX, sizeof(uint16_t));
-    if (!iA || !iB || !iD) return -2;
+    iR = malloc((size_t)IN * sizeof(uint32_t));
+    if (!iA || !iB || !iD || !iR) return -2;
     build_pairs();
     return 0;
 }
@@ -118,7 +123,13 @@ void meso3i_clear(void) {
 }
 void meso3i_collmode(int m) { IMODE = m; }
 void meso3i_dwell(int k) { DWELL = k < 1 ? 1 : (k > IKMAX ? IKMAX : k); }
-void meso3i_gate(int crit) { IGATE = crit; }
+void meso3i_gate(int crit) { IGATE = crit; IRSAT = crit ? 2 * crit : 8; }
+void meso3i_bias(int b) { IBIAS = b; }
+void meso3i_condense(int c) { ICOND = c; }
+
+/* saturation-tent attraction: linear pull up to IRSAT, zero beyond —
+ * inward pressure at the domain wall, hard repulsion against runaway */
+static int atti(uint32_t r) { return (int)(r > (uint32_t)IRSAT ? 0 : r); }
 
 /* coordinate planes containing channel c: bit0=xy, bit1=xz, bit2=yz */
 static int ipmask(int c) {
@@ -154,12 +165,13 @@ static int pick_chan(const uint8_t *n, int r, int skip) {
     return -1;
 }
 
-static void collide_node(uint8_t *n) {
+static void collide_node(uint8_t *n, int si) {
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
     if (m < 2) return;
-    int attempts = m >> 1;
+    int attempts = IBIAS ? m : m >> 1;   /* biased regime: full coverage */
     if (!attempts) attempts = 1;
+    int x = si % IW, y = (si / IW) % IH, z = si / (IW * IH);
     for (int a = 0; a < attempts; a++) {
         int i = pick_chan(n, irnd() % m, -1);
         int j = pick_chan(n, irnd() % (m - 1), i);
@@ -170,16 +182,59 @@ static void collide_node(uint8_t *n) {
         if (len <= 1) continue;
         int ko, lo2;
         if (IGATE && m >= IGATE) {
-            /* planar-circulation subfamily: only output pairs sharing a
-             * coordinate plane with the input pair are allowed */
+            /* planar-circulation subfamily gated at rho>=crit; output
+             * members weighted by density-gradient attraction (tent
+             * capped at 2*crit) toward each member's destinations —
+             * the discrete surface-tension analog */
             int pm = ipmask(lo) & ipmask(hi);
+            uint32_t wtot = 0, wgt[64];
             int ok[64], nok = 0;
             for (int k = 0; k < len; k++) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
-                if (pm & ipmask(c2) & ipmask(d2)) ok[nok++] = k;
+                if (!(pm & ipmask(c2) & ipmask(d2))) continue;
+                uint32_t w = 1;
+                if (IBIAS) {
+                    for (int q = 0; q < 2; q++) {
+                        int cc = q ? d2 : c2;
+                        if (cc == INCH - 1) { w += IBIAS * atti(iR[si]); continue; }
+                        int ni = iidx(iwrap(x + ICV[cc][0], IW),
+                                      iwrap(y + ICV[cc][1], IH),
+                                      iwrap(z + ICV[cc][2], ID));
+                        w += IBIAS * atti(iR[ni]);
+                    }
+                }
+                if (ICOND && (c2 == INCH - 1 || d2 == INCH - 1))
+                    w += ICOND * atti(iR[si]);   /* rest-output ratchet */
+                ok[nok] = k; wgt[nok] = w; wtot += w; nok++;
             }
             if (!nok) continue;
-            int k = ok[irnd() % nok];
+            uint32_t r = irnd() % wtot;
+            int pick = 0;
+            while (pick < nok - 1 && r >= wgt[pick]) { r -= wgt[pick]; pick++; }
+            int k = ok[pick];
+            ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
+        } else if (IBIAS) {
+            /* ungated node in biased regime: the domain wall acts on the
+             * bath side too — weight ALL group members by gradient pull */
+            uint32_t wtot = 0, wgt[64];
+            for (int k = 0; k < len; k++) {
+                int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
+                uint32_t w = 1;
+                for (int q = 0; q < 2; q++) {
+                    int cc = q ? d2 : c2;
+                    if (cc == INCH - 1) { w += IBIAS * atti(iR[si]); continue; }
+                    int ni = iidx(iwrap(x + ICV[cc][0], IW),
+                                  iwrap(y + ICV[cc][1], IH),
+                                  iwrap(z + ICV[cc][2], ID));
+                    w += IBIAS * atti(iR[ni]);
+                }
+                if (ICOND && (c2 == INCH - 1 || d2 == INCH - 1))
+                    w += ICOND * atti(iR[si]);   /* rest-output ratchet */
+                wgt[k] = w; wtot += w;
+            }
+            uint32_t r = irnd() % wtot;
+            int k = 0;
+            while (k < len - 1 && r >= wgt[k]) { r -= wgt[k]; k++; }
             ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
         } else if (IMODE == 2 && irnd() % 8 < 7) continue;   /* forward bias */
         else if (IMODE == 1) {                               /* shell weighted */
@@ -228,9 +283,18 @@ void meso3i_tick(void) {
         }
     }
 
+    /* 2a. pre-collision density snapshot (strict synchronicity: the
+     * gradient read must not see partially-collided sites) */
+    for (int s = 0; s < IN; s++) {
+        const uint8_t *n = iA + (size_t)s * INCH;
+        uint32_t r = 0;
+        for (int c = 0; c < INCH; c++) r += n[c];
+        iR[s] = r;
+    }
+
     /* 2. node collisions */
     for (int s = 0; s < IN; s++)
-        collide_node(iA + (size_t)s * INCH);
+        collide_node(iA + (size_t)s * INCH, s);
 
     /* 3. stream: rest stays; moving quanta go direct (DWELL=1) or into
      *    the edge delay line at stage DWELL-1 */

@@ -34,6 +34,8 @@ void     meso3i_clear(void);
 void     meso3i_collmode(int);
 void     meso3i_dwell(int);
 void     meso3i_gate(int);
+void     meso3i_bias(int);
+void     meso3i_condense(int);
 void     meso3i_tick(void);
 uint8_t  meso3i_get(int x, int y, int z, int c);
 uint32_t meso3i_edge(int x, int y, int z, int c);
@@ -478,18 +480,30 @@ static void t10_ring(void) {
  *   boxmass   = fraction within the seed footprint x,y in [16,24]
  * If the gate binds, the core persists; if the wall leaks, it evaporates
  * into the ergodic bath. gate=0 control shows unprotected decay. */
-static void t11_core(int gate, int dwell, int per) {
-    meso3i_clear(); meso3i_dwell(dwell); meso3i_collmode(0); meso3i_gate(gate);
+static void t11_core3(int gate, int dwell, int per, int bias, int restseed, int cond);
+static void t11_core2(int gate, int dwell, int per, int bias, int restseed);
+static void t11_core(int gate, int dwell, int per, int bias) {
+    t11_core2(gate, dwell, per, bias, 0);
+}
+static void t11_core2(int gate, int dwell, int per, int bias, int restseed) {
+    t11_core3(gate, dwell, per, bias, restseed, 0);
+}
+static void t11_core3(int gate, int dwell, int per, int bias, int restseed, int cond) {
+    meso3i_clear(); meso3i_dwell(dwell); meso3i_collmode(0);
+    meso3i_gate(gate); meso3i_bias(bias); meso3i_condense(cond);
     int seed = 0;
     for (int y = 16; y <= 24; y++)
     for (int x = 16; x <= 24; x++) {
         if ((x + y + 20) & 1) continue;
         for (int c = 0; c < 4; c++) meso3i_set(x, y, 20, c, (uint8_t)per), seed += per;
+        if (restseed) meso3i_set(x, y, 20, INCH_i - 1, (uint8_t)per), seed += per;
     }
-    printf("T11 gate=%d dwell=%d m/node=%d (seed=%d):", gate, dwell, 4 * per, seed);
+    printf("T11 gate=%d bias=%d dwell=%d rest=%d cond=%d (seed=%d):",
+           gate, bias, dwell, restseed, cond, seed);
     for (int t = 0; t <= 200; t++) {
         if (t % 25 == 0 || t == 199) {
-            uint64_t m = 0, plane = 0, box = 0;
+            uint64_t m = 0, plane = 0, box = 0, boxrest = 0;
+            int rmax = 0;
             for (int z = 0; z < D; z++)
             for (int y = 0; y < H; y++)
             for (int x = 0; x < W; x++) {
@@ -498,11 +512,16 @@ static void t11_core(int gate, int dwell, int per) {
                 for (int c = 0; c < INCH_i; c++)
                     n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
                 m += n;
+                if (n > rmax) rmax = n;
                 if (z == 20) plane += n;
-                if (z == 20 && x >= 16 && x <= 24 && y >= 16 && y <= 24) box += n;
+                if (z == 20 && x >= 16 && x <= 24 && y >= 16 && y <= 24) {
+                    box += n;
+                    boxrest += meso3i_get(x, y, z, INCH_i - 1);
+                }
             }
-            printf("  t=%d plane=%.0f%% box=%.0f%%", t,
-                   m ? 100.0 * plane / m : 0, m ? 100.0 * box / m : 0);
+            printf("  t=%d plane=%.0f%% box=%.0f%% boxrest=%llu ρmax=%d", t,
+                   m ? 100.0 * plane / m : 0, m ? 100.0 * box / m : 0,
+                   (unsigned long long)boxrest, rmax);
         }
         if (t < 200) meso3i_tick();
     }
@@ -510,7 +529,7 @@ static void t11_core(int gate, int dwell, int per) {
     meso3i_totals(&m, &px, &py, &pz);
     printf("  [conservation m=%llu p=(%lld,%lld,%lld)]\n",
            (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
-    meso3i_gate(0); meso3i_dwell(1);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0); meso3i_dwell(1);
 }
 
 int main(void) {
@@ -585,11 +604,21 @@ int main(void) {
     t10_ring();
 
     printf("# --- T11 rho-gated planar core (int D3Q13) ---\n");
-    t11_core(0, 1, 1);   /* ungated control, m=4/node */
-    t11_core(4, 1, 1);   /* marginal gate — expected self-dilution */
-    t11_core(4, 1, 2);   /* m=8/node — boundary arrivals stay >=4 */
-    t11_core(4, 2, 2);   /* same at dwell=2 */
-    t11_core(2, 1, 2);   /* deep gate — anything arriving in pairs stays gated */
+    t11_core(0, 1, 2, 0);   /* ungated control */
+    t11_core(4, 1, 2, 0);   /* gate only — lamination, no confinement */
+    t11_core(4, 2, 2, 0);   /* gate + dwell */
+
+    printf("# --- T12 M21: density-gradient deflection phase sweep ---\n");
+    t11_core(4, 1, 2, 1);   /* weak attraction */
+    t11_core(4, 1, 2, 4);   /* moderate */
+    t11_core(4, 1, 2, 16);  /* strong — runaway check */
+    t11_core(4, 2, 2, 4);   /* moderate at dwell=2 */
+    t11_core(0, 1, 2, 4);   /* bias everywhere, no planar gate */
+    t11_core(0, 1, 2, 16);  /* bias everywhere, strong */
+    t11_core2(4, 1, 2, 16, 1); /* rest-anchored core (condensation test) */
+    t11_core2(0, 1, 2, 16, 1); /* rest anchor, bias only */
+    t11_core3(4, 1, 2, 16, 0, 32); /* condensation ratchet, no rest seed */
+    t11_core3(4, 2, 2, 16, 0, 32); /* ratchet at dwell=2 */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
