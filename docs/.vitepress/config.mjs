@@ -24,6 +24,7 @@ const readingOrder = [
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Frontier', link: '/interference/frontier' },
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
 
   { text: "Hopf's Loom", link: '/loom-demo' },
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
@@ -56,6 +57,7 @@ const interferenceItems = [
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Frontier', link: '/interference/frontier' },
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Podcast', link: '/interference/sessions' }
 ]
 
