@@ -391,6 +391,84 @@ static void tof_dwell(int k) {
     meso3i_dwell(1);
 }
 
+/* T10: Route A bound-structure probes (meso3i).
+ *   a) mono-channel slab blob at dwell k — {c,c} pairs are singleton
+ *      classes on D3Q13, predicted rigid coherent translation at v=1/k.
+ *   b) 50/50 ch0+ch4 blob — internal collisions should disperse it.
+ *   c) bidirectional rhombus ring — bookkeeping predicts instant death:
+ *      vertex pairs sum to momentum with zero ring-resident outputs.
+ * Coherence = fraction of seed mass still within the seed slab channels;
+ * drift = x-centroid slope. */
+static void t10_blob(int dwell, int mixed) {
+    meso3i_clear(); meso3i_dwell(dwell); meso3i_collmode(0);
+    for (int z = 16; z <= 24; z++)
+    for (int y = 16; y <= 24; y++)
+    for (int x = 4; x <= 8; x += 2) {
+        if ((x + y + z) & 1) continue;
+        if (mixed) {
+            /* ch0+ch2: {0,2} is a genuine 2-member class — collidable control */
+            meso3i_set(x, y, z, (x + y + z) % 4 == 0 ? 0 : 2, 1);
+        } else {
+            meso3i_set(x, y, z, 0, 1);
+        }
+    }
+    printf("T10%s dwell=%d:", mixed ? "b-mixed" : "a-mono", dwell);
+    for (int t = 0; t <= 40; t++) {
+        if (t % 10 == 0) {
+            double cx = 0, cy = 0, in0 = 0; uint64_t m = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int n = 0;
+                for (int c = 0; c < INCH_i - 1; c++)
+                    n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                cx += n * x; cy += n * y; m += n;
+                in0 += meso3i_get(x, y, z, 0) + (int)meso3i_edge(x, y, z, 0);
+            }
+            double sy = 0; cy = m ? cy / m : 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int n = 0;
+                for (int c = 0; c < INCH_i - 1; c++)
+                    n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                sy += n * (y - cy) * (y - cy);
+            }
+            printf("  t=%d x̄=%.1f σy=%.1f ch0=%.0f%%",
+                   t, m ? cx / m : 0, m ? sqrt(sy / m) : 0, m ? 100 * in0 / m : 0);
+        }
+        if (t < 40) meso3i_tick();
+    }
+    printf("\n");
+    meso3i_dwell(1);
+}
+
+static void t10_ring(void) {
+    /* rhombus vertices (offset to +coords); both directions seeded:
+     * vertex gets {fwd_leg, rev_leg} pair so arrivals form antipodal pairs */
+    int vx[4] = {20, 21, 20, 19}, vy[4] = {20, 21, 22, 21}, vz = 20;
+    /* legs: v0->v1 ch0, v1->v2 ch3, v2->v3 ch1, v3->v0 ch2
+     * reverse: v0->v3 ch3, v3->v2 ch0, v2->v1 ch2, v1->v0 ch1 */
+    int out[4][2] = {{0,3},{3,1},{1,2},{2,0}};   /* {fwd,rev} per vertex */
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    for (int v = 0; v < 4; v++) {
+        meso3i_set(vx[v], vy[v], vz, out[v][0], 1);
+        meso3i_set(vx[v], vy[v], vz, out[v][1], 1);
+    }
+    printf("T10c rhombus ring (predicted dead):");
+    for (int t = 0; t <= 20; t++) {
+        int on = 0;
+        for (int v = 0; v < 4; v++)
+            for (int c = 0; c < INCH_i - 1; c++)
+                on += meso3i_get(vx[v], vy[v], vz, c) + (int)meso3i_edge(vx[v], vy[v], vz, c);
+        if (t % 4 == 0) printf("  t=%d ringmass=%d", t, on);
+        if (t < 20) meso3i_tick();
+    }
+    printf("\n");
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -454,6 +532,13 @@ int main(void) {
     tof_dwell(1);
     tof_dwell(2);
     tof_dwell(4);
+
+    printf("# --- T10 Route A: bound-structure probes (int D3Q13) ---\n");
+    t10_blob(1, 0);
+    t10_blob(2, 0);
+    t10_blob(4, 0);
+    t10_blob(2, 1);
+    t10_ring();
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
