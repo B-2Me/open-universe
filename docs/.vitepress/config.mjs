@@ -29,6 +29,7 @@ const readingOrder = [
   { text: "Hopf's Loom", link: '/loom-demo' },
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
   { text: "Langevin's Wake", link: '/wake-demo' },
+  { text: "Yarkovsky's Ember", link: '/ember-demo' },
   
   { text: 'Audiocast', link: '/interference/sessions' },
   { text: 'Intent', link: '/intent' }
@@ -65,7 +66,8 @@ const interferenceItems = [
 const instrumentItems = [
   { text: "Hopf's Loom · 3D Engine", link: '/loom-demo' },
   { text: 'Hopfion Zoo · 3D Knots', link: '/hopfion-zoo' },
-  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' }
+  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' },
+  { text: "Yarkovsky's Ember · Friction", link: '/ember-demo' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is

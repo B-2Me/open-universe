@@ -5,6 +5,8 @@ docs/public/wasm/wake/planck-hex.js
 docs/public/wasm/wake/planck-hex.wasm
 docs/public/wasm/loom/planck3.js
 docs/public/wasm/loom/planck3.wasm
+docs/public/wasm/ember/meso3i.js
+docs/public/wasm/ember/meso3i.wasm
 
 # Build artifacts / local tooling
 node_modules/

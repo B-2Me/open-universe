@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p ../docs/public/wasm/wake/ ../docs/public/wasm/loom/
+mkdir -p ../docs/public/wasm/wake/ ../docs/public/wasm/loom/ ../docs/public/wasm/ember/
 
 # Stamp engines with the revision that last touched planck.c — the
 # physics provenance. Stamping the deploy HEAD would churn the displayed
@@ -120,5 +120,45 @@ if emcc planck3.c \
   echo "✅ planck3 compiled successfully."
 else
   echo "❌ Error: planck3 compilation failed!"
+  exit 1
+fi
+
+# Yarkovsky's Ember — meso3i integer-occupancy multichannel engine
+# (True-FCC D3Q19, transit friction + carrier-gated radiation). RG8 pack
+# buffer inside the wasm heap feeds texSubImage3D exactly like planck3.
+echo "Compiling meso3i friction engine (ember)..."
+if emcc meso3i.c \
+  -DGIT_REV=\"$GIT_REV\" \
+  -O3 \
+  -s WASM=1 \
+  -s MODULARIZE=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -s EXPORT_NAME="'createEmber'" \
+  -s EXPORTED_FUNCTIONS="[
+    '_meso3i_init',
+    '_meso3i_clear',
+    '_meso3i_tick',
+    '_meso3i_get',
+    '_meso3i_set',
+    '_meso3i_collmode',
+    '_meso3i_friction',
+    '_meso3i_fricmode',
+    '_meso3i_dim',
+    '_meso3i_nch',
+    '_meso3i_cvc',
+    '_meso3i_rg_pointer',
+    '_meso3i_rg_refresh',
+    '_meso3i_rest_mass',
+    '_meso3i_mov_mass',
+    '_meso3i_cm',
+    '_meso3i_drain_edge',
+    '_meso3i_save',
+    '_meso3i_restore'
+  ]" \
+  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
+  -o ../docs/public/wasm/ember/meso3i.js; then
+  echo "✅ meso3i (ember) compiled successfully."
+else
+  echo "❌ Error: meso3i compilation failed!"
   exit 1
 fi

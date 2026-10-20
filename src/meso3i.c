@@ -565,3 +565,68 @@ void meso3i_hist(uint64_t *out) {
 
 int meso3i_nch(void) { return INCH; }
 const int (*meso3i_cv(void))[3] { return (const int (*)[3])ICV; }
+
+/* ---- viewer shim (Yarkovsky's Ember wasm build; harmless natively) ----
+ * R = summed moving-channel population (clamped), G = rest-channel
+ * population, packed site-major so texSubImage3D can read it as RG8.
+ * Stats refreshed alongside: rest/moving totals + rest-mass centroid in
+ * fixed point (x256), for the HUD — one pass, no extra sweeps. */
+static uint8_t *iRG;
+static int st_rest, st_mov, st_cx, st_cy, st_cz;
+
+int meso3i_dim(int a)      { return a == 0 ? IW : a == 1 ? IH : ID; }
+int meso3i_cvc(int c, int k) { return c < 0 || c >= INCH ? 0 : ICV[c][k]; }
+
+const uint8_t *meso3i_rg_refresh(void) {
+    if (!iRG) iRG = malloc((size_t)IN * 2);
+    long long cx = 0, cy = 0, cz = 0;
+    st_rest = st_mov = 0;
+    for (int s = 0; s < IN; s++) {
+        const uint8_t *n = iA + (size_t)s * INCH;
+        int mov = 0;
+        for (int c = 0; c < IMOV; c++) mov += n[c];
+        int rest = n[INCH - 1];
+        iRG[s * 2]     = (uint8_t)(mov > 255 ? 255 : mov);
+        iRG[s * 2 + 1] = (uint8_t)rest;
+        st_mov += mov; st_rest += rest;
+        int x = s % IW, y = (s / IW) % IH, z = s / (IW * IH);
+        cx += (long long)rest * x;
+        cy += (long long)rest * y;
+        cz += (long long)rest * z;
+    }
+    if (st_rest) {
+        st_cx = (int)(cx * 256 / st_rest);
+        st_cy = (int)(cy * 256 / st_rest);
+        st_cz = (int)(cz * 256 / st_rest);
+    } else st_cx = st_cy = st_cz = -256;
+    return iRG;
+}
+const uint8_t *meso3i_rg_pointer(void) { return iRG ? iRG : meso3i_rg_refresh(); }
+int meso3i_rest_mass(void) { return st_rest; }
+int meso3i_mov_mass(void)  { return st_mov; }
+int meso3i_cm(int a)       { return a == 0 ? st_cx : a == 1 ? st_cy : st_cz; }
+
+/* vacuum boundary: zero every channel on sites within `t` of the shell —
+ * the open-drain the test harnesses use (in JS this loop is too hot) */
+void meso3i_drain_edge(int t) {
+    for (int z = 0; z < ID; z++)
+    for (int y = 0; y < IH; y++)
+    for (int x = 0; x < IW; x++) {
+        if (x >= t && x < IW - t && y >= t && y < IH - t &&
+            z >= t && z < ID - t) continue;
+        memset(iA + (size_t)iidx(x, y, z) * INCH, 0, INCH);
+    }
+}
+
+/* snapshot = the channel buffer only (dwell lines + Q regs excluded —
+ * Ember runs DWELL=1/IQMODE=0 where both are inert anyway) */
+static uint8_t *iSNAP;
+void meso3i_save(void) {
+    if (!iSNAP) iSNAP = malloc((size_t)IN * INCH);
+    memcpy(iSNAP, iA, (size_t)IN * INCH);
+}
+int meso3i_restore(void) {
+    if (!iSNAP) return -1;
+    memcpy(iA, iSNAP, (size_t)IN * INCH);
+    return 0;
+}

@@ -154,3 +154,5 @@ All of it lives on 19 integer channels per node, one rest bin, and two rules. Al
 A recorded run — real telemetry, not an animation mock: `test_replay` ran the canonical sequence (drive → cutoff → quiet → one-sided beam) and dumped every frame. Watch the convergent spokes feed a breathing amber core, the core freeze dead when the drive cuts at t=200, sit inert for 400 ticks of vacuum quiet, then creep toward the +x carrier beam at t=600 while its far side evaporates.
 
 <FrictionReplay />
+
+Or run it yourself — the same engine, live in your browser: **[Yarkovsky's Ember](/ember-demo)** compiles `meso3i` to WebAssembly and lets you toggle the drive, drop cold rocks, and push them around with the carrier beam.

@@ -5,6 +5,7 @@ import WakeSimulator from '../components/WakeSimulator.vue'
 import LoomSimulator from '../components/LoomSimulator.vue'
 import HopfionViewer from '../components/HopfionViewer.vue'
 import FrictionReplay from '../components/FrictionReplay.vue'
+import EmberSimulator from '../components/EmberSimulator.vue'
 
 export default {
   extends: DefaultTheme,
@@ -14,5 +15,6 @@ export default {
     app.component('LoomSimulator', LoomSimulator);
     app.component('HopfionViewer', HopfionViewer);
     app.component('FrictionReplay', FrictionReplay);
+    app.component('EmberSimulator', EmberSimulator);
   }
 }
