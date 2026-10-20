@@ -132,4 +132,18 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 
 **Hemisphere-resolved confirmation:** splitting parked mass at the centroid plane shows the lit hemisphere (beam-entry side) holds steady at ~480 (erosion exactly offset by drag-parked carriers) while the downstream hemisphere loses 43% (474→269). The "leading edge absorbs, trailing edge erodes" picture is direct evidence, not inference.
 
+### M37 — two-body probe: weak mutual attraction via ablation, no merger
+
+`test_two.c` seeds two rest-channel lumps (mpn=60, r²≤8 blobs, ~3k quanta each) at separation d, unconditional slow boil (1/256) so each lump's radiation acts as the other's carrier beam. Drained open box, 1500 ticks.
+
+| Initial sep | Δsep over ~1400t | Verdict |
+|---|---|---|
+| 4 | 4.75 → 4.16 (monotonic −0.6) | **steady mutual approach** |
+| 8 | ~7.9 (within noise) | flat |
+| 16 | ~15.5 (noisy end-stage) | flat/weak |
+
+**Mechanism:** each lump radiates isotropically; its quanta strike the other's near face → carrier-gated ablation erodes the far side (M36 comet mechanism) → **each centroid creeps toward its neighbor**. Mutual ablation IS mutual attraction — the closest thing to a gravitational analog yet measured on this substrate, with an effective 1/d reach (flux intercepted ∝ solid angle).
+
+**The honest limit:** drift ~0.0004 cells/tick vs. evaporative lifetime ~2500 ticks — the lumps die ~1 cell short of contact. No merger observed; no repulsion; no orbit. Two-body "gravity" exists here but is weak and mortal — a qualitative force-analog, not yet chemistry.
+
 This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
