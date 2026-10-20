@@ -89,3 +89,11 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 *   We aren't watching expanding space; we are watching a macroscopic video buffer. The event arrives in slow motion because it was spooled through the finite bandwidth of a discrete substrate.
 
 *   **Substrate grounding (Aspirational / framework hypothesis):** accumulated queuing latency is a mesoscale-continuum target; on the bare `planck3.c` substrate, vacuum transmission is strictly ballistic and dispersion-free (M4).
+
+---
+
+## Observed Anchor: The Yarkovsky Effect
+
+The claim that space is not a cold conductive sponge — that resting mass exchanges momentum with the vacuum only through *directed radiative venting* — is measured astronomy, not conjecture. A rotating asteroid parks absorbed sunlight as surface heat (the vacuum insulates; there is no conduction), then re-radiates it anisotropically. The afternoon side is hottest; its infrared photons carry vector momentum ($p = E/c$), and the asymmetric emission acts as a continuous micro-thruster — measurably shifting orbital semi-major axes (radar on 6489 Golevka; OSIRIS-REx tracking of Bennu).
+
+On the `meso3i` substrate this mechanism class is directly expressed (M33–M35): transit drag parks flux as resting heat in the native rest channel, and carrier-gated radiation vents it back — accretion, venting, and pressure release on pure channels, no registers. The recoil analog itself (direction-correlated emission → lump drift) is an open experiment; see [The Multi-Channel Bridge](/interference/meso-bridge).
