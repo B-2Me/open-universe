@@ -122,9 +122,9 @@ static int pmask(int c) {  /* coordinate planes containing channel c */
     if (c == REST) return 7;
     int x = CV[c][0], y = CV[c][1], z = CV[c][2];
     int m = 0;
-    if (x && y) m |= 1;                 /* xy plane */
-    if (x && z) m |= 2;                 /* xz plane */
-    if (y && z) m |= 4;                 /* yz plane */
+    if (!z) m |= 1;                     /* lies in xy plane */
+    if (!y) m |= 2;                     /* lies in xz plane */
+    if (!x) m |= 4;                     /* lies in yz plane */
     return m;
 }
 

@@ -131,11 +131,13 @@ void meso3i_condense(int c) { ICOND = c; }
  * inward pressure at the domain wall, hard repulsion against runaway */
 static int atti(uint32_t r) { return (int)(r > (uint32_t)IRSAT ? 0 : r); }
 
-/* coordinate planes containing channel c: bit0=xy, bit1=xz, bit2=yz */
+/* coordinate planes containing channel c: bit0=xy, bit1=xz, bit2=yz.
+ * A channel lies in a coordinate plane iff its orthogonal component
+ * is zero — axial channels thus get two-plane masks. */
 static int ipmask(int c) {
     if (c == INCH - 1) return 7;            /* rest: all planes */
     int x = ICV[c][0], y = ICV[c][1], z = ICV[c][2];
-    return (x && y ? 1 : 0) | (x && z ? 2 : 0) | (y && z ? 4 : 0);
+    return (!z ? 1 : 0) | (!y ? 2 : 0) | (!x ? 4 : 0);
 }
 
 uint8_t meso3i_get(int x, int y, int z, int c) {
@@ -187,8 +189,8 @@ static void collide_node(uint8_t *n, int si) {
              * capped at 2*crit) toward each member's destinations —
              * the discrete surface-tension analog */
             int pm = ipmask(lo) & ipmask(hi);
-            uint32_t wtot = 0, wgt[64];
-            int ok[64], nok = 0;
+            uint32_t wtot = 0, wgt[200];
+            int ok[200], nok = 0;
             for (int k = 0; k < len; k++) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
                 if (!(pm & ipmask(c2) & ipmask(d2))) continue;
@@ -216,7 +218,7 @@ static void collide_node(uint8_t *n, int si) {
         } else if (IBIAS) {
             /* ungated node in biased regime: the domain wall acts on the
              * bath side too — weight ALL group members by gradient pull */
-            uint32_t wtot = 0, wgt[64];
+            uint32_t wtot = 0, wgt[200];
             for (int k = 0; k < len; k++) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
                 uint32_t w = 1;
