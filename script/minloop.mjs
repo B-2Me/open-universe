@@ -20,6 +20,8 @@ const arg = (k, d) => {
 };
 const num = (k, d) => parseFloat(arg(k, d));
 const MAXLEN = num('maxlen', 12), COUNT = num('count', 8);
+const DFSLEN = num('dfslen', 0);      /* >0: enumerate exact-length loops via DFS */
+const DEDUP = !arg('nodup', false);
 
 const W = 40, H = 40, D = 40;
 const SX = 20, SY = 20, SZ = 20;
@@ -45,8 +47,58 @@ const nbr = (x, y, z, d) => {
   return [(x + o[0] + W) % W, (y + o[1] + H) % H, nz];
 };
 
-/* BFS: state = [x,y,z,lastPort]; parent map for path reconstruction. */
 const seedI = idx(SX, SY, SZ);
+
+/* ---------- DFS exact-length enumerator (for the L-sweep) ---------- */
+if (DFSLEN) {
+  const loops = [];
+  const seenSig = new Set();
+  const path = [], seen = new Set([seedI]);
+  const dfs = (x, y, z, lp, depth) => {
+    if (loops.length >= COUNT * 8) return;
+    for (let d = 1; d <= 12; d++) {
+      if (lp && DOTS[d][lp] < 128) continue;
+      const n = nbr(x, y, z, d);
+      if (!n) continue;
+      const [nx, ny, nz] = n;
+      if (idx(nx, ny, nz) === seedI) {
+        if (depth + 1 === DFSLEN) {
+          const first = path[1].port;          // seed's outgoing = first hop
+          if (DOTS[d][first] < 128) continue;  // wrap turn at the seed
+          // outgoing port of cell i = arrival port of cell i+1 (d for last)
+          const cells = path.map((c, i) => ({
+            x: c.x, y: c.y, z: c.z,
+            port: i + 1 < path.length ? path[i + 1].port : d,
+          }));
+          if (DEDUP) {
+            const sig = cells.map(c => idx(c.x, c.y, c.z)).sort((a, b) => a - b).join(',');
+            if (seenSig.has(sig)) continue;
+            seenSig.add(sig);
+          }
+          loops.push(cells);
+        }
+        continue;
+      }
+      const ni = idx(nx, ny, nz);
+      if (seen.has(ni) || depth + 1 >= DFSLEN) continue;
+      seen.add(ni); path.push({ x: nx, y: ny, z: nz, port: d });
+      dfs(nx, ny, nz, d, depth + 1);
+      path.pop(); seen.delete(ni);
+    }
+  };
+  path.push({ x: SX, y: SY, z: SZ, port: 0 });
+  // seed's first hop has no lock constraint; handled by lp=0
+  dfs(SX, SY, SZ, 0, 0);
+  console.log(`DFS exact-len ${DFSLEN}: ${loops.length} distinct loops (dedup=${DEDUP})`);
+  for (const l of loops.slice(0, COUNT)) {
+    const pts = l.map(c => `${c.x - SX},${c.y - SY},${c.z - SZ},${c.port}`).join(';');
+    const zspan = Math.max(...l.map(c => c.z)) - Math.min(...l.map(c => c.z));
+    console.log(`  L=${DFSLEN} zspan=${zspan} :: ${pts}`);
+  }
+  process.exit(0);
+}
+
+/* BFS: state = [x,y,z,lastPort]; parent map for path reconstruction. */
 const key = (x, y, z, p) => idx(x, y, z) * 13 + p;
 const parent = new Map();
 let frontier = [[SX, SY, SZ, 0]];      // lastPort 0 = start (no lock)

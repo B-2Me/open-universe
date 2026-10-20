@@ -80,7 +80,8 @@ int main(int argc, char **argv) {
     const char *ps = argc > 3 ? argv[3] : "000";
 
     int n = (mode == 0 || mode == 3 || mode == 4) ? 2
-          : (mode == 2 ? 1 : (mode >= 6 ? 4 + (mode >= 7) : 3));
+          : (mode == 2 ? 1 : (mode >= 6 && mode != 9 ? 4 + (mode >= 7)
+                          : (mode == 9 ? 5 : 3)));
     int cores[5][3], ax[5], ph[5];
     if (mode == 2) {          /* solo breather, axis = first phase digit */
         cores[0][0] = 58; cores[0][1] = 19; cores[0][2] = 20;
@@ -123,6 +124,14 @@ int main(int argc, char **argv) {
         cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
         cores[3][0] = 58; cores[3][1] = 20; cores[3][2] = 19; ax[3] = 1;
         cores[4][0] = 60; cores[4][1] = 20; cores[4][2] = 19; ax[4] = 1;
+    } else if (mode == 9) {   /* parallel x-chains at Dy (arg4, default 1):
+                               * do adjacent corridors cross-talk? */
+        int dy = argc > 4 ? atoi(argv[4]) : 1;
+        cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 20; ax[0] = 1;
+        cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 1;
+        cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 20; ax[2] = 1;
+        cores[3][0] = 58; cores[3][1] = 20 + dy; cores[3][2] = 20; ax[3] = 1;
+        cores[4][0] = 60; cores[4][1] = 20 + dy; cores[4][2] = 20; ax[4] = 1;
     } else {                  /* closed triangle */
         cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 20; ax[0] = 1;
         cores[1][0] = 58; cores[1][1] = 19; cores[1][2] = 20; ax[1] = 2;

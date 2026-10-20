@@ -32,63 +32,80 @@ uint8_t *planck3_state_pointer(void);
 typedef struct { uint8_t q, s; uint16_t h; uint8_t b, tn; } Rec;
 static int idx(int x, int y, int z) { return (z * H + y) * W + x; }
 
-/* hexagon: cell coords + outgoing port, centered at x+40,y+20 z=20 */
-static const int LOOP[6][3] = {
+/* default hexagon: cell coords + outgoing port, centered x+40,y+20 z=20 */
+static int LOOP[64][3] = {
     {60, 20, 1}, {61, 20, 2}, {61, 21, 3}, {61, 22, 4}, {60, 22, 5}, {59, 21, 6}
 };
+static int NL = 6;
+
+static int loop_z[64] = {20,20,20,20,20,20};
+
+/* parse "dx,dy,dz,port;dx,dy,dz,port;..." relative to (60,20,20) */
+static int parse_loop(const char *s) {
+    int n = 0;
+    while (*s && n < 64) {
+        int dx, dy, dz, p;
+        if (sscanf(s, "%d,%d,%d,%d", &dx, &dy, &dz, &p) != 4) break;
+        LOOP[n][0] = 60 + dx; LOOP[n][1] = 20 + dy; LOOP[n][2] = p;
+        loop_z[n] = 20 + dz;
+        n++;
+        while (*s && *s != ';') s++;
+        if (*s == ';') s++;
+    }
+    return n;
+}
 
 int main(int argc, char **argv) {
     int ticks = argc > 1 ? atoi(argv[1]) : 48;
-    int fill  = argc > 2 ? atoi(argv[2]) : 0;
+    int fill  = argc > 2 ? atoi(argv[2]) : 4;
+    int bcount= argc > 3 ? atoi(argv[3]) : 1;
+    int bcell = argc > 4 ? atoi(argv[4]) : 0;
+    if (argc > 5) NL = parse_loop(argv[5]);   /* "dx,dy,dz,port;..." */
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init fail\n"); return 1; }
     planck3_set_mode(0);
     planck3_set_sync(1);
     planck3_set_temit(300);
 
-    /* paint ring spins on all cells; quanta by fill mode.
-     * fill 3 = loom-style: q=60 + hp=500 heat on every cell */
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < NL; i++) {
         int q = fill == 1 ? 200 : (fill == 2 ? (i % 2 ? 200 : 0) : (i == 0 ? 200 : 0));
         int h = 0, b = 0;
-        if (fill == 3) { q = 60; h = 500; }   /* loom knot-seed density */
-        if (fill >= 4) q = 0;                  /* pure momentum injection */
-        if (fill == 4 && i == (argc > 4 ? atoi(argv[4]) : 0))
-            b = argc > 3 ? atoi(argv[3]) : 200;
-        if (fill == 5) { q = 60; h = 500; if (i == 0) b = 200; } /* hot ring + packet */
-        planck3_set_node(idx(LOOP[i][0], LOOP[i][1], ZL), q, LOOP[i][2], h, b, 0);
+        if (fill == 3) { q = 60; h = 500; }
+        if (fill >= 4) q = 0;
+        if (fill == 4 && i == bcell) b = bcount;
+        if (fill == 5) { q = 60; h = 500; if (i == 0) b = 200; }
+        planck3_set_node(idx(LOOP[i][0], LOOP[i][1], loop_z[i]),
+                         q, LOOP[i][2], h, b, 0);
     }
     planck3_prepare();
 
     const Rec *st = (const Rec *)planck3_state_pointer();
     int64_t drained = 0;
-    printf("# orbit fill=%d t=%d\n", fill, ticks);
-    printf("# t | ring_q cell_q[0..5] rot_deg spill\n");
+    printf("# orbit fill=%d L=%d t=%d\n", fill, NL, ticks);
     for (int t = 0; t <= ticks; t++) {
-        int rq[6], ring = 0;
+        int ring = 0, lead = -1, leadq = 0;
         double rx = 0, ry = 0;
-        for (int i = 0; i < 6; i++) {
-            const Rec *c = &st[idx(LOOP[i][0], LOOP[i][1], ZL)];
-            rq[i] = c->q + c->b;              /* parked + in-flight */
-            ring += rq[i];
-            double a = i * 1.0471975511965977; /* 60° per vertex */
-            rx += rq[i] * cos(a); ry += rq[i] * sin(a);
+        for (int i = 0; i < NL; i++) {
+            const Rec *c = &st[idx(LOOP[i][0], LOOP[i][1], loop_z[i])];
+            int m = c->q + c->b;
+            ring += m;
+            if (m > leadq) { leadq = m; lead = i; }
+            double a = i * 6.2831853071795865 / NL;
+            rx += m * cos(a); ry += m * sin(a);
         }
-        /* spill = quanta within r<=2 of ring centroid excluding ring cells */
         int spill = 0;
-        for (int z = ZL - 1; z <= ZL + 1; z++)
-            for (int y = 17; y <= 25; y++)
-                for (int x = 56; x <= 65; x++) {
+        for (int z = 15; z <= 25; z++)
+            for (int y = 10; y <= 30; y++)
+                for (int x = 50; x <= 72; x++) {
                     int on = 0;
-                    for (int i = 0; i < 6; i++)
-                        if (x == LOOP[i][0] && y == LOOP[i][1] && z == ZL) on = 1;
+                    for (int i = 0; i < NL; i++)
+                        if (x == LOOP[i][0] && y == LOOP[i][1] &&
+                            z == loop_z[i]) on = 1;
                     if (!on) spill += st[idx(x, y, z)].q + st[idx(x, y, z)].b;
                 }
         double rot = ring ? atan2(ry, rx) * 57.29577951308232 : 0;
-        if (t % 4 == 0 || t == ticks)
-            printf("t=%3d | %4d | %3d %3d %3d %3d %3d %3d | %6.1f | %d\n",
-                   t, ring, rq[0], rq[1], rq[2], rq[3], rq[4], rq[5], rot, spill);
-        /* drain x=0 plane */
+        printf("t=%3d | ring=%4d lead=c%d(q%d) rot=%6.1f spill=%d\n",
+               t, ring, lead, leadq, rot, spill);
         for (int z = 0; z < D; z++)
             for (int y = 0; y < H; y++) {
                 const Rec *r = &st[idx(0, y, z)];
