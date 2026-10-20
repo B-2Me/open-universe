@@ -56,6 +56,8 @@ static int      IFV[3];              /* field vector (components -1,0,+1) */
 static int      IQCAP;               /* Q overflow capacity (mode>=5) */
 static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
 static int      IREFL;               /* congestion-reflection cap; 0=off */
+static int      IFRIC;               /* routing friction: density cap; 0=off */
+static int      IFRICM;              /* rest-inertia: 0=rest collides; k=rest inert, radiates ~1/4k */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
@@ -147,6 +149,8 @@ void meso3i_field(int fx, int fy, int fz, int f) {
 }
 void meso3i_qcap(int c) { IQCAP = c; }
 void meso3i_reflect(int cap) { IREFL = cap; }
+void meso3i_friction(int cap) { IFRIC = cap; }
+void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_pset(int x, int y, int z, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
@@ -215,17 +219,31 @@ static int pick_chan(const uint8_t *n, int r, int skip) {
     }
     return -1;
 }
+/* pick with a fully-excluded channel (inert rest) plus a one-less skip */
+static int pick_chan_x(const uint8_t *n, int r, int excl, int skip) {
+    for (int c = 0; c < INCH; c++) {
+        if (c == excl) continue;
+        int cnt = n[c] - (c == skip);
+        if (cnt <= 0) continue;
+        if (r < cnt) return c;
+        r -= cnt;
+    }
+    return -1;
+}
 
 static void collide_node(uint8_t *n, int si) {
+    int rest = IFRICM ? n[INCH - 1] : 0;
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
+    m -= rest;                       /* inert heat: rest mass does not collide */
     if (m < 2) return;
+    int excl = IFRICM ? INCH - 1 : -1;
     int attempts = (IBIAS || IFLD) ? m : m >> 1;   /* weighted: full coverage */
     if (!attempts) attempts = 1;
     int x = si % IW, y = (si / IW) % IH, z = si / (IW * IH);
     for (int a = 0; a < attempts; a++) {
-        int i = pick_chan(n, irnd() % m, -1);
-        int j = pick_chan(n, irnd() % (m - 1), i);
+        int i = pick_chan_x(n, irnd() % m, excl, -1);
+        int j = pick_chan_x(n, irnd() % (m - 1), excl, i);
         if (i < 0 || j < 0) continue;
         int lo = i < j ? i : j, hi = i < j ? j : i;
         /* Q condensation: at gated nodes an antipodal pair {c,-c} may
@@ -333,6 +351,14 @@ static void collide_node(uint8_t *n, int si) {
         }
         n[i]--; n[j]--;
         n[ko]++; n[lo2]++;
+    }
+    /* radiative boil-off: parked heat slowly re-emits into moving
+     * channels — the friction sink's return path. Rate ~1/(4k) per
+     * quantum per tick — a warm core vents while driven, cools off
+     * when the drive stops. */
+    if (IFRICM && rest) {
+        for (int u = 0; u < n[INCH - 1]; u++)
+            if (irnd() % (4 * IFRICM) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
     }
 }
 
@@ -474,6 +500,15 @@ void meso3i_tick(void) {
             if (qcapture(ni)) {
                 uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
                 iQ[ni] = q > 255 ? 255 : (uint8_t)q;
+                continue;
+            }
+            if (IFRIC && (int)iR[ni] >= IFRIC && irnd() % 2 == 0) {
+                /* network drag (space-is-friction): a transit hop into a
+                 * congested node sheds momentum — the quantum lands in the
+                 * destination's REST channel as parked heat. Entry rate ∝
+                 * inflow×congestion; exit only via slow collision re-picks.
+                 * Momentum absorbed by the network (flagged, inelastic). */
+                iB[ni * INCH + INCH - 1] += n[c];
                 continue;
             }
             if (IREFL && (int)(iR[ni] + iQ[ni]) >= IREFL) {

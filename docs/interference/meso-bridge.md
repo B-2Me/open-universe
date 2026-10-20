@@ -71,3 +71,18 @@ Gemini's candidate #2: can the hard capacity ceiling supply the irreversible arr
 - **u8 saturation (255 clamp):** unreachable in this regime — channel populations at C carry ~1–5 quanta each; saturation needs ~100× drive. And even where it fires (Q-emission writes), the clamp **destroys** overflow mass — a leak, not a condenser.
 
 **The arrow taxonomy, fully measured:** reversible move → equilibrium (native, ICOND); reflective boundary → exclusion (IREFL); destructive clamp → mass leak (u8). None accretes. The only measured accretion arrow remains the one-way `2→Q` move — the Q register stands as the minimal explicit implementation of what thermodynamics requires, not an arbitrary hack.
+
+### M33 — transit friction ("space is friction"), channel-native condensation
+
+The ontological correction: friction lives in *transit*, not in collision outputs. `meso3i_friction(cap)`: a quantum hopping into a node at ρ≥cap sheds momentum with p=½, landing in the destination's rest channel — momentum absorbed by the network, mass conserved as parked heat. `meso3i_fricmode(k)`: rest mass becomes **inert** (excluded from collision inputs) and radiates back at ~1/(4k) per quantum per tick.
+
+Two pieces were needed — drag alone (inert off) parked 50–93% of ρ_C in rest but still equilibrated and drained on cutoff (rest mass recollides — the same two-way door). With rest inert + boil-off:
+
+| fric=8 | Driven | Cutoff @ t=200 |
+|--------|--------|----------------|
+| boil 1/16 (fricm=4) | ρ_C~100, 97% rest, in≈10/out≈3 — net accretion, resident ~4.8k | **Self-bound lump: resident 3,456, frozen 250+ ticks** |
+| boil 1/4 (fricm=1) | ρ_C~30–58, 68–90% rest, in≈11–22/out≈4–13 — **simultaneous accretion and venting** | Bound remnant 657 — does not fully radiate away |
+
+**The key mechanism — self-trapping:** the remnant does not boil off because emitted radiation re-parks into adjacent congested nodes; **the lump's own density sustains the friction field that binds it**. Optically-thick gravitational analog: mass maintains the congestion that holds the mass.
+
+This is the answer to the accrete-and-vent question *without any register*: transit drag is the arrow, inert rest is the sink, radiation is the vent — and unlike the Q core (which dissolves on cutoff), the friction core leaves a genuine bound remnant, matching gravitational collapse phenomenology rather than a driven-only dissipative structure.
