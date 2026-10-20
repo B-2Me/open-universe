@@ -23,6 +23,7 @@ const readingOrder = [
   { text: 'Audits', link: '/interference/audits' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Frontier', link: '/interference/frontier' },
+  { text: 'Monograph', link: '/interference/monograph' },
 
   { text: "Hopf's Loom", link: '/loom-demo' },
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
@@ -54,6 +55,7 @@ const interferenceItems = [
   { text: 'Audits', link: '/interference/audits' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Frontier', link: '/interference/frontier' },
+  { text: 'Monograph', link: '/interference/monograph' },
   { text: 'Podcast', link: '/interference/sessions' }
 ]
 
