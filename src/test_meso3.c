@@ -773,6 +773,73 @@ static void t17(int grad, const char *tag) {
     meso3i_qmode(0); meso3i_qdir(-1);
 }
 
+/* vacuum-halo profiler: ring-binned channel+edge mass vs minimal-image
+ * radius from the lump seed center — is the "empty" space around a
+ * bound core carrying a real density/latency gradient? */
+static void halo_profile(int cx0, int cy0, int cz0) {
+    uint64_t ring[24] = {0};
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        int dx = x - cx0; if (dx >  W/2) dx -= W; if (dx < -W/2) dx += W;
+        int dy = y - cy0; if (dy >  H/2) dy -= H; if (dy < -H/2) dy += H;
+        int dz = z - cz0; if (dz >  D/2) dz -= D; if (dz < -D/2) dz += D;
+        int r = (int)(sqrt(dx*dx + dy*dy + dz*dz) + 0.5);
+        if (r >= 24) continue;
+        for (int c = 0; c < INCH_i; c++)
+            ring[r] += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+    }
+    printf("    halo:");
+    for (int r = 0; r < 12; r++) printf(" r%-2d=%-3llu", r, (unsigned long long)ring[r]);
+    printf("\n");
+}
+
+/* T18: soliton test — capacity-thresholded emission.  Same phase-graded
+ * conveyor as T17, but a node emits only the excess above IQCAP: thin
+ * regions hoard mass, peaks pump — does the packet hold its shape?
+ * Coherence metric: circular concentration R in [0,1] and width sigma. */
+static void t18(int grad, int cap, const char *tag) {
+    meso3i_clear(); meso3i_dwell(1); meso3i_collmode(0);
+    meso3i_gate(0); meso3i_bias(0); meso3i_condense(0);
+    meso3i_qmode(6); meso3i_qdir(0); meso3i_qcap(cap);
+    meso3i_field(0, 0, 0, 0);
+    for (int z = 0; z < D; z++)
+    for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++)
+        meso3i_pset(x, y, z, grad ? (x & 3) : 0);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        meso3i_qset(x, y, 20, 8); seed += 8;
+    }
+    printf("T18 %s cap=%d (Q-seed=%d):\n", tag, cap, seed);
+    for (int t = 0; t <= 400; t++) {
+        if (t % 80 == 0) {
+            uint64_t qtot = 0; double sx = 0, cx = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int q = meso3i_qget(x, y, z);
+                qtot += q;
+                sx += q * sin(2 * M_PI * x / W);
+                cx += q * cos(2 * M_PI * x / W);
+            }
+            double R = qtot ? hypot(sx, cx) / qtot : 0;
+            double sig = R > 1e-9 ? sqrt(-2 * log(R)) * W / (2 * M_PI) : 0;
+            double xc = qtot ? atan2(sx, cx) * W / (2 * M_PI) : 0;
+            if (xc < 0) xc += W;
+            printf("  t=%d Q=%llu x̄c=%.2f R=%.3f σ=%.2f\n", t,
+                   (unsigned long long)qtot, xc, R, sig);
+            if (t == 0 || t == 400) halo_profile(20, 20, 20);
+        }
+        if (t < 400) meso3i_tick();
+    }
+    meso3i_qmode(0); meso3i_qdir(-1); meso3i_qcap(0);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -885,6 +952,10 @@ int main(void) {
     printf("# --- T17 phase-graded lump: conveyor drift v~1/4? ---\n");
     t17(0, "flat-phase");      /* control: simultaneous emit */
     t17(1, "grad-x");          /* phi = x mod 4 conveyor */
+
+    printf("# --- T18 soliton test: capacity-thresholded emission ---\n");
+    t18(1, 4, "thresh-4");     /* hoard to 4, pump excess */
+    t18(1, 6, "thresh-6");     /* hoard to 6 */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;

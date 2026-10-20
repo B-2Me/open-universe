@@ -383,7 +383,11 @@ void meso3i_tick(void) {
         for (int s = 0; s < IN; s++) {
             int onbeat = IQMODE >= 6 ? ((ITICK + iPH[s]) & 3) == 0
                                      : (ITICK & 3) == 3;
-            if (!onbeat || iQ[s] < 2) continue;
+            /* capacity-thresholded emit (T18): hoard to IQCAP, only the
+             * excess pumps forward — trailing edge chokes off its own
+             * emission (self-sharpening profile / soliton analog) */
+            int qmin = IQCAP ? IQCAP + 1 : 2;
+            if (!onbeat || iQ[s] < qmin) continue;
             uint8_t *n = iA + (size_t)s * INCH;
             if (IQMODE >= 3 && IDIR >= 0) {
                 n[IDIR]++;
