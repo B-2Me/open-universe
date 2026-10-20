@@ -532,6 +532,58 @@ static void t11_core3(int gate, int dwell, int per, int bias, int restseed, int 
     meso3i_gate(0); meso3i_bias(0); meso3i_condense(0); meso3i_dwell(1);
 }
 
+/* T13: 3D isotropic blob — spontaneous plane selection test.
+ * Seed a 9x9x9 cube, m=8/node spread uniformly over the 12 channels
+ * (isotropic in expectation, no planar bias). If the rho-gate alone
+ * selects a lamination plane, one plane family captures excess mass;
+ * if frustrated by conflicting node-level plane choices, it disperses
+ * isotropically. Measure max single-slab share per axis family. */
+static void t13_blob(int gate, int dwell) {
+    meso3i_clear(); meso3i_dwell(dwell); meso3i_collmode(0);
+    meso3i_gate(gate); meso3i_bias(0);
+    int seed = 0;
+    for (int z = 16; z <= 24; z++)
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + z) & 1) continue;
+        for (int q = 0; q < 8; q++) {
+            int c = trnd() % 12;
+            meso3i_set(x, y, z, c, meso3i_get(x, y, z, c) + 1);
+            seed++;
+        }
+    }
+    printf("T13 gate=%d dwell=%d 3D-isotropic (seed=%d):", gate, dwell, seed);
+    for (int t = 0; t <= 200; t++) {
+        if (t % 50 == 0 || t == 199) {
+            uint64_t m = 0, mx[64] = {0}, my[64] = {0}, mz[64] = {0};
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int n = 0;
+                for (int c = 0; c < INCH_i; c++)
+                    n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                m += n; mx[x] += n; my[y] += n; mz[z] += n;
+            }
+            uint64_t bxx = 0, byy = 0, bzz = 0;
+            for (int i = 0; i < 64; i++) {
+                if (mx[i] > bxx) bxx = mx[i];
+                if (my[i] > byy) byy = my[i];
+                if (mz[i] > bzz) bzz = mz[i];
+            }
+            printf("  t=%d maxslab x=%.0f%% y=%.0f%% z=%.0f%%", t,
+                   m ? 100.0 * bxx / m : 0, m ? 100.0 * byy / m : 0,
+                   m ? 100.0 * bzz / m : 0);
+        }
+        if (t < 200) meso3i_tick();
+    }
+    uint64_t m; int64_t px, py, pz;
+    meso3i_totals(&m, &px, &py, &pz);
+    printf("  [conservation m=%llu p=(%lld,%lld,%lld)]\n",
+           (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
+    meso3i_gate(0); meso3i_dwell(1);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -619,6 +671,11 @@ int main(void) {
     t11_core2(0, 1, 2, 16, 1); /* rest anchor, bias only */
     t11_core3(4, 1, 2, 16, 0, 32); /* condensation ratchet, no rest seed */
     t11_core3(4, 2, 2, 16, 0, 32); /* ratchet at dwell=2 */
+
+    printf("# --- T13 spontaneous plane selection (3D isotropic seed) ---\n");
+    t13_blob(0, 1);   /* ungated control — expected isotropic dispersal */
+    t13_blob(4, 1);   /* gate only */
+    t13_blob(4, 2);   /* gate + dwell */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
