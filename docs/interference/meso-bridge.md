@@ -31,8 +31,17 @@ title: The Multi-Channel Bridge
 | M24-T19 | Q-weighted capture fails — **Pick-Two Triangle**: binding, transport, coherence each achievable, never all three | `meso3i.c` | `6693abd` |
 | M24-T20 | Peristaltic cycle: 98% mass recondensation (discrete de Broglie pulsation), zero locomotion | `meso3i.c` qmode 8 | `f33630f` |
 
-## The Open Question
+## The Accretion/Outflow Experiment (M32)
 
-The substrate's measured primitives — multi-channel simultaneous inflow/outflow, exact conservation, a condense/emit ratchet in the Q register, field-coupled defect matter — are the pieces of the actual target: **how a True-FCC node can accrete incoming flux while continuously venting outflow**, settling into a bound condensate sustained by throughput rather than a frozen trap. What is not yet measured: whether steady driven accretion on multichannel nodes self-organizes a persistent core, what density profile it carries, and whether venting selects a preferred emission axis. That is the campaign this page seeds.
+`src/test_accrete.c` — 18-channel convergent "spoke" drive onto a central node, open drained box, injection `rate=4/ray/tick`.
 
-*Q-register (M22–M24) results are engineered rule-family experiments — measured on the multichannel substrate but not its native collision mechanics.*
+| Regime | Result |
+|--------|--------|
+| **Native collision** | Pure throughput: ρ_C≈20 steady, ~94% of injected flux drains. A convergent node is a transparent scattering point — no accretion, no core. |
+| **+ Q condense (qmode 1)** | Unbounded accretion: Q_C climbs linearly (≈+0.55/t, ~30% of throughput), ΣQ spreads across the box. A sink, not a structure. |
+| **+ condense + emit (qmode 2)** | **Dynamic equilibrium: Q_C plateaus at ~30 under sustained inflow≈30, outflow≈20** — accretion and venting balance. The bound core is sustained only while driven. |
+| **Drive cutoff @ t=200** | condense+emit: Q_C decays to 0 in ~100 ticks, total mass→4 — **full dissolution**; the core existed only inside the throughput gradient. condense-only: Q_C=116 frozen forever — bound deposit, not driven. |
+
+**The accretion law:** accretion and outflow are separable channels. Native collisions give outflow-only; a condensation ratchet gives accretion-only; the structure that both accretes *and* vents requires both channels open — and lives strictly inside the gradient (dissipative, Prigogine-class), while accretion-without-venting produces frozen bound deposits.
+
+*Q-register (M22–M24, M32) results are engineered rule-family experiments — measured on the multichannel substrate but not its native collision mechanics.*
