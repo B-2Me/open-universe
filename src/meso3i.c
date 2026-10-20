@@ -35,6 +35,14 @@ static int      INCH, IMOV;          /* channels incl rest; moving chans */
 static uint8_t *iA, *iB;             /* site-major: [site*INCH + c] */
 static int      ICV[19][3];
 
+/* edge dwell: per-(site,channel) delay line, stage j = delivers in j+1 ticks.
+ * A quantum streamed with DWELL=k enters stage k-1 and reaches the
+ * destination node after k ticks -> effective channel velocity v = 1/k.
+ * DWELL=1 bypasses the buffer (direct stream, v=1). */
+#define IKMAX 4
+static int      DWELL = 1;
+static uint16_t *iD;                 /* [site][NMOV][IKMAX] */
+
 static int      IMODE;
 static int      INPAIR;              /* unordered pairs incl doubles */
 static uint16_t GID[19][19];         /* group id for pair (i<=j) */
@@ -97,16 +105,29 @@ int meso3i_init(int w, int h, int d, int axial) {
     ICV[INCH - 1][0] = ICV[INCH - 1][1] = ICV[INCH - 1][2] = 0;
     iA = calloc((size_t)IN * INCH, 1);
     iB = calloc((size_t)IN * INCH, 1);
-    if (!iA || !iB) return -2;
+    iD = calloc((size_t)IN * 18 * IKMAX, sizeof(uint16_t));
+    if (!iA || !iB || !iD) return -2;
     build_pairs();
     return 0;
 }
 
-void meso3i_clear(void) { memset(iA, 0, (size_t)IN * INCH); }
+void meso3i_clear(void) {
+    memset(iA, 0, (size_t)IN * INCH);
+    memset(iD, 0, (size_t)IN * 18 * IKMAX * sizeof(uint16_t));
+}
 void meso3i_collmode(int m) { IMODE = m; }
+void meso3i_dwell(int k) { DWELL = k < 1 ? 1 : (k > IKMAX ? IKMAX : k); }
 
 uint8_t meso3i_get(int x, int y, int z, int c) {
     return iA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * INCH + c];
+}
+/* in-flight population on the edge leaving site (x,y,z) along channel c */
+uint32_t meso3i_edge(int x, int y, int z, int c) {
+    if (c >= IMOV) return 0;
+    const uint16_t *ed = iD + (size_t)iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV * IKMAX;
+    uint32_t n = 0;
+    for (int j = 0; j < IKMAX; j++) n += ed[c * IKMAX + j];
+    return n;
 }
 void meso3i_set(int x, int y, int z, int c, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
@@ -161,18 +182,51 @@ static void collide_node(uint8_t *n) {
 }
 
 void meso3i_tick(void) {
+    /* 1. edge delivery: stage-0 quanta arrive at their destination node,
+     *    then all stages shift down one slot */
+    if (DWELL > 1) {
+        for (int z = 0; z < ID; z++)
+        for (int y = 0; y < IH; y++)
+        for (int x = 0; x < IW; x++) {
+            if (!isite(x, y, z)) continue;
+            uint16_t *ed = iD + (size_t)iidx(x, y, z) * IMOV * IKMAX;
+            for (int c = 0; c < IMOV; c++) {
+                uint16_t arr = ed[c * IKMAX];
+                if (arr) {
+                    int nx = iwrap(x + ICV[c][0], IW);
+                    int ny = iwrap(y + ICV[c][1], IH);
+                    int nz = iwrap(z + ICV[c][2], ID);
+                    uint8_t *na = iA + (size_t)iidx(nx, ny, nz) * INCH;
+                    uint32_t v = na[c] + arr;
+                    na[c] = v > 255 ? 255 : (uint8_t)v;
+                }
+                for (int j = 0; j < IKMAX - 1; j++)
+                    ed[c * IKMAX + j] = ed[c * IKMAX + j + 1];
+                ed[c * IKMAX + IKMAX - 1] = 0;
+            }
+        }
+    }
+
+    /* 2. node collisions */
     for (int s = 0; s < IN; s++)
         collide_node(iA + (size_t)s * INCH);
 
+    /* 3. stream: rest stays; moving quanta go direct (DWELL=1) or into
+     *    the edge delay line at stage DWELL-1 */
     memset(iB, 0, (size_t)IN * INCH);
     for (int z = 0; z < ID; z++)
     for (int y = 0; y < IH; y++)
     for (int x = 0; x < IW; x++) {
         if (!isite(x, y, z)) continue;
-        uint8_t *n = iA + (size_t)iidx(x, y, z) * INCH;
-        iB[iidx(x, y, z) * INCH + INCH - 1] += n[INCH - 1];
+        int si = iidx(x, y, z);
+        uint8_t *n = iA + (size_t)si * INCH;
+        iB[si * INCH + INCH - 1] += n[INCH - 1];
         for (int c = 0; c < IMOV; c++) {
             if (!n[c]) continue;
+            if (DWELL > 1) {
+                iD[(size_t)si * IMOV * IKMAX + c * IKMAX + DWELL - 1] += n[c];
+                continue;
+            }
             int nx = iwrap(x + ICV[c][0], IW);
             int ny = iwrap(y + ICV[c][1], IH);
             int nz = iwrap(z + ICV[c][2], ID);
@@ -194,6 +248,16 @@ void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
             y_ += (int64_t)n[c] * ICV[c][1];
             z_ += (int64_t)n[c] * ICV[c][2];
         }
+    }
+    for (int s = 0; s < IN; s++) {
+        const uint16_t *ed = iD + (size_t)s * IMOV * IKMAX;
+        for (int c = 0; c < IMOV; c++)
+            for (int j = 0; j < IKMAX; j++) {
+                m += ed[c * IKMAX + j];
+                x_ += (int64_t)ed[c * IKMAX + j] * ICV[c][0];
+                y_ += (int64_t)ed[c * IKMAX + j] * ICV[c][1];
+                z_ += (int64_t)ed[c * IKMAX + j] * ICV[c][2];
+            }
     }
     *mass = m; *px = x_; *py = y_; *pz = z_;
 }

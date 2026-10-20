@@ -32,8 +32,10 @@ const int (*meso3_cv(void))[3];
 int      meso3i_init(int w, int h, int d, int axial);
 void     meso3i_clear(void);
 void     meso3i_collmode(int);
+void     meso3i_dwell(int);
 void     meso3i_tick(void);
 uint8_t  meso3i_get(int x, int y, int z, int c);
+uint32_t meso3i_edge(int x, int y, int z, int c);
 void     meso3i_set(int x, int y, int z, int c, uint8_t v);
 void     meso3i_totals(uint64_t *, int64_t *, int64_t *, int64_t *);
 void     meso3i_hist(uint64_t *);
@@ -353,6 +355,42 @@ static void iequipartition(int ticks) {
     printf("]\n");
 }
 
+/* T9: edge dwell — inject a sparse channel-0 (1,1,0) pulse, track x-centroid.
+ * Expected v = 1/DWELL links/tick. Sparse fill ⇒ no collisions: pure
+ * transport measurement of the fractional duty cycle. */
+static void tof_dwell(int k) {
+    meso3i_clear();
+    meso3i_dwell(k);
+    meso3i_collmode(0);
+    for (int z = 0; z < D; z += 2)
+    for (int y = 0; y < H; y += 2)
+    for (int x = 4; x <= 7; x += 2)
+        if (!((x + y + z) & 1))
+            meso3i_set(x, y, z, 0, 1);          /* channel 0 = (+1,+1,0) */
+    printf("T9 dwell=%d (predicted v=%.3f):", k, 1.0 / k);
+    double x0 = 0, xend = 0;
+    for (int t = 0; t <= 30; t++) {
+        if (t == 0 || t == 10 || t == 20 || t == 30) {
+            double cx = 0; uint64_t m = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int n = 0;
+                for (int c = 0; c < INCH_i - 1; c++)
+                    n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                cx += n * x; m += n;
+            }
+            double xm = m ? cx / m : 0;
+            if (t == 0) x0 = xm; else xend = xm;
+            printf("  t=%d x̄=%.2f", t, xm);
+        }
+        if (t < 30) meso3i_tick();
+    }
+    printf("  → v_meas=%.3f\n", (xend - x0) / 30.0);
+    meso3i_dwell(1);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -407,6 +445,15 @@ int main(void) {
     for (double s = 0.05; s <= 0.26; s += 0.10)
         igalilean(0.30, s, 0, "int D3Q13 u-sweep");
     igalilean(0.30, 0.02, 0, "int D3Q13 u-sweep");
+
+    printf("# --- T9 edge dwell: fractional duty-cycle velocity (int D3Q13) ---\n");
+    meso3i_dwell(2);
+    irandfill(0.30);
+    iledger(200, "int D3Q13 dwell=2");
+    meso3i_dwell(1);
+    tof_dwell(1);
+    tof_dwell(2);
+    tof_dwell(4);
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
