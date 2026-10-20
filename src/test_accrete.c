@@ -27,6 +27,7 @@ int      meso3i_init(int w, int h, int d, int axial);
 void     meso3i_clear(void);
 void     meso3i_collmode(int);
 void     meso3i_gate(int);
+void     meso3i_condense(int);
 void     meso3i_qmode(int);
 void     meso3i_qdir(int);
 uint8_t  meso3i_qget(int, int, int);
@@ -93,19 +94,20 @@ int main(int argc, char **argv) {
     int gate   = argc > 7 ? atoi(argv[7]) : 0;
     int RAY    = argc > 8 ? atoi(argv[8]) : 10;
     int spokes = argc > 9 ? atoi(argv[9]) : 0;  /* 0=all, 1=equatorial(dz=0), 2=polar(dz!=0) */
+    int cond   = argc > 10 ? atoi(argv[10]) : 0; /* ICOND rest-channel ratchet */
 
     if (meso3i_init(W, H, D, 1)) { fprintf(stderr, "init fail\n"); return 1; }
     NCH = meso3i_nch(); NMOV = NCH - 1;
     meso3i_collmode(0);
     if (gate) meso3i_gate(gate);
+    if (cond) meso3i_condense(cond);
     if (qmode) meso3i_qmode(qmode);
     if (qdir >= 0) meso3i_qdir(qdir);
 
     int64_t injected = 0;
-    printf("# accrete rate=%d/%dt qmode=%d qdir=%d gate=%d t=%d\n",
-           rate, period, qmode, qdir, gate, ticks);
-    printf("# t | rho_C | Q_C | inflow | out | rest% | sh1 sh2 sh3 | sumQ | inj drain\n");
-    uint64_t tot0 = 0;
+    printf("# accrete rate=%d/%dt qmode=%d qdir=%d gate=%d cond=%d t=%d\n",
+           rate, period, qmode, qdir, gate, cond, ticks);
+    printf("# t | rho_C | Q_C | inflow | out | rest%% | sh1 sh2 sh3 | sumQ | inj drain\n");
     for (int t = 0; t <= ticks; t++) {
         /* measure staged inflow at C's predecessors + center state */
         uint32_t infl = 0;

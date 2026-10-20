@@ -283,10 +283,11 @@ static void collide_node(uint8_t *n, int si) {
             while (pick < nok - 1 && r >= wgt[pick]) { r -= wgt[pick]; pick++; }
             int k = ok[pick];
             ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
-        } else if (IBIAS || IFLD) {
+        } else if (IBIAS || IFLD || ICOND) {
             /* ungated node in weighted regime: the domain wall acts on the
              * bath side too — weight ALL group members by gradient pull
-             * and/or external-field alignment */
+             * and/or external-field alignment; with only ICOND set this is
+             * the pure rest-channel ratchet (rest outputs get +ICOND*atti) */
             uint32_t wtot = 0, wgt[200];
             for (int k = 0; k < len; k++) {
                 int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];

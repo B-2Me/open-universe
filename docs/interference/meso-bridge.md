@@ -50,3 +50,15 @@ title: The Multi-Channel Bridge
 - **Core-size scaling (isotropic condense+emit):** rate=1–2 → sub-threshold, no sustained core; rate=4 → Q_C≈30 plateau; rate=8 → Q_C≈180 still climbing at t=300; rate=16 → saturates at the u8 cap (255). **The driven core's size follows the feed rate, bounded by register saturation — there is an onset threshold (between rate 2 and 4) and a hard ceiling, not a linear law.**
 
 *Q-register (M22–M24, M32) results are engineered rule-family experiments — measured on the multichannel substrate but not its native collision mechanics.*
+
+### M32c — channel-native ratchet test (ICOND alone)
+
+Can pure channel dynamics condense without the Q register? The rest channel is a native v=0 state, and `ICOND` density-weights collision *outputs* toward it — the mildest possible arrow: no new state, just a weighted output preference. (Plumbing note: ICOND weighting lived inside the weighted branch gated by `IBIAS||IFLD`, so a one-line engine change now lets `ICOND` alone activate that branch — flag-gated, inert when 0.)
+
+**Result: negative, and instructive** (`qmode=0, icond=16`):
+
+- At rate=4 (ρ_C≈20): identical to native — the `atti` tent cuts to zero above ρ=8, so **the ratchet disarms exactly where density is highest**. Self-limiting by construction.
+- At rate=1 (ρ_C≈8–14, inside the atti window): rest share fluctuates 0–18%, never accumulates; ρ_C wanders ~10. No core.
+- Cutoff @ t=300: node empties fully (resident→56). Nothing bound.
+
+**Why it must fail:** the rest channel participates symmetrically in collisions — ICOND boosts rest *outputs*, but rest quanta are re-picked as *inputs* at the same rate. The weight shifts the equilibrium distribution; it cannot ratchet. This is M20a ergodicity one level up: every reversible or symmetrically-weighted rule thermalizes, so **an irreversible one-way move (2→Q) is not an implementation hack, it's a logical requirement for accretion**. The honest architectural question is where the arrow lives — Q-register, capacity ceiling, or absorb/remit cycle — not whether to have one.
