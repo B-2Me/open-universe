@@ -19,6 +19,7 @@ int     planck3_init_dims(int, int, int);
 int     planck3_set_mode(int);
 void    planck3_set_sync(int);
 void    planck3_set_temit(int);
+void    planck3_set_curl(int, int);
 void    planck3_set_node(int32_t, int, int, int, int, int);
 void    planck3_prepare(void);
 void    planck3_tick(void);
@@ -60,12 +61,18 @@ int main(int argc, char **argv) {
     int fill  = argc > 2 ? atoi(argv[2]) : 4;
     int bcount= argc > 3 ? atoi(argv[3]) : 1;
     int bcell = argc > 4 ? atoi(argv[4]) : 0;
-    if (argc > 5) NL = parse_loop(argv[5]);   /* "dx,dy,dz,port;..." */
+    if (argc > 5 && argv[5][0] != '-') {      /* "-" keeps default hexagon */
+        int n = parse_loop(argv[5]);
+        if (n >= 3) NL = n;
+    }
 
     if (planck3_init_dims(W, H, D)) { fprintf(stderr, "init fail\n"); return 1; }
     planck3_set_mode(0);
     planck3_set_sync(1);
     planck3_set_temit(300);
+    /* curl transverse induction (exchange-field wake): argv[6] = div strength
+     * (0 off, 3 ≈ 1/8 inflow momentum), vac=1 restrict to spinless cells */
+    if (argc > 6) planck3_set_curl(atoi(argv[6]), argc > 7 ? atoi(argv[7]) : 1);
 
     for (int i = 0; i < NL; i++) {
         int q = fill == 1 ? 200 : (fill == 2 ? (i % 2 ? 200 : 0) : (i == 0 ? 200 : 0));
