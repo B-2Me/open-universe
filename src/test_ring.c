@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
     const char *ps = argc > 3 ? argv[3] : "000";
 
     int n = (mode == 0 || mode == 3 || mode == 4) ? 2
-          : (mode == 2 ? 1 : 3);
-    int cores[3][3], ax[3], ph[3];
+          : (mode == 2 ? 1 : (mode == 6 ? 4 : 3));
+    int cores[4][3], ax[4], ph[4];
     if (mode == 2) {          /* solo breather, axis = first phase digit */
         cores[0][0] = 58; cores[0][1] = 19; cores[0][2] = 20;
         ax[0] = ps[0] - '0';
@@ -99,6 +99,13 @@ int main(int argc, char **argv) {
         cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 18; ax[0] = 7;
         cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 7;
         cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
+    } else if (mode == 6) {   /* ax7 3-chain + ax9 crossfire breather:
+                               * its port-10 lobe lands on the chain's
+                               * shared cell (59,20,19) */
+        cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 18; ax[0] = 7;
+        cores[1][0] = 60; cores[1][1] = 20; cores[1][2] = 20; ax[1] = 7;
+        cores[2][0] = 62; cores[2][1] = 20; cores[2][2] = 22; ax[2] = 7;
+        cores[3][0] = 58; cores[3][1] = 19; cores[3][2] = 20; ax[3] = 9;
     } else {                  /* closed triangle */
         cores[0][0] = 58; cores[0][1] = 20; cores[0][2] = 20; ax[0] = 1;
         cores[1][0] = 58; cores[1][1] = 19; cores[1][2] = 20; ax[1] = 2;
