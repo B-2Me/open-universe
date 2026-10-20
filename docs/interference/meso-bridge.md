@@ -152,4 +152,15 @@ Seeding two lumps at sep≤2 (overlapping halos) produces a single connected blo
 
 **Interpretation:** the "matter" here is a heat deposit, not a droplet. Coalescence is degenerate (two touching deposits ARE one deposit), which means the interaction vocabulary is currently limited to *ablative* coupling — lumps affect each other only through the flux they exchange, never through contact. A real merger physics (cohesion, surface tension, binding-energy release) would need structure inside the lump that contact can rearrange — the rest channel is too simple a state to carry it.
 
+### M38 — structured lump test: circulation dies in ~25 ticks
+
+`test_spin.c` seeds a rest blob then injects tangentially-aligned moving quanta on a shell inside it — a lump that *spins*. Tracked lump rest mass, trapped moving mass, and net z-angular momentum Lz.
+
+| Config | Lz at t=0 → t=25 | Verdict |
+|---|---|---|
+| inert rest + carrier-gated boil (fricm=−4) | 320 → 6 | circulation thermalizes instantly; lump persists as scalar heat |
+| colliding rest (fricm=0) | 320 → 9, rest→8 | lump evaporates entirely — worse |
+
+**The boundary of this rule set, measured:** friction thermalizes every directed pattern — there is *no* persistent internal structure a lump can carry. No spin, no polarity, no chirality, no valence. **Friction gives rocks, not atoms** — the substrate supports the full "heat deposit" phenomenology (accrete, vent, persist, migrate, weakly attract) but the structured-matter rung (and therefore chemistry) is absent *in principle* under these rules, not just untested. Reaching it would need a mechanism that preserves pattern inside parked mass — e.g., channel-structured bound states rather than a single scalar rest bin.
+
 This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
