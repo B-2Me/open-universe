@@ -96,7 +96,19 @@ Lab-seeded only (M16/M17): the **dimer breather** — two cores sharing one lobe
 - Detector pixels (APD or oscillator) are single-shot — histograms need fresh pixels per event.
 - Mass, not identity, is trackable — the 6-byte node has no ID register; attribution needs spatial isolation or explicit bookkeeping.
 
-## The Two Layers (repo hygiene)
+## The Mesoscale Bridge (M19: `meso3.c` / `meso3i.c`)
 
-- **Grounded engine** (`src/planck3.c` + `src/test_*.c`): the validated physics substrate — this document's subject.
+The proven-absent channels above are statements about *single-spin* `planck3.c`, not about discrete substrates in principle. M19 built the second engine family — FHP-class multi-channel lattice gases on the same True-FCC topology — and mapped which legacy barriers fall and which remain:
+
+- **Counter-flow**: opposing streams coexist on a node and resolve by angular redistribution — no v=0 fusion (T2); forward-bias tuning shifts head-on traffic between thermal scattering (12.5%) and transit (53.9%) (T6).
+- **Isotropy**: the D3Q13 4th-rank gap (Σcx⁴=8 vs 3Σcx²cy²=12) is repaired on D3Q19 only by *dynamic* shell weighting w_axial/w_face = 1/8 — static seeding thermalizes away in 50 ticks; the collision operator must carry the weight (T5).
+- **Galilean transport**: Boolean occupancy reproduces the FHP g(ρ) defect (zero-cross at half-fill, sign reversal above) — integer occupancy replaces it with a positive plateau g≈0.7–0.96 across all densities (T7/T8); u-sweep shows the plateau is flat in u where the estimator resolves it (T8b).
+- **Sub-light transport**: edge dwell buffers give exact fractional duty cycles v=1/k, measured 1.000/0.467/0.233 at k=1/2/4 (T9).
+- **Conservation**: exact throughout — 0 violations in every ledger run, edges included.
+- **Still open**: the g plateau sits below 1.0 (rest-channel dilution or ergodicity bias — unsolved); **a bound structure that drifts coherently at v<1 does not yet exist** — slow flux is measured, moving matter is not.
+
+## The Three Layers (repo hygiene)
+
+- **Canonical engine** (`src/planck3.c` + `src/test_*.c`): the measured single-spin substrate — the M1–M18 record above.
+- **Meso engines** (`src/meso3.c`, `src/meso3i.c` + `src/test_meso3.c`): the multi-channel bridge — M19 record.
 - **Hopfion Zoo / Hopf's Loom** (`script/`, `docs/.vitepress/` viewers): parked interactive 3D visualizer of FCC geometry. Preserved as a visualization demo, deliberately outside the measurement campaign.
