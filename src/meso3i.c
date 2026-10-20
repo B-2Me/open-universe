@@ -44,6 +44,7 @@ static int      DWELL = 1;
 static uint16_t *iD;                 /* [site][NMOV][IKMAX] */
 
 static int      IMODE;
+static int      IGATE;               /* rho_crit for planar gating; 0=off */
 static int      INPAIR;              /* unordered pairs incl doubles */
 static uint16_t GID[19][19];         /* group id for pair (i<=j) */
 static uint8_t  GPAIRS[400][2];
@@ -117,6 +118,14 @@ void meso3i_clear(void) {
 }
 void meso3i_collmode(int m) { IMODE = m; }
 void meso3i_dwell(int k) { DWELL = k < 1 ? 1 : (k > IKMAX ? IKMAX : k); }
+void meso3i_gate(int crit) { IGATE = crit; }
+
+/* coordinate planes containing channel c: bit0=xy, bit1=xz, bit2=yz */
+static int ipmask(int c) {
+    if (c == INCH - 1) return 7;            /* rest: all planes */
+    int x = ICV[c][0], y = ICV[c][1], z = ICV[c][2];
+    return (x && y ? 1 : 0) | (x && z ? 2 : 0) | (y && z ? 4 : 0);
+}
 
 uint8_t meso3i_get(int x, int y, int z, int c) {
     return iA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * INCH + c];
@@ -160,8 +169,20 @@ static void collide_node(uint8_t *n) {
         int len = GLEN[g];
         if (len <= 1) continue;
         int ko, lo2;
-        if (IMODE == 2 && irnd() % 8 < 7) continue;          /* forward bias */
-        if (IMODE == 1) {                                    /* shell weighted */
+        if (IGATE && m >= IGATE) {
+            /* planar-circulation subfamily: only output pairs sharing a
+             * coordinate plane with the input pair are allowed */
+            int pm = ipmask(lo) & ipmask(hi);
+            int ok[64], nok = 0;
+            for (int k = 0; k < len; k++) {
+                int c2 = GPAIRS[GOFF[g] + k][0], d2 = GPAIRS[GOFF[g] + k][1];
+                if (pm & ipmask(c2) & ipmask(d2)) ok[nok++] = k;
+            }
+            if (!nok) continue;
+            int k = ok[irnd() % nok];
+            ko = GPAIRS[GOFF[g] + k][0]; lo2 = GPAIRS[GOFF[g] + k][1];
+        } else if (IMODE == 2 && irnd() % 8 < 7) continue;   /* forward bias */
+        else if (IMODE == 1) {                               /* shell weighted */
             uint32_t tot = 0;
             for (int k = 0; k < len; k++) tot += GWGT[GOFF[g] + k];
             uint32_t r = tot ? irnd() % tot : 0;

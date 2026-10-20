@@ -33,6 +33,7 @@ int      meso3i_init(int w, int h, int d, int axial);
 void     meso3i_clear(void);
 void     meso3i_collmode(int);
 void     meso3i_dwell(int);
+void     meso3i_gate(int);
 void     meso3i_tick(void);
 uint8_t  meso3i_get(int x, int y, int z, int c);
 uint32_t meso3i_edge(int x, int y, int z, int c);
@@ -469,6 +470,49 @@ static void t10_ring(void) {
     printf("\n");
 }
 
+/* T11: rho-gated planar core — the domain-wall stability test.
+ * Seed a 5x5 patch on z=20, 4 quanta/node spread across xy channels
+ * (rho=4 >= gate). Below rho_crit nodes run the ergodic family; at/above
+ * they run the planar-circulation subfamily. Measure:
+ *   planemass = fraction of total mass on the z=20 plane
+ *   boxmass   = fraction within the seed footprint x,y in [16,24]
+ * If the gate binds, the core persists; if the wall leaks, it evaporates
+ * into the ergodic bath. gate=0 control shows unprotected decay. */
+static void t11_core(int gate, int dwell, int per) {
+    meso3i_clear(); meso3i_dwell(dwell); meso3i_collmode(0); meso3i_gate(gate);
+    int seed = 0;
+    for (int y = 16; y <= 24; y++)
+    for (int x = 16; x <= 24; x++) {
+        if ((x + y + 20) & 1) continue;
+        for (int c = 0; c < 4; c++) meso3i_set(x, y, 20, c, (uint8_t)per), seed += per;
+    }
+    printf("T11 gate=%d dwell=%d m/node=%d (seed=%d):", gate, dwell, 4 * per, seed);
+    for (int t = 0; t <= 200; t++) {
+        if (t % 25 == 0 || t == 199) {
+            uint64_t m = 0, plane = 0, box = 0;
+            for (int z = 0; z < D; z++)
+            for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++) {
+                if ((x + y + z) & 1) continue;
+                int n = 0;
+                for (int c = 0; c < INCH_i; c++)
+                    n += meso3i_get(x, y, z, c) + (int)meso3i_edge(x, y, z, c);
+                m += n;
+                if (z == 20) plane += n;
+                if (z == 20 && x >= 16 && x <= 24 && y >= 16 && y <= 24) box += n;
+            }
+            printf("  t=%d plane=%.0f%% box=%.0f%%", t,
+                   m ? 100.0 * plane / m : 0, m ? 100.0 * box / m : 0);
+        }
+        if (t < 200) meso3i_tick();
+    }
+    uint64_t m; int64_t px, py, pz;
+    meso3i_totals(&m, &px, &py, &pz);
+    printf("  [conservation m=%llu p=(%lld,%lld,%lld)]\n",
+           (unsigned long long)m, (long long)px, (long long)py, (long long)pz);
+    meso3i_gate(0); meso3i_dwell(1);
+}
+
 int main(void) {
     printf("# M19 — Boolean LGA on True-FCC (channels=%d)\n", 13);
 
@@ -539,6 +583,13 @@ int main(void) {
     t10_blob(4, 0);
     t10_blob(2, 1);
     t10_ring();
+
+    printf("# --- T11 rho-gated planar core (int D3Q13) ---\n");
+    t11_core(0, 1, 1);   /* ungated control, m=4/node */
+    t11_core(4, 1, 1);   /* marginal gate — expected self-dilution */
+    t11_core(4, 1, 2);   /* m=8/node — boundary arrivals stay >=4 */
+    t11_core(4, 2, 2);   /* same at dwell=2 */
+    t11_core(2, 1, 2);   /* deep gate — anything arriving in pairs stays gated */
 
     printf("# --- T8 D3Q19 shell-weighted integer engine ---\n");
     INCH_i = 19;
