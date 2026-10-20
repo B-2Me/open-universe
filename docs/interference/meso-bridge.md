@@ -102,3 +102,17 @@ Swept boil rate (k = 1,4,16 → 1/4k per quantum/tick) and lump size (drive rate
 **The law:** ρ_C decay is smooth geometric (rate-16 tail: 228→207→167→143→110→87→61→…→0, ratio ≈0.75–0.8 per 25 ticks) — **pure exponential cooling**, no plateau, no stall, no critical-size floor. Cooling rate scales with boil constant; lifetime grows only **logarithmically** with lump mass (4× mass buys ~75 ticks). The self-shielding hypothesis fails: interior radiation escapes because the cooling front — surface drops below the friction cap first — propagates inward steadily rather than stalling.
 
 **Metastability verdict:** absent. The friction core is a candle, not a rock — its lifetime is proportional to how slowly it radiates, never self-sustaining. A metastable bound regime would need a mechanism that *suppresses* radiation below a threshold (e.g., density-gated emission, or emission cost) — an energy barrier the current rule set doesn't contain.
+
+### M35 — carrier-gated radiation: persistent, re-wakeable matter
+
+The missing barrier, implemented honestly: heat transfer needs a *carrier*. `fricmode = -k` gates boil-off on the presence of moving mass at the node — radiation fires only while flux transits (emission cost = a passing quantum). In true vacuum, parked heat is quiescent by physics, not by bug.
+
+Three-phase protocol (drive t<200 → quiet 200–600 → re-illuminate 600–900):
+
+| Phase | Behavior |
+|-------|----------|
+| Driven | Breathing core: ρ_C~106 (95%+ rest), sustained out ~2–22 |
+| Quiet (400 ticks) | Partial radiative decay while in-flight carriers remain, then **frozen at ρ_C=79, resident ~6k** — inert in vacuum |
+| Re-illuminated | **The remnant wakes**: ρ_C 79→118 in 25 ticks, accretes and re-vents (out 6–21). Persistent object with state, not dead mass |
+
+This is the metastable regime M34 showed was missing: bound mass that *persists* without drive, *decays* under flux, and *responds* to re-feeding — the cold-rock phenomenology (stable in vacuum, ablatable near a flux source), achieved with two flag-gated rules on native channels and zero registers.

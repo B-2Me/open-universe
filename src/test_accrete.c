@@ -101,6 +101,7 @@ int main(int argc, char **argv) {
     int refl   = argc > 11 ? atoi(argv[11]) : 0; /* IREFL congestion-refusal cap */
     int fric   = argc > 12 ? atoi(argv[12]) : 0; /* IFRIC transit-drag density cap */
     int fricm  = argc > 13 ? atoi(argv[13]) : 0; /* rest inert + boil rate 1/4k */
+    int resume = argc > 14 ? atoi(argv[14]) : 0; /* re-illuminate after t=resume */
 
     if (meso3i_init(W, H, D, 1)) { fprintf(stderr, "init fail\n"); return 1; }
     NCH = meso3i_nch(); NMOV = NCH - 1;
@@ -109,7 +110,7 @@ int main(int argc, char **argv) {
     if (cond) meso3i_condense(cond);
     if (refl) meso3i_reflect(refl);
     if (fric) meso3i_friction(fric);
-    if (fricm) meso3i_fricmode(fricm);
+    meso3i_fricmode(fricm);
     if (qmode) meso3i_qmode(qmode);
     if (qdir >= 0) meso3i_qdir(qdir);
 
@@ -161,7 +162,8 @@ int main(int argc, char **argv) {
                    (long long)injected,
                    (long long)dz_face, (long long)dxy_face);
         /* drive: inject on each spoke */
-        if (t % period == 0 && t < ticks && (!cut || t < cut)) {
+        int drive_on = (!cut || t < cut || (resume && t >= resume));
+        if (t % period == 0 && t < ticks && drive_on) {
             for (int c = 0; c < NMOV; c++) {
                 if (spokes == 1 && cv(c, 2) != 0) continue;   /* equatorial only */
                 if (spokes == 2 && cv(c, 2) == 0) continue;   /* polar only */

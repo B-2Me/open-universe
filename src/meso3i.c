@@ -236,12 +236,14 @@ static void collide_node(uint8_t *n, int si) {
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
     m -= rest;                       /* inert heat: rest mass does not collide */
-    /* radiative boil-off: parked heat slowly re-emits into moving
-     * channels — the friction sink's return path. Must fire even at
-     * pure-heat nodes (m<2), else cutoff remnants freeze dead. */
-    if (IFRICM && rest) {
+    /* radiative boil-off: parked heat re-emits into moving channels.
+     * IFRICM>0: unconditional blackbody rate ~1/(4k) per quantum.
+     * IFRICM<0: carrier-gated — emission only while moving mass
+     * transits the node (heat needs a carrier; inert in true vacuum). */
+    if (IFRICM && rest && (IFRICM > 0 || m > 0)) {
+        int k = IFRICM < 0 ? -IFRICM : IFRICM;
         for (int u = 0; u < n[INCH - 1]; u++)
-            if (irnd() % (4 * IFRICM) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
+            if (irnd() % (4 * k) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
     }
     if (m < 2) return;
     int excl = IFRICM ? INCH - 1 : -1;
