@@ -80,9 +80,9 @@ Two pieces were needed — drag alone (inert off) parked 50–93% of ρ_C in res
 
 | fric=8 | Driven | Cutoff @ t=200 |
 |--------|--------|----------------|
-| boil 1/16 (fricm=4) | ρ_C~100, 97% rest, in≈10/out≈3 — net accretion, resident ~4.8k | **Self-bound lump: resident 3,456, frozen 250+ ticks** |
-| boil 1/4 (fricm=1) | ρ_C~30–58, 68–90% rest, in≈11–22/out≈4–13 — **simultaneous accretion and venting** | Bound remnant 657 — does not fully radiate away |
+| boil 1/16 (fricm=4) | ρ_C~100, 97% rest, in≈10/out≈3 — net accretion, resident ~4.8k | ~~frozen lump~~ → corrected: **full boil-off, resident→0** (see below) |
+| boil 1/4 (fricm=1) | ρ_C~30–58, 68–90% rest, in≈11–22/out≈4–13 — **simultaneous accretion and venting** | Full dissolution — driven structure only |
 
-**The key mechanism — self-trapping:** the remnant does not boil off because emitted radiation re-parks into adjacent congested nodes; **the lump's own density sustains the friction field that binds it**. Optically-thick gravitational analog: mass maintains the congestion that holds the mass.
+**Correction (verified):** the first run's "bound remnant" was a code-path artifact — the boil-off loop sat behind `collide_node`'s `m < 2` early return, so pure-heat nodes could never radiate. With radiation moved ahead of the gate, the lump **fully boils away** after cutoff (resident →0, injected = drained). Self-trapping via re-parking does *not* hold: emitted quanta escape because surface nodes cool below the friction cap, and the cooling front propagates inward.
 
-This is the answer to the accrete-and-vent question *without any register*: transit drag is the arrow, inert rest is the sink, radiation is the vent — and unlike the Q core (which dissolves on cutoff), the friction core leaves a genuine bound remnant, matching gravitational collapse phenomenology rather than a driven-only dissipative structure.
+**What M33 actually establishes:** transit friction gives a **channel-native dissipative core** — accretion and venting simultaneously, no register, no pair-condensation move — but it is drive-maintained like the Q core, not self-bound. The honest statement of the ontology as measured: *space-is-friction* produces the Prigogine structure natively (drag → parked heat → radiation), but permanence still requires either a true one-way sink or sustained throughput.

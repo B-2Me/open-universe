@@ -236,6 +236,13 @@ static void collide_node(uint8_t *n, int si) {
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
     m -= rest;                       /* inert heat: rest mass does not collide */
+    /* radiative boil-off: parked heat slowly re-emits into moving
+     * channels — the friction sink's return path. Must fire even at
+     * pure-heat nodes (m<2), else cutoff remnants freeze dead. */
+    if (IFRICM && rest) {
+        for (int u = 0; u < n[INCH - 1]; u++)
+            if (irnd() % (4 * IFRICM) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
+    }
     if (m < 2) return;
     int excl = IFRICM ? INCH - 1 : -1;
     int attempts = (IBIAS || IFLD) ? m : m >> 1;   /* weighted: full coverage */
@@ -351,14 +358,6 @@ static void collide_node(uint8_t *n, int si) {
         }
         n[i]--; n[j]--;
         n[ko]++; n[lo2]++;
-    }
-    /* radiative boil-off: parked heat slowly re-emits into moving
-     * channels — the friction sink's return path. Rate ~1/(4k) per
-     * quantum per tick — a warm core vents while driven, cools off
-     * when the drive stops. */
-    if (IFRICM && rest) {
-        for (int u = 0; u < n[INCH - 1]; u++)
-            if (irnd() % (4 * IFRICM) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
     }
 }
 
