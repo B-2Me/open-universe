@@ -67,9 +67,16 @@ onUnmounted(() => {
       <div class="loom-well loom-transport" role="group" aria-label="Transport">
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
         <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
-        <button data-reset title="Reset to Hopfion"   aria-label="Reset">⟲</button>
-        <button data-knot  title="Knot tool — arm, then click the lattice to place"
-                aria-label="Knot placement tool"      aria-pressed="false">⌖</button>
+        <button data-reset title="Clear the field"    aria-label="Reset">⟲</button>
+        <button data-drive class="on" aria-pressed="true"
+                title="Convergent feed — 18 spokes pouring flux into the core"
+                aria-label="Toggle convergent drive">☀</button>
+        <button data-beam  title="Carrier beam — +x flux that walks a lump"
+                aria-label="Toggle carrier beam"      aria-pressed="false">➤</button>
+        <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
+                aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
+        <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
+                aria-label="Cold rock tool"           aria-pressed="false">●</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
@@ -81,30 +88,36 @@ onUnmounted(() => {
 
       <div class="loom-well loom-selects">
         <label class="loom-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
-          <option value="full"    selected>Full torus</option>
+          <option value="full"    selected>Full field</option>
           <option value="side">Side profile</option>
           <option value="equator">Equator slab</option>
-          <option value="bore">Core bore</option>
-          <option value="core">Deep core</option>
+          <option value="bore">Top-down</option>
+          <option value="core">Core close-up</option>
           <option value="lattice">Lattice plane</option>
         </select></label>
         <label class="loom-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
-          <option value="2" selected>metabolism</option>
+          <option value="0" selected>ember</option>
+          <option value="1">heat</option>
+          <option value="2">flux</option>
           <option value="3">macro</option>
-          <option value="1">spin class</option>
-          <option value="0">density</option>
+        </select></label>
+        <label class="loom-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
+          <option value="0" selected>uniform</option>
+          <option value="1">shell-weighted</option>
+          <option value="2">forward-bias</option>
         </select></label>
       </div>
 
       <button class="loom-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="loom-well loom-sliders">
-        <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
-        <label>Width <input type="range" data-zthick  min="1" max="40" step="1" value="40"><output>40</output></label>
+        <label>Slice <input type="range" data-zcenter min="0" max="35" step="1" value="18"><output>18</output></label>
+        <label>Width <input type="range" data-zthick  min="1" max="36" step="1" value="36"><output>36</output></label>
         <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Diss  <input type="range" data-diss    min="0" max="31" step="1" value="15"><output>15</output></label>
-        <label>Heat  <input type="range" data-therm   min="5" max="65" step="1" value="50"><output>50k</output></label>
+        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8"><output>8</output></label>
+        <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
+        <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>
     </div>
