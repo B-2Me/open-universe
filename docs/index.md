@@ -70,3 +70,4 @@ The investigation is organized into four core pillars, progressing from empirica
 *   **[Hopf's Loom](/loom-demo):** A 400,000-node WebGL2 volume visualizer demonstrating topological circulation on the True-FCC lattice.
 *   **[The Hopfion Zoo](/hopfion-zoo):** A geometric archive of stable resting structures explored during early 3D parameter sweeps.
 *   **[Langevin's Wake](/wake-demo):** A 2D interactive canvas demonstration of discrete routing and wake dynamics.
+
