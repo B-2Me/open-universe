@@ -477,7 +477,7 @@ export async function initLoomSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2,
+    phot: 2, pair: false,
   };
   // boot state: a cold lump at center — parked heat, inert in vacuum
   // until the user turns on a drive or a beam
@@ -531,6 +531,14 @@ export async function initLoomSimulator(root, opts = {}) {
   toggle('[data-beam]', 'beam',
     'photon laser on — violet light shining +x across the lattice · coupling set by the Phot dial',
     'laser off');
+  bind('[data-pair]', 'click', e => {
+    ui.pair = !ui.pair;
+    wasm._meso3i_pair(ui.pair ? 1 : 0);
+    const b = e.currentTarget;
+    b.classList.toggle('on', ui.pair); b.setAttribute('aria-pressed', String(ui.pair));
+    say(ui.pair ? 'pair rules on — radiation goes out back-to-back, head-on collisions bind into rest'
+                : 'pair rules off');
+  });
   // radio-exclusive armed tools: ⌖ vortex ring vs ● cold rock
   const armBtns = { ring: root.querySelector('[data-ring]'), lump: root.querySelector('[data-lump]') };
   const setArm = (which) => {

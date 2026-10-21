@@ -31,6 +31,7 @@ What you see on boot is a cold lump at center — parked amber heat, inert in va
   - *off* — photons stream through parked mass untouched: light that cannot couple.
   - *catalyst* — a transiting photon licenses the carrier-gated emission gate, like a massless carrier: isotropic boil-off with no payload added.
   - *stimulated* — each photon may kick a rest quantum into *its own channel*: coherent directional ablation, the microscopic mechanism under M36's walk-toward-the-beam.
+- **⇄ (pair rules)** — the momentum-honest wind/unwind cycle: `2·rest ⇄ c + c¹`. Rest sheds mass as back-to-back antipodal pairs (no net momentum), and head-on collisions can bind a pair back into rest. Measured caveat: the colliding pair is itself a carrier, so a binding site also lights its own emission gate — unwind tends to dominate wind wherever they meet.
 - **⌖ (vortex tool)** — arm it, tap the slice plane: injects two concentric rings of moving quanta on the best-tangent equatorial channels — a circulation seed. Watch whether it holds, shears, or thermalizes into parked heat. This is the knot question.
 - **● (rock tool)** — arm it, tap the slice plane: drops a cold rest-mass lump — the proven-persistent control case.
 - **⧉ / ⤺** — snapshot the field, perturb, rewind.

@@ -77,6 +77,8 @@ onUnmounted(() => {
                 aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
         <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
                 aria-label="Cold rock tool"           aria-pressed="false">●</button>
+        <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
+                aria-label="Toggle antipodal pair rules" aria-pressed="false">⇄</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>

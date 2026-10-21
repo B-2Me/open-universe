@@ -68,6 +68,10 @@ static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICM;              /* rest-inertia: 0=rest collides; k=rest inert, radiates ~1/4k */
 static int      IPHOT;               /* photons: 0 off, 1 catalyst gate, 2 stimulated emission */
+static int      IPAIR;               /* antipodal pairs: 0 off, 1 on — momentum-honest
+                                        wind/unwind. Rest radiates as back-to-back
+                                        channel pairs (zero net momentum); populated
+                                        antipodal pairs may bind back into rest. */
 static int      IPHN;                /* live photon count — photon sweep skipped at 0 */
 static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV + c]: directional,
                                         massless, non-colliding messengers */
@@ -170,6 +174,7 @@ void meso3i_reflect(int cap) { IREFL = cap; }
 void meso3i_friction(int cap) { IFRIC = cap; }
 void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
+void meso3i_pair(int m) { IPAIR = m; }
 
 /* photon channel access — live parity only, like meso3i_set. Photons
  * carry direction (their channel) but no mass and never collide. */
@@ -290,7 +295,30 @@ static void collide_node(uint8_t *n, int si) {
                            (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
         for (int u = 0; u < n[INCH - 1]; u++)
-            if (irnd() % (4 * k) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
+            if (irnd() % (4 * k) == 0) {
+                if (IPAIR && n[INCH - 1] >= 2) {
+                    /* pair emission: rest sheds as a back-to-back
+                     * antipodal pair — zero net momentum, honest decay */
+                    int c = irnd() % IMOV;
+                    n[INCH - 1] -= 2;
+                    n[c]++; n[c ^ 1]++;
+                } else {
+                    n[INCH - 1]--; n[irnd() % IMOV]++;
+                }
+            }
+    }
+    /* pair capture (IPAIR): a populated antipodal pair may bind into
+     * rest mass — the wind side of the cycle. Zero net momentum either
+     * way; binding needs no congestion, just two quanta arriving
+     * head-on. Rate ~1/(4k) per pair, mirroring the emission clock. */
+    if (IPAIR) {
+        int k = IFRICM ? (IFRICM < 0 ? -IFRICM : IFRICM) : 4;
+        for (int c = 0; c + 1 < IMOV; c += 2)
+            if (n[c] && n[c + 1] && irnd() % (4 * k) == 0) {
+                n[c]--; n[c + 1]--;
+                uint32_t r = n[INCH - 1] + 2;
+                n[INCH - 1] = r > 255 ? 255 : (uint8_t)r;
+            }
     }
     if (m < 2) return;
     int excl = IFRICM ? INCH - 1 : -1;
