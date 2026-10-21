@@ -434,9 +434,10 @@ onUnmounted(() => {
 html:has(.ember-simulator) {
   overscroll-behavior: none;
 }
-@media (pointer: coarse), (max-width: 820px) {
-  .ember-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
-}
+/* .VPNav is sticky (in-flow) on this theme, so VitePress's
+   padding-top: var(--vp-nav-height) — meant to clear a fixed nav —
+   is a dead band below the navbar. Reclaim it at all widths. */
+.ember-page .VPContent { padding-top: 0 !important; }
 .ember-page .ember-doc {
   max-width: 768px;
   margin: 0 auto;

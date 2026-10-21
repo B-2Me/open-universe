@@ -455,9 +455,10 @@ onUnmounted(() => {
 html:has(.loom-simulator) {
   overscroll-behavior: none;
 }
-@media (pointer: coarse), (max-width: 820px) {
-  .loom-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
-}
+/* .VPNav is sticky (in-flow) on this theme, so VitePress's
+   padding-top: var(--vp-nav-height) — meant to clear a fixed nav —
+   is a dead band below the navbar. Reclaim it at all widths. */
+.loom-page .VPContent { padding-top: 0 !important; }
 /* Page prose: doc typography + article width, same as the rest of the site.
    (layout: page renders raw Content with no .vp-doc wrapper — we add the
    class in loom-demo.md and constrain it here.) */

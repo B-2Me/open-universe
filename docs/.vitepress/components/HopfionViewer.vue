@@ -403,8 +403,9 @@ onUnmounted(() => {
 .hopfion-page .aside-top {
   display: none !important;
 }
-@media (pointer: coarse), (max-width: 820px) {
-  .hopfion-page .VPContent { padding-top: var(--vp-nav-height, 64px) !important; }
-}
+/* .VPNav is sticky (in-flow) on this theme, so VitePress's
+   padding-top: var(--vp-nav-height) — meant to clear a fixed nav —
+   is a dead band below the navbar. Reclaim it at all widths. */
+.hopfion-page .VPContent { padding-top: 0 !important; }
 .hopfion-page .hopfion-doc { max-width: 768px; margin: 0 auto; padding: 24px 24px 72px; }
 </style>
