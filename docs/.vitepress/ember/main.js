@@ -590,7 +590,7 @@ export async function initEmberSimulator(root, opts = {}) {
         if (ui.tickMs > ui.budget) break;
       }
       lastSpent = spent;
-      upload(); dirty = true;
+      if (ui.tick > 0 && spent > 0) { upload(); dirty = true; }
     } else lastSpent = 0;
 
     resize();
