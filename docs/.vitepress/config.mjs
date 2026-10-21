@@ -64,10 +64,10 @@ const interferenceItems = [
 
 // Interactive instruments — they live under Interference, not beside it.
 const instrumentItems = [
+  { text: "Yarkovsky's Ember · Friction", link: '/ember-demo' },
   { text: "Hopf's Loom · 3D Engine", link: '/loom-demo' },
   { text: 'Hopfion Zoo · 3D Knots', link: '/hopfion-zoo' },
-  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' },
-  { text: "Yarkovsky's Ember · Friction", link: '/ember-demo' }
+  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is

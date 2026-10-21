@@ -33,15 +33,18 @@ const m4 = {
     const f = 1 / Math.tan(fov / 2), nf = 1 / (near - far);
     return [f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
   },
-  rotX(a) { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, 0, c, s, 0, 0, 0, -s, 0, 0, s, 0, c, 0, 0, 0, 1]; },
-  rotY(a) { const c = Math.cos(a), s = Math.sin(a); return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, -s, 0, 0, 0, 1, 0, 0, 0, 0, 1]; },
-  translate(x, y, z) { return [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]; },
+  rotX(a) { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]; },
+  rotY(a) { const c = Math.cos(a), s = Math.sin(a); return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]; },
+  translate(x, y, z) { return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]; },
 };
 
 const VERT = `#version 300 es
 precision highp float;
 precision highp sampler3D;
-layout(location=0) in vec2 a_corner;
+// billboard corners synthesized from gl_VertexID — no VBO needed
+const vec2 CORNER[6] = vec2[6](
+  vec2(-1.0,-1.0), vec2(1.0,-1.0), vec2(1.0,1.0),
+  vec2(-1.0,-1.0), vec2(1.0,1.0),  vec2(-1.0,1.0));
 uniform sampler3D u_vol;                  // RG8: r=moving g=rest
 uniform mat4 u_mvp;
 uniform float u_size;
@@ -52,8 +55,8 @@ uniform int u_colorMode;                  // 0=ember 1=heat 2=flux 3=macro
 out vec4 v_color;
 out vec2 v_uv;
 uniform int u_nx, u_ny, u_nxy, u_step;
-uniform vec3 u_centroid;
 void main() {
+  vec2 a_corner = CORNER[gl_VertexID];
   int id = gl_InstanceID;
   int x = (id % u_nx) * u_step;
   int y = ((id / u_nx) % u_ny) * u_step;
@@ -68,9 +71,9 @@ void main() {
   }
   float halfT = u_z_thickness * 0.5;
   float alpha = abs(float(z) - u_z_center) <= halfT ? 1.0 : u_ghost_alpha;
-  vec3 p = vec3(float(x), float(y), float(z)) - u_centroid;
+  vec3 p = vec3(float(x), float(y), float(z));
   vec4 mv = u_mvp * vec4(p, 1.0);
-  float ps = u_size * (0.6 + 1.6 * d / 255.0);
+  float ps = u_size * (0.8 + 2.0 * d / 255.0);
   mv.xy += a_corner * ps;
   gl_Position = mv;
   vec3 rgb;
@@ -103,6 +106,9 @@ void main() {
     // ember: the whole story — cyan flux streams feeding amber heat
     rgb = ember * (0.35 + 0.85 * rest / 255.0) + flux * 0.85;
   }
+  // visibility floor: real occupancies run ~5-120, far below the 255
+  // normalization — a sparse dim ember must still read against the void
+  rgb = rgb * 1.8 + vec3(0.028);
   v_color = vec4(rgb, alpha);
 }`;
 
@@ -241,7 +247,7 @@ export async function initEmberSimulator(root, opts = {}) {
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
     'u_ghost_alpha', 'u_qmin', 'u_colorMode',
-    'u_nx', 'u_ny', 'u_nxy', 'u_step', 'u_centroid'])
+    'u_nx', 'u_ny', 'u_nxy', 'u_step'])
     U[n] = gl.getUniformLocation(prog, n);
 
   const maxTex = gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);
@@ -273,13 +279,10 @@ export async function initEmberSimulator(root, opts = {}) {
     root.dispatchEvent(new CustomEvent('ember:reinit'));
   });
 
+  // No vertex attributes — corners come from gl_VertexID. A bound VAO is
+  // still required for the draw to be valid on some drivers.
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
-  const vb = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vb);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1]), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
   gl.enable(gl.DEPTH_TEST);
   gl.depthMask(false);
@@ -287,7 +290,7 @@ export async function initEmberSimulator(root, opts = {}) {
   gl.blendFunc(gl.ONE, gl.ONE);
 
   // ---------- camera / controls ----------
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 85, cx: 0, cy: 0, cz: 0 };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 70, cx: cenX, cy: cenY, cz: cenZ };
   const tgt = { ...cam };
   let dirty = true, lastInteract = -1e4;
   const ptrs = new Map();
@@ -374,7 +377,7 @@ export async function initEmberSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 12, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
-    qmin: 1, size: 0.55, colorMode: 0,
+    qmin: 1, size: 0.80, colorMode: 0, tps: 20, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false,
   };
@@ -444,6 +447,7 @@ export async function initEmberSimulator(root, opts = {}) {
   bind('[data-zthick]', 'input', e => { ui.zThick = +e.target.value; readout(e); dirty = true; });
   bind('[data-qmin]', 'input', e => { ui.qmin = +e.target.value; readout(e); dirty = true; });
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
+  bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
   bind('[data-tune]', 'click', e => {
@@ -499,11 +503,11 @@ export async function initEmberSimulator(root, opts = {}) {
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 85,  zCenter: D3 >> 1, zThick: D3 },
-    core:    { yaw: 0.9,  pitch: 0.6,  dist: 45,  zCenter: D3 >> 1, zThick: D3 },
-    slab:    { yaw: 0.7,  pitch: 0.15, dist: 85,  zCenter: D3 >> 1, zThick: 4 },
-    side:    { yaw: 0.35, pitch: 0.10, dist: 95,  zCenter: D3 >> 1, zThick: D3 },
-    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 85,  zCenter: D3 >> 1, zThick: 1 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 70,  zCenter: D3 >> 1, zThick: D3 },
+    core:    { yaw: 0.9,  pitch: 0.6,  dist: 40,  zCenter: D3 >> 1, zThick: D3 },
+    slab:    { yaw: 0.7,  pitch: 0.15, dist: 70,  zCenter: D3 >> 1, zThick: 4 },
+    side:    { yaw: 0.35, pitch: 0.10, dist: 80,  zCenter: D3 >> 1, zThick: D3 },
+    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 70,  zCenter: D3 >> 1, zThick: 1 },
   };
   const setRange = (sel, v) => {
     const el = root.querySelector(sel);
@@ -512,7 +516,7 @@ export async function initEmberSimulator(root, opts = {}) {
   const applyPreset = (name) => {
     const p = PRESETS[name];
     if (!p) return;
-    Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist, cx: 0, cy: 0, cz: 0 });
+    Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist, cx: cenX, cy: cenY, cz: cenZ });
     ui.zCenter = p.zCenter; ui.zThick = p.zThick;
     setRange('[data-zcenter]', ui.zCenter); setRange('[data-zthick]', ui.zThick);
     poke(); dirty = true;
@@ -568,8 +572,12 @@ export async function initEmberSimulator(root, opts = {}) {
     }
 
     if (ui.playing) {
+      // ticks-per-second governor: c=1 is the speed of light here — uncapped
+      // the lattice runs ~100+ tps and flux crosses the grid in ~0.4s
+      ui.tickDebt = Math.min(ui.tickDebt + dt, 2000);
+      const quantum = 1000 / ui.tps;
       let spent = 0;
-      while (spent < ui.budget) {
+      while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
         if (ui.drive || ui.beam) inject();
         wasm._meso3i_drain_edge(3);
@@ -577,6 +585,7 @@ export async function initEmberSimulator(root, opts = {}) {
         const ms = performance.now() - t0;
         spent += ms;
         ui.tick++;
+        ui.tickDebt -= quantum;
         ui.tickMs = ui.tickMs * 0.9 + ms * 0.1;
         if (ui.tickMs > ui.budget) break;
       }
@@ -603,12 +612,12 @@ export async function initEmberSimulator(root, opts = {}) {
       const si = strideInfo();
       gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
       gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
-      gl.uniform3f(U.u_centroid, cenX, cenY, cenZ);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
       syncZoom();
       drawGizmo();
       dirty = false;
     }
+
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
       const rest = wasm._meso3i_rest_mass(), mov = wasm._meso3i_mov_mass();
       const cx = wasm._meso3i_cm(0) / 256, cyy = wasm._meso3i_cm(1) / 256, cz = wasm._meso3i_cm(2) / 256;

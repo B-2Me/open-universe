@@ -10,6 +10,9 @@ hero:
       text: Enter The Planck Field
       link: /field
     - theme: alt
+      text: Kindle Yarkovsky's Ember
+      link: /ember-demo
+    - theme: alt
       text: Audit the Paradoxes
       link: /paradox
     - theme: alt

@@ -110,9 +110,10 @@ onUnmounted(() => {
       <div class="ember-well ember-sliders">
         <label>Slice <input type="range" data-zcenter min="0" max="43" step="1" value="22"><output>22</output></label>
         <label>Width <input type="range" data-zthick  min="1" max="44" step="1" value="44"><output>44</output></label>
-        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
+        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="80"><output>80</output></label>
+        <label>Speed <input type="range" data-speed   min="1" max="120" step="1" value="20"><output>20</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="85"><output>85</output></label>
+        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="70"><output>70</output></label>
       </div>
     </div>
   </div>
