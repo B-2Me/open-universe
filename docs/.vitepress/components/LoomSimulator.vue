@@ -68,7 +68,7 @@ onUnmounted(() => {
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
         <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
         <button data-reset title="Clear the field"    aria-label="Reset">⟲</button>
-        <button data-drive class="on" aria-pressed="true"
+        <button data-drive aria-pressed="false"
                 title="Convergent feed — 18 spokes pouring flux into the core"
                 aria-label="Toggle convergent drive">☀</button>
         <button data-beam  title="Photon laser — massless +x light; coupling set by the Phot dial"

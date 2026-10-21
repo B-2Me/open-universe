@@ -476,11 +476,11 @@ export async function initLoomSimulator(root, opts = {}) {
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
-    drive: true, beam: false, arm: null,       // arm: 'ring' | 'lump'
+    drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
     phot: 2,
   };
-  // boot state: a cold lump at center so there's structure on frame one,
-  // and the convergent drive re-grows it into a breathing ember
+  // boot state: a cold lump at center — parked heat, inert in vacuum
+  // until the user turns on a drive or a beam
   seedLump(CX, CY, CZ);
   // sync tuning-slider bounds with the engine's actual depth
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {

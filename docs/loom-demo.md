@@ -20,7 +20,7 @@ pageClass: loom-page
 
 This branch is a live experiment. The original Loom ran `planck3`, whose single-spin nodes could store a direction — the ingredient that let the Hopfion's woven loops persist. `meso3i` has no such register: a node holds nineteen population counts and one rest bin, and the measured boundary of that engine (M38) is that injected circulation thermalizes in ~25 ticks at 44³. The open question this page asks at 72×72×36: **does anything knot-shaped survive transit friction, or is a "weaving" the one thing this substrate refuses to hold?**
 
-What you see on boot is the measured canon instead: a cold lump at center plus the 18-spoke convergent drive — parked amber heat breathing under cyan influx, the M33–M35 phenomenology. From there, the tools are the experiment.
+What you see on boot is a cold lump at center — parked amber heat, inert in vacuum (carrier-gated radiation can't vent without a carrier). From there, the tools are the experiment: ☀ starts the 18-spoke convergent feed that grows a breathing ember (the M33–M35 canon), ➤ fires the photon laser.
 
 ## Play with it
 
