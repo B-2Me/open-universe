@@ -74,6 +74,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="host" class="hopfion-sim">
+    <div class="hopfion-stage">
     <div class="hopfion-canvas" data-canvas></div>
     <div class="hopfion-vignette" aria-hidden="true"></div>
 
@@ -96,6 +97,24 @@ onUnmounted(() => {
       </template>
       <div v-if="status !== 'ok'" class="hopfion-card-status">{{ status }}</div>
     </div>
+
+    <div class="hopfion-index" :class="{ closed: !railOpen }">
+      <button class="hopfion-index-title" @click="railOpen = !railOpen"
+              :title="railOpen ? 'Collapse specimens' : 'Expand specimens'">
+        <span class="caret" :class="{ open: railOpen }"></span>
+        SPECIMENS · {{ knots.length }}
+      </button>
+      <div class="hopfion-rows" v-show="railOpen">
+        <button v-for="k in knots" :key="k.name"
+                class="hopfion-row" :class="{ on: current && current.name === k.name }"
+                @click="select(k)">
+          <span class="hopfion-row-name">{{ k.name }}</span>
+          <span class="hopfion-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
+        </button>
+      </div>
+    </div>
+    </div>
+
     <div class="hopfion-ctrl">
       <button class="cbtn cbtn-gizmo" @click="viewer?.reset()" title="Orientation — click to reset view">
         <canvas data-gizmo width="72" height="72"></canvas>
@@ -112,22 +131,6 @@ onUnmounted(() => {
       <button class="cbtn cbtn-color" :class="colorMode" @click="cycleColor" :title="'Color by ' + colorMode">
         {{ colorMode }}
       </button>
-    </div>
-
-    <div class="hopfion-index" :class="{ closed: !railOpen }">
-      <button class="hopfion-index-title" @click="railOpen = !railOpen"
-              :title="railOpen ? 'Collapse specimens' : 'Expand specimens'">
-        <span class="caret" :class="{ open: railOpen }"></span>
-        SPECIMENS · {{ knots.length }}
-      </button>
-      <div class="hopfion-rows" v-show="railOpen">
-        <button v-for="k in knots" :key="k.name"
-                class="hopfion-row" :class="{ on: current && current.name === k.name }"
-                @click="select(k)">
-          <span class="hopfion-row-name">{{ k.name }}</span>
-          <span class="hopfion-row-meta">{{ fmtMass(k.mass) }}q · {{ k.loops }}L</span>
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -147,7 +150,11 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
 }
+/* stage = the canvas region plus its overlays (vignette, card, index) */
+.hopfion-stage { position: relative; flex: 1; min-height: 0; }
 .hopfion-canvas { position: absolute; inset: 0; }
 .hopfion-canvas :deep(canvas) { display: block; }
 
@@ -221,11 +228,12 @@ onUnmounted(() => {
 .hopfion-legend .nad { background: #a770ff; box-shadow: 0 0 6px #a770ff88; }
 .hopfion-card-status { color: #ffb0a0; margin-top: 4px; }
 
-/* ── control bar (bottom center) ── */
+/* ── control bar — in-flow below the canvas, never overlaps it ── */
 .hopfion-ctrl {
-  position: absolute;
-  left: 50%; bottom: 12px;
-  transform: translateX(-50%);
+  flex: none;
+  align-self: center;
+  margin: 6px auto;
+  max-width: calc(100% - 16px);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -382,7 +390,7 @@ onUnmounted(() => {
     max-width: none;
     border-radius: 0;
   }
-  .hopfion-ctrl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .hopfion-ctrl { margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* short viewports of any kind: same fit — min-height yields instead of

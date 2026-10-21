@@ -62,11 +62,7 @@ onUnmounted(() => {
     <!-- always-visible collapse toggle -->
     <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
-    <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
-    <canvas class="loom-gizmo" data-gizmo width="96" height="96"
-            title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
-
-    <!-- floating control dock -->
+    <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="loom-dock">
       <div class="loom-well loom-transport" role="group" aria-label="Transport">
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
@@ -78,6 +74,9 @@ onUnmounted(() => {
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
         <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
+        <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
+        <canvas class="loom-gizmo" data-gizmo width="96" height="96"
+                title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
       </div>
 
       <div class="loom-well loom-selects">
@@ -126,6 +125,8 @@ onUnmounted(() => {
   --loom-accent: #7fe;
   --loom-muted: #9ef;
   position: relative;
+  display: flex;
+  flex-direction: column;
   /* --tool-top is the element's measured document offset (set on mount);
      svh always reserves the browser URL-bar strip, so the dock can't
      slide below the fold when chrome collapses. */
@@ -133,7 +134,7 @@ onUnmounted(() => {
   height: calc(100svh - var(--tool-top, 76px) - 8px);
   min-height: 520px;
   max-width: 1200px;
-  margin: 0 auto;                     /* HUD/⚙/gizmo align to the canvas
+  margin: 0 auto;                     /* HUD/⚙ align to the canvas
                                          edges, not the window edges */
   background: #05050d;
   border-radius: 10px;
@@ -141,10 +142,9 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 .loom-canvas {
-  position: absolute;
-  inset: 0;
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  height: 100%;
   display: block;
   touch-action: none;
 }
@@ -206,15 +206,12 @@ onUnmounted(() => {
 .loom-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .loom-simulator.dock-hidden .loom-dock { display: none; }
 
-/* orientation gizmo — Blender-style axes chip, right edge mid-height
-   (well clear of the ⚙ toggle it used to crowd) */
+/* orientation gizmo — Blender-style axes chip, seated in the
+   transport well */
 .loom-gizmo {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 8px;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
+  flex: none;
   border-radius: 50%;
   background: rgba(8, 10, 20, 0.6);
   border: 1px solid var(--loom-bevel-light);
@@ -224,12 +221,11 @@ onUnmounted(() => {
   z-index: 3;
 }
 
-/* floating dock — raised panel; wells carve control groups into it */
+/* control dock — in-flow below the canvas; wells carve control groups */
 .loom-dock {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
+  flex: none;
+  align-self: center;
+  margin: 6px auto;
   max-width: calc(100% - 16px);
   padding: 7px 10px;
   display: flex;
@@ -428,7 +424,7 @@ onUnmounted(() => {
     border-radius: 0;
   }
   .loom-dock {
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 8px);
   }
 }
