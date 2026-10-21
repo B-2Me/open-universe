@@ -34,12 +34,12 @@ The substrate is not a metaphor — it runs. These are the live engines and the 
 
 *   **[Langevin's Wake](/wake-demo)** — the 2D engine, live in your browser. A cellular automaton over the same substrate physics that produced the research log's first measurements — paint, perturb, and watch agency emerge.
 *   **[Hopf's Loom](/loom-demo)** — the 3D True-FCC engine, live in your browser. A 400,000-node volume renderer over the same physics — tomographic slices, spin-class coloring, and a stable multi-loop Hopfion you can orbit.
-*   **[The Hopfion Zoo](/hopfion-zoo)** — the measured particle dictionary. Thirty-seven stable rest-mass geometries found by sweeping the engine's configuration space — every specimen a real 256³ simulation result, inspectable in 3D.
+*   **[The Hopfion Zoo](/hopfion-zoo)** — the measured particle dictionary. Thirty-seven stable rest-mass geometries found by sweeping the engine's configuration space — every specimen a real simulation result, inspectable in 3D.
 
 ## The Laboratory
 
 *   **[Theoretical Audits](/interference/audits)** — five tests that translate legacy paradoxes (redshift, collapse, time dilation, agency, the particle zoo) into measurable friction problems for the substrate.
-*   **[Predictive Roadmap](/interference/roadmap)** — the four-step path from a working simulator to a direct benchmark against CERN telemetry.
+*   **[Predictive Roadmap](/interference/roadmap)** — the five-step path from a working simulator to a direct benchmark against CERN telemetry.
 *   **[The Open Frontier](/interference/frontier)** — the research log. Every measured experiment, falsified hypothesis, and engine RFC — including the results that failed.
 *   **[Planned Audio Sessions](/interference/sessions)** — the living syllabus for the podcast companion.
 
@@ -50,7 +50,6 @@ The substrate is not a metaphor — it runs. These are the live engines and the 
 Have thoughts on the framework or want to collaborate on an audit? Send a message below.
 
 <form action="https://api.web3forms.com/submit" method="POST" class="contact-form">
-  <!-- Replace this value with the key Web3Forms emailed you -->
   <input type="hidden" name="access_key" value="26bfc507-c88b-422c-8366-06792406aef9">
   
   <label>

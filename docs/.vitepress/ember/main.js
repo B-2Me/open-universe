@@ -120,7 +120,7 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;
-  float a = exp(-r2 * 3.0);
+  float a = exp(-r2 * 9.0);
   frag = vec4(v_color.rgb * v_color.a * a, 1.0);
 }`;
 
@@ -202,8 +202,8 @@ export async function initEmberSimulator(root, opts = {}) {
     return n;
   };
 
-  // Camera ray -> lattice cell on the slice plane (cubic embedding:
-  // world coord = grid coord - centroid).
+  // Camera ray -> lattice cell on the slice plane (world coords are
+  // absolute grid coords; the camera orbits the lattice center).
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
     const nx = ((cx - r.left) / r.width) * 2 - 1;
@@ -217,14 +217,14 @@ export async function initEmberSimulator(root, opts = {}) {
     const dW = { x: d1.x * cyw - d1.z * syw, y: d1.y, z: d1.x * syw + d1.z * cyw };
     const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
     const cW = { x: -c1.z * syw + cam.cx, y: c1.y + cam.cy, z: c1.z * cyw + cam.cz };
-    const pz = ui.zCenter - cenZ;
+    const pz = ui.zCenter;
     if (Math.abs(dW.z) < 1e-3) return null;
     const t = (pz - cW.z) / dW.z;
     if (t <= 0) return null;
     return {
-      lx: Math.round(cW.x + t * dW.x + cenX),
-      ly: Math.round(cW.y + t * dW.y + cenY),
-      lz: ui.zCenter,
+      lx: Math.round(cW.x + t * dW.x),
+      ly: Math.round(cW.y + t * dW.y),
+      lz: Math.round(ui.zCenter),
     };
   };
 
@@ -290,7 +290,7 @@ export async function initEmberSimulator(root, opts = {}) {
   gl.blendFunc(gl.ONE, gl.ONE);
 
   // ---------- camera / controls ----------
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 70, cx: cenX, cy: cenY, cz: cenZ };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 25, cx: cenX, cy: cenY, cz: cenZ };
   const tgt = { ...cam };
   let dirty = true, lastInteract = -1e4;
   const ptrs = new Map();
@@ -317,7 +317,7 @@ export async function initEmberSimulator(root, opts = {}) {
     } else if (ptrs.size === 2) {
       const [a, b] = [...ptrs.values()];
       const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      if (lastPinch) { tgt.dist = Math.max(20, Math.min(300, tgt.dist * lastPinch / d)); dirty = true; }
+      if (lastPinch) { tgt.dist = Math.max(8, Math.min(200, tgt.dist * lastPinch / d)); dirty = true; }
       lastPinch = d;
       const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
       if (lastMid) {
@@ -369,7 +369,7 @@ export async function initEmberSimulator(root, opts = {}) {
   document.addEventListener('visibilitychange', keepAwake);
   canvas.addEventListener('wheel', e => {
     e.preventDefault(); poke();
-    tgt.dist = Math.max(20, Math.min(300, tgt.dist * (1 + e.deltaY * 0.001)));
+    tgt.dist = Math.max(8, Math.min(200, tgt.dist * (1 + e.deltaY * 0.001)));
     dirty = true;
   }, { passive: false });
 
@@ -377,7 +377,7 @@ export async function initEmberSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 12, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
-    qmin: 1, size: 0.80, colorMode: 0, tps: 20, tickDebt: 0,
+    qmin: 1, size: 0.55, colorMode: 0, tps: 20, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false,
   };
@@ -503,7 +503,7 @@ export async function initEmberSimulator(root, opts = {}) {
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 70,  zCenter: D3 >> 1, zThick: D3 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 25,  zCenter: D3 >> 1, zThick: D3 },
     core:    { yaw: 0.9,  pitch: 0.6,  dist: 40,  zCenter: D3 >> 1, zThick: D3 },
     slab:    { yaw: 0.7,  pitch: 0.15, dist: 70,  zCenter: D3 >> 1, zThick: 4 },
     side:    { yaw: 0.35, pitch: 0.10, dist: 80,  zCenter: D3 >> 1, zThick: D3 },
@@ -529,7 +529,7 @@ export async function initEmberSimulator(root, opts = {}) {
   }
 
   const resize = () => {
-    const dpr = Math.min(2, devicePixelRatio || 1);
+    const dpr = Math.min(1.5, devicePixelRatio || 1);
     const w = canvas.clientWidth * dpr | 0, h = canvas.clientHeight * dpr | 0;
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; dirty = true; }
   };
@@ -538,7 +538,7 @@ export async function initEmberSimulator(root, opts = {}) {
 
   // ---------- main loop ----------
   upload();
-  let raf = 0, lastT = performance.now(), fps = 0;
+  let raf = 0, lastT = performance.now(), fps = 0, lastDrawT = 0;
   const frame = (now) => {
     raf = requestAnimationFrame(frame);
     const dt = now - lastT; lastT = now;
@@ -594,7 +594,8 @@ export async function initEmberSimulator(root, opts = {}) {
     } else lastSpent = 0;
 
     resize();
-    if (dirty) {
+    if (dirty && now - lastDrawT >= 33) {   // 30fps cap — physics/HUD run at
+      lastDrawT = now;                      // rAF rate; raster is the hot part
       const proj = m4.persp(0.9, canvas.width / Math.max(1, canvas.height), 1, 600);
       const view = m4.mul(m4.translate(0, 0, -cam.dist),
         m4.mul(m4.rotX(cam.pitch), m4.mul(m4.rotY(cam.yaw),
@@ -621,7 +622,7 @@ export async function initEmberSimulator(root, opts = {}) {
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
       const rest = wasm._meso3i_rest_mass(), mov = wasm._meso3i_mov_mass();
       const cx = wasm._meso3i_cm(0) / 256, cyy = wasm._meso3i_cm(1) / 256, cz = wasm._meso3i_cm(2) / 256;
-      const cm = rest > 0 ? `cm=(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no ember';
+      const cm = rest > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no ember';
       hud.textContent = `t${ui.tick} · ember=${rest} · flux=${mov} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(1)}ms/t`;
     }
   };

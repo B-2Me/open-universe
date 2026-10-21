@@ -99,7 +99,7 @@ Swept boil rate (k = 1,4,16 → 1/4k per quantum/tick) and lump size (drive rate
 | rate=8 | 1/64 | ~18k | ρ_C 49→0 over ~450 ticks |
 | rate=16 | 1/64 | ~44k | ρ_C 228→0 over ~525 ticks |
 
-**The law:** ρ_C decay is smooth geometric (rate-16 tail: 228→207→167→143→110→87→61→…→0, ratio ≈0.75–0.8 per 25 ticks) — **pure exponential cooling**, no plateau, no stall, no critical-size floor. Cooling rate scales with boil constant; lifetime grows only **logarithmically** with lump mass (4× mass buys ~75 ticks). The self-shielding hypothesis fails: interior radiation escapes because the cooling front — surface drops below the friction cap first — propagates inward steadily rather than stalling.
+**The law:** ρ_C decay is smooth geometric (rate-16 tail: 228→207→167→143→110→87→61→…→0 — the per-25-tick ratio tightens from ~0.9 early to ~0.7 late) — **pure exponential cooling**, no plateau, no stall, no critical-size floor. Cooling rate scales with boil constant; lifetime grows only **logarithmically** with lump mass (4× mass buys ~75 ticks). The self-shielding hypothesis fails: interior radiation escapes because the cooling front — surface drops below the friction cap first — propagates inward steadily rather than stalling.
 
 **Metastability verdict:** absent. The friction core is a candle, not a rock — its lifetime is proportional to how slowly it radiates, never self-sustaining. A metastable bound regime would need a mechanism that *suppresses* radiation below a threshold (e.g., density-gated emission, or emission cost) — an energy barrier the current rule set doesn't contain.
 
@@ -132,6 +132,8 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 
 **Hemisphere-resolved confirmation:** splitting parked mass at the centroid plane shows the lit hemisphere (beam-entry side) holds steady at ~480 (erosion exactly offset by drag-parked carriers) while the downstream hemisphere loses 43% (474→269). The "leading edge absorbs, trailing edge erodes" picture is direct evidence, not inference.
 
+This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
+
 ### M37 — two-body probe: weak mutual attraction via ablation, no merger
 
 `test_two.c` seeds two rest-channel lumps (mpn=60, r²≤8 blobs, ~3k quanta each) at separation d, unconditional slow boil (1/256) so each lump's radiation acts as the other's carrier beam. Drained open box, 1500 ticks.
@@ -142,7 +144,7 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 | 8 | ~7.9 (within noise) | flat |
 | 16 | ~15.5 (noisy end-stage) | flat/weak |
 
-**Mechanism:** each lump radiates isotropically; its quanta strike the other's near face → carrier-gated ablation erodes the far side (M36 comet mechanism) → **each centroid creeps toward its neighbor**. Mutual ablation IS mutual attraction — the closest thing to a gravitational analog yet measured on this substrate, with an effective 1/d reach (flux intercepted ∝ solid angle).
+**Mechanism:** each lump radiates isotropically; its quanta strike the other's near face → carrier-gated ablation erodes the far side (M36 comet mechanism) → **each centroid creeps toward its neighbor**. Mutual ablation IS mutual attraction — the closest thing to a gravitational analog yet measured on this substrate, with a reach set by geometric dilution (intercepted flux ∝ solid angle, ∝ d⁻² in the far field — though at these separations the near-face/diffuse-halo geometry dominates).
 
 **The honest limit:** drift ~0.0004 cells/tick vs. evaporative lifetime ~2500 ticks — the lumps die ~1 cell short of contact. No merger observed; no repulsion; no orbit. Two-body "gravity" exists here but is weak and mortal — a qualitative force-analog, not yet chemistry.
 
@@ -162,5 +164,3 @@ Seeding two lumps at sep≤2 (overlapping halos) produces a single connected blo
 | colliding rest (fricm=0) | 320 → 9, rest→8 | lump evaporates entirely — worse |
 
 **The boundary of this rule set, measured:** friction thermalizes every directed pattern — there is *no* persistent internal structure a lump can carry. No spin, no polarity, no chirality, no valence. **Friction gives rocks, not atoms** — the substrate supports the full "heat deposit" phenomenology (accrete, vent, persist, migrate, weakly attract) but the structured-matter rung (and therefore chemistry) is absent *in principle* under these rules, not just untested. Reaching it would need a mechanism that preserves pattern inside parked mass — e.g., channel-structured bound states rather than a single scalar rest bin.
-
-This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve — it *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.

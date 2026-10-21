@@ -1,0 +1,20 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/seeds/**": true,
+    "**/seeds256/**": true,
+    "**/logs/**": true,
+    "**/docs/.vitepress/dist/**": true,
+    "**/docs/.vitepress/cache/**": true,
+    "**/docs/public/audio/**": true,
+    "**/docs/public/wasm/**": true
+  },
+  "search.exclude": {
+    "**/seeds/**": true,
+    "**/seeds256/**": true,
+    "**/logs/**": true,
+    "**/docs/public/audio/**": true,
+    "**/docs/public/wasm/**": true,
+    "**/docs/.vitepress/dist/**": true
+  }
+}

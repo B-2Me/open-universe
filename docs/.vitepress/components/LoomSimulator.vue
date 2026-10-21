@@ -116,6 +116,7 @@ onUnmounted(() => {
 /* Wake-style soft-UI skin: raised beveled controls seated in inset
    wells on a deep drop-shadowed panel — background recedes, controls pop. */
 .loom-simulator {
+  color-scheme: dark;
   --loom-panel: linear-gradient(180deg, #141c30, #0a101d);
   --loom-well: #060a13;
   --loom-btn-top: #22314f;
@@ -344,6 +345,10 @@ onUnmounted(() => {
     linear-gradient(180deg, var(--loom-btn-top), var(--loom-btn-bot));
   background-repeat: no-repeat;
   background-position: right 8px center, 0 0;
+}
+.loom-dock select option {
+  background: #131c30;
+  color: var(--loom-muted);
 }
 
 /* slider wells — recessed groove track + raised beveled thumb */

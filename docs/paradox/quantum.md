@@ -17,7 +17,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   "Measurement" is not a passive, weightless gaze. A measurement is a physical collision causing localized relational tension to accumulate ($Q_{pending}$). 
 *   The wave function does not collapse probabilistically; it resolves deterministically when the local routing buffer hits the absolute saturation threshold of the hardware: $\text{If } Q_{pending} \ge FLOW\_CAP, \text{ then } \text{Actualize}(x, t)$. You aren't "looking" at a particle; your detector forced the local grid to exceed its capacity, forcing it to precipitate a state to satisfy the collision.
 
-*   **Substrate grounding (Measured in part — M9/M10):** the APD cascade confirms that sub-threshold un-actualized flux (q=3) deterministically triggers macroscopic click amplification (q≈160) once local capacity saturates at an armed boundary; single-quantum antibunching remains unresolved.
+*   **Substrate grounding (prototype measurement, since retracted):** the APD cascade — sub-threshold un-actualized flux (q=3) deterministically triggering macroscopic click amplification (q≈160) once local capacity saturates at an armed boundary — was demonstrated on the single-spin prototype; single-quantum antibunching remains unresolved.
 
 ---
 
@@ -40,7 +40,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   As it propagates through the field without being measured, it hasn't actualized into a specific geometric point because the substrate has no relational requirement to render its exact locus. 
 *   The moment a detector is introduced, the physical constraints of the collision dictate the actualization of a localized state. The "particle" isn't a hidden bullet revealing itself; it is the instantaneous actualization of the event.
 
-*   **Substrate grounding (Measured — M4, M5, M10, M11):** individual flux packets propagate ballistically at v=1 with zero self-interference; the "wave" is strictly an ensemble histogram of arrival timing and coincidence combs across discrete detector cells.
+*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, individual flux packets propagated ballistically at v=1 with zero self-interference — the "wave" was strictly an ensemble histogram of arrival timing and coincidence combs across discrete detector cells.
 
 ---
 
@@ -48,7 +48,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** If you take two uncharged metal plates, place them in a perfect vacuum, and move them incredibly close together, a mysterious force pushes them together. Classical physics assumes that a vacuum is completely empty. If there is nothing between the plates, where is the physical push coming from?
 
 **The Planck Field Reconciliation:** The block universe assumes space is a passive, empty container where objects sit. 
-*   There is no such thing as "empty space." The void is not a cold, dead container; it is a boiling, infinitely dense sea of zero-point energy, vibrating at a high ambient thermodynamic temperature. 
+*   There is no such thing as "empty space." The void is not a cold, dead container; it is a boiling, immensely dense sea of zero-point energy, vibrating at a high ambient thermodynamic temperature. 
 *   When you place two plates that close together, you restrict the wavelengths of the field's baseline tension between them. Because the hot ambient tension outside the plates is stronger than the constrained tension inside, the plates are pushed together. 
 *   The Casimir Effect is the smoking gun that the universe is not an empty stage. It is an active, hot, vibrating medium.
 
@@ -138,7 +138,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ---
 
 ## 14. The Contraction Paradox (Lorentz Contraction & Magnetism)
-**The Paradox:** To explain why two parallel wires carrying current either attract or repel, modern physics correctly points out that an independent "magnetic force" doesn't exist. Instead, they claim that from the perspective of the moving electrons, the physical distance between the protons in the other wire mathematically shrinks due to Special Relativity (Lorentz Contraction). This creates an artificial charge density that causes repulsion. To avoid the paradox of invisible magnetic ropes, they invented the paradox of shrinking physical space.
+**The Paradox:** To explain why two parallel wires carrying current either attract or repel, modern physics correctly points out that an independent "magnetic force" doesn't exist. Instead, they claim that from the perspective of the moving electrons, the physical distance between the protons in the other wire mathematically shrinks due to Special Relativity (Lorentz Contraction). This creates an artificial charge density that causes attraction. To avoid the paradox of invisible magnetic ropes, they invented the paradox of shrinking physical space.
 
 **The Planck Field Reconciliation:** This is the ultimate mathematical shell game—trading a substance paradox for a geometric paradox. 
 *   Space is a discrete relational network, not a stretchable fabric. Physical distance does not shrink simply because an adjacent object is moving fast. 
@@ -157,4 +157,4 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   Furthermore, if their topological spins are forced into the same slipstream, they clash. This generates a massive spike in metabolic dissipation ($\Phi$), triggering immediate momentum cancellation and violent physical repulsion. 
 *   Fermions cannot share a state because doing so requires more relational bandwidth than the hardware of the Planck Field is physically capable of providing at a single node.
 
-*   **Substrate grounding (Measured — M16):** breather-dimer stability enforces a discrete phase-exclusion schedule — Δφ ∈ {1,3} bonds, Δφ = 0 destroys both cores through capacity saturation — demonstrating exclusion as a native routing-table saturation constraint.
+*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, breather-dimer stability enforced a discrete phase-exclusion schedule — Δφ ∈ {1,3} bonds, Δφ = 0 destroys both cores through capacity saturation — demonstrating exclusion as a native routing-table saturation constraint.

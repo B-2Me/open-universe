@@ -46,7 +46,7 @@ A reversible or symmetrically-weighted rule thermalizes; it cannot bind. This is
 Before the native mechanism existed, the Q-register extension (`IQMODE`) demonstrated the *target phenomenology*:
 
 - Condense alone (`2→Q`, no emit): unbounded sink — a dead deposit, not a structure (M32).
-- Condense + emit: **breathing core** — Q_C plateaus at ~30 under sustained inflow≈30/outflow≈20, igniting above a rate threshold (~3), saturating at the u8 cap (255), and **fully dissolving ~100 ticks after drive cutoff** (M32, M32b).
+- Condense + emit: **breathing core** — Q_C plateaus at ~30 under sustained inflow≈30/outflow≈20, igniting somewhere between rate 2 and rate 4, saturating at the u8 cap (255), and **fully dissolving ~100 ticks after drive cutoff** (M32, M32b).
 - Asymmetric drive: no jet collimation — outflow isotropic (M32b).
 - Earlier Q experiments: bound lumps (M22), self-shielding from field weights (M23), phase-gated conveyor v≈0.064 (M24), Pick-Two triangle — binding/transport/coherence, never all three (M24-T19), peristaltic recondensation (M24-T20).
 
@@ -68,7 +68,7 @@ Drag alone fails (rest mass recollides — the two-way door). Inert rest alone f
 | Driven, boil 1/4 | ρ_C~30–58, 68–90% rest; **in≈11–22 / out≈4–13 sustained** — a channel-native breathing core |
 | Driven, boil 1/16 | ρ_C~100, 97% rest — heavier core |
 | Cutoff, unconditional boil | exponential decay to zero — candle not rock (M34) |
-| Cutoff, carrier-gated | **persistent remnant** — decays while in-flight carriers remain, then frozen ρ_C~79 for 400+ ticks (M35) |
+| Cutoff, carrier-gated | **persistent remnant** — decays while in-flight carriers remain, then frozen ρ_C~79 for the full 400-tick quiet window (M35) |
 | **Re-illumination** | remnant **wakes**: ρ 79→118 in 25 ticks, re-accretes and re-vents — persistent interactive matter (M35) |
 
 ### The decay law (M34)
@@ -102,7 +102,7 @@ Tangential moving quanta injected inside a lump — a circulation pattern — th
 
 This is a boundary in principle, not in coverage: the rest channel is a scalar bin — everything parked there forgets how it arrived. Friction gives **rocks, not atoms**. The structured-matter tier (and with it, any chemistry) would require bound mass that retains channel/directional identity — a different state representation, not another flag.
 
-**Scale honesty:** the arena is ~70k nodes. A hydrogen atom is ~10⁶⁰ Planck cells. Rocks and weather — not the periodic table — is the correct expectation at this scale, and that is exactly what was measured.
+**Scale honesty:** the arena is 85,184 cells (44³, of which 42,592 even-parity sites are live). A hydrogen atom is ~10⁶⁰ Planck cells. Rocks and weather — not the periodic table — is the correct expectation at this scale, and that is exactly what was measured.
 
 ---
 
@@ -121,6 +121,8 @@ The mechanism class — *resting mass exchanging momentum with vacuum through di
 - **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IREFL, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant.
 
 ## Milestone Index
+
+*Numbering note: the meso campaign continued the sequential ledger, so the M-numbers below overlap the retracted single-spin M1–M31 range. Every index entry here refers exclusively to `meso3i` experiments; same-numbered `planck3` results are the ones marked retracted in the ledger.*
 
 | M | Finding | Commit |
 |---|---------|--------|

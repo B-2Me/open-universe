@@ -73,6 +73,7 @@ html:has(.wake-sandbox) body {
 
 /* Right Massive Viewport (Stacks Header & Canvas) */
 #app-viewport {
+  --pad-h: 0px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -92,7 +93,7 @@ html:has(.wake-sandbox) body {
   flex-wrap: nowrap;
   gap: 6px;
   width: 100%;
-  max-width: 760px;
+  max-width: min(760px, 100%, calc(82dvh - 100px));
   margin: 0 auto 8px auto;
   align-items: center;
   justify-content: space-between;
@@ -161,7 +162,7 @@ html:has(.wake-sandbox) body {
 /* Sub-canvas touch pad */
 #canvas-touch-pad { display: none; }
 @media (pointer: coarse) {
-  #canvas-touch-zone { --pad-h: 72px; }
+  #canvas-touch-zone, #app-viewport { --pad-h: 72px; }
   #canvas-touch-pad {
     display: block;
     width: 100%;
@@ -454,6 +455,7 @@ input[type=checkbox] { accent-color: var(--pf-brand-main); cursor: pointer; }
     gap: 4px;
     margin-bottom: 6px;
     width: 100%;
+    max-width: min(100%, calc(52dvh - 58px - var(--pad-h)));
   }
 
   #btn_toggle_left { order: 1; flex: 0 1 auto; padding: 0 6px; min-height: 32px; }

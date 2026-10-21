@@ -69,12 +69,12 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 **The Paradox:** Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
 
 **The Planck Field Reconciliation:** This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
-*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite computational vector budget ($C_{max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$).
+*   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite computational vector budget ($C_{\max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$).
 *   **Velocity (Special Relativity):** Movement requires actively routing data from one node to the next. As a system approaches the absolute routing speed limit of the grid ($c$), nearly 100% of its vector budget is consumed by spatial hand-offs, leaving 0% for internal ticking. A photon does not experience time because all of its bandwidth is spent propagating.
 *   **Gravity (General Relativity):** A massive body is a dense tension knot. A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.
 *   Time didn't "stretch" like a fabric. The internal actualization rate of the object simply dropped because its finite processing bandwidth was maxed out fighting gravity or routing data.
 
-*   **Substrate grounding (Measured boundary limit — M4, M12, M17):** continuous intermediate velocities (0 < v < 1) need mesoscale multi-speed channels, but the substrate enforces the extreme binary boundary of the vector budget ($C_{max}^2 = C_s^2 + C_i^2$) exactly: free flux allocates 100% of bandwidth to spatial translation (v=1, no internal clock), while bound breathers allocate 100% to internal cycling (τ=4, v=0).
+*   **Substrate grounding (prototype measurement, since retracted):** continuous intermediate velocities (0 < v < 1) need mesoscale multi-speed channels, but the substrate enforces the extreme binary boundary of the vector budget ($C_{\max}^2 = C_s^2 + C_i^2$) exactly: on the single-spin engine, free flux allocated 100% of bandwidth to spatial translation (v=1, no internal clock), while bound breathers allocated 100% to internal cycling (τ=4, v=0).
 
 ---
 
@@ -88,7 +88,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 *   Over billions of light-years and trillions of discrete actualizations, this latency compounds. The wave loses energy to thermodynamic friction (redshift), and the physical distance between the front and back of the pulse physically widens due to network drag. 
 *   We aren't watching expanding space; we are watching a macroscopic video buffer. The event arrives in slow motion because it was spooled through the finite bandwidth of a discrete substrate.
 
-*   **Substrate grounding (Aspirational / framework hypothesis):** accumulated queuing latency is a mesoscale-continuum target; on the bare `planck3.c` substrate, vacuum transmission is strictly ballistic and dispersion-free (M4).
+*   **Substrate grounding (Aspirational / framework hypothesis):** accumulated queuing latency is a mesoscale-continuum target; on the bare `planck3.c` substrate, vacuum transmission is strictly ballistic and dispersion-free.
 
 ---
 

@@ -55,18 +55,14 @@ onUnmounted(() => {
     <canvas class="ember-canvas" aria-label="Yarkovsky's Ember 3D friction lattice renderer"></canvas>
 
     <!-- telemetry chip -->
-    <div class="ember-hud" data-hud>booting…</div>
+    <div class="ember-hud" data-hud title="t = physics ticks · ember = parked rest-mass quanta · flux = moving quanta · core@(x,y,z) = ember's center of mass · fps = render rate · ms/t = compute time per tick">booting…</div>
     <!-- transient status line under the telemetry chip — empty = hidden -->
     <div class="ember-status" data-status></div>
 
     <!-- always-visible collapse toggle -->
     <button class="ember-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
-    <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
-    <canvas class="ember-gizmo" data-gizmo width="96" height="96"
-            title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
-
-    <!-- floating control dock -->
+    <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="ember-dock">
       <div class="ember-well ember-transport" role="group" aria-label="Transport">
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
@@ -78,6 +74,9 @@ onUnmounted(() => {
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
         <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
+        <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
+        <canvas class="ember-gizmo" data-gizmo width="96" height="96"
+                title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
       </div>
 
       <div class="ember-well ember-switches" role="group" aria-label="Flux switches">
@@ -110,10 +109,10 @@ onUnmounted(() => {
       <div class="ember-well ember-sliders">
         <label>Slice <input type="range" data-zcenter min="0" max="43" step="1" value="22"><output>22</output></label>
         <label>Width <input type="range" data-zthick  min="1" max="44" step="1" value="44"><output>44</output></label>
-        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="80"><output>80</output></label>
+        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
         <label>Speed <input type="range" data-speed   min="1" max="120" step="1" value="20"><output>20</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="70"><output>70</output></label>
+        <label>Zoom  <input type="range" data-zoom    min="8" max="200" step="1" value="25"><output>25</output></label>
       </div>
     </div>
   </div>
@@ -123,6 +122,7 @@ onUnmounted(() => {
 /* Same soft-UI skin as Hopf's Loom: raised beveled controls seated in
    inset wells on a deep drop-shadowed panel. */
 .ember-simulator {
+  color-scheme: dark;
   --ember-panel: linear-gradient(180deg, #141c30, #0a101d);
   --ember-well: #060a13;
   --ember-btn-top: #22314f;
@@ -132,6 +132,8 @@ onUnmounted(() => {
   --ember-accent: #fda;
   --ember-muted: #9ef;
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - var(--tool-top, 76px) - 8px);
   height: calc(100svh - var(--tool-top, 76px) - 8px);
   min-height: 520px;
@@ -143,10 +145,9 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 .ember-canvas {
-  position: absolute;
-  inset: 0;
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  height: 100%;
   display: block;
   touch-action: none;
 }
@@ -205,12 +206,9 @@ onUnmounted(() => {
 .ember-simulator.dock-hidden .ember-dock { display: none; }
 
 .ember-gizmo {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 8px;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
+  flex: none;
   border-radius: 50%;
   background: rgba(8, 10, 20, 0.6);
   border: 1px solid var(--ember-bevel-light);
@@ -221,10 +219,9 @@ onUnmounted(() => {
 }
 
 .ember-dock {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
+  flex: none;
+  align-self: center;
+  margin: 6px auto;
   max-width: calc(100% - 16px);
   padding: 7px 10px;
   display: flex;
@@ -339,6 +336,10 @@ onUnmounted(() => {
   background-repeat: no-repeat;
   background-position: right 8px center, 0 0;
 }
+.ember-dock select option {
+  background: #131c30;
+  color: var(--ember-muted);
+}
 
 .ember-sliders label {
   display: flex;
@@ -412,7 +413,7 @@ onUnmounted(() => {
     border-radius: 0;
   }
   .ember-dock {
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 8px);
   }
 }

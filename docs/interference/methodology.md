@@ -34,11 +34,11 @@ To eliminate IEEE-754 floating-point truncation drift and chaotic rounding diver
 
 | Register | Type | Range | Physical / Algorithmic Role |
 | :--- | :--- | :--- | :--- |
-| **`quanta` ($q$)** | `uint8_t` | $0 \dots 255$ | Resident discrete packet count (local mass density; deadlock threshold $> 200$). |
+| **`quanta` ($q$)** | `uint8_t` | $0 \dots 255$ | Resident discrete packet count (local mass density; ports hard-refuse once occupancy $q + b > 200$). |
 | **`spin` ($s$)** | `uint8_t` | $0 \dots 12$ | Active directional port index (`1–6` equatorial, `7–9` zenith, `10–12` nadir, `0` stationary). |
 | **`heat` ($h$)** | `uint16_t` | $0 \dots 65535$ | Accumulated local routing friction and angular shear excitation. |
 | **`buffer` ($b$)** | `uint8_t` | $0 \dots 255$ | Staged in-flight flux arriving during the current synchronous tick. |
-| **`tension` ($\phi$)** | `uint8_t` | $0 \dots 255$ | Diffusing scalar occupancy-congestion field emitted by near-deadlock nodes ($q \ge 200$). |
+| **`tension` ($\phi$)** | `uint8_t` | $0 \dots 255$ | Diffusing scalar congestion field emitted by near-deadlock nodes (occupancy $q + b >$ `T_EMIT_MIN` $= 200$). |
 
 *(Note: Load-time provenance masks `painted` $\in \{0, 1, 2\}$ are tracked externally by the analysis harnesses `sweep.mjs`, `boost.mjs`, and `collide.mjs` so the 6-byte core node carries zero particle-ID register overhead.)*
 
@@ -67,7 +67,7 @@ Time advances in discrete ticks $t \to t + 1$. The engine supports three memory 
 
 ## 4. Causal Thermodynamics & Cold Matter Inversion
 
-A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does not represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. In classical continuum physics, standard parabolic heat and fluid equations (Fourier and Navier-Stokes) unphysically permit infinite propagation speeds, forcing relativists and aerospace engineers to bolt on second-order hyperbolic delay patches (such as Maxwell-Cattaneo or Israel-Stewart "extended causal thermodynamics") to prevent thermal flux from outrunning the speed of light. On our discrete 12-neighbor lattice, causal transport ($c = 1\text{ hop / tick}$) is native to the adjacency graph by construction—requiring zero differential relaxation patches—and implements **Discrete Causal Thermodynamics**: an exact, PRNG-free integer accounting of directional routing impedance and finite node bandwidth.
+A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does not represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. In classical continuum physics, standard parabolic heat and fluid equations (Fourier and Navier-Stokes) unphysically permit infinite propagation speeds, forcing relativists and aerospace engineers to bolt on second-order hyperbolic delay patches (such as Maxwell-Cattaneo or Israel-Stewart "extended causal thermodynamics") to prevent thermal flux from outrunning the speed of light. On our discrete 12-neighbor lattice, causal transport ($c = 1\text{ hop / tick}$) is native to the adjacency graph by construction—requiring zero differential relaxation patches—and implements **Discrete Causal Thermodynamics**: an exact integer accounting of directional routing impedance and finite node bandwidth. The core transition operator is PRNG-free; the optional stochastic-foam scenarios (e.g., the RFC-042 $q=1$ floor) inject `rand()`-driven ambient flux on top of it.
 
 | Property | Classical / Continuum Thermodynamics | Discrete Causal Thermodynamics (`planck3.c`) |
 | :--- | :--- | :--- |

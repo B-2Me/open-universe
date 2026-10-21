@@ -1,0 +1,19 @@
+# Indexer exclusions — generated artifacts and heavyweight data.
+# These paths churn (logs/*.json rewritten per run) or are bulk binary/
+# telemetry; indexing them inflates the language server's working set
+# and triggers re-index churn with zero context benefit.
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+seeds/
+seeds256/
+logs/
+knot_dictionary.json
+docs/public/audio/
+docs/public/wasm/
+docs/public/data/
+docs/public/hopfion/
+docs/public/library/
+docs/public/loom/
+src/smatrix/smatrix.exe
+src/smatrix/*.obj

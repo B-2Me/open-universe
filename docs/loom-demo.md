@@ -3,6 +3,7 @@ title: Hopf's Loom
 description: A 3D window into the Planck Field — a self-sustaining routing pattern you can slice, perturb, and rewind.
 outline: false
 layout: page
+pageClass: loom-page
 ---
 
 <ClientOnly>
@@ -17,7 +18,7 @@ layout: page
 
 *A continuous routing cycle, woven from whirlpools — rendering live in your browser.*
 
-What you're looking at is a **Hopfion**: a localized standing wave of extreme routing congestion made of 400,000 tiny cells, each one routing data and resolving friction according to the exact same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember ring is the intense phase friction continuously generated to maintain the loop, while the dim red darkness is the colder, lower-friction vacuum it sits in. Because the underlying flow is woven into a perfectly closed, phase-locked loop, it continuously re-renders itself without unraveling. 
+What you're looking at is a **Hopfion**: a localized standing wave of extreme routing congestion made of 400,000 tiny cells, each one routing data and resolving friction according to the exact same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember ring is the intense phase friction continuously generated to maintain the loop, while the dim red darkness is the surrounding vacuum — rendered faint because empty cells are culled from the thermal palette (per the substrate's own accounting the vacuum runs warm; it is the phase-locked knot that freezes). Because the underlying flow is woven into a perfectly closed, phase-locked loop, it continuously re-renders itself without unraveling. 
 
 And it's *running*. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.
 

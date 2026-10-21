@@ -54,7 +54,7 @@ Where $C_{a,b}$ is the chiral interference coefficient between two specific port
 ### 3. The Thermal Limit ($H_{max}$) and Deadlock Capacity
 The physical constants of the universe are not arbitrary magic numbers; they are the literal integer buffer limits of a single Planck node.
 
-*   **`DEADLOCK_QUANTA` ($Q_{max}$):** The maximum amount of relational traffic ($q$) a single node can route in one tick before the geometric waveguide is forced to structurally dilate (e.g., an electron physically expanding into a higher orbital to handle a photon's traffic surge).
+*   **`DEADLOCK_QUANTA` ($Q_{max}$):** The occupancy threshold ($q + b > 200$, resident plus staged in-flight mass) at which a node's port hard-refuses incoming traffic — the routing-table expression of exclusion. (Distinct from `FLOW_CAP` = 160, the per-tick relay bandwidth.)
 *   **`THERMAL_LIMIT` ($H_{max}$):** The absolute maximum phase friction a node can sustain before computational failure. 
 
 Gravity and ambient environmental tension act as a baseline friction floor ($h_{ambient}$). Therefore, the available stability threshold for any topological structure is strictly:
@@ -115,7 +115,7 @@ $$D_{net}(A, B) \propto \Phi(A, B) + Impedance(A, B)$$
 If the phase friction between two entangled nodes is zero, their network distance is zero. They share a direct network edge on the fundamental discrete substrate. Emergent 3D spatial separation does not dictate fundamental network adjacency.
 
 ### 6. Quantum Tunneling $\to$ Network Leakage
-An electron is not a solid bullet; it is a wave of un-actualized relational potential, and an electromagnetic barrier is simply a localized zone of high relational resistance. When the potential wave hits this resistance zone, its probability amplitude decays exponentially. A fraction bleeds past the boundary because the network is porous. We replace the geometric tunneling probability ($T \approx e^{-2\gamma a}$) with a threshold actualization of network leakage:
+An electron *in transit* — unbound flux between knots — is not a solid bullet; it is a wave of un-actualized relational potential, and an electromagnetic barrier is simply a localized zone of high relational resistance. When the potential wave hits this resistance zone, its probability amplitude decays exponentially. A fraction bleeds past the boundary because the network is porous. We replace the geometric tunneling probability ($T \approx e^{-2\gamma a}$) with a threshold actualization of network leakage:
 $$\text{Actualize}(x) \text{ where } \min \left( \sum \text{Relational Resistance} \right) \text{ reaches } FLOW\_CAP$$
 
 *Measured constraint (harness `+seep`):* a naive per-port leakage fraction does **not** produce the exponential curve — transmission through a closed deadlocked ring is thickness-independent (a *pipeline*, not an attenuator), because a mass-conserving buffer warehouses seeped flux and forwards it at the same rate at every stage. Exponential attenuation requires **per-stage loss**: each barrier hop must thermalize a fraction of the staged flux into exhaust rather than relaying it intact. Porous barriers exist; thickness-dependent decay requires absorptive barrier nodes, which is a different mechanism.
@@ -123,8 +123,8 @@ $$\text{Actualize}(x) \text{ where } \min \left( \sum \text{Relational Resistanc
 ### 7. Pauli Exclusion Principle $\to$ Node Saturation
 The Pauli Exclusion Principle states that two identical fermions cannot occupy the same quantum state simultaneously, using antisymmetric wave functions to forbid overlap. 
 
-In a discrete network, they don't overlap because a single network switch can only handle so much traffic before it drops packets. If you attempt to force two circulating topological waveguides into the exact same spatial locus, the incoming un-actualized potential ($Q_{in}$) instantly exceeds the absolute flow capacity of the local grid ($DEADLOCK\_QUANTA$). We replace the antisymmetric wave function with the hard integer limits of the hardware:
-$$\text{If } Q_{in} > DEADLOCK\_QUANTA, \text{ trigger Relational Repulsion}$$
+In a discrete network, they don't overlap because a single network switch can only handle so much traffic before it drops packets. If you attempt to force two circulating topological waveguides into the exact same spatial locus, the incoming un-actualized potential ($Q_{in}$) pushes the target's occupancy past the hard refusal threshold of the local grid ($DEADLOCK\_QUANTA$). We replace the antisymmetric wave function with the hard integer limits of the hardware:
+$$\text{If } q + b > DEADLOCK\_QUANTA, \text{ the port refuses — Relational Repulsion}$$
 
 ## Dimensionality Is a Coordination Number
 
@@ -136,9 +136,9 @@ $$\text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;\vert{}\; 
 
 ### Universality Classes and the Mesoscale Bridge
 
-The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice:
+The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice (later retracted as an implementation artifact — see the [monograph](/interference/meso-monograph)):
 
-- **The Verified Microscopic Bedrock:** exact mass-current conservation (`fired ≡ pulled`, M2), ballistic v=1 light-cone propagation (M4), classical Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff (M3), threshold avalanche detection (M9), and discrete timing-comb interferometry (M11).
+- **The Single-Spin Bedrock (prototype measurements):** exact mass-current conservation (`fired ≡ pulled`, M2), ballistic v=1 light-cone propagation (M4), classical Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff (M3), threshold avalanche detection (M9), and discrete timing-comb interferometry (M11).
 - **The Universality Class Boundary:** the single-spin winner-take-all constraint enforces a rigid kinematic invariant, v ∈ {0, 1} (M17). Light moves at c = 1; all bound matter (lumps, filaments, breathers, dimers) is permanently anchored at v = 0. Lacking linear field superposition and fractional coupling, the single-spin bedrock coarse-grains into an *alternate* discrete universe — not standard continuum electrodynamics.
 - **The Multi-Channel Mesoscale Specification (`meso3.c` target):** bridging the ~40-order-of-magnitude gap between Planck hops and laboratory observation requires the integer Lattice-Gas Automaton (FHP-class) universality class:
     - **Single-ownership edge arrays** — each link stored once (or under an owner-endpoint convention), eliminating the duplicated-state reconciliation bugs the sync-mode push ledger had to fight.
@@ -156,7 +156,7 @@ Here is how particle collider observables translate directly to the `planck3.c` 
 
 ### 1. Invariant Mass ($GeV/c^2$) $\to$ Topological Deadlock Quanta
 * **The Raw Observable:** Colliders measure the total rest energy of a resonance peak before it shatters.
-* **The Process Translation:** In the engine, mass is not an object; it is the raw count of `quanta` trapped in a stationary routing cycle where $Q \ge DEADLOCK\_QUANTA$. 
+* **The Process Translation:** In the engine, mass is not an object; it is the raw count of `quanta` trapped in a stationary routing cycle at occupancy $q + b > DEADLOCK\_QUANTA$. 
 * **Validation Status [OPEN - HIGH PRIORITY]:** We must define a particle's mass strictly by the minimum `FLOW_CAP` and `TENSION` required to force a specific nested winding (like the 19-loop Hopfion) into stable equilibrium under Earth-analog noise. 
 * **Next Step:** Run automated tuning sweeps across the 3D engine to find the exact quanta-count eigenvalues where Hopfions self-stabilize against our calibrated environmental baseline.
 
@@ -169,7 +169,7 @@ Here is how particle collider observables translate directly to the `planck3.c` 
 ### 3. Scattering Cross-Section ($\sigma$) $\to$ Shear Tolerance
 * **The Raw Observable:** The probability area that two particles will interact or deflect when fired at each other.
 * **The Process Translation:** Collisions are competing routing demands. Cross-section is the precise impact parameter (distance in nodes) where a propagating tension gradient forces a passing stream to shear its boundary layer and accrete into the knot, rather than deflecting.
-* **Validation Status [VALIDATED (2D) / OPEN (3D) - MEDIUM PRIORITY]:** The 2D harness (`hexlens` variant) natively proved this mechanism. We measured the accretion cross-section at a grazing incidence of B=25–30 nodes, where the stream sheds ~55% of its quanta into bound deadlocked cells around the well. The interaction cuts off exactly at the diffusive reach of the tension field ($\approx 35$ nodes).
+* **Validation Status [VALIDATED (2D) / OPEN (3D) - MEDIUM PRIORITY]:** The 2D harness (`hexlens` variant) natively proved this mechanism. We measured the accretion cross-section at a grazing incidence of b=25–30 nodes, where the stream sheds ~55% of its quanta into bound deadlocked cells around the well. The interaction cuts off exactly at the diffusive reach of the tension field ($\approx 35$ nodes).
 * **Next Step:** We must replicate this in 3D by firing streams at the stable Hopfion and measuring the capture cross-section vs. impact parameter in `planck3.c`. 
 
 ### 4. Missing Transverse Energy (MET) $\to$ Unknotted Thermal Spray

@@ -1,3 +1,7 @@
+---
+title: The Vanguard
+---
+
 # The Vanguard Lineage: Systems Integration and Philosophical Divergences
 
 > "There is no such thing as philosophy-free physics; there is only physics whose philosophical baggage is taken on board without examination."  
@@ -71,8 +75,8 @@ We agree with the vanguard that light is not a stream of tiny flying marbles; bu
 | Fotini Markopoulou &  | Geometrogenesis: 3D space emerges  | Reliance on quantum superposition of |
 | Lee Smolin            | from a discrete relational graph   | graph topologies without causality   |
 +-----------------------+------------------------------------+--------------------------------------+
-| Werner Heisenberg &   | Vacuum non-linearity; light-light  | Framing saturation purely as virtual |
-| Hans Heinrich Euler   | scattering at high field density   | loop corrections in continuous space |
+| Heisenberg, Euler &   | Vacuum non-linearity; light-light  | Framing saturation purely as virtual |
+| Schwinger             | scattering at high field density   | loop corrections in continuous space |
 +-----------------------+------------------------------------+--------------------------------------+
 | Donald Hoffman        | 3D space and objects are an        | Philosophical idealism: claiming     |
 |                       | evolutionary desktop dashboard     | objective physical reality is absent |
@@ -87,11 +91,11 @@ We agree with the vanguard that light is not a stream of tiny flying marbles; bu
   * *The Cellular Automaton Interpretation of Quantum Mechanics* (Fundamental Theories of Physics, Springer, 2016)
   * *"Entangled quantum states in a local deterministic theory"* (2009)
 * **The Breakthrough (Where We Agree):**  
-  't Hooft demonstrated that the apparent "mysteries" of quantum mechanics—superposition, wave-particle duality, and the Born probability rule ($P = |\psi|^2$)—do not require genuine indeterminism or mystical observer-dependent reality. At the Planck scale ($10^{-35}\text{ m}, 10^{-43}\text{ s}$), nature is an entirely deterministic, discrete cellular automaton. Quantum states are mathematical equivalence classes: because macroscopic instruments cannot track $10^{43}$ deterministic updates per second, we are forced to group vast microstate trajectories into statistical probabilistic vectors.
+  't Hooft demonstrated that the apparent "mysteries" of quantum mechanics—superposition, wave-particle duality, and the Born probability rule ($P = |\psi|^2$)—do not require genuine indeterminism or mystical observer-dependent reality. At the Planck scale ($10^{-35}\text{ m}, 5.4 \times 10^{-44}\text{ s}$), nature is an entirely deterministic, discrete cellular automaton. Quantum states are mathematical equivalence classes: because macroscopic instruments cannot track $10^{43}$ deterministic updates per second, we are forced to group vast microstate trajectories into statistical probabilistic vectors.
 * **The Point of Divergence (Where We Disagree):**  
   To make his theory palatable to mainstream academic physicists, 't Hooft spends enormous mathematical effort mapping discrete integer automaton states back onto continuous complex Hilbert spaces ($\mathbb{C}$), continuous global time, and unitary Hamiltonian evolution ($e^{-iHt}$). In doing so, he re-introduces the very continuous mathematical baggage that causes infinities.
 * **The Planck Field Realization:**  
-  We discard the complex Hilbert space detour. The Planck Field is a strictly finite, integer-valued network. State transitions are local, memoryless updates ($t \to t+1$) governed by integer capacity limits (`FLOW_CAP`, `DEADLOCK`). We do not need continuous complex wave functions to explain physics; statistical interference patterns emerge natively as arrival-time combs and ensemble histograms (Milestones M10–M13).
+  We discard the complex Hilbert space detour. The Planck Field is a strictly finite, integer-valued network. State transitions are local, memoryless updates ($t \to t+1$) governed by integer capacity limits (`FLOW_CAP`, `DEADLOCK`). We do not need continuous complex wave functions to explain physics; statistical interference patterns emerge natively as arrival-time combs and ensemble histograms (measured on the single-spin prototype).
 
 ---
 
@@ -106,7 +110,7 @@ We agree with the vanguard that light is not a stream of tiny flying marbles; bu
 * **The Point of Divergence (Where We Disagree):**  
   Lamb retreated into an operationalist stance, famously declaring that photons don't exist and that physics should speak only of classical electromagnetic fields exciting quantized matter. Hobson similarly rested on continuous differential field equations. This leaves an ontological vacuum: if a photon isn't a particle, what is physically traveling through space when a laser pulses?
 * **The Planck Field Realization:**  
-  Light in transit is an un-anchored, linear train of discrete relational momentum quanta cascading along open vacuum links at $v=1$. It is not a zero-dimensional ball, nor an abstract equation; it is active momentum propagating across a discrete graph. When it strikes an active matter boundary, local capacity saturation triggers a discrete avalanche (the Avalanche Photodiode mechanism measured in M9/M10), producing the illusion of a localized "click."
+  Light in transit is an un-anchored, linear train of discrete relational momentum quanta cascading along open vacuum links at $v=1$. It is not a zero-dimensional ball, nor an abstract equation; it is active momentum propagating across a discrete graph. When it strikes an active matter boundary, local capacity saturation triggers a discrete avalanche (the Avalanche Photodiode mechanism measured on the single-spin prototype), producing the illusion of a localized "click."
 
 ---
 
@@ -149,7 +153,7 @@ We agree with the vanguard that light is not a stream of tiny flying marbles; bu
 * **The Point of Divergence (Where We Disagree):**  
   Standard QFT treats this non-linearity as a perturbative quantum correction—calculating virtual electron-positron loop Feynman diagrams in a continuous mathematical vacuum. This obscures the physical mechanism behind infinite mathematical integrals that require artificial renormalization to cancel.
 * **The Planck Field Realization:**  
-  Vacuum non-linearity is a native hardware threshold. On our discrete lattice, each node has a finite routing bandwidth (`FLOW_CAP = 160`, `DEADLOCK = 200`). At low densities (dilute beams), quanta traverse shared regions without cross-talk — the corpuscular analog of linear superposition (measured M8/M10). But when two packets co-arrive at the exact same cell at the exact same tick, local capacity saturates: glancing streams vector-sum steer, while head-on collisions cancel spatial momentum ($v=1 \to v=0$) and condense into bound stationary rest mass (optical precipitation, measured in M6).
+  Vacuum non-linearity is a native hardware threshold. On our discrete lattice, each node has a finite routing bandwidth (`FLOW_CAP = 160`, `DEADLOCK = 200`). At low densities (dilute beams), quanta traverse shared regions without cross-talk — the corpuscular analog of linear superposition (measured on the single-spin prototype). But when two packets co-arrive at the exact same cell at the exact same tick, local capacity saturates: glancing streams vector-sum and steer, while head-on collisions cancel spatial momentum ($v=1 \to v=0$) and condense into bound stationary rest mass (optical precipitation, also measured on the prototype).
 
 ---
 
@@ -163,7 +167,7 @@ We agree with the vanguard that light is not a stream of tiny flying marbles; bu
 * **The Point of Divergence (Where We Disagree):**  
   Hoffman commits the Idealist Fallacy. Having proved that human perception is an interface, he leaps to the conclusion that objective physical reality does not exist ("conscious realism"). He claims the universe consists entirely of disembodied "conscious agents" exchanging information, dissolving physical matter into mentalism.
 * **The Planck Field Realization:**  
-  We maintain strict biophysical realism. Objective physical reality **does** exist: it is the discrete, thermodynamic Planck Field. A human being is an objective, localized metabolic engine composed of roughly $10^{101}$ Planck nodes. The biological nervous system samples incoming boundary collisions (at the retina, skin, and eardrum) over sluggish $\sim 100\text{ ms}$ integration windows. Because calculating $10^{43}$ discrete network routing events per second is impossible, the visual cortex projects an inverse 3D render. The dashboard is real, and the underlying thermodynamic hardware it maps is real.
+  We maintain strict biophysical realism. Objective physical reality **does** exist: it is the discrete, thermodynamic Planck Field. A human brain is an objective, localized metabolic engine composed of roughly $10^{101}$ Planck nodes. The biological nervous system samples incoming boundary collisions (at the retina, skin, and eardrum) over sluggish $\sim 100\text{ ms}$ integration windows. Because calculating $10^{43}$ discrete network routing events per second is impossible, the visual cortex projects an inverse 3D render. The dashboard is real, and the underlying thermodynamic hardware it maps is real.
 
 ---
 
@@ -193,7 +197,7 @@ By uniting the valid breakthroughs of the vanguard while rejecting their continu
 1. **Reality is an Active Process, Not a Frozen Block:** There is no archival memory storing the past, nor a pre-rendered future. Time is the sequential, irreversible consumption and overwriting of relational state ($t \to t+1$).
 2. **Space is Network Adjacency, Not an Empty Box:** Distance is discrete hop count; geometry is graph coordination; curvature is routing congestion.
 3. **Matter is Trapped Momentum, Not Solid Substance:** Bound particles are self-confining, phase-locked circulations; mass is localized routing inertia.
-4. **Light is Unobstructed Momentum, Not a Frozen Equation:** On the substrate, light is a discrete train of corpuscular momentum packets cascading along open vacuum links at the causal throughput limit ($v=1$, measured M4/M10). The Lamb/Hobson critique targets real photons — nature's quanta are extended field modes, not marbles — and our substrate is a coarse discrete analog of that claim: what physical light is *not* is an abstract equation waiting to be measured.
+4. **Light is Unobstructed Momentum, Not a Frozen Equation:** On the substrate, light is a discrete train of corpuscular momentum packets cascading along open vacuum links at the causal throughput limit ($v=1$; measured on the single-spin prototype). The Lamb/Hobson critique targets real photons — nature's quanta are extended field modes, not marbles — and our substrate is a coarse discrete analog of that claim: what physical light is *not* is an abstract equation waiting to be measured.
 5. **The Observer is a Physical Heat Sink, Not a Mystical Mind:** Measurement is contact collision causing local capacity saturation; the wave function does not collapse, it precipitates deterministically when local buffers hit their integer ceiling (`FLOW_CAP`).
 
 We do not retreat into the chalkboard clouds. We measure the substrate, count the integers, and balance the thermodynamic books.

@@ -343,6 +343,7 @@ onUnmounted(() => {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   background: var(--pf-bg-main);
   color: var(--pf-text);
+  color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
 }
 
@@ -393,6 +394,12 @@ onUnmounted(() => {
   text-overflow: ellipsis !important;
   overflow: hidden !important;
   white-space: nowrap !important;
+  background: var(--pf-bg-main) !important;
+  color: var(--pf-text) !important;
+}
+.viewport-header .scenario-select option {
+  background: var(--pf-bg-main);
+  color: var(--pf-text);
 }
 
 .viewport-header .icon-btn {

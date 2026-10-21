@@ -46,9 +46,9 @@ Human intuition is blind to scale. What seems logical at the macroscopic level d
 To visualize how macroscopic physical structures span the abyss down to this fundamental limit, consider these proportional steps:
 
 *   **The Electron (~10¹⁷ Planck lengths across):** In the Standard Model, electrons behave as point-like excitations without internal substructure down to experimental limits. If a single Planck length were the size of a grain of sand, an electron would span a vast planetary expanse.
-*   **The Proton (~5 × 10¹⁹ Planck lengths across):** A proton possesses a charge radius of about 0.84 femtometers, making it roughly 100 times larger than the upper bounds of an electron. 
+*   **The Proton (~5 × 10¹⁹ Planck lengths across):** A proton possesses a charge radius of about 0.84 femtometers, making it roughly 500 times larger than the upper bounds of an electron. 
 *   **The Atomic Nucleus (~10²⁰ Planck lengths across):** Ranging from 1 to 7 femtometers depending on mass, the nucleus represents a dense nexus of strong relational binding. 
-*   **Complex Structures & Human Scale (~10³⁵ Planck lengths across):** When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined, or drops of water in all the oceans multiplied exponentially. 
+*   **Complex Structures & Human Scale (~10³⁵ Planck lengths across):** When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined — more even than drops of water in all the oceans. 
 
 Every level of complexity is a nested cascade of relational actualizations. Because the universe is bound by these material limits, actualization is constrained by strict rules:
 
@@ -99,9 +99,9 @@ Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic s
 
 > **Provenance note (M1–M18 campaign):** the per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure — they predate the grounded measurement campaign and are retained as a target for the mesoscale engine. What the substrate has actually produced is documented below.
 
-### 4. The Measured Species Hierarchy (planck3.c, M12–M18)
+### 4. The Species Hierarchy — Single-Spin Prototype (planck3.c, M12–M18, retracted)
 
-The discrete substrate's emergent matter, as actually measured — every entry verified by a headless harness, none hand-authored:
+The discrete substrate's emergent matter, as actually measured — every entry verified by a headless harness, none hand-authored. *(These single-spin prototype results were later retracted as an implementation artifact — retained here as the theory's map, not the record; the current measurements live in [The Friction Substrate](/interference/meso-monograph).)*
 
 | Species | Period | Cells | Status |
 | :--- | :--- | :--- | :--- |

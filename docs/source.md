@@ -33,7 +33,7 @@ A local system's relational capacity is inherently distributed between spatial t
 ### 3. Cosmological Redshift (Propagation Friction)
 Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
 $$E_{received} = E_{emitted} e^{-\mu d}$$
-Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades logarithmically due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
+Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades exponentially due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
 
 ### 4. Electromagnetism (Phase Friction)
 Charge is not a continuous geometric wave; it is the discrete topological state ($s$) of a locus. The Phase Friction ($\Phi$) between any two boundaries is calculated through discrete modular distance across finite states ($N$), not continuous trigonometric angles:
@@ -180,7 +180,7 @@ To navigate the site without falling back into mechanistic traps, use the follow
 
 ### The Substrate-Grounded Bridge (Planck Field Engine, M1–M18)
 
-The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom verified in the `planck3.c` discrete substrate across eighteen measured milestones, and each carries a provenance flag — **Measured** (verified by a committed headless harness), **Framework** (mechanism-consistent but not directly demonstrated), or **Aspirational** (a target for the multi-channel mesoscale engine, not expressible at the single-spin bedrock). No row launders an aspiration into a measurement.
+The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom verified in the `planck3.c` discrete substrate across eighteen measured milestones, and each carries a provenance flag — **Measured** (recorded by a committed headless harness on the single-spin prototype — mechanics since retracted), **Framework** (mechanism-consistent but not directly demonstrated), or **Aspirational** (a target for the multi-channel mesoscale engine, not expressible at the single-spin bedrock). No row launders an aspiration into a measurement. *(The M1–M18 entries are the retracted single-spin prototype campaign — the idioms remain the theory's map; the current record is the [meso monograph](/interference/meso-monograph).)*
 
 | Legacy Term | The Bridge Idiom | Process Ontology Reality | Status |
 | :--- | :--- | :--- | :--- |

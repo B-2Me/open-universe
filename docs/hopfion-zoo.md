@@ -1,6 +1,7 @@
 ---
 layout: page
 title: The Hopfion Zoo
+pageClass: hopfion-page
 ---
 
 <HopfionViewer />
@@ -9,7 +10,7 @@ title: The Hopfion Zoo
 
 # The Hopfion Zoo
 
-Every specimen in this carousel is a **measured eigenvalue of the
+Every specimen in this carousel is a **measured eigenstate of the
 substrate** — a closed loop geometry that survived 400 ticks of the
 True FCC engine's ambient metabolism with constant mass. They are not
 artist impressions: each point is a live lattice cell from the actual

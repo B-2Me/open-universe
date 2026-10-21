@@ -36,8 +36,8 @@ When mathematicians map out flawless geometric theorems, they are not studying t
 
 Human visual perception is not a passive, real-time camera feed of the Planck Field:
 
-- **The Scale Inversion:** A single human brain (~1.4 kg) contains on the order of 10^101 Planck cells, through which roughly 10^27 charged particles are woven — each buffered by ~10^74 open vacuum nodes (order-of-magnitude scale arguments).
-- **The Causal Volume:** In one second of conscious thought, the brain executes on the order of 10^144 microscopic causal updates — outnumbering the particle count of the observable universe by dozens of orders of magnitude.
+- **The Scale Inversion:** A single human brain (~1.4 kg) contains on the order of $10^{101}$ Planck cells, through which roughly $10^{27}$ charged particles are woven — each buffered by ~$10^{74}$ open vacuum nodes (order-of-magnitude scale arguments).
+- **The Causal Volume:** In one second of conscious thought, the brain executes on the order of $10^{144}$ microscopic causal updates — outnumbering the particle count of the observable universe by dozens of orders of magnitude.
 - **The Statistical Rendering:** The retina does not pipe raw Planck ticks to the mind. It registers sparse, discrete actualizations and sends electrochemical pulses down the optic nerve. The "mind's eye" is a generative, time-averaged predictive model — a living dashboard continuously updated by sensory prediction errors, built to navigate the field without drowning in its microscopic calculation.
 
 ---

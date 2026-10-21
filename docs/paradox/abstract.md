@@ -13,7 +13,7 @@ When pure, infinitely scalable mathematics is projected onto a physical universe
 **The Planck Field Reconciliation:** Simulation theory is a modern resurgence of deterministic, block-universe thinking. It assumes a higher-level "server" is rendering our reality using algorithmic software. When grounded in physical thermodynamics, the math prohibits this:
 *   **The Hardware Limit:** Any computer, no matter how advanced, operates on algorithms (step-by-step syntactic rules). 
 *   **The Uncomputable Horizon:** As proven by mathematical incompleteness (Gödel, Turing, Chaitin), physical reality contains non-computational, undecidable properties. At the Planck scale, reality does not follow a closed algorithmic loop.
-*   **The Verdict:** You cannot simulate non-algorithmic physics on algorithmic architecture. Therefore, the universe cannot be a simulation. We are not running on a virtual machine; we are plugged directly into the fundamental, uncomputable substrate of nature.
+*   **The Verdict:** You cannot simulate non-algorithmic physics on algorithmic architecture. Therefore, the universe cannot be a simulation. We are not running on a virtual machine; we are plugged directly into the fundamental, algorithmically irreducible substrate of nature.
 
 ---
 

@@ -379,3 +379,13 @@ html.dark .sync-text.active {
   align-items: center !important;
   gap: 6px !important;
 }
+
+/* ---------------------------------------------------
+   Mobile nav flyout: indent links inside a nested group
+   section (e.g. Paradoxes) one level deeper than the
+   group's own links, so following siblings don't read
+   as children of the section.
+--------------------------------------------------- */
+.VPNavScreenMenuGroup .VPNavScreenMenuGroupSection .VPNavScreenMenuGroupLink {
+  margin-left: 28px;
+}
