@@ -153,7 +153,11 @@ if emcc meso3i.c \
     '_meso3i_cm',
     '_meso3i_drain_edge',
     '_meso3i_save',
-    '_meso3i_restore'
+    '_meso3i_restore',
+    '_meso3i_phot',
+    '_meso3i_phset',
+    '_meso3i_phget',
+    '_meso3i_photons'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/ember/meso3i.js; then

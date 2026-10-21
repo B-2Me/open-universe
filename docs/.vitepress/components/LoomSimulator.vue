@@ -71,8 +71,8 @@ onUnmounted(() => {
         <button data-drive class="on" aria-pressed="true"
                 title="Convergent feed — 18 spokes pouring flux into the core"
                 aria-label="Toggle convergent drive">☀</button>
-        <button data-beam  title="Carrier beam — +x flux that walks a lump"
-                aria-label="Toggle carrier beam"      aria-pressed="false">➤</button>
+        <button data-beam  title="Photon laser — massless +x light; coupling set by the Phot dial"
+                aria-label="Toggle photon laser"      aria-pressed="false">➤</button>
         <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
                 aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
         <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
@@ -105,6 +105,11 @@ onUnmounted(() => {
           <option value="0" selected>uniform</option>
           <option value="1">shell-weighted</option>
           <option value="2">forward-bias</option>
+        </select></label>
+        <label class="loom-field"><span>Phot</span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
+          <option value="0">off</option>
+          <option value="1">catalyst</option>
+          <option value="2" selected>stimulated</option>
         </select></label>
       </div>
 

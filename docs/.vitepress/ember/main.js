@@ -2,8 +2,8 @@
  * Yarkovsky's Ember — live meso3i friction substrate in the browser.
  *
  * Pipeline (parity with Hopf's Loom): meso3i.wasm ticks the integer
- * lattice gas; meso3i_rg_refresh() packs {moving, rest} into an RG8
- * buffer inside the wasm heap -> gl.texSubImage3D uploads it straight
+ * lattice gas; meso3i_rg_refresh() packs {moving, rest, photons} into an
+ * RGB8 buffer inside the wasm heap -> gl.texSubImage3D uploads it straight
  * to the GPU -> one drawArraysInstanced call renders every lattice
  * cell; the vertex shader culls vacuum and ghosts the tomographic slab.
  *
@@ -45,7 +45,7 @@ precision highp sampler3D;
 const vec2 CORNER[6] = vec2[6](
   vec2(-1.0,-1.0), vec2(1.0,-1.0), vec2(1.0,1.0),
   vec2(-1.0,-1.0), vec2(1.0,1.0),  vec2(-1.0,1.0));
-uniform sampler3D u_vol;                  // RG8: r=moving g=rest
+uniform sampler3D u_vol;                  // RGB8: r=moving g=rest b=photons
 uniform mat4 u_mvp;
 uniform float u_size;
 uniform float u_z_center, u_z_thickness;
@@ -61,10 +61,11 @@ void main() {
   int x = (id % u_nx) * u_step;
   int y = ((id / u_nx) % u_ny) * u_step;
   int z = (id / u_nxy) * u_step;
-  vec2 rg = texelFetch(u_vol, ivec3(x, y, z), 0).rg;
+  vec3 rg = texelFetch(u_vol, ivec3(x, y, z), 0).rgb;
   float mov = rg.r * 255.0;
   float rest = rg.g * 255.0;
-  float d = max(mov, rest);
+  float ph = rg.b * 255.0;
+  float d = max(mov, max(rest, ph));
   v_uv = a_corner;
   if (d < u_qmin) {                        // vacuum + dead parity: clip
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
@@ -106,6 +107,10 @@ void main() {
     // ember: the whole story — cyan flux streams feeding amber heat
     rgb = ember * (0.35 + 0.85 * rest / 255.0) + flux * 0.85;
   }
+  // photons: violet light, always additive — a beam must read through
+  // vacuum in every color mode
+  float g = pow(ph / 255.0, 0.6);
+  rgb += mix(vec3(0.30, 0.10, 0.80), vec3(0.85, 0.70, 1.00), g) * g * 1.6;
   // visibility floor: real occupancies run ~5-120, far below the 255
   // normalization — a sparse dim ember must still read against the void
   rgb = rgb * 1.8 + vec3(0.028);
@@ -257,7 +262,7 @@ export async function initEmberSimulator(root, opts = {}) {
   }
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_3D, tex);
-  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RG8, W3, H3, D3, 0, gl.RG, gl.UNSIGNED_BYTE, null);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB8, W3, H3, D3, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
   for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST],
     [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]])
     gl.texParameteri(gl.TEXTURE_3D, k, v);
@@ -267,8 +272,8 @@ export async function initEmberSimulator(root, opts = {}) {
   const upload = () => {
     wasm._meso3i_rg_refresh();
     const h8 = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
-    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RG, gl.UNSIGNED_BYTE,
-      h8.subarray(rgPtr, rgPtr + N3 * 2));
+    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGB, gl.UNSIGNED_BYTE,
+      h8.subarray(rgPtr, rgPtr + N3 * 3));
   };
 
   canvas.addEventListener('webglcontextlost', e => {

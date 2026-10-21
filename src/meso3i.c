@@ -15,6 +15,15 @@
  *
  * Modes: 0 uniform member pick, 1 shell-weighted (pair weight (1/8) per
  * axial member), 2 forward-bias (7/8 keep the input pair).
+ *
+ * Photons (IPHOT): a parallel massless field on the moving channels —
+ * photons stream like quanta but carry no mass and never collide.
+ *   1 catalyst: photon presence licenses the IFRICM<0 emission gate
+ *     (a massless carrier — isotropic boil-off, nothing added).
+ *   2 stimulated: each arriving photon may kick a rest quantum into the
+ *     photon's own channel — coherent directional ablation (a laser).
+ * Neither deletes mass: parked heat converts back to moving flux, which
+ * drains at the boundary or re-parks downstream.
  */
 #include <stdint.h>
 #include <stdlib.h>
@@ -58,6 +67,10 @@ static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
 static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICM;              /* rest-inertia: 0=rest collides; k=rest inert, radiates ~1/4k */
+static int      IPHOT;               /* photons: 0 off, 1 catalyst gate, 2 stimulated emission */
+static int      IPHN;                /* live photon count — photon sweep skipped at 0 */
+static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV + c]: directional,
+                                        massless, non-colliding messengers */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
@@ -125,7 +138,9 @@ int meso3i_init(int w, int h, int d, int axial) {
     iR = malloc((size_t)IN * sizeof(uint32_t));
     iQ = calloc((size_t)IN, 1);
     iPH = calloc((size_t)IN, 1);
-    if (!iA || !iB || !iD || !iR || !iQ || !iPH) return -2;
+    iPA = calloc((size_t)IN * IMOV, 1);
+    iPB = calloc((size_t)IN * IMOV, 1);
+    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB) return -2;
     build_pairs();
     return 0;
 }
@@ -135,6 +150,9 @@ void meso3i_clear(void) {
     memset(iD, 0, (size_t)IN * 18 * IKMAX * sizeof(uint16_t));
     memset(iQ, 0, (size_t)IN);
     memset(iPH, 0, (size_t)IN);
+    memset(iPA, 0, (size_t)IN * IMOV);
+    memset(iPB, 0, (size_t)IN * IMOV);
+    IPHN = 0;
     ITICK = 0;
 }
 void meso3i_collmode(int m) { IMODE = m; }
@@ -151,6 +169,23 @@ void meso3i_qcap(int c) { IQCAP = c; }
 void meso3i_reflect(int cap) { IREFL = cap; }
 void meso3i_friction(int cap) { IFRIC = cap; }
 void meso3i_fricmode(int m) { IFRICM = m; }
+void meso3i_phot(int m) { IPHOT = m; }
+
+/* photon channel access — live parity only, like meso3i_set. Photons
+ * carry direction (their channel) but no mass and never collide. */
+void meso3i_phset(int x, int y, int z, int c, uint8_t v) {
+    if (c < 0 || c >= IMOV) return;
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (!isite(x, y, z)) return;
+    int si = iidx(x, y, z) * IMOV + c;
+    IPHN += (int)v - iPA[si];
+    iPA[si] = v;
+}
+uint8_t meso3i_phget(int x, int y, int z, int c) {
+    if (c < 0 || c >= IMOV) return 0;
+    return iPA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV + c];
+}
+int meso3i_photons(void) { return IPHN; }
 void meso3i_pset(int x, int y, int z, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
@@ -231,6 +266,15 @@ static int pick_chan_x(const uint8_t *n, int r, int excl, int skip) {
     return -1;
 }
 
+/* photon occupancy at a site — catalyst gate reads this only for
+ * nodes with parked rest mass (rare), so a plain channel sum is fine */
+static int phot_at(int si) {
+    const uint8_t *p = iPA + (size_t)si * IMOV;
+    int n = 0;
+    for (int c = 0; c < IMOV; c++) n += p[c];
+    return n;
+}
+
 static void collide_node(uint8_t *n, int si) {
     int rest = IFRICM ? n[INCH - 1] : 0;
     int m = 0;
@@ -239,8 +283,11 @@ static void collide_node(uint8_t *n, int si) {
     /* radiative boil-off: parked heat re-emits into moving channels.
      * IFRICM>0: unconditional blackbody rate ~1/(4k) per quantum.
      * IFRICM<0: carrier-gated — emission only while moving mass
-     * transits the node (heat needs a carrier; inert in true vacuum). */
-    if (IFRICM && rest && (IFRICM > 0 || m > 0)) {
+     * transits the node (heat needs a carrier; inert in true vacuum).
+     * IPHOT==1 (catalyst): a transiting photon field licenses the same
+     * gate without contributing mass — a massless carrier probe. */
+    if (IFRICM && rest && (IFRICM > 0 || m > 0 ||
+                           (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
         for (int u = 0; u < n[INCH - 1]; u++)
             if (irnd() % (4 * k) == 0) { n[INCH - 1]--; n[irnd() % IMOV]++; }
@@ -528,6 +575,47 @@ void meso3i_tick(void) {
             iB[di] = v > 255 ? 255 : (uint8_t)v;   /* hard cap safety */
         }
     }
+
+    /* 4. photon stream — after the mass stream so arrivals at ni see the
+     * complete post-stream state (iB rest channel is final). Photons hop
+     * along channel vectors, never collide, carry no mass.
+     * IPHOT==2 (stimulated emission): each arriving photon may kick one
+     * rest quantum at the destination into the photon's OWN channel —
+     * coherent directional ablation. The photon survives the transit
+     * (the emitted quantum's momentum comes from beam alignment —
+     * flagged, like every other non-invariant in this engine). */
+    if (IPHN) {
+        memset(iPB, 0, (size_t)IN * IMOV);
+        for (int z = 0; z < ID; z++)
+        for (int y = 0; y < IH; y++)
+        for (int x = 0; x < IW; x++) {
+            if (!isite(x, y, z)) continue;
+            const uint8_t *ps = iPA + (size_t)iidx(x, y, z) * IMOV;
+            for (int c = 0; c < IMOV; c++) {
+                int p = ps[c];
+                if (!p) continue;
+                int ni = iidx(iwrap(x + ICV[c][0], IW),
+                              iwrap(y + ICV[c][1], IH),
+                              iwrap(z + ICV[c][2], ID));
+                if (IPHOT == 2) {
+                    int ri = ni * INCH + INCH - 1;
+                    for (int u = 0; u < p; u++)
+                        if (iB[ri] && (int)(irnd() & 255) < iB[ri]) {
+                            iB[ri]--;
+                            int di = ni * INCH + c;
+                            uint32_t v = iB[di] + 1;
+                            iB[di] = v > 255 ? 255 : (uint8_t)v;
+                        }
+                }
+                int pi = ni * IMOV + c;
+                uint32_t v = iPB[pi] + p;
+                if (v > 255) { IPHN -= (int)(v - 255); v = 255; }
+                iPB[pi] = (uint8_t)v;
+            }
+        }
+        uint8_t *tp = iPA; iPA = iPB; iPB = tp;
+    }
+
     uint8_t *t = iA; iA = iB; iB = t;
 }
 
@@ -568,7 +656,8 @@ const int (*meso3i_cv(void))[3] { return (const int (*)[3])ICV; }
 
 /* ---- viewer shim (Yarkovsky's Ember wasm build; harmless natively) ----
  * R = summed moving-channel population (clamped), G = rest-channel
- * population, packed site-major so texSubImage3D can read it as RG8.
+ * population, B = summed photon population (massless light field),
+ * packed site-major so texSubImage3D can read it as RGB8.
  * Stats refreshed alongside: rest/moving totals + rest-mass centroid in
  * fixed point (x256), for the HUD — one pass, no extra sweeps. */
 static uint8_t *iRG;
@@ -578,7 +667,7 @@ int meso3i_dim(int a)      { return a == 0 ? IW : a == 1 ? IH : ID; }
 int meso3i_cvc(int c, int k) { return c < 0 || c >= INCH ? 0 : ICV[c][k]; }
 
 const uint8_t *meso3i_rg_refresh(void) {
-    if (!iRG) iRG = malloc((size_t)IN * 2);
+    if (!iRG) iRG = malloc((size_t)IN * 3);
     long long cx = 0, cy = 0, cz = 0;
     st_rest = st_mov = 0;
     for (int s = 0; s < IN; s++) {
@@ -586,8 +675,14 @@ const uint8_t *meso3i_rg_refresh(void) {
         int mov = 0;
         for (int c = 0; c < IMOV; c++) mov += n[c];
         int rest = n[INCH - 1];
-        iRG[s * 2]     = (uint8_t)(mov > 255 ? 255 : mov);
-        iRG[s * 2 + 1] = (uint8_t)rest;
+        iRG[s * 3]     = (uint8_t)(mov > 255 ? 255 : mov);
+        iRG[s * 3 + 1] = (uint8_t)rest;
+        if (IPHN) {
+            const uint8_t *pp = iPA + (size_t)s * IMOV;
+            int ph = 0;
+            for (int c = 0; c < IMOV; c++) ph += pp[c];
+            iRG[s * 3 + 2] = (uint8_t)(ph > 255 ? 255 : ph);
+        } else iRG[s * 3 + 2] = 0;
         st_mov += mov; st_rest += rest;
         int x = s % IW, y = (s / IW) % IH, z = s / (IW * IH);
         cx += (long long)rest * x;
@@ -607,19 +702,27 @@ int meso3i_mov_mass(void)  { return st_mov; }
 int meso3i_cm(int a)       { return a == 0 ? st_cx : a == 1 ? st_cy : st_cz; }
 
 /* vacuum boundary: zero every channel on sites within `t` of the shell —
- * the open-drain the test harnesses use (in JS this loop is too hot) */
+ * the open-drain the test harnesses use (in JS this loop is too hot).
+ * Photons drain too — an open boundary for light as well as mass. */
 void meso3i_drain_edge(int t) {
     for (int z = 0; z < ID; z++)
     for (int y = 0; y < IH; y++)
     for (int x = 0; x < IW; x++) {
         if (x >= t && x < IW - t && y >= t && y < IH - t &&
             z >= t && z < ID - t) continue;
-        memset(iA + (size_t)iidx(x, y, z) * INCH, 0, INCH);
+        int si = iidx(x, y, z);
+        memset(iA + (size_t)si * INCH, 0, INCH);
+        if (IPHN) {
+            uint8_t *pp = iPA + (size_t)si * IMOV;
+            for (int c = 0; c < IMOV; c++) IPHN -= pp[c];
+            memset(pp, 0, IMOV);
+        }
     }
 }
 
-/* snapshot = the channel buffer only (dwell lines + Q regs excluded —
- * Ember runs DWELL=1/IQMODE=0 where both are inert anyway) */
+/* snapshot = the channel buffer only (dwell lines, Q regs and photons
+ * excluded — Ember runs DWELL=1/IQMODE=0 where those are inert, and a
+ * beam is cheap to re-shine) */
 static uint8_t *iSNAP;
 void meso3i_save(void) {
     if (!iSNAP) iSNAP = malloc((size_t)IN * INCH);
