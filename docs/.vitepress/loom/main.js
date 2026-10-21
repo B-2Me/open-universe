@@ -249,7 +249,9 @@ export async function initLoomSimulator(root, opts = {}) {
 
   // ●: drop a cold rest-mass lump (the M35 rock) onto the slice plane —
   // the proven-persistent control case for the vortex experiment.
-  const LUMP_R = 3, LUMP_Q = 32;
+  // Thick enough that the photon laser visibly drills through it: a
+  // thin lump just blinks out before the coupling modes can diverge.
+  const LUMP_R = 5, LUMP_Q = 96;
   const seedLump = (lx, ly, lz) => {
     let n = 0;
     for (let dz = -LUMP_R; dz <= LUMP_R; dz++)
