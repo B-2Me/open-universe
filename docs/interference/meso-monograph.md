@@ -178,6 +178,22 @@ Two adjacent wound lumps (±4-cell gap, drive-coupled interface), 300t:
 
 *Ledger note:* the ~70% mass boil-off in all four runs is generic drive-ablation, not annihilation-specific; the distinctive weld datum is spin collapse, not mass loss.
 
+### M46 — Continuum extraction: the stress tensor `Πᵢⱼ` and the wavefront
+
+Pure-harness measurements (`logs/stress-tensor.mjs`, `logs/wavefront-isotropy.mjs`, `logs/wound-tensor.mjs`): `Πᵢⱼ = Σ cᵢcⱼn_c` computed over channel populations — no engine changes, no presumed law.
+
+- **Equation of state:** on a settled driven ember, `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% outside the core — the moving component is a nearly ideal isotropic gas with `P ≈ ρ⟨c_x²⟩`, `⟨c_x²⟩ = 16/18` in lattice units.
+- **Wavefront:** a point pulse expands as **two ballistic shells** — axials at reach 2t, diagonals at √2t — each isotropic within ~8% in-class. The lattice is anisotropic across speed classes *by construction*; "isotropy" claims must name the shell.
+- **Wound shear:** stored Lz surfaces as a `Π_xy` quadrupole *in the directional rest bins* (NE−/SE+/NW+ sign pattern confirmed; the fourth quadrant's `(1,−1,0)` bin was empty — population asymmetry, not a sign violation). `Π_xy^mov ≡ 0` — the shear lives in storage, not in flight. Most tangential momentum parks in axial channels (`c_xc_y = 0`, invisible to the off-diagonal tensor), so `Π_xy` sees only the diagonal-bin slice — a lattice quantization caveat, not missing physics.
+
+### M47 — The transaction ledger (`meso3i_ev`)
+
+Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta: drag-park, pair-bind, gated emit, Q-capture, boundary drain, photon eject, congestion reflect (`logs/transactions.mjs`). An entropy-production *analog* — a count of RNG-mediated or boundary events that cannot be replayed backward, not a computed `dS/dt`.
+
+- **Driven ember:** sustained ~3,700 transactions per 20t window (park ≈ emit ≈ drain ~1,200 each) — the lump is a standing dissipative structure, a throughput engine, not a static object.
+- **Wound fossil after drive-off:** every counter decays to **exactly zero** by t≈160 while 475 rest mass sits frozen — the non-radiating ground state is literally transaction-silent, not a dynamic equilibrium.
+- **Free pulse:** transactions occur only when the front reaches the drain — ballistic vacuum transport produces *zero* irreversible events. Irreversibility lives at contact, not in flight.
+
 **Standing conclusion:** the substrate now produces matter that **stores angular momentum, acquires it from collisions and from light, shields it behind a latency barrier, transfers it by contact, and annihilates it under internal counter-rotation** — while provably refusing perpetual circulation. "Atoms, not whirlpools" is the measured ontology.
 
 ## Milestone Index
@@ -204,6 +220,8 @@ Two adjacent wound lumps (±4-cell gap, drive-coupled interface), 300t:
 | M43 | Grazing collisions and absorbed light write spin (YORP) | `1b1f88c` |
 | M44 | No live circulation — bucket brigade subcritical, all regimes | `a622a8b` |
 | M45 | Spin induction by contact; internal counter-rotation annihilates | `1b1f88c` |
+| M46 | Πᵢⱼ extracted: P/ρ→~0.98 ideal gas; two-shell wavefront; wound shear quadrupole in rest bins | `1204e4f` |
+| M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 
 ## The Picture That Emerges
 
