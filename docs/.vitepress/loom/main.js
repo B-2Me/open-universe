@@ -520,7 +520,7 @@ export async function initLoomSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2, pair: false,
+    phot: 2, pair: false, drest: 0,
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
   // boot state: a cold lump at center — parked heat, inert in vacuum
@@ -666,6 +666,12 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-bou]', 'input', e => { ui.bou = +e.target.value; readout(e); });
   bind('[data-bov]', 'input', e => { ui.bov = +e.target.value; readout(e); });
   bind('[data-phot]', 'change', e => { ui.phot = +e.target.value; wasm._meso3i_phot(ui.phot); });
+  bind('[data-drest]', 'change', e => {
+    ui.drest = +e.target.value;
+    wasm._meso3i_drest(ui.drest);
+    say(ui.drest ? 'directional rest — parked flux keeps its channel: wound mass can store rotation'
+                 : 'scalar rest — parked heat forgets which way it was going');
+  });
   bind('[data-coll]', 'change', e => { wasm._meso3i_collmode(+e.target.value); });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;

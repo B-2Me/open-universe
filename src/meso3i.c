@@ -79,6 +79,17 @@ static int      ILAT = 1;            /* emission latency: carrier-gated radiatio
                                         survive transient flux — only sustained
                                         transit unwinds. */
 static uint8_t *iLT;                 /* per-site consecutive-transit counter */
+static int      IDREST;              /* directional rest ("frozen flux"): a
+                                        friction-parked quantum lands in rest[c],
+                                        the bin for the channel it was riding,
+                                        and carrier-gated emission returns it to
+                                        that same channel — momentum stored on
+                                        park, handed back on emit. The only
+                                        candidate so far for a wound state: an
+                                        Lz imbalance survives inside parked
+                                        mass instead of smearing to a scalar.
+                                        0 = canonical scalar rest bin. */
+static uint8_t *iRA, *iRB;           /* directional rest bins [site][IMOV] */
 static int      IPHN;                /* live photon count — photon sweep skipped at 0 */
 static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV + c]: directional,
                                         massless, non-colliding messengers */
@@ -152,7 +163,10 @@ int meso3i_init(int w, int h, int d, int axial) {
     iPA = calloc((size_t)IN * IMOV, 1);
     iPB = calloc((size_t)IN * IMOV, 1);
     iLT = calloc((size_t)IN, 1);
-    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT) return -2;
+    iRA = calloc((size_t)IN * IMOV, 1);
+    iRB = calloc((size_t)IN * IMOV, 1);
+    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT ||
+        !iRA || !iRB) return -2;
     build_pairs();
     return 0;
 }
@@ -165,6 +179,8 @@ void meso3i_clear(void) {
     memset(iPA, 0, (size_t)IN * IMOV);
     memset(iPB, 0, (size_t)IN * IMOV);
     memset(iLT, 0, (size_t)IN);
+    memset(iRA, 0, (size_t)IN * IMOV);
+    memset(iRB, 0, (size_t)IN * IMOV);
     IPHN = 0;
     ITICK = 0;
 }
@@ -185,6 +201,19 @@ void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
+void meso3i_drest(int m) { IDREST = m; }
+/* parked population in the directional bins at a site — iRA is the
+ * canonical (post-swap) plane; iRB is only coherent mid-tick */
+static int drest_at(const uint8_t *base, int si) {
+    const uint8_t *dr = base + (size_t)si * IMOV;
+    int s = 0;
+    for (int c = 0; c < IMOV; c++) s += dr[c];
+    return s;
+}
+uint8_t meso3i_rget(int x, int y, int z, int c) {
+    if (c < 0 || c >= IMOV) return 0;
+    return iRA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV + c];
+}
 
 /* photon channel access — live parity only, like meso3i_set. Photons
  * carry direction (their channel) but no mass and never collide. */
@@ -307,11 +336,18 @@ static void collide_node(uint8_t *n, int si) {
      * unwind what it just wound.
      * IPHOT==1 (catalyst): a transiting photon field licenses the same
      * gate without contributing mass — a massless carrier probe. */
-    if (IFRICM && rest && (IFRICM > 0 || iLT[si] >= ILAT ||
-                           (IPHOT == 1 && phot_at(si)))) {
+    int dsum = IDREST ? drest_at(iRA, si) : 0;
+    int parked = n[INCH - 1] + dsum;
+    if (IFRICM && parked && (IFRICM > 0 || iLT[si] >= ILAT ||
+                             (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
-        for (int u = 0; u < n[INCH - 1]; u++)
-            if (irnd() % (4 * k) == 0) {
+        uint8_t *dr = iRA + (size_t)si * IMOV;
+        for (int u = 0; u < n[INCH - 1] + dsum; u++) {
+            if (irnd() % (4 * k) != 0) continue;
+            int tot = n[INCH - 1] + dsum;
+            int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
+            if (pick < n[INCH - 1]) {
+                /* scalar bin: canonical flagged emission */
                 if (IPAIR && n[INCH - 1] >= 2) {
                     /* pair emission: rest sheds as a back-to-back
                      * antipodal pair — zero net momentum, honest decay */
@@ -321,19 +357,35 @@ static void collide_node(uint8_t *n, int si) {
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
                 }
+            } else {
+                /* directional bin: emit back onto the channel it parked
+                 * on — the momentum stored at park is handed back */
+                int w = pick - n[INCH - 1], c = 0;
+                for (; c < IMOV - 1; c++) { if (w < dr[c]) break; w -= dr[c]; }
+                dr[c]--; dsum--;
+                n[c]++;
             }
+        }
     }
     /* pair capture (IPAIR): a populated antipodal pair may bind into
      * rest mass — the wind side of the cycle. Zero net momentum either
      * way; binding needs no congestion, just two quanta arriving
-     * head-on. Rate ~1/(4k) per pair, mirroring the emission clock. */
+     * head-on. Rate ~1/(4k) per pair, mirroring the emission clock.
+     * IDREST: each quantum parks on its own channel — winding stores
+     * the pair's axis, not just its mass. */
     if (IPAIR) {
         int k = IFRICM ? (IFRICM < 0 ? -IFRICM : IFRICM) : 4;
         for (int c = 0; c + 1 < IMOV; c += 2)
             if (n[c] && n[c + 1] && irnd() % (4 * k) == 0) {
                 n[c]--; n[c + 1]--;
-                uint32_t r = n[INCH - 1] + 2;
-                n[INCH - 1] = r > 255 ? 255 : (uint8_t)r;
+                if (IDREST) {
+                    uint8_t *dr = iRA + (size_t)si * IMOV;
+                    if (dr[c] < 255) dr[c]++;
+                    if (dr[c + 1] < 255) dr[c + 1]++;
+                } else {
+                    uint32_t r = n[INCH - 1] + 2;
+                    n[INCH - 1] = r > 255 ? 255 : (uint8_t)r;
+                }
             }
     }
     if (m < 2) return;
@@ -572,6 +624,7 @@ void meso3i_tick(void) {
     /* 3. stream: rest stays; moving quanta go direct (DWELL=1) or into
      *    the edge delay line at stage DWELL-1 */
     memset(iB, 0, (size_t)IN * INCH);
+    if (IDREST) memcpy(iRB, iRA, (size_t)IN * IMOV);   /* parked flux stays put */
     for (int z = 0; z < ID; z++)
     for (int y = 0; y < IH; y++)
     for (int x = 0; x < IW; x++) {
@@ -599,8 +652,15 @@ void meso3i_tick(void) {
                  * congested node sheds momentum — the quantum lands in the
                  * destination's REST channel as parked heat. Entry rate ∝
                  * inflow×congestion; exit only via slow collision re-picks.
-                 * Momentum absorbed by the network (flagged, inelastic). */
-                iB[ni * INCH + INCH - 1] += n[c];
+                 * Momentum absorbed by the network (flagged, inelastic).
+                 * IDREST: park on the channel's own rest bin instead —
+                 * "frozen flux": momentum stored, not absorbed. */
+                if (IDREST) {
+                    uint32_t v = iRB[(size_t)ni * IMOV + c] + n[c];
+                    iRB[(size_t)ni * IMOV + c] = v > 255 ? 255 : (uint8_t)v;
+                } else {
+                    iB[ni * INCH + INCH - 1] += n[c];
+                }
                 continue;
             }
             if (IREFL && (int)(iR[ni] + iQ[ni]) >= IREFL) {
@@ -643,9 +703,25 @@ void meso3i_tick(void) {
                               iwrap(z + ICV[c][2], ID));
                 if (IPHOT == 2) {
                     int ri = ni * INCH + INCH - 1;
+                    int dsum = IDREST ? drest_at(iRB, ni) : 0;
+                    int parked = iB[ri] + dsum;
                     for (int u = 0; u < p; u++)
-                        if (iB[ri] && (int)(irnd() & 255) < iB[ri]) {
-                            iB[ri]--;
+                        if (parked && (int)(irnd() & 255) < parked) {
+                            /* eject into the photon's channel — the
+                             * photon fixes the direction either way;
+                             * draw proportionally from scalar vs its
+                             * directional bins */
+                            int pick = parked > iB[ri]
+                                ? (int)(irnd() % (uint32_t)parked) : 0;
+                            if (pick < iB[ri]) {
+                                iB[ri]--;
+                            } else {
+                                uint8_t *dr = iRB + (size_t)ni * IMOV;
+                                int w = pick - iB[ri], c2 = 0;
+                                for (; c2 < IMOV - 1; c2++) { if (w < dr[c2]) break; w -= dr[c2]; }
+                                dr[c2]--;
+                            }
+                            parked--;
                             int di = ni * INCH + c;
                             uint32_t v = iB[di] + 1;
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
@@ -661,6 +737,7 @@ void meso3i_tick(void) {
     }
 
     uint8_t *t = iA; iA = iB; iB = t;
+    if (IDREST) { uint8_t *tr = iRA; iRA = iRB; iRB = tr; }
 }
 
 void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
@@ -672,6 +749,18 @@ void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
             x_ += (int64_t)n[c] * ICV[c][0];
             y_ += (int64_t)n[c] * ICV[c][1];
             z_ += (int64_t)n[c] * ICV[c][2];
+        }
+        if (IDREST) {
+            /* parked flux still carries its stored momentum — count it
+             * honestly: under IDREST a friction park is momentum-neutral
+             * for the field (stored, not absorbed by the network) */
+            const uint8_t *dr = iRA + (size_t)s * IMOV;
+            for (int c = 0; c < IMOV; c++) {
+                m += dr[c];
+                x_ += (int64_t)dr[c] * ICV[c][0];
+                y_ += (int64_t)dr[c] * ICV[c][1];
+                z_ += (int64_t)dr[c] * ICV[c][2];
+            }
         }
     }
     for (int s = 0; s < IN; s++) {
@@ -692,6 +781,7 @@ void meso3i_hist(uint64_t *out) {
     for (int s = 0; s < IN; s++) {
         const uint8_t *n = iA + (size_t)s * INCH;
         for (int c = 0; c < INCH; c++) out[c] += n[c];
+        if (IDREST) out[INCH - 1] += drest_at(iRA, s);
     }
 }
 
@@ -718,7 +808,7 @@ const uint8_t *meso3i_rg_refresh(void) {
         const uint8_t *n = iA + (size_t)s * INCH;
         int mov = 0;
         for (int c = 0; c < IMOV; c++) mov += n[c];
-        int rest = n[INCH - 1];
+        int rest = n[INCH - 1] + (IDREST ? drest_at(iRA, s) : 0);
         iRG[s * 3]     = (uint8_t)(mov > 255 ? 255 : mov);
         iRG[s * 3 + 1] = (uint8_t)rest;
         if (IPHN) {
@@ -756,6 +846,7 @@ void meso3i_drain_edge(int t) {
             z >= t && z < ID - t) continue;
         int si = iidx(x, y, z);
         memset(iA + (size_t)si * INCH, 0, INCH);
+        if (IDREST) memset(iRA + (size_t)si * IMOV, 0, IMOV);
         if (IPHN) {
             uint8_t *pp = iPA + (size_t)si * IMOV;
             for (int c = 0; c < IMOV; c++) IPHN -= pp[c];
@@ -775,7 +866,7 @@ static int      iSNAP_N, iSNAP_CH, iSNAP_TICK, iSNAP_PHN;
 static uint32_t iSNAP_RNG;
 
 void meso3i_save(void) {
-    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV + (size_t)IN * 3
+    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV * 2 + (size_t)IN * 3
                     + (size_t)IN * IMOV * IKMAX * sizeof(uint16_t);
     if (iSNAP_SZ < sz) {
         free(iSNAP);
@@ -786,6 +877,7 @@ void meso3i_save(void) {
     uint8_t *p = iSNAP;
     memcpy(p, iA,  (size_t)IN * INCH);                        p += (size_t)IN * INCH;
     memcpy(p, iPA, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(p, iRA, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
     memcpy(p, iLT, (size_t)IN);                               p += IN;
     memcpy(p, iQ,  (size_t)IN);                               p += IN;
     memcpy(p, iPH, (size_t)IN);                               p += IN;
@@ -798,6 +890,7 @@ int meso3i_restore(void) {
     uint8_t *p = iSNAP;
     memcpy(iA,  p, (size_t)IN * INCH);                        p += (size_t)IN * INCH;
     memcpy(iPA, p, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(iRA, p, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
     memcpy(iLT, p, (size_t)IN);                               p += IN;
     memcpy(iQ,  p, (size_t)IN);                               p += IN;
     memcpy(iPH, p, (size_t)IN);                               p += IN;

@@ -126,6 +126,10 @@ onUnmounted(() => {
           <option value="breath">breathing core (☀ + Rad)</option>
           <option value="comet">comet ablation (➤ off-center)</option>
         </select></label>
+        <label class="loom-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
+          <option value="0" selected>scalar</option>
+          <option value="1">directional</option>
+        </select></label>
         <label class="loom-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>
