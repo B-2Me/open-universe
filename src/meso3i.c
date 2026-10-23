@@ -72,6 +72,13 @@ static int      IPAIR;               /* antipodal pairs: 0 off, 1 on — momentu
                                         wind/unwind. Rest radiates as back-to-back
                                         channel pairs (zero net momentum); populated
                                         antipodal pairs may bind back into rest. */
+static int      ILAT = 1;            /* emission latency: carrier-gated radiation
+                                        fires only after m>0 has persisted ILAT
+                                        consecutive ticks at the node. 1 = instant
+                                        (canonical). >1 lets freshly-bound mass
+                                        survive transient flux — only sustained
+                                        transit unwinds. */
+static uint8_t *iLT;                 /* per-site consecutive-transit counter */
 static int      IPHN;                /* live photon count — photon sweep skipped at 0 */
 static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV + c]: directional,
                                         massless, non-colliding messengers */
@@ -144,7 +151,8 @@ int meso3i_init(int w, int h, int d, int axial) {
     iPH = calloc((size_t)IN, 1);
     iPA = calloc((size_t)IN * IMOV, 1);
     iPB = calloc((size_t)IN * IMOV, 1);
-    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB) return -2;
+    iLT = calloc((size_t)IN, 1);
+    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT) return -2;
     build_pairs();
     return 0;
 }
@@ -156,6 +164,7 @@ void meso3i_clear(void) {
     memset(iPH, 0, (size_t)IN);
     memset(iPA, 0, (size_t)IN * IMOV);
     memset(iPB, 0, (size_t)IN * IMOV);
+    memset(iLT, 0, (size_t)IN);
     IPHN = 0;
     ITICK = 0;
 }
@@ -175,6 +184,7 @@ void meso3i_friction(int cap) { IFRIC = cap; }
 void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
 void meso3i_pair(int m) { IPAIR = m; }
+void meso3i_lat(int n) { ILAT = n; }
 
 /* photon channel access — live parity only, like meso3i_set. Photons
  * carry direction (their channel) but no mass and never collide. */
@@ -285,13 +295,19 @@ static void collide_node(uint8_t *n, int si) {
     int m = 0;
     for (int c = 0; c < INCH; c++) m += n[c];
     m -= rest;                       /* inert heat: rest mass does not collide */
+    /* transit dwell bookkeeping: consecutive ticks with moving mass
+     * present. collide_node runs for every site, so empty sites reset. */
+    if (m > 0) { if (iLT[si] < 255) iLT[si]++; } else iLT[si] = 0;
     /* radiative boil-off: parked heat re-emits into moving channels.
      * IFRICM>0: unconditional blackbody rate ~1/(4k) per quantum.
      * IFRICM<0: carrier-gated — emission only while moving mass
      * transits the node (heat needs a carrier; inert in true vacuum).
+     * ILAT>1: the carrier must DWELL — transit must persist ILAT
+     * consecutive ticks before the gate opens; a passing pair can't
+     * unwind what it just wound.
      * IPHOT==1 (catalyst): a transiting photon field licenses the same
      * gate without contributing mass — a massless carrier probe. */
-    if (IFRICM && rest && (IFRICM > 0 || m > 0 ||
+    if (IFRICM && rest && (IFRICM > 0 || iLT[si] >= ILAT ||
                            (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
         for (int u = 0; u < n[INCH - 1]; u++)

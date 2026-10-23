@@ -124,6 +124,7 @@ onUnmounted(() => {
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
         <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8"><output>8</output></label>
         <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
+        <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
         <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>

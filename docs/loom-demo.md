@@ -35,7 +35,7 @@ What you see on boot is a cold lump at center — parked amber heat, inert in va
 - **⌖ (vortex tool)** — arm it, tap the slice plane: injects two concentric rings of moving quanta on the best-tangent equatorial channels — a circulation seed. Watch whether it holds, shears, or thermalizes into parked heat. This is the knot question.
 - **● (rock tool)** — arm it, tap the slice plane: drops a cold rest-mass lump — the proven-persistent control case.
 - **⧉ / ⤺** — snapshot the field, perturb, rewind.
-- **Tuning** — **Slice** + **Width** give a living MRI scan; **Drag** is the transit-friction congestion threshold (IFRIC); **Rad** sets the radiation gate strength (carrier-gated: heat vents only under transit); **Collide** picks the collision variant (uniform / shell-weighted / forward-bias); **Speed** caps ticks per second.
+- **Tuning** — **Slice** + **Width** give a living MRI scan; **Drag** is the transit-friction congestion threshold (IFRIC); **Rad** sets the radiation gate strength (carrier-gated: heat vents only under transit); **Lat** sets emission latency — how many *consecutive* ticks a carrier must dwell at a node before rest can radiate (1 = instant, the canon; raise it and sporadic flux stops unwinding parked mass — measured: a pulse every 20t leaks a 24k lump to 7.7k at Lat 1 but leaves it frozen and slowly growing at Lat 8); **Collide** picks the collision variant (uniform / shell-weighted / forward-bias); **Speed** caps ticks per second.
 
 ::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts
 

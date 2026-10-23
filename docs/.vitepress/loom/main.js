@@ -558,6 +558,7 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-unsnap]', 'click', () => { if (wasm._meso3i_restore() === 0) { upload(); dirty = true; } });
   bind('[data-fric]', 'input', e => { wasm._meso3i_friction(+e.target.value); readout(e); });
   bind('[data-rad]', 'input', e => { wasm._meso3i_fricmode(-(+e.target.value)); readout(e); });
+  bind('[data-lat]', 'input', e => { wasm._meso3i_lat(+e.target.value); readout(e); });
   bind('[data-phot]', 'change', e => { ui.phot = +e.target.value; wasm._meso3i_phot(ui.phot); });
   bind('[data-coll]', 'change', e => { wasm._meso3i_collmode(+e.target.value); });
   bind('[data-spin]', 'click', e => {
