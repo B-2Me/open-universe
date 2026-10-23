@@ -119,6 +119,7 @@ onUnmounted(() => {
           <option value="0">off</option>
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
+          <option value="3">absorbed</option>
         </select></label>
         <label class="loom-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
           <option value="" selected>scene…</option>

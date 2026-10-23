@@ -701,6 +701,40 @@ void meso3i_tick(void) {
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
+                if (IPHOT == 3) {
+                    /* absorbed photon (radiation pressure / YORP mode):
+                     * the photon is CONSUMED on contact with parked mass —
+                     * its momentum transfers into the mass ledger as an
+                     * ejected quantum on the photon's own channel, drawn
+                     * proportionally from scalar vs directional rest.
+                     * Momentum closes if photons are counted (totals):
+                     * -p leaves the light field, +p enters the matter
+                     * field. Light can write spin where it grazes. */
+                    int ri = ni * INCH + INCH - 1;
+                    int dsum = IDREST ? drest_at(iRB, ni) : 0;
+                    int parked = iB[ri] + dsum;
+                    int absorbed = 0;
+                    for (int u = 0; u < p; u++)
+                        if (parked && (int)(irnd() & 255) < parked) {
+                            int pick = parked > iB[ri]
+                                ? (int)(irnd() % (uint32_t)parked) : 0;
+                            if (pick < iB[ri]) {
+                                iB[ri]--;
+                            } else {
+                                uint8_t *dr = iRB + (size_t)ni * IMOV;
+                                int w = pick - iB[ri], c2 = 0;
+                                for (; c2 < IMOV - 1; c2++) { if (w < dr[c2]) break; w -= dr[c2]; }
+                                dr[c2]--;
+                            }
+                            parked--; absorbed++;
+                            int di = ni * INCH + c;
+                            uint32_t v = iB[di] + 1;
+                            iB[di] = v > 255 ? 255 : (uint8_t)v;
+                        }
+                    p -= absorbed;
+                    IPHN -= absorbed;
+                    if (!p) continue;
+                }
                 if (IPHOT == 2) {
                     int ri = ni * INCH + INCH - 1;
                     int dsum = IDREST ? drest_at(iRB, ni) : 0;
@@ -760,6 +794,16 @@ void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
                 x_ += (int64_t)dr[c] * ICV[c][0];
                 y_ += (int64_t)dr[c] * ICV[c][1];
                 z_ += (int64_t)dr[c] * ICV[c][2];
+            }
+        }
+        if (IPHOT == 3) {
+            /* photon momentum counts in the ledger under absorbed mode —
+             * absorption then closes: -p in flight, +p as ejecta */
+            const uint8_t *pp = iPA + (size_t)s * IMOV;
+            for (int c = 0; c < IMOV; c++) {
+                x_ += (int64_t)pp[c] * ICV[c][0];
+                y_ += (int64_t)pp[c] * ICV[c][1];
+                z_ += (int64_t)pp[c] * ICV[c][2];
             }
         }
     }

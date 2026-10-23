@@ -167,7 +167,9 @@ if emcc meso3i.c \
     '_meso3i_qset',
     '_meso3i_totals',
     '_meso3i_drest',
-    '_meso3i_rget'
+    '_meso3i_rget',
+    '_malloc',
+    '_free'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/ember/meso3i.js; then
