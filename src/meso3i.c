@@ -102,6 +102,22 @@ static uint16_t GWGT[400];
 static uint16_t GOFF[300], GLEN[300];
 static int      NGRP;
 
+/* irreversible contact transactions, counted in quanta per class.
+ * These are the engine's entropy-production analog: RNG-mediated or
+ * boundary events that cannot be replayed backward. This is an event
+ * count, not a computed entropy — it measures HOW MANY contact
+ * transactions occurred, not dS/dt.
+ *   0 drag-park   transit hop shed into rest by congestion (IFRIC)
+ *   1 pair-bind   antipodal pair captured into rest (IPAIR)
+ *   2 emit        parked mass vented through the radiation gate
+ *   3 qcap        moving mass absorbed by the Q core register
+ *   4 drain       mass quanta zeroed at the open boundary shell
+ *   5 peject      parked mass ejected by photon contact (IPHOT 2/3)
+ *   6 reflect     hop refused by congestion wall (IREFL) */
+static uint64_t iEV[7];
+double meso3i_ev(int k)     { return (k >= 0 && k < 7) ? (double)iEV[k] : 0; }
+void   meso3i_ev_reset(void) { memset(iEV, 0, sizeof iEV); }
+
 static uint32_t irng = 0xC0FFEEu;
 static inline uint32_t irnd(void) {
     irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
@@ -181,6 +197,7 @@ void meso3i_clear(void) {
     memset(iLT, 0, (size_t)IN);
     memset(iRA, 0, (size_t)IN * IMOV);
     memset(iRB, 0, (size_t)IN * IMOV);
+    memset(iEV, 0, sizeof iEV);
     IPHN = 0;
     ITICK = 0;
 }
@@ -359,8 +376,10 @@ static void collide_node(uint8_t *n, int si) {
                     int c = irnd() % IMOV;
                     n[INCH - 1] -= 2;
                     n[c]++; n[c ^ 1]++;
+                    iEV[2] += 2;
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
+                    iEV[2]++;
                 }
             } else {
                 /* directional bin: emit back onto the channel it parked
@@ -369,6 +388,7 @@ static void collide_node(uint8_t *n, int si) {
                 for (; c < IMOV - 1; c++) { if (w < dr[c]) break; w -= dr[c]; }
                 dr[c]--; dsum--;
                 n[c]++;
+                iEV[2]++;
             }
         }
     }
@@ -383,6 +403,7 @@ static void collide_node(uint8_t *n, int si) {
         for (int c = 0; c + 1 < IMOV; c += 2)
             if (n[c] && n[c + 1] && irnd() % (4 * k) == 0) {
                 n[c]--; n[c + 1]--;
+                iEV[1] += 2;
                 if (IDREST) {
                     uint8_t *dr = iRA + (size_t)si * IMOV;
                     if (dr[c] < 255) dr[c]++;
@@ -410,6 +431,7 @@ static void collide_node(uint8_t *n, int si) {
             ICV[i][1] + ICV[j][1] == 0 && ICV[i][2] + ICV[j][2] == 0 &&
             (!IGATE || m >= IGATE) && irnd() % 2 == 0) {
             n[i]--; n[j]--;
+            iEV[3] += 2;
             uint32_t q = iQ[si] + 2;
             iQ[si] = q > 255 ? 255 : (uint8_t)q;
             continue;
@@ -650,6 +672,7 @@ void meso3i_tick(void) {
             if (qcapture(ni)) {
                 uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
                 iQ[ni] = q > 255 ? 255 : (uint8_t)q;
+                iEV[3] += n[c];
                 continue;
             }
             if (IFRIC && (int)iR[ni] >= IFRIC && irnd() % 2 == 0) {
@@ -666,6 +689,7 @@ void meso3i_tick(void) {
                 } else {
                     iB[ni * INCH + INCH - 1] += n[c];
                 }
+                iEV[0] += n[c];
                 continue;
             }
             if (IREFL && (int)(iR[ni] + iQ[ni]) >= IREFL) {
@@ -677,6 +701,7 @@ void meso3i_tick(void) {
                 int di = si * INCH + (c ^ 1);
                 uint32_t v = iB[di] + n[c];
                 iB[di] = v > 255 ? 255 : (uint8_t)v;
+                iEV[6] += n[c];
                 continue;
             }
             int di = ni * INCH + c;
@@ -738,6 +763,7 @@ void meso3i_tick(void) {
                         }
                     p -= absorbed;
                     IPHN -= absorbed;
+                    iEV[5] += absorbed;
                     if (!p) continue;
                 }
                 if (IPHOT == 2) {
@@ -761,6 +787,7 @@ void meso3i_tick(void) {
                                 dr[c2]--;
                             }
                             parked--;
+                            iEV[5]++;
                             int di = ni * INCH + c;
                             uint32_t v = iB[di] + 1;
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
@@ -894,8 +921,14 @@ void meso3i_drain_edge(int t) {
         if (x >= t && x < IW - t && y >= t && y < IH - t &&
             z >= t && z < ID - t) continue;
         int si = iidx(x, y, z);
+        const uint8_t *na = iA + (size_t)si * INCH;
+        for (int c = 0; c < INCH; c++) iEV[4] += na[c];
+        if (IDREST) {
+            const uint8_t *dr = iRA + (size_t)si * IMOV;
+            for (int c = 0; c < IMOV; c++) iEV[4] += dr[c];
+            memset(iRA + (size_t)si * IMOV, 0, IMOV);
+        }
         memset(iA + (size_t)si * INCH, 0, INCH);
-        if (IDREST) memset(iRA + (size_t)si * IMOV, 0, IMOV);
         if (IPHN) {
             uint8_t *pp = iPA + (size_t)si * IMOV;
             for (int c = 0; c < IMOV; c++) IPHN -= pp[c];
