@@ -764,16 +764,44 @@ void meso3i_drain_edge(int t) {
     }
 }
 
-/* snapshot = the channel buffer only (dwell lines, Q regs and photons
- * excluded — Ember runs DWELL=1/IQMODE=0 where those are inert, and a
- * beam is cheap to re-shine) */
+/* snapshot = the full cross-tick state: mass channels, photon plane,
+ * latency counters, dwell delay lines (in-flight mass), Q + phase
+ * registers, and the tick clock / photon count / RNG state so a
+ * restore replays bit-for-bit. iB/iPB are scratch write buffers and
+ * iR is recaptured at the top of every tick — neither persists. */
 static uint8_t *iSNAP;
+static size_t   iSNAP_SZ;
+static int      iSNAP_N, iSNAP_CH, iSNAP_TICK, iSNAP_PHN;
+static uint32_t iSNAP_RNG;
+
 void meso3i_save(void) {
-    if (!iSNAP) iSNAP = malloc((size_t)IN * INCH);
-    memcpy(iSNAP, iA, (size_t)IN * INCH);
+    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV + (size_t)IN * 3
+                    + (size_t)IN * IMOV * IKMAX * sizeof(uint16_t);
+    if (iSNAP_SZ < sz) {
+        free(iSNAP);
+        iSNAP = malloc(sz);
+        iSNAP_SZ = iSNAP ? sz : 0;
+    }
+    if (!iSNAP) return;
+    uint8_t *p = iSNAP;
+    memcpy(p, iA,  (size_t)IN * INCH);                        p += (size_t)IN * INCH;
+    memcpy(p, iPA, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(p, iLT, (size_t)IN);                               p += IN;
+    memcpy(p, iQ,  (size_t)IN);                               p += IN;
+    memcpy(p, iPH, (size_t)IN);                               p += IN;
+    memcpy(p, iD,  (size_t)IN * IMOV * IKMAX * sizeof(uint16_t));
+    iSNAP_N = IN; iSNAP_CH = INCH;
+    iSNAP_TICK = ITICK; iSNAP_PHN = IPHN; iSNAP_RNG = irng;
 }
 int meso3i_restore(void) {
-    if (!iSNAP) return -1;
-    memcpy(iA, iSNAP, (size_t)IN * INCH);
+    if (!iSNAP || iSNAP_N != IN || iSNAP_CH != INCH) return -1;
+    uint8_t *p = iSNAP;
+    memcpy(iA,  p, (size_t)IN * INCH);                        p += (size_t)IN * INCH;
+    memcpy(iPA, p, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(iLT, p, (size_t)IN);                               p += IN;
+    memcpy(iQ,  p, (size_t)IN);                               p += IN;
+    memcpy(iPH, p, (size_t)IN);                               p += IN;
+    memcpy(iD,  p, (size_t)IN * IMOV * IKMAX * sizeof(uint16_t));
+    ITICK = iSNAP_TICK; IPHN = iSNAP_PHN; irng = iSNAP_RNG;
     return 0;
 }
