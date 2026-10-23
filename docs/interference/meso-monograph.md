@@ -118,6 +118,7 @@ The mechanism class — *resting mass exchanging momentum with vacuum through di
 - **Native vs. engineered:** every IFRIC/IFRICM result is channel-*native* (no extra state) but flag-*gated* (authored mechanics, not emergent collisions). The substrate gained a **transit-friction law**; friction did not "emerge" — it was coded, measured, and audited.
 - **Momentum accounting:** IFRIC absorbs transiting momentum into the network (flagged). Mass is exact; momentum is not — that is what friction means.
 - **Retracted:** single-spin `planck3` campaign mechanics (M1–M31) — removed from the record as an implementation artifact; history retained in git.
+- **Downgraded (M47b):** M37's "mutual attraction via reciprocal ablation" — controlled re-measurement with solo-lump baselines shows the convergence is drive-centric infall; the pairwise residual is <~5×10⁻⁴ cells/t at gaps 2–14. Radiation-shadow gravity unproven at this scale.
 - **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IREFL, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant.
 - **Branch ledger (`loom-meso`):** IPHOT/IPHOT=3 absorption, IPAIR, ILAT and IDREST are flag-gated authored mechanics in the same honesty class as IFRIC. Under IDREST, `totals()` counts stored directional momentum — a friction park is momentum-neutral (stored, not absorbed). Under IPHOT=3, photon momentum joins the ledger so absorption closes exactly.
 
@@ -186,6 +187,14 @@ Pure-harness measurements (`logs/stress-tensor.mjs`, `logs/wavefront-isotropy.mj
 - **Wavefront:** a point pulse expands as **two ballistic shells** — axials at reach 2t, diagonals at √2t — each isotropic within ~8% in-class. The lattice is anisotropic across speed classes *by construction*; "isotropy" claims must name the shell.
 - **Wound shear:** stored Lz surfaces as a `Π_xy` quadrupole *in the directional rest bins* (NE−/SE+/NW+ sign pattern confirmed; the fourth quadrant's `(1,−1,0)` bin was empty — population asymmetry, not a sign violation). `Π_xy^mov ≡ 0` — the shear lives in storage, not in flight. Most tangential momentum parks in axial channels (`c_xc_y = 0`, invisible to the off-diagonal tensor), so `Π_xy` sees only the diagonal-bin slice — a lattice quantization caveat, not missing physics.
 
+### M47b — The drift-curve null: M37 revisited
+
+Controlled re-measurement of the M37 "mutual attraction" (`logs/m37-drift.mjs`): two R3/Q64 scalar lumps at `±sep/2` under the 18-spoke drive, centroid slopes over 800t, *each position also measured solo* to subtract the drive-geometry baseline.
+
+- Pair closing rates are real (0.0009–0.004 cells/t) — **but lone lumps at the same positions close at the same rate**. The mutual residual `v_pair − v_baseline` is ~±5×10⁻⁴ cells/t, non-monotonic, fits neither `1/r` nor `e^(−r/λ)`.
+- The convergent field belongs to the **drive**, not the pair: lone-lump inward drift scales superlinearly with distance from center (+0.00012 @ 4 cells → +0.00235 @ 10). Lumps fall toward the flux source — a drive-centric convergence gradient, not a two-body force.
+- **Correction to the record:** mutual shadowing, if present, is below ~5×10⁻⁴ cells/t at surface gaps 2–14 — an order of magnitude under the drive background. M37's "reciprocal-ablation attraction" is downgraded to *drive-mediated convergence with no measurable pairwise force above noise*. Radiation-shadow gravity remains unproven at this scale.
+
 ### M47 — The transaction ledger (`meso3i_ev`)
 
 Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta: drag-park, pair-bind, gated emit, Q-capture, boundary drain, photon eject, congestion reflect (`logs/transactions.mjs`). An entropy-production *analog* — a count of RNG-mediated or boundary events that cannot be replayed backward, not a computed `dS/dt`.
@@ -211,7 +220,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M34 | Remnant decay = pure exponential, no metastable floor | `2f28e7b` |
 | M35 | Carrier-gated radiation → persistent re-wakeable matter | `6c23a03` |
 | M36 | Ablation drift — lump migrates toward beam, hemisphere-imaged | `cb41b20`, `f95706a` |
-| M37 | Mutual attraction via reciprocal ablation; contact degenerate | `5a7f8b2`, `4540cc1` |
+| M37 | Apparent mutual approach — see M47b: drive-centric infall, not pairwise attraction | `5a7f8b2`, `4540cc1` |
 | M38 | No internal structure — rocks not atoms | `94cbebb` |
 | M39 | Massless photon plane; catalyst/stimulated/absorbed coupling | `b3fa609`, `1b1f88c` |
 | M40 | Pair wind/unwind — binders are carriers; entangled gate | `10d521e` |
@@ -222,6 +231,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M45 | Spin induction by contact; internal counter-rotation annihilates | `1b1f88c` |
 | M46 | Πᵢⱼ extracted: P/ρ→~0.98 ideal gas; two-shell wavefront; wound shear quadrupole in rest bins | `1204e4f` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
+| M47b | Drift-curve null: M37 "attraction" is drive-centric infall; pairwise force <5e-4 cells/t | `1204e4f` |
 
 ## The Picture That Emerges
 

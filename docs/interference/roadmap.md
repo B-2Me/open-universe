@@ -34,9 +34,11 @@ Real, radar-measured phenomena running on the same contact mechanics:
 *   **Light-written spin (M43):** `IPHOT=3` absorbed photons deposit directional momentum into directional rest; a grazing beam spins matter with the correct sign — a YORP-class mechanism.
 *   **Honesty condition:** these are *mechanism matches* in substrate units. Dimensional claims (meters, seconds, Golevka's ~200 m drift) require a bridge that does not yet exist — and asserting one would repeat the CERN error at a smaller scale.
 
-## Step 4: Entropic Gravitational Scaling
+## Step 4: Entropic Gravitational Scaling — *revised by M47b*
 
-M37 measured short-range mutual attraction through reciprocal ablation — a radiation-shadow mechanism, not metric gravity. The next question is quantitative and internal: the force-vs-separation curve, how it scales with lump mass and drive flux, and whether it is consistent with an entropic/screening form. If the curve has a clean functional form, *then* a dimensional bridge becomes discussable.
+M37's apparent mutual attraction was re-measured with single-lump baseline controls (`logs/m37-drift.mjs`): the convergence is **drive-centric infall**, not a pairwise force — lone lumps fall toward the flux source at the same rate as paired ones, and the mutual residual is <~5×10⁻⁴ cells/t at gaps 2–14. Radiation-shadow gravity remains unproven at this scale.
+
+The open question is now sharper: does mutual shadowing exist *at all* in configurations without a centered drive — e.g., a pure translational flux field (plane wave) where shadowing is the only asymmetric term? If a pairwise force can't be isolated there either, "gravity" language leaves the roadmap.
 
 ## Step 5: The Second Law & Decay
 
