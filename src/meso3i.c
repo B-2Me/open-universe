@@ -214,6 +214,11 @@ uint8_t meso3i_rget(int x, int y, int z, int c) {
     if (c < 0 || c >= IMOV) return 0;
     return iRA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV + c];
 }
+void meso3i_rset(int x, int y, int z, int c, uint8_t v) {
+    if (c < 0 || c >= IMOV) return;
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (isite(x, y, z)) iRA[iidx(x, y, z) * IMOV + c] = v;
+}
 
 /* photon channel access — live parity only, like meso3i_set. Photons
  * carry direction (their channel) but no mass and never collide. */

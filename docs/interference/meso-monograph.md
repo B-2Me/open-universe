@@ -4,7 +4,7 @@ title: The Friction Substrate
 
 # The Friction Substrate: A Multichannel Research Monograph
 
-*Consolidated findings from the `meso3i` campaign (M19–M38): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter — with zero registers and zero hidden state. Every claim below is anchored to a commit and a headless C harness; every engineered rule is flagged as such.*
+*Consolidated findings from the `meso3i` campaign (M19–M45): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter — and, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
 
 ---
 
@@ -119,6 +119,66 @@ The mechanism class — *resting mass exchanging momentum with vacuum through di
 - **Momentum accounting:** IFRIC absorbs transiting momentum into the network (flagged). Mass is exact; momentum is not — that is what friction means.
 - **Retracted:** single-spin `planck3` campaign mechanics (M1–M31) — removed from the record as an implementation artifact; history retained in git.
 - **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IREFL, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant.
+- **Branch ledger (`loom-meso`):** IPHOT/IPHOT=3 absorption, IPAIR, ILAT and IDREST are flag-gated authored mechanics in the same honesty class as IFRIC. Under IDREST, `totals()` counts stored directional momentum — a friction park is momentum-neutral (stored, not absorbed). Under IPHOT=3, photon momentum joins the ledger so absorption closes exactly.
+
+## Part VIII — The Structured-Matter Tier (M39–M45, `loom-meso`)
+
+*M38's boundary was drawn for scalar rest. This part measures what happens when the rest state is given the one thing it lacked: a channel identity. All results on the 72×72×36 loom grid, harnesses in `logs/*.mjs`.*
+
+### M39 — The photon field (massless directional plane)
+
+A parallel `u8` population per (site, moving channel): photons carry direction but no mass, never collide, stream at channel speed, drain at the boundary. Coupling modes: `IPHOT 0` uncoupled, `1` catalyst (licenses the carrier-gated emission gate without adding mass), `2` stimulated (each arriving photon may eject a rest quantum into *its own channel*), `3` absorbed (the ejecting photon is consumed — momentum transfers into the mass ledger).
+
+- Ring fossil (727 rest), 150t of a 1-cell +x pencil beam: off → untouched; catalyst → 626; stimulated → 623, with ~528 photons in flight.
+- Thick lump (23.9k) under a plane wave: catalyst −71.5% (isotropic boil, smears); stimulated −67.8% (confined to the beam row — drills a tunnel). No measurable centroid recoil at this scale.
+
+### M40 — Antipodal pair rules (IPAIR)
+
+Momentum-honest wind/unwind: `2·rest ⇄ c + c¹`. Rest radiates back-to-back pairs (zero net momentum); populated antipodal pairs may bind into rest with no congestion requirement.
+
+**Measured caveat — the entanglement theorem:** a colliding antipodal pair *is itself* a carrier, so a binding site opens its own emission gate. Standing head-on collision (300t): rest 75 without pairs, 31 with — capture adds a trickle while the gate it opened drains faster. Under drive, pair emission doubles the ablation rate (two quanta per event). Wind and unwind cannot be separated at a node because both read the same bit: `m>0`.
+
+### M41 — Sustained-transit latency (ILAT)
+
+`iLT`: per-site consecutive-transit counter; the emission gate opens only after `n` straight ticks of `m>0`. One byte of *time* memory, not structure.
+
+- Sparse pulse (1t/20t) vs a 23.9k lump: Lat 1 → 7.7k; Lat 8 → **24,048** (frozen, slightly grows — parking without venting); Lat 24 → 24,064.
+- Sustained drive: Lat 1 → 6.9k; Lat 8 → 23.6k; Lat 24 → 22.1k.
+- Pair-collision site with IPAIR: rest 66 at Lat 1 → **130 at Lat 8** — the first configuration where binding beat decay.
+- Interpretation: parked mass is metastable with an *activation barrier* — sporadic flux scatters, sustained bombardment unwinds. Lumps self-shield: the congested skin parks transients so the interior never sustains transit.
+
+### M42 — Directional rest, `rest[18]` (IDREST) — "frozen flux"
+
+One rest bin per channel: a friction-parked quantum lands in `rest[c]` and re-emits onto channel `c`. Momentum is stored on park and handed back on emit. Scalar rest remains the canonical default.
+
+- **Storage:** canonical vortex seed → scalar: Lz 9,984→0 by t=40 (M38 reconfirmed). Directional: `Lz_park = 4,932` persists to t=200+ — ~half the injected angular momentum frozen into channel-bin imbalance (the rest was lost to pre-park scrambling and drain, not the parking).
+- **Revival:** drive carriers through the wound fossil → `Lz_mov` reappears at 2,317 **with the original sign** — a latent vortex that re-inflates on demand and unwinds honestly under sustained probing (~120t bleed to drain).
+- **Shielding (M41 × M42):** at Lat 16, a sparse probe leaves `Lz_park` exactly untouched; a sustained drive erodes it ~4% while the lump *accretes* the drive into wound mass (parked 588→4,560). Metastable flywheel regime.
+- **Q-register control (M42b):** `IQMODE` condensation tested against the same benchmark — Q is a scalar bin and its antipodal-only capture can't even admit a coherent vortex: `Lz→0` by t≈40 in all modes, Q-total stays 0 under canonical friction (mechanics confirmed live under sustained head-on flux). The scalar trap is *generic*.
+
+### M43 — Writing spin: collisions and light
+
+- **Collision-writ (L→S):** a collimated +x mass beam grazing an R5 lump at impact parameter ±3 writes `Lz_park = −17,671` / `+13,931` (sign correct both flanks; dead-center control ≈0). Orbital momentum converts to stored spin — measured.
+- **Light-writ (absorbed mode, the YORP analog):** a grazing photon beam writes the same sign structure at ~5% magnitude (−521 / +436 at t50): each absorbed photon deposits one quantum's worth of momentum. Ledger audit: mass exactly conserved, ~3,800 px transferred light→matter over 40t, transverse components ≈0.
+
+### M44 — The no-go: no live circulation
+
+A closed channel loop (12-node hexagonal polygon — every hop lands on the next loop site, so emitted quanta are auto-aimed forward) was swept over emission rate, friction, latency, and IDREST. **Every regime collapses `Lz_mov` to zero by t≈40.** The bucket brigade is subcritical *by construction*: emission needs `m>0` (a carrier present), but every hop either parks the carrier or passes it through without production — once flux hits zero nothing re-ignites. The substrate has matter that *remembers* rotation but cannot *be* rotation: a stationary ground state, not a perpetual whirlpool.
+
+### M45 — Spin-contact dynamics
+
+Two adjacent wound lumps (±4-cell gap, drive-coupled interface), 300t:
+
+| configuration | outcome |
+|---|---|
+| antiparallel (+Lz/−Lz) | spins survive with signs intact — the gap insulates; cancellation needs co-location |
+| parallel (+Lz/+Lz) | symmetric coexistence, no composite enhancement |
+| +Lz vs cold | **induction**: the cold lump spins up 0→+2,734 through contact transit |
+| counter-rotating halves in ONE body | **shear annihilation**: ±30k stored spin → ~0 in ~60t (co-located antipodal bins vent into each other; the spin, not an extra mechanism, is what dies) |
+
+*Ledger note:* the ~70% mass boil-off in all four runs is generic drive-ablation, not annihilation-specific; the distinctive weld datum is spin collapse, not mass loss.
+
+**Standing conclusion:** the substrate now produces matter that **stores angular momentum, acquires it from collisions and from light, shields it behind a latency barrier, transfers it by contact, and annihilates it under internal counter-rotation** — while provably refusing perpetual circulation. "Atoms, not whirlpools" is the measured ontology.
 
 ## Milestone Index
 
@@ -137,6 +197,13 @@ The mechanism class — *resting mass exchanging momentum with vacuum through di
 | M36 | Ablation drift — lump migrates toward beam, hemisphere-imaged | `cb41b20`, `f95706a` |
 | M37 | Mutual attraction via reciprocal ablation; contact degenerate | `5a7f8b2`, `4540cc1` |
 | M38 | No internal structure — rocks not atoms | `94cbebb` |
+| M39 | Massless photon plane; catalyst/stimulated/absorbed coupling | `b3fa609`, `1b1f88c` |
+| M40 | Pair wind/unwind — binders are carriers; entangled gate | `10d521e` |
+| M41 | Transit-latency gate → activation barrier, self-shielding | `bf737da` |
+| M42 | Directional rest `rest[18]` stores Lz; sign-true revival | `a622a8b` |
+| M43 | Grazing collisions and absorbed light write spin (YORP) | `1b1f88c` |
+| M44 | No live circulation — bucket brigade subcritical, all regimes | `a622a8b` |
+| M45 | Spin induction by contact; internal counter-rotation annihilates | `1b1f88c` |
 
 ## The Picture That Emerges
 
@@ -147,7 +214,7 @@ A discrete substrate on which **space is friction** produces, in order:
 3. **Emission cost** makes radiation require a carrier (metastability + environmental coupling).
 4. The result: bound matter that **breathes while fed, sleeps in vacuum, wakes under light, migrates under anisotropic flux, and weakly attracts its neighbors through mutual radiation.**
 
-All of it lives on 19 integer channels per node, one rest bin, and two rules. All of it survives honest audit. The next rung — structured matter — is a state-representation question, not a flag question, and it is where the frontier now sits.
+All of it lives on 19 integer channels per node, one rest bin, and two rules. All of it survives honest audit. The structured-matter rung turned out to be a state-representation question — answered on `loom-meso` by giving rest mass a channel identity (Part VIII): the result is matter that stores spin, acquires it from collisions and light, and provably cannot circulate it forever.
 
 ---
 

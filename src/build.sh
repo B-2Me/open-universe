@@ -168,6 +168,7 @@ if emcc meso3i.c \
     '_meso3i_totals',
     '_meso3i_drest',
     '_meso3i_rget',
+    '_meso3i_rset',
     '_malloc',
     '_free'
   ]" \
