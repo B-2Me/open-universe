@@ -6,29 +6,38 @@ audio: /audio/roadmap.mp3
   <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 </ClientOnly>
 
-# The Predictive Roadmap: Beyond the Standard Model
+# The Predictive Roadmap: Honest Anchors
 
-If we completely discard the obligation to match the Standard Model’s continuous geometric math and focus strictly on raw detector telemetry, the path to out-predicting legacy models becomes a massive, non-linear fluid dynamics and network-routing problem. Because the Planck Field is a cellular automaton, it is governed by **Computational Irreducibility**. There are no algebraic shortcuts to skip ahead; the only way to know what a massive grid of discrete nodes will do is to calculate every sequential tick.
+The Planck Field is a cellular automaton, so it is governed by **Computational Irreducibility**: there are no algebraic shortcuts ahead of the ticks. That cuts both ways — the substrate can only claim what its measurements actually show, and every comparison to real physics needs a mechanism match, not a borrowed vocabulary.
 
-Here is the exact roadmap to bridge the gap between our working discrete simulator and raw collider data:
+> **Status note (loom-meso):** This page previously proposed benchmarking integer collision spray against CERN Open Data via an "LSZ reduction." That path is retired. LSZ is a theorem about asymptotic continuous fields with on-shell poles; a discrete 19-channel lattice gas in a ~10⁵-cell open box has neither. The scale gap is worse: a proton spans ~10⁶⁰ Planck volumes — the grid is a trillionth of a trillionth of one proton's internal arena. The anchors below are the ones the engine can actually reach.
+>
+> The original collider-telemetry roadmap survives in git history as the authentic record of the top-down approach.
 
-> **Status note:** Steps 1–5 below predate the current engine direction and assume single-spin Hopfion knots can be accelerated into collisions. That prototype's constraints are implementation artifacts; the path to collider telemetry runs through the multichannel mesoscale engine (`meso3i.c`) — see [The Multi-Channel Bridge](./meso-bridge.md). This page is retained as the authentic record of the top-down approach.
+## Step 1: Directional Rest & Latent Spin — *achieved (M39–M45)*
 
-## Step 1: The Mass Hierarchy Proof (The Particle Dictionary)
-Right now, the 3D engine proves that a 19-loop Hopfion can self-stabilize. But the universe has a highly specific "particle zoo" (electrons, muons, tau particles, etc. at exact mass ratios). We must prove that the engine supports *multiple, distinct* stable topological knots. The first empirical benchmark is finding the natural "eigenvalues" of the grid—the specific quantized sizes where knots naturally lock into harmony under the exact same universal parameters.
+The single-spin campaign's wall — scalar rest destroys all circulation in ~25 ticks — is crossed on the `loom-meso` branch. `rest[18]` directional parking stores angular momentum without degradation; latency gating shields it; collisions and absorbed light write it with the correct `r × p` sign. Structured matter exists on the substrate: stationary, non-radiating, wound states — "atoms, not whirlpools." See [the monograph](./meso-monograph.md), Part VIII.
 
-## Step 2: Algorithmic Parameter Sweeping
-Currently, the physics thresholds (dissipation rates, thermal limits, tension diffusion) are hand-tuned via UI sliders to explore stable regimes. To find the true universal parameter set, we must build a headless testing harness. Using gradient descent or a genetic algorithm, the fitness function will sweep the engine's parameters to find the exact integer configuration that allows a hierarchy of distinct Hopfions to survive the longest under ambient vacuum noise without detonating.
+## Step 2: The Continuum Bridge
 
-## Step 3: Scale and Asymptotic Freedom
-A 400,000-node grid is enough to prove a single knot is stable, but fundamentally too small to measure a scattering cross-section or decay spray. The propagating tension field of a particle reaches out 10 to 25 nodes. To achieve asymptotic freedom—where incoming streams and outgoing spray move independently without boundary interference—we must deploy the chunked-memory architecture to scale the simulation volume to a minimum of **$256^3$ ($\approx 16.7$ million nodes)**.
+Extract the macroscopic constitutive relations of the gas itself, in substrate units, from direct measurement — never presumed:
 
-## Step 4: The CERN Benchmark (The LSZ Reduction)
-With a populated particle dictionary, locked parameters, and a $256^3$ arena, we script the interaction matrices. Leveraging the engine's native mechanics, we initialize boundaries through **contact-spawns**, **overlapping accretion zones**, and **directional momentum injection**. We measure the exact impact parameters where intersecting tension fields force standing waves to shear, fuse, or structurally rupture. We log the exact amount of `quanta` that un-knots and sprays out as un-actualized radiation (Missing Transverse Energy). By running this thousands of times to generate statistical branching ratios, we can test the grid's raw integer spray directly against the raw debris telemetry from the CERN Open Data Portal.
+*   **Stress tensor.** `Πᵢⱼ = Σ cᵢcⱼf_c` per site/shell. First extraction on a driven ember gives `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% — a nearly ideal isotropic moving fluid, with `P ≈ ρ·⟨c_x²⟩`, `⟨c_x²⟩ = 16/18` in lattice units.
+*   **Wavefront anisotropy.** A point pulse expands as *two* ballistic shells — axials at v=2, diagonals at v=1, each isotropic within ~8% in-class. The lattice is anisotropic across speed classes by construction; claims of emergent isotropy must name the shell.
+*   **Transport.** Sound speed, shear viscosity, and the P(ρ) curve as measured quantities. The open question: whether any coarse-grained limit of the full engine (collisions + friction + rest) recovers hydrodynamic transport without grid artifacts.
 
-## Step 5: Astrophysical & Cosmological Signatures
-Once the local S-Matrix and particle dictionary are mapped via the CERN Benchmark, the framework scales up to macro-observables. Because the Planck Field is intrinsically chiral (possessing a native screw axis), this discrete parity violation must cast a macroscopic shadow across the universe. The final phase of the roadmap tests the substrate against astrophysics:
+## Step 3: The Yarkovsky/YORP Observational Bridge — *mechanism matched*
 
-*   **Cosmic Microwave Background (CMB) Birefringence:** Measuring the EB cross-power spectrum of the CMB to confirm the universal rotation angle predicted by a chiral vacuum.
-*   **Gravitational Wave Polarization:** Utilizing Pulsar Timing Arrays and the LISA mission to hunt for the predicted net circular polarization in the Stochastic Gravitational Wave Background.
-*   **Baryogenesis Validation:** Using the S-Matrix divergence between chiral Hopfions and anti-Hopfions to mathematically model the early-universe thermalization rate, proving matter survived strictly due to geometric alignment with the substrate's grain.
+Real, radar-measured phenomena running on the same contact mechanics:
+
+*   **Ablation drift (M36):** asymmetric venting propels a lump — the substrate's Yarkovsky-style thrust mechanism.
+*   **Light-written spin (M43):** `IPHOT=3` absorbed photons deposit directional momentum into directional rest; a grazing beam spins matter with the correct sign — a YORP-class mechanism.
+*   **Honesty condition:** these are *mechanism matches* in substrate units. Dimensional claims (meters, seconds, Golevka's ~200 m drift) require a bridge that does not yet exist — and asserting one would repeat the CERN error at a smaller scale.
+
+## Step 4: Entropic Gravitational Scaling
+
+M37 measured short-range mutual attraction through reciprocal ablation — a radiation-shadow mechanism, not metric gravity. The next question is quantitative and internal: the force-vs-separation curve, how it scales with lump mass and drive flux, and whether it is consistent with an entropic/screening form. If the curve has a clean functional form, *then* a dimensional bridge becomes discussable.
+
+## Step 5: The Second Law & Decay
+
+M32c/d established that reversible moves cannot accrete — irreversibility is load-bearing for matter formation on this substrate. Exponential decay rates, the entropy ledger of park/emit/drain events, and the relation between stored spin and thermalization are all measurable on the current engine. This is the substrate's cleanest contact point with the transactional/thermodynamic arrow of time.
