@@ -59,6 +59,11 @@ onUnmounted(() => {
     <!-- transient status line under the telemetry chip — empty = hidden -->
     <div class="loom-status" data-status></div>
 
+    <!-- mass-partition sparkline: rest (amber) over flux (violet),
+         each strip auto-scaled — the lump's breath made visible -->
+    <canvas class="loom-graph" data-graph width="156" height="56"
+            title="Mass partition history — rest mass (amber) vs moving flux (violet), last ~240 ticks"></canvas>
+
     <!-- always-visible collapse toggle -->
     <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
@@ -79,6 +84,8 @@ onUnmounted(() => {
                 aria-label="Cold rock tool"           aria-pressed="false">●</button>
         <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
                 aria-label="Toggle antipodal pair rules" aria-pressed="false">⇄</button>
+        <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
+                aria-label="Drop a binary lump pair">⚭</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
@@ -207,6 +214,22 @@ onUnmounted(() => {
   z-index: 3;
 }
 .loom-status:empty { display: none; }
+
+/* mass-partition sparkline — top-right, under the ⚙ toggle; two strips,
+   rest over flux, each auto-scaled so neither flattens the other */
+.loom-graph {
+  position: absolute;
+  top: 50px;
+  right: 8px;
+  width: 156px;
+  height: 56px;
+  background: rgba(8, 10, 20, 0.55);
+  border: 1px solid var(--loom-bevel-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--loom-bevel-light);
+  pointer-events: none;
+  z-index: 3;
+}
 
 /* collapse toggle — small, always visible */
 .loom-uitoggle {

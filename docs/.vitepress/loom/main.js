@@ -136,6 +136,34 @@ export async function initLoomSimulator(root, opts = {}) {
   const gl = canvas.getContext('webgl2', { antialias: true, alpha: false });
   const hud = root.querySelector('[data-hud]');
   if (!gl) { hud.textContent = 'WebGL2 unavailable'; return () => {}; }
+  // mass-partition sparkline — rest vs flux, two strips, auto-scaled
+  const graph = root.querySelector('[data-graph]');
+  const gctx = graph ? graph.getContext('2d') : null;
+  const hist = { rest: [], mov: [], cap: 240 };
+  const drawGraph = () => {
+    if (!gctx) return;
+    const w = graph.width, h = graph.height, half = h >> 1;
+    gctx.clearRect(0, 0, w, h);
+    const strip = (arr, y0, hh, col) => {
+      if (arr.length < 2) return;
+      const mx = Math.max(1, ...arr);
+      gctx.strokeStyle = col; gctx.lineWidth = 1; gctx.beginPath();
+      for (let i = 0; i < arr.length; i++) {
+        const x = 2 + (i / (hist.cap - 1)) * (w - 4);
+        const y = y0 + hh - 3 - (arr[i] / mx) * (hh - 5);
+        i ? gctx.lineTo(x, y) : gctx.moveTo(x, y);
+      }
+      gctx.stroke();
+    };
+    strip(hist.rest, 2, half - 2, 'rgba(255,150,50,0.9)');
+    strip(hist.mov, half + 2, half - 3, 'rgba(140,100,255,0.9)');
+  };
+  const pushHist = () => {
+    hist.rest.push(wasm._meso3i_rest_mass());
+    hist.mov.push(wasm._meso3i_mov_mass());
+    if (hist.rest.length > hist.cap) { hist.rest.shift(); hist.mov.shift(); }
+    drawGraph();
+  };
 
   // Transient status line under the HUD — metrics own the HUD, so
   // event messages live here and self-clear instead of being stomped
@@ -252,20 +280,21 @@ export async function initLoomSimulator(root, opts = {}) {
   // Thick enough that the photon laser visibly drills through it: a
   // thin lump just blinks out before the coupling modes can diverge.
   const LUMP_R = 5, LUMP_Q = 96;
-  const seedLump = (lx, ly, lz) => {
+  const seedBall = (lx, ly, lz, R, Q) => {
     let n = 0;
-    for (let dz = -LUMP_R; dz <= LUMP_R; dz++)
-    for (let dy = -LUMP_R; dy <= LUMP_R; dy++)
-    for (let dx = -LUMP_R; dx <= LUMP_R; dx++) {
-      if (dx * dx + dy * dy + dz * dz > LUMP_R * LUMP_R) continue;
+    for (let dz = -R; dz <= R; dz++)
+    for (let dy = -R; dy <= R; dy++)
+    for (let dx = -R; dx <= R; dx++) {
+      if (dx * dx + dy * dy + dz * dz > R * R) continue;
       const x = lx + dx, y = ly + dy, z = lz + dz;
       if (((x + y + z) & 1) !== 0) continue;   // live parity only
       if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
-      wasm._meso3i_set(x, y, z, REST, LUMP_Q);
+      wasm._meso3i_set(x, y, z, REST, Q);
       n++;
     }
     return n;
   };
+  const seedLump = (lx, ly, lz) => seedBall(lx, ly, lz, LUMP_R, LUMP_Q);
 
   // Camera ray through a canvas pixel -> lattice cell on the current
   // slice plane. Camera orbits the lattice center at (yaw, pitch, dist);
@@ -539,6 +568,15 @@ export async function initLoomSimulator(root, opts = {}) {
     say(ui.pair ? 'pair rules on — radiation goes out back-to-back, head-on collisions bind into rest'
                 : 'pair rules off');
   });
+  bind('[data-binary]', 'click', () => {
+    // M37 two-body preset: two small lumps ~6 cells of vacuum apart on
+    // the equator — inside mutual-ablation reach. Radiation needs
+    // carriers (☀) or blackbody (Rad can't go positive from this UI).
+    const a = seedBall(CX - 6, CY, CZ, 3, 64);
+    const b = seedBall(CX + 6, CY, CZ, 3, 64);
+    upload(); dirty = true;
+    say(`M37 pair dropped — ${a + b} sites parked · mutual ablation needs carriers: turn ☀ on`, 6000);
+  });
   // radio-exclusive armed tools: ⌖ vortex ring vs ● cold rock
   const armBtns = { ring: root.querySelector('[data-ring]'), lump: root.querySelector('[data-lump]') };
   const setArm = (which) => {
@@ -761,6 +799,7 @@ export async function initLoomSimulator(root, opts = {}) {
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
       // meso3i telemetry: parked rest mass, moving flux, rest centroid.
       // Stats refresh inside rg_refresh during upload — no extra sweep.
+      pushHist();
       const rest = wasm._meso3i_rest_mass(), mov = wasm._meso3i_mov_mass();
       const phn = wasm._meso3i_photons();
       const cx = wasm._meso3i_cm(0) / 256, cy = wasm._meso3i_cm(1) / 256, cz = wasm._meso3i_cm(2) / 256;
