@@ -26,7 +26,10 @@ What you see on boot is a cold lump at center — parked amber heat, inert in va
 
 - **Drag** to orbit; **two-finger drag** pans, pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
 - **☀ drive** — the convergent feed that accretes a breathing ember. Cut it and the core freezes in place (carrier-gated radiation — parked heat only vents while a carrier transits).
-- **➤ beam** — a **photon laser**: massless light sourced inside the left drain shell, riding the +x axial channel (v=2) straight across the lattice. Photons carry direction but no mass and never collide. What they do to matter depends on the **Phot** dial — and they never *delete* mass, only kick parked heat back into flight, which then drains off the boundary.
+- **➤ beam** — an **apertured photon plane wave**: a checkerboard disc of light sourced just inside the drain shell, riding one axial channel straight across the lattice. Photons carry direction but no mass and never collide. Only the six axial channels (v=2) travel in straight lines on this lattice — face diagonals zigzag — so **Dir** offers ±x/±y/±z. **Ap** sizes the aperture, **OffU**/**OffV** translate it in the beam-normal plane to graze lumps off-center. What light does to matter depends on the **Phot** dial — and it never *deletes* mass, only kicks parked heat back into flight, which then drains off the boundary.
+- **⚭ binary** — the M37 two-body preset: two cold lumps a few cells of vacuum apart. Mutual-ablation attraction is real but needs carriers — turn ☀ on and watch the centroid crawl (headless: ~0.0004 cells/tick).
+- **Scene select** — one-click measured regimes: *wound lump* (Lat 16 + ⇄ + ☀ — the only config where binding beat decay headless), *breathing core* (the ☀ attractor), *comet ablation* (offset plane wave on a cold lump).
+- **sparkline** — the amber/violet strips under the toggle: rest mass over moving flux, independently scaled, last ~40 minutes of evolution.
 - **Phot select** — the light–matter coupling experiment:
   - *off* — photons stream through parked mass untouched: light that cannot couple.
   - *catalyst* — a transiting photon licenses the carrier-gated emission gate, like a massless carrier: isotropic boil-off with no payload added.
@@ -34,7 +37,7 @@ What you see on boot is a cold lump at center — parked amber heat, inert in va
 - **⇄ (pair rules)** — the momentum-honest wind/unwind cycle: `2·rest ⇄ c + c¹`. Rest sheds mass as back-to-back antipodal pairs (no net momentum), and head-on collisions can bind a pair back into rest. Measured caveat: the colliding pair is itself a carrier, so a binding site also lights its own emission gate — unwind tends to dominate wind wherever they meet.
 - **⌖ (vortex tool)** — arm it, tap the slice plane: injects two concentric rings of moving quanta on the best-tangent equatorial channels — a circulation seed. Watch whether it holds, shears, or thermalizes into parked heat. This is the knot question.
 - **● (rock tool)** — arm it, tap the slice plane: drops a cold rest-mass lump — the proven-persistent control case.
-- **⧉ / ⤺** — snapshot the field, perturb, rewind.
+- **⧉ / ⤺** — snapshot the field, perturb, rewind. The save is physics-complete — channels, photons, latency counters, dwell lines, registers and RNG state — so a restore replays bit-for-bit (verified headless).
 - **Tuning** — **Slice** + **Width** give a living MRI scan; **Drag** is the transit-friction congestion threshold (IFRIC); **Rad** sets the radiation gate strength (carrier-gated: heat vents only under transit); **Lat** sets emission latency — how many *consecutive* ticks a carrier must dwell at a node before rest can radiate (1 = instant, the canon; raise it and sporadic flux stops unwinding parked mass — measured: a pulse every 20t leaks a 24k lump to 7.7k at Lat 1 but leaves it frozen and slowly growing at Lat 8); **Collide** picks the collision variant (uniform / shell-weighted / forward-bias); **Speed** caps ticks per second.
 
 ::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts

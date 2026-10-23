@@ -120,6 +120,12 @@ onUnmounted(() => {
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
         </select></label>
+        <label class="loom-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+          <option value="" selected>scene…</option>
+          <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
+          <option value="breath">breathing core (☀ + Rad)</option>
+          <option value="comet">comet ablation (➤ off-center)</option>
+        </select></label>
         <label class="loom-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>

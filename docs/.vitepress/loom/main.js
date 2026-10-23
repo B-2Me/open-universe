@@ -592,6 +592,55 @@ export async function initLoomSimulator(root, opts = {}) {
     upload(); dirty = true;
     say(`M37 pair dropped — ${a + b} sites parked · mutual ablation needs carriers: turn ☀ on`, 6000);
   });
+  // one-click physics scenes — zero the field, set the measured flag
+  // combination through the real widgets (so the dock stays honest),
+  // and seed the canonical geometry. Params are the measured regimes,
+  // not guesses: wound = the latency-test wind-dominant config.
+  const ctl = (sel, v, ev = 'input') => {
+    const e = root.querySelector(sel);
+    if (!e) return;
+    e.value = v;
+    e.dispatchEvent(new Event(ev, { bubbles: true }));
+  };
+  const press = (sel, key, on) => {
+    if (ui[key] !== on) root.querySelector(sel)?.click();
+  };
+  const SCENES = {
+    wound: () => {
+      ctl('[data-coll]', '1', 'change');
+      ctl('[data-lat]', 16);
+      press('[data-pair]', 'pair', true);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('wound lump — Lat 16 + ⇄ + ☀: sporadic flux can\'t unwind; bound rest may grow where collision traffic persists', 6000);
+    },
+    breath: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('breathing core — ☀ + Rad: the lump feeds and vents toward a steady ember, watch the sparkline plateau', 6000);
+    },
+    comet: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      ctl('[data-phot]', '2', 'change');
+      ctl('[data-bov]', 6);
+      press('[data-pair]', 'pair', false);
+      press('[data-drive]', 'drive', false);
+      press('[data-beam]', 'beam', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('comet ablation — offset plane wave grazing a cold lump: watch the stimulated plume and core@ drift', 6000);
+    },
+  };
+  bind('[data-scene]', 'change', e => {
+    const f = SCENES[e.target.value];
+    e.target.value = '';                    // back to "Scene…" so re-picks refire
+    if (f) { f(); upload(); dirty = true; }
+  });
   // radio-exclusive armed tools: ⌖ vortex ring vs ● cold rock
   const armBtns = { ring: root.querySelector('[data-ring]'), lump: root.querySelector('[data-lump]') };
   const setArm = (which) => {

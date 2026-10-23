@@ -159,7 +159,13 @@ if emcc meso3i.c \
     '_meso3i_lat',
     '_meso3i_phset',
     '_meso3i_phget',
-    '_meso3i_photons'
+    '_meso3i_photons',
+    '_meso3i_qmode',
+    '_meso3i_qdir',
+    '_meso3i_qcap',
+    '_meso3i_qget',
+    '_meso3i_qset',
+    '_meso3i_totals'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/ember/meso3i.js; then
