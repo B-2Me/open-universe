@@ -216,12 +216,30 @@ export async function initLoomSimulator(root, opts = {}) {
   // sources RATE quanta/tick at a point RAY cells back along its
   // direction — 18 spokes aimed at the lattice center.
   const RAY = 3, RATE = 4;
-  // the only strictly +x channel is the axial second-shell [2,0,0] —
-  // equatorial channels all drift in y or z, so they can't draw a
-  // straight beam line
-  const cBeam = CV.findIndex(v => v[0] === 2 && v[1] === 0 && v[2] === 0);
-  const BX = ((4 + CY + CZ) & 1) === 0 ? 4 : 5;   // live-parity source site
-  const PHV = 16;                                  // photons/tick at aperture
+  // photon laser: an apertured PLANE WAVE riding an axial channel.
+  // Only the six axial vectors (v=2) travel straight on D3Q19 — face
+  // diagonals zigzag, so a "beam" on them fans into a spray. The
+  // aperture is a checkerboard disc just inside the drain shell; OffU/
+  // OffV translate it in the normal plane to graze lumps off-center.
+  const AXIS = { x: 0, y: 1, z: 2 };
+  const DIM = [W3, H3, D3], CTR = [CX, CY, CZ];
+  const PHV = 8;                                   // photons/tick per source site
+  const beamFire = () => {
+    const a = AXIS[ui.bdir[1]], s = ui.bdir[0] === '+' ? 1 : -1;
+    const c = CV.findIndex(v => v[a] === 2 * s && !v[(a + 1) % 3] && !v[(a + 2) % 3]);
+    if (c < 0) return;
+    const u = (a + 1) % 3, w = (a + 2) % 3;
+    const p0 = s > 0 ? 4 : DIM[a] - 5;             // inside drain_edge(3)
+    const pt = [0, 0, 0]; pt[a] = p0;
+    for (let du = -ui.bap; du <= ui.bap; du++)
+    for (let dv = -ui.bap; dv <= ui.bap; dv++) {
+      if (du * du + dv * dv > ui.bap * ui.bap) continue;
+      pt[u] = CTR[u] + ui.bou + du;
+      pt[w] = CTR[w] + ui.bov + dv;
+      if (pt[u] < 0 || pt[u] >= DIM[u] || pt[w] < 0 || pt[w] >= DIM[w]) continue;
+      wasm._meso3i_phset(pt[0], pt[1], pt[2], c, PHV);
+    }
+  };
   const inject = () => {
     for (let c = 0; c < NMOV; c++) {
       const [vx, vy, vz] = CV[c];
@@ -230,11 +248,7 @@ export async function initLoomSimulator(root, opts = {}) {
       for (let u = 0; u < RATE; u++)
         wasm._meso3i_set(sx, sy, sz, c, wasm._meso3i_get(sx, sy, sz, c) + 1);
     }
-    if (ui.beam && cBeam >= 0)
-      // photon laser: massless light sourced inside the drain shell,
-      // riding v=2 hops across the whole lattice — couples to matter
-      // only through the Phot mode, visible in every palette
-      wasm._meso3i_phset(BX, CY, CZ, cBeam, PHV);
+    if (ui.beam) beamFire();
   };
 
   // ⌖ vortex ring — THE knot test on this engine. Two concentric rings
@@ -507,6 +521,7 @@ export async function initLoomSimulator(root, opts = {}) {
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
     phot: 2, pair: false,
+    bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
   // boot state: a cold lump at center — parked heat, inert in vacuum
   // until the user turns on a drive or a beam
@@ -597,6 +612,10 @@ export async function initLoomSimulator(root, opts = {}) {
   bind('[data-fric]', 'input', e => { wasm._meso3i_friction(+e.target.value); readout(e); });
   bind('[data-rad]', 'input', e => { wasm._meso3i_fricmode(-(+e.target.value)); readout(e); });
   bind('[data-lat]', 'input', e => { wasm._meso3i_lat(+e.target.value); readout(e); });
+  bind('[data-bdir]', 'change', e => { ui.bdir = e.target.value; });
+  bind('[data-bap]', 'input', e => { ui.bap = +e.target.value; readout(e); });
+  bind('[data-bou]', 'input', e => { ui.bou = +e.target.value; readout(e); });
+  bind('[data-bov]', 'input', e => { ui.bov = +e.target.value; readout(e); });
   bind('[data-phot]', 'change', e => { ui.phot = +e.target.value; wasm._meso3i_phot(ui.phot); });
   bind('[data-coll]', 'change', e => { wasm._meso3i_collmode(+e.target.value); });
   bind('[data-spin]', 'click', e => {

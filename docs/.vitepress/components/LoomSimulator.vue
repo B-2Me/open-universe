@@ -76,7 +76,7 @@ onUnmounted(() => {
         <button data-drive aria-pressed="false"
                 title="Convergent feed — 18 spokes pouring flux into the core"
                 aria-label="Toggle convergent drive">☀</button>
-        <button data-beam  title="Photon laser — massless +x light; coupling set by the Phot dial"
+        <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
                 aria-label="Toggle photon laser"      aria-pressed="false">➤</button>
         <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
                 aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
@@ -120,6 +120,11 @@ onUnmounted(() => {
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
         </select></label>
+        <label class="loom-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
+          <option value="+x" selected>+x</option><option value="-x">−x</option>
+          <option value="+y">+y</option><option value="-y">−y</option>
+          <option value="+z">+z</option><option value="-z">−z</option>
+        </select></label>
       </div>
 
       <button class="loom-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
@@ -132,6 +137,9 @@ onUnmounted(() => {
         <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8"><output>8</output></label>
         <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
         <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
+        <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output></label>
+        <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
+        <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
         <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>
