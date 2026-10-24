@@ -489,7 +489,33 @@ onUnmounted(() => {
   .mill-dock {
     margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 8px);
+    /* a fully-expanded dock can't be allowed to squeeze the canvas to
+       zero — cap it and let it scroll internally */
+    max-height: 52svh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
+  /* both control wells must wrap — seven labeled selects and twelve
+     transport buttons never fit one narrow row */
+  .mill-transport,
+  .mill-selects {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mill-field { gap: 4px; }
+  .mill-field > span { font-size: 9px; }
+  .mill-dock select { padding: 0 20px 0 8px; }
+}
+
+/* phones: shrink the secondary chrome so the HUD keeps the corner */
+@media (max-width: 560px) {
+  .mill-graph {
+    top: 46px;
+    right: 6px;
+    width: 110px;
+    height: 40px;
+  }
+  .mill-gizmo { width: 34px; height: 34px; }
 }
 
 /* short viewports of any kind (wide but landscape-short, split-screen):
