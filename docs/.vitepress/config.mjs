@@ -29,6 +29,7 @@ const readingOrder = [
   { text: 'Methodology', link: '/interference/methodology' },
   { text: 'Frontier', link: '/interference/frontier' },
   { text: 'Audits', link: '/interference/audits' },
+  { text: 'Collider Matrix', link: '/interference/collider' },
   { text: 'Why Simulate', link: '/interference/usefulness' },
 
   { text: "Yarkovsky's Ember", link: '/ember-demo' },
@@ -78,6 +79,7 @@ const historyItems = [
   { text: 'Methodology', link: '/interference/methodology' },
   { text: 'Open Frontier', link: '/interference/frontier' },
   { text: 'Theoretical Audits', link: '/interference/audits' },
+  { text: 'Collider Matrix', link: '/interference/collider' },
   { text: 'Why Simulate', link: '/interference/usefulness' },
   { text: 'Podcast', link: '/interference/sessions' }
 ]

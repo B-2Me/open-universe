@@ -12,7 +12,7 @@ The Planck Field is a cellular automaton, so it is governed by **Computational I
 
 > **Status note (loom-meso):** This page previously proposed benchmarking integer collision spray against CERN Open Data via an "LSZ reduction." That path is retired. LSZ is a theorem about asymptotic continuous fields with on-shell poles; a discrete 19-channel lattice gas in a ~10⁵-cell open box has neither. The scale gap is worse: a proton spans ~10⁶⁰ Planck volumes — the grid is a trillionth of a trillionth of one proton's internal arena. The anchors below are the ones the engine can actually reach.
 >
-> The original collider-telemetry roadmap survives in git history as the authentic record of the top-down approach.
+> The original collider-telemetry matrix — which observables would map onto which engine quantities *if* a scale path ever existed, plus the grid-scale argument for why it currently can't — is preserved under Program History: [The Collider Matrix](/interference/collider). It stays conditional: it reopens only if a measured dimensional bridge and an asymptotic-scale domain both materialize.
 
 ## Step 1: Directional Rest & Latent Spin — *achieved (M39–M45)*
 

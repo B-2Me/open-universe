@@ -8,7 +8,7 @@ audio: /audio/audits.mp3
 
 # Laboratory Interference: The Theoretical Audits
 
-> **Program History.** These five audit proposals date from the prototype era. Audit 5's CERN-telemetry calibration path is **retired** — a finite 19-channel lattice gas has no asymptotic fields or on-shell poles for an LSZ reduction, and the scale gap is ~10⁶⁰ volumes (see the [roadmap](/interference/roadmap) status note). Audits 1–4 remain open as conceptual tests.
+> **Program History.** These five audit proposals date from the prototype era. Audit 5's CERN-telemetry calibration path is **retired** — a finite 19-channel lattice gas has no asymptotic fields or on-shell poles for an LSZ reduction, and the scale gap is ~10⁶⁰ volumes (see the [roadmap](/interference/roadmap) status note). The full translation matrix it proposed is preserved, conditionally, in [The Collider Matrix](/interference/collider). Audits 1–4 remain open as conceptual tests.
 
 If interference is the mechanism of human agency, it is also the mechanism of absolute physical proof. A philosophical architecture is only as valid as its physical constraints. Because the Planck Field is a physical, thermodynamic substrate, *every* paradox in legacy physics can be translated into a testable, localized relational friction problem. 
 
