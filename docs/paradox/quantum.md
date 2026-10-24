@@ -12,17 +12,17 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ## 1. The Observer Paradox (Wave Function Collapse)
 **The Paradox:** In quantum mechanics, particles exist in a smeared-out state of probability (a wave function). But the exact moment a scientist measures them, they "collapse" into a single, definite position. In a substance ontology, this led to decades of mystical philosophy claiming that "human consciousness magically creates reality just by looking at it."
 
-**The Planck Field Reconciliation:** This isn't magic; it is a hard network capacity limit. Legacy thinking traps us in the **"Picture in the Envelope" Fallacy**—assuming reality is a collection of pre-actualized, static objects sitting inside passive containers, just waiting in the dark to be discovered. 
+**The Planck Field Reconciliation:** This isn't magic; it is a hard network capacity limit. Legacy thinking traps us in the **"Picture in the Envelope" Fallacy**: assuming reality is a collection of pre-actualized, static objects sitting inside passive containers, just waiting in the dark to be discovered.
 *   In a continuously actualizing field, the substrate does not dissipate thermodynamic energy to define hard boundaries where no relational tension exists. Without interaction, a locus exists as an un-actualized potential.
 *   "Measurement" is not a passive, weightless gaze. A measurement is a physical collision causing localized relational tension to accumulate ($Q_{pending}$). 
 *   The wave function does not collapse probabilistically; it resolves deterministically when the local routing buffer hits the absolute saturation threshold of the hardware: $\text{If } Q_{pending} \ge FLOW\_CAP, \text{ then } \text{Actualize}(x, t)$. You aren't "looking" at a particle; your detector forced the local grid to exceed its capacity, forcing it to precipitate a state to satisfy the collision.
 
-*   **Substrate grounding (prototype measurement, since retracted):** the APD cascade — sub-threshold un-actualized flux (q=3) deterministically triggering macroscopic click amplification (q≈160) once local capacity saturates at an armed boundary — was demonstrated on the single-spin prototype; single-quantum antibunching remains unresolved.
+*   **Substrate grounding (prototype measurement, since retracted):** the APD cascade. Sub-threshold un-actualized flux (q=3) deterministically triggering macroscopic click amplification (q≈160) once local capacity saturates at an armed boundary: was demonstrated on the single-spin prototype; single-quantum antibunching remains unresolved.
 
 ---
 
 ## 2. The Locality Paradox (Quantum Entanglement & Bell's Theorem)
-**The Paradox:** If two particles become entangled, measuring one instantly determines the state of the other, even if they are light-years apart. In 1964, Bell's Theorem mathematically proved that no "local" hidden variables could explain this. Legacy physics assumes this means we must accept "spooky action at a distance"—invisible forces traveling faster than light across an empty container.
+**The Paradox:** If two particles become entangled, measuring one instantly determines the state of the other, even if they are light-years apart. In 1964, Bell's Theorem mathematically proved that no "local" hidden variables could explain this. Legacy physics assumes this means we must accept "spooky action at a distance": invisible forces traveling faster than light across an empty container.
 
 **The Planck Field Reconciliation:** A local grid of definite classical states has only one valid exit from Bell's Theorem without resorting to superdeterminism: it must give up locality. The Planck Field explicitly gives up locality, but it does not give up locality for "spooky magic." It gives up *geometric* locality in favor of *topological network* locality.
 *   In the Planck Field, space is not an empty box; it is a web of relational phase friction. Distance is measured by network routing cost, not geometric rulers.
@@ -35,12 +35,12 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ## 3. The Duality Paradox (The Double-Slit Experiment)
 **The Paradox:** If you fire a single photon through two slits, it acts like a wave, interfering with itself to create a striped pattern on the wall. But if you put a detector at the slits, it acts like a solid bullet, hitting the wall in a single spot. Legacy physics struggles to explain how a single "object" can switch its physical nature from a fluid wave to a solid particle.
 
-**The Planck Field Reconciliation:** The paradox happens because we project spatially-biased substance metaphors—"bullets" and "water"—onto the fundamental substrate.
+**The Planck Field Reconciliation:** The paradox happens because we project spatially-biased substance metaphors, "bullets" and "water", onto the fundamental substrate.
 *   A photon is not a tiny flying bowling ball. It is an un-actualized relational potential.
 *   As it propagates through the field without being measured, it hasn't actualized into a specific geometric point because the substrate has no relational requirement to render its exact locus. 
 *   The moment a detector is introduced, the physical constraints of the collision dictate the actualization of a localized state. The "particle" isn't a hidden bullet revealing itself; it is the instantaneous actualization of the event.
 
-*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, individual flux packets propagated ballistically at v=1 with zero self-interference — the "wave" was strictly an ensemble histogram of arrival timing and coincidence combs across discrete detector cells.
+*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, individual flux packets propagated ballistically at v=1 with zero self-interference. The "wave" was strictly an ensemble histogram of arrival timing and coincidence combs across discrete detector cells.
 
 ---
 
@@ -48,14 +48,14 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** If you take two uncharged metal plates, place them in a perfect vacuum, and move them incredibly close together, a mysterious force pushes them together. Classical physics assumes that a vacuum is completely empty. If there is nothing between the plates, where is the physical push coming from?
 
 **The Planck Field Reconciliation:** The block universe assumes space is a passive, empty container where objects sit. 
-*   There is no such thing as "empty space." The void is not a cold, dead container; it is a boiling, immensely dense sea of zero-point energy, vibrating at a high ambient thermodynamic temperature. 
+*   In the substrate there is no such thing as "empty space". The void is a boiling, immensely dense sea of ambient tension, vibrating at a high baseline temperature. Real physics finds the same: the vacuum hums with zero-point energy.
 *   When you place two plates that close together, you restrict the wavelengths of the field's baseline tension between them. Because the hot ambient tension outside the plates is stronger than the constrained tension inside, the plates are pushed together. 
-*   The Casimir Effect is the smoking gun that the universe is not an empty stage. It is an active, hot, vibrating medium.
+*   The Casimir Effect is the smoking gun that the vacuum is no empty stage. The model's answer and the measured one agree: an active, hot, vibrating medium.
 
 ---
 
 ## 5. The Precision Paradox (Heisenberg's Uncertainty Principle)
-**The Paradox:** In quantum mechanics, the more precisely you measure a particle's position, the less precisely you can know its momentum. Legacy physics treats this as an irritating veil of ignorance—assuming the particle *actually* has a precise speed and location, but nature is hiding the numbers from our instruments.
+**The Paradox:** In quantum mechanics, the more precisely you measure a particle's position, the less precisely you can know its momentum. Legacy physics treats this as an irritating veil of ignorance: assuming the particle *actually* has a precise speed and location, but nature is hiding the numbers from our instruments.
 
 **The Planck Field Reconciliation:** Nature isn't hiding the numbers; the numbers don't exist, because infinite precision requires infinite thermodynamic capacity.
 *   Position and momentum are mutually exclusive relational constraints competing for the same finite processing bandwidth. 
@@ -70,7 +70,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Planck Field Reconciliation:** This is another failure of projecting spatially-biased metaphors onto the subatomic field. 
 *   The electron is not a solid bullet; it is a wave of un-actualized relational potential. The barrier is not a solid wall; it is a localized zone of high relational resistance.
 *   When the un-actualized potential wave hits the resistance zone, its probability amplitude decays exponentially. A fraction of that potential bleeds past the boundary because the network is porous.
-*   When the field is forced to actualize the event (due to accumulating tension exceeding $FLOW\_CAP$), it selects a locus from the available potential. No "object" ever phased through a "wall"—the field simply resolved the pending tension by actualizing the event in an adjacent, lower-friction locus on the far side of the barrier.
+*   When the field is forced to actualize the event (due to accumulating tension exceeding $FLOW\_CAP$), it selects a locus from the available potential. No "object" ever phased through a "wall": the field simply resolved the pending tension by actualizing the event in an adjacent, lower-friction locus on the far side of the barrier.
 
 ---
 
@@ -98,7 +98,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** In advanced variations of the double-slit experiment, physicists can measure a photon *after* it has already passed through the slits. The measurement seems to reach back in time and change how the photon behaved in the past. This leads to wild legacy claims of "retrocausality" (the future altering the past).
 
 **The Planck Field Reconciliation:** Retrocausality is a map-reading error caused by the illusion of the block universe.
-- The universe is a **zero-storage substrate**. There is no "past" to reach back and change.
+- The substrate is **zero-storage**. There is no "past" to reach back and change.
 - The photon never "decided" to be a particle or a wave in the past; it propagated purely as un-actualized relational potential. 
 - Because the photon remained un-actualized, the timeline wasn't altered. The detector simply forced the actualization of the entire relational event *in the present moment*. You didn't change history; you just forced the field to resolve a pending tension right now.
 
@@ -124,7 +124,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ---
 
 ## 12. The Renormalization Paradox (Infinite Self-Energy)
-**The Paradox:** In Quantum Field Theory (QFT), calculating the self-energy of an electron yields an infinite result because the foundational equations define the electron as a zero-dimensional point. To make the math match experimental reality, theorists use a process called "renormalization"—manually crossing out the infinities to leave only the finite mass.
+**The Paradox:** In Quantum Field Theory (QFT), calculating the self-energy of an electron yields an infinite result because the foundational equations define the electron as a zero-dimensional point. To make the math match experimental reality, theorists use a process called "renormalization": manually crossing out the infinities to leave only the finite mass.
 
 **The Planck Field Reconciliation:** The mathematical infinities are not a quirky feature of nature; they are absolute proof that treating the electron as a point with zero volume is physically broken. The universe does not contain infinities. The electron is a massive, coordinated ensemble spanning roughly 10⁶¹ localized Planck volumes. The finite, real mass that physicists measure (after crossing out their infinite math) is simply the net thermodynamic tension required to sustain that localized vortex in the grid.
 
@@ -140,8 +140,8 @@ Here is how the active substrate resolves the core quantum paradoxes.
 ## 14. The Contraction Paradox (Lorentz Contraction & Magnetism)
 **The Paradox:** To explain why two parallel wires carrying current either attract or repel, modern physics correctly points out that an independent "magnetic force" doesn't exist. Instead, they claim that from the perspective of the moving electrons, the physical distance between the protons in the other wire mathematically shrinks due to Special Relativity (Lorentz Contraction). This creates an artificial charge density that causes attraction. To avoid the paradox of invisible magnetic ropes, they invented the paradox of shrinking physical space.
 
-**The Planck Field Reconciliation:** This is the ultimate mathematical shell game—trading a substance paradox for a geometric paradox. 
-*   Space is a discrete relational network, not a stretchable fabric. Physical distance does not shrink simply because an adjacent object is moving fast. 
+**The Planck Field Reconciliation:** This is the ultimate mathematical shell game, trading a substance paradox for a geometric paradox.
+*   In this model, space is a discrete relational network, not a stretchable fabric: physical distance does not shrink simply because an adjacent object is moving fast.
 *   The wires interact purely through **Phase Friction** (spin alignment). 
 *   When currents flow in opposite directions, their discrete topological spins clash. The grid resolves this massive spike in metabolic dissipation by pushing the boundaries apart (repulsion). When they flow together, their spins mesh, dropping friction to zero (attraction). 
 *   We do not need to invent the illusion of shrinking space to explain relational friction.
@@ -157,4 +157,4 @@ Here is how the active substrate resolves the core quantum paradoxes.
 *   Furthermore, if their topological spins are forced into the same slipstream, they clash. This generates a massive spike in metabolic dissipation ($\Phi$), triggering immediate momentum cancellation and violent physical repulsion. 
 *   Fermions cannot share a state because doing so requires more relational bandwidth than the hardware of the Planck Field is physically capable of providing at a single node.
 
-*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, breather-dimer stability enforced a discrete phase-exclusion schedule — Δφ ∈ {1,3} bonds, Δφ = 0 destroys both cores through capacity saturation — demonstrating exclusion as a native routing-table saturation constraint.
+*   **Substrate grounding (prototype measurement, since retracted):** on the single-spin engine, breather-dimer stability enforced a discrete phase-exclusion schedule, Δφ ∈ {1,3} bonds, Δφ = 0 destroys both cores through capacity saturation, demonstrating exclusion as a native routing-table saturation constraint.

@@ -1,0 +1,21 @@
+fountain tail: hopfion_25_9 100x100x40 — 19 cycles, longest 2001; arc 1001 (50%), feed at tail 23,30,19 s12
+  t      live  arcLive  freeEnds  maxCycle  nCycles  srcQ
+  t0: live=1001 arcLive=1000 freeEnds=1 maxCycle=0 nCycles=0 srcQ=80
+  t25: live=994 arcLive=975 freeEnds=6 maxCycle=2 nCycles=0 srcQ=80
+  t50: live=975 arcLive=948 freeEnds=27 maxCycle=0 nCycles=0 srcQ=255
+  t75: live=974 arcLive=923 freeEnds=24 maxCycle=0 nCycles=0 srcQ=255
+  t100: live=975 arcLive=898 freeEnds=27 maxCycle=0 nCycles=0 srcQ=255
+  t125: live=974 arcLive=873 freeEnds=26 maxCycle=0 nCycles=0 srcQ=255
+  t150: live=975 arcLive=848 freeEnds=27 maxCycle=0 nCycles=0 srcQ=255
+  t175: live=973 arcLive=820 freeEnds=26 maxCycle=0 nCycles=0 srcQ=255
+  t200: live=965 arcLive=770 freeEnds=27 maxCycle=396 nCycles=1 srcQ=255
+  t225: live=916 arcLive=720 freeEnds=48 maxCycle=396 nCycles=1 srcQ=255
+  t250: live=884 arcLive=668 freeEnds=57 maxCycle=0 nCycles=0 srcQ=255
+  t275: live=869 arcLive=615 freeEnds=84 maxCycle=0 nCycles=0 srcQ=255
+  t300: live=812 arcLive=574 freeEnds=106 maxCycle=2 nCycles=0 srcQ=255
+  t325: live=757 arcLive=524 freeEnds=162 maxCycle=2 nCycles=0 srcQ=255
+  t350: live=692 arcLive=472 freeEnds=211 maxCycle=185 nCycles=1 srcQ=255
+  t375: live=657 arcLive=365 freeEnds=299 maxCycle=2 nCycles=0 srcQ=255
+  t399: live=669 arcLive=291 freeEnds=353 maxCycle=0 nCycles=0 srcQ=255
+
+→ C:\src\github.com\nater0000\open-universe\logs\fountain-tail-hopfion_25_9-0p5-l80.json

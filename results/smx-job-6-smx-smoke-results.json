@@ -1,0 +1,94 @@
+{
+  "jobDir": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-6-smx-smoke",
+  "meta": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-6-smx-smoke\\meta.json",
+  "results": [
+    {
+      "batch": 0,
+      "name": "b0",
+      "seeds": [
+        "hopfion_25_9",
+        "hopfion_25_9"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2728,
+      "retainB": 0.2682,
+      "live": 29287,
+      "mass": 1548034,
+      "paintedA": 27971,
+      "paintedB": 24434,
+      "spec": null,
+      "cycles": {
+        "freeEnds": 27101,
+        "maxCycle": 2,
+        "nCycles": 39
+      }
+    },
+    {
+      "batch": 1,
+      "name": "b5",
+      "seeds": [
+        "hopfion_25_9",
+        "hopfion_25_9"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2663,
+      "retainB": 0.2892,
+      "live": 36158,
+      "mass": 1560913,
+      "paintedA": 27971,
+      "paintedB": 24320,
+      "spec": null,
+      "cycles": {
+        "freeEnds": 34387,
+        "maxCycle": 2,
+        "nCycles": 22
+      }
+    },
+    {
+      "batch": 2,
+      "name": "ax1",
+      "seeds": [
+        "hopfion_25_9",
+        "hopfion_25_9"
+      ],
+      "axis": 1,
+      "verdict": "fusion",
+      "retainA": 0.2809,
+      "retainB": 0.2801,
+      "live": 42659,
+      "mass": 1627344,
+      "paintedA": 27971,
+      "paintedB": 24459,
+      "spec": null,
+      "cycles": {
+        "freeEnds": 40481,
+        "maxCycle": 2,
+        "nCycles": 28
+      }
+    },
+    {
+      "batch": 3,
+      "name": "b0",
+      "seeds": [
+        "hopfion_25_9",
+        "hopfion_25_9"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2728,
+      "retainB": 0.2682,
+      "live": 29287,
+      "mass": 1548034,
+      "paintedA": 27971,
+      "paintedB": 24434,
+      "spec": null,
+      "cycles": {
+        "freeEnds": 27101,
+        "maxCycle": 2,
+        "nCycles": 39
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "ts": 1791959505761,
+  "mode": "tail",
+  "phase": "ticking",
+  "t": 29,
+  "level": 80,
+  "live": 990,
+  "arcLive": 971,
+  "freeEnds": 10,
+  "maxCycle": 2,
+  "nCycles": 0
+}

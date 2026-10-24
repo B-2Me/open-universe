@@ -1,0 +1,22 @@
+fountain ring: 100x100x40 — 24 apertures r=12 z=10 bias=0.6 level=80/tick
+  walls: 68224 shell cells — pinch=0q ptension=60t /tick
+  t      live  arcLive  freeEnds  maxCycle  nCycles  srcQ
+  t0: live=24 arcLive=0 freeEnds=24 maxCycle=0 nCycles=0 srcQ=0
+  t25: live=502 arcLive=0 freeEnds=31 maxCycle=2 nCycles=0 srcQ=1270
+  t50: live=684 arcLive=0 freeEnds=283 maxCycle=2 nCycles=0 srcQ=1355
+  t75: live=749 arcLive=0 freeEnds=463 maxCycle=2 nCycles=0 srcQ=4585
+  t100: live=762 arcLive=0 freeEnds=563 maxCycle=2 nCycles=0 srcQ=5120
+  t125: live=786 arcLive=0 freeEnds=665 maxCycle=2 nCycles=0 srcQ=5295
+  t150: live=894 arcLive=0 freeEnds=804 maxCycle=2 nCycles=0 srcQ=5870
+  t175: live=1087 arcLive=0 freeEnds=986 maxCycle=2 nCycles=0 srcQ=6039
+  t200: live=1225 arcLive=0 freeEnds=1135 maxCycle=2 nCycles=0 srcQ=5960
+  t225: live=1365 arcLive=0 freeEnds=1265 maxCycle=2 nCycles=0 srcQ=6040
+  t250: live=1461 arcLive=0 freeEnds=1374 maxCycle=2 nCycles=0 srcQ=5960
+  t275: live=1584 arcLive=0 freeEnds=1489 maxCycle=2 nCycles=0 srcQ=6040
+  t300: live=1705 arcLive=0 freeEnds=1609 maxCycle=2 nCycles=0 srcQ=5960
+  t325: live=1779 arcLive=0 freeEnds=1684 maxCycle=2 nCycles=0 srcQ=6040
+  t350: live=1854 arcLive=0 freeEnds=1757 maxCycle=2 nCycles=0 srcQ=6120
+  t375: live=1867 arcLive=0 freeEnds=1769 maxCycle=2 nCycles=0 srcQ=6120
+  t399: live=1839 arcLive=0 freeEnds=1755 maxCycle=2 nCycles=0 srcQ=6120
+
+→ C:\src\github.com\nater0000\open-universe\logs\fountain-ring-r12-b0p6-l80-t60.json

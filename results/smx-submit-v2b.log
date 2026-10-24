@@ -1,0 +1,11 @@
+smxz: 3222.3 MB → 5.2 MB (28s)
+POST http://169.254.206.230:9898/job  smx-v2.smx.smxz (5.2 MB)
+→ queued as job 2 (12.4s upload)
+watching every 15s (Ctrl+C to detach — job keeps running)
+  done t1000 spray=0
+  status.json
+  batch 0 → C:\src\github.com\nater0000\open-universe\logs\smx-job-2-smx-v2\batch_00.smxst
+  batch 1 → C:\src\github.com\nater0000\open-universe\logs\smx-job-2-smx-v2\batch_01.smxst
+  batch 2 → C:\src\github.com\nater0000\open-universe\logs\smx-job-2-smx-v2\batch_02.smxst
+  batch 3 → C:\src\github.com\nater0000\open-universe\logs\smx-job-2-smx-v2\batch_03.smxst
+done

@@ -18,7 +18,7 @@ Before we audit the vanguard of modern physics, we must define the absolute phys
 
 Legacy physics assumes the universe is a static container filled with distinct objects governed by invisible rules. This generates unresolvable paradoxes. In the Planck Field, there are no objects and no empty space; there are only relational boundaries undergoing continuous state updates. 
 
-Because the universe has a hard physical resolution limit (the Planck scale), it does not operate on continuous floating-point calculus. We translate legacy forces into the discrete, capacity-bound actualizations of the substrate:
+Working at a hard physical resolution limit (the Planck scale), the substrate does not operate on continuous floating-point calculus. We translate legacy forces into the discrete, capacity-bound actualizations of the substrate. Mechanisms that work *like* reality's, whether or not reality is built this way:
 
 ### 1. Entropic Gravity (The Path of Least Resistance)
 Gravity is not an invisible geometric curve pulling objects across a void. We define it as an entropic thermodynamic equation of state:
@@ -26,14 +26,14 @@ $$F = T \frac{\Delta S}{\Delta x}$$
 Gravity is simply the Unruh temperature ($T$) of the local field multiplied by the change in relational entropy ($\Delta S$) over a discrete, fixed Planck-length step ($\Delta x$). Matter does not pull; local tension naturally resolves down the path of least thermodynamic resistance.
 
 ### 2. Time Dilation (Actualization Capacity)
-Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The fundamental substrate acts as the absolute preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
+In the substrate, time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The substrate acts as a preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate: one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per tick ($C_{max}$).
 $$C_{max}^2 = C_s^2 + C_i^2$$
 A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity (data routing) or gravitational resistance (environmental tension) approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
 ### 3. Cosmological Redshift (Propagation Friction)
-Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
+In this model, space is not stretching: light loses frequency as a direct consequence of propagation across an active discrete medium.
 $$E_{received} = E_{emitted} e^{-\mu d}$$
-Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades exponentially due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
+Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades exponentially due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency: a stretching of the data arrival interval without geometric spatial expansion.
 
 ### 4. Electromagnetism (Phase Friction)
 Charge is not a continuous geometric wave; it is the discrete topological state ($s$) of a locus. The Phase Friction ($\Phi$) between any two boundaries is calculated through discrete modular distance across finite states ($N$), not continuous trigonometric angles:
@@ -43,14 +43,14 @@ Aligned states (zero modular distance) mesh into coherent flow, allowing relatio
 ### 5. Mass-Energy Equivalence (Actualization Yield)
 $E=mc^2$ is not a conversion spell between two different substances. It is the mathematical boundary of Topological Unwinding:
 $$Y_{act} = (N_{nodes} \cdot \tau_{knot}) \times \Omega_{max}$$
-Mass is relational inertia—a deadlocked knot of tension dense enough to completely block incoming traffic, forcing the surrounding field to route momentum around it. When the localized heat exceeds the structural threshold of this knot, the topological deadlock unwinds. The total actualization yield ($Y_{act}$) is the exact thermodynamic tension stored in the knot, flooding the local field and instantly saturating its maximum actualization throughput ($\Omega_{max}$). It is a localized thunderstorm of state updates.
+Mass is relational inertia: a deadlocked knot of tension dense enough to completely block incoming traffic, forcing the surrounding field to route momentum around it. When the localized heat exceeds the structural threshold of this knot, the topological deadlock unwinds. The total actualization yield ($Y_{act}$) is the exact thermodynamic tension stored in the knot, flooding the local field and instantly saturating its maximum actualization throughput ($\Omega_{max}$). It is a localized thunderstorm of state updates.
 
 ---
 
 ## II. Philosophical Foundations: Process & Indeterminism
 
 ### Alfred North Whitehead: Process and Reality
-* **The Process View:** Whitehead dismantled the classical view of static "substance," replacing it with **actual occasions**—discrete, perishing drops of experience that are constantly overwritten to construct the present. Reality is not a collection of objects; it is an unbroken stream of qualitative becoming.
+* **The Process View:** Whitehead dismantled the classical view of static "substance," replacing it with **actual occasions**. Discrete, perishing drops of experience that are constantly overwritten to construct the present. Reality is not a collection of objects; it is an unbroken stream of qualitative becoming.
 * **Bridge to Old Constructs:** Materialists call these "particles" or "matter," but these terms are merely frozen abstractions of rapidly perishing relational events.
 
 ### Karl Popper: The Open Universe
@@ -59,7 +59,7 @@ Mass is relational inertia—a deadlocked knot of tension dense enough to comple
 
 ### Ilya Prigogine: Dissipative Structures & Non-Equilibrium
 * **The Thermodynamic Persistence of Form:** Classical thermodynamics focused almost exclusively on closed systems decaying into equilibrium. Prigogine (Nobel Prize in Chemistry, 1977) proved that in open systems far from equilibrium, the continuous flow of energy actually creates and maintains highly ordered, complex forms. He called these "dissipative structures." A tornado, a chemical clock, or a biological cell is not a static object; it is a form that only exists because it is actively consuming and routing thermodynamic energy.
-* **Bridge to Old Constructs:** Legacy physics treats fundamental particles as static, isolated objects. In the Planck Field, every "particle" or "molecule" is the ultimate subatomic dissipative structure. They only maintain their physical boundary through the continuous, unbroken exertion of the grid's actualization capacity. Prigogine proves that structure and thermodynamics are not separate fields—the structure *is* the thermodynamic routing.
+* **Bridge to Old Constructs:** Legacy physics treats fundamental particles as static, isolated objects. In the Planck Field, every "particle" or "molecule" is the ultimate subatomic dissipative structure. They only maintain their physical boundary through the continuous, unbroken exertion of the grid's actualization capacity. Prigogine proves that structure and thermodynamics are not separate fields: the structure *is* the thermodynamic routing.
 
 ---
 
@@ -67,7 +67,7 @@ Mass is relational inertia—a deadlocked knot of tension dense enough to comple
 
 ### N. Katherine Hayles: The Materiality of Information & Recursive Loops
 * **The Disembodiment Fallacy:** In *How We Became Posthuman* (1999), Hayles dismantles the illusion that information is a weightless, disembodied ghost separate from physical reality. Information requires a physical medium to exist and act.
-* **The Cybernetic Feedback Loop:** Consciousness is not a passive mirror reflecting a pre-recorded world. It is a recursive feedback loop—we simulate our own simulations, feeding predictions back into the system as fresh physical inputs.
+* **The Cybernetic Feedback Loop:** Consciousness is not a passive mirror reflecting a pre-recorded world. It is a recursive feedback loop: we simulate our own simulations, feeding predictions back into the system as fresh physical inputs.
 * **Bridge to Old Constructs:** Dualists treat the mind as an abstract logic layer floating above the brain. Hayles proves that *changing your mind is physics*, because every representation is a material event updating the state of the biological interface in real-time.
 
 ---
@@ -77,11 +77,11 @@ Mass is relational inertia—a deadlocked knot of tension dense enough to comple
 ### Max Planck & The Instrumental Turn: The Quantum of Action
 * **The Resolution Limit:** Planck discovered that thermodynamic energy exchange is quantized, establishing that reality cannot be infinitely subdivided. He proved the existence of hard natural limits (Planck length, Planck time).
 * **The Instrumental Error:** Legacy physics did not ignore Planck’s mathematics; they simply stripped it of its physical ontology. Lacking the vocabulary of complex dynamic networks, early 20th-century physicists attempted to map a discrete, actively actualizing universe using the continuous, frictionless calculus of the 19th century. They turned his thermodynamic reality into a weightless probability tool, calculating outcomes while ignoring the absolute thermodynamic dissipation limits of the substrate.
-* **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be calculated without physical friction. Planck established the literal bedrock of **The Planck Field**, proving the universe is bound by finite resolution and metabolic constraints.
+* **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be calculated without physical friction. Planck established the literal bedrock of **The Planck Field**, showing nature operates under finite resolution and metabolic constraints.
 
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy shape relational geometry, and objects simply follow natural geodesic paths through a landscape where actualization flows at varying rates.
-* **Bridge to Old Constructs:** We often say "gravity pulls," but this is a macroscopic idiom. There are no invisible tethers—only relational geometry shaping the path of least resistance.
+* **Bridge to Old Constructs:** We often say "gravity pulls," but this is a macroscopic idiom. There are no invisible tethers: only relational geometry shaping the path of least resistance.
 
 ### Rolf Landauer: The Thermodynamics of Information
 * **The Physical Dissipation of Data:** In 1961, Landauer proved that information is not an abstract, mathematical ghost. The erasure or manipulation of a single bit of information carries a strict, irreducible thermodynamic dissipation requirement (heat). Information is fundamentally physical.
@@ -103,7 +103,7 @@ The friction between a discrete physical reality and continuous, frictionless ma
 *   **Bridge to Old Constructs:** Mainstream mathematics assumes space and time can be divided infinitely, allowing for zero-friction abstractions. Brouwer and Zeilberger validate the Planck Field’s core axiom: reality has a hard resolution limit, and frictionless infinities do not physically exist. 
 
 ### Edward Fredkin & Seth Lloyd: Digital Physics 
-*   **The Universe as a Processor:** Fredkin, a pioneer of digital physics, argued that the universe is literally a cellular automaton—a discrete computational substrate where fundamental physics is just the processing of information. Seth Lloyd expanded this by calculating the absolute thermodynamic computational capacity of the universe, proving that physical laws are bound by the limits of processing bandwidth.
+*   **The Universe as a Processor:** Fredkin, a pioneer of digital physics, argued that the universe is literally a cellular automaton. A discrete computational substrate where fundamental physics is just the processing of information. Seth Lloyd expanded this by calculating the absolute thermodynamic computational capacity of the universe, proving that physical laws are bound by the limits of processing bandwidth.
 *   **Bridge to Old Constructs:** Legacy physics treats the universe as a geometric container where objects move. Digital physics aligns perfectly with the Planck Field, recognizing that the universe is a finite processing engine where spatial translation and causal actualization are literal computational events.
 
 ### Gregory Chaitin: Algorithmic Information Theory
@@ -134,7 +134,7 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 * **Where We Detach:** Volovik primarily applies these principles as emergent macroscopic behavior of quantum liquids. We push this framework to the ultimate bedrock, mapping his fluid dynamics and vortex topological structures directly to the discrete computational network grid. 
 
 ### Tony Skyrme: Topological Solitons (Skyrmions)
-* **What We Integrate:** Skyrme realized decades ago that fundamental particles are not point-like objects. They are topological solitons—stable, localized twists or knots in a continuous field. A "Skyrmion" cannot easily unwind without an enormous energetic cost, which perfectly explains why structures like electrons and protons remain permanently stable.
+* **What We Integrate:** Skyrme realized decades ago that fundamental particles are not point-like objects. They are topological solitons: stable, localized twists or knots in a continuous field. A "Skyrmion" cannot easily unwind without an enormous energetic cost, which perfectly explains why structures like electrons and protons remain permanently stable.
 * **Where We Detach:** Standard Skyrmion theory is traditionally applied over a continuous background field. We integrate the concept of topological stability (the knot) but apply it over a fundamentally discrete network grid, treating mass as the thermodynamic processing cost of maintaining that knot.
 
 ### Giacomo Mauro D'Ariano et al.: Quantum Cellular Automata
@@ -142,8 +142,8 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 * **Where We Detach:** D'Ariano’s rules operate on unitary quantum states (amplitudes/superposition). The Planck Field operates one layer deeper, on definitive classical actualizations, pushing the QCA model down to the ontological bedrock.
 
 ### Gerard 't Hooft: The Cellular Automaton Interpretation
-* **What We Integrate:** Nobel Laureate Gerard 't Hooft argues that beneath the probabilistic blur of quantum mechanics lies a discrete, classical, deterministic machine—a cellular automaton. He completely aligns with our stance: the universe operates on definite, single-configuration local states at the Planck scale, not smeared-out probability waves.
-* **Where We Detach:** To survive Bell's Theorem, 't Hooft accepts "Superdeterminism"—the idea that the entire future of the universe was fixed at the Big Bang. We reject this. A local grid of definite states has four exits from Bell's Theorem. We explicitly pick the non-local exit. However, we do not give up locality for "spooky action at a distance"; we give up *geometric* locality in favor of *topological network* locality. On the fundamental discrete substrate, entangled nodes share a direct network edge. Emergent 3D spatial separation does not dictate fundamental network adjacency.
+* **What We Integrate:** Nobel Laureate Gerard 't Hooft argues that beneath the probabilistic blur of quantum mechanics lies a discrete, classical, deterministic machine, a cellular automaton. He completely aligns with our stance: the universe operates on definite, single-configuration local states at the Planck scale, not smeared-out probability waves.
+* **Where We Detach:** To survive Bell's Theorem, 't Hooft accepts "Superdeterminism". The idea that the entire future of the universe was fixed at the Big Bang. We reject this. A local grid of definite states has four exits from Bell's Theorem. We explicitly pick the non-local exit. However, we do not give up locality for "spooky action at a distance"; we give up *geometric* locality in favor of *topological network* locality. On the fundamental discrete substrate, entangled nodes share a direct network edge. Emergent 3D spatial separation does not dictate fundamental network adjacency.
 
 ### Lee Smolin: The Reality of Time
 * **What We Integrate:** We adopt Smolin’s **Temporal Naturalism**. Smolin forcefully dismantles the Block Universe, arguing that the present moment is thick and real, the past is physically gone, and the future is radically unwritten. Time is a continuous process of becoming, not a 4D landscape you can traverse.
@@ -155,7 +155,7 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 
 ### Erik Verlinde: Thermodynamic Gravity
 * **What We Integrate:** We fully integrate Verlinde’s proof of **Entropic Gravity**. He demonstrates that gravity is an emergent thermodynamic phenomenon. When matter interacts, it shifts the entanglement entropy of the surrounding boundary, generating a displacement force. By treating gravity as an entropic consequence of information distribution across the field, Verlinde naturally accounts for galactic rotation curves, rendering invisible "Dark Matter" physically redundant.
-* **Where We Detach:** Verlinde remains intellectually tethered to the formalisms of high-energy string theory—specifically holographic idealized screens. He treats boundary information as an abstract mathematical projection. Per Landauer's Principle, information is not an abstract concept; it is an embodied, material state-change requiring literal thermodynamic dissipation.
+* **Where We Detach:** Verlinde remains intellectually tethered to the formalisms of high-energy string theory. Specifically holographic idealized screens. He treats boundary information as an abstract mathematical projection. Per Landauer's Principle, information is not an abstract concept; it is an embodied, material state-change requiring literal thermodynamic dissipation.
 
 ### Stephen Wolfram: The Discrete Network
 * **What We Integrate:** Wolfram recognized that differential calculus assumes an infinitely divisible continuum that nature does not physically possess. His hypergraph model replaces continuous space with an actively updating network of discrete relational nodes. Space is just the geometric distance between nodes; causal propagation is the directed chain of localized actualization events. This discrete causal structure perfectly matches the architecture of the Planck Field. Furthermore, Wolfram's dynamic hypergraphs perfectly demonstrate how dynamic network adjacency satisfies Bell's non-locality condition without geometric "spooky action."
@@ -163,7 +163,7 @@ Institutional physics remains largely trapped in the gravity of legacy architect
 
 ---
 
-> **Deep dive:** the six-pillar expansion of this audit — 't Hooft, Lamb & Hobson, Rovelli, Markopoulou & Smolin, Heisenberg–Euler–Schwinger, and Hoffman — with primary works and per-pillar divergence analysis, lives on the [Vanguard Lineage](/vanguard) page.
+> **Deep dive:** the six-pillar expansion of this audit, 't Hooft, Lamb & Hobson, Rovelli, Markopoulou & Smolin, Heisenberg–Euler–Schwinger, and Hoffman, with primary works and per-pillar divergence analysis, lives on the [Vanguard Lineage](/vanguard) page.
 
 ## VIII. Translation Guide: Substance Ontology to Process Ontology
 
@@ -180,17 +180,17 @@ To navigate the site without falling back into mechanistic traps, use the follow
 
 ### The Substrate-Grounded Bridge (Planck Field Engine, M1–M18)
 
-The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom verified in the `planck3.c` discrete substrate across eighteen measured milestones, and each carries a provenance flag — **Measured** (recorded by a committed headless harness on the single-spin prototype — mechanics since retracted), **Framework** (mechanism-consistent but not directly demonstrated), or **Aspirational** (a target for the multi-channel mesoscale engine, not expressible at the single-spin bedrock). No row launders an aspiration into a measurement. *(The M1–M18 entries are the retracted single-spin prototype campaign — the idioms remain the theory's map; the current record is the [meso monograph](/interference/meso-monograph).)*
+The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom verified in the `planck3.c` discrete substrate across eighteen measured milestones, and each carries a provenance flag, **Measured** (recorded by a committed headless harness on the single-spin prototype, mechanics since retracted), **Framework** (mechanism-consistent but not directly demonstrated), or **Aspirational** (a target for the multi-channel mesoscale engine, not expressible at the single-spin bedrock). No row launders an aspiration into a measurement. *(The M1–M18 entries are the retracted single-spin prototype campaign: the idioms remain the theory's map; the current record is the [meso monograph](/interference/meso-monograph).)*
 
 | Legacy Term | The Bridge Idiom | Process Ontology Reality | Status |
 | :--- | :--- | :--- | :--- |
-| **Empty Space / Vacuum** | "A void where objects move." | **Active Relational Ground State:** A dense, memoryless 12-neighbor True-FCC network in local equilibrium (ΔΦ ≈ 0). | **Measured (M3)** — vacuum is inert equilibrium. |
-| **Light / Photon** | "A wave/particle moving through space." | **Unobstructed Moving Momentum:** causal throughput propagating across open vacuum links at the network's maximum rate (v = 1). | **Measured (M4)** — ballistic, dispersion-free, isotropic. |
-| **Matter** | "A solid particle with rest mass." | **Self-Confined Spinning Momentum:** causal throughput locked in a self-trapping limit cycle. Bedrock matter is anchored at v = 0. | **Measured in part (M12, M14, M17)** — spontaneous τ=4 breathers exist; sub-light drift is proven absent in `planck3.c` (aspirational for `meso3.c`). |
-| **Wave-Particle Duality** | "A particle splits and interferes with itself." | **Un-actualized Flux in Flight; Ensemble in Data:** nothing splits; the "wave" is the statistical histogram of many discrete events. | **Measured (M5, M10, M11)** — strictly additive corpuscles; combs arise from arrival timing. |
-| **Quantum Collapse** | "Observation collapses the wave function." | **Hardware Capacity Saturation:** an armed cell just below `FLOW_CAP` fires an irreversible directional avalanche on a microscopic trigger. | **Measured in part (M9, M10)** — the APD cascade is proven; single-quantum antibunching requires stochastic single-port emission, not yet expressible. |
-| **Quantum Phase** | "A complex number ψ rotating in Hilbert space." | **Relative Arrival Timing + Internal Clocks:** timing offsets Δt mod τ across converging paths; 4-state structural registers in bound cycles. | **Measured (M11, M12, M13)** — Dirac combs and breather clocks verified, no complex numbers. |
-| **Chemical Bonding** | "Shared electron pairs in a potential well." | **Shared-Link Time-Multiplexing:** two limit cycles sharing one boundary link on alternating beats (Δφ ∈ {1,3}) under a discrete exclusion rule. | **Measured (M16)** — 5-cell dimer molecule stable 1,000+ ticks. |
-| **Forces (Gravity)** | "Invisible pushes and pulls at a distance." | **Relational Impedance Gradients:** tension (tn) slopes steer *moving* flux only (`feelsTension` requires spin ≠ 0); stationary mass is structurally blind. | **Framework (mechanism-consistent)** — T_DIVERT shear is canonical-active; direct gradient-deflection measurement is untested. |
-| **Light Speed vs. Sound Speed** | "Two wave speeds 10⁶ apart." | **Link Speed vs. Dense-Medium Relay:** light is raw link throughput; sound is a mechanical relay through condensed structure. | **Aspirational (meso3 target)** — in `planck3.c` dense media *choke* rather than retard; no sub-c propagation exists. |
-| **Electromagnetism** | "An invisible vector field in space." | **Collision Kinematics:** the momentum exchange when moving momentum meets self-confining momentum. | **Framework / Analogy** — fusion and steering measured (M6); long-range 1/r² fields need multi-channel mesoscale modeling. |
+| **Empty Space / Vacuum** | "A void where objects move." | **Active Relational Ground State:** A dense, memoryless 12-neighbor True-FCC network in local equilibrium (ΔΦ ≈ 0). | **Measured (M3)**: vacuum is inert equilibrium. |
+| **Light / Photon** | "A wave/particle moving through space." | **Unobstructed Moving Momentum:** causal throughput propagating across open vacuum links at the network's maximum rate (v = 1). | **Measured (M4)**: ballistic, dispersion-free, isotropic. |
+| **Matter** | "A solid particle with rest mass." | **Self-Confined Spinning Momentum:** causal throughput locked in a self-trapping limit cycle. Bedrock matter is anchored at v = 0. | **Measured in part (M12, M14, M17)**: spontaneous τ=4 breathers exist; sub-light drift is proven absent in `planck3.c` (aspirational for `meso3.c`). |
+| **Wave-Particle Duality** | "A particle splits and interferes with itself." | **Un-actualized Flux in Flight; Ensemble in Data:** nothing splits; the "wave" is the statistical histogram of many discrete events. | **Measured (M5, M10, M11)**: strictly additive corpuscles; combs arise from arrival timing. |
+| **Quantum Collapse** | "Observation collapses the wave function." | **Hardware Capacity Saturation:** an armed cell just below `FLOW_CAP` fires an irreversible directional avalanche on a microscopic trigger. | **Measured in part (M9, M10)**: the APD cascade is proven; single-quantum antibunching requires stochastic single-port emission, not yet expressible. |
+| **Quantum Phase** | "A complex number ψ rotating in Hilbert space." | **Relative Arrival Timing + Internal Clocks:** timing offsets Δt mod τ across converging paths; 4-state structural registers in bound cycles. | **Measured (M11, M12, M13)**: Dirac combs and breather clocks verified, no complex numbers. |
+| **Chemical Bonding** | "Shared electron pairs in a potential well." | **Shared-Link Time-Multiplexing:** two limit cycles sharing one boundary link on alternating beats (Δφ ∈ {1,3}) under a discrete exclusion rule. | **Measured (M16)**: 5-cell dimer molecule stable 1,000+ ticks. |
+| **Forces (Gravity)** | "Invisible pushes and pulls at a distance." | **Relational Impedance Gradients:** tension (tn) slopes steer *moving* flux only (`feelsTension` requires spin ≠ 0); stationary mass is structurally blind. | **Framework (mechanism-consistent)**: T_DIVERT shear is canonical-active; direct gradient-deflection measurement is untested. |
+| **Light Speed vs. Sound Speed** | "Two wave speeds 10⁶ apart." | **Link Speed vs. Dense-Medium Relay:** light is raw link throughput; sound is a mechanical relay through condensed structure. | **Aspirational (meso3 target)**: in `planck3.c` dense media *choke* rather than retard; no sub-c propagation exists. |
+| **Electromagnetism** | "An invisible vector field in space." | **Collision Kinematics:** the momentum exchange when moving momentum meets self-confining momentum. | **Framework / Analogy**: fusion and steering measured (M6); long-range 1/r² fields need multi-channel mesoscale modeling. |

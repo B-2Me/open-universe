@@ -1,0 +1,7 @@
+{
+  "ts": 1792005586483,
+  "config": "config/collide-ymirror-absorb.json",
+  "scenario": "absorb_axis5",
+  "phase": "done",
+  "verdict": "degraded"
+}

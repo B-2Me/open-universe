@@ -3,71 +3,67 @@ layout: home
 
 hero:
   name: "The Open Universe"
-  text: "Reality is a continuously actualizing, zero-storage substrate."
-  tagline: "The 'infinitely divisible empty space' paradigm is breaking. We are systems integrators building the bottom-up engineering validation of the discrete Planck Field."
+  text: "A substrate built to work like reality does. Measured, not assumed."
+  tagline: "We built a tiny universe with simple rules and measured what it can do. This is the record."
   actions:
     - theme: brand
-      text: Enter The Planck Field
+      text: "Turn the Mill: Live Physics"
+      link: /mill-demo
+    - theme: alt
+      text: The Measured Record
+      link: /interference/meso-monograph
+    - theme: alt
+      text: The Program
       link: /field
     - theme: alt
-      text: Kindle Yarkovsky's Ember
-      link: /ember-demo
-    - theme: alt
-      text: Audit the Paradoxes
-      link: /paradox
-    - theme: alt
-      text: The Empirical Laboratory
-      link: /interference
+      text: Where It Stands
+      link: /interference/roadmap
 
 features:
-  - title: Objective Thermodynamics
-    details: Reality is not a frictionless geometric abstraction. We ground our framework directly in objective physical constraints—like the Planck resolution limit and the metabolic dissipation of actualization.
-  - title: The Zero-Storage Substrate
-    details: The universe is not a pre-recorded block. The past is physically consumed and overwritten to actualize the present, and the future is radically unwritten.
-  - title: Bottom-Up Systems Integration
-    details: The vanguard is fragmented across quantum gravity, superfluid theories, and digital physics. We unite their mathematical proofs to upend the continuous-void paradigm.
+  - title: Matter Is Trapped Traffic
+    details: In the substrate, a particle is not a thing that moves. It is momentum that couldn't leave. Congested flux parks as rest mass; parked flux radiates only when a carrier passes through it.
+  - title: Light Writes, Contact Transacts
+    details: Absorbed photons deposit directional momentum into matter. Light literally writes spin. Every irreversible event in the engine happens at contact, and the ledger counts zero in free flight.
+  - title: Measured, Not Scripted
+    details: Every claim on this site is a headless measurement against the C engine, commit-anchored and reproducible, including the nulls, the confounds we caught, and the claims we retracted.
 ---
 
-## The Map is Not the Territory
+## The Silhouette It Replaces
 
-**Geometry is not the universe. It is the dashboard.**
+**For three centuries, the map has been a container full of objects.** Empty space as a stage; particles as little things sitting on it; forces as invisible ropes connecting them. That picture, *substance ontology*, works brilliantly until it doesn't, and the places it doesn't are exactly the famous ones: quantum measurement, dark matter, the arrow of time, what an electron *is* between interactions.
 
-For nearly a century, legacy physics has been trapped in a mathematical detour, actively defending the false paradigm of an infinitely divisible empty space. When faced with the sheer physical friction of quantum mechanics in the early 20th century, the academic establishment abandoned physical ontology altogether. They attempted to describe a discrete, state-dependent universe using the continuous, frictionless calculus of the 19th century. 
+The Open Universe proposes the opposite silhouette: no container, no passive objects. A dense, discrete, continuously-updating **substrate** where every locus hands state to its neighbors each tick, where "space" is the tension between adjacent updates, and where a "particle" is a *pattern of traffic that fails to dissipate*, a standing process, not a standing thing.
 
-Because the vocabulary of complex dynamic networks—recursive feedback, structural capacity, and continuous state actualization—was not yet integrated into fundamental physics, they traded the thermodynamic territory for a clean geometric abstraction.
+This is not a metaphor we ask you to accept. It is an engine we ask you to measure. We can't step outside reality to inspect what it *is*: all anyone can do is build a substrate that reproduces its *how*, and record how far the resemblance goes.
 
-But math lacks mass, and abstractions manifest without friction. When you apply frictionless mathematics to a physical universe, you generate paradoxes. Without a way to account for the physical dissipation of localized actualization, institutions had to invent invisible ghosts—stretching space, stretchable time, dark matter, and a bloated zoo of structureless point-particles—just to balance their equations. They became trapped in "substance ontology," assuming the universe is a passive geometric container (space) filled with distinct static objects (matter).
+## What the Engine Is
 
-### The Vanguard is Already Here
+A lattice gas in the honest sense: the descendant of the FHP automata and D3Q19 lattice Boltzmann methods that already earned their place in fluid physics. Each cell carries 19 integer channels of quanta. Streaming hops quanta along channels; collisions reshuffle them under exact mass and momentum conservation; transit friction parks congested flux as rest mass; parked mass radiates only while a carrier transits. Everything else, everything you can see in [Joule's Mill](/mill-demo), is measured outcome, not authored behavior.
 
-You are not alone in seeing the cracks in the legacy framework. A quiet cohort of theoretical physicists, computer scientists, and condensed-matter pioneers has spent decades mathematically dismantling the continuous block universe. From cellular automata and superfluid vacuum theory to entropic gravity and digital physics, the heavy theoretical lifting has already been done. 
+## What It Does: The Current Record
 
-This site is an audit of the legacy error, and a bottom-up engineering validation of those vanguard claims. 
+- **Coherent light travels forever.** A unidirectional beam never self-scatters: equal co-moving pairs have no momentum-conserving alternative, a selection rule that emerges from pure integer bookkeeping (M47c).
+- **Collisions thermalize: friction binds.** An anisotropic gas isotropizes to `P/ρ ≈ 0.879` in ~25 ticks (M46); congestion drag turns that same flux into parked, persistent matter (M33–M35).
+- **Matter spins, and light can wind it.** Directional rest channels store angular momentum indefinitely (M39, M42); absorbed photons deposit it with the correct sign (M43), a YORP-class mechanism.
+- **Only active matter interacts.** Self-radiating lumps genuinely couple: transiently, at short range (M47b). Passive lumps in a bath or a beam do not pull on each other at all. Le Sage shadowing is dead; transaction-mediated coupling survives.
+- **A medium attenuates; vacuum doesn't.** A pulse through a dilute ambient gas loses flux on a measurable mean free path; through vacuum it loses exactly zero (M48).
+- **Every irreversible event is countable.** The transaction ledger reads zero in free flight, ~3,700 per window in a driven ember, and zero again in the frozen ground state (M47), the substrate's arrow of time, instrumented.
 
-We are stepping out of the frozen block universe, abandoning the illusion of static substances, and returning directly to the active, unwritten **Planck Field**. 
+And the honest boundaries: no sustained gravitational attraction, no structured chemistry yet, no dimensional bridge to meters or seconds. All measured, all documented: the monograph keeps the confounds and retractions as first-class results.
 
-The universe does not calculate geometry; it resolves thermodynamic gradients. There are no objects; there are only relational boundaries. There is no empty space; there is only the active, zero-storage substrate.
+## Exploring the Program
 
-Welcome to a thermodynamic universe.
+*   **[The Friction Substrate](/interference/meso-monograph)**: the canonical empirical record: M19–M48, every mechanism verified or falsified headless.
+*   **[Joule's Mill](/mill-demo)**: the flagship instrument: the full engine live in your browser, with the milestone regimes one click away.
+*   **[The Predictive Roadmap](/interference/roadmap)**: what the engine can still reach, and which bridges it honestly can't.
+*   **[The Planck Field](/field)**: the theoretical program: why a process-ontology substrate, and what the vanguard lineage already established.
 
----
+### Milestone Instruments & History
 
-## Exploring the Architecture
+*The earlier engines and campaigns are preserved as the provenance of the current model: the missteps are part of the record, not hidden beneath it.*
 
-The investigation is organized into four core pillars, progressing from empirical anomalies to laboratory telemetry:
-
-*   **[The Observational Paradoxes](/paradox):** Stress-testing legacy models across quantum, relativistic, macro-biological, and abstract mathematical breakdowns—showing how insoluble paradoxes resolve into expected behaviors of a discrete network.
-*   **[The Substrate & The Field](/field):** Grounding physical ontology in discrete causal mechanics, memoryless synchronous updates, and the transition from free flux ($c$) to bound localized circulation.
-*   **[The Formal Mathematical Machinery](/math):** Universality class analysis, lattice invariants on the 12-port True-FCC grid, discrete causal thermodynamics, and the exact tensor isotropy bounds.
-*   **[The Empirical Laboratory](/interference):** Direct telemetry from the C engine test harness (Milestones M1–M18), falsified hypotheses, discrete quantum optics, and the mesoscale roadmap.
-
----
-
-### Interactive Visualizers & Demos
-
-*For visual exploration of discrete lattice dynamics in the browser:*
-
-*   **[Hopf's Loom](/loom-demo):** A 400,000-node WebGL2 volume visualizer demonstrating topological circulation on the True-FCC lattice.
-*   **[The Hopfion Zoo](/hopfion-zoo):** A geometric archive of stable resting structures explored during early 3D parameter sweeps.
-*   **[Langevin's Wake](/wake-demo):** A 2D interactive canvas demonstration of discrete routing and wake dynamics.
-
+*   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: drive, beam, and the walking comet at 44³.
+*   **[Hopf's Loom](/loom-demo)**: the single-spin prototype engine: a woven 19-loop Hopfion you can slice and perturb.
+*   **[The Hopfion Zoo](/hopfion-zoo)**: thirty-seven stable knot geometries from the prototype's parameter sweeps.
+*   **[Langevin's Wake](/wake-demo)**: the original 2D substrate engine where the friction ontology started.
+*   **[Program History](/interference/methodology)**: methodology, the Open Frontier experiment log, and the retired proposals (CERN matching, LSZ, shadow gravity) kept in context.

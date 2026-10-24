@@ -1,0 +1,83 @@
+[
+  {
+    "level": 0,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 2,
+    "converged": true,
+    "warmTicks": 60
+  },
+  {
+    "level": 64,
+    "load": "beam",
+    "retainA": 0.997,
+    "retainB": 0,
+    "hEq": 1397.5,
+    "converged": true,
+    "warmTicks": 60
+  },
+  {
+    "level": 160,
+    "load": "beam",
+    "retainA": 1,
+    "retainB": 0.061,
+    "hEq": 1358.1,
+    "converged": true,
+    "warmTicks": 66
+  },
+  {
+    "level": 0,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 2,
+    "converged": true,
+    "warmTicks": 200
+  },
+  {
+    "level": 32,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 1475.2,
+    "converged": true,
+    "warmTicks": 200
+  },
+  {
+    "level": 64,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 1459.6,
+    "converged": true,
+    "warmTicks": 200
+  },
+  {
+    "level": 128,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 1527.8,
+    "converged": true,
+    "warmTicks": 200
+  },
+  {
+    "level": 192,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 1459,
+    "converged": true,
+    "warmTicks": 200
+  },
+  {
+    "level": 240,
+    "load": "beam",
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 1572.3,
+    "converged": true,
+    "warmTicks": 200
+  }
+]

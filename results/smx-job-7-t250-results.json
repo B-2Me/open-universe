@@ -1,0 +1,921 @@
+{
+  "jobDir": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-7-t250",
+  "meta": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-v2.smx.meta.json",
+  "results": [
+    {
+      "batch": 0,
+      "name": "clr09",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 9,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 1,
+      "name": "clr12",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 12,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 2,
+      "name": "clr16",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 16,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 3,
+      "name": "clr20",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 20,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 4,
+      "name": "clr24",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 24,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 5,
+      "name": "clr28",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 28,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 6,
+      "name": "clr32",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 32,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 7,
+      "name": "clr40",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 40,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 8,
+      "name": "clr40_p20",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 20952,
+      "mass": 1257120,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "clr_A": 40,
+        "pinch": 20
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 14
+      }
+    },
+    {
+      "batch": 9,
+      "name": "ov_self_02",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.226,
+      "retainB": 0.2403,
+      "live": 20814,
+      "mass": 673555,
+      "paintedA": 20952,
+      "paintedB": 20903,
+      "spec": {
+        "overlap": 0.02,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 20720,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 10,
+      "name": "ov_self_25",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2384,
+      "retainB": 0.239,
+      "live": 18814,
+      "mass": 606938,
+      "paintedA": 20952,
+      "paintedB": 19002,
+      "spec": {
+        "overlap": 0.25,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18730,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 11,
+      "name": "ov_self_50",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2129,
+      "retainB": 0.2432,
+      "live": 18406,
+      "mass": 584566,
+      "paintedA": 20952,
+      "paintedB": 19654,
+      "spec": {
+        "overlap": 0.5,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18360,
+        "maxCycle": 2,
+        "nCycles": 2
+      }
+    },
+    {
+      "batch": 12,
+      "name": "ov_self_75",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2454,
+      "retainB": 0.2516,
+      "live": 18275,
+      "mass": 579990,
+      "paintedA": 20952,
+      "paintedB": 18723,
+      "spec": {
+        "overlap": 0.75,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18226,
+        "maxCycle": 2,
+        "nCycles": 3
+      }
+    },
+    {
+      "batch": 13,
+      "name": "ov_32x24_25",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_24_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2319,
+      "retainB": 0.2511,
+      "live": 16187,
+      "mass": 519790,
+      "paintedA": 20952,
+      "paintedB": 14981,
+      "spec": {
+        "overlap": 0.25,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 16144,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 14,
+      "name": "ov_32x40_25",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_40_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2345,
+      "retainB": 0.2294,
+      "live": 19093,
+      "mass": 616949,
+      "paintedA": 20952,
+      "paintedB": 18646,
+      "spec": {
+        "overlap": 0.25,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18996,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 15,
+      "name": "ov_32x48_25",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_48_16"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2337,
+      "retainB": 0.2442,
+      "live": 50564,
+      "mass": 1631211,
+      "paintedA": 20952,
+      "paintedB": 72841,
+      "spec": {
+        "overlap": 0.25,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 50179,
+        "maxCycle": 2,
+        "nCycles": 5
+      }
+    },
+    {
+      "batch": 16,
+      "name": "ov_self_ax6",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 6,
+      "verdict": "elastic_bounce",
+      "retainA": 1,
+      "retainB": 1,
+      "live": 41904,
+      "mass": 2514240,
+      "paintedA": 20952,
+      "paintedB": 20952,
+      "spec": {
+        "overlap": 0.25,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 28
+      }
+    },
+    {
+      "batch": 17,
+      "name": "wound_arc40",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.9876,
+      "retainB": null,
+      "live": 19903,
+      "mass": 1209120,
+      "paintedA": 20152,
+      "paintedB": 0,
+      "spec": {
+        "wound_A": 0.4,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 13
+      }
+    },
+    {
+      "batch": 18,
+      "name": "wound_arc50",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.9875,
+      "retainB": null,
+      "live": 19702,
+      "mass": 1197060,
+      "paintedA": 19951,
+      "paintedB": 0,
+      "spec": {
+        "wound_A": 0.5,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 0,
+        "maxCycle": 2001,
+        "nCycles": 13
+      }
+    },
+    {
+      "batch": 19,
+      "name": "wound_bite30",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.1673,
+      "retainB": null,
+      "live": 5404,
+      "mass": 186732,
+      "paintedA": 14666,
+      "paintedB": 0,
+      "spec": {
+        "bite_A": 0.3,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 5366,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 20,
+      "name": "retie_arc40",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2349,
+      "retainB": 0.2345,
+      "live": 18512,
+      "mass": 586742,
+      "paintedA": 20152,
+      "paintedB": 19030,
+      "spec": {
+        "overlap": 0.25,
+        "wound_A": 0.4,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18442,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 21,
+      "name": "retie_2x40",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.2379,
+      "retainB": 0.2353,
+      "live": 18091,
+      "mass": 567543,
+      "paintedA": 20152,
+      "paintedB": 18298,
+      "spec": {
+        "overlap": 0.25,
+        "wound_A": 0.4,
+        "wound_B": 0.4,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 18036,
+        "maxCycle": 2,
+        "nCycles": 2
+      }
+    },
+    {
+      "batch": 22,
+      "name": "retie_bite30",
+      "seeds": [
+        "hopfion_32_8",
+        "hopfion_32_8"
+      ],
+      "axis": 0,
+      "verdict": "fusion",
+      "retainA": 0.1919,
+      "retainB": 0.2378,
+      "live": 16781,
+      "mass": 539852,
+      "paintedA": 14666,
+      "paintedB": 20908,
+      "spec": {
+        "overlap": 0.25,
+        "bite_A": 0.3,
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 16718,
+        "maxCycle": 2,
+        "nCycles": 1
+      }
+    },
+    {
+      "batch": 23,
+      "name": "kick_iso",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.357,
+      "retainB": null,
+      "live": 21758,
+      "mass": 703292,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "kick": {
+          "buf": 120,
+          "cells": "A"
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 21695,
+        "maxCycle": 2,
+        "nCycles": 2
+      }
+    },
+    {
+      "batch": 24,
+      "name": "kick_hemi",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.2972,
+      "retainB": null,
+      "live": 15847,
+      "mass": 506961,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "kick": {
+          "buf": 120,
+          "cells": "A",
+          "hemi": [
+            -1,
+            0,
+            0
+          ]
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 15811,
+        "maxCycle": 2,
+        "nCycles": 2
+      }
+    },
+    {
+      "batch": 25,
+      "name": "slug_soft",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.0029,
+      "retainB": null,
+      "live": 9704,
+      "mass": 347399,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "slug": {
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "off": 16,
+          "len": 24,
+          "w": 4,
+          "q": 80
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 9651,
+        "maxCycle": 2,
+        "nCycles": 2
+      }
+    },
+    {
+      "batch": 26,
+      "name": "slug_hard",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.0064,
+      "retainB": null,
+      "live": 10024,
+      "mass": 344392,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "slug": {
+          "dir": [
+            1,
+            0,
+            0
+          ],
+          "off": 16,
+          "len": 24,
+          "w": 4,
+          "q": 255
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 9969,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 27,
+      "name": "emit_p0",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.0018,
+      "retainB": null,
+      "live": 16234,
+      "mass": 641983,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              60,
+              128,
+              128
+            ],
+            "r": 6,
+            "dir": [
+              1,
+              0,
+              0
+            ],
+            "quant": 4,
+            "mod": 0
+          }
+        ],
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 14612,
+        "maxCycle": 4,
+        "nCycles": 60
+      }
+    },
+    {
+      "batch": 28,
+      "name": "emit_p4",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.227,
+      "retainB": null,
+      "live": 16325,
+      "mass": 580542,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              60,
+              128,
+              128
+            ],
+            "r": 6,
+            "dir": [
+              1,
+              0,
+              0
+            ],
+            "quant": 8,
+            "mod": 4
+          }
+        ],
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 14924,
+        "maxCycle": 2,
+        "nCycles": 38
+      }
+    },
+    {
+      "batch": 29,
+      "name": "emit_p8",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.0001,
+      "retainB": null,
+      "live": 15967,
+      "mass": 579462,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              60,
+              128,
+              128
+            ],
+            "r": 6,
+            "dir": [
+              1,
+              0,
+              0
+            ],
+            "quant": 8,
+            "mod": 8
+          }
+        ],
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 14328,
+        "maxCycle": 2,
+        "nCycles": 30
+      }
+    },
+    {
+      "batch": 30,
+      "name": "emit_p16",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.2346,
+      "retainB": null,
+      "live": 15585,
+      "mass": 585338,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              60,
+              128,
+              128
+            ],
+            "r": 6,
+            "dir": [
+              1,
+              0,
+              0
+            ],
+            "quant": 8,
+            "mod": 16
+          }
+        ],
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 14647,
+        "maxCycle": 2,
+        "nCycles": 31
+      }
+    },
+    {
+      "batch": 31,
+      "name": "emit_p32",
+      "seeds": [
+        "hopfion_32_8",
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.0003,
+      "retainB": null,
+      "live": 15470,
+      "mass": 582172,
+      "paintedA": 20952,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              60,
+              128,
+              128
+            ],
+            "r": 6,
+            "dir": [
+              1,
+              0,
+              0
+            ],
+            "quant": 8,
+            "mod": 32
+          }
+        ],
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 14960,
+        "maxCycle": 2,
+        "nCycles": 4
+      }
+    }
+  ]
+}

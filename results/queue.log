@@ -1,0 +1,5 @@
+[08:07:51] queue: waiting for sweep PID 12200
+[09:19:22] queue: sweep finished - launching gentle basin
+[10:33:03] queue: gentle done (exit 0) - launching tension basin
+[13:02:24] queue: tension done (exit 0) - launching collision matrix
+[15:37:23] queue: collide done (exit 0) - queue complete
