@@ -118,7 +118,7 @@ The mechanism class — *resting mass exchanging momentum with vacuum through di
 - **Native vs. engineered:** every IFRIC/IFRICM result is channel-*native* (no extra state) but flag-*gated* (authored mechanics, not emergent collisions). The substrate gained a **transit-friction law**; friction did not "emerge" — it was coded, measured, and audited.
 - **Momentum accounting:** IFRIC absorbs transiting momentum into the network (flagged). Mass is exact; momentum is not — that is what friction means.
 - **Retracted:** single-spin `planck3` campaign mechanics (M1–M31) — removed from the record as an implementation artifact; history retained in git.
-- **Downgraded (M47b):** M37's "mutual attraction via reciprocal ablation" — controlled re-measurement with solo-lump baselines shows the convergence is drive-centric infall; the pairwise residual is <~5×10⁻⁴ cells/t at gaps 2–14. Radiation-shadow gravity unproven at this scale.
+- **Corrected (M47b):** M37's "mutual attraction via reciprocal ablation" — two findings. (a) Under centered-drive configs the apparent convergence is a *drive-centric infall field*, not a two-body force (solo baselines identical). (b) In the faithful self-radiating regime (fricm>0, no drive) a real short-range pairwise approach exists at sep≤12 but is transient — it reverses as evaporation proceeds; lumps die before contact. Radiation-shadow gravity remains unproven.
 - **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IREFL, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant.
 - **Branch ledger (`loom-meso`):** IPHOT/IPHOT=3 absorption, IPAIR, ILAT and IDREST are flag-gated authored mechanics in the same honesty class as IFRIC. Under IDREST, `totals()` counts stored directional momentum — a friction park is momentum-neutral (stored, not absorbed). Under IPHOT=3, photon momentum joins the ledger so absorption closes exactly.
 
@@ -187,13 +187,21 @@ Pure-harness measurements (`logs/stress-tensor.mjs`, `logs/wavefront-isotropy.mj
 - **Wavefront:** a point pulse expands as **two ballistic shells** — axials at reach 2t, diagonals at √2t — each isotropic within ~8% in-class. The lattice is anisotropic across speed classes *by construction*; "isotropy" claims must name the shell.
 - **Wound shear:** stored Lz surfaces as a `Π_xy` quadrupole *in the directional rest bins* (NE−/SE+/NW+ sign pattern confirmed; the fourth quadrant's `(1,−1,0)` bin was empty — population asymmetry, not a sign violation). `Π_xy^mov ≡ 0` — the shear lives in storage, not in flight. Most tangential momentum parks in axial channels (`c_xc_y = 0`, invisible to the off-diagonal tensor), so `Π_xy` sees only the diagonal-bin slice — a lattice quantization caveat, not missing physics.
 
-### M47b — The drift-curve null: M37 revisited
+### M47b — The M37 force-curve program: confound found, partial signal survives
 
-Controlled re-measurement of the M37 "mutual attraction" (`logs/m37-drift.mjs`): two R3/Q64 scalar lumps at `±sep/2` under the 18-spoke drive, centroid slopes over 800t, *each position also measured solo* to subtract the drive-geometry baseline.
+Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs/m37-drift2.mjs`).
 
-- Pair closing rates are real (0.0009–0.004 cells/t) — **but lone lumps at the same positions close at the same rate**. The mutual residual `v_pair − v_baseline` is ~±5×10⁻⁴ cells/t, non-monotonic, fits neither `1/r` nor `e^(−r/λ)`.
-- The convergent field belongs to the **drive**, not the pair: lone-lump inward drift scales superlinearly with distance from center (+0.00012 @ 4 cells → +0.00235 @ 10). Lumps fall toward the flux source — a drive-centric convergence gradient, not a two-body force.
-- **Correction to the record:** mutual shadowing, if present, is below ~5×10⁻⁴ cells/t at surface gaps 2–14 — an order of magnitude under the drive background. M37's "reciprocal-ablation attraction" is downgraded to *drive-mediated convergence with no measurable pairwise force above noise*. Radiation-shadow gravity remains unproven at this scale.
+**Stage 1 — a confound discovered.** R3/Q64 lumps at `±sep/2` under the centered 18-spoke drive, fricmode −4 (carrier-gated): pair closing rates 0.0009–0.004 cells/t — *but solo lumps at the same positions close identically*. The convergence was the drive's radial infall field (lone-lump drift scales superlinearly with distance: 1.2×10⁻⁴ @ 4 cells → 2.4×10⁻³ @ 10), not a two-body force. Any claim involving `drive` + off-center lumps inherits this artifact; solo controls are mandatory.
+
+**Stage 2 — the faithful regime (5a7f8b2 conditions).** No drive; `fricm=8` unconditional self-radiation; 44³ box; each lump's own boil-off is the other's ablation source. Solo baseline ≈ 0 as required — isotropic self-radiation gives no net drift, so any pairwise signal is real.
+
+- sep 4: **−0.35 cells approach by t=100**, then *reversal* — sep grows to +0.33 net by t≈200 as evaporation takes over
+- sep 8/16: flat; sep 12: −0.11 early approach, same late reversal
+- The short-range pairwise term exists (reproduces the original's magnitude at sep≤12) but is **transient**: it acts while cores are dense, then ablation asymmetry flips the sign and lumps die ~1 cell short of contact, as the original noted.
+
+**Stage 3 — ambient bath (process-ontology control).** `test_bath.c`: carrier-gated lumps (`fricm=-4`, inert without carriers) in an isotropic flux bath injected on the boundary shell — no central source. Solo lumps still converge (~0.0019 cells/t toward center — the bath's own boundary-geometry artifact), but the **pairwise residual is zero at every gap** (±4×10⁻⁵ cells/t). Inert lumps in a uniform bath produce no measurable mutual force.
+
+**Verdict:** a pairwise approach exists *only* in the self-radiating regime, and even there it is a transient ablation effect, not a sustained force: weak, short-range (sep≤12), and sign-flipping as evaporation proceeds. Carrier-gated lumps under ambient flux are passively inert — shadowing without a measurable attraction. Radiation-shadow gravity remains unproven; what survives is "two actively-radiating lumps ablate each other asymmetrically while dense."
 
 ### M47 — The transaction ledger (`meso3i_ev`)
 
@@ -220,7 +228,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M34 | Remnant decay = pure exponential, no metastable floor | `2f28e7b` |
 | M35 | Carrier-gated radiation → persistent re-wakeable matter | `6c23a03` |
 | M36 | Ablation drift — lump migrates toward beam, hemisphere-imaged | `cb41b20`, `f95706a` |
-| M37 | Apparent mutual approach — see M47b: drive-centric infall, not pairwise attraction | `5a7f8b2`, `4540cc1` |
+| M37 | Weak short-range mutual approach under self-radiation, transient — see M47b | `5a7f8b2`, `4540cc1` |
 | M38 | No internal structure — rocks not atoms | `94cbebb` |
 | M39 | Massless photon plane; catalyst/stimulated/absorbed coupling | `b3fa609`, `1b1f88c` |
 | M40 | Pair wind/unwind — binders are carriers; entangled gate | `10d521e` |

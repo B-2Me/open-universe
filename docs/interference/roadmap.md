@@ -36,9 +36,13 @@ Real, radar-measured phenomena running on the same contact mechanics:
 
 ## Step 4: Entropic Gravitational Scaling — *revised by M47b*
 
-M37's apparent mutual attraction was re-measured with single-lump baseline controls (`logs/m37-drift.mjs`): the convergence is **drive-centric infall**, not a pairwise force — lone lumps fall toward the flux source at the same rate as paired ones, and the mutual residual is <~5×10⁻⁴ cells/t at gaps 2–14. Radiation-shadow gravity remains unproven at this scale.
+M37 was re-measured in three regimes with solo-lump baselines (`logs/m37-drift*.mjs`, `src/test_bath.c`):
 
-The open question is now sharper: does mutual shadowing exist *at all* in configurations without a centered drive — e.g., a pure translational flux field (plane wave) where shadowing is the only asymmetric term? If a pairwise force can't be isolated there either, "gravity" language leaves the roadmap.
+*   **Centered drive:** the convergence is *drive-centric infall* — an artifact of the point source, not a two-body force.
+*   **Self-radiating (`fricm>0`, the faithful regime):** a real but *transient* short-range approach (sep ≤12) that reverses as evaporation proceeds. Two active processes ablate each other asymmetrically while dense — not a sustained force.
+*   **Ambient bath (carrier-gated):** zero pairwise residual at every gap. Inert lumps shadow the bath but produce no measurable attraction.
+
+"Gravity" language is out of the roadmap. What remains is a bounded claim: mutual ablation between actively-radiating lumps, transient and short-range. A dimensional bridge is not discussable.
 
 ## Step 5: The Second Law & Decay
 
