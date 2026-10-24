@@ -1,6 +1,6 @@
 ---
 title: Hopf's Loom
-description: The 3D instrument re-seated on the multichannel friction substrate — an experiment in whether woven structure can survive transit friction.
+description: A 3D window into the Planck Field — a self-sustaining routing pattern you can slice, perturb, and rewind.
 outline: false
 layout: page
 pageClass: loom-page
@@ -14,49 +14,54 @@ pageClass: loom-page
 
 <div class="loom-doc vp-doc">
 
-# Hopf's Loom — friction-substrate experiment
+# Hopf's Loom
 
-*The same 3D instrument, re-seated on `meso3i` — the multichannel engine where friction lives in transit, not in registers.*
+*A continuous routing cycle, woven from whirlpools — rendering live in your browser.*
 
-This branch is a live experiment. The original Loom ran `planck3`, whose single-spin nodes could store a direction — the ingredient that let the Hopfion's woven loops persist. `meso3i` has no such register: a node holds nineteen population counts and one rest bin, and the measured boundary of that engine (M38) is that injected circulation thermalizes in ~25 ticks at 44³. The open question this page asks at 72×72×36: **does anything knot-shaped survive transit friction, or is a "weaving" the one thing this substrate refuses to hold?**
+> **Milestone instrument.** This page documents the earlier single-spin prototype engine (`planck3.c`), whose stable knots first showed the lattice could hold woven structure. The active engine is the multichannel `meso3i` — **[Joule's Mill](/mill-demo)** — and the current measured record is the [Friction Substrate monograph](/interference/meso-monograph).
 
-What you see on boot is a cold lump at center — parked amber heat, inert in vacuum (carrier-gated radiation can't vent without a carrier). From there, the tools are the experiment: ☀ starts the 18-spoke convergent feed that grows a breathing ember (the M33–M35 canon), ➤ fires the photon laser.
+What you're looking at is a **Hopfion**: a localized standing wave of extreme routing congestion made of 400,000 tiny cells, each one routing data and resolving friction according to the exact same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view** — a thermal portrait, not a photograph: the ember ring is the intense phase friction continuously generated to maintain the loop, while the dim red darkness is the surrounding vacuum — rendered faint because empty cells are culled from the thermal palette (per the substrate's own accounting the vacuum runs warm; it is the phase-locked knot that freezes). Because the underlying flow is woven into a perfectly closed, phase-locked loop, it continuously re-renders itself without unraveling. 
+
+And it's *running*. This is not a video — the little universe is ticking away in a real physics engine inside your browser tab.
 
 ## Play with it
 
 - **Drag** to orbit; **two-finger drag** pans, pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
-- **☀ drive** — the convergent feed that accretes a breathing ember. Cut it and the core freezes in place (carrier-gated radiation — parked heat only vents while a carrier transits).
-- **➤ beam** — an **apertured photon plane wave**: a checkerboard disc of light sourced just inside the drain shell, riding one axial channel straight across the lattice. Photons carry direction but no mass and never collide. Only the six axial channels (v=2) travel in straight lines on this lattice — face diagonals zigzag — so **Dir** offers ±x/±y/±z. **Ap** sizes the aperture, **OffU**/**OffV** translate it in the beam-normal plane to graze lumps off-center. What light does to matter depends on the **Phot** dial — and it never *deletes* mass, only kicks parked heat back into flight, which then drains off the boundary.
-- **⚭ binary** — the M37 two-body preset: two cold lumps a few cells of vacuum apart. Mutual-ablation attraction is real but needs carriers — turn ☀ on and watch the centroid crawl (headless: ~0.0004 cells/tick).
-- **Scene select** — one-click measured regimes: *wound lump* (Lat 16 + ⇄ + ☀ — the only config where binding beat decay headless), *breathing core* (the ☀ attractor), *comet ablation* (offset plane wave on a cold lump).
-- **sparkline** — the amber/violet strips under the toggle: rest mass over moving flux, independently scaled, last ~40 minutes of evolution.
-- **Phot select** — the light–matter coupling experiment:
-  - *off* — photons stream through parked mass untouched: light that cannot couple.
-  - *catalyst* — a transiting photon licenses the carrier-gated emission gate, like a massless carrier: isotropic boil-off with no payload added.
-  - *stimulated* — each photon may kick a rest quantum into *its own channel*: coherent directional ablation, the microscopic mechanism under M36's walk-toward-the-beam.
-- **⇄ (pair rules)** — the momentum-honest wind/unwind cycle: `2·rest ⇄ c + c¹`. Rest sheds mass as back-to-back antipodal pairs (no net momentum), and head-on collisions can bind a pair back into rest. Measured caveat: the colliding pair is itself a carrier, so a binding site also lights its own emission gate — unwind tends to dominate wind wherever they meet.
-- **⌖ (vortex tool)** — arm it, tap the slice plane: injects two concentric rings of moving quanta on the best-tangent equatorial channels — a circulation seed. Watch whether it holds, shears, or thermalizes into parked heat. This is the knot question.
-- **● (rock tool)** — arm it, tap the slice plane: drops a cold rest-mass lump — the proven-persistent control case.
-- **⧉ / ⤺** — snapshot the field, perturb, rewind. The save is physics-complete — channels, photons, latency counters, dwell lines, registers and RNG state — so a restore replays bit-for-bit (verified headless).
-- **Tuning** — **Slice** + **Width** give a living MRI scan; **Drag** is the transit-friction congestion threshold (IFRIC); **Rad** sets the radiation gate strength (carrier-gated: heat vents only under transit); **Lat** sets emission latency — how many *consecutive* ticks a carrier must dwell at a node before rest can radiate (1 = instant, the canon; raise it and sporadic flux stops unwinding parked mass — measured: a pulse every 20t leaks a 24k lump to 7.7k at Lat 1 but leaves it frozen and slowly growing at Lat 8); **Collide** picks the collision variant (uniform / shell-weighted / forward-bias); **Speed** caps ticks per second.
+- **Focus menu** — quick camera framings: try **Equator slab** (a thin slice through the ring's waist) or **Core bore** (straight down the vortex's throat). The little axes orb on the right edge shows where you're looking; double-tap it to reset.
+- **View menu** — you're looking at *metabolism* (heat) by default; switch to **macro** for the clean geometric readout (dense cores glow cyan — the *shape* of the standing wave), **spin class** to paint by flow direction (warm = around the ring, cyan/violet = through the hole), or **density** for raw traffic volume.
+- **⌖ (knot tool)** — tap it, then tap *on the structure itself* to inject a burst of dense relational flux. It stays armed for repeat throws; tap ⌖ again to disarm. Every outcome is a deterministic routing resolution, not an animation.
+- **⧉ / ⤺** — snapshot the universe, disrupt the traffic patterns, then rewind and try a different perturbation.
+- **Tuning** — open the sliders: **Slice** + **Width** turn the torus into a living MRI scan (drop width to 1 and scrub the lattice plane by plane); **Diss** and **Heat** are the substrate's metabolism knobs — crank Dissipation down and routing patterns linger, drop the thermal ceiling and the structures violently blow out.
+
+## How Topological Closure Occurs
+
+On the older substrates this routing pattern was impossible — continuously painted 3D topologies decayed or collapsed within seconds. This one maintains its coherence because it was *woven*, not painted: its flow was exact-traced cell-to-cell around closed loops, like thread on a loom, until every strand perfectly meshed with its origin. That's the name. Whether the thermodynamic routing in our universe works this exact way is an open question — but here, closed-loop weaving is what allows a macroscopic boundary to persistently re-render itself.
 
 ::: details 🔬 Under the Hood: For Physicists & Automata Enthusiasts
 
 ### What the engine actually is
 
-- **Substrate:** 72×72×36 even-parity True-FCC sublattice — only half the cubic sites can ever host matter; the 18 moving channels (12 face-diagonal + 6 axial second-shell) carry the lattice geometry. Rendered in the honest embedding: raw cubic coords, odd-parity sites are structural vacuum.
-- **Engine:** `src/meso3i.c` compiled to WebAssembly — the same module Yarkovsky's Ember runs. Integer populations (u8) per channel; collide = procedural pair-group shuffle conserving mass and momentum exactly; stream = hop along channel vectors; **friction** (IFRIC) sheds congested transits into the rest channel as parked heat; **radiation** (IFRICM −4) is carrier-gated — inert heat re-emits only while moving mass transits.
-- **Photons (IPHOT):** a parallel massless field on the moving channels — streams like quanta, carries no mass, never collides. Flag-gated coupling: `0` uncoupled, `1` catalyst (licenses the emission gate), `2` stimulated emission (rest quantum ejected into the photon's own channel — directional). Momentum is injected/absorbed at these flagged points, like every other non-invariant in the engine. Headless result: a 1-cell +x beam ablated ~14% of a 727-quantum ring fossil in 150 ticks under either coupling mode; with coupling off the same beam left the fossil untouched.
-- **Boundary:** `drain_edge(3)` zeroes a 3-cell shell each tick — an open boundary for light as well as mass.
+- **Substrate:** 100×100×40 stacked-hex (ABC/FCC-style) lattice, 400,000 nodes, 12 ports each — 6 equatorial + 3 zenith + 3 nadir. Parity-free port tables; a fixed port index repeats its offset every layer, so long-range diagonals trace straight lines through the A→B→C→A cycle.
+- **Engine:** `src/planck3.c` compiled to WebAssembly — the same register set as the 2D engine (8-bit quanta, 8-bit spin, 16-bit heat, buffer, tension), same canonical physics: Phase Lock, FLOW_CAP routing, occupancy congestion, tension divert, unwind spray, quadrature dissipation.
+- **Falsifiability:** the C port is **bit-identical** to the JS harness on all mass channels over 400 ticks (verified natively and in Wasm — `test/loom/t0.bin`/`t400.bin` regression vectors).
 
-### The pipeline
+### The pipeline (the zero-copy path)
 
-`meso3i_rg_refresh()` packs {moving, rest, photons} into an RGB8 buffer inside the Wasm heap → `gl.texSubImage3D` per frame → one instanced billboard draw. Cyan ramp = moving flux, blackbody ramp = parked rest mass, violet = the photon field (additive in every palette — a beam must read through vacuum).
+`quanta`+`spin` are packed into an RG8 buffer *inside* the Wasm heap (`planck3_rg_refresh`) and uploaded per tick via `gl.texSubImage3D` — the physics state never crosses into a JavaScript array. In metabolism mode the G channel carries **scene-normalized heat** (thermal-camera style min→max over live cells), so the palette always spans the structure's full internal gradient rather than absolute temperature. One instanced draw renders all 400k cells as soft billboard quads; the vertex shader applies the hex-plane embedding at √(2/3) layer spacing, culls vacuum, and ghosts anything outside the slice slab to ~6% alpha so the silhouette stays readable.
 
-### What this is testing
+### What the Hopfion is made of
 
-- The vortex tool writes *momentum*, not structure — meso3i has no per-site direction register to pin a weave the way planck3's spin field did. If circulation survives anyway, it's emergent self-consistency; if it thermalizes, that confirms M38's "rocks, not atoms" boundary at loom scale.
-- Everything else — accretion, breathing, quiescence, beam drift, two-body attraction — was already measured headless (see [The Friction Substrate](/interference/meso-monograph), M19–M38, each claim commit-anchored).
+19 nested closed field-line loops traced by a memoized depth-first search over the port graph — each loop only painted if it returned to its seed *within Phase-Lock tolerance* on every hop. 27,971 painted cells, in-degree exactly 1 everywhere, `hold = 1.00` through t=400: the structure never deviates from its traced routing pattern.
+
+### The honest residuals
+
+- `coh = 0.61`, not 1.00 — that metric counts cells whose *quantized* port lies within 60° of the *continuum* ideal field; it's a quantization ceiling, not an instability.
+- ~2/3 of seeds close, so the envelope is a subset of ideal field lines, not a complete torus foliation.
+- The fast chunk/halo memory mode is bit-exact in this laminar regime but diverges under knot congestion (push-ordering); the flat mode you see running is the canonical reference.
+
+### Full experiment log
+
+The complete chain — RFC-043's closed-streamline law → the RFC-047 tracing failure → the RFC-048 crystallography fix → the RFC-049 C port → this renderer — lives in the audit log: [The Interference](/interference).
 
 :::
 

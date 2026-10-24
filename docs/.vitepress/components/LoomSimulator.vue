@@ -59,11 +59,6 @@ onUnmounted(() => {
     <!-- transient status line under the telemetry chip — empty = hidden -->
     <div class="loom-status" data-status></div>
 
-    <!-- mass-partition sparkline: rest (amber) over flux (violet),
-         each strip auto-scaled — the lump's breath made visible -->
-    <canvas class="loom-graph" data-graph width="156" height="56"
-            title="Mass partition history — rest mass (amber) vs moving flux (violet), last ~240 ticks"></canvas>
-
     <!-- always-visible collapse toggle -->
     <button class="loom-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
@@ -72,20 +67,9 @@ onUnmounted(() => {
       <div class="loom-well loom-transport" role="group" aria-label="Transport">
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
         <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
-        <button data-reset title="Clear the field"    aria-label="Reset">⟲</button>
-        <button data-drive aria-pressed="false"
-                title="Convergent feed — 18 spokes pouring flux into the core"
-                aria-label="Toggle convergent drive">☀</button>
-        <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
-                aria-label="Toggle photon laser"      aria-pressed="false">➤</button>
-        <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
-                aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
-        <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
-                aria-label="Cold rock tool"           aria-pressed="false">●</button>
-        <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
-                aria-label="Toggle antipodal pair rules" aria-pressed="false">⇄</button>
-        <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
-                aria-label="Drop a binary lump pair">⚭</button>
+        <button data-reset title="Reset to Hopfion"   aria-label="Reset">⟲</button>
+        <button data-knot  title="Knot tool — arm, then click the lattice to place"
+                aria-label="Knot placement tool"      aria-pressed="false">⌖</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
@@ -97,61 +81,30 @@ onUnmounted(() => {
 
       <div class="loom-well loom-selects">
         <label class="loom-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
-          <option value="full"    selected>Full field</option>
+          <option value="full"    selected>Full torus</option>
           <option value="side">Side profile</option>
           <option value="equator">Equator slab</option>
-          <option value="bore">Top-down</option>
-          <option value="core">Core close-up</option>
+          <option value="bore">Core bore</option>
+          <option value="core">Deep core</option>
           <option value="lattice">Lattice plane</option>
         </select></label>
         <label class="loom-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
-          <option value="0" selected>ember</option>
-          <option value="1">heat</option>
-          <option value="2">flux</option>
+          <option value="2" selected>metabolism</option>
           <option value="3">macro</option>
-        </select></label>
-        <label class="loom-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
-          <option value="0" selected>uniform</option>
-          <option value="1">shell-weighted</option>
-          <option value="2">forward-bias</option>
-        </select></label>
-        <label class="loom-field"><span>Phot</span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
-          <option value="0">off</option>
-          <option value="1">catalyst</option>
-          <option value="2" selected>stimulated</option>
-          <option value="3">absorbed</option>
-        </select></label>
-        <label class="loom-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
-          <option value="" selected>scene…</option>
-          <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
-          <option value="breath">breathing core (☀ + Rad)</option>
-          <option value="comet">comet ablation (➤ off-center)</option>
-        </select></label>
-        <label class="loom-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
-          <option value="0" selected>scalar</option>
-          <option value="1">directional</option>
-        </select></label>
-        <label class="loom-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
-          <option value="+x" selected>+x</option><option value="-x">−x</option>
-          <option value="+y">+y</option><option value="-y">−y</option>
-          <option value="+z">+z</option><option value="-z">−z</option>
+          <option value="1">spin class</option>
+          <option value="0">density</option>
         </select></label>
       </div>
 
       <button class="loom-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="loom-well loom-sliders">
-        <label>Slice <input type="range" data-zcenter min="0" max="35" step="1" value="18"><output>18</output></label>
-        <label>Width <input type="range" data-zthick  min="1" max="36" step="1" value="36"><output>36</output></label>
+        <label>Slice <input type="range" data-zcenter min="0" max="39" step="1" value="20"><output>20</output></label>
+        <label>Width <input type="range" data-zthick  min="1" max="40" step="1" value="40"><output>40</output></label>
         <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8"><output>8</output></label>
-        <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
-        <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
-        <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output></label>
-        <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
-        <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
-        <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
+        <label>Diss  <input type="range" data-diss    min="0" max="31" step="1" value="15"><output>15</output></label>
+        <label>Heat  <input type="range" data-therm   min="5" max="65" step="1" value="50"><output>50k</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
       </div>
     </div>
@@ -233,22 +186,6 @@ onUnmounted(() => {
   z-index: 3;
 }
 .loom-status:empty { display: none; }
-
-/* mass-partition sparkline — top-right, under the ⚙ toggle; two strips,
-   rest over flux, each auto-scaled so neither flattens the other */
-.loom-graph {
-  position: absolute;
-  top: 50px;
-  right: 8px;
-  width: 156px;
-  height: 56px;
-  background: rgba(8, 10, 20, 0.55);
-  border: 1px solid var(--loom-bevel-light);
-  border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--loom-bevel-light);
-  pointer-events: none;
-  z-index: 3;
-}
 
 /* collapse toggle — small, always visible */
 .loom-uitoggle {

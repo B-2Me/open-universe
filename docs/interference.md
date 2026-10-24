@@ -30,18 +30,29 @@ This assumes a frictionless, perfectly scalable universe. But when we measure ph
 
 ## The Instruments
 
-The substrate is not a metaphor — it runs. These are the live engines and the measured dictionary behind every claim on this site:
+The substrate is not a metaphor — it runs. The flagship instrument and the milestone builds that led to it:
 
-*   **[Langevin's Wake](/wake-demo)** — the 2D engine, live in your browser. A cellular automaton over the same substrate physics that produced the research log's first measurements — paint, perturb, and watch agency emerge.
-*   **[Hopf's Loom](/loom-demo)** — the 3D True-FCC engine, live in your browser. A 400,000-node volume renderer over the same physics — tomographic slices, spin-class coloring, and a stable multi-loop Hopfion you can orbit.
-*   **[The Hopfion Zoo](/hopfion-zoo)** — the measured particle dictionary. Thirty-seven stable rest-mass geometries found by sweeping the engine's configuration space — every specimen a real simulation result, inspectable in 3D.
+*   **[Joule's Mill](/mill-demo)** — the flagship engine, live in your browser. A 93,000-cell True-FCC lattice gas with the full measured rule set: directional rest, photon coupling, pair rules, latency gating, and one-click milestone scenes.
+*   **[Yarkovsky's Ember](/ember-demo)** — the first meso3i instrument: convergent drive, carrier beam, cold rocks, and the walk-toward-the-light comet drift at 44³.
+*   **[Hopf's Loom](/loom-demo)** — the earlier single-spin 3D engine (a milestone showcase): a 400,000-node volume renderer orbiting a woven 19-loop Hopfion.
+*   **[The Hopfion Zoo](/hopfion-zoo)** — the prototype's measured knot dictionary: thirty-seven stable geometries from the single-spin era.
+*   **[Langevin's Wake](/wake-demo)** — the original 2D engine where the friction ontology began.
 
 ## The Laboratory
 
-*   **[Theoretical Audits](/interference/audits)** — five tests that translate legacy paradoxes (redshift, collapse, time dilation, agency, the particle zoo) into measurable friction problems for the substrate.
-*   **[Predictive Roadmap](/interference/roadmap)** — the five-step path from a working simulator to a direct benchmark against CERN telemetry.
-*   **[The Open Frontier](/interference/frontier)** — the research log. Every measured experiment, falsified hypothesis, and engine RFC — including the results that failed.
+*   **[The Friction Substrate](/interference/meso-monograph)** — the canonical record: milestones M19–M48, every claim commit-anchored, including the confounds and retractions.
+*   **[Predictive Roadmap](/interference/roadmap)** — the honest anchors: what the engine can still reach, and which bridges it can't.
+*   **[The Multi-Channel Bridge](/interference/meso-bridge)** — the M19–M38 consolidation: how the multichannel substrate earned its place over the single-spin prototype.
 *   **[Planned Audio Sessions](/interference/sessions)** — the living syllabus for the podcast companion.
+
+### Program History
+
+*Earlier campaigns and superseded proposals, kept in context — the missteps are part of the method.*
+
+*   **[Methodology & Reproducibility](/interference/methodology)** — the planck3 engine specification and the deterministic reproduction suite.
+*   **[The Open Frontier](/interference/frontier)** — the 2D-era research log: measured experiments, falsified hypotheses, and engine RFCs.
+*   **[Theoretical Audits](/interference/audits)** — the five forward-looking test proposals (the CERN calibration path in Audit 5 is retired).
+*   **[The Utility of Causal Simulation](/interference/usefulness)** — why a discrete wind tunnel is worth building at all.
 
 ---
 

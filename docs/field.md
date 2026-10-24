@@ -9,6 +9,8 @@ audio: /audio/field.mp3
 
 # The Planck Field
 
+*This page is the conceptual foundation — the claim and its silhouette. What the substrate has actually **measured** lives in the [Friction Substrate monograph](/interference/meso-monograph), and the live engine is [Joule's Mill](/mill-demo).*
+
 ## 100 Years of Burying the Planck
 
 For a century, modern physics has been trapped in a mathematical detour. 

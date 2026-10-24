@@ -14,6 +14,8 @@ pageClass: wake-page
 # Langevin's Wake
 *The Planck Field bare-metal simulation engine.*
 
+> **Milestone instrument.** This is the original 2D substrate engine (`planck.c`) where the friction ontology began — several mechanisms described below (tension-field gravity, propagation redshift) were prototype-era mechanics later bounded or superseded by headless measurement. The current engine family runs in 3D: [Joule's Mill](/mill-demo).
+
 Welcome to thermodynamic reality. What you are looking at is not a standard web canvas rendering frictionless geometric shapes. It is a 160,000-node physics grid running purely in C, calculating fundamental relational friction and directly mapping it to your graphics hardware via a zero-copy WebAssembly memory bridge. 
 
 ::: details ⚙️ Under the Hood: The Hardware Metaphor

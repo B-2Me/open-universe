@@ -9,6 +9,8 @@ audio: /audio/usefulness.mp3
 
 # The Utility of Causal Simulation
 
+> **Program History.** This essay dates from the prototype era and describes the program's original ambitions — including CERN-telemetry benchmarking, which is now retired (see the [roadmap](/interference/roadmap) status note). Its core argument — a discrete wind tunnel for extracting constitutive laws where continuous calculus fails — is what the meso3i campaign actually executed; the measured results are in the [Friction Substrate monograph](/interference/meso-monograph).
+
 If we accept the two foundational premises of this framework—first, that reality at the Planck scale ($1.6 \times 10^{-35}\text{ meters}$) is a zero-storage, computationally irreducible substrate; and second, that continuous geometry is already an effective compression algorithm for navigating macroscopic trajectories—a critical question arises:
 
 **What is the actual scientific and practical utility of running discrete Causal Thermodynamic simulations?**

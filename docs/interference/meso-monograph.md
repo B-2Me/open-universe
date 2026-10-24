@@ -286,4 +286,4 @@ A recorded run — real telemetry, not an animation mock: `test_replay` ran the 
 
 <FrictionReplay />
 
-Or run it yourself — the same engine, live in your browser: **[Yarkovsky's Ember](/ember-demo)** compiles `meso3i` to WebAssembly and lets you toggle the drive, drop cold rocks, and push them around with the carrier beam.
+Or run it yourself — the same engine, live in your browser: **[Joule's Mill](/mill-demo)** compiles `meso3i` to WebAssembly with the full measured rule set — directional rest, photon coupling, pair rules, latency, and one-click milestone scenes. (The earlier 44³ build, [Yarkovsky's Ember](/ember-demo), is preserved as a milestone.)

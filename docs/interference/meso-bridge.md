@@ -4,7 +4,9 @@ title: The Multi-Channel Bridge
 
 # The Multi-Channel Bridge: meso3i Findings
 
-*The canonical simulation substrate going forward is `src/meso3i.c` — a multichannel integer-occupancy lattice gas on the True-FCC lattice. Unlike a single-spin prototype, every node carries an array of independent directional channels: simultaneous inflow on some ports and outflow on others is native mechanics, not a special case. This page consolidates the measured findings on that substrate as the seed for the accretion/outflow campaign.*
+> **Context note.** This page consolidates milestones M19–M38 — the bridge from the single-spin prototype to the multichannel engine. The canonical record continues in the [Friction Substrate monograph](/interference/meso-monograph) (M39–M48), which revises several readings below: M37's "weak mutual attraction" is now understood as transient mutual ablation between self-radiating lumps only (M47b), and M38's "rocks, not atoms" boundary was crossed by directional rest (M39/M42).
+
+*The canonical simulation substrate going forward is `src/meso3i.c`* — a multichannel integer-occupancy lattice gas on the True-FCC lattice. Unlike a single-spin prototype, every node carries an array of independent directional channels: simultaneous inflow on some ports and outflow on others is native mechanics, not a special case. This page consolidates the measured findings on that substrate as the seed for the accretion/outflow campaign.*
 
 ## The Substrate
 

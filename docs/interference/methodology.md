@@ -8,6 +8,8 @@ audio: /audio/methodology.mp3
 
 # Methodology & Reproducibility
 
+> **Program History.** This documents the earlier single-spin prototype engines (`planck.c` / `planck3.c`) — still the correct spec for reproducing the Hopfion Zoo and Hopf's Loom milestones. The active engine is `src/meso3i.c` (see the [Multi-Channel Bridge](/interference/meso-bridge) and the [Friction Substrate monograph](/interference/meso-monograph)).
+
 This document specifies the formal mathematical architecture, state-space invariants, causal thermodynamic laws, and deterministic reproduction protocols for the **Langevin's Wake** (`planck.c`) and **Hopf's Loom** (`planck3.c`) discrete lattice engines.
 
 All macroscopic behaviors observed in [The Hopfion Zoo](/hopfion-zoo) and [Hopf's Loom](/loom-demo)—including 3D topological soliton stability, inertial rigidity under gradient stress, and multi-knot scattering cascades—emerge strictly from local, integer-only transition operators executing across a stationary 12-neighbor lattice without floating-point dynamics, pseudo-random thermal baths, or continuous differential solvers.

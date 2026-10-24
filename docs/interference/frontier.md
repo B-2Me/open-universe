@@ -8,6 +8,8 @@ audio: /audio/frontier.mp3
 
 # The Open Frontier
 
+> **Program History.** This is the 2D / single-spin-era experiment log — measured, falsified, and kept as provenance. The current measurement record lives in the [Friction Substrate monograph](/interference/meso-monograph); the current engine is [Joule's Mill](/mill-demo).
+
 *The following is the immediate roadmap for the framework — how the current 2D mechanics scale toward volumetric observables. None of this is implemented in the engine yet; it is the theoretical trajectory, kept honest by that distinction.*
 
 The engine is already a flat 1D array — `calloc(PIXEL_COUNT, sizeof(PlanckNode))`. The "plane" exists only because the routing table wires node $i$ to specific neighbors via modulo arithmetic (`y·W + x`). There is no geometric container. It follows that "3D space" is not a stack of 2D sheets — it is simply a wider coordination number. Going from Oct8 (8 exits) or Hex6 (6 exits) to a 3D substrate means giving each node 12 (hexagonal close-packed), 14 (body-centered cubic), or 26 (3D Moore) valid neighbors in the same flat array. The field isn't deeper; it has more exit vectors per locus — more ways to dissipate thermodynamic friction.
