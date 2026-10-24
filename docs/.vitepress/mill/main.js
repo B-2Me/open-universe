@@ -413,7 +413,7 @@ export async function initMillSimulator(root, opts = {}) {
 
   // ---------- camera / controls ----------
   // cubic embedding: the camera orbits the lattice center directly
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 95, cx: cenX, cy: cenY, cz: cenZ };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 45, cx: cenX, cy: cenY, cz: cenZ };
   const tgt = { ...cam };                 // preset targets (smooth lerp)
   // lastInteract in the past → turntable spins from the first frame
   let dirty = true, lastInteract = -1e4;
@@ -746,12 +746,12 @@ export async function initMillSimulator(root, opts = {}) {
 
   // quick-view presets: smooth-lerp camera + jump slice values
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 95,  zCenter: D3 >> 1, zThick: D3 },
-    equator: { yaw: 0.7,  pitch: 0.18, dist: 95,  zCenter: D3 >> 1, zThick: 4 },
-    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 95,  zCenter: D3 >> 1, zThick: D3 },
-    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 95,  zCenter: D3 >> 1, zThick: 1 },
-    side:    { yaw: 0.7,  pitch: 0.05, dist: 105, zCenter: D3 >> 1, zThick: D3 },
-    core:    { yaw: 0.9,  pitch: 0.9,  dist: 45,  zCenter: D3 >> 1, zThick: 8 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 45,  zCenter: D3 >> 1, zThick: D3 },
+    equator: { yaw: 0.7,  pitch: 0.18, dist: 50,  zCenter: D3 >> 1, zThick: 4 },
+    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 55,  zCenter: D3 >> 1, zThick: D3 },
+    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 65,  zCenter: D3 >> 1, zThick: 1 },
+    side:    { yaw: 0.7,  pitch: 0.05, dist: 60,  zCenter: D3 >> 1, zThick: D3 },
+    core:    { yaw: 0.9,  pitch: 0.9,  dist: 35,  zCenter: D3 >> 1, zThick: 8 },
   };
   const setRange = (sel, v) => {
     const el = root.querySelector(sel);

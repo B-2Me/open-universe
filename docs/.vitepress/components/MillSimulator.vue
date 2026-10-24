@@ -152,7 +152,7 @@ onUnmounted(() => {
         <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
         <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
         <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
-        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="95"><output>95</output></label>
+        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output></label>
       </div>
     </div>
   </div>
