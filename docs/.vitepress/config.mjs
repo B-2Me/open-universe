@@ -102,7 +102,7 @@ const navBar = readingOrder.flatMap(item => {
 
 export default defineConfig({
   title: "The Open Universe",
-  description: "Reality is a live-rendering, zero-storage computational grid.",
+  description: "A live-rendering, zero-storage computational substrate built to work like reality.",
   base: '/', 
   cleanUrls: true,
 

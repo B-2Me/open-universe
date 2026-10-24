@@ -105,7 +105,10 @@ docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
   `DELETE /job/<id>` and `POST /purge` (drop finished job dirs +
   uploads — refused for running/queued jobs). Upload `.smx` blobs
   auto-delete when the run finishes. `smatrix run <job.smx>` runs
-  locally.
+  locally. On Windows the listener needs a firewall rule once:
+  `netsh advfirewall firewall add rule name="smatrix 9898" dir=in
+  action=allow protocol=TCP localport=9898 profile=private`
+  (adjust the port to match `--port`).
   `script/smatrix_pack.mjs` emits the binary job + a `.meta.json`
   provenance sidecar (painted A/B masks — the node has no ID
   register); `script/smatrix_submit.mjs --config=… --host=<ip>`
