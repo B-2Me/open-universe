@@ -23,7 +23,7 @@ They abandoned the thermodynamic baseline. And without a way to account for the 
 *   They invented a stretchable "dimension of time" to explain metabolic capacity limits (Time Dilation).
 *   They invented mystical "conscious observers" to explain why potential resolves into reality (Quantum Collapse).
 
-*The Open Universe* framework is a return to fundamental thermodynamics. By treating reality as an active, relational field rather than a static block, the paradoxes of the last century dissolve. They can be viewed not as physical mysteries, but as the accounting errors of a broken ontology.
+*The Open Universe* framework is a return to fundamental thermodynamics: a substrate modeled as an active, relational field rather than a static block. We cannot inspect reality from outside it, so the honest claim is narrower — build a medium that reproduces reality's *how*, then audit whether the paradoxes dissolve inside it. Within the substrate, they do.
 
 ---
 
@@ -31,13 +31,13 @@ They abandoned the thermodynamic baseline. And without a way to account for the 
 
 For centuries, legacy philosophy and classical physics relied on a **Substance Ontology**—the assumption that reality is fundamentally made of independent, static "things" moving through an empty 3D container called "space" across a 4D highway called "time." This led directly to the concept of the Block Universe: a static, pre-existing timeline where the past, present, and future all exist simultaneously.
 
-Reality, however, is a **Process Ontology**. It is a **Planck Field**: a dense, fully saturated thermodynamic substrate. 
+The Planck Field proposes the opposite working model — a **Process Ontology**: a dense, fully saturated thermodynamic substrate that works the way a reality with no archival memory would have to.
 
-The universe is not a pre-recorded script where the future already exists down the track; it possesses no archival memory. It is a memoryless, continuously actualizing substrate. To actualize the present moment, the previous relational state must be continuously dissipated and overwritten. The universe exists entirely on the active boundary of "Now." 
+In this substrate there is no pre-recorded script where the future already exists down the track; the field possesses no archival memory. It is memoryless and continuously actualizing: to actualize the present moment, the previous relational state must be continuously dissipated and overwritten. Everything exists entirely on the active boundary of "Now." 
 
-In this framework, **space** is not an empty vacuum. It is the active relational tension between adjacent nodes in the field. **Time** is not a dimension you can travel through. It is simply the local actualization rate—the sequence of thermodynamic state changes occurring at any given coordinate. When a photon travels across the universe, it isn't flying through an empty void. It is forcing a trillion sequential state changes across a physical medium. Every time it hands off its relational tension to the next node, it undergoes inevitable thermodynamic dissipation. 
+**Space** in this model is not an empty vacuum. It is the active relational tension between adjacent nodes in the field. **Time** is not a dimension you can travel through; it is the local actualization rate—the sequence of thermodynamic state changes occurring at any given coordinate. When a photon crosses the substrate, it isn't flying through an empty void; it is forcing sequential state changes across a physical medium, and every hand-off of relational tension to the next node carries inevitable thermodynamic dissipation. 
 
-This is the baseline constraint of the open universe: **Nothing actualizes without physical dissipation.**
+This is the baseline constraint the substrate enforces: **nothing actualizes without physical dissipation** — the same constraint real thermodynamics enforces on reality.
 
 ---
 
@@ -52,7 +52,7 @@ To visualize how macroscopic physical structures span the abyss down to this fun
 *   **The Atomic Nucleus (~10²⁰ Planck lengths across):** Ranging from 1 to 7 femtometers depending on mass, the nucleus represents a dense nexus of strong relational binding. 
 *   **Complex Structures & Human Scale (~10³⁵ Planck lengths across):** When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined — more even than drops of water in all the oceans. 
 
-Every level of complexity is a nested cascade of relational actualizations. Because the universe is bound by these material limits, actualization is constrained by strict rules:
+Every level of complexity is a nested cascade of relational actualizations. A substrate bound by these material limits constrains actualization by strict rules:
 
 *   **The Speed of Causality:** Legacy physics calls *c* the "speed of light," but light does not define *c*; rather, *c* defines light. Fundamentally, *c* is the absolute maximum rate at which a relational state change can propagate across the field. Resolving relational tension requires thermodynamic exertion. If the sun suddenly vanished, the Earth would not instantly drift out of orbit. It would take eight minutes for the loss of gravitational tension to propagate across the relational field. For those eight minutes, Earth would orbit a ghost, because the causal ripple of its absence had not yet actualized at our local boundary.
 *   **State-Oriented Interactions:** When we examine the fundamental limits at the Planck scale, we must abandon the legacy metaphor of "microscopic billiard balls." We only need to look at Feynman diagrams. The vertices in these diagrams represent causal events—virtual photon exchanges, spin flips, phase shifts. These nodes map exact locations where relational tension is resolved. Causality at the fundamental limit is *state-oriented*, continuously recalculating relational properties at every boundary condition.
@@ -61,19 +61,19 @@ Every level of complexity is a nested cascade of relational actualizations. Beca
 
 ## The Cold Matter Inversion
 
-Classical human intuition tells us that empty space is freezing cold and dense matter (like a star) is incredibly hot. The actual mechanics of a finite-bandwidth substrate dictate the exact opposite.
+Classical human intuition tells us that empty space is freezing cold and dense matter (like a star) is incredibly hot. The mechanics of a finite-bandwidth substrate produce the exact opposite — a match for what real physics finds in coherent matter.
 
 If a local node must spend massive computational bandwidth maintaining a dense topological deadlock (mass), it experiences extreme **metabolic drag**. The mathematical effort of resolving this relational inertia forces the internal space of the particle to freeze. Conversely, the "empty" vacuum carries very little relational drag, allowing it to easily sustain a higher ambient vibration. 
 
-**The Vacuum is hot. Matter is cold.** 
+**In the substrate, the vacuum is hot and matter is cold.** 
 
-When physicists create perfectly coherent, frictionless topological states of matter in a lab—like Bose-Einstein condensates or superfluids—they are forced to drop the temperature to fractions of a degree above absolute zero. Extreme relational coherence requires extreme cold. The core of a fundamental particle is the coldest thing in the universe.
+When physicists create perfectly coherent, frictionless topological states of matter in a lab—like Bose-Einstein condensates or superfluids—they are forced to drop the temperature to fractions of a degree above absolute zero. Extreme relational coherence requires extreme cold — in the lab, and in the model alike.
 
 ---
 
 ## Relational Friction and Gradient Descent
 
-Matter is not a solid object inserted into the field; matter is what happens when the field knots itself up. Mass is simply a localized zone of extreme relational tension. 
+In the substrate, matter is not a solid object inserted into the field; it is what happens when the field knots itself up — mass as a localized zone of extreme relational tension.
 
 In the language of Nobel laureate Ilya Prigogine, these localized boundaries are **dissipative structures**. For a localized boundary to persist against the redistributing pressure of the wider field, it must continuously dissipate thermodynamic exhaust. 
 

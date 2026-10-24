@@ -192,9 +192,9 @@ The `planck3.c` engine is our **discrete wind tunnel**:
 
 ## V. Synthesis: The Grounded Causal Manifesto
 
-By uniting the valid breakthroughs of the vanguard while rejecting their continuous, operationalist, and idealist detours, the Planck Field establishes an unassailable foundation:
+By uniting the valid breakthroughs of the vanguard while rejecting their continuous, operationalist, and idealist detours, the Planck Field builds a substrate that works like reality does. We cannot step outside the universe to verify what it *is* — the honest claim is about the *how*:
 
-1. **Reality is an Active Process, Not a Frozen Block:** There is no archival memory storing the past, nor a pre-rendered future. Time is the sequential, irreversible consumption and overwriting of relational state ($t \to t+1$).
+1. **The Substrate is an Active Process, Not a Frozen Block:** There is no archival memory storing the past, nor a pre-rendered future. Time is the sequential, irreversible consumption and overwriting of relational state ($t \to t+1$) — the same bookkeeping a zero-storage reality would require.
 2. **Space is Network Adjacency, Not an Empty Box:** Distance is discrete hop count; geometry is graph coordination; curvature is routing congestion.
 3. **Matter is Trapped Momentum, Not Solid Substance:** Bound particles are self-confining, phase-locked circulations; mass is localized routing inertia.
 4. **Light is Unobstructed Momentum, Not a Frozen Equation:** On the substrate, light is a discrete train of corpuscular momentum packets cascading along open vacuum links at the causal throughput limit ($v=1$; measured on the single-spin prototype). The Lamb/Hobson critique targets real photons — nature's quanta are extended field modes, not marbles — and our substrate is a coarse discrete analog of that claim: what physical light is *not* is an abstract equation waiting to be measured.

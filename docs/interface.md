@@ -80,7 +80,7 @@ We are hardwired with a profound **spatial bias**. We actively demand that the u
 
 ## Filtering the Static
 
-The universe is a churning sea of relational friction, Brownian motion, and cosmic background radiation. To a static object like a rock, this thermodynamic noise is purely destructive; it simply erodes the rock's structure over time. 
+On this model, the universe works like a churning sea of relational friction, Brownian motion, and cosmic background radiation. To a static object like a rock, this thermodynamic noise is purely destructive; it simply erodes the rock's structure over time. 
 
 But to the Local Interface, this static contains the data of causality. 
 
@@ -98,7 +98,7 @@ But this assumes "fuel" is a static noun—a substance that exists independently
 
 *   **The Myth of Energy Consumption:** In a process ontology, there is no physical substance called "energy" that gets "consumed." What classical physics measures as metabolic or mechanical energy is merely a macroscopic abstraction for the rate of actualization, relational transformation, and boundary maintenance. 
 *   **The Illusion of Inherent Fuel:** A block of wood is not objectively fuel; to a rock, it is just environmental noise. Oxygen is not inherently fuel; to an anaerobic bacterium, it is a toxic constraint that dissolves its structure. Radio waves are not fuel to a human retina. 
-*   **Experience Defines the Fuel:** The universe is simply a continuous gradient of relational tension. It is the Local Interface—the active, experiencing biological loop—that determines what is fuel and what isn't. 
+*   **Experience Defines the Fuel:** In the substrate, the environment is simply a continuous gradient of relational tension. It is the Local Interface—the active, experiencing biological loop—that determines what is fuel and what isn't. 
 *   **The Metabolic Filter:** By defining its own metabolic boundaries, the interface reaches into the static and actively *structures* specific relational geometries into usable thermodynamic work. 
 
 You do not experience the universe because you burn fuel. **You have fuel because you are actively experiencing the universe.** The "feeling" of consciousness is the literal, physical friction of the interface drawing its own boundaries and deciding which parts of the field it will metabolize to sustain itself.

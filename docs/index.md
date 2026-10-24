@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "The Open Universe"
-  text: "Reality is a continuously actualizing, zero-storage substrate."
+  text: "A substrate built to work like reality does — measured, not assumed."
   tagline: "We built a tiny universe with simple rules and measured what it can do. This is the record."
   actions:
     - theme: brand
@@ -34,7 +34,7 @@ features:
 
 The Open Universe proposes the opposite silhouette: no container, no passive objects. A dense, discrete, continuously-updating **substrate** where every locus hands state to its neighbors each tick, where "space" is the tension between adjacent updates, and where a "particle" is a *pattern of traffic that fails to dissipate* — a standing process, not a standing thing.
 
-This is not a metaphor we ask you to accept. It is an engine we ask you to measure.
+This is not a metaphor we ask you to accept. It is an engine we ask you to measure. We can't step outside reality to inspect what it *is* — all anyone can do is build a substrate that reproduces its *how*, and record how far the resemblance goes.
 
 ## What the Engine Is
 

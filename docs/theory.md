@@ -8,7 +8,7 @@ audio: /audio/theory.mp3
 
 # The Theory
 
-The Planck Field is a single physical claim with four levels of depth: reality is a discrete, capacity-bound substrate that continuously actualizes its own state — no block universe, no empty space, no invisible forces, only relational boundaries resolving thermodynamic tension one update at a time.
+The Planck Field is a single physical claim with four levels of depth: a discrete, capacity-bound substrate that continuously actualizes its own state — no block universe, no empty space, no invisible forces, only relational boundaries resolving thermodynamic tension one update at a time — can be built to work the way reality appears to work. No one gets to inspect reality from outside it, so the claim is about the *how*: the substrate reproduces the mechanics, and the measurements on this site record how far the match holds.
 
 This section builds that claim in order. Each level stands alone; together they trace the full arc from "the legacy map contradicts itself" to "here is the machine that doesn't."
 

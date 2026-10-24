@@ -48,9 +48,9 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** If you take two uncharged metal plates, place them in a perfect vacuum, and move them incredibly close together, a mysterious force pushes them together. Classical physics assumes that a vacuum is completely empty. If there is nothing between the plates, where is the physical push coming from?
 
 **The Planck Field Reconciliation:** The block universe assumes space is a passive, empty container where objects sit. 
-*   There is no such thing as "empty space." The void is not a cold, dead container; it is a boiling, immensely dense sea of zero-point energy, vibrating at a high ambient thermodynamic temperature. 
+*   In the substrate there is no such thing as "empty space" — the void is a boiling, immensely dense sea of ambient tension, vibrating at a high baseline temperature. Real physics finds the same: the vacuum hums with zero-point energy.
 *   When you place two plates that close together, you restrict the wavelengths of the field's baseline tension between them. Because the hot ambient tension outside the plates is stronger than the constrained tension inside, the plates are pushed together. 
-*   The Casimir Effect is the smoking gun that the universe is not an empty stage. It is an active, hot, vibrating medium.
+*   The Casimir Effect is the smoking gun that the vacuum is no empty stage — the model's answer and the measured one agree: an active, hot, vibrating medium.
 
 ---
 
@@ -98,7 +98,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** In advanced variations of the double-slit experiment, physicists can measure a photon *after* it has already passed through the slits. The measurement seems to reach back in time and change how the photon behaved in the past. This leads to wild legacy claims of "retrocausality" (the future altering the past).
 
 **The Planck Field Reconciliation:** Retrocausality is a map-reading error caused by the illusion of the block universe.
-- The universe is a **zero-storage substrate**. There is no "past" to reach back and change.
+- The substrate is **zero-storage**. There is no "past" to reach back and change.
 - The photon never "decided" to be a particle or a wave in the past; it propagated purely as un-actualized relational potential. 
 - Because the photon remained un-actualized, the timeline wasn't altered. The detector simply forced the actualization of the entire relational event *in the present moment*. You didn't change history; you just forced the field to resolve a pending tension right now.
 
@@ -141,7 +141,7 @@ Here is how the active substrate resolves the core quantum paradoxes.
 **The Paradox:** To explain why two parallel wires carrying current either attract or repel, modern physics correctly points out that an independent "magnetic force" doesn't exist. Instead, they claim that from the perspective of the moving electrons, the physical distance between the protons in the other wire mathematically shrinks due to Special Relativity (Lorentz Contraction). This creates an artificial charge density that causes attraction. To avoid the paradox of invisible magnetic ropes, they invented the paradox of shrinking physical space.
 
 **The Planck Field Reconciliation:** This is the ultimate mathematical shell game—trading a substance paradox for a geometric paradox. 
-*   Space is a discrete relational network, not a stretchable fabric. Physical distance does not shrink simply because an adjacent object is moving fast. 
+*   In this model, space is a discrete relational network, not a stretchable fabric — physical distance does not shrink simply because an adjacent object is moving fast. 
 *   The wires interact purely through **Phase Friction** (spin alignment). 
 *   When currents flow in opposite directions, their discrete topological spins clash. The grid resolves this massive spike in metabolic dissipation by pushing the boundaries apart (repulsion). When they flow together, their spins mesh, dropping friction to zero (attraction). 
 *   We do not need to invent the illusion of shrinking space to explain relational friction.

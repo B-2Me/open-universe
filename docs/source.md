@@ -18,7 +18,7 @@ Before we audit the vanguard of modern physics, we must define the absolute phys
 
 Legacy physics assumes the universe is a static container filled with distinct objects governed by invisible rules. This generates unresolvable paradoxes. In the Planck Field, there are no objects and no empty space; there are only relational boundaries undergoing continuous state updates. 
 
-Because the universe has a hard physical resolution limit (the Planck scale), it does not operate on continuous floating-point calculus. We translate legacy forces into the discrete, capacity-bound actualizations of the substrate:
+Working at a hard physical resolution limit (the Planck scale), the substrate does not operate on continuous floating-point calculus. We translate legacy forces into the discrete, capacity-bound actualizations of the substrate — mechanisms that work *like* reality's, whether or not reality is built this way:
 
 ### 1. Entropic Gravity (The Path of Least Resistance)
 Gravity is not an invisible geometric curve pulling objects across a void. We define it as an entropic thermodynamic equation of state:
@@ -26,12 +26,12 @@ $$F = T \frac{\Delta S}{\Delta x}$$
 Gravity is simply the Unruh temperature ($T$) of the local field multiplied by the change in relational entropy ($\Delta S$) over a discrete, fixed Planck-length step ($\Delta x$). Matter does not pull; local tension naturally resolves down the path of least thermodynamic resistance.
 
 ### 2. Time Dilation (Actualization Capacity)
-Time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The fundamental substrate acts as the absolute preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per Planck-time interval ($C_{max}$). 
+In the substrate, time is not a stretchable 4D fabric. It is the absolute limit of sequential actualizations within a local locus. The substrate acts as a preferred rest frame, where the maximum speed of causality ($c$) is strictly defined by the network's local update rate—one node hop per tick (the discrete mechanism behind the Lieb-Robinson bound). The substrate has a hard throughput limit of causal increments per tick ($C_{max}$).
 $$C_{max}^2 = C_s^2 + C_i^2$$
 A local system's relational capacity is inherently distributed between spatial translation ($C_s$) and internal state updates ($C_i$). As the capacity consumed by velocity (data routing) or gravitational resistance (environmental tension) approaches the absolute structural vector limit, the increments available to process the object's internal biological or mechanical state changes mathematically approach zero.
 
 ### 3. Cosmological Redshift (Propagation Friction)
-Space is not stretching. Light loses frequency as a direct consequence of propagation across an active discrete medium.
+In this model, space is not stretching — light loses frequency as a direct consequence of propagation across an active discrete medium.
 $$E_{received} = E_{emitted} e^{-\mu d}$$
 Every time a photon's wavefront advances to the next Planck locus, it undergoes inevitable thermodynamic dissipation. Over cosmic distances ($d$), the signal degrades exponentially due to the baseline thermodynamic friction ($\mu$) of the resting field. This manifests as Accumulated Processing Latency—a stretching of the data arrival interval without geometric spatial expansion.
 
@@ -77,7 +77,7 @@ Mass is relational inertia—a deadlocked knot of tension dense enough to comple
 ### Max Planck & The Instrumental Turn: The Quantum of Action
 * **The Resolution Limit:** Planck discovered that thermodynamic energy exchange is quantized, establishing that reality cannot be infinitely subdivided. He proved the existence of hard natural limits (Planck length, Planck time).
 * **The Instrumental Error:** Legacy physics did not ignore Planck’s mathematics; they simply stripped it of its physical ontology. Lacking the vocabulary of complex dynamic networks, early 20th-century physicists attempted to map a discrete, actively actualizing universe using the continuous, frictionless calculus of the 19th century. They turned his thermodynamic reality into a weightless probability tool, calculating outcomes while ignoring the absolute thermodynamic dissipation limits of the substrate.
-* **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be calculated without physical friction. Planck established the literal bedrock of **The Planck Field**, proving the universe is bound by finite resolution and metabolic constraints.
+* **Bridge to Old Constructs:** Classical physics assumes an infinitely smooth continuum where the future can be calculated without physical friction. Planck established the literal bedrock of **The Planck Field**, showing nature operates under finite resolution and metabolic constraints.
 
 ### Richard Feynman & General Relativity: The Dissolution of Force
 * **The Geometric Reality:** Gravity is not an invisible force pulling objects across empty space. Mass and energy shape relational geometry, and objects simply follow natural geodesic paths through a landscape where actualization flows at varying rates.

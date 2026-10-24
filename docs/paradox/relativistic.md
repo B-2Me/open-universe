@@ -11,8 +11,8 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 **The Paradox:** In legacy cosmology, the overall 3D geometry of the universe is perfectly "flat." According to standard models, if the universe were off by a fraction of a percent at the Big Bang, space would have curved into a tight sphere or a warped saddle. To explain this geometric coincidence, physicists invented "Cosmic Inflation"—a magical period where space stretched faster than light to smooth out the wrinkles.
 
 **The Planck Field Reconciliation:** The paradox only exists because legacy physics treats space as a passive geometric container that can stretch and warp. 
-- There is no "empty space" to stretch. Space is the relational network of the field.
-- The universe exhibits "flatness" for the same reason a puddle of water rests flat. The substrate resolves its relational tension through continuous thermodynamic gradient descent. Flat geometry is simply the macroscopic appearance of a network resting at baseline equilibrium.
+- In the substrate there is no "empty space" to stretch — space is the relational network of the field.
+- The substrate exhibits "flatness" for the same reason a puddle of water rests flat. The field resolves its relational tension through continuous thermodynamic gradient descent. Flat geometry is simply the macroscopic appearance of a network resting at baseline equilibrium.
 
 ---
 
@@ -20,8 +20,8 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 **The Paradox:** Almost all the fundamental equations of classical physics and relativity are "time-reversible." The math works perfectly fine whether time flows forward or backward. Yet, in measured reality, time *only* flows one way. A dropped teacup shatters; it never spontaneously reassembles. How does a hard, one-way thermodynamic arrow emerge from equations that don't demand it?
 
 **The Planck Field Reconciliation:** The block universe treats time as a spatial dimension—a highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
-*   But the universe is a **zero-storage active field**. There is no static archive holding the "past." 
-*   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the fundamental sub-atomic limit by the actualization of the shattered pieces. 
+*   The substrate is a **zero-storage active field**. There is no static archive holding the "past." 
+*   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the substrate's fundamental limit by the actualization of the shattered pieces. 
 *   The arrow of time is not a mysterious force; it is the inevitable thermodynamic friction of an active substrate that possesses no archival memory.
 
 ---
@@ -40,16 +40,16 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 **The Paradox:** If you travel back in time and prevent your grandfather from meeting your grandmother, you are never born. But if you are never born, you cannot travel back in time to stop them. Block-universe physics, which treats time as a geometric spatial dimension, struggles to rule out time travel, leading to absurd logical loops.
 
 **The Planck Field Reconciliation:** The block universe treats time as a landscape you can traverse. The Planck Field proves this physically impossible.
-*   The universe is a **zero-storage substrate**. It does not maintain a cached backup of the year 1920. 
-*   "The past" is not a physical place located behind us; it is the dissipated potential that was physically overwritten to actualize the present moment. 
-*   You cannot travel to the past because the physical geometry of the past no longer exists. 
+*   The substrate is a **zero-storage field**. It does not maintain a cached backup of the year 1920. 
+*   In this model, "the past" is not a physical place located behind us; it is the dissipated potential that was physically overwritten to actualize the present moment. 
+*   Within a zero-storage field there is nothing to travel back to — the physical geometry of the past no longer exists. 
 
 ---
 
 ## 5. The Volume Paradox (The Holographic Principle)
 **The Paradox:** When physicists study black holes, they discovered that the total amount of information (entropy) you can fit inside a 3D space does not depend on the *volume* of the space, but on the 2D *surface area* bounding it. This shatters the classical assumption that space is an empty 3D box you can pack full of stuff.
 
-**The Planck Field Reconciliation:** Space is not an empty container you fill with objects. Space is a relational network.
+**The Planck Field Reconciliation:** In the substrate, space is not an empty container you fill with objects. Space is a relational network.
 *   In the Planck Field, actualization only occurs where two boundaries meet (relational friction). 
 *   Because events only happen at the boundary of interaction, the total relational capacity of any localized region is strictly limited by its surface area—the physical boundary where it touches the rest of the field.
 
@@ -68,7 +68,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ## 7. The Dilation Paradox (Relativistic Time)
 **The Paradox:** Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
 
-**The Planck Field Reconciliation:** This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. Time is not a fabric you travel through; it is simply the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
+**The Planck Field Reconciliation:** This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. In the substrate, time is not a fabric you travel through; it is the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
 *   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite computational vector budget ($C_{\max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$).
 *   **Velocity (Special Relativity):** Movement requires actively routing data from one node to the next. As a system approaches the absolute routing speed limit of the grid ($c$), nearly 100% of its vector budget is consumed by spatial hand-offs, leaving 0% for internal ticking. A photon does not experience time because all of its bandwidth is spent propagating.
 *   **Gravity (General Relativity):** A massive body is a dense tension knot. A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.

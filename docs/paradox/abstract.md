@@ -12,8 +12,8 @@ When pure, infinitely scalable mathematics is projected onto a physical universe
 
 **The Planck Field Reconciliation:** Simulation theory is a modern resurgence of deterministic, block-universe thinking. It assumes a higher-level "server" is rendering our reality using algorithmic software. When grounded in physical thermodynamics, the math prohibits this:
 *   **The Hardware Limit:** Any computer, no matter how advanced, operates on algorithms (step-by-step syntactic rules). 
-*   **The Uncomputable Horizon:** As proven by mathematical incompleteness (Gödel, Turing, Chaitin), physical reality contains non-computational, undecidable properties. At the Planck scale, reality does not follow a closed algorithmic loop.
-*   **The Verdict:** You cannot simulate non-algorithmic physics on algorithmic architecture. Therefore, the universe cannot be a simulation. We are not running on a virtual machine; we are plugged directly into the fundamental, algorithmically irreducible substrate of nature.
+*   **The Uncomputable Horizon:** As proven by mathematical incompleteness (Gödel, Turing, Chaitin), formal systems contain undecidable properties. A substrate built on thermodynamic actualization does not run a closed algorithmic loop — and if reality works the same way, it cannot be one either.
+*   **The Verdict:** On this reading, you cannot simulate non-algorithmic physics on algorithmic architecture. The Planck Field models nature as algorithmically irreducible — which, if the model holds, means we are plugged directly into a substrate no virtual machine could host.
 
 ---
 
@@ -22,8 +22,8 @@ When pure, infinitely scalable mathematics is projected onto a physical universe
 
 **The Planck Field Reconciliation:** This is the ultimate proof that math lacks mass, and abstractions manifest without friction. 
 - Pure geometry assumes a shape is made of an infinite number of zero-dimensional points, meaning you can divide it infinitely. 
-- The physical universe is not infinitely divisible. It has a hard resolution limit (the Planck length). 
-- You cannot slice physical matter into infinitely thin geometric abstractions because matter is a localized zone of extreme relational tension. Projecting frictionless geometry onto reality ignores the absolute thermodynamic constraints of actualization.
+- A physical substrate is not infinitely divisible — it has a hard resolution limit (the Planck length, in reality; the grid cell, in the model). 
+- You cannot slice physical matter into infinitely thin geometric abstractions because matter is a localized zone of extreme relational tension. Projecting frictionless geometry onto a capacity-bound field ignores the thermodynamic constraints of actualization.
 
 ---
 
@@ -40,9 +40,9 @@ When pure, infinitely scalable mathematics is projected onto a physical universe
 **The Paradox:** Ancient philosophers pointed out that to walk across a room, you must first cross half the distance, then half of the remaining distance, then half of that, infinitely. Because math allows infinite division, motion should be logically impossible—you'd be trapped in an infinite loop of halving distances forever. Yet, we walk across rooms every day. 
 
 **The Planck Field Reconciliation:** Zeno’s Paradox is a logical collapse that happens when you confuse a mathematical abstraction with physical reality.
-*   The universe is not infinitely divisible. You cannot divide space smaller than the fundamental grain of reality. 
-*   Motion is not a smooth, infinite slide across a continuous void; it is a localized sequence of discrete actualizations.
-*   The universe avoids the infinite loop because it possesses a finite relational network and a minimal temporal duration (Planck time).
+*   A discrete substrate is not infinitely divisible — you cannot divide space smaller than the fundamental grain. 
+*   Motion on it is not a smooth, infinite slide across a continuous void; it is a localized sequence of discrete actualizations.
+*   The substrate avoids the infinite loop because it possesses a finite relational network and a minimal temporal duration — the same escape hatch a Planck-grained reality would have.
 
 ---
 

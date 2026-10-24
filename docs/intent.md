@@ -29,15 +29,15 @@ We are auditing legacy ideas to see which ones hold their boundaries, and which 
 
 ## The Thermodynamic Baseline
 
-Before there is matter, there is the thermodynamic static of the field. This is the unvarnished baseline of the Open Universe. The default state of every locus in the universe is un-actualized relational potential. The entirety of physics is simply the superset of ways this baseline static is structured by localized relational loops and topological tension.
+Before there is matter, there is the thermodynamic static of the field. This is the unvarnished baseline the Open Universe models: every locus defaults to un-actualized relational potential, and the substrate's physics is the superset of ways this baseline static gets structured by localized relational loops and topological tension.
 
-This architecture provides strictly fundamental, physical mechanics. It defines *how* the universe actualizes, but deliberately leaves the theological or materialist *why* up to the local agent. We are not concerned with who authored the substrate; we are concerned with how to operate the local interface.
+This architecture provides strictly fundamental, physical mechanics. It describes *how* a universe built this way would actualize — and deliberately leaves the theological or materialist *why* up to the local agent. We cannot inspect reality from outside it, so we don't claim to know what authored the substrate; we claim to have built one whose *how* matches, and we measure how far the match goes.
 
 ## Hyper-Local Agency
 
 Ultimately, the purpose of compiling this audit is deeply practical. I believe we fail to see our bodies as nature's interface, localized for navigating causality at an unimaginable scale.
 
-Causality is not a global blanket covering the universe all at once. Because the universe actualizes reality at a strict causal speed limit ($c$), you cannot operate outside your localized boundary. Agency is strictly hyper-local. You are an active causal router for your immediate environment, not the cosmos. You cannot overwrite the global field, but you possess absolute actualization agency over your local present.
+Causality is not a global blanket covering the universe all at once. In a substrate that actualizes at a strict causal speed limit ($c$), you cannot operate outside your localized boundary. Agency is strictly hyper-local. You are an active causal router for your immediate environment, not the cosmos. You cannot overwrite the global field, but you possess absolute actualization agency over your local present.
 
 Because our legacy philosophies treat us as isolated "objects" or "ghosts in a machine," we fail to recognize this power. We fail to see our biology as a hyper-advanced natural interface evolved to steer through this localized causality. As a result, we bump into each other and our environment in awkward, destructive ways. We generate unnecessary relational friction simply because we are using legacy maps to drive the biological interface blind. 
 
