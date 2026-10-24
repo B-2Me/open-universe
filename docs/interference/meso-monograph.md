@@ -207,6 +207,18 @@ Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs
 
 **Verdict:** a pairwise approach exists *only* in the self-radiating regime, and even there it is a transient ablation effect, not a sustained force: weak, short-range (sep≤12), and sign-flipping as evaporation proceeds. Carrier-gated lumps under ambient flux or a broadside beam produce **no measurable shadow-mediated force** (≤3×10⁻⁴ cells/t). Radiation-shadow gravity is closed at this scale: pairwise coupling requires *active radiating* lumps and is transient even then.
 
+### M48 — Wave attenuation: turbid vs. opaque
+
+`test_atten.c`: a self-coherent +x axial pulse through a uniform ambient gas at ρ = {0,1,2,4,8} quanta/site. Vacuum control: **exactly zero attenuation** for 30 ticks (~60 cells) — M47c reconfirmed. With ambient:
+
+| ρ | decay rate | λ ≈ | channel |
+|---|---|---|---|
+| 1–2 | ~1.0%/t | ~200 cells | collisional scatter (weak Beer-Lambert regime) |
+| 4 | ~2.8%/t | ~72 cells | congestion drag engages |
+| 8 | ~8%/t | ~25 cells | congestion collapse (park ≫ emit) |
+
+**Decomposition:** at low ρ the medium is *turbid* (scattering-dominated); past the `IFRIC` congestion threshold it turns *opaque* (absorption-dominated — momentum parks into rest, superlinear in ρ). The medium's "opacity" is threshold-shaped, not a pure cross-section. Caveat: ambient is unreplenished (decays during the run) — λ values are first-cut. This also bounds pairwise force reach: carrier flux dies within ~15–25 cells at lump-relevant densities, which is *why* no shadow force exists at gaps 2–14 (M47b stage 4's null is consistent, not merely unlucky).
+
 ### M47c — The coherent-beam theorem (from the M46 control)
 
 The `(b)` control in `logs/eos-thermalize.mjs` — a +x-only seed in a closed box — stays **perfectly frozen forever** (ρ, px, Pxx constant to t≥200). Mechanism: a co-moving pair {c,c} has total momentum 2c, and on D3Q19 no other channel pair sums to 2c — momentum conservation leaves the pair nowhere to scatter. The collision operator is *exactly blind* to unidirectional flow.
@@ -251,6 +263,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M45 | Spin induction by contact; internal counter-rotation annihilates — replicated lamp-free | `1b1f88c` |
 | M46 | Πᵢⱼ: P/ρ→0.879 closed-box EOS (collisions generate isotropy); wound shear in rest bins | `1204e4f` |
 | M47c | Coherent-beam theorem: {c,c} has no momentum-conserving scatter — unidirectional flow is permanently frozen | `9cd561f` |
+| M48 | Wave attenuation: zero in vacuum; turbid (~200c λ) below congestion, opaque (~25c) above | `55d2b02` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 | M47b | M37 resolved: real transient ablation coupling only between self-radiating lumps; bath & broadside null; drive-infall artifact caught | `e002c9d` |
 
