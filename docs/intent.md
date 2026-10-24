@@ -17,7 +17,7 @@ I hold a Bachelor of Science in Computer Science from a California university an
 
 This site is an **audit of our philosophical architecture**. 
 
-For centuries, thinkers have proposed high-level designs for how the universe works—determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator. **I am doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
+For centuries, thinkers have proposed high-level designs for how the universe works. Determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator. **I am doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
 
 ## What We Are Auditing
 
@@ -31,7 +31,7 @@ We are auditing legacy ideas to see which ones hold their boundaries, and which 
 
 Before there is matter, there is the thermodynamic static of the field. This is the unvarnished baseline the Open Universe models: every locus defaults to un-actualized relational potential, and the substrate's physics is the superset of ways this baseline static gets structured by localized relational loops and topological tension.
 
-This architecture provides strictly fundamental, physical mechanics. It describes *how* a universe built this way would actualize — and deliberately leaves the theological or materialist *why* up to the local agent. We cannot inspect reality from outside it, so we don't claim to know what authored the substrate; we claim to have built one whose *how* matches, and we measure how far the match goes.
+This architecture provides strictly fundamental, physical mechanics. It describes *how* a universe built this way would actualize, and deliberately leaves the theological or materialist *why* up to the local agent. We cannot inspect reality from outside it, so we don't claim to know what authored the substrate; we claim to have built one whose *how* matches, and we measure how far the match goes.
 
 ## Hyper-Local Agency
 

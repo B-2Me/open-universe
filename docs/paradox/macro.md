@@ -24,7 +24,7 @@ At the scale of biology and chemistry, legacy models ignore the thermodynamic pr
 **The Planck Field Reconciliation:** Both materialist and dualist camps fail because they assume the universe is made of dead matter processing abstract data. 
 *   In a process ontology, the brain is not a machine processing static files. It is an active, metabolic boundary continuously fighting to stay synchronized with the flow of becoming.
 *   Information is a physical constraint. Simulating the future and forcing biological architecture to alter its trajectory requires intense thermodynamic dissipation.
-*   The "feeling" of consciousness—the qualia of the color red, the sensation of pain, the experience of a thought—is not a magical ghost. **It is the literal thermodynamic friction of actualization.** You don't *have* an experience; you *are* the physical friction of the interface sustaining its own recursive loop.
+*   The "feeling" of consciousness: the qualia of the color red, the sensation of pain, the experience of a thought. Is not a magical ghost. **It is the literal thermodynamic friction of actualization.** You don't *have* an experience; you *are* the physical friction of the interface sustaining its own recursive loop.
 
 *   **Substrate grounding (Aspirational / interpretive):** maps the observer to a localized thermodynamic dissipation boundary (the Hayles Loop); no neurological or macro-scale integration has been simulated on substrate.
 

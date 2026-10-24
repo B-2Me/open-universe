@@ -24,4 +24,4 @@ audio: /audio/sessions.mp3
 
 ## Episode 04: Internal Depth vs. External Depth (The Geometric Dashboard)
 * **Anchor Media:** *The Matrix* (Film)
-* **Focus:** Unpacking the mathematician's dilemma. We explore the difference between *external depth* (the brute-force, fundamental thermodynamic accounting of the field) and *internal depth* (the breathtaking complexity of the biological interface rendering 3D spatial geometry). We discuss why geometry is the ultimate sensory compression, proving that mathematicians aren't mapping the empty void—they are mapping the highest-level cognitive architecture of the human mind.
+* **Focus:** Unpacking the mathematician's dilemma. We explore the difference between *external depth* (the brute-force, fundamental thermodynamic accounting of the field) and *internal depth* (the breathtaking complexity of the biological interface rendering 3D spatial geometry). We discuss why geometry is the ultimate sensory compression, proving that mathematicians aren't mapping the empty void: they are mapping the highest-level cognitive architecture of the human mind.

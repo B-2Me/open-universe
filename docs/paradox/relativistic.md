@@ -8,10 +8,10 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ---
 
 ## 1. The Flatness Problem (The Geometric Coincidence)
-**The Paradox:** In legacy cosmology, the overall 3D geometry of the universe is perfectly "flat." According to standard models, if the universe were off by a fraction of a percent at the Big Bang, space would have curved into a tight sphere or a warped saddle. To explain this geometric coincidence, physicists invented "Cosmic Inflation"—a magical period where space stretched faster than light to smooth out the wrinkles.
+**The Paradox:** In legacy cosmology, the overall 3D geometry of the universe is perfectly "flat." According to standard models, if the universe were off by a fraction of a percent at the Big Bang, space would have curved into a tight sphere or a warped saddle. To explain this geometric coincidence, physicists invented "Cosmic Inflation": a magical period where space stretched faster than light to smooth out the wrinkles.
 
 **The Planck Field Reconciliation:** The paradox only exists because legacy physics treats space as a passive geometric container that can stretch and warp. 
-- In the substrate there is no "empty space" to stretch — space is the relational network of the field.
+- In the substrate there is no "empty space" to stretch: space is the relational network of the field.
 - The substrate exhibits "flatness" for the same reason a puddle of water rests flat. The field resolves its relational tension through continuous thermodynamic gradient descent. Flat geometry is simply the macroscopic appearance of a network resting at baseline equilibrium.
 
 ---
@@ -19,7 +19,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ## 2. The Reversibility Paradox (The Arrow of Time)
 **The Paradox:** Almost all the fundamental equations of classical physics and relativity are "time-reversible." The math works perfectly fine whether time flows forward or backward. Yet, in measured reality, time *only* flows one way. A dropped teacup shatters; it never spontaneously reassembles. How does a hard, one-way thermodynamic arrow emerge from equations that don't demand it?
 
-**The Planck Field Reconciliation:** The block universe treats time as a spatial dimension—a highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
+**The Planck Field Reconciliation:** The block universe treats time as a spatial dimension. A highway you can drive up and down. If reality were a static object, you could simply re-traverse it.
 *   The substrate is a **zero-storage active field**. There is no static archive holding the "past." 
 *   To actualize the present, the previous relational state must be continuously dissipated and overwritten. The teacup cannot reassemble because the physical state of "the whole teacup" has been permanently overwritten at the substrate's fundamental limit by the actualization of the shattered pieces. 
 *   The arrow of time is not a mysterious force; it is the inevitable thermodynamic friction of an active substrate that possesses no archival memory.
@@ -29,7 +29,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ## 3. The Missing Mass Paradox (Dark Matter)
 **The Paradox:** When we look at how galaxies rotate, there isn't enough visible "stuff" (mass) to generate the gravity needed to hold them together. Because classical physics assumes gravity only comes from objects, physicists mathematically injected a massive amount of invisible "Dark Matter" into the equations just to balance the scale. 
 
-**The Planck Field Reconciliation:** This is the ultimate failure of substance ontology—assuming that if there is a physical effect, there must be a hidden "object" causing it.
+**The Planck Field Reconciliation:** This is the ultimate failure of substance ontology. Assuming that if there is a physical effect, there must be a hidden "object" causing it.
 *   Gravity is not a tether tied between objects; it is the entropic gradient of the substrate.
 *   The Planck Field requires continuous thermodynamic friction and relational tension just to maintain its macroscopic boundaries. What we are measuring at the galactic scale is not a cloud of invisible particles. We are measuring the baseline structural tension of the field holding itself together. 
 *   We don't need to invent invisible objects to balance the math; we simply account for the physical maintenance requirement of the relational network.
@@ -42,7 +42,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 **The Planck Field Reconciliation:** The block universe treats time as a landscape you can traverse. The Planck Field proves this physically impossible.
 *   The substrate is a **zero-storage field**. It does not maintain a cached backup of the year 1920. 
 *   In this model, "the past" is not a physical place located behind us; it is the dissipated potential that was physically overwritten to actualize the present moment. 
-*   Within a zero-storage field there is nothing to travel back to — the physical geometry of the past no longer exists. 
+*   Within a zero-storage field there is nothing to travel back to: the physical geometry of the past no longer exists.
 
 ---
 
@@ -51,7 +51,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 
 **The Planck Field Reconciliation:** In the substrate, space is not an empty container you fill with objects. Space is a relational network.
 *   In the Planck Field, actualization only occurs where two boundaries meet (relational friction). 
-*   Because events only happen at the boundary of interaction, the total relational capacity of any localized region is strictly limited by its surface area—the physical boundary where it touches the rest of the field.
+*   Because events only happen at the boundary of interaction, the total relational capacity of any localized region is strictly limited by its surface area: the physical boundary where it touches the rest of the field.
 
 ---
 
@@ -68,7 +68,7 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 ## 7. The Dilation Paradox (Relativistic Time)
 **The Paradox:** Einstein’s relativity proves that time "slows down" for objects moving at extreme speeds or in high gravity. Legacy physics uses this to claim that time is a physical, 4D spatial fabric that stretches and bends.
 
-**The Planck Field Reconciliation:** This is the ultimate Spatial Bias—confusing the rate of a clock with a spatial dimension. In the substrate, time is not a fabric you travel through; it is the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
+**The Planck Field Reconciliation:** This is the ultimate Spatial Bias. Confusing the rate of a clock with a spatial dimension. In the substrate, time is not a fabric you travel through; it is the sequential rate of localized actualizations. In a topological network, time dilation is simply localized network lag.
 *   The field possesses an absolute maximum rate of causal actualization. Any localized system has a finite computational vector budget ($C_{\max}^2 = C_s^2 + C_i^2$) that must be shared between external environmental processing ($C_s$) and internal state changes ($C_i$).
 *   **Velocity (Special Relativity):** Movement requires actively routing data from one node to the next. As a system approaches the absolute routing speed limit of the grid ($c$), nearly 100% of its vector budget is consumed by spatial hand-offs, leaving 0% for internal ticking. A photon does not experience time because all of its bandwidth is spent propagating.
 *   **Gravity (General Relativity):** A massive body is a dense tension knot. A node adjacent to it is bombarded by extreme relational data, acting like a computational DDoS attack. The local grid must dedicate massive bandwidth simply to resolve the crushing environmental tension, starving the internal processing budget.
@@ -94,6 +94,6 @@ At the cosmological scale, legacy physics treats space and time as stretchable g
 
 ## Observed Anchor: The Yarkovsky Effect
 
-The claim that space is not a cold conductive sponge — that resting mass exchanges momentum with the vacuum only through *directed radiative venting* — is measured astronomy, not conjecture. A rotating asteroid parks absorbed sunlight as surface heat (the vacuum insulates; there is no conduction), then re-radiates it anisotropically. The afternoon side is hottest; its infrared photons carry vector momentum ($p = E/c$), and the asymmetric emission acts as a continuous micro-thruster — measurably shifting orbital semi-major axes (radar on 6489 Golevka; OSIRIS-REx tracking of Bennu).
+The claim that space is not a cold conductive sponge, that resting mass exchanges momentum with the vacuum only through *directed radiative venting*, is measured astronomy, not conjecture. A rotating asteroid parks absorbed sunlight as surface heat (the vacuum insulates; there is no conduction), then re-radiates it anisotropically. The afternoon side is hottest; its infrared photons carry vector momentum ($p = E/c$), and the asymmetric emission acts as a continuous micro-thruster: measurably shifting orbital semi-major axes (radar on 6489 Golevka; OSIRIS-REx tracking of Bennu).
 
-On the `meso3i` substrate this mechanism class is directly expressed (M33–M35): transit drag parks flux as resting heat in the native rest channel, and carrier-gated radiation vents it back — accretion, venting, and pressure release on pure channels, no registers. The recoil analog itself (direction-correlated emission → lump drift) is an open experiment; see [The Multi-Channel Bridge](/interference/meso-bridge).
+On the `meso3i` substrate this mechanism class is directly expressed (M33–M35): transit drag parks flux as resting heat in the native rest channel, and carrier-gated radiation vents it back. Accretion, venting, and pressure release on pure channels, no registers. The recoil analog itself (direction-correlated emission → lump drift) is an open experiment; see [The Multi-Channel Bridge](/interference/meso-bridge).

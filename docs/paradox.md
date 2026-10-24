@@ -8,9 +8,9 @@ audio: /audio/paradox.mp3
 
 # Observational Paradoxes: Stress-Testing the Architecture
 
-In any complex system, you learn the most by looking at the paradoxes—the observational dead ends where the standard models contradict themselves. For centuries, classical physics (built on a static block universe and substance ontology) has struggled with physical behaviors that seem logically impossible. 
+In any complex system, you learn the most by looking at the paradoxes: the observational dead ends where the standard models contradict themselves. For centuries, classical physics (built on a static block universe and substance ontology) has struggled with physical behaviors that seem logically impossible.
 
-A paradox is rarely a failure in nature; it is almost always a failure of the map trying to describe the territory. When we audit these exact same phenomena inside the **Planck Field** substrate—a continuously actualizing, zero-storage process of becoming—they stop being paradoxes. They resolve into expected, inevitable behaviors of the model. Whether reality works this way is the open question; that the substrate resolves them this way is what we can show.
+A paradox is rarely a failure in nature; it is almost always a failure of the map trying to describe the territory. When we audit these exact same phenomena inside the **Planck Field** substrate, a continuously actualizing, zero-storage process of becoming, they stop being paradoxes. They resolve into expected, inevitable behaviors of the model. Whether reality works this way is the open question; that the substrate resolves them this way is what we can show.
 
 Because the legacy errors span every discipline from quantum mechanics to biology, we have organized the audits into the four physical scales where continuous mathematics breaks down:
 

@@ -8,11 +8,11 @@ audio: /audio/methodology.mp3
 
 # Methodology & Reproducibility
 
-> **Program History.** This documents the earlier single-spin prototype engines (`planck.c` / `planck3.c`) — still the correct spec for reproducing the Hopfion Zoo and Hopf's Loom milestones. The active engine is `src/meso3i.c` (see the [Multi-Channel Bridge](/interference/meso-bridge) and the [Friction Substrate monograph](/interference/meso-monograph)).
+> **Program History.** This documents the earlier single-spin prototype engines (`planck.c` / `planck3.c`): still the correct spec for reproducing the Hopfion Zoo and Hopf's Loom milestones. The active engine is `src/meso3i.c` (see the [Multi-Channel Bridge](/interference/meso-bridge) and the [Friction Substrate monograph](/interference/meso-monograph)).
 
 This document specifies the formal mathematical architecture, state-space invariants, causal thermodynamic laws, and deterministic reproduction protocols for the **Langevin's Wake** (`planck.c`) and **Hopf's Loom** (`planck3.c`) discrete lattice engines.
 
-All macroscopic behaviors observed in [The Hopfion Zoo](/hopfion-zoo) and [Hopf's Loom](/loom-demo)—including 3D topological soliton stability, inertial rigidity under gradient stress, and multi-knot scattering cascades—emerge strictly from local, integer-only transition operators executing across a stationary 12-neighbor lattice without floating-point dynamics, pseudo-random thermal baths, or continuous differential solvers.
+All macroscopic behaviors observed in [The Hopfion Zoo](/hopfion-zoo) and [Hopf's Loom](/loom-demo), including 3D topological soliton stability, inertial rigidity under gradient stress, and multi-knot scattering cascades, emerge strictly from local, integer-only transition operators executing across a stationary 12-neighbor lattice without floating-point dynamics, pseudo-random thermal baths, or continuous differential solvers.
 
 ---
 
@@ -69,7 +69,7 @@ Time advances in discrete ticks $t \to t + 1$. The engine supports three memory 
 
 ## 4. Causal Thermodynamics & Cold Matter Inversion
 
-A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does not represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. In classical continuum physics, standard parabolic heat and fluid equations (Fourier and Navier-Stokes) unphysically permit infinite propagation speeds, forcing relativists and aerospace engineers to bolt on second-order hyperbolic delay patches (such as Maxwell-Cattaneo or Israel-Stewart "extended causal thermodynamics") to prevent thermal flux from outrunning the speed of light. On our discrete 12-neighbor lattice, causal transport ($c = 1\text{ hop / tick}$) is native to the adjacency graph by construction—requiring zero differential relaxation patches—and implements **Discrete Causal Thermodynamics**: an exact integer accounting of directional routing impedance and finite node bandwidth. The core transition operator is PRNG-free; the optional stochastic-foam scenarios (e.g., the RFC-042 $q=1$ floor) inject `rand()`-driven ambient flux on top of it.
+A foundational distinction of this framework is that the thermal register (`heat`, $h \in \text{uint16}$) does not represent a statistical-mechanical ensemble average, stochastic Brownian velocity dispersion, or coupling to an external probabilistic heat bath. In classical continuum physics, standard parabolic heat and fluid equations (Fourier and Navier-Stokes) unphysically permit infinite propagation speeds, forcing relativists and aerospace engineers to bolt on second-order hyperbolic delay patches (such as Maxwell-Cattaneo or Israel-Stewart "extended causal thermodynamics") to prevent thermal flux from outrunning the speed of light. On our discrete 12-neighbor lattice, causal transport ($c = 1\text{ hop / tick}$) is native to the adjacency graph by construction, requiring zero differential relaxation patches, and implements **Discrete Causal Thermodynamics**: an exact integer accounting of directional routing impedance and finite node bandwidth. The core transition operator is PRNG-free; the optional stochastic-foam scenarios (e.g., the RFC-042 $q=1$ floor) inject `rand()`-driven ambient flux on top of it.
 
 | Property | Classical / Continuum Thermodynamics | Discrete Causal Thermodynamics (`planck3.c`) |
 | :--- | :--- | :--- |
@@ -91,7 +91,7 @@ In continuum statistical mechanics, localized matter is treated as a high-energy
 Consequently, a stable particle does not fight entropy through external energy pumping; it persists as a **cold, phase-locked causal anchor** carving a frictionless slipstream through a warm substrate.
 
 ### 4.3 Hopfions as Causal Thermodynamic Attractors
-Because crossing trajectories incur heavy Phase Friction and thermal unwinding while closed, linked trajectories circulate without collision penalties, 3D Hopfions act as natural **causal thermodynamic attractors** of the True FCC substrate. Under perturbation or turbulent relaxation, misaligned packets heat up, lose Phase Lock, and shed radially as evaporative spray—leaving the surviving linked core to quench into a stable eigenstate.
+Because crossing trajectories incur heavy Phase Friction and thermal unwinding while closed, linked trajectories circulate without collision penalties, 3D Hopfions act as natural **causal thermodynamic attractors** of the True FCC substrate. Under perturbation or turbulent relaxation, misaligned packets heat up, lose Phase Lock, and shed radially as evaporative spray: leaving the surviving linked core to quench into a stable eigenstate.
 
 ---
 
