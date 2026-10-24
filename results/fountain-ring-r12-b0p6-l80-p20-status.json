@@ -1,0 +1,12 @@
+{
+  "ts": 1791942780719,
+  "mode": "ring",
+  "phase": "ticking",
+  "t": 399,
+  "level": 80,
+  "live": 192376,
+  "arcLive": 0,
+  "freeEnds": 77271,
+  "maxCycle": 4,
+  "nCycles": 40
+}

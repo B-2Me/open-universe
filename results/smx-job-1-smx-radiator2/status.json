@@ -1,0 +1,10 @@
+{
+  "ts": 1792103736282,
+  "runner": "smatrix",
+  "phase": "done",
+  "t": 1000,
+  "sprayEvents": 89008,
+  "sprayQuanta": 22788148,
+  "absorbed": 4662778,
+  "absorbedPer": [1127737,1203189,1170085,1161767]
+}

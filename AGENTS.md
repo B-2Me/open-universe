@@ -156,12 +156,33 @@ Write-Output $p.Id > logs/sweep.pid
 
 ## Generated artifacts — never commit
 
-`seeds/`, `knot_dictionary.json`, `docs/public/audio/` (Kokoro TTS
-mp3s + sync maps), and all wasm outputs are generated, not source.
+`seeds/`, `docs/public/audio/` (Kokoro TTS mp3s + sync maps), and all
+wasm outputs are generated, not source. `knot_dictionary.json` IS
+committed — it's the 48K sweep verdict registry, expensive to
+regenerate; only its `.tmp` swap file stays ignored.
 The deploy workflow regenerates audio per deploy and ships it via
 `dist/` — it is NOT committed back (kept out to stop repo bloat).
 To hear narration locally, run `npm run generate-audio` (needs the
 Kokoro pipeline); without it the Listen chip appears but can't play.
+
+## meso3i harnesses + telemetry layout
+
+- `script/meso/*.mjs` — the 28 self-contained meso3i experiment
+  harnesses behind the M33–M48 monograph milestones (m37-bath,
+  photon-test, drest-*, transactions, wavefront-isotropy, lump-ablate,
+  yorp-*, eos-thermalize, stress-tensor …). Each loads
+  `docs/public/wasm/ember/meso3i.js` (build via `src/build.sh` first)
+  and prints measurements to stdout — no output files. They were
+  rescued from the ignored `logs/` dir; keep new harnesses here.
+- `results/` — committed telemetry: the collide/anneal/boost/fountain/
+  quench JSONs, run `.log` transcripts, census `.txt` dumps, and
+  per-job `status.json`/`-results.json` under `results/smx-job-*/`.
+  The monograph's numbers trace back to these files.
+- `logs/` stays fully ignored — it's the scratch dir for bulk
+  regenerable binary output (`.smxst` state snapshots, `.smx` job
+  blobs, `.vtk` frames, `.bin` knot states, `*.meta.json` painted
+  masks). After a run worth keeping, move its small JSON/log output
+  into `results/` and any new harness into `script/meso/`.
 
 ## Docs build
 

@@ -1,0 +1,22 @@
+
+collide: flight_a05 256x256x256 axis 0 dir (1.00,0.00,0.00) b=0 sep=100 pinch=0
+  A=hopfion_32_8@40,128,128 (20952 cells, boost→2913 requantized)  B=hopfion_32_8@215,128,128 (20952 cells)  walls 65536+65536
+  t0: gap=176.86 merged=false live=41092 A=18618/20952 B=20952/20952
+  t50: gap=170.82 merged=false live=27810 A=1/20952 B=14632/20952
+  t100: gap=164.62 merged=false live=23231 A=1/20952 B=5956/20952
+  t150: gap=152.28 merged=false live=21538 A=1392/20952 B=2453/20952
+  t199: gap=152.33 merged=false live=21508 A=1357/20952 B=2290/20952
+
+  S-MATRIX flight_a05: DEGRADED — retain A=0.06 B=0.11 mass 2514240→1366606 in 1520s
+
+collide: flight_a10 256x256x256 axis 0 dir (1.00,0.00,0.00) b=0 sep=100 pinch=0
+  A=hopfion_32_8@40,128,128 (20952 cells, boost→10740 requantized)  B=hopfion_32_8@215,128,128 (20952 cells)  walls 65536+65536
+  t0: gap=175 merged=false live=39490 A=13902/20952 B=20952/20952
+  t50: gap=157.14 merged=false live=27863 A=2355/20952 B=14525/20952
+  t100: gap=152.75 merged=false live=23040 A=2216/20952 B=5622/20952
+  t150: gap=158.95 merged=false live=22036 A=1524/20952 B=2452/20952
+  t199: gap=171.07 merged=false live=22174 A=1924/20952 B=2448/20952
+
+  S-MATRIX flight_a10: DEGRADED — retain A=0.09 B=0.12 mass 2514240→1377881 in 1501s
+
+10 scenarios → C:\src\github.com\nater0000\open-universe\logs\collide-results.json

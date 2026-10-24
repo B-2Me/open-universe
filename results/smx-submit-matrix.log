@@ -1,0 +1,58 @@
+POST http://192.168.68.51:9898/job  smx-matrix.smx (3254.8 MB)
+→ queued as job 3 (1381.8s upload)
+watching every 30s (Ctrl+C to detach — job keeps running)
+  ticking t0 spray=0
+  ticking t0 spray=0
+  ticking t100 spray=0
+  ticking t100 spray=0
+  ticking t200 spray=0
+  ticking t200 spray=0
+  ticking t300 spray=0
+  ticking t300 spray=0
+  ticking t400 spray=0
+  ticking t400 spray=0
+  ticking t500 spray=0
+  ticking t500 spray=0
+  ticking t600 spray=0
+  ticking t600 spray=0
+  ticking t700 spray=0
+  ticking t700 spray=0
+  ticking t800 spray=0
+  ticking t800 spray=0
+  ticking t900 spray=0
+  ticking t1000 spray=0
+  idle
+  status.json
+  batch 0 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_00.smxst
+  batch 1 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_01.smxst
+  batch 2 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_02.smxst
+  batch 3 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_03.smxst
+  batch 4 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_04.smxst
+  batch 5 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_05.smxst
+  batch 6 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_06.smxst
+  batch 7 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_07.smxst
+  batch 8 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_08.smxst
+  batch 9 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_09.smxst
+  batch 10 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_10.smxst
+  batch 11 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_11.smxst
+  batch 12 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_12.smxst
+  batch 13 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_13.smxst
+  batch 14 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_14.smxst
+  batch 15 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_15.smxst
+  batch 16 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_16.smxst
+  batch 17 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_17.smxst
+  batch 18 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_18.smxst
+  batch 19 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_19.smxst
+  batch 20 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_20.smxst
+  batch 21 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_21.smxst
+  batch 22 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_22.smxst
+  batch 23 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_23.smxst
+  batch 24 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_24.smxst
+  batch 25 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_25.smxst
+  batch 26 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_26.smxst
+  batch 27 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_27.smxst
+  batch 28 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_28.smxst
+  batch 29 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_29.smxst
+  batch 30 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_30.smxst
+  batch 31 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_31.smxst
+done

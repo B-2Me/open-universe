@@ -1,0 +1,233 @@
+{
+  "jobDir": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-3",
+  "meta": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-3\\meta.json",
+  "results": [
+    {
+      "batch": 0,
+      "name": "rad_dumb",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.432,
+      "retainB": null,
+      "live": 16233,
+      "mass": 402631,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              40,
+              64,
+              64
+            ],
+            "r": 5,
+            "spin": 0,
+            "quant": 60,
+            "mod": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 55000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 15491,
+        "maxCycle": 3,
+        "nCycles": 31
+      }
+    },
+    {
+      "batch": 1,
+      "name": "rad_normal",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.4445,
+      "retainB": null,
+      "live": 17464,
+      "mass": 424262,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              40,
+              64,
+              64
+            ],
+            "r": 5,
+            "spin": 0,
+            "quant": 60,
+            "mod": 0
+          },
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              0
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 55000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 16677,
+        "maxCycle": 8,
+        "nCycles": 34
+      }
+    },
+    {
+      "batch": 2,
+      "name": "rad_chiral",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.4207,
+      "retainB": null,
+      "live": 16659,
+      "mass": 429272,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              40,
+              64,
+              64
+            ],
+            "r": 5,
+            "spin": 0,
+            "quant": 60,
+            "mod": 0
+          },
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              1
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 55000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 15796,
+        "maxCycle": 8,
+        "nCycles": 26
+      }
+    },
+    {
+      "batch": 3,
+      "name": "rad_antichiral",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 0.4262,
+      "retainB": null,
+      "live": 15617,
+      "mass": 371253,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "pos": [
+              40,
+              64,
+              64
+            ],
+            "r": 5,
+            "spin": 0,
+            "quant": 60,
+            "mod": 0
+          },
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              -1
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 55000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 15012,
+        "maxCycle": 4,
+        "nCycles": 31
+      }
+    }
+  ]
+}

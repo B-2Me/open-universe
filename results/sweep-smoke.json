@@ -1,0 +1,47 @@
+{
+  "generated": "2026-10-14T06:32:46.318Z",
+  "ticks": 50,
+  "diss": 15,
+  "limit": 50000,
+  "mode": 0,
+  "entries": [
+    {
+      "sig": "hopfion_25_9|100x100x40|t50|d15|l50000|m0",
+      "name": "hopfion_25_9",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 25,
+      "R1": 9,
+      "painted": 27971,
+      "loops": 19,
+      "mass0": 1678260,
+      "massEnd": 1678260,
+      "retain": 1,
+      "live0": 27971,
+      "liveEnd": 27971,
+      "radiusXY": 26.44,
+      "radiusZ": 5.3,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 4435,
+      "series": [
+        {
+          "t": 25,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 50,
+          "q": 1678260,
+          "dead": 0
+        }
+      ]
+    }
+  ]
+}

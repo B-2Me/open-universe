@@ -1,0 +1,74 @@
+
+quench: level=0 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=259.7 hB=259.7 (qA=0 bufA=0)
+  t50: hA=2 hB=2 (qA=0 bufA=0)
+  t100: hA=2 hB=2 (qA=0 bufA=0)
+  t150: hA=2 hB=2 (qA=0 bufA=0)
+  t200: hA=2 hB=2 (qA=0 bufA=0)
+  t250: hA=2 hB=2 (qA=0 bufA=0)
+  t300: hA=2 hB=2 (qA=0 bufA=0)
+  t350: hA=2 hB=2 (qA=0 bufA=0)
+  t399: hA=2 hB=2 (qA=0 bufA=0)
+  RESULT level=0: A(in-beam) retain=0 t50/25/10=9/18/26 · B(control) retain=0 9/18/26 · hA_eq=2
+
+quench: level=32 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=1637.5 hB=415.8 (qA=27.2 bufA=0.6)
+  t50: hA=1500.2 hB=179.9 (qA=30.7 bufA=0.5)
+  t100: hA=1419.2 hB=141.6 (qA=28.2 bufA=0.5)
+  t150: hA=1400.9 hB=170.8 (qA=27.3 bufA=0.7)
+  t200: hA=1449.2 hB=189.6 (qA=27.4 bufA=0.5)
+  t250: hA=1490.1 hB=183.4 (qA=29.5 bufA=0.8)
+  t300: hA=1431.7 hB=178.5 (qA=27.8 bufA=1)
+  t350: hA=1361.8 hB=124.6 (qA=26.4 bufA=0.5)
+  t399: hA=1338 hB=142.1 (qA=24.9 bufA=0.6)
+  RESULT level=32: A(in-beam) retain=0 t50/25/10=2/6/6 · B(control) retain=0 10/29/59 · hA_eq=1475.2
+
+quench: level=64 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=1645.3 hB=460.3 (qA=27.3 bufA=0.8)
+  t50: hA=1405.5 hB=235.4 (qA=27.2 bufA=0.7)
+  t100: hA=1502.1 hB=193.1 (qA=30.8 bufA=1.1)
+  t150: hA=1463.9 hB=187.2 (qA=28.6 bufA=0.5)
+  t200: hA=1498.1 hB=228.7 (qA=25.7 bufA=1.3)
+  t250: hA=1521 hB=217.9 (qA=28.6 bufA=0.7)
+  t300: hA=1489 hB=193 (qA=28.7 bufA=0.8)
+  t350: hA=1496.3 hB=199.1 (qA=27.6 bufA=0.8)
+  t399: hA=1508.8 hB=230 (qA=28.8 bufA=0.7)
+  RESULT level=64: A(in-beam) retain=0 t50/25/10=2/2/5 · B(control) retain=0 10/34/43 · hA_eq=1459.6
+
+quench: level=128 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=1680.9 hB=358.1 (qA=31.1 bufA=0.4)
+  t50: hA=1548.2 hB=165.8 (qA=32.5 bufA=1.1)
+  t100: hA=1643 hB=124 (qA=34.8 bufA=1)
+  t150: hA=1474.9 hB=120.7 (qA=32.2 bufA=0.9)
+  t200: hA=1406.5 hB=120 (qA=27.2 bufA=0.8)
+  t250: hA=1494 hB=117.9 (qA=33.2 bufA=0.8)
+  t300: hA=1463.9 hB=133.3 (qA=28.8 bufA=0.6)
+  t350: hA=1474.2 hB=131.4 (qA=29.1 bufA=0.8)
+  t399: hA=1434.1 hB=129.4 (qA=26.8 bufA=0.6)
+  RESULT level=128: A(in-beam) retain=0 t50/25/10=2/3/6 · B(control) retain=0 14/30/59 · hA_eq=1527.8
+
+quench: level=192 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=1595.5 hB=379 (qA=28.6 bufA=0.6)
+  t50: hA=1445.8 hB=114.9 (qA=28 bufA=0.8)
+  t100: hA=1463.2 hB=103.9 (qA=27.7 bufA=1.2)
+  t150: hA=1474.8 hB=103.7 (qA=31 bufA=1)
+  t200: hA=1435.2 hB=97.3 (qA=27.6 bufA=0.8)
+  t250: hA=1441.8 hB=83.1 (qA=26.1 bufA=0.7)
+  t300: hA=1466.8 hB=92.2 (qA=28.9 bufA=0.6)
+  t350: hA=1525.5 hB=93.3 (qA=28 bufA=1.1)
+  t399: hA=1452.7 hB=128.2 (qA=27 bufA=0.7)
+  RESULT level=192: A(in-beam) retain=0 t50/25/10=2/2/3 · B(control) retain=0 20/35/57 · hA_eq=1459
+
+quench: level=240 100x100x40 warm=200 meas=400 h0=300 srcZone 2025+81 cells, probes 891+891
+  t0: hA=1747.6 hB=339.1 (qA=30.4 bufA=1.4)
+  t50: hA=1530.3 hB=119.6 (qA=32.2 bufA=0.7)
+  t100: hA=1511.4 hB=76.8 (qA=28.9 bufA=0.4)
+  t150: hA=1508.1 hB=64.4 (qA=29.8 bufA=0.8)
+  t200: hA=1529 hB=66.9 (qA=31.7 bufA=0.5)
+  t250: hA=1511 hB=89.3 (qA=30.5 bufA=1.1)
+  t300: hA=1445.9 hB=110.3 (qA=27.5 bufA=1)
+  t350: hA=1486.2 hB=79.6 (qA=29.3 bufA=0.3)
+  t399: hA=1543.5 hB=65.5 (qA=28.3 bufA=0.8)
+  RESULT level=240: A(in-beam) retain=0 t50/25/10=1/1/3 · B(control) retain=0 13/23/36 · hA_eq=1572.3
+
+9 levels → C:\src\github.com\nater0000\open-universe\logs\quench-results.json

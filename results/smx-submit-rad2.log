@@ -1,0 +1,10 @@
+POST http://192.168.68.51:9898/job  smx-radiator2.smx (50.7 MB)
+→ queued as job 3 (530.3s upload)
+watching every 15s (Ctrl+C to detach — job keeps running)
+  idle
+  status.json
+  batch 0 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_00.smxst
+  batch 1 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_01.smxst
+  batch 2 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_02.smxst
+  batch 3 → C:\src\github.com\nater0000\open-universe\logs\smx-job-3\batch_03.smxst
+done

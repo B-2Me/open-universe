@@ -1,0 +1,2533 @@
+{
+  "generated": "2026-10-12T00:38:35.835Z",
+  "ticks": 400,
+  "diss": 15,
+  "limit": 50000,
+  "mode": 0,
+  "entries": [
+    {
+      "sig": "hopfion_20_7|100x100x40|t400|d15|l50000|m0",
+      "name": "hopfion_20_7",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 20,
+      "R1": 7,
+      "painted": 11514,
+      "loops": 9,
+      "mass0": 690840,
+      "massEnd": 690840,
+      "retain": 1,
+      "live0": 11514,
+      "liveEnd": 11514,
+      "radiusXY": 21.23,
+      "radiusZ": 3.87,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 46397,
+      "series": [
+        {
+          "t": 100,
+          "q": 690840,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 690840,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 690840,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 690840,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_20_9|100x100x40|t400|d15|l50000|m0",
+      "name": "hopfion_20_9",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 20,
+      "R1": 9,
+      "painted": 23150,
+      "loops": 19,
+      "mass0": 1389000,
+      "massEnd": 1389000,
+      "retain": 1,
+      "live0": 23150,
+      "liveEnd": 23150,
+      "radiusXY": 21.93,
+      "radiusZ": 5.31,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 52105,
+      "series": [
+        {
+          "t": 100,
+          "q": 1389000,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1389000,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1389000,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1389000,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_25_9|100x100x40|t400|d15|l50000|m0",
+      "name": "hopfion_25_9",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 25,
+      "R1": 9,
+      "painted": 27971,
+      "loops": 19,
+      "mass0": 1678260,
+      "massEnd": 1678260,
+      "retain": 1,
+      "live0": 27971,
+      "liveEnd": 27971,
+      "radiusXY": 26.44,
+      "radiusZ": 5.3,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 50410,
+      "series": [
+        {
+          "t": 100,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1678260,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_30_12|100x100x40|t400|d15|l50000|m0",
+      "name": "hopfion_30_12",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 30,
+      "R1": 12,
+      "painted": 44120,
+      "loops": 26,
+      "mass0": 2647200,
+      "massEnd": 2647200,
+      "retain": 1,
+      "live0": 44120,
+      "liveEnd": 44120,
+      "radiusXY": 31.85,
+      "radiusZ": 6.53,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 35297,
+      "series": [
+        {
+          "t": 100,
+          "q": 2647200,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 2647200,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 2647200,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 2647200,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_30_9|100x100x40|t400|d15|l50000|m0",
+      "name": "hopfion_30_9",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 30,
+      "R1": 9,
+      "painted": 26786,
+      "loops": 17,
+      "mass0": 1607160,
+      "massEnd": 1607160,
+      "retain": 1,
+      "live0": 26786,
+      "liveEnd": 26786,
+      "radiusXY": 30.86,
+      "radiusZ": 5.46,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 34728,
+      "series": [
+        {
+          "t": 100,
+          "q": 1607160,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1607160,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1607160,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1607160,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_24_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_24_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 24,
+      "R1": 12,
+      "painted": 34996,
+      "loops": 24,
+      "mass0": 2099760,
+      "massEnd": 2099760,
+      "retain": 1,
+      "live0": 34996,
+      "liveEnd": 34996,
+      "radiusXY": 25.71,
+      "radiusZ": 6.32,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1414843,
+      "series": [
+        {
+          "t": 50,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 2099760,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 2099760,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_24_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_24_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 24,
+      "R1": 16,
+      "painted": 65611,
+      "loops": 40,
+      "mass0": 3936660,
+      "massEnd": 3936660,
+      "retain": 1,
+      "live0": 65611,
+      "liveEnd": 65611,
+      "radiusXY": 27.44,
+      "radiusZ": 8.24,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1328417,
+      "series": [
+        {
+          "t": 50,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3936660,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3936660,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_24_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_24_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 24,
+      "R1": 20,
+      "painted": 121169,
+      "loops": 71,
+      "mass0": 7270140,
+      "massEnd": 7270140,
+      "retain": 1,
+      "live0": 121169,
+      "liveEnd": 121169,
+      "radiusXY": 30.32,
+      "radiusZ": 10.53,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1332332,
+      "series": [
+        {
+          "t": 50,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7270140,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7270140,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_24_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_24_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 24,
+      "R1": 8,
+      "painted": 17108,
+      "loops": 13,
+      "mass0": 1026480,
+      "massEnd": 1026480,
+      "retain": 1,
+      "live0": 17108,
+      "liveEnd": 17108,
+      "radiusXY": 25.12,
+      "radiusZ": 4.34,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1325150,
+      "series": [
+        {
+          "t": 50,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1026480,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1026480,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_32_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_32_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 32,
+      "R1": 12,
+      "painted": 45998,
+      "loops": 30,
+      "mass0": 2759880,
+      "massEnd": 2759880,
+      "retain": 1,
+      "live0": 45998,
+      "liveEnd": 45998,
+      "radiusXY": 33.61,
+      "radiusZ": 6.37,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1342124,
+      "series": [
+        {
+          "t": 50,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 2759880,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 2759880,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_32_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_32_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 32,
+      "R1": 16,
+      "painted": 66149,
+      "loops": 39,
+      "mass0": 3968940,
+      "massEnd": 3968940,
+      "retain": 1,
+      "live0": 66149,
+      "liveEnd": 66149,
+      "radiusXY": 33.99,
+      "radiusZ": 8.16,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1329606,
+      "series": [
+        {
+          "t": 50,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3968940,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3968940,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_32_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_32_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 32,
+      "R1": 20,
+      "painted": 133077,
+      "loops": 81,
+      "mass0": 7984620,
+      "massEnd": 7984620,
+      "retain": 1,
+      "live0": 133077,
+      "liveEnd": 133077,
+      "radiusXY": 37.16,
+      "radiusZ": 10.6,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1426620,
+      "series": [
+        {
+          "t": 50,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7984620,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7984620,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_32_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_32_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 32,
+      "R1": 8,
+      "painted": 20952,
+      "loops": 14,
+      "mass0": 1257120,
+      "massEnd": 1257120,
+      "retain": 1,
+      "live0": 20952,
+      "liveEnd": 20952,
+      "radiusXY": 32.77,
+      "radiusZ": 4.44,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1421831,
+      "series": [
+        {
+          "t": 50,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1257120,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1257120,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_40_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_40_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 40,
+      "R1": 12,
+      "painted": 44604,
+      "loops": 30,
+      "mass0": 2676240,
+      "massEnd": 2676240,
+      "retain": 1,
+      "live0": 44604,
+      "liveEnd": 44604,
+      "radiusXY": 40.57,
+      "radiusZ": 6.16,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1511231,
+      "series": [
+        {
+          "t": 50,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 2676240,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 2676240,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_40_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_40_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 40,
+      "R1": 16,
+      "painted": 72749,
+      "loops": 45,
+      "mass0": 4364940,
+      "massEnd": 4364940,
+      "retain": 1,
+      "live0": 72749,
+      "liveEnd": 72749,
+      "radiusXY": 40.92,
+      "radiusZ": 8.01,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1609967,
+      "series": [
+        {
+          "t": 50,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 4364940,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 4364940,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_40_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_40_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 40,
+      "R1": 20,
+      "painted": 127822,
+      "loops": 75,
+      "mass0": 7669320,
+      "massEnd": 7669320,
+      "retain": 1,
+      "live0": 127822,
+      "liveEnd": 127822,
+      "radiusXY": 42.21,
+      "radiusZ": 10.49,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 2113383,
+      "series": [
+        {
+          "t": 50,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7669320,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7669320,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_40_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_40_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 40,
+      "R1": 8,
+      "painted": 19816,
+      "loops": 15,
+      "mass0": 1188960,
+      "massEnd": 1188960,
+      "retain": 1,
+      "live0": 19816,
+      "liveEnd": 19816,
+      "radiusXY": 40.29,
+      "radiusZ": 4.39,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1687032,
+      "series": [
+        {
+          "t": 50,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1188960,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1188960,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_48_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_48_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 48,
+      "R1": 12,
+      "painted": 51229,
+      "loops": 31,
+      "mass0": 3073740,
+      "massEnd": 3073740,
+      "retain": 1,
+      "live0": 51229,
+      "liveEnd": 51229,
+      "radiusXY": 48.03,
+      "radiusZ": 6.29,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1459085,
+      "series": [
+        {
+          "t": 50,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3073740,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3073740,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_48_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_48_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 48,
+      "R1": 16,
+      "painted": 74691,
+      "loops": 42,
+      "mass0": 4481460,
+      "massEnd": 4481460,
+      "retain": 1,
+      "live0": 74691,
+      "liveEnd": 74691,
+      "radiusXY": 48.43,
+      "radiusZ": 7.73,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1461299,
+      "series": [
+        {
+          "t": 50,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 4481460,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 4481460,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_48_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_48_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 48,
+      "R1": 20,
+      "painted": 122690,
+      "loops": 75,
+      "mass0": 7361400,
+      "massEnd": 7361400,
+      "retain": 1,
+      "live0": 122690,
+      "liveEnd": 122690,
+      "radiusXY": 48.74,
+      "radiusZ": 10.13,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1466294,
+      "series": [
+        {
+          "t": 50,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7361400,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7361400,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_48_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_48_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 48,
+      "R1": 8,
+      "painted": 24898,
+      "loops": 14,
+      "mass0": 1493880,
+      "massEnd": 1493880,
+      "retain": 1,
+      "live0": 24898,
+      "liveEnd": 24898,
+      "radiusXY": 48.14,
+      "radiusZ": 4.27,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1456368,
+      "series": [
+        {
+          "t": 50,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1493880,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1493880,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_56_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_56_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 56,
+      "R1": 12,
+      "painted": 46718,
+      "loops": 30,
+      "mass0": 2803080,
+      "massEnd": 2803080,
+      "retain": 1,
+      "live0": 46718,
+      "liveEnd": 46718,
+      "radiusXY": 55.68,
+      "radiusZ": 6.15,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1483682,
+      "series": [
+        {
+          "t": 50,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 2803080,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 2803080,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_56_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_56_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 56,
+      "R1": 16,
+      "painted": 76782,
+      "loops": 43,
+      "mass0": 4606920,
+      "massEnd": 4606920,
+      "retain": 1,
+      "live0": 76782,
+      "liveEnd": 76782,
+      "radiusXY": 55.39,
+      "radiusZ": 7.81,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1465547,
+      "series": [
+        {
+          "t": 50,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 4606920,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 4606920,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_56_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_56_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 56,
+      "R1": 20,
+      "painted": 129299,
+      "loops": 78,
+      "mass0": 7757940,
+      "massEnd": 7757940,
+      "retain": 1,
+      "live0": 129299,
+      "liveEnd": 129299,
+      "radiusXY": 55.65,
+      "radiusZ": 10.17,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1466001,
+      "series": [
+        {
+          "t": 50,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7757940,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7757940,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_56_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_56_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 56,
+      "R1": 8,
+      "painted": 22045,
+      "loops": 15,
+      "mass0": 1322700,
+      "massEnd": 1322700,
+      "retain": 1,
+      "live0": 22045,
+      "liveEnd": 22045,
+      "radiusXY": 54.84,
+      "radiusZ": 4.22,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1463593,
+      "series": [
+        {
+          "t": 50,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1322700,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1322700,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_64_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_64_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 64,
+      "R1": 12,
+      "painted": 56610,
+      "loops": 36,
+      "mass0": 3396600,
+      "massEnd": 3396600,
+      "retain": 1,
+      "live0": 56610,
+      "liveEnd": 56610,
+      "radiusXY": 64.17,
+      "radiusZ": 6.45,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1461671,
+      "series": [
+        {
+          "t": 50,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3396600,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3396600,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_64_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_64_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 64,
+      "R1": 16,
+      "painted": 95099,
+      "loops": 53,
+      "mass0": 5705940,
+      "massEnd": 5705940,
+      "retain": 1,
+      "live0": 95099,
+      "liveEnd": 95099,
+      "radiusXY": 64.02,
+      "radiusZ": 7.98,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1463724,
+      "series": [
+        {
+          "t": 50,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 5705940,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 5705940,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_64_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_64_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 64,
+      "R1": 20,
+      "painted": 134997,
+      "loops": 77,
+      "mass0": 8099820,
+      "massEnd": 8099820,
+      "retain": 1,
+      "live0": 134997,
+      "liveEnd": 134997,
+      "radiusXY": 64.2,
+      "radiusZ": 9.83,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1467210,
+      "series": [
+        {
+          "t": 50,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 8099820,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 8099820,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_64_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_64_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 64,
+      "R1": 8,
+      "painted": 22454,
+      "loops": 14,
+      "mass0": 1347240,
+      "massEnd": 1347240,
+      "retain": 1,
+      "live0": 22454,
+      "liveEnd": 22454,
+      "radiusXY": 62.71,
+      "radiusZ": 3.9,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1460471,
+      "series": [
+        {
+          "t": 50,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1347240,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1347240,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_72_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_72_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 72,
+      "R1": 12,
+      "painted": 55800,
+      "loops": 32,
+      "mass0": 3348000,
+      "massEnd": 3348000,
+      "retain": 1,
+      "live0": 55800,
+      "liveEnd": 55800,
+      "radiusXY": 70.48,
+      "radiusZ": 6.39,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1502726,
+      "series": [
+        {
+          "t": 50,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3348000,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3348000,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_72_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_72_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 72,
+      "R1": 16,
+      "painted": 87341,
+      "loops": 52,
+      "mass0": 5240460,
+      "massEnd": 5240460,
+      "retain": 1,
+      "live0": 87341,
+      "liveEnd": 87341,
+      "radiusXY": 71.02,
+      "radiusZ": 7.98,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1466808,
+      "series": [
+        {
+          "t": 50,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 5240460,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 5240460,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_72_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_72_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 72,
+      "R1": 20,
+      "painted": 131884,
+      "loops": 74,
+      "mass0": 7913040,
+      "massEnd": 7913040,
+      "retain": 1,
+      "live0": 131884,
+      "liveEnd": 131884,
+      "radiusXY": 70.75,
+      "radiusZ": 10.03,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1491684,
+      "series": [
+        {
+          "t": 50,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 7913040,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 7913040,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_72_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_72_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 72,
+      "R1": 8,
+      "painted": 24332,
+      "loops": 13,
+      "mass0": 1459920,
+      "massEnd": 1459920,
+      "retain": 1,
+      "live0": 24332,
+      "liveEnd": 24332,
+      "radiusXY": 70.26,
+      "radiusZ": 4.26,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1543889,
+      "series": [
+        {
+          "t": 50,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1459920,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1459920,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_80_12|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_80_12",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 80,
+      "R1": 12,
+      "painted": 52685,
+      "loops": 30,
+      "mass0": 3161100,
+      "massEnd": 3161100,
+      "retain": 1,
+      "live0": 52685,
+      "liveEnd": 52685,
+      "radiusXY": 78.77,
+      "radiusZ": 6.25,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1938996,
+      "series": [
+        {
+          "t": 50,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 3161100,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 3161100,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_80_16|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_80_16",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 80,
+      "R1": 16,
+      "painted": 94709,
+      "loops": 58,
+      "mass0": 5682540,
+      "massEnd": 5682540,
+      "retain": 1,
+      "live0": 94709,
+      "liveEnd": 94709,
+      "radiusXY": 79.8,
+      "radiusZ": 8.03,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1624590,
+      "series": [
+        {
+          "t": 50,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 5682540,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 5682540,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_80_20|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_80_20",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 80,
+      "R1": 20,
+      "painted": 154345,
+      "loops": 85,
+      "mass0": 9260700,
+      "massEnd": 9260700,
+      "retain": 1,
+      "live0": 154345,
+      "liveEnd": 154345,
+      "radiusXY": 80.04,
+      "radiusZ": 9.81,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 1626232,
+      "series": [
+        {
+          "t": 50,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 9260700,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 9260700,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_80_8|256x256x256|t400|d15|l50000|m0",
+      "name": "hopfion_80_8",
+      "dims": [
+        256,
+        256,
+        256
+      ],
+      "R0": 80,
+      "R1": 8,
+      "painted": 22189,
+      "loops": 12,
+      "mass0": 1331340,
+      "massEnd": 1331340,
+      "retain": 1,
+      "live0": 22189,
+      "liveEnd": 22189,
+      "radiusXY": 78.68,
+      "radiusZ": 4.02,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 5380371,
+      "series": [
+        {
+          "t": 50,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1331340,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1331340,
+          "dead": 0
+        }
+      ]
+    },
+    {
+      "sig": "hopfion_25_9|100x100x40|t400|d15|l50000|m0|y1",
+      "name": "hopfion_25_9",
+      "dims": [
+        100,
+        100,
+        40
+      ],
+      "R0": 25,
+      "R1": 9,
+      "painted": 27971,
+      "loops": 19,
+      "mass0": 1678260,
+      "massEnd": 1678260,
+      "retain": 1,
+      "live0": 27971,
+      "liveEnd": 27971,
+      "radiusXY": 26.44,
+      "radiusZ": 5.3,
+      "deadlocked": 0,
+      "sprayEvents": 0,
+      "sprayQuanta": 0,
+      "stableTail": true,
+      "verdict": "stable",
+      "ms": 45838,
+      "series": [
+        {
+          "t": 25,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 50,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 75,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 100,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 125,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 150,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 175,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 200,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 225,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 250,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 275,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 300,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 325,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 350,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 375,
+          "q": 1678260,
+          "dead": 0
+        },
+        {
+          "t": 400,
+          "q": 1678260,
+          "dead": 0
+        }
+      ]
+    }
+  ]
+}

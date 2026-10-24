@@ -1,0 +1,17 @@
+{
+  "dims": [
+    100,
+    100,
+    40
+  ],
+  "generated": "2026-10-14T06:35:04.339Z",
+  "manifest": [
+    {
+      "name": "hopfion_25_9",
+      "loops": 19,
+      "painted": 27971,
+      "inflowClean": 27971,
+      "alien": 0
+    }
+  ]
+}
