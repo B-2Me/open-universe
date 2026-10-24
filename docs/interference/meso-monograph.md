@@ -205,6 +205,14 @@ Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs
 
 **Verdict:** a pairwise approach exists *only* in the self-radiating regime, and even there it is a transient ablation effect, not a sustained force: weak, short-range (sep≤12), and sign-flipping as evaporation proceeds. Carrier-gated lumps under ambient flux are passively inert — shadowing without a measurable attraction. Radiation-shadow gravity remains unproven; what survives is "two actively-radiating lumps ablate each other asymmetrically while dense."
 
+### M47c — The coherent-beam theorem (from the M46 control)
+
+The `(b)` control in `logs/eos-thermalize.mjs` — a +x-only seed in a closed box — stays **perfectly frozen forever** (ρ, px, Pxx constant to t≥200). Mechanism: a co-moving pair {c,c} has total momentum 2c, and on D3Q19 no other channel pair sums to 2c — momentum conservation leaves the pair nowhere to scatter. The collision operator is *exactly blind* to unidirectional flow.
+
+- Consequence 1: **coherent radiation cannot self-degrade** — a beam propagates indefinitely without scattering (mirroring QED's parallel-photon null: s = 2E₁E₂(1−cosθ) → 0 at θ=0; mechanism-level analog, not a claim of equivalence).
+- Consequence 2: thermalization requires *velocity spread*, not just density — incoherence is a precondition for the fluid regime.
+- Consequence 3 (with M44): the substrate has a hard coherent/incoherent divide — coherent streams are invisible to collisions; only crossing or counter-propagating populations transact.
+
 ### M47 — The transaction ledger (`meso3i_ev`)
 
 Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta: drag-park, pair-bind, gated emit, Q-capture, boundary drain, photon eject, congestion reflect (`logs/transactions.mjs`). An entropy-production *analog* — a count of RNG-mediated or boundary events that cannot be replayed backward, not a computed `dS/dt`.
@@ -239,7 +247,8 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M43 | Grazing collisions and absorbed light write spin (YORP) | `1b1f88c` |
 | M44 | No live circulation — bucket brigade subcritical, all regimes | `a622a8b` |
 | M45 | Spin induction by contact; internal counter-rotation annihilates — replicated lamp-free | `1b1f88c` |
-| M46 | Πᵢⱼ: P/ρ→0.879 closed-box EOS (collisions generate isotropy); coherent flow collisionless; wound shear in rest bins | `1204e4f` |
+| M46 | Πᵢⱼ: P/ρ→0.879 closed-box EOS (collisions generate isotropy); wound shear in rest bins | `1204e4f` |
+| M47c | Coherent-beam theorem: {c,c} has no momentum-conserving scatter — unidirectional flow is permanently frozen | `9cd561f` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 | M47b | Drift-curve null: M37 "attraction" is drive-centric infall; pairwise force <5e-4 cells/t | `1204e4f` |
 

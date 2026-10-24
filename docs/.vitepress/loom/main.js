@@ -585,12 +585,13 @@ export async function initLoomSimulator(root, opts = {}) {
   });
   bind('[data-binary]', 'click', () => {
     // M37 two-body preset: two small lumps ~6 cells of vacuum apart on
-    // the equator — inside mutual-ablation reach. Radiation needs
-    // carriers (☀) or blackbody (Rad can't go positive from this UI).
+    // the equator. M47b: pairwise ablation is real only between
+    // self-radiating lumps and is transient; under the centered ☀
+    // drive the convergence is drive-centric infall, not attraction.
     const a = seedBall(CX - 6, CY, CZ, 3, 64);
     const b = seedBall(CX + 6, CY, CZ, 3, 64);
     upload(); dirty = true;
-    say(`M37 pair dropped — ${a + b} sites parked · mutual ablation needs carriers: turn ☀ on`, 6000);
+    say(`M37 pair dropped — ${a + b} sites parked · ☀ convergence is drive-centric; mutual ablation needs Rad > 0`, 6000);
   });
   // one-click physics scenes — zero the field, set the measured flag
   // combination through the real widgets (so the dock stays honest),
