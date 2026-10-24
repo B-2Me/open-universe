@@ -179,11 +179,13 @@ Two adjacent wound lumps (±4-cell gap, drive-coupled interface), 300t:
 
 *Ledger note:* the ~70% mass boil-off in all four runs is generic drive-ablation, not annihilation-specific; the distinctive weld datum is spin collapse, not mass loss.
 
+*Lamp-free replication (`logs/spin-collide-clean.mjs`):* all four configs rerun with `fricm=8` self-radiation and **zero drive** — every carrier comes from the lumps' own boil-off. Qualitative results all hold: antiparallel/parallel decay identically with signs intact; the cold lump still inducts `0→+2,290` by t50 (~85% of the driven case); the weld still collapses spin ~3× faster than mass. The first run's drive sat *inside* the weld lump (injection at r=3 < R=6) — its boil-off numbers were lamp-assisted, but the spin-collapse mechanism survives clean.
+
 ### M46 — Continuum extraction: the stress tensor `Πᵢⱼ` and the wavefront
 
 Pure-harness measurements (`logs/stress-tensor.mjs`, `logs/wavefront-isotropy.mjs`, `logs/wound-tensor.mjs`): `Πᵢⱼ = Σ cᵢcⱼn_c` computed over channel populations — no engine changes, no presumed law.
 
-- **Equation of state:** on a settled driven ember, `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% outside the core — the moving component is a nearly ideal isotropic gas with `P ≈ ρ⟨c_x²⟩`, `⟨c_x²⟩ = 16/18` in lattice units.
+- **Equation of state:** on a settled driven ember, `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% outside the core. **Clean re-test (`logs/eos-thermalize.mjs`, closed box, no drive, no drain):** a ±x-axial-only seed (anisotropy 2.0) thermalizes to `anis ≈ 0` in ~25 ticks and settles at `P/ρ = 0.879` vs. the 16/18 = 0.889 isotropic ideal (~1% lattice correction) — **collisions generate isotropy; the lamp wasn't supplying it.** Control: a +x-only seed stays perfectly frozen forever — the collision operator has *no move family for a co-moving pair*, so coherent flow is collisionless by construction. Thermalization requires velocity spread, not just density.
 - **Wavefront:** a point pulse expands as **two ballistic shells** — axials at reach 2t, diagonals at √2t — each isotropic within ~8% in-class. The lattice is anisotropic across speed classes *by construction*; "isotropy" claims must name the shell.
 - **Wound shear:** stored Lz surfaces as a `Π_xy` quadrupole *in the directional rest bins* (NE−/SE+/NW+ sign pattern confirmed; the fourth quadrant's `(1,−1,0)` bin was empty — population asymmetry, not a sign violation). `Π_xy^mov ≡ 0` — the shear lives in storage, not in flight. Most tangential momentum parks in axial channels (`c_xc_y = 0`, invisible to the off-diagonal tensor), so `Π_xy` sees only the diagonal-bin slice — a lattice quantization caveat, not missing physics.
 
@@ -236,8 +238,8 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M42 | Directional rest `rest[18]` stores Lz; sign-true revival | `a622a8b` |
 | M43 | Grazing collisions and absorbed light write spin (YORP) | `1b1f88c` |
 | M44 | No live circulation — bucket brigade subcritical, all regimes | `a622a8b` |
-| M45 | Spin induction by contact; internal counter-rotation annihilates | `1b1f88c` |
-| M46 | Πᵢⱼ extracted: P/ρ→~0.98 ideal gas; two-shell wavefront; wound shear quadrupole in rest bins | `1204e4f` |
+| M45 | Spin induction by contact; internal counter-rotation annihilates — replicated lamp-free | `1b1f88c` |
+| M46 | Πᵢⱼ: P/ρ→0.879 closed-box EOS (collisions generate isotropy); coherent flow collisionless; wound shear in rest bins | `1204e4f` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 | M47b | Drift-curve null: M37 "attraction" is drive-centric infall; pairwise force <5e-4 cells/t | `1204e4f` |
 
