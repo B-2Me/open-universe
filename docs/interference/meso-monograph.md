@@ -203,7 +203,9 @@ Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs
 
 **Stage 3 — ambient bath (process-ontology control).** `test_bath.c`: carrier-gated lumps (`fricm=-4`, inert without carriers) in an isotropic flux bath injected on the boundary shell — no central source. Solo lumps still converge (~0.0019 cells/t toward center — the bath's own boundary-geometry artifact), but the **pairwise residual is zero at every gap** (±4×10⁻⁵ cells/t). Inert lumps in a uniform bath produce no measurable mutual force.
 
-**Verdict:** a pairwise approach exists *only* in the self-radiating regime, and even there it is a transient ablation effect, not a sustained force: weak, short-range (sep≤12), and sign-flipping as evaporation proceeds. Carrier-gated lumps under ambient flux are passively inert — shadowing without a measurable attraction. Radiation-shadow gravity remains unproven; what survives is "two actively-radiating lumps ablate each other asymmetrically while dense."
+**Stage 4 — broadside beam shadow (`test_shadow.c`).** Translational +x carrier plane, gated lumps: upstream A shadows downstream B (one-sided by construction). Pairwise residuals ±3×10⁻⁴ cells/t, sign-inconsistent across sep 10–18 — **null**. Bonus datum: solo ablation-drift decays −0.0054 (x=27) → ~0 (x=41) — the beam's ablation reach is only ~15 cells; coherent flux thermalizes before it travels.
+
+**Verdict:** a pairwise approach exists *only* in the self-radiating regime, and even there it is a transient ablation effect, not a sustained force: weak, short-range (sep≤12), and sign-flipping as evaporation proceeds. Carrier-gated lumps under ambient flux or a broadside beam produce **no measurable shadow-mediated force** (≤3×10⁻⁴ cells/t). Radiation-shadow gravity is closed at this scale: pairwise coupling requires *active radiating* lumps and is transient even then.
 
 ### M47c — The coherent-beam theorem (from the M46 control)
 
@@ -250,7 +252,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M46 | Πᵢⱼ: P/ρ→0.879 closed-box EOS (collisions generate isotropy); wound shear in rest bins | `1204e4f` |
 | M47c | Coherent-beam theorem: {c,c} has no momentum-conserving scatter — unidirectional flow is permanently frozen | `9cd561f` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
-| M47b | Drift-curve null: M37 "attraction" is drive-centric infall; pairwise force <5e-4 cells/t | `1204e4f` |
+| M47b | M37 resolved: real transient ablation coupling only between self-radiating lumps; bath & broadside null; drive-infall artifact caught | `e002c9d` |
 
 ## The Picture That Emerges
 
