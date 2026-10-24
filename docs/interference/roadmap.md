@@ -36,7 +36,7 @@ Real, radar-measured phenomena running on the same contact mechanics:
 
 ## Step 4: Entropic Gravitational Scaling, *revised by M47b*
 
-M37 was re-measured in three regimes with solo-lump baselines (`logs/m37-drift*.mjs`, `src/test_bath.c`):
+M37 was re-measured in three regimes with solo-lump baselines (`script/meso/m37-drift*.mjs`, `src/test_bath.c`):
 
 *   **Centered drive:** the convergence is *drive-centric infall*. An artifact of the point source, not a two-body force.
 *   **Self-radiating (`fricm>0`, the faithful regime):** a real but *transient* short-range approach (sep ≤12) that reverses as evaporation proceeds. Two active processes ablate each other asymmetrically while dense: not a sustained force.

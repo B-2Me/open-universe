@@ -124,7 +124,7 @@ The mechanism class, *resting mass exchanging momentum with vacuum through direc
 
 ## Part VIII. The Structured-Matter Tier (M39–M45, `loom-meso`)
 
-*M38's boundary was drawn for scalar rest. This part measures what happens when the rest state is given the one thing it lacked: a channel identity. All results on the 72×72×36 loom grid, harnesses in `logs/*.mjs`.*
+*M38's boundary was drawn for scalar rest. This part measures what happens when the rest state is given the one thing it lacked: a channel identity. All results on the 72×72×36 loom grid, harnesses in `script/meso/*.mjs`.*
 
 ### M39. The photon field (massless directional plane)
 
@@ -179,19 +179,19 @@ Two adjacent wound lumps (±4-cell gap, drive-coupled interface), 300t:
 
 *Ledger note:* the ~70% mass boil-off in all four runs is generic drive-ablation, not annihilation-specific; the distinctive weld datum is spin collapse, not mass loss.
 
-*Lamp-free replication (`logs/spin-collide-clean.mjs`):* all four configs rerun with `fricm=8` self-radiation and **zero drive**. Every carrier comes from the lumps' own boil-off. Qualitative results all hold: antiparallel/parallel decay identically with signs intact; the cold lump still inducts `0→+2,290` by t50 (~85% of the driven case); the weld still collapses spin ~3× faster than mass. The first run's drive sat *inside* the weld lump (injection at r=3 < R=6): its boil-off numbers were lamp-assisted, but the spin-collapse mechanism survives clean.
+*Lamp-free replication (`script/meso/spin-collide-clean.mjs`):* all four configs rerun with `fricm=8` self-radiation and **zero drive**. Every carrier comes from the lumps' own boil-off. Qualitative results all hold: antiparallel/parallel decay identically with signs intact; the cold lump still inducts `0→+2,290` by t50 (~85% of the driven case); the weld still collapses spin ~3× faster than mass. The first run's drive sat *inside* the weld lump (injection at r=3 < R=6): its boil-off numbers were lamp-assisted, but the spin-collapse mechanism survives clean.
 
 ### M46. Continuum extraction: the stress tensor `Πᵢⱼ` and the wavefront
 
-Pure-harness measurements (`logs/stress-tensor.mjs`, `logs/wavefront-isotropy.mjs`, `logs/wound-tensor.mjs`): `Πᵢⱼ = Σ cᵢcⱼn_c` computed over channel populations, no engine changes, no presumed law.
+Pure-harness measurements (`script/meso/stress-tensor.mjs`, `script/meso/wavefront-isotropy.mjs`, `script/meso/wound-tensor.mjs`): `Πᵢⱼ = Σ cᵢcⱼn_c` computed over channel populations, no engine changes, no presumed law.
 
-- **Equation of state:** on a settled driven ember, `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% outside the core. **Clean re-test (`logs/eos-thermalize.mjs`, closed box, no drive, no drain):** a ±x-axial-only seed (anisotropy 2.0) thermalizes to `anis ≈ 0` in ~25 ticks and settles at `P/ρ = 0.879` vs. the 16/18 = 0.889 isotropic ideal (~1% lattice correction), **collisions generate isotropy; the lamp wasn't supplying it.** Control: a +x-only seed stays perfectly frozen forever. The collision operator has *no move family for a co-moving pair*, so coherent flow is collisionless by construction. Thermalization requires velocity spread, not just density.
+- **Equation of state:** on a settled driven ember, `P/ρ → 0.89–0.98` with off-diagonal shear ≤9% outside the core. **Clean re-test (`script/meso/eos-thermalize.mjs`, closed box, no drive, no drain):** a ±x-axial-only seed (anisotropy 2.0) thermalizes to `anis ≈ 0` in ~25 ticks and settles at `P/ρ = 0.879` vs. the 16/18 = 0.889 isotropic ideal (~1% lattice correction), **collisions generate isotropy; the lamp wasn't supplying it.** Control: a +x-only seed stays perfectly frozen forever. The collision operator has *no move family for a co-moving pair*, so coherent flow is collisionless by construction. Thermalization requires velocity spread, not just density.
 - **Wavefront:** a point pulse expands as **two ballistic shells**, axials at reach 2t, diagonals at √2t, each isotropic within ~8% in-class. The lattice is anisotropic across speed classes *by construction*; "isotropy" claims must name the shell.
 - **Wound shear:** stored Lz surfaces as a `Π_xy` quadrupole *in the directional rest bins* (NE−/SE+/NW+ sign pattern confirmed; the fourth quadrant's `(1,−1,0)` bin was empty, population asymmetry, not a sign violation). `Π_xy^mov ≡ 0`: the shear lives in storage, not in flight. Most tangential momentum parks in axial channels (`c_xc_y = 0`, invisible to the off-diagonal tensor), so `Π_xy` sees only the diagonal-bin slice, a lattice quantization caveat, not missing physics.
 
 ### M47b. The M37 force-curve program: confound found, partial signal survives
 
-Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs/m37-drift2.mjs`).
+Two-stage re-measurement of M37 "mutual attraction" (`script/meso/m37-drift.mjs`, `script/meso/m37-drift2.mjs`).
 
 **Stage 1. A confound discovered.** R3/Q64 lumps at `±sep/2` under the centered 18-spoke drive, fricmode −4 (carrier-gated): pair closing rates 0.0009–0.004 cells/t. *but solo lumps at the same positions close identically*. The convergence was the drive's radial infall field (lone-lump drift scales superlinearly with distance: 1.2×10⁻⁴ @ 4 cells → 2.4×10⁻³ @ 10), not a two-body force. Any claim involving `drive` + off-center lumps inherits this artifact; solo controls are mandatory.
 
@@ -221,7 +221,7 @@ Two-stage re-measurement of M37 "mutual attraction" (`logs/m37-drift.mjs`, `logs
 
 ### M47c. The coherent-beam theorem (from the M46 control)
 
-The `(b)` control in `logs/eos-thermalize.mjs`, a +x-only seed in a closed box, stays **perfectly frozen forever** (ρ, px, Pxx constant to t≥200). Mechanism: a co-moving pair {c,c} has total momentum 2c, and on D3Q19 no other channel pair sums to 2c. Momentum conservation leaves the pair nowhere to scatter. The collision operator is *exactly blind* to unidirectional flow.
+The `(b)` control in `script/meso/eos-thermalize.mjs`, a +x-only seed in a closed box, stays **perfectly frozen forever** (ρ, px, Pxx constant to t≥200). Mechanism: a co-moving pair {c,c} has total momentum 2c, and on D3Q19 no other channel pair sums to 2c. Momentum conservation leaves the pair nowhere to scatter. The collision operator is *exactly blind* to unidirectional flow.
 
 - Consequence 1: **coherent radiation cannot self-degrade**. A beam propagates indefinitely without scattering (mirroring QED's parallel-photon null: s = 2E₁E₂(1−cosθ) → 0 at θ=0; mechanism-level analog, not a claim of equivalence).
 - Consequence 2: thermalization requires *velocity spread*, not just density. Incoherence is a precondition for the fluid regime.
@@ -229,7 +229,7 @@ The `(b)` control in `logs/eos-thermalize.mjs`, a +x-only seed in a closed box, 
 
 ### M47. The transaction ledger (`meso3i_ev`)
 
-Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta: drag-park, pair-bind, gated emit, Q-capture, boundary drain, photon eject, congestion reflect (`logs/transactions.mjs`). An entropy-production *analog*: a count of RNG-mediated or boundary events that cannot be replayed backward, not a computed `dS/dt`.
+Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta: drag-park, pair-bind, gated emit, Q-capture, boundary drain, photon eject, congestion reflect (`script/meso/transactions.mjs`). An entropy-production *analog*: a count of RNG-mediated or boundary events that cannot be replayed backward, not a computed `dS/dt`.
 
 - **Driven ember:** sustained ~3,700 transactions per 20t window (park ≈ emit ≈ drain ~1,200 each). The lump is a standing dissipative structure, a throughput engine, not a static object.
 - **Wound fossil after drive-off:** every counter decays to **exactly zero** by t≈160 while 475 rest mass sits frozen. The non-radiating ground state is literally transaction-silent, not a dynamic equilibrium.

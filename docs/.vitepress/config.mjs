@@ -26,6 +26,7 @@ const readingOrder = [
   { text: "Joule's Mill", link: '/mill-demo' },
 
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Build & Validate', link: '/interference/reproduce' },
   { text: 'Methodology', link: '/interference/methodology' },
   { text: 'Frontier', link: '/interference/frontier' },
   { text: 'Audits', link: '/interference/audits' },
@@ -61,7 +62,8 @@ const interferenceItems = [
   { text: 'Overview', link: '/interference' },
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' }
+  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
 // The active instrument first; milestone builds preserved underneath.

@@ -4,7 +4,7 @@
 
 The Open Universe is an ontology and framework for exploring thermodynamic reality — and a working instrument for poking it. The premise: the "infinitely divisible empty space" paradigm of legacy physics is an accounting error. Geometry is the dashboard, not the territory. Underneath the dashboard is the **Planck Field** — a dense, saturated, memoryless substrate where nothing actualizes without physical dissipation, where the past is physically consumed to write the present, and the future is radically unwritten.
 
-This repository is that argument made executable: a set of essays auditing the legacy framework, an audio edition of every prose page, and a family of bare-metal C cellular-automata engines running on CPU, WebAssembly, and CUDA — **Yarkovsky's Ember** (3D multichannel friction substrate, the canonical engine), **Hopf's Loom** (3D True-FCC, up to 16.7M nodes headless), and **Langevin's Wake** (2D, 160,000 nodes) — plus the headless experiment suite whose measured results fill the research monograph.
+This repository is that argument made executable: a set of essays auditing the legacy framework, an audio edition of every prose page, and a family of bare-metal C cellular-automata engines running on CPU, WebAssembly, and CUDA — **Joule's Mill** (3D multichannel friction substrate, the flagship instrument) and its milestone builds **Yarkovsky's Ember**, **Hopf's Loom** (3D True-FCC, up to 16.7M nodes headless), and **Langevin's Wake** (2D, 160,000 nodes) — plus the headless experiment suite whose measured results fill the research monograph.
 
 🌐 **Live site & engine sandbox:** [planckfield.site](https://planckfield.site)
 
@@ -42,7 +42,8 @@ The site is structured as an audit: state the thesis, stress-test it against the
 
 | Instrument | What it is |
 |---|---|
-| [**Yarkovsky's Ember**](docs/ember-demo.md) (`ember-demo.md`) | The flagship — a live WebGL2 window into the `meso3i` friction substrate (44³ True-FCC). Toggle the convergent drive, drop cold rocks, push them with the carrier beam, and watch parked heat migrate under anisotropic flux |
+| [**Joule's Mill**](docs/mill-demo.md) (`mill-demo.md`) | The flagship — the full `meso3i` instrument (72×72×36 True-FCC). Directional rest, photon coupling modes, pair rules, latency gating, scene presets, and the apertured plane-wave beam |
+| [**Yarkovsky's Ember**](docs/ember-demo.md) (`ember-demo.md`) | Milestone instrument — the first browser build of the `meso3i` substrate (44³ True-FCC): convergent drive, cold rocks, carrier beam |
 | [**Hopf's Loom**](docs/loom-demo.md) (`loom-demo.md`) | The 3D instrument — a live Hopfion on the 400k-node `planck3.wasm` substrate: tomographic slices, spin-class coloring, knot injection, snapshot rewind |
 | [**The Hopfion Zoo**](docs/hopfion-zoo.md) (`hopfion-zoo.md`) | The measured particle dictionary — 37 stable rest-mass geometries found by sweeping the engine's configuration space, each specimen a real simulation result inspectable in 3D (vtk.js) |
 | [**Langevin's Wake**](docs/wake-demo.md) (`wake-demo.md`) | The 2D instrument — a live 160k-node substrate you can paint, perturb, and watch metabolize. Hosts the *Shell-World vs. Knot-World* topology capstone |
@@ -55,7 +56,7 @@ The simulators are not demos bolted onto the site — they're the framework's wo
 
 `src/planck.c` is a single-file C engine: 160,000 `PlanckNode`s at 4 bytes each (8-bit quanta, 8-bit spin, 16-bit heat). Every tick it computes relational friction, topological unwinding, phase alignment, and entropic routing — strictly deterministic, no floating-point mysticism, no birth/death rules. All physics constants are named `#define`s at the top of the file; the engine is stamped at compile time with the git revision that built it (`build.sh` injects `-DGIT_REV`), so the build shown in the UI footer is always the provenance of the artifact you're running.
 
-`src/meso3i.c` is the **canonical 3D engine**: a multichannel integer-occupancy lattice gas on the even-parity True-FCC sublattice — D3Q19 channels per node (12 face-diagonal + 6 axial second-shell + 1 rest), `uint8_t` populations, memoryless collide→stream ticks with exact mass/momentum conservation. Every departure from the base mechanics is a flag-gated, enumerated rule: the campaign's measured contribution is the **transit-friction law** (drag parks moving flux as rest heat; carrier-gated emission vents it), which produces accreting, breathing, persistent, mobile bound matter. This is the engine behind Yarkovsky's Ember and the M19–M38 monograph. `src/meso3.c` is its immediate predecessor, retained for history.
+`src/meso3i.c` is the **canonical 3D engine**: a multichannel integer-occupancy lattice gas on the even-parity True-FCC sublattice — D3Q19 channels per node (12 face-diagonal + 6 axial second-shell + 1 rest), `uint8_t` populations, memoryless collide→stream ticks with exact mass/momentum conservation. Every departure from the base mechanics is a flag-gated, enumerated rule: the campaign's measured contribution is the **transit-friction law** (drag parks moving flux as rest heat; carrier-gated emission vents it), which produces accreting, breathing, persistent, mobile bound matter. This is the engine behind Joule's Mill, Yarkovsky's Ember, and the M19–M48 monograph. `src/meso3.c` is its immediate predecessor, retained for history.
 
 `src/planck3.c` is the earlier 3D engine: a True Face-Centered Cubic lattice of 6-byte `Node3`s (quanta, spin, heat, buffer, tension) with 12 directional ports — 6 equatorial, 3 zenith, 3 nadir — and parity-free A-B-C stacking verified across 4.7M directed edges. `planck3_init()` gives the browser's 100×100×40; `planck3_init_dims()` rescales to 256³ for headless sweeps and collision basins. It still powers Hopf's Loom and the Hopfion Zoo; its single-spin *campaign mechanics* (M1–M31) were later retracted as an implementation artifact — see the monograph's honesty ledger. The full formal spec lives in [Methodology & Reproducibility](docs/interference/methodology.md).
 
@@ -107,13 +108,17 @@ WebGL2 volume renderer over `planck3.wasm`: the engine packs {quanta,spin} into 
 
 A vtk.js carousel over `docs/public/hopfion/*.bin` — compact `ZOO3` sparse specimens exported from settled dictionary runs, ordered by invariant mass.
 
+### Joule's Mill (`docs/.vitepress/mill/` + `MillSimulator.vue`)
+
+The full `meso3i` instrument on a 72×72×36 lattice: same RG8 `texSubImage3D` zero-copy pipeline as the Loom, with the complete flag surface exposed — directional vs scalar rest, photon coupling modes (off/catalyst/stimulated/absorbed), pair wind/unwind rules, emission latency, collision variants, and one-click scene presets that drop you into measured regimes (wound lump, breathing core, comet ablation).
+
 ### Yarkovsky's Ember (`docs/.vitepress/ember/` + `EmberSimulator.vue`)
 
-A WebGL2 instanced renderer over `meso3i` compiled to WASM: the engine packs the live lattice into an RG8 3D texture (85,184 cells, 42,592 live even-parity sites), uploaded per frame via `texSubImage3D`. The UI exposes the substrate directly — convergent drive on/off, carrier beam, cold-rock placement, tomographic slice/width controls, transport, snapshots, and camera presets — with cyan/blue for moving flux and amber/white for parked rest heat. A recorded "Life of a Lump" replay (`FrictionReplay.vue`, real `test_replay` telemetry) plays the same canonical sequence inside the monograph.
+The earlier, smaller `meso3i` browser build — a WebGL2 instanced renderer over the engine packed into an RG8 3D texture (85,184 cells, 42,592 live even-parity sites), uploaded per frame via `texSubImage3D`. Convergent drive on/off, carrier beam, cold-rock placement, tomographic slice/width controls, transport, snapshots, and camera presets — with cyan/blue for moving flux and amber/white for parked rest heat. A recorded "Life of a Lump" replay (`FrictionReplay.vue`, real `test_replay` telemetry) plays the same canonical sequence inside the monograph.
 
-### The headless experiment suite (`/script`, `/config`)
+### The headless experiment suite (`/script`, `/script/meso`, `/config`)
 
-The same engines run as plain Node against the wasm artifacts — no container needed — producing the measured claims on the site:
+The same engines run as plain Node against the wasm artifacts — no container needed — producing the measured claims on the site. `script/meso/*.mjs` holds the 28 self-contained meso3i harnesses behind the M33–M48 milestones (each loads `docs/public/wasm/ember/meso3i.js` and prints measurements to stdout); `script/*.mjs` holds the earlier planck3 suite:
 
 | Script | Role |
 |---|---|
@@ -127,9 +132,9 @@ The same engines run as plain Node against the wasm artifacts — no container n
 | `smatrix_*.mjs` | CUDA job harness — pack SMX1 blobs (`smatrix_pack`), submit to a LAN `smatrix serve` instance (`smatrix_submit`), watch heartbeats, classify verdicts, pull states |
 | `kokoro-pipeline.js` | TTS narration + word-level sync maps for every prose page |
 
-Alongside the JS harnesses, `src/test_*.c` is a 25-file headless C suite — the monograph's reproduction battery: conservation ledgers (`test_conservation`, `-DP3_AUDIT`), ballistic ToF (`test_tof`), slit apparatus (`test_doubleslit`), beams/drift/bath/lump/orbit probes on `meso3i`, and `test_replay` which dumps the canonical drive→cutoff→beam sequence frame-by-frame for the site's replay.
+Alongside the JS harnesses, `src/test_*.c` is a 29-file headless C suite — the monograph's reproduction battery: conservation ledgers (`test_conservation`, `-DP3_AUDIT`), ballistic ToF (`test_tof`), slit apparatus (`test_doubleslit`), beams/drift/bath/lump/orbit probes on `meso3i`, and `test_replay` which dumps the canonical drive→cutoff→beam sequence frame-by-frame for the site's replay.
 
-Latest results — the `meso3i` friction campaign (M19–M38): transit friction accretes moving flux into bound lumps; carrier-gated radiation makes them persistent and re-wakeable; lumps drift toward beams by ablation and weakly attract neighbors through reciprocal radiation; tangential circulation thermalizes in ~25 ticks — rocks, not atoms. Consolidated with commit-anchored provenance in [The Friction Substrate](docs/interference/meso-monograph.md). Earlier `planck3` results — the 37-specimen dictionary (37/37 stable at 400 ticks), collision verdicts (head-on ~0–4% retention, glancing fusion ~15–17%) — remain inspectable in the Zoo but their single-spin mechanics are retracted from the theoretical record; details in [The Open Frontier](docs/interference/frontier.md). Generated data (`seeds/`, `logs/`, `knot_dictionary.json`, TTS audio) is reproducible output — gitignored, never committed; the zoo `.bin` specimens are the exception, committed as site content.
+Latest results — the `meso3i` friction campaign (M19–M48): transit friction accretes moving flux into bound lumps; carrier-gated radiation makes them persistent and re-wakeable; lumps drift toward beams by ablation; directional rest stores angular momentum in parked channels and absorbed light writes it (YORP); the collision operator is exactly blind to coherent flow (M47c), so beams cross vacuum forever but attenuate in ambient media (M48); and the only pairwise coupling measured is transient mutual ablation between *self-radiating* lumps — passive shadow gravity is null (M47b). Consolidated with commit-anchored provenance in [The Friction Substrate](docs/interference/meso-monograph.md). Earlier `planck3` results — the 37-specimen dictionary (37/37 stable at 400 ticks), collision verdicts (head-on ~0–4% retention, glancing fusion ~15–17%) — remain inspectable in the Zoo but their single-spin mechanics are retracted from the theoretical record; details in [The Open Frontier](docs/interference/frontier.md). Generated data (`seeds/`, `logs/` bulk output, TTS audio) is reproducible output — gitignored, never committed; `results/` (the campaign telemetry) and `knot_dictionary.json` (the sweep verdict registry) are tracked, and the zoo `.bin` specimens are committed as site content.
 
 ## Repository Structure
 
@@ -144,14 +149,16 @@ Latest results — the `meso3i` friction campaign (M19–M38): transit friction 
 | `/src/build.sh` | The emcc build script — git-rev provenance injection + exported function surface (always use this; never hand-roll `emcc`) |
 | `/docs` | The VitePress site: the framework essays listed above |
 | `/docs/.vitepress/wake/` | Langevin's Wake JS modules (see map above) |
-| `/docs/.vitepress/loom/` · `hopfion/` · `ember/` | Hopf's Loom volume renderer · Hopfion Zoo vtk.js renderer · Yarkovsky's Ember WebGL2 renderer |
-| `/docs/.vitepress/components/` | Vue mount points: `WakeSimulator`, `LoomSimulator`, `HopfionViewer`, `EmberSimulator`, `FrictionReplay`, `StickyAudioPlayer` |
+| `/docs/.vitepress/mill/` · `loom/` · `hopfion/` · `ember/` | Joule's Mill · Hopf's Loom volume renderer · Hopfion Zoo vtk.js renderer · Yarkovsky's Ember WebGL2 renderer |
+| `/docs/.vitepress/components/` | Vue mount points: `WakeSimulator`, `MillSimulator`, `LoomSimulator`, `HopfionViewer`, `EmberSimulator`, `FrictionReplay`, `StickyAudioPlayer` |
 | `/docs/public/wasm/wake/` · `loom/` · `ember/` | Build output for `planck*` / `planck3` / `meso3i` wasm modules (gitignored) |
 | `/docs/public/hopfion/` | Committed `ZOO3` specimen binaries + `index.json` manifest for the Zoo |
 | `/docs/public/loom/` | `hopfion.p3st` — the Loom's starting-state blob |
-| `/script` | Headless experiment suite + TTS pipeline (see table above) |
+| `/script` · `/script/meso` | planck3 headless suite + TTS pipeline · the 28 meso3i experiment harnesses (see table above) |
 | `/config` | Experiment configs: sweep/boost/collide run definitions |
-| `/seeds` · `/logs` · `knot_dictionary.json` | Generated experiment data — gitignored, reproducible |
+| `/results` | Committed telemetry: campaign JSONs, run transcripts, per-job status |
+| `knot_dictionary.json` | Tracked sweep verdict registry (expensive to regenerate) |
+| `/seeds` · `/logs` | Generated data — gitignored, reproducible |
 | `AGENTS.md` | Build/test notes for coding agents (Docker wasm build, detached-run pitfalls) |
 | `.github/workflows/` | `ci.yml` (PR build validation) and `deploy.yml` (Pages deploy) |
 
@@ -166,7 +173,9 @@ The WASM artifacts (`docs/public/wasm/wake/planck.*`, `docs/public/wasm/loom/pla
 | `npm run wasm:build` | Just the engine compile (needs `emcc` on PATH). |
 | `npm run generate-audio` | Kokoro TTS pipeline — recursive over all prose pages; deploy regenerates it. |
 
-No local emsdk? Use the pinned Docker toolchain — `cd src && docker run --rm -v "$PWD/..:/src" -w /src/src emscripten/emsdk:3.1.61 bash build.sh` — or just run `docs:dev` without it: the site builds, the simulators simply won't boot an engine. The headless suite (`node script/*.mjs`) needs only Node + the wasm artifacts. Full reproduction recipes: [Methodology §7](docs/interference/methodology.md).
+No local emsdk? Use the pinned Docker toolchain — `cd src && docker run --rm -v "$PWD/..:/src" -w /src/src emscripten/emsdk:3.1.61 bash build.sh` — or just run `docs:dev` without it: the site builds, the simulators simply won't boot an engine.
+
+**Validating a result:** once `docs/public/wasm/ember/meso3i.js` exists, any meso3i experiment is one Node command — `node script/meso/eos-thermalize.mjs` reruns the M46 closed-box equation-of-state measurement; `node script/meso/m37-bath.mjs` reruns the ambient-bath shadow control. No dependencies beyond Node itself. Native C harnesses (`src/test_*.c`) compile against `meso3i.c`/`planck3.c` via Docker `gcc:13`. The full environment guide — prerequisites, build, harness map, and where the archived telemetry lives — is [Build & Validation Environments](docs/interference/reproduce.md).
 
 ## CI & Deploy
 
