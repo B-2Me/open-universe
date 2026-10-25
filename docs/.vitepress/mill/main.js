@@ -449,11 +449,28 @@ export async function initMillSimulator(root, opts = {}) {
   let lastPinch = 0, lastMid = null, pinchRest = false;
   canvas.style.touchAction = 'none';
   const poke = () => { lastInteract = performance.now(); };
-  let downPos = null;
+  let downPos = null, rightPan = false;
+  // shared pan: drag the look-at center along the camera's right/up axes
+  const panBy = (dx, dy) => {
+    const s = cam.dist * 0.0016;
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+    const cxp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const rx = cy, ry = sp * sy, rz = -cxp * sy;      // R·(1,0,0)
+    const ux = 0, uy = cxp, uz = sp;                  // R·(0,1,0)
+    tgt.cx += (dy * ux - dx * rx) * s;
+    tgt.cy += (dy * uy - dx * ry) * s;
+    tgt.cz += (dy * uz - dx * rz) * s;
+    const cl = v => Math.max(-120, Math.min(120, v));
+    tgt.cx = cl(tgt.cx); tgt.cy = cl(tgt.cy); tgt.cz = cl(tgt.cz);
+    dirty = true;
+  };
+  // suppress the browser context menu — right-drag pans instead
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('pointerdown', e => {
     poke();
     ptrs.set(e.pointerId, [e.clientX, e.clientY]);
     downPos = [e.clientX, e.clientY];
+    if (e.button === 2) rightPan = true;
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', e => {
@@ -465,6 +482,7 @@ export async function initMillSimulator(root, opts = {}) {
       // pinch collapsed to one finger — its tracked position is stale
       // pre-pinch state; eating the delta avoids an orbit jump
       if (pinchRest) return;
+      if (rightPan) { panBy(e.clientX - prev[0], e.clientY - prev[1]); return; }
       tgt.yaw += (e.clientX - prev[0]) * 0.008;
       tgt.pitch = Math.max(-1.5, Math.min(1.5, tgt.pitch + (e.clientY - prev[1]) * 0.008));
       dirty = true;
@@ -473,34 +491,21 @@ export async function initMillSimulator(root, opts = {}) {
       const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
       if (lastPinch) { tgt.dist = Math.max(20, Math.min(300, tgt.dist * lastPinch / d)); dirty = true; }
       lastPinch = d;
-      // two-finger pan: drag the look-at center along the camera's
-      // right/up axes (content follows the fingers)
+      // two-finger pan (content follows the fingers)
       const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-      if (lastMid) {
-        const dx = mid[0] - lastMid[0], dy = mid[1] - lastMid[1];
-        const s = cam.dist * 0.0016;
-        const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
-        const cxp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
-        const rx = cy, ry = sp * sy, rz = -cxp * sy;      // R·(1,0,0)
-        const ux = 0, uy = cxp, uz = sp;                  // R·(0,1,0)
-        tgt.cx += (dy * ux - dx * rx) * s;
-        tgt.cy += (dy * uy - dx * ry) * s;
-        tgt.cz += (dy * uz - dx * rz) * s;
-        const cl = v => Math.max(-120, Math.min(120, v));
-        tgt.cx = cl(tgt.cx); tgt.cy = cl(tgt.cy); tgt.cz = cl(tgt.cz);
-        dirty = true;
-      }
+      if (lastMid) panBy(mid[0] - lastMid[0], mid[1] - lastMid[1]);
       lastMid = mid;
     }
   });
   const endPtr = e => {
     ptrs.delete(e.pointerId); lastPinch = 0; lastMid = null;
+    if (e.button === 2) rightPan = false;
     if (ptrs.size === 1) pinchRest = true;   // a pinch just collapsed
     else pinchRest = false;
-    // armed placement tool: a click (not a drag) drops the armed
+    // armed placement tool: a LEFT click (not a drag) drops the armed
     // payload on the slice plane; the tool stays armed — tap its
     // button again to disarm
-    if (ui.arm && downPos && ptrs.size === 0) {
+    if (ui.arm && downPos && ptrs.size === 0 && e.button === 0) {
       const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
       if (moved < 8) {
         const cell = pickCell(e.clientX, e.clientY);
@@ -560,9 +565,9 @@ export async function initMillSimulator(root, opts = {}) {
     phot: 2, pair: false, drest: 0,
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
-  // boot state: a cold lump at center — parked heat, inert in vacuum
-  // until the user turns on a drive or a beam
-  seedLump(CX, CY, CZ);
+  // boot state is set by the default scene (SCENES.vault) once all
+  // widget binds exist — scenes drive the real controls so the dock
+  // stays honest
   // slice sliders track whichever plane axis is active
   const syncSliceUI = () => {
     const cut = root.querySelector('[data-cut]');
@@ -605,7 +610,7 @@ export async function initMillSimulator(root, opts = {}) {
   });
   bind('[data-reset]', 'click', () => {
     wasm._meso3i_clear(); ui.tick = 0;
-    seedLump(CX, CY, CZ);
+    if (ui.drest) seedWound(CX, CY, CZ, 5, 48); else seedLump(CX, CY, CZ);
     rStep = rStep0; lowT = highT = null;   // restore render density too
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding, watch it re-accrete' : 'cleared — cold vacuum');
@@ -809,11 +814,15 @@ export async function initMillSimulator(root, opts = {}) {
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
-  bind('[data-tune]', 'click', e => {
+  // dock accordions — Flags (selects) and Tuning (sliders) collapse by
+  // class on the dock root so both stay out of the way on load
+  const acc = (sel, cls) => bind(sel, 'click', e => {
     const dock = root.querySelector('.mill-dock');
-    const open = dock?.classList.toggle('tune-open');
+    const open = dock?.classList.toggle(cls);
     e.currentTarget.setAttribute('aria-expanded', String(!!open));
   });
+  acc('[data-flags]', 'sel-open');
+  acc('[data-tune]', 'tune-open');
   const zoomEl = root.querySelector('[data-zoom]');
   const syncZoom = () => {           // wheel/pinch/preset moved dist externally
     if (!zoomEl) return;
@@ -861,6 +870,11 @@ export async function initMillSimulator(root, opts = {}) {
     });
   }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
+
+  // default scene: the spin vault (M50) — runs through the same code
+  // path as a menu pick so every flag/widget ends in the measured state
+  SCENES.vault();
+  upload(); dirty = true;
 
   // quick-view presets: smooth-lerp camera + slice plane jump. Each
   // preset chooses the slab axis its name implies — 'side' is a real

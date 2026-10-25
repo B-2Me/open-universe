@@ -20,11 +20,11 @@ pageClass: mill-page
 
 This is `meso3i` compiled to WebAssembly: 93,000 live cells, each carrying 19 integer channels of real quanta. There is no empty space and there are no objects: only directional traffic on a lattice, and the parked deposits that congestion leaves behind. Cyan is moving flux; amber is **parked momentum**: mass, in the only sense this universe has. Every behavior you can produce here is a measured milestone in the [Friction Substrate](/interference/meso-monograph) record (M33–M51), not a scripted animation.
 
-The page boots with a cold lump at center. Frozen flux, silent in vacuum, because heat here only radiates while a carrier transits. From there the controls are the experiment: **☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset; the **Scene** menu reproduces the milestone regimes in one click.
+The page boots into the **spin vault** (M50): a wound lump — parked flux that remembers its direction — sealed behind a Wall-32 refusal crust, inert until you feed it. From there the controls are the experiment: **☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset; the **Scene** menu (under **Flags ▾**) reproduces the milestone regimes in one click.
 
 ## Play with it
 
-- **Drag** to orbit; **two-finger drag** pans, pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
+- **Drag** to orbit; **right-drag** pans (or **two-finger drag**), pinch zooms (or use the **Zoom** slider). It slowly rotates on its own if you leave it alone.
 - **☀ drive**: the convergent feed that accretes a breathing ember (M33–M35). Cut it and the core freezes in place: carrier-gated radiation means parked heat can only vent while flux transits.
 - **➤ beam**: an **apertured photon plane wave**: a checkerboard disc of light sourced just inside the drain shell, riding one axial channel straight across the lattice. Photons carry direction but no mass and never collide. Only the six axial channels (v=2) travel in straight lines on this lattice, face diagonals zigzag, so **Dir** offers ±x/±y/±z. **Ap** sizes the aperture, **OffU**/**OffV** translate it in the beam-normal plane to graze lumps off-center. What light does to matter depends on the **Phot** dial.
 - **⚭ binary**: the M37 two-body preset: two self-radiating lumps a few cells apart. The honest headline now (M47b): they ablate each other asymmetrically. A real, transient, short-range coupling between *active radiators*, not a sustained force and not passive shadow gravity.

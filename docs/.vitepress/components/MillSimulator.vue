@@ -95,6 +95,8 @@ onUnmounted(() => {
                 title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
       </div>
 
+      <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
+
       <div class="mill-well mill-selects">
         <label class="mill-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
           <option value="full"    selected>Full field</option>
@@ -123,13 +125,13 @@ onUnmounted(() => {
         </select></label>
         <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
           <option value="" selected>scene…</option>
+          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
           <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
           <option value="breath">breathing core (☀ + Rad)</option>
           <option value="comet">comet ablation (➤ off-center)</option>
           <option value="porous">porous rim (ramp→255: dissolves)</option>
           <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
           <option value="walled">walled crust (Wall 32 + ☀)</option>
-          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
         </select></label>
         <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
@@ -384,7 +386,9 @@ onUnmounted(() => {
 }
 .mill-transport button:disabled { opacity: 0.35; cursor: default; }
 
-/* tuning accordion — sliders stay collapsed until asked for */
+/* tuning accordions — selects + sliders stay collapsed until asked for;
+   on load the dock is just the transport row */
+.mill-dock:not(.sel-open) .mill-selects { display: none; }
 .mill-dock:not(.tune-open) .mill-sliders { display: none; }
 .mill-accbtn {
   min-width: 34px;
