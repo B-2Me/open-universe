@@ -33,7 +33,7 @@ The site is structured as an audit: state the thesis, stress-test it against the
 | [**Predictive Roadmap**](docs/interference/roadmap.md) (`interference/roadmap.md`) | The path from working simulator to a direct benchmark against collider telemetry |
 | [**The Open Frontier**](docs/interference/frontier.md) (`interference/frontier.md`) | The research log: every measured experiment, falsified hypothesis, and engine RFC, including the results that failed |
 | [**The Multi-Channel Bridge**](docs/interference/meso-bridge.md) (`interference/meso-bridge.md`) | The `meso3i` transition document: why the substrate moved to a multichannel integer lattice gas, and the first accretion/outflow findings on it |
-| [**The Friction Substrate**](docs/interference/meso-monograph.md) (`interference/meso-monograph.md`) | The consolidated `meso3i` monograph (M19–M38): the measured friction laws, bound matter, locomotion, interaction, and the honesty ledger, with a real telemetry replay |
+| [**The Friction Substrate**](docs/interference/meso-monograph.md) (`interference/meso-monograph.md`) | The consolidated `meso3i` monograph (M19–M48): the measured friction laws, bound matter, locomotion, interaction, and the honesty ledger, with a real telemetry replay |
 | [**The Utility of Causal Simulation**](docs/interference/usefulness.md) (`interference/usefulness.md`) | Why a computationally irreducible substrate is still worth simulating: the engineering case for the instrument |
 | [**Audio Sessions**](docs/interference/sessions.md) (`interference/sessions.md`) | The living syllabus for the podcast companion |
 | [**The Intent**](docs/intent.md) (`intent.md`) | Why this site exists: a systems integrator's audit of philosophical architecture |

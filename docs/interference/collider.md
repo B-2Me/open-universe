@@ -1,6 +1,11 @@
 ---
 title: The Collider Matrix (Retired Program)
+audio: /audio/collider.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Collider Translation Matrix
 

@@ -1,6 +1,11 @@
 ---
 title: Build & Validation Environments
+audio: /audio/reproduce.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # Build & Validation Environments
 

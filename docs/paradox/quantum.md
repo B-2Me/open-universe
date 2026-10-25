@@ -1,6 +1,12 @@
 ---
 title: The Quantum Floor
+audio: /audio/quantum.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Quantum Floor
 
 The foundational errors of legacy physics begin at the subatomic scale, where continuous geometry attempts to describe a discrete thermodynamic routing network. When physicists project frictionless math onto finite hardware, the resulting capacity limits are misidentified as probabilistic magic. 

@@ -105,7 +105,7 @@ function sanitizeTextForTTS(text) {
 
 // Pages that get no narration: the landing hero and the live
 // instruments (the Tools — simulators, not prose).
-const SKIP = new Set(['index', 'loom-demo', 'wake-demo', 'hopfion-zoo']);
+const SKIP = new Set(['loom-demo', 'wake-demo', 'ember-demo', 'mill-demo', 'hopfion-zoo']);
 
 async function processFile(filePath) {
   const filename = path.basename(filePath, '.md');

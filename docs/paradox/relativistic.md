@@ -1,6 +1,12 @@
 ---
 title: The Relativistic Horizon
+audio: /audio/relativistic.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Relativistic Horizon
 
 At the cosmological scale, legacy physics treats space and time as stretchable geometric fabrics. But when the illusion of an empty container is replaced with a finite-bandwidth routing network, gravitational and relativistic paradoxes resolve into straightforward latency and capacity constraints.
