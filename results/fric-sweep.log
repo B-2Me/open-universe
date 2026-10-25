@@ -1,0 +1,47 @@
+=== A. Universality: flat p8 vs graded ramps (IFRIC=8, fricmode=-4, reflect=0) ===
+  flat p=25%      driven rest 23904->1421  cutoff->1282  | park=93 bind=0 emit=245 qcap=0 drain=1559 flux=0
+  flat p=50%      driven rest 23940->6833  cutoff->5962  | park=1987 bind=0 emit=2900 qcap=0 drain=2219 flux=0
+  flat p=75%      driven rest 23982->19488  cutoff->18483  | park=4194 bind=0 emit=5236 qcap=0 drain=2185 flux=0
+  ramp cap->255   driven rest 24107->370  cutoff->333  | park=10 bind=0 emit=61 qcap=0 drain=1473 flux=0
+  ramp cap->2cap  driven rest 23928->21075  cutoff->21181  | park=105 bind=0 emit=7 qcap=0 drain=205 flux=0
+
+=== B. Core-and-skin: IFRIC=8 + IREFL {0,16,32,64}, radial rest profile ===
+  shell sums r0..r7 (rest quanta per Chebyshev shell):
+  IREFL=  0:   113   459  1767  2453  1946    11    24     0  | park=81195 reflect=0 rest=6773 flux=1269
+  IREFL= 16:    19  1301  4915 13143  8989     2    23     0  | park=18851 reflect=18367 rest=28392 flux=508
+  IREFL= 32:    96  1644  5995 13543  9171     3    34     0  | park=14463 reflect=12569 rest=30486 flux=523
+  IREFL= 64:   235  2151  4711 14367  9565     4    33     0  | park=19088 reflect=13410 rest=31066 flux=469
+
+=== C. M36 replay: grow(200) -> freeze(400) -> beam(600), IREFL {0,32,64} ===
+  IREFL=  0 +x t= 200: cm_x=21.910 rest=2039 flux=1119 reflect=0
+  IREFL=  0 +x t= 400: cm_x=21.918 rest=1855 flux=0 reflect=0
+  IREFL=  0 +x t= 600: cm_x=21.918 rest=1855 flux=0 reflect=0
+  IREFL=  0 +x t= 800: cm_x=21.781 rest=1378 flux=267 reflect=0
+  IREFL=  0 +x t=1000: cm_x=21.594 rest=1237 flux=287 reflect=0
+  IREFL=  0 +x t=1200: cm_x=21.473 rest=1168 flux=304 reflect=0
+  IREFL= 32 +x t= 200: cm_x=21.973 rest=3723 flux=707 reflect=4049
+  IREFL= 32 +x t= 400: cm_x=21.969 rest=3725 flux=0 reflect=4049
+  IREFL= 32 +x t= 600: cm_x=21.969 rest=3725 flux=0 reflect=4049
+  IREFL= 32 +x t= 800: cm_x=22.254 rest=3517 flux=182 reflect=5332
+  IREFL= 32 +x t=1000: cm_x=22.305 rest=3644 flux=215 reflect=6690
+  IREFL= 32 +x t=1200: cm_x=22.203 rest=4171 flux=189 reflect=8121
+  IREFL= 64 +x t= 200: cm_x=21.996 rest=2180 flux=804 reflect=2403
+  IREFL= 64 +x t= 400: cm_x=21.988 rest=2173 flux=0 reflect=2419
+  IREFL= 64 +x t= 600: cm_x=21.988 rest=2173 flux=0 reflect=2419
+  IREFL= 64 +x t= 800: cm_x=22.039 rest=1546 flux=263 reflect=2951
+  IREFL= 64 +x t=1000: cm_x=21.285 rest=1602 flux=232 reflect=3678
+  IREFL= 64 +x t=1200: cm_x=21.867 rest=1447 flux=217 reflect=4346
+  IREFL=  0 -x t= 200: cm_x=21.949 rest=2132 flux=1129 reflect=0
+  IREFL=  0 -x t= 400: cm_x=22.020 rest=1812 flux=0 reflect=0
+  IREFL=  0 -x t= 600: cm_x=22.020 rest=1812 flux=0 reflect=0
+  IREFL=  0 -x t= 800: cm_x=22.289 rest=1296 flux=305 reflect=0
+  IREFL=  0 -x t=1000: cm_x=22.258 rest=1314 flux=320 reflect=0
+  IREFL=  0 -x t=1200: cm_x=22.305 rest=1176 flux=293 reflect=0
+  IREFL= 32 -x t= 200: cm_x=22.055 rest=3124 flux=712 reflect=4240
+  IREFL= 32 -x t= 400: cm_x=22.074 rest=3127 flux=0 reflect=4244
+  IREFL= 32 -x t= 600: cm_x=22.074 rest=3127 flux=0 reflect=4244
+  IREFL= 32 -x t= 800: cm_x=22.055 rest=3169 flux=159 reflect=5334
+  IREFL= 32 -x t=1000: cm_x=21.988 rest=2899 flux=208 reflect=6582
+  IREFL= 32 -x t=1200: cm_x=21.977 rest=3348 flux=194 reflect=7873
+
+done.

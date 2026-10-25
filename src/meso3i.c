@@ -66,6 +66,9 @@ static int      IQCAP;               /* Q overflow capacity (mode>=5) */
 static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
 static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
+static int      IFRICP = 128;        /* flat park probability num/256 (128 = legacy p=1/2) */
+static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
+                                        1=ramp cap->255, 2=ramp cap->2*cap */
 static int      IFRICM;              /* rest-inertia: 0=rest collides; k=rest inert, radiates ~1/4k */
 static int      IPHOT;               /* photons: 0 off, 1 catalyst gate, 2 stimulated emission */
 static int      IPAIR;               /* antipodal pairs: 0 off, 1 on — momentum-honest
@@ -214,6 +217,19 @@ void meso3i_field(int fx, int fy, int fz, int f) {
 void meso3i_qcap(int c) { IQCAP = c; }
 void meso3i_reflect(int cap) { IREFL = cap; }
 void meso3i_friction(int cap) { IFRIC = cap; }
+void meso3i_fricp(int p8) { IFRICP = p8 < 0 ? 0 : (p8 > 256 ? 256 : p8); }
+void meso3i_friccurve(int mode) { IFRICC = mode; }
+
+/* park probability num/256 at destination rest mass rho: flat by default,
+ * graded ramps when IFRICC selects a curve (0 at/below cap, rising to the
+ * ceiling at 255 for mode 1, at 2*cap for mode 2). */
+static inline int fricp_num(int rho) {
+    if (!IFRICC) return IFRICP;
+    int span = (IFRICC == 2) ? IFRIC : (255 - IFRIC);
+    if (span < 1) return 256;
+    int num = 256 * (rho - IFRIC) / span;
+    return num > 256 ? 256 : num;
+}
 void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
 void meso3i_pair(int m) { IPAIR = m; }
@@ -675,7 +691,8 @@ void meso3i_tick(void) {
                 iEV[3] += n[c];
                 continue;
             }
-            if (IFRIC && (int)iR[ni] >= IFRIC && irnd() % 2 == 0) {
+            if (IFRIC && (int)iR[ni] >= IFRIC &&
+                (int)(irnd() & 255) < fricp_num((int)iR[ni])) {
                 /* network drag (space-is-friction): a transit hop into a
                  * congested node sheds momentum — the quantum lands in the
                  * destination's REST channel as parked heat. Entry rate ∝
