@@ -313,28 +313,47 @@ async function processFile(filePath) {
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
   await fs.mkdir(SYNC_MAP_DIR, { recursive: true });
 
-  let buffer;
-  if (audioFresh) {
-    console.log(`Realigning sync map for ${filename} (audio current, no TTS call)`);
-    buffer = await fs.readFile(finalAudioPath);
-  } else {
-    console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
-    const mp3 = await openai.audio.speech.create({
-      model: 'kokoro',
-      voice: 'af_bella',
-      input: fullPageText,
-    });
-    buffer = Buffer.from(await mp3.arrayBuffer());
-    await fs.writeFile(finalAudioPath, buffer);
+  // Atomic commit: generate + analyze first, write to .tmp, then rename.
+  // A TTS/decode failure or mid-write crash must never replace a working
+  // (mp3, map) pair — stale audio beats no audio.
+  const tmpAudio = finalAudioPath + '.tmp';
+  const tmpMap = syncMapPath + '.tmp';
+  try {
+    let buffer;
+    if (audioFresh) {
+      console.log(`Realigning sync map for ${filename} (audio current, no TTS call)`);
+      buffer = await fs.readFile(finalAudioPath);
+    } else {
+      console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
+      const mp3 = await openai.audio.speech.create({
+        model: 'kokoro',
+        voice: 'af_bella',
+        input: fullPageText,
+      });
+      buffer = Buffer.from(await mp3.arrayBuffer());
+      await fs.writeFile(tmpAudio, buffer);
+    }
+
+    const metadata = await mm.parseBuffer(buffer);
+    const totalDuration = metadata.format.duration;
+
+    const syncEntries = await buildSyncEntries(contentNodes, buffer, totalDuration);
+
+    await fs.writeFile(tmpMap, JSON.stringify(syncEntries, null, 2));
+
+    // Renames are atomic; hash is written last as the commit marker. A
+    // crash between the two renames self-heals next run: the mismatched
+    // pair fails the hash check and the realign path rebuilds the map.
+    if (!audioFresh) await fs.rename(tmpAudio, finalAudioPath);
+    await fs.rename(tmpMap, syncMapPath);
+    await fs.writeFile(hashPath, `${MAP_VERSION}:${textHash}\n`);
+  } catch (err) {
+    await Promise.all([
+      fs.unlink(tmpAudio).catch(() => {}),
+      fs.unlink(tmpMap).catch(() => {}),
+    ]);
+    throw err;
   }
-
-  const metadata = await mm.parseBuffer(buffer);
-  const totalDuration = metadata.format.duration;
-
-  const syncEntries = await buildSyncEntries(contentNodes, buffer, totalDuration);
-
-  await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
-  await fs.writeFile(hashPath, `${MAP_VERSION}:${textHash}\n`);
 
   let updatedContent = content;
   if (!updatedContent.includes('audio: ')) {
