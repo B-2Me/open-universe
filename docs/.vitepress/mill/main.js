@@ -1170,6 +1170,8 @@ export async function initMillSimulator(root, opts = {}) {
       const pwx = canvas.width / nPanes;
       if (nPanes > 1) gl.enable(gl.SCISSOR_TEST);
       const si = strideInfo();
+      gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
+      gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
       for (let i = 0; i < nPanes; i++) {
         const cfg = panes ? panes[i] : { layout: 0, mode: -1 };
         const vx = Math.round(i * pwx);
