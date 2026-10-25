@@ -64,6 +64,10 @@ onUnmounted(() => {
     <canvas class="mill-graph" data-graph width="156" height="56"
             title="Mass partition history — rest mass (amber) vs moving flux (violet), last ~240 ticks"></canvas>
 
+    <!-- split-view dressing: center divider + per-pane captions -->
+    <div class="mill-divider"></div>
+    <div class="mill-panetags"><span data-tagl></span><span data-tagr></span></div>
+
     <!-- always-visible collapse toggle -->
     <button class="mill-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
@@ -151,6 +155,11 @@ onUnmounted(() => {
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>
           <option value="+z">+z</option><option value="-z">−z</option>
+        </select></label>
+        <label class="mill-field"><span>Split</span><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
+          <option value="off" selected>off</option>
+          <option value="layout">cube | fcc</option>
+          <option value="modes">ember | flux</option>
         </select></label>
       </div>
 
@@ -252,6 +261,40 @@ onUnmounted(() => {
   z-index: 3;
 }
 .mill-status:empty { display: none; }
+
+/* split view — center hairline + per-pane captions, only when split-on */
+.mill-divider {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(160, 200, 255, 0.45), transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+.mill-simulator.split-on .mill-divider { display: block; }
+.mill-panetags {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.mill-simulator.split-on .mill-panetags { display: flex; }
+.mill-panetags span {
+  flex: 1;
+  text-align: center;
+  font: 10px monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mill-muted);
+  opacity: 0.65;
+  text-shadow: 0 0 4px #000;
+}
 
 /* mass-partition sparkline — top-right, under the ⚙ toggle; two strips,
    rest over flux, each auto-scaled so neither flattens the other */

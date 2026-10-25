@@ -55,6 +55,8 @@ uniform int u_colorMode;                  // 0=ember 1=heat 2=flux 3=macro
 out vec4 v_color;
 out vec2 v_uv;
 uniform int u_nx, u_ny, u_nxy, u_step;   // strided grid decode
+uniform int u_layout;                    // 0=cubic embed 1=fcc packed
+uniform vec3 u_packoff;                  // recenters packed cloud on lattice center
 void main() {
   int id = gl_InstanceID;
   int x = (id % u_nx) * u_step;
@@ -75,8 +77,16 @@ void main() {
   // cubic embed: even-parity FCC sublattice carries its geometry in the
   // channel vectors, so raw grid coords are the honest picture
   vec3 p = vec3(float(x), float(y), float(z));
+  if (u_layout == 1) {
+    // fcc index space: primitive basis (1,1,0),(0,1,1),(1,0,1) mapped to
+    // unit axes — the lattice in its own coordinates, parity gaps gone.
+    // Bonds read as the 6 axis edges + 6 face diagonals of the packed grid.
+    p = vec3(p.x + p.y - p.z, -p.x + p.y + p.z, p.x - p.y + p.z) * 0.5 + u_packoff;
+  }
   vec4 mv = u_mvp * vec4(p, 1.0);
-  float ps = u_size * (0.8 + 2.0 * d / 255.0);
+  // packed cells sit ~41% closer than the √2 embed spacing — shrink a
+  // touch so the dense block doesn't fuse into one billboard pile
+  float ps = u_size * (0.8 + 2.0 * d / 255.0) * (u_layout == 1 ? 0.72 : 1.0);
   mv.xy += a_corner * ps;                 // billboard in view space
   gl_Position = mv;
   vec3 rgb;
@@ -244,6 +254,10 @@ export async function initMillSimulator(root, opts = {}) {
   // OffV translate it in the normal plane to graze lumps off-center.
   const AXIS = { x: 0, y: 1, z: 2 };
   const DIM = [W3, H3, D3], CTR = [CX, CY, CZ];
+  // packed-grid offset: keeps the index-space cloud centered where the
+  // camera expects the lattice to be (the packed image of the center
+  // isn't the center of the packed image)
+  const PACKOFF = [CX - (CX + CY - CZ) / 2, CY - (-CX + CY + CZ) / 2, CZ - (CX - CY + CZ) / 2];
   const PHV = 8;                                   // photons/tick per source site
   const beamFire = () => {
     const a = AXIS[ui.bdir[1]], s = ui.bdir[0] === '+' ? 1 : -1;
@@ -363,9 +377,14 @@ export async function initMillSimulator(root, opts = {}) {
   // (yaw, pitch, dist); world coords ARE grid coords under cubic embed.
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
-    const nx = ((cx - r.left) / r.width) * 2 - 1;
+    const panes = PANES[ui.split];
+    const nPanes = panes ? 2 : 1;
+    const pwCss = r.width / nPanes;
+    const pane = Math.min(nPanes - 1, Math.max(0, Math.floor((cx - r.left) / pwCss)));
+    const layout = panes ? panes[pane].layout : 0;
+    const nx = ((cx - r.left - pane * pwCss) / pwCss) * 2 - 1;
     const ny = 1 - ((cy - r.top) / r.height) * 2;
-    const asp = canvas.width / Math.max(1, canvas.height);
+    const asp = (canvas.width / nPanes) / Math.max(1, canvas.height);
     const th = Math.tan(0.45);              // half-fov (persp fov = 0.9 rad)
     // view-space ray
     const vx = nx * th * asp, vy = ny * th, vz = -1;
@@ -380,6 +399,22 @@ export async function initMillSimulator(root, opts = {}) {
     const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
     const cW = { x: -c1.z * syw + cam.cx, y: c1.y + cam.cy, z: c1.z * cyw + cam.cz };
     const pw = [cW.x, cW.y, cW.z], dw = [dW.x, dW.y, dW.z];
+    if (layout === 1) {
+      // packed pane: lattice plane p[axis]=cut maps to a tilted plane in
+      // packed coords — intersect the ray there, then unmap to lattice
+      const n = ui.sAxis === 0 ? [1, 0, 1] : ui.sAxis === 1 ? [1, 1, 0] : [0, 1, 1];
+      const rhs = ui.sCut + n[0] * PACKOFF[0] + n[1] * PACKOFF[1] + n[2] * PACKOFF[2];
+      const den = n[0] * dw[0] + n[1] * dw[1] + n[2] * dw[2];
+      if (Math.abs(den) < 1e-3) return null;
+      const t = (rhs - (n[0] * pw[0] + n[1] * pw[1] + n[2] * pw[2])) / den;
+      if (t <= 0) return null;
+      const q = [pw[0] + t * dw[0] - PACKOFF[0], pw[1] + t * dw[1] - PACKOFF[1], pw[2] + t * dw[2] - PACKOFF[2]];
+      return {
+        lx: Math.round(q[0] + q[2]),          // x = a + c
+        ly: Math.round(q[0] + q[1]),          // y = a + b
+        lz: Math.round(q[1] + q[2]),          // z = b + c
+      };
+    }
     if (Math.abs(dw[ui.sAxis]) < 1e-3) return null;  // edge-on: plane never hit
     const t = (ui.sCut - pw[ui.sAxis]) / dw[ui.sAxis];
     if (t <= 0) return null;
@@ -443,7 +478,7 @@ export async function initMillSimulator(root, opts = {}) {
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_s_center', 'u_s_thick',
     'u_s_axis', 'u_ghost_alpha', 'u_qmin', 'u_colorMode',
-    'u_nx', 'u_ny', 'u_nxy', 'u_step'])
+    'u_nx', 'u_ny', 'u_nxy', 'u_step', 'u_layout', 'u_packoff'])
     U[n] = gl.getUniformLocation(prog, n);
 
   // Hardware safe-fail: the whole lattice lives in one RG8 3D texture.
@@ -616,8 +651,14 @@ export async function initMillSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2, pair: false, drest: 0, exposure: 1.5,
+    phot: 2, pair: false, drest: 0, exposure: 1.5, split: 'off',
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
+  };
+  // split panes: {layout, mode} per half — mode -1 follows the View select
+  const PANES = {
+    off:    null,
+    layout: [{ layout: 0, mode: -1 }, { layout: 1, mode: -1 }],
+    modes:  [{ layout: 0, mode: 0 },  { layout: 0, mode: 2 }],
   };
   // boot state is set by the default scene (SCENES.vault) once all
   // widget binds exist — scenes drive the real controls so the dock
@@ -867,6 +908,21 @@ export async function initMillSimulator(root, opts = {}) {
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
+  // split view: two lenses on the same live field — cube|fcc compares
+  // coordinate systems, ember|flux compares mass channels
+  const TAGS = { layout: ['cubic embed', 'fcc index'], modes: ['ember', 'flux'] };
+  bind('[data-split]', 'change', e => {
+    ui.split = e.target.value;
+    root.classList.toggle('split-on', ui.split !== 'off');
+    const [tl, tr] = TAGS[ui.split] || ['', ''];
+    const el = root.querySelector('[data-tagl]'), er = root.querySelector('[data-tagr]');
+    if (el) el.textContent = tl; if (er) er.textContent = tr;
+    dirty = true;
+    if (ui.split === 'layout')
+      say('same lattice, two coordinates — left: true positions, parity gaps real · right: primitive index space, gaps removed', 7000);
+    else if (ui.split === 'modes')
+      say('same field, two channels — parked heat left, moving flux right', 6000);
+  });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
   bind('[data-expo]', 'input', e => { ui.exposure = +e.target.value / 100; readout(e); dirty = true; });
   // dock accordions — Flags (selects) and Tuning (sliders) collapse by
@@ -1036,7 +1092,6 @@ export async function initMillSimulator(root, opts = {}) {
 
     resize();
     if (dirty) {
-      const proj = m4.persp(0.9, canvas.width / Math.max(1, canvas.height), 1, 600);
       const view = m4.mul(m4.translate(0, 0, -cam.dist),
         m4.mul(m4.rotX(cam.pitch), m4.mul(m4.rotY(cam.yaw),
           m4.translate(-cam.cx, -cam.cy, -cam.cz))));
@@ -1044,18 +1099,33 @@ export async function initMillSimulator(root, opts = {}) {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0.02, 0.02, 0.05, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      gl.uniformMatrix4fv(U.u_mvp, false, m4.mul(proj, view));
       gl.uniform1f(U.u_size, ui.size);
       gl.uniform1f(U.u_s_center, ui.sCut);
       gl.uniform1f(U.u_s_thick, ui.sSlab);
       gl.uniform1i(U.u_s_axis, ui.sAxis);
       gl.uniform1f(U.u_ghost_alpha, ui.ghostAlpha);
       gl.uniform1f(U.u_qmin, ui.qmin);
-      gl.uniform1i(U.u_colorMode, ui.colorMode);
+      // per-pane draw: scissored halves share the camera but carry their
+      // own layout/mode — the same live field through two lenses
+      const panes = PANES[ui.split];
+      const nPanes = panes ? 2 : 1;
+      const pwx = canvas.width / nPanes;
+      if (nPanes > 1) gl.enable(gl.SCISSOR_TEST);
       const si = strideInfo();
-      gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
-      gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
+      for (let i = 0; i < nPanes; i++) {
+        const cfg = panes ? panes[i] : { layout: 0, mode: -1 };
+        const vx = Math.round(i * pwx);
+        const vw = Math.round((i + 1) * pwx) - vx;
+        if (nPanes > 1) gl.scissor(vx, 0, vw, canvas.height);
+        gl.viewport(vx, 0, vw, canvas.height);
+        const pProj = m4.persp(0.9, vw / Math.max(1, canvas.height), 1, 600);
+        gl.uniformMatrix4fv(U.u_mvp, false, m4.mul(pProj, view));
+        gl.uniform1i(U.u_colorMode, cfg.mode < 0 ? ui.colorMode : cfg.mode);
+        gl.uniform1i(U.u_layout, cfg.layout);
+        gl.uniform3f(U.u_packoff, PACKOFF[0], PACKOFF[1], PACKOFF[2]);
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
+      }
+      if (nPanes > 1) gl.disable(gl.SCISSOR_TEST);
       if (hdrOK) {
         // resolve: tonemap the accumulated HDR buffer onto the canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
