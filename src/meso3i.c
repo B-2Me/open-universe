@@ -585,12 +585,14 @@ void meso3i_tick(void) {
     }
 
     /* 2a. pre-collision density snapshot (strict synchronicity: the
-     * gradient read must not see partially-collided sites) */
+     * gradient read must not see partially-collided sites). Includes
+     * directional rest — parked flux in iRA is congestion exactly like
+     * scalar rest (collide_node/rg_refresh/hist already count it). */
     for (int s = 0; s < IN; s++) {
         const uint8_t *n = iA + (size_t)s * INCH;
         uint32_t r = 0;
         for (int c = 0; c < INCH; c++) r += n[c];
-        iR[s] = r;
+        iR[s] = r + (IDREST ? (uint32_t)drest_at(iRA, s) : 0u);
     }
 
     /* 2. node collisions */
