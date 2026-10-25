@@ -355,7 +355,7 @@ Corrected statement for M49-C: the wall converts ablation-erosion into accretion
 | M47b | M37 resolved: real transient ablation coupling only between self-radiating lumps; bath & broadside null; drive-infall artifact caught | `e002c9d` |
 | M49 | Capture gate is a phase parameter: flat-p band / ramp→dissolve-or-fossil; IREFL builds a hollow-core crust and flips ablation drift (grown remnant — see M50) | `e70fe6e` |
 | M50 | iR/drest fix + M42–45 re-verified; drift is morphology-dependent (mass-matched: wall→lit-face accretion, upstream march); IREFL×IDREST spin vault | `0946f9c`, `6282abb` |
-| M51 | Morphology axis resolved: M36 pull is grown-structure-specific; wall gives density-windowed upstream accretion on seeded lumps (peak Q32); M49 "push" was a transient | (this entry) |
+| M51 | Morphology axis resolved: M36 pull is grown-structure-specific; wall gives density-windowed upstream accretion on seeded lumps (peak Q32); M49 "push" was a transient | `480fd20` |
 
 ## The Picture That Emerges
 
