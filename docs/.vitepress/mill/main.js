@@ -315,6 +315,29 @@ export async function initMillSimulator(root, opts = {}) {
   };
   const seedLump = (lx, ly, lz) => seedBall(lx, ly, lz, LUMP_R, LUMP_Q);
 
+  // wound lump — scalar rest + directional bins wound about z (the
+  // M45/M50 winding): the spin vault seed. rset writes parked
+  // directional mass directly, so the object is born remembering.
+  const seedWound = (lx, ly, lz, R, Q, s = 1) => {
+    let n = 0;
+    for (let dz = -R; dz <= R; dz++)
+    for (let dy = -R; dy <= R; dy++)
+    for (let dx = -R; dx <= R; dx++) {
+      if (dx * dx + dy * dy + dz * dz > R * R) continue;
+      const x = lx + dx, y = ly + dy, z = lz + dz;
+      if (((x + y + z) & 1) !== 0) continue;
+      if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
+      wasm._meso3i_set(x, y, z, REST, Q);
+      const vx = -s * dy, vy = s * dx;
+      for (let c = 0; c < NMOV; c++) {
+        const d = vx * CV[c][0] + vy * CV[c][1];
+        if (d > 0) wasm._meso3i_rset(x, y, z, c, Math.min(255, Math.round(d * 8)));
+      }
+      n++;
+    }
+    return n;
+  };
+
   // Camera ray through a canvas pixel -> lattice cell on the current
   // slice plane (normal = ui.sAxis). Camera orbits the lattice center at
   // (yaw, pitch, dist); world coords ARE grid coords under cubic embed.
@@ -700,12 +723,26 @@ export async function initMillSimulator(root, opts = {}) {
       press('[data-beam]', 'beam', false);
       press('[data-drive]', 'drive', true);
       wasm._meso3i_clear(); seedLump(CX, CY, CZ);
-      say('walled crust — Wall 32: saturated sites refuse inflow; a dense crust builds at the refusal boundary with a hollow core. Add ➤ for the M49 downwind drift', 6500);
+      say('walled crust — Wall 32: saturated sites refuse inflow; a dense crust builds at the refusal boundary with a hollow core. Under a beam, accretion happens on the lit face (M51)', 6500);
+    },
+    // M50-B: the spin vault — directional rest behind a refusal crust.
+    // The wall turns beam ablation into winding-fed accretion.
+    vault: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      ctl('[data-drest]', '1', 'change');
+      setFric(50, 0, 32);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', false);
+      wasm._meso3i_clear(); seedWound(CX, CY, CZ, 5, 48);
+      say('spin vault — directional rest + Wall 32: stored rotation behind a refusal crust. The headless record: a mass beam feeds the winding instead of ablating it (98% spin kept over 800t, M50) — probe it with ☀ or ➤', 7000);
     },
   };
   bind('[data-scene]', 'change', e => {
     const f = SCENES[e.target.value];
     e.target.value = '';                    // back to "Scene…" so re-picks refire
+    ctl('[data-drest]', '0', 'change');     // no rest-mode leak between scenes; vault re-arms it
     if (f) { f(); upload(); dirty = true; }
   });
   // radio-exclusive armed tools: ⌖ vortex ring vs ● cold rock

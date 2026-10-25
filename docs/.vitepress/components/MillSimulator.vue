@@ -129,6 +129,7 @@ onUnmounted(() => {
           <option value="porous">porous rim (ramp→255: dissolves)</option>
           <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
           <option value="walled">walled crust (Wall 32 + ☀)</option>
+          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
         </select></label>
         <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>

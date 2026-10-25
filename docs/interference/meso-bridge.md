@@ -141,6 +141,8 @@ Protocol: drive 0–200 (build remnant), quiet 200–600 (frozen, restCM fixed a
 
 This is genuine environment-driven motion of persistent bound matter: the remnant doesn't just sit or dissolve. It *migrates* under anisotropic flux, slowly, while being eaten. A comet, not a rocket.
 
+> *Post-record refinement (M50–M51):* the pull measured here is specific to the **grown** remnant's internal structure. Uniform seeded lumps of every tested morphology show no drift under the same beam; under a congestion wall they instead accrete on the lit face and march *toward* the source — drift direction is morphology-dependent, not a law of ablation. See the monograph, M50–M51.
+
 ### M37. Two-body probe: weak mutual attraction via ablation, no merger
 
 `test_two.c` seeds two rest-channel lumps (mpn=60, r²≤8 blobs, ~3k quanta each) at separation d, unconditional slow boil (1/256) so each lump's radiation acts as the other's carrier beam. Drained open box, 1500 ticks.
