@@ -1,0 +1,111 @@
+[
+  {
+    "name": "smoke_headon",
+    "axis": 0,
+    "b": 0,
+    "verdict": "fusion",
+    "retainA": 0.1529,
+    "retainB": 0.1481
+  },
+  {
+    "name": "symmetric_equatorial_headon",
+    "axis": 0,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.0001,
+    "retainB": 0.0423
+  },
+  {
+    "name": "asymmetric_diagonal_glancing",
+    "axis": 4,
+    "b": 15,
+    "verdict": "fusion",
+    "retainA": 0.1699,
+    "retainB": 0.1512
+  },
+  {
+    "name": "bsweep_b02",
+    "axis": 0,
+    "b": 2,
+    "verdict": "degraded",
+    "retainA": 0.2859,
+    "retainB": 0.0423
+  },
+  {
+    "name": "bsweep_b04",
+    "axis": 0,
+    "b": 4,
+    "verdict": "degraded",
+    "retainA": 0.0001,
+    "retainB": 0.0423
+  },
+  {
+    "name": "bsweep_b08",
+    "axis": 0,
+    "b": 8,
+    "verdict": "degraded",
+    "retainA": 0.0009,
+    "retainB": 0.0423
+  },
+  {
+    "name": "bsweep_b12",
+    "axis": 0,
+    "b": 12,
+    "verdict": "degraded",
+    "retainA": 0.1464,
+    "retainB": 0.0422
+  },
+  {
+    "name": "symmetric_swapped",
+    "axis": 3,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.0423,
+    "retainB": 0.0001
+  },
+  {
+    "name": "symmetric_swapped",
+    "axis": 3,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.2594,
+    "retainB": 0.0039,
+    "sync": 1
+  },
+  {
+    "name": "ymirror_axis1",
+    "axis": 1,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.3109,
+    "retainB": 0.316,
+    "sync": 1
+  },
+  {
+    "name": "ymirror_axis5",
+    "axis": 5,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.3146,
+    "retainB": 0.3193,
+    "sync": 1
+  },
+  {
+    "name": "absorb_axis1",
+    "axis": 1,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.2433,
+    "retainB": 0.2437,
+    "sync": 1
+  },
+  {
+    "name": "absorb_axis5",
+    "axis": 5,
+    "b": 0,
+    "verdict": "degraded",
+    "retainA": 0.2292,
+    "retainB": 0,
+    "sync": 1
+  }
+]

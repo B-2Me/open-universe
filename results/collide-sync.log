@@ -1,0 +1,28 @@
+
+collide: symmetric_swapped 256x256x256 axis 3 dir (-1.00,0.00,0.00) b=0 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@192,128,128 (20952 cells)  B=hopfion_32_8@64,128,128 (20952 cells)  walls 65536+65536
+  t0: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=125.19 merged=false live=40842 A=19182/20952 B=20952/20952
+  t750: gap=113.43 merged=false live=41693 A=11464/20952 B=20877/20952
+  t800: gap=119.96 merged=false live=48477 A=4542/20952 B=14802/20952
+  t850: gap=135.79 merged=false live=61991 A=4639/20952 B=66/20952
+  t900: gap=138.18 merged=false live=78712 A=4759/20952 B=54/20952
+  t950: gap=138.76 merged=false live=91194 A=4907/20952 B=78/20952
+  t999: gap=138.24 merged=false live=101331 A=5435/20952 B=81/20952
+
+  S-MATRIX symmetric_swapped: DEGRADED — retain A=0.26 B=0.00 mass 2514240→1432903 in 3337s
+
+9 scenarios → C:\src\github.com\nater0000\open-universe\logs\collide-results.json

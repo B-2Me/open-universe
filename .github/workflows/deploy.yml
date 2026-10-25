@@ -79,6 +79,7 @@ jobs:
           test -f ../docs/public/wasm/wake/planck.wasm
           test -f ../docs/public/wasm/wake/planck-hex.wasm
           test -f ../docs/public/wasm/loom/planck3.wasm
+          test -f ../docs/public/wasm/ember/meso3i.wasm
 
       - name: Build VitePress Site
         run: npm run docs:build

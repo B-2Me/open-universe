@@ -19,18 +19,24 @@ const readingOrder = [
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' },
   { text: 'Vanguard', link: '/vanguard' },
-  { text: 'Interference', link: '/interference' },
-  { text: 'Audits', link: '/interference/audits' },
-  { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: 'Frontier', link: '/interference/frontier' },
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
-  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
 
+  { text: 'Interference', link: '/interference' },
+  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
+  { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: "Joule's Mill", link: '/mill-demo' },
+
+  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Build & Validate', link: '/interference/reproduce' },
+  { text: 'Methodology', link: '/interference/methodology' },
+  { text: 'Frontier', link: '/interference/frontier' },
+  { text: 'Audits', link: '/interference/audits' },
+  { text: 'Collider Matrix', link: '/interference/collider' },
+  { text: 'Why Simulate', link: '/interference/usefulness' },
+
+  { text: "Yarkovsky's Ember", link: '/ember-demo' },
   { text: "Hopf's Loom", link: '/loom-demo' },
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
   { text: "Langevin's Wake", link: '/wake-demo' },
-  { text: "Yarkovsky's Ember", link: '/ember-demo' },
-  
   { text: 'Audiocast', link: '/interference/sessions' },
   { text: 'Intent', link: '/intent' }
 ]
@@ -54,20 +60,30 @@ const theoryItems = [
 
 const interferenceItems = [
   { text: 'Overview', link: '/interference' },
-  { text: 'Audits', link: '/interference/audits' },
-  { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: 'Frontier', link: '/interference/frontier' },
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
-  { text: 'Podcast', link: '/interference/sessions' }
+  { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
-// Interactive instruments — they live under Interference, not beside it.
+// The active instrument first; milestone builds preserved underneath.
 const instrumentItems = [
-  { text: "Yarkovsky's Ember · Friction", link: '/ember-demo' },
-  { text: "Hopf's Loom · 3D Engine", link: '/loom-demo' },
-  { text: 'Hopfion Zoo · 3D Knots', link: '/hopfion-zoo' },
-  { text: "Langevin's Wake · 2D Engine", link: '/wake-demo' }
+  { text: "Joule's Mill · Flagship", link: '/mill-demo' },
+  { text: "Yarkovsky's Ember · Milestone", link: '/ember-demo' },
+  { text: "Hopf's Loom · Milestone", link: '/loom-demo' },
+  { text: 'Hopfion Zoo · Milestone', link: '/hopfion-zoo' },
+  { text: "Langevin's Wake · Milestone", link: '/wake-demo' }
+]
+
+// Earlier campaigns, prototype engines, and superseded proposals —
+// the provenance of the current model, kept for context.
+const historyItems = [
+  { text: 'Methodology', link: '/interference/methodology' },
+  { text: 'Open Frontier', link: '/interference/frontier' },
+  { text: 'Theoretical Audits', link: '/interference/audits' },
+  { text: 'Collider Matrix', link: '/interference/collider' },
+  { text: 'Why Simulate', link: '/interference/usefulness' },
+  { text: 'Podcast', link: '/interference/sessions' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is
@@ -77,7 +93,7 @@ const navBar = readingOrder.flatMap(item => {
   if (item.link === '/theory')
     return [{ text: 'Theory', items: theoryItems }]
   if (item.link === '/interference')
-    return [{ text: 'Interference', items: [...interferenceItems, { text: 'Instruments', items: instrumentItems }] }]
+    return [{ text: 'Interference', items: [...interferenceItems, { text: 'Instruments', items: instrumentItems }, { text: 'Program History', items: historyItems }] }]
   return (item.link === '/field' || item.link === '/intent') ? [item] : []
 })
 
@@ -86,7 +102,7 @@ const navBar = readingOrder.flatMap(item => {
 
 export default defineConfig({
   title: "The Open Universe",
-  description: "Reality is a live-rendering, zero-storage computational grid.",
+  description: "A live-rendering, zero-storage computational substrate built to work like reality.",
   base: '/', 
   cleanUrls: true,
 

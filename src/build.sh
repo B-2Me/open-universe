@@ -153,7 +153,26 @@ if emcc meso3i.c \
     '_meso3i_cm',
     '_meso3i_drain_edge',
     '_meso3i_save',
-    '_meso3i_restore'
+    '_meso3i_restore',
+    '_meso3i_phot',
+    '_meso3i_pair',
+    '_meso3i_lat',
+    '_meso3i_phset',
+    '_meso3i_phget',
+    '_meso3i_photons',
+    '_meso3i_qmode',
+    '_meso3i_qdir',
+    '_meso3i_qcap',
+    '_meso3i_qget',
+    '_meso3i_qset',
+    '_meso3i_totals',
+    '_meso3i_drest',
+    '_meso3i_rget',
+    '_meso3i_rset',
+    '_meso3i_ev',
+    '_meso3i_ev_reset',
+    '_malloc',
+    '_free'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
   -o ../docs/public/wasm/ember/meso3i.js; then

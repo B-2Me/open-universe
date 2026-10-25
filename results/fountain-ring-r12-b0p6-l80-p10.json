@@ -1,0 +1,3777 @@
+{
+  "mode": "ring",
+  "seed": null,
+  "arcFrac": null,
+  "dims": [
+    100,
+    100,
+    40
+  ],
+  "ticks": 400,
+  "diss": 15,
+  "limit": 50000,
+  "level": 80,
+  "foam": null,
+  "pinch": {
+    "level": 10,
+    "shell": 2,
+    "wallCells": 68224
+  },
+  "ring": {
+    "radius": 12,
+    "count": 24,
+    "bias": 0.6
+  },
+  "cycles": [],
+  "arcLen": 0,
+  "sources": [
+    [
+      62,
+      50,
+      10,
+      8
+    ],
+    [
+      60,
+      53,
+      10,
+      8
+    ],
+    [
+      57,
+      56,
+      10,
+      8
+    ],
+    [
+      54,
+      58,
+      10,
+      8
+    ],
+    [
+      51,
+      60,
+      10,
+      8
+    ],
+    [
+      47,
+      62,
+      10,
+      4
+    ],
+    [
+      44,
+      62,
+      10,
+      4
+    ],
+    [
+      41,
+      62,
+      10,
+      4
+    ],
+    [
+      39,
+      60,
+      10,
+      9
+    ],
+    [
+      38,
+      58,
+      10,
+      9
+    ],
+    [
+      37,
+      56,
+      10,
+      9
+    ],
+    [
+      37,
+      53,
+      10,
+      9
+    ],
+    [
+      38,
+      50,
+      10,
+      9
+    ],
+    [
+      40,
+      47,
+      10,
+      6
+    ],
+    [
+      43,
+      44,
+      10,
+      6
+    ],
+    [
+      46,
+      42,
+      10,
+      6
+    ],
+    [
+      49,
+      40,
+      10,
+      7
+    ],
+    [
+      53,
+      38,
+      10,
+      1
+    ],
+    [
+      56,
+      38,
+      10,
+      1
+    ],
+    [
+      59,
+      38,
+      10,
+      1
+    ],
+    [
+      61,
+      40,
+      10,
+      7
+    ],
+    [
+      62,
+      42,
+      10,
+      2
+    ],
+    [
+      63,
+      44,
+      10,
+      2
+    ],
+    [
+      63,
+      47,
+      10,
+      2
+    ]
+  ],
+  "tNucleate": 125,
+  "ms": 193561,
+  "series": [
+    {
+      "t": 0,
+      "live": 65988,
+      "arcLive": 0,
+      "freeEnds": 17977,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 1,
+      "live": 83368,
+      "arcLive": 0,
+      "freeEnds": 17698,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 80
+    },
+    {
+      "t": 2,
+      "live": 100463,
+      "arcLive": 0,
+      "freeEnds": 17266,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 400
+    },
+    {
+      "t": 3,
+      "live": 117126,
+      "arcLive": 0,
+      "freeEnds": 16982,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 400
+    },
+    {
+      "t": 4,
+      "live": 133501,
+      "arcLive": 0,
+      "freeEnds": 16550,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 400
+    },
+    {
+      "t": 5,
+      "live": 149444,
+      "arcLive": 0,
+      "freeEnds": 16262,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 560
+    },
+    {
+      "t": 6,
+      "live": 165099,
+      "arcLive": 0,
+      "freeEnds": 15823,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 400
+    },
+    {
+      "t": 7,
+      "live": 180310,
+      "arcLive": 0,
+      "freeEnds": 15458,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 250
+    },
+    {
+      "t": 8,
+      "live": 195148,
+      "arcLive": 0,
+      "freeEnds": 15011,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 1142
+    },
+    {
+      "t": 9,
+      "live": 209533,
+      "arcLive": 0,
+      "freeEnds": 14672,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 997
+    },
+    {
+      "t": 10,
+      "live": 223481,
+      "arcLive": 0,
+      "freeEnds": 14278,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 1235
+    },
+    {
+      "t": 11,
+      "live": 236964,
+      "arcLive": 0,
+      "freeEnds": 14054,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 1483
+    },
+    {
+      "t": 12,
+      "live": 250134,
+      "arcLive": 0,
+      "freeEnds": 13762,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 1495
+    },
+    {
+      "t": 13,
+      "live": 262796,
+      "arcLive": 0,
+      "freeEnds": 13614,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 1655
+    },
+    {
+      "t": 14,
+      "live": 275059,
+      "arcLive": 0,
+      "freeEnds": 13428,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 2203
+    },
+    {
+      "t": 15,
+      "live": 286869,
+      "arcLive": 0,
+      "freeEnds": 12903,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 2154
+    },
+    {
+      "t": 16,
+      "live": 297776,
+      "arcLive": 0,
+      "freeEnds": 12068,
+      "maxCycle": 3,
+      "nCycles": 2,
+      "srcQ": 2644
+    },
+    {
+      "t": 17,
+      "live": 307465,
+      "arcLive": 0,
+      "freeEnds": 10740,
+      "maxCycle": 4,
+      "nCycles": 3,
+      "srcQ": 2609
+    },
+    {
+      "t": 18,
+      "live": 315492,
+      "arcLive": 0,
+      "freeEnds": 11802,
+      "maxCycle": 5,
+      "nCycles": 1,
+      "srcQ": 2697
+    },
+    {
+      "t": 19,
+      "live": 323212,
+      "arcLive": 0,
+      "freeEnds": 11002,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 2869
+    },
+    {
+      "t": 20,
+      "live": 330223,
+      "arcLive": 0,
+      "freeEnds": 10876,
+      "maxCycle": 3,
+      "nCycles": 1,
+      "srcQ": 3058
+    },
+    {
+      "t": 21,
+      "live": 336821,
+      "arcLive": 0,
+      "freeEnds": 10981,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 3086
+    },
+    {
+      "t": 22,
+      "live": 342556,
+      "arcLive": 0,
+      "freeEnds": 11026,
+      "maxCycle": 3,
+      "nCycles": 1,
+      "srcQ": 3583
+    },
+    {
+      "t": 23,
+      "live": 347340,
+      "arcLive": 0,
+      "freeEnds": 11354,
+      "maxCycle": 4,
+      "nCycles": 2,
+      "srcQ": 3580
+    },
+    {
+      "t": 24,
+      "live": 351649,
+      "arcLive": 0,
+      "freeEnds": 11613,
+      "maxCycle": 4,
+      "nCycles": 1,
+      "srcQ": 3432
+    },
+    {
+      "t": 25,
+      "live": 354948,
+      "arcLive": 0,
+      "freeEnds": 11618,
+      "maxCycle": 6,
+      "nCycles": 4,
+      "srcQ": 3791
+    },
+    {
+      "t": 26,
+      "live": 357283,
+      "arcLive": 0,
+      "freeEnds": 11838,
+      "maxCycle": 3,
+      "nCycles": 1,
+      "srcQ": 4213
+    },
+    {
+      "t": 27,
+      "live": 358747,
+      "arcLive": 0,
+      "freeEnds": 12779,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 4152
+    },
+    {
+      "t": 28,
+      "live": 358911,
+      "arcLive": 0,
+      "freeEnds": 13520,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 4011
+    },
+    {
+      "t": 29,
+      "live": 358158,
+      "arcLive": 0,
+      "freeEnds": 14854,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4350
+    },
+    {
+      "t": 30,
+      "live": 356744,
+      "arcLive": 0,
+      "freeEnds": 16353,
+      "maxCycle": 4,
+      "nCycles": 3,
+      "srcQ": 4399
+    },
+    {
+      "t": 31,
+      "live": 354207,
+      "arcLive": 0,
+      "freeEnds": 18243,
+      "maxCycle": 4,
+      "nCycles": 2,
+      "srcQ": 4555
+    },
+    {
+      "t": 32,
+      "live": 351282,
+      "arcLive": 0,
+      "freeEnds": 20019,
+      "maxCycle": 3,
+      "nCycles": 2,
+      "srcQ": 4984
+    },
+    {
+      "t": 33,
+      "live": 347650,
+      "arcLive": 0,
+      "freeEnds": 23564,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4987
+    },
+    {
+      "t": 34,
+      "live": 344530,
+      "arcLive": 0,
+      "freeEnds": 24407,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4885
+    },
+    {
+      "t": 35,
+      "live": 340407,
+      "arcLive": 0,
+      "freeEnds": 26774,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4325
+    },
+    {
+      "t": 36,
+      "live": 335823,
+      "arcLive": 0,
+      "freeEnds": 29764,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 4612
+    },
+    {
+      "t": 37,
+      "live": 331166,
+      "arcLive": 0,
+      "freeEnds": 32699,
+      "maxCycle": 3,
+      "nCycles": 4,
+      "srcQ": 4715
+    },
+    {
+      "t": 38,
+      "live": 326250,
+      "arcLive": 0,
+      "freeEnds": 35603,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 4897
+    },
+    {
+      "t": 39,
+      "live": 320608,
+      "arcLive": 0,
+      "freeEnds": 38477,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4473
+    },
+    {
+      "t": 40,
+      "live": 315455,
+      "arcLive": 0,
+      "freeEnds": 41253,
+      "maxCycle": 7,
+      "nCycles": 42,
+      "srcQ": 4781
+    },
+    {
+      "t": 41,
+      "live": 310370,
+      "arcLive": 0,
+      "freeEnds": 43746,
+      "maxCycle": 4,
+      "nCycles": 19,
+      "srcQ": 5395
+    },
+    {
+      "t": 42,
+      "live": 304467,
+      "arcLive": 0,
+      "freeEnds": 46383,
+      "maxCycle": 3,
+      "nCycles": 10,
+      "srcQ": 5298
+    },
+    {
+      "t": 43,
+      "live": 297742,
+      "arcLive": 0,
+      "freeEnds": 48693,
+      "maxCycle": 3,
+      "nCycles": 5,
+      "srcQ": 4960
+    },
+    {
+      "t": 44,
+      "live": 291718,
+      "arcLive": 0,
+      "freeEnds": 51018,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4865
+    },
+    {
+      "t": 45,
+      "live": 285777,
+      "arcLive": 0,
+      "freeEnds": 52977,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4970
+    },
+    {
+      "t": 46,
+      "live": 279257,
+      "arcLive": 0,
+      "freeEnds": 54847,
+      "maxCycle": 8,
+      "nCycles": 11,
+      "srcQ": 4813
+    },
+    {
+      "t": 47,
+      "live": 273058,
+      "arcLive": 0,
+      "freeEnds": 56709,
+      "maxCycle": 4,
+      "nCycles": 17,
+      "srcQ": 5332
+    },
+    {
+      "t": 48,
+      "live": 266794,
+      "arcLive": 0,
+      "freeEnds": 57386,
+      "maxCycle": 4,
+      "nCycles": 15,
+      "srcQ": 5303
+    },
+    {
+      "t": 49,
+      "live": 260792,
+      "arcLive": 0,
+      "freeEnds": 58477,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5002
+    },
+    {
+      "t": 50,
+      "live": 254932,
+      "arcLive": 0,
+      "freeEnds": 58979,
+      "maxCycle": 5,
+      "nCycles": 15,
+      "srcQ": 4669
+    },
+    {
+      "t": 51,
+      "live": 249547,
+      "arcLive": 0,
+      "freeEnds": 60245,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5359
+    },
+    {
+      "t": 52,
+      "live": 245321,
+      "arcLive": 0,
+      "freeEnds": 60496,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4742
+    },
+    {
+      "t": 53,
+      "live": 241035,
+      "arcLive": 0,
+      "freeEnds": 61359,
+      "maxCycle": 4,
+      "nCycles": 27,
+      "srcQ": 5023
+    },
+    {
+      "t": 54,
+      "live": 237417,
+      "arcLive": 0,
+      "freeEnds": 60780,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4896
+    },
+    {
+      "t": 55,
+      "live": 233514,
+      "arcLive": 0,
+      "freeEnds": 61521,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4926
+    },
+    {
+      "t": 56,
+      "live": 230461,
+      "arcLive": 0,
+      "freeEnds": 61114,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 4654
+    },
+    {
+      "t": 57,
+      "live": 226886,
+      "arcLive": 0,
+      "freeEnds": 61733,
+      "maxCycle": 4,
+      "nCycles": 17,
+      "srcQ": 4902
+    },
+    {
+      "t": 58,
+      "live": 223481,
+      "arcLive": 0,
+      "freeEnds": 61510,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 4563
+    },
+    {
+      "t": 59,
+      "live": 220920,
+      "arcLive": 0,
+      "freeEnds": 62129,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4854
+    },
+    {
+      "t": 60,
+      "live": 218699,
+      "arcLive": 0,
+      "freeEnds": 62163,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 4965
+    },
+    {
+      "t": 61,
+      "live": 216615,
+      "arcLive": 0,
+      "freeEnds": 62489,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5422
+    },
+    {
+      "t": 62,
+      "live": 214961,
+      "arcLive": 0,
+      "freeEnds": 62658,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 5175
+    },
+    {
+      "t": 63,
+      "live": 213806,
+      "arcLive": 0,
+      "freeEnds": 62857,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5342
+    },
+    {
+      "t": 64,
+      "live": 212961,
+      "arcLive": 0,
+      "freeEnds": 62780,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 5124
+    },
+    {
+      "t": 65,
+      "live": 212103,
+      "arcLive": 0,
+      "freeEnds": 63090,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5253
+    },
+    {
+      "t": 66,
+      "live": 211582,
+      "arcLive": 0,
+      "freeEnds": 63260,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5165
+    },
+    {
+      "t": 67,
+      "live": 211289,
+      "arcLive": 0,
+      "freeEnds": 63655,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 5291
+    },
+    {
+      "t": 68,
+      "live": 211561,
+      "arcLive": 0,
+      "freeEnds": 64247,
+      "maxCycle": 6,
+      "nCycles": 15,
+      "srcQ": 5311
+    },
+    {
+      "t": 69,
+      "live": 212107,
+      "arcLive": 0,
+      "freeEnds": 63846,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5374
+    },
+    {
+      "t": 70,
+      "live": 212650,
+      "arcLive": 0,
+      "freeEnds": 63726,
+      "maxCycle": 6,
+      "nCycles": 15,
+      "srcQ": 4998
+    },
+    {
+      "t": 71,
+      "live": 213082,
+      "arcLive": 0,
+      "freeEnds": 64052,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 5151
+    },
+    {
+      "t": 72,
+      "live": 213773,
+      "arcLive": 0,
+      "freeEnds": 64046,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5155
+    },
+    {
+      "t": 73,
+      "live": 214717,
+      "arcLive": 0,
+      "freeEnds": 63887,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5037
+    },
+    {
+      "t": 74,
+      "live": 215229,
+      "arcLive": 0,
+      "freeEnds": 63734,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4850
+    },
+    {
+      "t": 75,
+      "live": 216174,
+      "arcLive": 0,
+      "freeEnds": 63791,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 5503
+    },
+    {
+      "t": 76,
+      "live": 217143,
+      "arcLive": 0,
+      "freeEnds": 63665,
+      "maxCycle": 6,
+      "nCycles": 10,
+      "srcQ": 5399
+    },
+    {
+      "t": 77,
+      "live": 217945,
+      "arcLive": 0,
+      "freeEnds": 63648,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5702
+    },
+    {
+      "t": 78,
+      "live": 218946,
+      "arcLive": 0,
+      "freeEnds": 63612,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4887
+    },
+    {
+      "t": 79,
+      "live": 219863,
+      "arcLive": 0,
+      "freeEnds": 63403,
+      "maxCycle": 4,
+      "nCycles": 16,
+      "srcQ": 5392
+    },
+    {
+      "t": 80,
+      "live": 220679,
+      "arcLive": 0,
+      "freeEnds": 63669,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 4815
+    },
+    {
+      "t": 81,
+      "live": 221593,
+      "arcLive": 0,
+      "freeEnds": 63452,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5526
+    },
+    {
+      "t": 82,
+      "live": 222168,
+      "arcLive": 0,
+      "freeEnds": 63614,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5112
+    },
+    {
+      "t": 83,
+      "live": 223179,
+      "arcLive": 0,
+      "freeEnds": 63710,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5452
+    },
+    {
+      "t": 84,
+      "live": 224045,
+      "arcLive": 0,
+      "freeEnds": 63493,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 4573
+    },
+    {
+      "t": 85,
+      "live": 224790,
+      "arcLive": 0,
+      "freeEnds": 63622,
+      "maxCycle": 6,
+      "nCycles": 11,
+      "srcQ": 5221
+    },
+    {
+      "t": 86,
+      "live": 225428,
+      "arcLive": 0,
+      "freeEnds": 63534,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5062
+    },
+    {
+      "t": 87,
+      "live": 226200,
+      "arcLive": 0,
+      "freeEnds": 63731,
+      "maxCycle": 7,
+      "nCycles": 5,
+      "srcQ": 5448
+    },
+    {
+      "t": 88,
+      "live": 226901,
+      "arcLive": 0,
+      "freeEnds": 63616,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4728
+    },
+    {
+      "t": 89,
+      "live": 227881,
+      "arcLive": 0,
+      "freeEnds": 63485,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5217
+    },
+    {
+      "t": 90,
+      "live": 228682,
+      "arcLive": 0,
+      "freeEnds": 63366,
+      "maxCycle": 5,
+      "nCycles": 5,
+      "srcQ": 5265
+    },
+    {
+      "t": 91,
+      "live": 229649,
+      "arcLive": 0,
+      "freeEnds": 63446,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5338
+    },
+    {
+      "t": 92,
+      "live": 230282,
+      "arcLive": 0,
+      "freeEnds": 63383,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5167
+    },
+    {
+      "t": 93,
+      "live": 231147,
+      "arcLive": 0,
+      "freeEnds": 63426,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 5180
+    },
+    {
+      "t": 94,
+      "live": 231730,
+      "arcLive": 0,
+      "freeEnds": 63241,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5111
+    },
+    {
+      "t": 95,
+      "live": 232187,
+      "arcLive": 0,
+      "freeEnds": 63441,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 5124
+    },
+    {
+      "t": 96,
+      "live": 232948,
+      "arcLive": 0,
+      "freeEnds": 63446,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4641
+    },
+    {
+      "t": 97,
+      "live": 233614,
+      "arcLive": 0,
+      "freeEnds": 63591,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5363
+    },
+    {
+      "t": 98,
+      "live": 234378,
+      "arcLive": 0,
+      "freeEnds": 63303,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4632
+    },
+    {
+      "t": 99,
+      "live": 234840,
+      "arcLive": 0,
+      "freeEnds": 63232,
+      "maxCycle": 5,
+      "nCycles": 16,
+      "srcQ": 5632
+    },
+    {
+      "t": 100,
+      "live": 235212,
+      "arcLive": 0,
+      "freeEnds": 63191,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 4793
+    },
+    {
+      "t": 101,
+      "live": 235608,
+      "arcLive": 0,
+      "freeEnds": 63034,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5597
+    },
+    {
+      "t": 102,
+      "live": 236020,
+      "arcLive": 0,
+      "freeEnds": 63079,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5017
+    },
+    {
+      "t": 103,
+      "live": 236579,
+      "arcLive": 0,
+      "freeEnds": 62607,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 5297
+    },
+    {
+      "t": 104,
+      "live": 236594,
+      "arcLive": 0,
+      "freeEnds": 62680,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 4568
+    },
+    {
+      "t": 105,
+      "live": 237023,
+      "arcLive": 0,
+      "freeEnds": 62605,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5381
+    },
+    {
+      "t": 106,
+      "live": 237517,
+      "arcLive": 0,
+      "freeEnds": 62495,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 4529
+    },
+    {
+      "t": 107,
+      "live": 237857,
+      "arcLive": 0,
+      "freeEnds": 62429,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5005
+    },
+    {
+      "t": 108,
+      "live": 238311,
+      "arcLive": 0,
+      "freeEnds": 62441,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4570
+    },
+    {
+      "t": 109,
+      "live": 238525,
+      "arcLive": 0,
+      "freeEnds": 62448,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 5039
+    },
+    {
+      "t": 110,
+      "live": 239030,
+      "arcLive": 0,
+      "freeEnds": 62330,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4599
+    },
+    {
+      "t": 111,
+      "live": 239079,
+      "arcLive": 0,
+      "freeEnds": 62371,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4926
+    },
+    {
+      "t": 112,
+      "live": 239527,
+      "arcLive": 0,
+      "freeEnds": 62498,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4546
+    },
+    {
+      "t": 113,
+      "live": 239606,
+      "arcLive": 0,
+      "freeEnds": 62663,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4663
+    },
+    {
+      "t": 114,
+      "live": 240053,
+      "arcLive": 0,
+      "freeEnds": 62549,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4874
+    },
+    {
+      "t": 115,
+      "live": 240315,
+      "arcLive": 0,
+      "freeEnds": 62488,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 4971
+    },
+    {
+      "t": 116,
+      "live": 240528,
+      "arcLive": 0,
+      "freeEnds": 62642,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4607
+    },
+    {
+      "t": 117,
+      "live": 240836,
+      "arcLive": 0,
+      "freeEnds": 62625,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4709
+    },
+    {
+      "t": 118,
+      "live": 240893,
+      "arcLive": 0,
+      "freeEnds": 62742,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 4651
+    },
+    {
+      "t": 119,
+      "live": 240911,
+      "arcLive": 0,
+      "freeEnds": 62623,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 4855
+    },
+    {
+      "t": 120,
+      "live": 241036,
+      "arcLive": 0,
+      "freeEnds": 62617,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5126
+    },
+    {
+      "t": 121,
+      "live": 241292,
+      "arcLive": 0,
+      "freeEnds": 62448,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4740
+    },
+    {
+      "t": 122,
+      "live": 241294,
+      "arcLive": 0,
+      "freeEnds": 62626,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4472
+    },
+    {
+      "t": 123,
+      "live": 241471,
+      "arcLive": 0,
+      "freeEnds": 62804,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5103
+    },
+    {
+      "t": 124,
+      "live": 241709,
+      "arcLive": 0,
+      "freeEnds": 62508,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4844
+    },
+    {
+      "t": 125,
+      "live": 241871,
+      "arcLive": 0,
+      "freeEnds": 62323,
+      "maxCycle": 17,
+      "nCycles": 12,
+      "srcQ": 4688
+    },
+    {
+      "t": 126,
+      "live": 242266,
+      "arcLive": 0,
+      "freeEnds": 62278,
+      "maxCycle": 6,
+      "nCycles": 7,
+      "srcQ": 5222
+    },
+    {
+      "t": 127,
+      "live": 242419,
+      "arcLive": 0,
+      "freeEnds": 62252,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5242
+    },
+    {
+      "t": 128,
+      "live": 242843,
+      "arcLive": 0,
+      "freeEnds": 62339,
+      "maxCycle": 8,
+      "nCycles": 13,
+      "srcQ": 5604
+    },
+    {
+      "t": 129,
+      "live": 243174,
+      "arcLive": 0,
+      "freeEnds": 62110,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5174
+    },
+    {
+      "t": 130,
+      "live": 243095,
+      "arcLive": 0,
+      "freeEnds": 61985,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4813
+    },
+    {
+      "t": 131,
+      "live": 243492,
+      "arcLive": 0,
+      "freeEnds": 61976,
+      "maxCycle": 5,
+      "nCycles": 15,
+      "srcQ": 5314
+    },
+    {
+      "t": 132,
+      "live": 243608,
+      "arcLive": 0,
+      "freeEnds": 62112,
+      "maxCycle": 6,
+      "nCycles": 13,
+      "srcQ": 5198
+    },
+    {
+      "t": 133,
+      "live": 243699,
+      "arcLive": 0,
+      "freeEnds": 61991,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5052
+    },
+    {
+      "t": 134,
+      "live": 243867,
+      "arcLive": 0,
+      "freeEnds": 61759,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 4606
+    },
+    {
+      "t": 135,
+      "live": 244041,
+      "arcLive": 0,
+      "freeEnds": 61921,
+      "maxCycle": 3,
+      "nCycles": 3,
+      "srcQ": 5287
+    },
+    {
+      "t": 136,
+      "live": 243977,
+      "arcLive": 0,
+      "freeEnds": 62098,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4617
+    },
+    {
+      "t": 137,
+      "live": 244107,
+      "arcLive": 0,
+      "freeEnds": 61841,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4639
+    },
+    {
+      "t": 138,
+      "live": 244002,
+      "arcLive": 0,
+      "freeEnds": 61992,
+      "maxCycle": 3,
+      "nCycles": 3,
+      "srcQ": 4961
+    },
+    {
+      "t": 139,
+      "live": 244161,
+      "arcLive": 0,
+      "freeEnds": 61910,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5315
+    },
+    {
+      "t": 140,
+      "live": 244568,
+      "arcLive": 0,
+      "freeEnds": 61815,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5052
+    },
+    {
+      "t": 141,
+      "live": 244577,
+      "arcLive": 0,
+      "freeEnds": 61830,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5284
+    },
+    {
+      "t": 142,
+      "live": 244660,
+      "arcLive": 0,
+      "freeEnds": 61730,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 4867
+    },
+    {
+      "t": 143,
+      "live": 244310,
+      "arcLive": 0,
+      "freeEnds": 61612,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4925
+    },
+    {
+      "t": 144,
+      "live": 244388,
+      "arcLive": 0,
+      "freeEnds": 61994,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5169
+    },
+    {
+      "t": 145,
+      "live": 244816,
+      "arcLive": 0,
+      "freeEnds": 61903,
+      "maxCycle": 15,
+      "nCycles": 15,
+      "srcQ": 5312
+    },
+    {
+      "t": 146,
+      "live": 245031,
+      "arcLive": 0,
+      "freeEnds": 61777,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4803
+    },
+    {
+      "t": 147,
+      "live": 245213,
+      "arcLive": 0,
+      "freeEnds": 61636,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 5463
+    },
+    {
+      "t": 148,
+      "live": 245245,
+      "arcLive": 0,
+      "freeEnds": 61758,
+      "maxCycle": 10,
+      "nCycles": 11,
+      "srcQ": 4572
+    },
+    {
+      "t": 149,
+      "live": 245217,
+      "arcLive": 0,
+      "freeEnds": 61766,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4745
+    },
+    {
+      "t": 150,
+      "live": 245221,
+      "arcLive": 0,
+      "freeEnds": 61618,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 4414
+    },
+    {
+      "t": 151,
+      "live": 245372,
+      "arcLive": 0,
+      "freeEnds": 61423,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4798
+    },
+    {
+      "t": 152,
+      "live": 245271,
+      "arcLive": 0,
+      "freeEnds": 61698,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4414
+    },
+    {
+      "t": 153,
+      "live": 245289,
+      "arcLive": 0,
+      "freeEnds": 61978,
+      "maxCycle": 4,
+      "nCycles": 4,
+      "srcQ": 4941
+    },
+    {
+      "t": 154,
+      "live": 245366,
+      "arcLive": 0,
+      "freeEnds": 61876,
+      "maxCycle": 4,
+      "nCycles": 16,
+      "srcQ": 5188
+    },
+    {
+      "t": 155,
+      "live": 245463,
+      "arcLive": 0,
+      "freeEnds": 61730,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5526
+    },
+    {
+      "t": 156,
+      "live": 244978,
+      "arcLive": 0,
+      "freeEnds": 61881,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 4860
+    },
+    {
+      "t": 157,
+      "live": 245015,
+      "arcLive": 0,
+      "freeEnds": 61771,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4799
+    },
+    {
+      "t": 158,
+      "live": 244984,
+      "arcLive": 0,
+      "freeEnds": 61788,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5041
+    },
+    {
+      "t": 159,
+      "live": 244916,
+      "arcLive": 0,
+      "freeEnds": 61881,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4976
+    },
+    {
+      "t": 160,
+      "live": 245074,
+      "arcLive": 0,
+      "freeEnds": 61771,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 4811
+    },
+    {
+      "t": 161,
+      "live": 245073,
+      "arcLive": 0,
+      "freeEnds": 61686,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4833
+    },
+    {
+      "t": 162,
+      "live": 244783,
+      "arcLive": 0,
+      "freeEnds": 62016,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 5189
+    },
+    {
+      "t": 163,
+      "live": 244836,
+      "arcLive": 0,
+      "freeEnds": 61867,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5349
+    },
+    {
+      "t": 164,
+      "live": 244868,
+      "arcLive": 0,
+      "freeEnds": 62032,
+      "maxCycle": 3,
+      "nCycles": 12,
+      "srcQ": 5390
+    },
+    {
+      "t": 165,
+      "live": 244842,
+      "arcLive": 0,
+      "freeEnds": 61975,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 5222
+    },
+    {
+      "t": 166,
+      "live": 244770,
+      "arcLive": 0,
+      "freeEnds": 61856,
+      "maxCycle": 6,
+      "nCycles": 13,
+      "srcQ": 5137
+    },
+    {
+      "t": 167,
+      "live": 244611,
+      "arcLive": 0,
+      "freeEnds": 62063,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 4804
+    },
+    {
+      "t": 168,
+      "live": 244760,
+      "arcLive": 0,
+      "freeEnds": 62165,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 4628
+    },
+    {
+      "t": 169,
+      "live": 244987,
+      "arcLive": 0,
+      "freeEnds": 62287,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4787
+    },
+    {
+      "t": 170,
+      "live": 244948,
+      "arcLive": 0,
+      "freeEnds": 62157,
+      "maxCycle": 3,
+      "nCycles": 5,
+      "srcQ": 5601
+    },
+    {
+      "t": 171,
+      "live": 245022,
+      "arcLive": 0,
+      "freeEnds": 62036,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5311
+    },
+    {
+      "t": 172,
+      "live": 245161,
+      "arcLive": 0,
+      "freeEnds": 61952,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5349
+    },
+    {
+      "t": 173,
+      "live": 245538,
+      "arcLive": 0,
+      "freeEnds": 61828,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 4832
+    },
+    {
+      "t": 174,
+      "live": 245579,
+      "arcLive": 0,
+      "freeEnds": 61819,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4744
+    },
+    {
+      "t": 175,
+      "live": 245804,
+      "arcLive": 0,
+      "freeEnds": 61924,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4882
+    },
+    {
+      "t": 176,
+      "live": 246086,
+      "arcLive": 0,
+      "freeEnds": 61720,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5030
+    },
+    {
+      "t": 177,
+      "live": 246125,
+      "arcLive": 0,
+      "freeEnds": 61700,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 5154
+    },
+    {
+      "t": 178,
+      "live": 245879,
+      "arcLive": 0,
+      "freeEnds": 61865,
+      "maxCycle": 3,
+      "nCycles": 10,
+      "srcQ": 5360
+    },
+    {
+      "t": 179,
+      "live": 245987,
+      "arcLive": 0,
+      "freeEnds": 61795,
+      "maxCycle": 3,
+      "nCycles": 12,
+      "srcQ": 5143
+    },
+    {
+      "t": 180,
+      "live": 245800,
+      "arcLive": 0,
+      "freeEnds": 61931,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4786
+    },
+    {
+      "t": 181,
+      "live": 245947,
+      "arcLive": 0,
+      "freeEnds": 61919,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5441
+    },
+    {
+      "t": 182,
+      "live": 245629,
+      "arcLive": 0,
+      "freeEnds": 62044,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5485
+    },
+    {
+      "t": 183,
+      "live": 245648,
+      "arcLive": 0,
+      "freeEnds": 62039,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5544
+    },
+    {
+      "t": 184,
+      "live": 245482,
+      "arcLive": 0,
+      "freeEnds": 62311,
+      "maxCycle": 4,
+      "nCycles": 4,
+      "srcQ": 5232
+    },
+    {
+      "t": 185,
+      "live": 245437,
+      "arcLive": 0,
+      "freeEnds": 62305,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 5688
+    },
+    {
+      "t": 186,
+      "live": 245484,
+      "arcLive": 0,
+      "freeEnds": 62234,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5060
+    },
+    {
+      "t": 187,
+      "live": 245356,
+      "arcLive": 0,
+      "freeEnds": 62331,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5533
+    },
+    {
+      "t": 188,
+      "live": 245266,
+      "arcLive": 0,
+      "freeEnds": 62201,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5590
+    },
+    {
+      "t": 189,
+      "live": 245285,
+      "arcLive": 0,
+      "freeEnds": 62426,
+      "maxCycle": 6,
+      "nCycles": 11,
+      "srcQ": 5762
+    },
+    {
+      "t": 190,
+      "live": 245359,
+      "arcLive": 0,
+      "freeEnds": 62641,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5305
+    },
+    {
+      "t": 191,
+      "live": 245499,
+      "arcLive": 0,
+      "freeEnds": 62603,
+      "maxCycle": 5,
+      "nCycles": 13,
+      "srcQ": 5477
+    },
+    {
+      "t": 192,
+      "live": 245289,
+      "arcLive": 0,
+      "freeEnds": 62301,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5582
+    },
+    {
+      "t": 193,
+      "live": 245117,
+      "arcLive": 0,
+      "freeEnds": 62579,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5965
+    },
+    {
+      "t": 194,
+      "live": 245328,
+      "arcLive": 0,
+      "freeEnds": 62399,
+      "maxCycle": 5,
+      "nCycles": 4,
+      "srcQ": 5497
+    },
+    {
+      "t": 195,
+      "live": 244944,
+      "arcLive": 0,
+      "freeEnds": 62235,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 5500
+    },
+    {
+      "t": 196,
+      "live": 244873,
+      "arcLive": 0,
+      "freeEnds": 62419,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 5234
+    },
+    {
+      "t": 197,
+      "live": 245255,
+      "arcLive": 0,
+      "freeEnds": 62304,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5481
+    },
+    {
+      "t": 198,
+      "live": 244988,
+      "arcLive": 0,
+      "freeEnds": 62175,
+      "maxCycle": 6,
+      "nCycles": 5,
+      "srcQ": 4739
+    },
+    {
+      "t": 199,
+      "live": 244997,
+      "arcLive": 0,
+      "freeEnds": 62185,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 5318
+    },
+    {
+      "t": 200,
+      "live": 245195,
+      "arcLive": 0,
+      "freeEnds": 62016,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4872
+    },
+    {
+      "t": 201,
+      "live": 245182,
+      "arcLive": 0,
+      "freeEnds": 62161,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5097
+    },
+    {
+      "t": 202,
+      "live": 245291,
+      "arcLive": 0,
+      "freeEnds": 62060,
+      "maxCycle": 5,
+      "nCycles": 13,
+      "srcQ": 4970
+    },
+    {
+      "t": 203,
+      "live": 245245,
+      "arcLive": 0,
+      "freeEnds": 62025,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4838
+    },
+    {
+      "t": 204,
+      "live": 245058,
+      "arcLive": 0,
+      "freeEnds": 62166,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4767
+    },
+    {
+      "t": 205,
+      "live": 245120,
+      "arcLive": 0,
+      "freeEnds": 62008,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 4829
+    },
+    {
+      "t": 206,
+      "live": 244940,
+      "arcLive": 0,
+      "freeEnds": 62095,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 5009
+    },
+    {
+      "t": 207,
+      "live": 244937,
+      "arcLive": 0,
+      "freeEnds": 62206,
+      "maxCycle": 6,
+      "nCycles": 9,
+      "srcQ": 4987
+    },
+    {
+      "t": 208,
+      "live": 245078,
+      "arcLive": 0,
+      "freeEnds": 62213,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 4917
+    },
+    {
+      "t": 209,
+      "live": 245268,
+      "arcLive": 0,
+      "freeEnds": 62024,
+      "maxCycle": 9,
+      "nCycles": 6,
+      "srcQ": 5248
+    },
+    {
+      "t": 210,
+      "live": 245240,
+      "arcLive": 0,
+      "freeEnds": 62027,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4746
+    },
+    {
+      "t": 211,
+      "live": 245395,
+      "arcLive": 0,
+      "freeEnds": 61922,
+      "maxCycle": 4,
+      "nCycles": 15,
+      "srcQ": 5069
+    },
+    {
+      "t": 212,
+      "live": 245472,
+      "arcLive": 0,
+      "freeEnds": 61604,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4471
+    },
+    {
+      "t": 213,
+      "live": 245312,
+      "arcLive": 0,
+      "freeEnds": 61658,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5258
+    },
+    {
+      "t": 214,
+      "live": 245458,
+      "arcLive": 0,
+      "freeEnds": 61770,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 4567
+    },
+    {
+      "t": 215,
+      "live": 245592,
+      "arcLive": 0,
+      "freeEnds": 61735,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4793
+    },
+    {
+      "t": 216,
+      "live": 245509,
+      "arcLive": 0,
+      "freeEnds": 62098,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4522
+    },
+    {
+      "t": 217,
+      "live": 245842,
+      "arcLive": 0,
+      "freeEnds": 61837,
+      "maxCycle": 3,
+      "nCycles": 5,
+      "srcQ": 5256
+    },
+    {
+      "t": 218,
+      "live": 246063,
+      "arcLive": 0,
+      "freeEnds": 61871,
+      "maxCycle": 7,
+      "nCycles": 9,
+      "srcQ": 5208
+    },
+    {
+      "t": 219,
+      "live": 245943,
+      "arcLive": 0,
+      "freeEnds": 61673,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5429
+    },
+    {
+      "t": 220,
+      "live": 245735,
+      "arcLive": 0,
+      "freeEnds": 62004,
+      "maxCycle": 3,
+      "nCycles": 13,
+      "srcQ": 4932
+    },
+    {
+      "t": 221,
+      "live": 245828,
+      "arcLive": 0,
+      "freeEnds": 62167,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 5545
+    },
+    {
+      "t": 222,
+      "live": 246163,
+      "arcLive": 0,
+      "freeEnds": 61922,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4944
+    },
+    {
+      "t": 223,
+      "live": 246070,
+      "arcLive": 0,
+      "freeEnds": 61847,
+      "maxCycle": 5,
+      "nCycles": 13,
+      "srcQ": 5283
+    },
+    {
+      "t": 224,
+      "live": 245994,
+      "arcLive": 0,
+      "freeEnds": 62116,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5207
+    },
+    {
+      "t": 225,
+      "live": 246150,
+      "arcLive": 0,
+      "freeEnds": 62032,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5499
+    },
+    {
+      "t": 226,
+      "live": 246070,
+      "arcLive": 0,
+      "freeEnds": 61908,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 5089
+    },
+    {
+      "t": 227,
+      "live": 246017,
+      "arcLive": 0,
+      "freeEnds": 61966,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5375
+    },
+    {
+      "t": 228,
+      "live": 246159,
+      "arcLive": 0,
+      "freeEnds": 61891,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4970
+    },
+    {
+      "t": 229,
+      "live": 245923,
+      "arcLive": 0,
+      "freeEnds": 62199,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5546
+    },
+    {
+      "t": 230,
+      "live": 246045,
+      "arcLive": 0,
+      "freeEnds": 62311,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 5111
+    },
+    {
+      "t": 231,
+      "live": 246058,
+      "arcLive": 0,
+      "freeEnds": 62019,
+      "maxCycle": 4,
+      "nCycles": 16,
+      "srcQ": 5470
+    },
+    {
+      "t": 232,
+      "live": 245975,
+      "arcLive": 0,
+      "freeEnds": 61885,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5507
+    },
+    {
+      "t": 233,
+      "live": 245722,
+      "arcLive": 0,
+      "freeEnds": 62175,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5279
+    },
+    {
+      "t": 234,
+      "live": 245600,
+      "arcLive": 0,
+      "freeEnds": 62141,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 5094
+    },
+    {
+      "t": 235,
+      "live": 245516,
+      "arcLive": 0,
+      "freeEnds": 62135,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 5098
+    },
+    {
+      "t": 236,
+      "live": 245439,
+      "arcLive": 0,
+      "freeEnds": 62137,
+      "maxCycle": 6,
+      "nCycles": 8,
+      "srcQ": 5034
+    },
+    {
+      "t": 237,
+      "live": 245478,
+      "arcLive": 0,
+      "freeEnds": 62137,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5154
+    },
+    {
+      "t": 238,
+      "live": 245525,
+      "arcLive": 0,
+      "freeEnds": 62007,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 4880
+    },
+    {
+      "t": 239,
+      "live": 245320,
+      "arcLive": 0,
+      "freeEnds": 61816,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4907
+    },
+    {
+      "t": 240,
+      "live": 245076,
+      "arcLive": 0,
+      "freeEnds": 61905,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4873
+    },
+    {
+      "t": 241,
+      "live": 245167,
+      "arcLive": 0,
+      "freeEnds": 62147,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5191
+    },
+    {
+      "t": 242,
+      "live": 245527,
+      "arcLive": 0,
+      "freeEnds": 62179,
+      "maxCycle": 3,
+      "nCycles": 4,
+      "srcQ": 4851
+    },
+    {
+      "t": 243,
+      "live": 245666,
+      "arcLive": 0,
+      "freeEnds": 62092,
+      "maxCycle": 5,
+      "nCycles": 6,
+      "srcQ": 5471
+    },
+    {
+      "t": 244,
+      "live": 245399,
+      "arcLive": 0,
+      "freeEnds": 62327,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4945
+    },
+    {
+      "t": 245,
+      "live": 245497,
+      "arcLive": 0,
+      "freeEnds": 62508,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4945
+    },
+    {
+      "t": 246,
+      "live": 245799,
+      "arcLive": 0,
+      "freeEnds": 62041,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4904
+    },
+    {
+      "t": 247,
+      "live": 245483,
+      "arcLive": 0,
+      "freeEnds": 61999,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4826
+    },
+    {
+      "t": 248,
+      "live": 245480,
+      "arcLive": 0,
+      "freeEnds": 62224,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 4944
+    },
+    {
+      "t": 249,
+      "live": 245790,
+      "arcLive": 0,
+      "freeEnds": 62007,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5125
+    },
+    {
+      "t": 250,
+      "live": 245605,
+      "arcLive": 0,
+      "freeEnds": 62034,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 5235
+    },
+    {
+      "t": 251,
+      "live": 245834,
+      "arcLive": 0,
+      "freeEnds": 61988,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 4984
+    },
+    {
+      "t": 252,
+      "live": 245804,
+      "arcLive": 0,
+      "freeEnds": 61874,
+      "maxCycle": 7,
+      "nCycles": 14,
+      "srcQ": 5499
+    },
+    {
+      "t": 253,
+      "live": 245450,
+      "arcLive": 0,
+      "freeEnds": 62162,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5217
+    },
+    {
+      "t": 254,
+      "live": 245653,
+      "arcLive": 0,
+      "freeEnds": 62040,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5359
+    },
+    {
+      "t": 255,
+      "live": 245481,
+      "arcLive": 0,
+      "freeEnds": 62134,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5308
+    },
+    {
+      "t": 256,
+      "live": 245598,
+      "arcLive": 0,
+      "freeEnds": 62066,
+      "maxCycle": 3,
+      "nCycles": 4,
+      "srcQ": 5076
+    },
+    {
+      "t": 257,
+      "live": 246011,
+      "arcLive": 0,
+      "freeEnds": 61981,
+      "maxCycle": 3,
+      "nCycles": 11,
+      "srcQ": 5362
+    },
+    {
+      "t": 258,
+      "live": 245925,
+      "arcLive": 0,
+      "freeEnds": 61938,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5269
+    },
+    {
+      "t": 259,
+      "live": 245788,
+      "arcLive": 0,
+      "freeEnds": 61854,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 5173
+    },
+    {
+      "t": 260,
+      "live": 245950,
+      "arcLive": 0,
+      "freeEnds": 62156,
+      "maxCycle": 6,
+      "nCycles": 12,
+      "srcQ": 5051
+    },
+    {
+      "t": 261,
+      "live": 245852,
+      "arcLive": 0,
+      "freeEnds": 61986,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5335
+    },
+    {
+      "t": 262,
+      "live": 246055,
+      "arcLive": 0,
+      "freeEnds": 61791,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 4836
+    },
+    {
+      "t": 263,
+      "live": 245549,
+      "arcLive": 0,
+      "freeEnds": 61459,
+      "maxCycle": 7,
+      "nCycles": 9,
+      "srcQ": 5108
+    },
+    {
+      "t": 264,
+      "live": 245300,
+      "arcLive": 0,
+      "freeEnds": 61740,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5029
+    },
+    {
+      "t": 265,
+      "live": 245454,
+      "arcLive": 0,
+      "freeEnds": 61668,
+      "maxCycle": 4,
+      "nCycles": 14,
+      "srcQ": 5561
+    },
+    {
+      "t": 266,
+      "live": 245491,
+      "arcLive": 0,
+      "freeEnds": 61772,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5500
+    },
+    {
+      "t": 267,
+      "live": 245171,
+      "arcLive": 0,
+      "freeEnds": 61779,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5484
+    },
+    {
+      "t": 268,
+      "live": 245437,
+      "arcLive": 0,
+      "freeEnds": 61801,
+      "maxCycle": 5,
+      "nCycles": 7,
+      "srcQ": 5254
+    },
+    {
+      "t": 269,
+      "live": 245314,
+      "arcLive": 0,
+      "freeEnds": 61770,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 5145
+    },
+    {
+      "t": 270,
+      "live": 245598,
+      "arcLive": 0,
+      "freeEnds": 61706,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 4859
+    },
+    {
+      "t": 271,
+      "live": 245581,
+      "arcLive": 0,
+      "freeEnds": 61512,
+      "maxCycle": 3,
+      "nCycles": 8,
+      "srcQ": 5310
+    },
+    {
+      "t": 272,
+      "live": 245379,
+      "arcLive": 0,
+      "freeEnds": 61586,
+      "maxCycle": 5,
+      "nCycles": 6,
+      "srcQ": 4769
+    },
+    {
+      "t": 273,
+      "live": 245243,
+      "arcLive": 0,
+      "freeEnds": 61673,
+      "maxCycle": 6,
+      "nCycles": 14,
+      "srcQ": 5613
+    },
+    {
+      "t": 274,
+      "live": 245334,
+      "arcLive": 0,
+      "freeEnds": 61847,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 5708
+    },
+    {
+      "t": 275,
+      "live": 245124,
+      "arcLive": 0,
+      "freeEnds": 62068,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5287
+    },
+    {
+      "t": 276,
+      "live": 245005,
+      "arcLive": 0,
+      "freeEnds": 62340,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5232
+    },
+    {
+      "t": 277,
+      "live": 245038,
+      "arcLive": 0,
+      "freeEnds": 62186,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5253
+    },
+    {
+      "t": 278,
+      "live": 244993,
+      "arcLive": 0,
+      "freeEnds": 62282,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5225
+    },
+    {
+      "t": 279,
+      "live": 244736,
+      "arcLive": 0,
+      "freeEnds": 62159,
+      "maxCycle": 10,
+      "nCycles": 9,
+      "srcQ": 5248
+    },
+    {
+      "t": 280,
+      "live": 244602,
+      "arcLive": 0,
+      "freeEnds": 62198,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4922
+    },
+    {
+      "t": 281,
+      "live": 244753,
+      "arcLive": 0,
+      "freeEnds": 62428,
+      "maxCycle": 4,
+      "nCycles": 3,
+      "srcQ": 5042
+    },
+    {
+      "t": 282,
+      "live": 244857,
+      "arcLive": 0,
+      "freeEnds": 62376,
+      "maxCycle": 5,
+      "nCycles": 14,
+      "srcQ": 5412
+    },
+    {
+      "t": 283,
+      "live": 244862,
+      "arcLive": 0,
+      "freeEnds": 62290,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4887
+    },
+    {
+      "t": 284,
+      "live": 244783,
+      "arcLive": 0,
+      "freeEnds": 62269,
+      "maxCycle": 6,
+      "nCycles": 9,
+      "srcQ": 5099
+    },
+    {
+      "t": 285,
+      "live": 244788,
+      "arcLive": 0,
+      "freeEnds": 62433,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4830
+    },
+    {
+      "t": 286,
+      "live": 245018,
+      "arcLive": 0,
+      "freeEnds": 62508,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4835
+    },
+    {
+      "t": 287,
+      "live": 244951,
+      "arcLive": 0,
+      "freeEnds": 62693,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 4694
+    },
+    {
+      "t": 288,
+      "live": 245007,
+      "arcLive": 0,
+      "freeEnds": 62749,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5129
+    },
+    {
+      "t": 289,
+      "live": 245111,
+      "arcLive": 0,
+      "freeEnds": 62678,
+      "maxCycle": 6,
+      "nCycles": 15,
+      "srcQ": 4923
+    },
+    {
+      "t": 290,
+      "live": 245349,
+      "arcLive": 0,
+      "freeEnds": 62582,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4857
+    },
+    {
+      "t": 291,
+      "live": 245390,
+      "arcLive": 0,
+      "freeEnds": 62365,
+      "maxCycle": 4,
+      "nCycles": 15,
+      "srcQ": 4997
+    },
+    {
+      "t": 292,
+      "live": 245233,
+      "arcLive": 0,
+      "freeEnds": 62570,
+      "maxCycle": 6,
+      "nCycles": 7,
+      "srcQ": 4824
+    },
+    {
+      "t": 293,
+      "live": 245193,
+      "arcLive": 0,
+      "freeEnds": 62614,
+      "maxCycle": 3,
+      "nCycles": 12,
+      "srcQ": 4624
+    },
+    {
+      "t": 294,
+      "live": 245076,
+      "arcLive": 0,
+      "freeEnds": 62715,
+      "maxCycle": 6,
+      "nCycles": 18,
+      "srcQ": 5219
+    },
+    {
+      "t": 295,
+      "live": 245198,
+      "arcLive": 0,
+      "freeEnds": 62616,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5248
+    },
+    {
+      "t": 296,
+      "live": 245239,
+      "arcLive": 0,
+      "freeEnds": 62688,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4968
+    },
+    {
+      "t": 297,
+      "live": 245628,
+      "arcLive": 0,
+      "freeEnds": 62368,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4673
+    },
+    {
+      "t": 298,
+      "live": 245688,
+      "arcLive": 0,
+      "freeEnds": 62425,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 5040
+    },
+    {
+      "t": 299,
+      "live": 245887,
+      "arcLive": 0,
+      "freeEnds": 62635,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4745
+    },
+    {
+      "t": 300,
+      "live": 245875,
+      "arcLive": 0,
+      "freeEnds": 62633,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 5203
+    },
+    {
+      "t": 301,
+      "live": 245857,
+      "arcLive": 0,
+      "freeEnds": 62440,
+      "maxCycle": 3,
+      "nCycles": 13,
+      "srcQ": 4754
+    },
+    {
+      "t": 302,
+      "live": 245738,
+      "arcLive": 0,
+      "freeEnds": 62316,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5169
+    },
+    {
+      "t": 303,
+      "live": 245685,
+      "arcLive": 0,
+      "freeEnds": 62265,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5193
+    },
+    {
+      "t": 304,
+      "live": 245698,
+      "arcLive": 0,
+      "freeEnds": 62116,
+      "maxCycle": 12,
+      "nCycles": 12,
+      "srcQ": 5311
+    },
+    {
+      "t": 305,
+      "live": 245801,
+      "arcLive": 0,
+      "freeEnds": 62043,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 5206
+    },
+    {
+      "t": 306,
+      "live": 245812,
+      "arcLive": 0,
+      "freeEnds": 62104,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4963
+    },
+    {
+      "t": 307,
+      "live": 245729,
+      "arcLive": 0,
+      "freeEnds": 62280,
+      "maxCycle": 6,
+      "nCycles": 7,
+      "srcQ": 4947
+    },
+    {
+      "t": 308,
+      "live": 245868,
+      "arcLive": 0,
+      "freeEnds": 61997,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 4622
+    },
+    {
+      "t": 309,
+      "live": 245938,
+      "arcLive": 0,
+      "freeEnds": 62419,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4913
+    },
+    {
+      "t": 310,
+      "live": 246171,
+      "arcLive": 0,
+      "freeEnds": 62287,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4465
+    },
+    {
+      "t": 311,
+      "live": 246177,
+      "arcLive": 0,
+      "freeEnds": 62199,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 4840
+    },
+    {
+      "t": 312,
+      "live": 246090,
+      "arcLive": 0,
+      "freeEnds": 62118,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4284
+    },
+    {
+      "t": 313,
+      "live": 245971,
+      "arcLive": 0,
+      "freeEnds": 61891,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 4778
+    },
+    {
+      "t": 314,
+      "live": 245891,
+      "arcLive": 0,
+      "freeEnds": 61839,
+      "maxCycle": 4,
+      "nCycles": 15,
+      "srcQ": 4707
+    },
+    {
+      "t": 315,
+      "live": 245877,
+      "arcLive": 0,
+      "freeEnds": 61750,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4900
+    },
+    {
+      "t": 316,
+      "live": 246001,
+      "arcLive": 0,
+      "freeEnds": 62040,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4641
+    },
+    {
+      "t": 317,
+      "live": 246125,
+      "arcLive": 0,
+      "freeEnds": 61688,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5076
+    },
+    {
+      "t": 318,
+      "live": 246189,
+      "arcLive": 0,
+      "freeEnds": 61824,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5005
+    },
+    {
+      "t": 319,
+      "live": 246250,
+      "arcLive": 0,
+      "freeEnds": 61658,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5187
+    },
+    {
+      "t": 320,
+      "live": 246728,
+      "arcLive": 0,
+      "freeEnds": 61649,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4657
+    },
+    {
+      "t": 321,
+      "live": 246618,
+      "arcLive": 0,
+      "freeEnds": 61577,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 4969
+    },
+    {
+      "t": 322,
+      "live": 246548,
+      "arcLive": 0,
+      "freeEnds": 61753,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4675
+    },
+    {
+      "t": 323,
+      "live": 246541,
+      "arcLive": 0,
+      "freeEnds": 61831,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 4959
+    },
+    {
+      "t": 324,
+      "live": 246362,
+      "arcLive": 0,
+      "freeEnds": 61905,
+      "maxCycle": 5,
+      "nCycles": 11,
+      "srcQ": 5207
+    },
+    {
+      "t": 325,
+      "live": 246408,
+      "arcLive": 0,
+      "freeEnds": 61916,
+      "maxCycle": 3,
+      "nCycles": 4,
+      "srcQ": 5441
+    },
+    {
+      "t": 326,
+      "live": 246232,
+      "arcLive": 0,
+      "freeEnds": 61708,
+      "maxCycle": 6,
+      "nCycles": 11,
+      "srcQ": 5121
+    },
+    {
+      "t": 327,
+      "live": 246273,
+      "arcLive": 0,
+      "freeEnds": 61877,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5353
+    },
+    {
+      "t": 328,
+      "live": 246429,
+      "arcLive": 0,
+      "freeEnds": 61920,
+      "maxCycle": 6,
+      "nCycles": 5,
+      "srcQ": 4876
+    },
+    {
+      "t": 329,
+      "live": 246369,
+      "arcLive": 0,
+      "freeEnds": 61760,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 5399
+    },
+    {
+      "t": 330,
+      "live": 246107,
+      "arcLive": 0,
+      "freeEnds": 61951,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5185
+    },
+    {
+      "t": 331,
+      "live": 246222,
+      "arcLive": 0,
+      "freeEnds": 61941,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5342
+    },
+    {
+      "t": 332,
+      "live": 246037,
+      "arcLive": 0,
+      "freeEnds": 62094,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5132
+    },
+    {
+      "t": 333,
+      "live": 246212,
+      "arcLive": 0,
+      "freeEnds": 62042,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 5400
+    },
+    {
+      "t": 334,
+      "live": 246029,
+      "arcLive": 0,
+      "freeEnds": 62016,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5307
+    },
+    {
+      "t": 335,
+      "live": 245825,
+      "arcLive": 0,
+      "freeEnds": 62194,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5248
+    },
+    {
+      "t": 336,
+      "live": 245664,
+      "arcLive": 0,
+      "freeEnds": 62154,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4976
+    },
+    {
+      "t": 337,
+      "live": 245765,
+      "arcLive": 0,
+      "freeEnds": 61935,
+      "maxCycle": 3,
+      "nCycles": 5,
+      "srcQ": 5219
+    },
+    {
+      "t": 338,
+      "live": 245666,
+      "arcLive": 0,
+      "freeEnds": 62195,
+      "maxCycle": 5,
+      "nCycles": 15,
+      "srcQ": 4922
+    },
+    {
+      "t": 339,
+      "live": 245852,
+      "arcLive": 0,
+      "freeEnds": 61899,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5170
+    },
+    {
+      "t": 340,
+      "live": 245913,
+      "arcLive": 0,
+      "freeEnds": 61821,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5000
+    },
+    {
+      "t": 341,
+      "live": 245719,
+      "arcLive": 0,
+      "freeEnds": 61728,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 5353
+    },
+    {
+      "t": 342,
+      "live": 245669,
+      "arcLive": 0,
+      "freeEnds": 61866,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5054
+    },
+    {
+      "t": 343,
+      "live": 245770,
+      "arcLive": 0,
+      "freeEnds": 62107,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5326
+    },
+    {
+      "t": 344,
+      "live": 245400,
+      "arcLive": 0,
+      "freeEnds": 62093,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 4766
+    },
+    {
+      "t": 345,
+      "live": 245341,
+      "arcLive": 0,
+      "freeEnds": 62184,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4743
+    },
+    {
+      "t": 346,
+      "live": 245542,
+      "arcLive": 0,
+      "freeEnds": 62182,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5054
+    },
+    {
+      "t": 347,
+      "live": 245733,
+      "arcLive": 0,
+      "freeEnds": 62001,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 4691
+    },
+    {
+      "t": 348,
+      "live": 245741,
+      "arcLive": 0,
+      "freeEnds": 61795,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4911
+    },
+    {
+      "t": 349,
+      "live": 245753,
+      "arcLive": 0,
+      "freeEnds": 62136,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5040
+    },
+    {
+      "t": 350,
+      "live": 246044,
+      "arcLive": 0,
+      "freeEnds": 62311,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5264
+    },
+    {
+      "t": 351,
+      "live": 246279,
+      "arcLive": 0,
+      "freeEnds": 61828,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 5079
+    },
+    {
+      "t": 352,
+      "live": 245942,
+      "arcLive": 0,
+      "freeEnds": 62029,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 4957
+    },
+    {
+      "t": 353,
+      "live": 245828,
+      "arcLive": 0,
+      "freeEnds": 61912,
+      "maxCycle": 5,
+      "nCycles": 10,
+      "srcQ": 4807
+    },
+    {
+      "t": 354,
+      "live": 245595,
+      "arcLive": 0,
+      "freeEnds": 61764,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 5128
+    },
+    {
+      "t": 355,
+      "live": 245441,
+      "arcLive": 0,
+      "freeEnds": 61684,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4665
+    },
+    {
+      "t": 356,
+      "live": 245225,
+      "arcLive": 0,
+      "freeEnds": 61765,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4591
+    },
+    {
+      "t": 357,
+      "live": 245061,
+      "arcLive": 0,
+      "freeEnds": 61422,
+      "maxCycle": 5,
+      "nCycles": 5,
+      "srcQ": 4949
+    },
+    {
+      "t": 358,
+      "live": 244933,
+      "arcLive": 0,
+      "freeEnds": 61551,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4530
+    },
+    {
+      "t": 359,
+      "live": 244676,
+      "arcLive": 0,
+      "freeEnds": 61715,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 4617
+    },
+    {
+      "t": 360,
+      "live": 244948,
+      "arcLive": 0,
+      "freeEnds": 61604,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 4516
+    },
+    {
+      "t": 361,
+      "live": 244770,
+      "arcLive": 0,
+      "freeEnds": 61796,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5067
+    },
+    {
+      "t": 362,
+      "live": 244774,
+      "arcLive": 0,
+      "freeEnds": 61630,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4763
+    },
+    {
+      "t": 363,
+      "live": 244768,
+      "arcLive": 0,
+      "freeEnds": 61339,
+      "maxCycle": 6,
+      "nCycles": 14,
+      "srcQ": 5003
+    },
+    {
+      "t": 364,
+      "live": 244423,
+      "arcLive": 0,
+      "freeEnds": 61646,
+      "maxCycle": 3,
+      "nCycles": 13,
+      "srcQ": 4880
+    },
+    {
+      "t": 365,
+      "live": 244579,
+      "arcLive": 0,
+      "freeEnds": 61969,
+      "maxCycle": 4,
+      "nCycles": 12,
+      "srcQ": 4877
+    },
+    {
+      "t": 366,
+      "live": 244622,
+      "arcLive": 0,
+      "freeEnds": 61693,
+      "maxCycle": 3,
+      "nCycles": 10,
+      "srcQ": 4943
+    },
+    {
+      "t": 367,
+      "live": 244539,
+      "arcLive": 0,
+      "freeEnds": 61664,
+      "maxCycle": 4,
+      "nCycles": 6,
+      "srcQ": 4827
+    },
+    {
+      "t": 368,
+      "live": 244573,
+      "arcLive": 0,
+      "freeEnds": 61963,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4773
+    },
+    {
+      "t": 369,
+      "live": 244769,
+      "arcLive": 0,
+      "freeEnds": 61720,
+      "maxCycle": 3,
+      "nCycles": 4,
+      "srcQ": 4994
+    },
+    {
+      "t": 370,
+      "live": 244581,
+      "arcLive": 0,
+      "freeEnds": 61673,
+      "maxCycle": 3,
+      "nCycles": 7,
+      "srcQ": 4970
+    },
+    {
+      "t": 371,
+      "live": 244237,
+      "arcLive": 0,
+      "freeEnds": 61713,
+      "maxCycle": 4,
+      "nCycles": 7,
+      "srcQ": 4840
+    },
+    {
+      "t": 372,
+      "live": 244257,
+      "arcLive": 0,
+      "freeEnds": 61705,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 4593
+    },
+    {
+      "t": 373,
+      "live": 244040,
+      "arcLive": 0,
+      "freeEnds": 61666,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 5223
+    },
+    {
+      "t": 374,
+      "live": 243808,
+      "arcLive": 0,
+      "freeEnds": 62122,
+      "maxCycle": 5,
+      "nCycles": 12,
+      "srcQ": 4935
+    },
+    {
+      "t": 375,
+      "live": 243897,
+      "arcLive": 0,
+      "freeEnds": 62106,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5045
+    },
+    {
+      "t": 376,
+      "live": 243831,
+      "arcLive": 0,
+      "freeEnds": 61922,
+      "maxCycle": 4,
+      "nCycles": 8,
+      "srcQ": 5149
+    },
+    {
+      "t": 377,
+      "live": 243796,
+      "arcLive": 0,
+      "freeEnds": 61871,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4843
+    },
+    {
+      "t": 378,
+      "live": 243614,
+      "arcLive": 0,
+      "freeEnds": 62198,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5169
+    },
+    {
+      "t": 379,
+      "live": 243735,
+      "arcLive": 0,
+      "freeEnds": 62058,
+      "maxCycle": 3,
+      "nCycles": 6,
+      "srcQ": 4782
+    },
+    {
+      "t": 380,
+      "live": 243631,
+      "arcLive": 0,
+      "freeEnds": 62093,
+      "maxCycle": 4,
+      "nCycles": 10,
+      "srcQ": 5347
+    },
+    {
+      "t": 381,
+      "live": 243371,
+      "arcLive": 0,
+      "freeEnds": 62340,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 4807
+    },
+    {
+      "t": 382,
+      "live": 243473,
+      "arcLive": 0,
+      "freeEnds": 62488,
+      "maxCycle": 5,
+      "nCycles": 8,
+      "srcQ": 5369
+    },
+    {
+      "t": 383,
+      "live": 243253,
+      "arcLive": 0,
+      "freeEnds": 62850,
+      "maxCycle": 4,
+      "nCycles": 5,
+      "srcQ": 5161
+    },
+    {
+      "t": 384,
+      "live": 243532,
+      "arcLive": 0,
+      "freeEnds": 62886,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 5473
+    },
+    {
+      "t": 385,
+      "live": 243617,
+      "arcLive": 0,
+      "freeEnds": 62662,
+      "maxCycle": 7,
+      "nCycles": 15,
+      "srcQ": 4960
+    },
+    {
+      "t": 386,
+      "live": 243698,
+      "arcLive": 0,
+      "freeEnds": 62306,
+      "maxCycle": 3,
+      "nCycles": 10,
+      "srcQ": 5516
+    },
+    {
+      "t": 387,
+      "live": 243746,
+      "arcLive": 0,
+      "freeEnds": 62428,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5139
+    },
+    {
+      "t": 388,
+      "live": 243800,
+      "arcLive": 0,
+      "freeEnds": 62414,
+      "maxCycle": 3,
+      "nCycles": 9,
+      "srcQ": 5478
+    },
+    {
+      "t": 389,
+      "live": 243765,
+      "arcLive": 0,
+      "freeEnds": 62494,
+      "maxCycle": 5,
+      "nCycles": 9,
+      "srcQ": 5174
+    },
+    {
+      "t": 390,
+      "live": 243904,
+      "arcLive": 0,
+      "freeEnds": 62296,
+      "maxCycle": 4,
+      "nCycles": 13,
+      "srcQ": 5400
+    },
+    {
+      "t": 391,
+      "live": 243826,
+      "arcLive": 0,
+      "freeEnds": 62521,
+      "maxCycle": 8,
+      "nCycles": 13,
+      "srcQ": 5490
+    },
+    {
+      "t": 392,
+      "live": 244158,
+      "arcLive": 0,
+      "freeEnds": 62193,
+      "maxCycle": 6,
+      "nCycles": 5,
+      "srcQ": 5749
+    },
+    {
+      "t": 393,
+      "live": 244353,
+      "arcLive": 0,
+      "freeEnds": 62346,
+      "maxCycle": 4,
+      "nCycles": 11,
+      "srcQ": 5073
+    },
+    {
+      "t": 394,
+      "live": 244477,
+      "arcLive": 0,
+      "freeEnds": 62220,
+      "maxCycle": 6,
+      "nCycles": 15,
+      "srcQ": 5278
+    },
+    {
+      "t": 395,
+      "live": 244723,
+      "arcLive": 0,
+      "freeEnds": 62256,
+      "maxCycle": 6,
+      "nCycles": 11,
+      "srcQ": 4863
+    },
+    {
+      "t": 396,
+      "live": 244918,
+      "arcLive": 0,
+      "freeEnds": 62252,
+      "maxCycle": 5,
+      "nCycles": 13,
+      "srcQ": 5211
+    },
+    {
+      "t": 397,
+      "live": 244896,
+      "arcLive": 0,
+      "freeEnds": 62175,
+      "maxCycle": 7,
+      "nCycles": 7,
+      "srcQ": 4804
+    },
+    {
+      "t": 398,
+      "live": 244773,
+      "arcLive": 0,
+      "freeEnds": 62085,
+      "maxCycle": 6,
+      "nCycles": 10,
+      "srcQ": 5368
+    },
+    {
+      "t": 399,
+      "live": 244909,
+      "arcLive": 0,
+      "freeEnds": 62223,
+      "maxCycle": 4,
+      "nCycles": 9,
+      "srcQ": 5205
+    }
+  ]
+}

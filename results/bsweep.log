@@ -1,0 +1,132 @@
+
+collide: bsweep_b02 256x256x256 axis 0 dir (1.00,0.00,0.00) b=2 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@64,128,128 (20952 cells)  B=hopfion_32_8@192,126,128 (20952 cells)  walls 65536+65536
+  t0: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t750: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t800: gap=128.02 merged=false live=41904 A=20952/20952 B=20952/20952
+  t850: gap=125.94 merged=false live=40871 A=20952/20952 B=19563/20952
+  t900: gap=110.58 merged=false live=37910 A=20949/20952 B=10726/20952
+  t950: gap=123.76 merged=false live=37808 A=17068/20952 B=1843/20952
+  t999: gap=110.9 merged=false live=40320 A=5991/20952 B=886/20952
+
+  S-MATRIX bsweep_b02: DEGRADED — retain A=0.29 B=0.04 mass 2514240→1371385 in 4652s
+
+collide: bsweep_b04 256x256x256 axis 0 dir (1.00,0.00,0.00) b=4 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@64,128,128 (20952 cells)  B=hopfion_32_8@192,124,128 (20952 cells)  walls 65536+65536
+  t0: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t750: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t800: gap=128.06 merged=false live=41904 A=20952/20952 B=20952/20952
+  t850: gap=126 merged=false live=40871 A=20952/20952 B=19563/20952
+  t900: gap=110.71 merged=false live=37906 A=20940/20952 B=10726/20952
+  t950: gap=121.67 merged=false live=36884 A=14953/20952 B=1843/20952
+  t999: gap=133.45 merged=false live=40782 A=2/20952 B=886/20952
+
+  S-MATRIX bsweep_b04: DEGRADED — retain A=0.00 B=0.04 mass 2514240→1326574 in 6064s
+
+collide: bsweep_b08 256x256x256 axis 0 dir (1.00,0.00,0.00) b=8 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@64,128,128 (20952 cells)  B=hopfion_32_8@192,120,128 (20952 cells)  walls 65536+65536
+  t0: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t750: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t800: gap=128.25 merged=false live=41904 A=20952/20952 B=20952/20952
+  t850: gap=126.21 merged=false live=40871 A=20952/20952 B=19563/20952
+  t900: gap=110.99 merged=false live=37871 A=20873/20952 B=10726/20952
+  t950: gap=119.65 merged=false live=37088 A=14518/20952 B=1843/20952
+  t999: gap=128.46 merged=false live=40452 A=18/20952 B=886/20952
+
+  S-MATRIX bsweep_b08: DEGRADED — retain A=0.00 B=0.04 mass 2514240→1292084 in 5999s
+
+collide: bsweep_b12 256x256x256 axis 0 dir (1.00,0.00,0.00) b=12 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@64,128,128 (20952 cells)  B=hopfion_32_8@192,116,128 (20952 cells)  walls 65536+65536
+  t0: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t750: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t800: gap=128.56 merged=false live=41904 A=20952/20952 B=20952/20952
+  t850: gap=126.55 merged=false live=40871 A=20952/20952 B=19563/20952
+  t900: gap=111.02 merged=false live=37612 A=20562/20952 B=10726/20952
+  t950: gap=119.95 merged=false live=36724 A=13239/20952 B=1843/20952
+  t999: gap=127.07 merged=false live=41754 A=3068/20952 B=885/20952
+
+  S-MATRIX bsweep_b12: DEGRADED — retain A=0.15 B=0.04 mass 2514240→1249590 in 3446s
+
+collide: symmetric_swapped 256x256x256 axis 3 dir (-1.00,0.00,0.00) b=0 sep=64 pinch={"type":"adsr","peak":20,"attack":50,"sustain":800,"release":150}
+  A=hopfion_32_8@192,128,128 (20952 cells)  B=hopfion_32_8@64,128,128 (20952 cells)  walls 65536+65536
+  t0: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t50: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t100: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t150: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t200: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t250: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t300: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t350: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t400: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t450: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t500: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t550: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t600: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t650: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t700: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t750: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t800: gap=128 merged=false live=41904 A=20952/20952 B=20952/20952
+  t850: gap=125.92 merged=false live=40871 A=19563/20952 B=20952/20952
+  t900: gap=110.48 merged=false live=37910 A=10726/20952 B=20951/20952
+  t950: gap=121.77 merged=false live=37463 A=1843/20952 B=15975/20952
+  t999: gap=119.96 merged=false live=39988 A=886/20952 B=3/20952
+
+  S-MATRIX symmetric_swapped: DEGRADED — retain A=0.04 B=0.00 mass 2514240→1330886 in 2904s
+
+8 scenarios → C:\src\github.com\nater0000\open-universe\logs\collide-results.json

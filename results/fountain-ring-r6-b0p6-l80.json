@@ -1,0 +1,373 @@
+{
+  "mode": "ring",
+  "seed": null,
+  "arcFrac": null,
+  "dims": [
+    40,
+    40,
+    20
+  ],
+  "ticks": 30,
+  "diss": 15,
+  "limit": 50000,
+  "level": 80,
+  "sync": 0,
+  "foam": null,
+  "pinch": null,
+  "ptension": null,
+  "ring": {
+    "radius": 6,
+    "count": 12,
+    "bias": 0.6
+  },
+  "cycles": [],
+  "arcLen": 0,
+  "sources": [
+    [
+      26,
+      20,
+      5,
+      8
+    ],
+    [
+      24,
+      23,
+      5,
+      8
+    ],
+    [
+      21,
+      25,
+      5,
+      8
+    ],
+    [
+      17,
+      26,
+      5,
+      4
+    ],
+    [
+      15,
+      25,
+      5,
+      9
+    ],
+    [
+      13,
+      23,
+      5,
+      9
+    ],
+    [
+      14,
+      20,
+      5,
+      9
+    ],
+    [
+      16,
+      17,
+      5,
+      6
+    ],
+    [
+      19,
+      15,
+      5,
+      7
+    ],
+    [
+      23,
+      14,
+      5,
+      1
+    ],
+    [
+      26,
+      15,
+      5,
+      7
+    ],
+    [
+      27,
+      17,
+      5,
+      2
+    ]
+  ],
+  "tNucleate": -1,
+  "ms": 266,
+  "series": [
+    {
+      "t": 0,
+      "live": 12,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 1,
+      "live": 24,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 2,
+      "live": 36,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 3,
+      "live": 48,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 4,
+      "live": 60,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 5,
+      "live": 72,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 6,
+      "live": 84,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 7,
+      "live": 96,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 8,
+      "live": 108,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 9,
+      "live": 120,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 10,
+      "live": 132,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 11,
+      "live": 144,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 12,
+      "live": 156,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 13,
+      "live": 168,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 14,
+      "live": 172,
+      "arcLive": 0,
+      "freeEnds": 4,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 15,
+      "live": 176,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 16,
+      "live": 180,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 17,
+      "live": 176,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 18,
+      "live": 172,
+      "arcLive": 0,
+      "freeEnds": 12,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 19,
+      "live": 176,
+      "arcLive": 0,
+      "freeEnds": 20,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 20,
+      "live": 180,
+      "arcLive": 0,
+      "freeEnds": 28,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 21,
+      "live": 184,
+      "arcLive": 0,
+      "freeEnds": 36,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 22,
+      "live": 188,
+      "arcLive": 0,
+      "freeEnds": 44,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 23,
+      "live": 192,
+      "arcLive": 0,
+      "freeEnds": 51,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 24,
+      "live": 195,
+      "arcLive": 0,
+      "freeEnds": 59,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 25,
+      "live": 198,
+      "arcLive": 0,
+      "freeEnds": 67,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 26,
+      "live": 201,
+      "arcLive": 0,
+      "freeEnds": 75,
+      "maxCycle": 2,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 27,
+      "live": 204,
+      "arcLive": 0,
+      "freeEnds": 91,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 0
+    },
+    {
+      "t": 28,
+      "live": 215,
+      "arcLive": 0,
+      "freeEnds": 99,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 1920
+    },
+    {
+      "t": 29,
+      "live": 218,
+      "arcLive": 0,
+      "freeEnds": 106,
+      "maxCycle": 0,
+      "nCycles": 0,
+      "srcQ": 760
+    }
+  ]
+}

@@ -10,11 +10,11 @@ audio: /audio/math.mp3
 
 For centuries, legacy physics has used differential calculus to model reality, relying on the assumption that space and time can be divided into infinitely small fractions until the distance between two points effectively becomes zero. But this continuous "real number line" is a macroscopic delusion, and calculus is merely a fuzzy approximation of a fundamentally discrete reality. 
 
-In the Planck Field, $\Delta x$ and $\Delta t$ can never reach zero. The universe has a hard resolution limit, and every single step across that limit requires a physical, thermodynamic exertion. Geometry is not the physical structure of the universe; it is a relational tool of information generation—a biological sensory compression. The universe does not calculate geometry; it resolves thermodynamic gradients across a discrete topological network.
+In the Planck Field, $\Delta x$ and $\Delta t$ can never reach zero. The universe has a hard resolution limit, and every single step across that limit requires a physical, thermodynamic exertion. Geometry is not the physical structure of the universe; it is a relational tool of information generation: a biological sensory compression. The universe does not calculate geometry; it resolves thermodynamic gradients across a discrete topological network.
 
 When quantum mathematicians rely on continuous Hilbert spaces and smooth differential equations, they model discrete hardware using the compressed sensory dashboard of the biological interface. To bridge this gap, we must replace continuous geometric operators with discrete network constraints. 
 
-The reduced Planck constant is the canonical example of this compression. In the legacy reading, $\hbar$ is a uniform "blur factor" painted across smooth space. In the discrete substrate it is a **conversion constant** — the exchange rate between continuous macroscopic observation and the discrete hop rate of the underlying lattice. It only *appears* flat because every macroscopic measurement averages over billions of unencumbered vacuum hops; where the substrate is loaded, the effective conversion bends. The constant is not a property of space — it is the price of coarse-graining it.
+The reduced Planck constant is the canonical example of this compression. In the legacy reading, $\hbar$ is a uniform "blur factor" painted across smooth space. In the discrete substrate it is a **conversion constant**: the exchange rate between continuous macroscopic observation and the discrete hop rate of the underlying lattice. It only *appears* flat because every macroscopic measurement averages over billions of unencumbered vacuum hops; where the substrate is loaded, the effective conversion bends. The constant is not a property of space: it is the price of coarse-graining it.
 
 ## The Death of the Continuous Derivative
 
@@ -54,7 +54,7 @@ Where $C_{a,b}$ is the chiral interference coefficient between two specific port
 ### 3. The Thermal Limit ($H_{max}$) and Deadlock Capacity
 The physical constants of the universe are not arbitrary magic numbers; they are the literal integer buffer limits of a single Planck node.
 
-*   **`DEADLOCK_QUANTA` ($Q_{max}$):** The occupancy threshold ($q + b > 200$, resident plus staged in-flight mass) at which a node's port hard-refuses incoming traffic — the routing-table expression of exclusion. (Distinct from `FLOW_CAP` = 160, the per-tick relay bandwidth.)
+*   **`DEADLOCK_QUANTA` ($Q_{max}$):** The occupancy threshold ($q + b > 200$, resident plus staged in-flight mass) at which a node's port hard-refuses incoming traffic, the routing-table expression of exclusion. (Distinct from `FLOW_CAP` = 160, the per-tick relay bandwidth.)
 *   **`THERMAL_LIMIT` ($H_{max}$):** The absolute maximum phase friction a node can sustain before computational failure. 
 
 Gravity and ambient environmental tension act as a baseline friction floor ($h_{ambient}$). Therefore, the available stability threshold for any topological structure is strictly:
@@ -68,7 +68,7 @@ If the accumulated phase friction of a localized topological loop exceeds the ha
 
 $$h_i + \Delta h_i \ge H_{max}$$
 
-The Transition Operator mathematically cannot resolve the traffic matrix. The buffer overflows. The node violently zeroes out its phase-locked state, shedding the trapped traffic outward into its 12 neighbors as linear, un-anchored propagating tension (Missing Transverse Energy, or MET). 
+The Transition Operator mathematically cannot resolve the traffic matrix. The buffer overflows. The node violently zeroes out its phase-locked state, shedding the trapped traffic outward into its 12 neighbors as linear, un-anchored propagating tension. 
 
 $$q_{out} = \frac{q_i}{12} \quad \text{propagating at velocity } c$$
 
@@ -115,80 +115,33 @@ $$D_{net}(A, B) \propto \Phi(A, B) + Impedance(A, B)$$
 If the phase friction between two entangled nodes is zero, their network distance is zero. They share a direct network edge on the fundamental discrete substrate. Emergent 3D spatial separation does not dictate fundamental network adjacency.
 
 ### 6. Quantum Tunneling $\to$ Network Leakage
-An electron *in transit* — unbound flux between knots — is not a solid bullet; it is a wave of un-actualized relational potential, and an electromagnetic barrier is simply a localized zone of high relational resistance. When the potential wave hits this resistance zone, its probability amplitude decays exponentially. A fraction bleeds past the boundary because the network is porous. We replace the geometric tunneling probability ($T \approx e^{-2\gamma a}$) with a threshold actualization of network leakage:
+An electron *in transit*, unbound flux between knots, is not a solid bullet; it is a wave of un-actualized relational potential, and an electromagnetic barrier is simply a localized zone of high relational resistance. When the potential wave hits this resistance zone, its probability amplitude decays exponentially. A fraction bleeds past the boundary because the network is porous. We replace the geometric tunneling probability ($T \approx e^{-2\gamma a}$) with a threshold actualization of network leakage:
 $$\text{Actualize}(x) \text{ where } \min \left( \sum \text{Relational Resistance} \right) \text{ reaches } FLOW\_CAP$$
 
-*Measured constraint (harness `+seep`):* a naive per-port leakage fraction does **not** produce the exponential curve — transmission through a closed deadlocked ring is thickness-independent (a *pipeline*, not an attenuator), because a mass-conserving buffer warehouses seeped flux and forwards it at the same rate at every stage. Exponential attenuation requires **per-stage loss**: each barrier hop must thermalize a fraction of the staged flux into exhaust rather than relaying it intact. Porous barriers exist; thickness-dependent decay requires absorptive barrier nodes, which is a different mechanism.
+*Measured constraint (harness `+seep`):* a naive per-port leakage fraction does **not** produce the exponential curve. Transmission through a closed deadlocked ring is thickness-independent (a *pipeline*, not an attenuator), because a mass-conserving buffer warehouses seeped flux and forwards it at the same rate at every stage. Exponential attenuation requires **per-stage loss**: each barrier hop must thermalize a fraction of the staged flux into exhaust rather than relaying it intact. Porous barriers exist; thickness-dependent decay requires absorptive barrier nodes, which is a different mechanism.
 
 ### 7. Pauli Exclusion Principle $\to$ Node Saturation
 The Pauli Exclusion Principle states that two identical fermions cannot occupy the same quantum state simultaneously, using antisymmetric wave functions to forbid overlap. 
 
 In a discrete network, they don't overlap because a single network switch can only handle so much traffic before it drops packets. If you attempt to force two circulating topological waveguides into the exact same spatial locus, the incoming un-actualized potential ($Q_{in}$) pushes the target's occupancy past the hard refusal threshold of the local grid ($DEADLOCK\_QUANTA$). We replace the antisymmetric wave function with the hard integer limits of the hardware:
-$$\text{If } q + b > DEADLOCK\_QUANTA, \text{ the port refuses — Relational Repulsion}$$
+$$\text{If } q + b > DEADLOCK\_QUANTA, \text{ the port refuses: Relational Repulsion}$$
 
 ## Dimensionality Is a Coordination Number
 
-The engine stores its universe as a flat 1D array of nodes — "space" exists only in the adjacency table that wires each node to its routing partners. Dimensionality is therefore not a container property but a bandwidth property: it is the count of valid exit vectors per locus.
+The engine stores its universe as a flat 1D array of nodes. "space" exists only in the adjacency table that wires each node to its routing partners. Dimensionality is therefore not a container property but a bandwidth property: it is the count of valid exit vectors per locus.
 
 $$\text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;\vert{}\; 8 \text{ (Moore 2D)} \;\vert{}\; 12 \text{ (HCP)} \;\vert{}\; 14 \text{ (BCC)} \;\vert{}\; 26 \text{ (Moore 3D)}$$
 
-"Scaling the universe to 3D" is not stacking sheets; it is widening the local routing table in the same flat array. A macro-object on a 12-neighbor graph is just a denser knot resolving thermodynamic friction across more channels — and the added channels give congestion somewhere else to go, which is precisely where 3D gravity (routing overflow) would live.
+"Scaling the universe to 3D" is not stacking sheets; it is widening the local routing table in the same flat array. A macro-object on a 12-neighbor graph is just a denser knot resolving thermodynamic friction across more channels, and the added channels give congestion somewhere else to go, which is precisely where 3D gravity (routing overflow) would live.
 
 ### Universality Classes and the Mesoscale Bridge
 
-The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice (later retracted as an implementation artifact — see the [monograph](/interference/meso-monograph)):
+The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice (later retracted as an implementation artifact. See the [monograph](/interference/meso-monograph)):
 
 - **The Single-Spin Bedrock (prototype measurements):** exact mass-current conservation (`fired ≡ pulled`, M2), ballistic v=1 light-cone propagation (M4), classical Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff (M3), threshold avalanche detection (M9), and discrete timing-comb interferometry (M11).
-- **The Universality Class Boundary:** the single-spin winner-take-all constraint enforces a rigid kinematic invariant, v ∈ {0, 1} (M17). Light moves at c = 1; all bound matter (lumps, filaments, breathers, dimers) is permanently anchored at v = 0. Lacking linear field superposition and fractional coupling, the single-spin bedrock coarse-grains into an *alternate* discrete universe — not standard continuum electrodynamics.
+- **The Universality Class Boundary:** the single-spin winner-take-all constraint enforces a rigid kinematic invariant, v ∈ {0, 1} (M17). Light moves at c = 1; all bound matter (lumps, filaments, breathers, dimers) is permanently anchored at v = 0. Lacking linear field superposition and fractional coupling, the single-spin bedrock coarse-grains into an *alternate* discrete universe, not standard continuum electrodynamics.
 - **The Multi-Channel Mesoscale Specification (`meso3.c` target):** bridging the ~40-order-of-magnitude gap between Planck hops and laboratory observation requires the integer Lattice-Gas Automaton (FHP-class) universality class:
-    - **Single-ownership edge arrays** — each link stored once (or under an owner-endpoint convention), eliminating the duplicated-state reconciliation bugs the sync-mode push ledger had to fight.
-    - **Multi-channel link allocation (f₁…f₁₂)** — directional integer populations per link, permitting counter-flow and clean wave crossing without forced fusion.
-    - **Sub-hop edge residence** — flux dwelling within a link across ticks natively unlocks continuous sub-light velocity (v ∈ [0,1)) as a fractional duty cycle.
-    - **The D3Q13 isotropy bound:** the twelve single-speed FCC vectors {±1,±1,0} fail strict 4th-rank tensor isotropy (Σv_x⁴ = 8 ≠ 12 = 3Σv_x²v_y²). A rest channel (v=0) is a useful internal-clock buffer, but it contributes zero to every velocity moment — it cannot repair the tensor. Continuum rotational invariance requires multi-speed shells or verified per-channel collision weighting.
-
-## The Operational Translation Matrix
-
-To out-predict the Standard Model, we must discard its continuous geometric maps while preserving its raw experimental data. We do not need to prove the 12-port lattice disappears; we only need to prove that the lattice's discrete outputs (`quanta`, `heat`, `yield`, `deadlocks`) match the raw telemetry spitting out of CERN detectors before legacy physicists apply their spatial approximations to it.
-
-**The Local Calibration Premise:** We explicitly reject the Standard Model assumption that collider data defines "universal" objects. Because a topological knot only exists in equilibrium with its surrounding field, the resonances measured at CERN are biased by Earth's specific gravity well and ambient noise. We use CERN data strictly as *local calibration telemetry* to tune the engine to Earth's baseline tension. 
-
-Here is how particle collider observables translate directly to the `planck3.c` engine state:
-
-### 1. Invariant Mass ($GeV/c^2$) $\to$ Topological Deadlock Quanta
-* **The Raw Observable:** Colliders measure the total rest energy of a resonance peak before it shatters.
-* **The Process Translation:** In the engine, mass is not an object; it is the raw count of `quanta` trapped in a stationary routing cycle at occupancy $q + b > DEADLOCK\_QUANTA$. 
-* **Validation Status [OPEN - HIGH PRIORITY]:** We must define a particle's mass strictly by the minimum `FLOW_CAP` and `TENSION` required to force a specific nested winding (like the 19-loop Hopfion) into stable equilibrium under Earth-analog noise. 
-* **Next Step:** Run automated tuning sweeps across the 3D engine to find the exact quanta-count eigenvalues where Hopfions self-stabilize against our calibrated environmental baseline.
-
-### 2. Mean Lifetime ($\tau$) $\to$ Phase-Lock Endurance (Ticks)
-* **The Raw Observable:** The statistical half-life of a particle before it decays into lighter debris.
-* **The Process Translation:** "Decay" is topological unwinding under environmental crush. The lifetime is exactly the number of ticks a phase-locked structure can maintain its closed streamlines against ambient `heat` before a critical routing channel saturates and the knot bursts.
-* **Validation Status [OPEN - HIGH PRIORITY]:** We must sweep the `THERMAL_LIMIT` slider downward (mimicking environmental crush) on a stable Hopfion. 
-* **Next Step:** Log the exact tick count where `yield` spikes and the structure loses hydrodynamic integrity. The resulting curve of *Ticks vs. Thermal Limit* is the exact process-equivalent of a decay lifetime.
-
-### 3. Scattering Cross-Section ($\sigma$) $\to$ Shear Tolerance
-* **The Raw Observable:** The probability area that two particles will interact or deflect when fired at each other.
-* **The Process Translation:** Collisions are competing routing demands. Cross-section is the precise impact parameter (distance in nodes) where a propagating tension gradient forces a passing stream to shear its boundary layer and accrete into the knot, rather than deflecting.
-* **Validation Status [VALIDATED (2D) / OPEN (3D) - MEDIUM PRIORITY]:** The 2D harness (`hexlens` variant) natively proved this mechanism. We measured the accretion cross-section at a grazing incidence of b=25–30 nodes, where the stream sheds ~55% of its quanta into bound deadlocked cells around the well. The interaction cuts off exactly at the diffusive reach of the tension field ($\approx 35$ nodes).
-* **Next Step:** We must replicate this in 3D by firing streams at the stable Hopfion and measuring the capture cross-section vs. impact parameter in `planck3.c`. 
-
-### 4. Missing Transverse Energy (MET) $\to$ Unknotted Thermal Spray
-* **The Raw Observable:** Energy that "disappears" during a collision, which the Standard Model attributes to invisible "ghost" particles (neutrinos).
-* **The Process Translation:** When a knot breaches the thermal limit, it deletes its deadlock and sprays its `quanta` into neighbor buffers as un-actualized radiation. 
-* **Validation Status [VALIDATED]:** Measured successfully in the `+spray` engine variant. Under forced threshold crush, a dense knot sprayed 6.2 million quanta in a contagious cascade. The detonation propagates precisely because energy stays in play; conservation doesn't damp the explosion, it carries it. This raw burst of non-deadlocked, propagating density *is* the Missing Transverse Energy.
-
-## Grid Scale and Validation Requirements
-
-To validate the scattering cross-sections ($\sigma$) and MET propagation mathematically, we must consider the boundaries of the grid. 
-
-**Is the current $100 \times 100 \times 40$ (400k nodes) grid sufficient?**
-For verifying the isolated stability of a nested-loop Hopfion, yes. The current 400k node space allows an electron-scale Hopfion (torus $R_0=25$, tube $R_1=9$) to sit comfortably and maintain exact `bit-identical` stability through 400+ ticks.
-
-However, for executing the Operational Translation Matrix, **the current scale is too small.**
-* **The Diffusion Limit:** The harness probes established that the tension field ($\ell \approx \sqrt{D/\lambda}$) reaches up to 25–35 cells outward. On a $100 \times 100$ grid, a centered particle's tension field will immediately strike the boundary. 
-* **Asymptotic Freedom:** To measure scattering amplitudes accurately (the LSZ reduction equivalent), incoming streams and outgoing spray must reach an asymptotic free state where they are no longer interacting with the core knot. 
-
-**The Scaling Requirement:**
-To pull raw decay and scattering data, the simulation volume must exceed the tension diffusion reach by a significant margin ($R \gg \ell_{\text{diffusion}}$). Validating the mathematics requires stepping up to a minimum of **$256^3$ ($\approx 16.7$ million nodes)** or **$400^3$ ($64$ million nodes)**.
-
-The engine is already architected for this scale. Phase 3 verified the **chunk + halo memory architecture** (RFC-049), which resolves physical nodes in $20^3$ interior chunks surrounded by a ghost-ring. This architecture prevents cache misses, bypasses the flat-array modulo math, and runs $1.15\times$ to $1.7\times$ faster natively. The chunked architecture is the exact production path required to scale the grid up to collider-level dimensions without breaking single-thread processing limits.
+    - **Single-ownership edge arrays**: each link stored once (or under an owner-endpoint convention), eliminating the duplicated-state reconciliation bugs the sync-mode push ledger had to fight.
+    - **Multi-channel link allocation (f₁…f₁₂)**: directional integer populations per link, permitting counter-flow and clean wave crossing without forced fusion.
+    - **Sub-hop edge residence**: flux dwelling within a link across ticks natively unlocks continuous sub-light velocity (v ∈ [0,1)) as a fractional duty cycle.
+    - **The D3Q13 isotropy bound:** the twelve single-speed FCC vectors {±1,±1,0} fail strict 4th-rank tensor isotropy (Σv_x⁴ = 8 ≠ 12 = 3Σv_x²v_y²). A rest channel (v=0) is a useful internal-clock buffer, but it contributes zero to every velocity moment: it cannot repair the tensor. Continuum rotational invariance requires multi-speed shells or verified per-channel collision weighting.

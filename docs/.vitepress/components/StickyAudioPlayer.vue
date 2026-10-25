@@ -89,7 +89,15 @@ onMounted(async () => {
 
   try {
     const response = await fetch(withBase(`/audio/sync-maps/${pageName}.json`))
-    if (!response.ok || !isMounted) return
+    // Dev server falls back to HTML for missing files (200 + text/html);
+    // sync maps are generated artifacts, so absence is expected locally.
+    const isJson = response.headers.get('content-type')?.includes('application/json')
+    if (!response.ok || !isJson || !isMounted) {
+      if (response.ok && !isJson) {
+        console.warn(`No sync map for "${pageName}" — run npm run generate-audio to enable narration sync`)
+      }
+      return
+    }
     const syncMap = await response.json()
 
     const rawElements = document.querySelectorAll('.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc p, .vp-doc li')

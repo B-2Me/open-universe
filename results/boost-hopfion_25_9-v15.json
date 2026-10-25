@@ -1,0 +1,148 @@
+{
+  "seed": "hopfion_25_9",
+  "dims": [
+    100,
+    100,
+    40
+  ],
+  "vector": 15,
+  "port": 4,
+  "dir": [
+    1,
+    0,
+    0
+  ],
+  "ticks": 5,
+  "diss": 15,
+  "limit": 50000,
+  "mode": 0,
+  "flux": {
+    "quanta": {
+      "type": "adsr",
+      "peak": 10,
+      "attack": 50,
+      "sustain": 100,
+      "release": 50
+    },
+    "tension": {
+      "type": "sine",
+      "amplitude": 5,
+      "period": 20
+    },
+    "spin": {
+      "type": "constant",
+      "value": 0
+    },
+    "heat": {
+      "type": "constant",
+      "value": 0
+    }
+  },
+  "centroid0": {
+    "x": 50.75,
+    "y": 51.519,
+    "z": 19.51
+  },
+  "centroidEnd": {
+    "x": 50.75,
+    "y": 51.519,
+    "z": 19.51
+  },
+  "displacement": [
+    0,
+    0,
+    0
+  ],
+  "deflectionDeg": null,
+  "mass0": 1678260,
+  "massEnd": 1682260,
+  "retain": 1.0024,
+  "knotQ0": 1678260,
+  "knotQEnd": 1678260,
+  "knotRetain": 1,
+  "coherence": 1,
+  "verdict": "survived",
+  "ms": 985,
+  "series": [
+    {
+      "t": 0,
+      "kx": 50.75,
+      "ky": 51.519,
+      "kz": 19.51,
+      "cx": 50.75,
+      "cy": 51.519,
+      "cz": 19.51,
+      "live": 27971,
+      "knotLive": 27971,
+      "knotQ": 1678260,
+      "q": 1678260,
+      "retain": 1,
+      "knotRetain": 1,
+      "coherence": 1
+    },
+    {
+      "t": 1,
+      "kx": 50.75,
+      "ky": 51.519,
+      "kz": 19.51,
+      "cx": 50.75,
+      "cy": 51.519,
+      "cz": 19.51,
+      "live": 27971,
+      "knotLive": 27971,
+      "knotQ": 1678260,
+      "q": 1678260,
+      "retain": 1,
+      "knotRetain": 1,
+      "coherence": 1
+    },
+    {
+      "t": 2,
+      "kx": 50.75,
+      "ky": 51.519,
+      "kz": 19.51,
+      "cx": 50.75,
+      "cy": 51.519,
+      "cz": 19.51,
+      "live": 27971,
+      "knotLive": 27971,
+      "knotQ": 1678260,
+      "q": 1678260,
+      "retain": 1,
+      "knotRetain": 1,
+      "coherence": 1
+    },
+    {
+      "t": 3,
+      "kx": 50.75,
+      "ky": 51.519,
+      "kz": 19.51,
+      "cx": 50.75,
+      "cy": 51.519,
+      "cz": 19.51,
+      "live": 27971,
+      "knotLive": 27971,
+      "knotQ": 1678260,
+      "q": 1678260,
+      "retain": 1,
+      "knotRetain": 1,
+      "coherence": 1
+    },
+    {
+      "t": 4,
+      "kx": 50.75,
+      "ky": 51.519,
+      "kz": 19.51,
+      "cx": 44.401,
+      "cy": 51.267,
+      "cz": 19.509,
+      "live": 31971,
+      "knotLive": 27971,
+      "knotQ": 1678260,
+      "q": 1682260,
+      "retain": 1.0024,
+      "knotRetain": 1,
+      "coherence": 1
+    }
+  ]
+}

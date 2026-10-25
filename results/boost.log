@@ -1,0 +1,19 @@
+boost: hopfion_32_8 256x256x256 vector=3 (port 4, dir -1,0,0)
+walls: 65536 src / 65536 sink nodes (skin 1) · ticks=500 diss=15 limit=50000
+t0: knot centroid=(130.39,129.63,127.75) knotQ=1257120 live=20952 q=1257120
+t0: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=1.000
+t25: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=2.616
+t50: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=7.777
+t75: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=12.864
+t100: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=17.574
+t125: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=18.557
+t150: skel=(130.39,129.63,127.75) v10=(0.000,0.000,0.000) knotRetain=1.000 coherence=1.00 massRetain=22.518
+t175: skel=(130.37,129.62,127.74) v10=(-0.002,-0.001,-0.001) knotRetain=1.001 coherence=1.00 massRetain=21.482
+t200: skel=(128.28,129.61,127.56) v10=(-0.131,0.022,0.007) knotRetain=0.885 coherence=0.79 massRetain=20.152
+t211: catastrophic unwind (knotRetain 0.00)
+
+BOOST RESULT — hopfion_32_8 vector 3
+  knot translation: (-5.33, 0.27, 0.37) |5.34| cells over 212 ticks
+  deflection:       4.9° off injected axis -1,0,0
+  survival:         shattered — knotRetain 1.060 coherence 0.551 (knot live 20952→16618) total retain 19.318 in 1152s
+→ C:\src\github.com\nater0000\open-universe\logs\boost-hopfion_32_8-v3.json

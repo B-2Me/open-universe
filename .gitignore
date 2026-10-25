@@ -14,8 +14,12 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 
 # Generated experiment data (reproducible, not source)
+# - seeds/: hopfion seed JSONs, deterministic via script/pathfinder.mjs
+# - knot_dictionary.json IS tracked (48K sweep verdict registry);
+#   only its .tmp swap file stays ignored
+# - logs/: bulk binary output (smx/smxst/vtk/bin) — curated telemetry
+#   and harnesses live in results/ and script/meso/
 seeds/
-knot_dictionary.json
 knot_dictionary.json.tmp
 
 # Generated TTS narration + sync maps (CI regenerates per deploy —

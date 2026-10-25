@@ -1,0 +1,21 @@
+fountain ring: 100x100x40 — 24 apertures r=12 z=10 bias=0.6 level=80/tick
+  t      live  arcLive  freeEnds  maxCycle  nCycles  srcQ
+  t0: live=24 arcLive=0 freeEnds=24 maxCycle=0 nCycles=0 srcQ=0
+  t25: live=502 arcLive=0 freeEnds=31 maxCycle=2 nCycles=0 srcQ=1270
+  t50: live=675 arcLive=0 freeEnds=247 maxCycle=2 nCycles=0 srcQ=1355
+  t75: live=791 arcLive=0 freeEnds=366 maxCycle=2 nCycles=0 srcQ=4330
+  t100: live=777 arcLive=0 freeEnds=513 maxCycle=2 nCycles=0 srcQ=5035
+  t125: live=729 arcLive=0 freeEnds=667 maxCycle=2 nCycles=0 srcQ=5865
+  t150: live=730 arcLive=0 freeEnds=668 maxCycle=2 nCycles=0 srcQ=5960
+  t175: live=723 arcLive=0 freeEnds=663 maxCycle=2 nCycles=0 srcQ=6120
+  t200: live=744 arcLive=0 freeEnds=693 maxCycle=2 nCycles=0 srcQ=6120
+  t225: live=764 arcLive=0 freeEnds=702 maxCycle=2 nCycles=0 srcQ=5960
+  t250: live=783 arcLive=0 freeEnds=718 maxCycle=2 nCycles=0 srcQ=6120
+  t275: live=800 arcLive=0 freeEnds=733 maxCycle=2 nCycles=0 srcQ=6120
+  t300: live=817 arcLive=0 freeEnds=752 maxCycle=2 nCycles=0 srcQ=6120
+  t325: live=841 arcLive=0 freeEnds=786 maxCycle=2 nCycles=0 srcQ=6120
+  t350: live=849 arcLive=0 freeEnds=793 maxCycle=2 nCycles=0 srcQ=6120
+  t375: live=839 arcLive=0 freeEnds=789 maxCycle=2 nCycles=0 srcQ=6120
+  t399: live=834 arcLive=0 freeEnds=783 maxCycle=2 nCycles=0 srcQ=6120
+
+→ C:\src\github.com\nater0000\open-universe\logs\fountain-ring-r12-b0p6-l80.json

@@ -1,0 +1,16 @@
+{
+  "ts": 1791959570772,
+  "started": 1791959566319,
+  "config": {
+    "ticks": 50,
+    "sample": 25,
+    "diss": 15,
+    "limit": 50000,
+    "mode": 0
+  },
+  "total": 1,
+  "completed": 1,
+  "candidate": "hopfion_25_9",
+  "phase": "done",
+  "verdict": "stable"
+}

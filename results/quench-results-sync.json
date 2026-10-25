@@ -1,0 +1,72 @@
+[
+  {
+    "level": 0,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0,
+    "hEq": 2,
+    "converged": true,
+    "warmTicks": 100
+  },
+  {
+    "level": 32,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.541,
+    "hEq": 420.1,
+    "converged": true,
+    "warmTicks": 100
+  },
+  {
+    "level": 64,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.397,
+    "hEq": 429.7,
+    "converged": true,
+    "warmTicks": 100
+  },
+  {
+    "level": 128,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.309,
+    "hEq": 411.6,
+    "converged": true,
+    "warmTicks": 105
+  },
+  {
+    "level": 160,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.231,
+    "hEq": 447.5,
+    "converged": true,
+    "warmTicks": 101
+  },
+  {
+    "level": 192,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.111,
+    "hEq": 419,
+    "converged": true,
+    "warmTicks": 100
+  },
+  {
+    "level": 240,
+    "load": "beam",
+    "sync": 1,
+    "retainA": 0,
+    "retainB": 0.275,
+    "hEq": 447.3,
+    "converged": true,
+    "warmTicks": 100
+  }
+]

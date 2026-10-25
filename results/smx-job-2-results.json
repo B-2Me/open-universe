@@ -1,0 +1,187 @@
+{
+  "jobDir": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-2",
+  "meta": "C:\\src\\github.com\\nater0000\\open-universe\\logs\\smx-job-2\\meta.json",
+  "results": [
+    {
+      "batch": 0,
+      "name": "rad_dumb",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 4169,
+      "mass": 1063095,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 45000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 4169,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 1,
+      "name": "rad_normal",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 4169,
+      "mass": 1063095,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              0
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 45000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 4169,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 2,
+      "name": "rad_chiral",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 4169,
+      "mass": 1063095,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              1
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 45000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 4169,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    },
+    {
+      "batch": 3,
+      "name": "rad_antichiral",
+      "seeds": [
+        null,
+        null
+      ],
+      "axis": 0,
+      "verdict": "survival",
+      "retainA": 1,
+      "retainB": null,
+      "live": 4169,
+      "mass": 1063095,
+      "paintedA": 4169,
+      "paintedB": 0,
+      "spec": {
+        "emit": [
+          {
+            "plane": [
+              0,
+              24,
+              24
+            ],
+            "dir": [
+              -1,
+              0,
+              -1
+            ],
+            "quant": 0
+          }
+        ],
+        "block": {
+          "pos": [
+            40,
+            64,
+            64
+          ],
+          "r": 10,
+          "q": 255,
+          "heat": 45000
+        },
+        "pinch": 0
+      },
+      "cycles": {
+        "freeEnds": 4169,
+        "maxCycle": 0,
+        "nCycles": 0
+      }
+    }
+  ]
+}
