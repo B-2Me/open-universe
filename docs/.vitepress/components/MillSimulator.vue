@@ -101,14 +101,17 @@ onUnmounted(() => {
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">auto orbit</span></button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save snap</span></button>
         <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load snap</span></button>
-        <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
-        <canvas class="mill-gizmo" data-gizmo width="96" height="96"
-                title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
-      </div>
 
-      <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
-
-      <div class="mill-well mill-selects">
+        <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+          <option value="" selected>scene…</option>
+          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
+          <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
+          <option value="breath">breathing core (☀ + Rad)</option>
+          <option value="comet">comet ablation (➤ off-center)</option>
+          <option value="porous">porous rim (ramp→255: dissolves)</option>
+          <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
+          <option value="walled">walled crust (Wall 32 + ☀)</option>
+        </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
         <label class="mill-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
           <option value="full"    selected>Full field</option>
           <option value="side">Side profile</option>
@@ -123,6 +126,15 @@ onUnmounted(() => {
           <option value="2">flux</option>
           <option value="3">macro</option>
         </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
+
+        <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
+        <canvas class="mill-gizmo" data-gizmo width="96" height="96"
+                title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
+      </div>
+
+      <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
+
+      <div class="mill-well mill-selects">
         <label class="mill-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
           <option value="0" selected>uniform</option>
           <option value="1">shell-weighted</option>
@@ -134,16 +146,6 @@ onUnmounted(() => {
           <option value="2" selected>stimulated</option>
           <option value="3">absorbed</option>
         </select><button class="mill-help" data-help="phot" aria-label="About Phot">?</button></label>
-        <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
-          <option value="" selected>scene…</option>
-          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
-          <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
-          <option value="breath">breathing core (☀ + Rad)</option>
-          <option value="comet">comet ablation (➤ off-center)</option>
-          <option value="porous">porous rim (ramp→255: dissolves)</option>
-          <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
-          <option value="walled">walled crust (Wall 32 + ☀)</option>
-        </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
         <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
           <option value="1">directional</option>

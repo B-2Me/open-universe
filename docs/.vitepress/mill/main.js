@@ -651,7 +651,7 @@ export async function initMillSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2, pair: false, drest: 0, exposure: 1.5, split: 'off',
+    phot: 2, pair: false, drest: 0, exposure: 1.5, split: 'off', scene: '',
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
   // split panes: {layout, mode} per half — mode -1 follows the View select
@@ -841,6 +841,7 @@ export async function initMillSimulator(root, opts = {}) {
   };
   bind('[data-scene]', 'change', e => {
     const f = SCENES[e.target.value];
+    ui.scene = e.target.value;              // the ? card reads the ACTIVE scene
     e.target.value = '';                    // back to "Scene…" so re-picks refire
     ctl('[data-drest]', '0', 'change');     // no rest-mode leak between scenes; vault re-arms it
     if (f) { f(); upload(); dirty = true; }
@@ -981,7 +982,7 @@ export async function initMillSimulator(root, opts = {}) {
     if (hb) {
       e.preventDefault(); e.stopPropagation();
       let key = hb.dataset.help;
-      if (key === 'scene') key = 'scene.' + (root.querySelector('[data-scene]')?.value || 'none');
+      if (key === 'scene') key = 'scene.' + (ui.scene || 'none');
       if (cardEl?.dataset.key === key) { hideCard(); return; }
       const [t, b] = HELP[key] || [key, 'no notes yet'];
       if (cardT) cardT.textContent = t;
@@ -1042,7 +1043,7 @@ export async function initMillSimulator(root, opts = {}) {
 
   // default scene: the spin vault (M50) — runs through the same code
   // path as a menu pick so every flag/widget ends in the measured state
-  SCENES.vault();
+  SCENES.vault(); ui.scene = 'vault';
   upload(); dirty = true;
 
   // quick-view presets: smooth-lerp camera + slice plane jump. Each
