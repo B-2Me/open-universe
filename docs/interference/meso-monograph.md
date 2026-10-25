@@ -9,7 +9,7 @@ audio: /audio/meso-monograph.mp3
 
 # The Friction Substrate: A Multichannel Research Monograph
 
-*Consolidated findings from the `meso3i` campaign (M19–M49): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
+*Consolidated findings from the `meso3i` campaign (M19–M50): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
 
 ---
 
@@ -126,7 +126,7 @@ The mechanism class, *resting mass exchanging momentum with vacuum through direc
 - **Corrected (M47b):** M37's "mutual attraction via reciprocal ablation". Two findings. (a) Under centered-drive configs the apparent convergence is a *drive-centric infall field*, not a two-body force (solo baselines identical). (b) In the faithful self-radiating regime (fricm>0, no drive) a real short-range pairwise approach exists at sep≤12 but is transient: it reverses as evaporation proceeds; lumps die before contact. Radiation-shadow gravity remains unproven.
 - **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant. (IREFL left this list at M49 — measured in series with IFRIC: hollow-core crust, ablation-drift reversal.)
 - **Constant-sensitivity (M49):** the M33 gate's `p=½` was never swept until M49. Lump phenomenology survives the flat-p band but scales ~15× in mass across it, and graded capture ramps leave the phase entirely (dissolving or fossil regimes). Every M33–M48 number inherits this dependence.
-- **Fixed (post-M49):** the step-2a density snapshot `iR` ignored `iRA` directional rest — under `IDREST=1` the friction/wall checks were blind to parked `rest[18]` mass, so wound lumps ran more porous than intended throughout M42–M45. Fixed in `meso3i.c`; the `IDREST=0` record is verified bit-identical (full M49 sweep rerun matches `results/fric-sweep.log` exactly). Qualitative M42–M45 claims stand on the bins' contents, but wound-lump *densities* from those runs should be treated as under-captured and re-measured if revisited. (Found in external review — Gemini's code read.)
+- **Fixed + re-verified (post-M49):** the step-2a density snapshot `iR` ignored `iRA` directional rest — under `IDREST=1` the friction/wall checks were blind to parked `rest[18]` mass, so wound lumps ran more porous than intended throughout M42–M45. Fixed in `meso3i.c`; the `IDREST=0` record is verified bit-identical (full M49 sweep rerun matches `results/fric-sweep.log` exactly). **All M42–M45 harnesses rerun post-fix** (`results/m42-45/`): every qualitative claim holds — storage strengthens (Lz_park 4,932→6,036), shielding strengthens (accretion 588→4,560 → 764→6,123), induction improves (+2,290→+2,507 clean), weld/M44 unchanged. Two magnitude shifts to note: revival re-inflation halves (Lz_mov 2,317→~949 — the denser fossil re-parks the probe), and light-writ flanks now sit on a −302 dead-center background (differential stays sign-true). M42b untouched (`iQ` was always counted). (Found in external review — Gemini's code read.)
 - **Branch ledger (`loom-meso`):** IPHOT/IPHOT=3 absorption, IPAIR, ILAT and IDREST are flag-gated authored mechanics in the same honesty class as IFRIC. Under IDREST, `totals()` counts stored directional momentum: a friction park is momentum-neutral (stored, not absorbed). Under IPHOT=3, photon momentum joins the ledger so absorption closes exactly.
 
 ## Part VIII. The Structured-Matter Tier (M39–M45, `loom-meso`)
@@ -281,7 +281,38 @@ The wall produces a dense crust at the saturation boundary (r≈3–4 shell ~5×
 | 32 | −x | −0.097 | away from source (mirror) |
 | 64 | +x | ~−0.1 | non-monotonic, suppressed |
 
-The reversal is *not* mirror recoil — the wall absorbs the momentum flip by construction, so no recoil channel reaches the lump. Mechanism: lit-face capture is refused, carriers transit to sub-threshold far-side sites and park there; the beam **deposits downstream of the lump** instead of eroding its near face, so the centroid drifts downwind. Ablation-pull lives in the open-porosity regime only; a saturated wall turns the same beam into deposition transport. Caveat: beam-phase reflect counters keep rising (4k→8k), so the wall stays live throughout — and the IREFL=32 remnant is ~2× heavier (3,725 vs 1,855 rest) under identical drive, so the compared lumps are not mass-matched.
+The reversal is *not* mirror recoil — the wall absorbs the momentum flip by construction, so no recoil channel reaches the lump. Mechanism: lit-face capture is refused, carriers transit to sub-threshold far-side sites and park there; the beam **deposits downstream of the lump** instead of eroding its near face, so the centroid drifts downwind. Ablation-pull lives in the open-porosity regime only; a saturated wall turns the same beam into deposition transport. Caveat: beam-phase reflect counters keep rising (4k→8k), so the wall stays live throughout — and the IREFL=32 remnant is ~2× heavier (3,725 vs 1,855 rest) under identical drive, so the compared lumps are not mass-matched. **See M50-C: mass-matched replication qualified this — drift direction is morphology-dependent; with a uniform seeded lump the wall produces lit-face accretion and a stronger *toward-source* march, not a reversal.**
+
+### M50. Post-fix consolidation: re-verification, mass-matched drift, the wound vault
+
+The `iR` density-snapshot fix (`0946f9c`, external review) made `IDREST` mass visible to the friction/wall gates for the first time. Three follow-up threads, all harnesses in `script/meso/`, logs in `results/m42-45/`.
+
+**A. M42–M45 re-verified verbatim.** Every wound-era harness rerun under the fixed gate. All qualitative claims hold; magnitudes move the predicted way (denser wound fossils capture more): storage `Lz_park` 4,932→6,036 (+22%), shielding accretion 588→4,560 → 764→6,123, induction +2,290→+2,507 (lamp-free). Caveats: revival re-inflation halves (2,317→~949 — the denser fossil re-parks the probe); light-writ flanks sit on a −302 dead-center background (differential sign-true).
+
+**C. Mass-matched drift replication (`drift-replicate.mjs`).** M49's reversal does *not* replicate at matched mass. Identical seeded spheres (R5, scalar 48, 11,952 rest) under an 800t canonical spoke beam:
+
+| IREFL | beam | Δcm_x | mass | reading |
+|---|---|---|---|---|
+| 0 | +x | −0.020 | −58% | erosion, **no pull** |
+| 0 | −x | +0.066 | −59% | erosion, no pull |
+| 32 | +x | **−0.500** | **+28%** | lit-face accretion, *toward* source |
+| 32 | −x | **+0.516** | +32% | mirror-consistent |
+| 64 | +x | −0.254 | −51% | intermediate |
+| — | none | 0.000 | 0% | inert fossil |
+
+The mechanism is ledger-readable: the wall bounces beam quanta on the approach side; bounced carriers re-approach and fringe-park on the lit face → near-face accretion → upstream centroid march. So the wall doesn't reverse a force — there is no force to reverse. It converts *ablation-erosion* into *lit-face accretion*, and **drift direction is morphology-dependent**: M49's grown-frozen remnant deposited on the far rim (+0.23 away), the uniform seeded sphere deposits on the near face (−0.50 toward). Even the open-gate baseline is morphology-dependent — the grown remnant pulled (−0.445), the seeded sphere doesn't (~0). "Ablation drift" names a family of deposition patterns, not a law of motion.
+
+**B. The wound vault (`wound-wall.mjs`).** The `IREFL × IDREST` cell — previously impossible, since the wall was blind to directional rest. Seeded wound lump (R5, `Lz_park`=154,624):
+
+| config | `Lz_park` after 800t | parked mass | outcome |
+|---|---|---|---|
+| no beam (either wall) | 154,624 (−0%) | 39,680 | perfectly inert fossil |
+| open + beam | 35,949 (**−77%**) | 14,233 (−64%) | ablation; spin spreads to outer shells; +0.53 downwind walk |
+| IREFL=32 + beam | **151,669 (−2%)** | **44,248 (+11%)** | **spin vault** |
+
+Behind the wall the beam becomes a slow feeder: `refl`=8,925 events refuse the approach, survivors park on the lit face *into the winding* — accreted mass joins the same shells (r3/r4), spin diffuses nowhere. The first object that is simultaneously a memory device and a beam-eater.
+
+*Caveats:* seeded sphere ≠ grown remnant (controlled comparison, not a rerun); vault measured at one geometry/density; light-writ background needs control-subtraction if quoted.
 
 ## Milestone Index
 
@@ -312,7 +343,8 @@ The reversal is *not* mirror recoil — the wall absorbs the momentum flip by co
 | M48 | Wave attenuation: zero in vacuum; turbid (~200c λ) below congestion, opaque (~25c) above | `55d2b02` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 | M47b | M37 resolved: real transient ablation coupling only between self-radiating lumps; bath & broadside null; drive-infall artifact caught | `e002c9d` |
-| M49 | Capture gate is a phase parameter: flat-p band / ramp→dissolve-or-fossil; IREFL builds a hollow-core crust and flips ablation drift to downwind push | `e70fe6e` |
+| M49 | Capture gate is a phase parameter: flat-p band / ramp→dissolve-or-fossil; IREFL builds a hollow-core crust and flips ablation drift (grown remnant — see M50) | `e70fe6e` |
+| M50 | iR/drest fix + M42–45 re-verified; drift is morphology-dependent (mass-matched: wall→lit-face accretion, upstream march); IREFL×IDREST spin vault | `0946f9c`, `6282abb` |
 
 ## The Picture That Emerges
 
