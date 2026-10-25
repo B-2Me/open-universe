@@ -340,6 +340,7 @@ onUnmounted(() => {
 /* raised controls — gradient face, dark rim, top highlight, drop shadow */
 .mill-transport button,
 .mill-dock select {
+  position: relative;
   min-width: 34px;
   min-height: 34px;
   padding: 0 10px;
@@ -357,9 +358,21 @@ onUnmounted(() => {
 }
 .mill-transport button.on {
   color: var(--mill-accent);
-  border-color: rgba(119, 255, 238, 0.45);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light),
-    0 0 9px rgba(119, 255, 238, 0.3);
+}
+/* on state = a small glowing horizontal pill inside the button,
+   like an indicator LED under the glyph */
+.mill-transport button.on::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 16px;
+  height: 3px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: var(--mill-accent);
+  box-shadow: 0 0 7px rgba(119, 255, 238, 0.9), 0 0 2px rgba(119, 255, 238, 0.7);
+  pointer-events: none;
 }
 /* armed tool = filled accent — unmistakably different from a passive toggle */
 .mill-transport button.armed {
