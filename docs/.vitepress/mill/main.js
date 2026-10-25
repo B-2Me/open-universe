@@ -86,7 +86,7 @@ void main() {
       :  h < 0.40 ? mix(vec3(0.42,0.04,0.00), vec3(0.82,0.20,0.00), (h - 0.20) * 5.0)
       :  h < 0.60 ? mix(vec3(0.82,0.20,0.00), vec3(1.00,0.48,0.00), (h - 0.40) * 5.0)
       :  h < 0.78 ? mix(vec3(1.00,0.48,0.00), vec3(1.00,0.72,0.10), (h - 0.60) * 5.56)
-      :             mix(vec3(1.00,0.72,0.10), vec3(1.00,0.95,0.80), (h - 0.78) * 4.55));
+      :             mix(vec3(1.00,0.72,0.10), vec3(1.00,0.82,0.42), (h - 0.78) * 4.55));
   // cold ramp for moving flux: deep indigo -> blue -> cyan -> white
   float f = pow(mov / 255.0, 0.7);
   vec3 flux = (f < 0.25 ? mix(vec3(0.02,0.03,0.16), vec3(0.05,0.20,0.70), f * 4.0)
@@ -129,6 +129,26 @@ void main() {
   if (r2 > 1.0) discard;                  // round billboard
   float a = exp(-r2 * 3.0);               // gaussian falloff, soft foam edge
   frag = vec4(v_color.rgb * v_color.a * a, 1.0);
+}`;
+
+// resolve pass — the point cloud accumulates additively into a
+// half-float HDR target, then one fullscreen triangle tonemaps it.
+// Reinhard keeps faint singles nearly linear while dense cores shoulder
+// off smoothly — a lump shows an amber gradient into its hot center
+// instead of a flat clipped disc.
+const TM_VS = `#version 300 es
+void main() {
+  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}`;
+const TM_FRAG = `#version 300 es
+precision highp float;
+uniform sampler2D u_hdr;
+uniform float u_exposure;
+out vec4 frag;
+void main() {
+  vec3 c = texelFetch(u_hdr, ivec2(gl_FragCoord.xy), 0).rgb * u_exposure;
+  frag = vec4(c / (1.0 + c), 1.0);
 }`;
 
 export async function initMillSimulator(root, opts = {}) {
@@ -386,6 +406,40 @@ export async function initMillSimulator(root, opts = {}) {
     throw new Error(gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
 
+  // HDR pipeline: EXT_color_buffer_float lets the additive blend land in
+  // a half-float target (no 8-bit clamp), resolved to the canvas by the
+  // tonemap pass. Without it we draw straight to the screen as before.
+  const hdrOK = !!gl.getExtension('EXT_color_buffer_float');
+  let tmProg = null, tmVao = null, fbo = null, hdrTex = null;
+  const tmU = {};
+  let hdrW = 0, hdrH = 0;
+  if (hdrOK) {
+    tmProg = gl.createProgram();
+    gl.attachShader(tmProg, sh(gl.VERTEX_SHADER, TM_VS));
+    gl.attachShader(tmProg, sh(gl.FRAGMENT_SHADER, TM_FRAG));
+    gl.linkProgram(tmProg);
+    if (!gl.getProgramParameter(tmProg, gl.LINK_STATUS))
+      throw new Error(gl.getProgramInfoLog(tmProg));
+    tmU.u_hdr = gl.getUniformLocation(tmProg, 'u_hdr');
+    tmU.u_exposure = gl.getUniformLocation(tmProg, 'u_exposure');
+    tmVao = gl.createVertexArray();            // attribute-less fullscreen tri
+    hdrTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST],
+      [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]])
+      gl.texParameteri(gl.TEXTURE_2D, k, v);
+    fbo = gl.createFramebuffer();
+  }
+  const ensureHDR = (w, h) => {
+    if (!hdrOK || w < 1 || h < 1 || (w === hdrW && h === hdrH)) return;
+    hdrW = w; hdrH = h;
+    gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hdrTex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  };
+
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_s_center', 'u_s_thick',
     'u_s_axis', 'u_ghost_alpha', 'u_qmin', 'u_colorMode',
@@ -562,7 +616,7 @@ export async function initMillSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2, pair: false, drest: 0,
+    phot: 2, pair: false, drest: 0, exposure: 1.5,
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
   // boot state is set by the default scene (SCENES.vault) once all
@@ -814,6 +868,7 @@ export async function initMillSimulator(root, opts = {}) {
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
+  bind('[data-expo]', 'input', e => { ui.exposure = +e.target.value / 100; readout(e); dirty = true; });
   // dock accordions — Flags (selects) and Tuning (sliders) collapse by
   // class on the dock root so both stay out of the way on load
   const acc = (sel, cls) => bind(sel, 'click', e => {
@@ -907,7 +962,7 @@ export async function initMillSimulator(root, opts = {}) {
   const resize = () => {
     const dpr = Math.min(2, devicePixelRatio || 1);
     const w = canvas.clientWidth * dpr | 0, h = canvas.clientHeight * dpr | 0;
-    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; dirty = true; }
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; ensureHDR(w, h); dirty = true; }
   };
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
@@ -985,6 +1040,7 @@ export async function initMillSimulator(root, opts = {}) {
       const view = m4.mul(m4.translate(0, 0, -cam.dist),
         m4.mul(m4.rotX(cam.pitch), m4.mul(m4.rotY(cam.yaw),
           m4.translate(-cam.cx, -cam.cy, -cam.cz))));
+      if (hdrOK) gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0.02, 0.02, 0.05, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -1000,6 +1056,23 @@ export async function initMillSimulator(root, opts = {}) {
       gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
       gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
+      if (hdrOK) {
+        // resolve: tonemap the accumulated HDR buffer onto the canvas
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.useProgram(tmProg);
+        gl.bindVertexArray(tmVao);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+        gl.uniform1i(tmU.u_hdr, 0);
+        gl.uniform1f(tmU.u_exposure, ui.exposure);
+        gl.disable(gl.DEPTH_TEST);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.enable(gl.DEPTH_TEST);
+        gl.useProgram(prog);
+        gl.bindVertexArray(vao);
+        gl.bindTexture(gl.TEXTURE_3D, tex);
+      }
       syncZoom();
       drawGizmo();
       dirty = false;

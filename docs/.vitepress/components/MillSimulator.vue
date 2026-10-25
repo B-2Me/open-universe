@@ -171,6 +171,7 @@ onUnmounted(() => {
         <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
         <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output></label>
+        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="150"><output>150</output></label>
       </div>
     </div>
   </div>
