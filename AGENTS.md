@@ -167,6 +167,12 @@ The deploy workflow regenerates audio per deploy and ships it via
 `dist/` — it is NOT committed back (kept out to stop repo bloat).
 To hear narration locally, run `npm run generate-audio` (needs the
 Kokoro pipeline); without it the Listen chip appears but can't play.
+Sync maps are silence-aligned, not char-proportional: the pipeline
+decodes each mp3 (`audio-decode`), detects the `' ... '` separator
+pauses via RMS floor, and snaps node boundaries to real gaps —
+`.hash` sidecars carry a `v2:` version tag so unchanged pages get a
+map-only realign with no TTS call. Bump `MAP_VERSION` if the
+alignment scheme changes again.
 
 ## meso3i harnesses + telemetry layout
 

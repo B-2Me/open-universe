@@ -18,6 +18,7 @@
     "vue": "latest"
   },
   "devDependencies": {
+    "audio-decode": "^3.12.0",
     "music-metadata": "^10.0.0",
     "openai": "^4.0.0",
     "remark": "^15.0.1",

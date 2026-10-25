@@ -1,9 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { pathToFileURL } from 'url';
 import { remark } from 'remark';
 import * as mm from 'music-metadata';
 import OpenAI from 'openai';
+import decode from 'audio-decode';
 import { execSync } from 'child_process';
 
 const openai = new OpenAI({
@@ -14,6 +16,133 @@ const openai = new OpenAI({
 const CONTENT_DIR = './docs';
 const AUDIO_OUT_DIR = './docs/public/audio';
 const SYNC_MAP_DIR = './docs/public/audio/sync-maps';
+
+// Sync-map timing scheme version, recorded in the .hash sidecar as
+// "vN:<textHash>". Bumping N forces a map-only realign (no TTS regen)
+// on the next run; a bare legacy hash realigns too since the map is v1.
+const MAP_VERSION = 'v2';
+
+// --- Measured-alignment sync -------------------------------------------------
+// Nodes are joined by ' ... ' which TTS voices as real pauses, plus the mp3
+// has lead/trail encoder silence. The old map spread totalDuration across
+// nodes by char count alone, smearing that silence inside node windows so
+// every highlight fired early. Now we decode the mp3, find the actual
+// silence gaps, and snap each node's expected boundary to the nearest gap:
+// node windows become real speech edges.
+
+const WIN = 2048, HOP = 1024;      // 46ms window / 23ms hop @44.1k
+const SIL_FLOOR = 0.04;            // silence = RMS below 4% of peak
+const MIN_INTERIOR_SIL = 0.18;     // ' ... ' pauses run ~0.3-1s
+const MIN_EDGE_SIL = 0.03;         // lead/trail padding: any clear run
+const SNAP_MAX = 1.5;              // refuse to snap a boundary further than this
+
+function silenceIntervals(pcm, sr) {
+  const dur = pcm.length / sr;
+  let peak = 0;
+  const rms = [];
+  for (let i = 0; i + WIN <= pcm.length; i += HOP) {
+    let s = 0;
+    for (let j = i; j < i + WIN; j++) s += pcm[j] * pcm[j];
+    const v = Math.sqrt(s / WIN);
+    rms.push(v);
+    if (v > peak) peak = v;
+  }
+  const floor = peak * SIL_FLOOR;
+  const sil = [];
+  let run = -1;
+  const close = (end) => {
+    const atEdge = run <= HOP / sr || end >= dur - HOP / sr;
+    if (end - run >= (atEdge ? MIN_EDGE_SIL : MIN_INTERIOR_SIL))
+      sil.push({ start: run, end });
+    run = -1;
+  };
+  for (let i = 0; i < rms.length; i++) {
+    const t = i * HOP / sr;
+    if (rms[i] < floor) { if (run < 0) run = t; }
+    else if (run >= 0) close(t);
+  }
+  if (run >= 0) close(dur);
+  return sil;
+}
+
+function alignNodes(nodes, sil, dur) {
+  // Speech segments = complement of silences.
+  const segs = [];
+  let prev = 0;
+  for (const s of sil) { if (s.start > prev) segs.push({ start: prev, end: s.start }); prev = s.end; }
+  if (prev < dur) segs.push({ start: prev, end: dur });
+  if (!segs.length) return null;
+
+  // Expected boundaries by char proportion (same anchor as before).
+  const totalChars = nodes.reduce((a, n) => a + n.charCount, 0);
+  const expected = [];
+  let cum = 0;
+  for (let i = 0; i < nodes.length - 1; i++) {
+    cum += nodes[i].charCount;
+    expected.push(dur * cum / totalChars);
+  }
+
+  // Gap candidates for boundaries: interior silences (lead/trail can't
+  // split two nodes).
+  const gaps = [];
+  for (let j = 0; j + 1 < segs.length; j++) gaps.push({ start: segs[j].end, end: segs[j + 1].start });
+
+  // Greedy in-order snap: each expected boundary claims the unused gap
+  // nearest to it within SNAP_MAX; otherwise it stays proportional.
+  const bounds = [segs[0].start];
+  let gi = 0;
+  let lastBound = segs[0].start;
+  for (const e of expected) {
+    let best = -1, bd = Infinity;
+    for (let g = gi; g < gaps.length; g++) {
+      const mid = (gaps[g].start + gaps[g].end) / 2;
+      if (mid <= lastBound) continue;
+      const d = Math.abs(mid - e);
+      if (d < bd) { bd = d; best = g; }
+      else if (mid > e) break;
+    }
+    if (best >= 0 && bd <= SNAP_MAX) {
+      bounds.push(gaps[best]);
+      lastBound = gaps[best].end;
+      gi = best + 1;
+    } else {
+      bounds.push(e);
+      lastBound = e;
+    }
+  }
+  bounds.push(segs[segs.length - 1].end);
+
+  return nodes.map((n, i) => {
+    const b = bounds[i + 1];
+    return {
+      text: n.originalText,
+      start: Number((typeof bounds[i] === 'object' ? bounds[i].end : bounds[i]).toFixed(3)),
+      end: Number((typeof b === 'object' ? b.start : b).toFixed(3)),
+    };
+  });
+}
+
+function proportionalNodes(nodes, dur) {
+  const totalChars = nodes.reduce((a, n) => a + n.charCount, 0);
+  let t = 0;
+  return nodes.map(n => {
+    const end = t + dur * n.charCount / totalChars;
+    const e = { text: n.originalText, start: Number(t.toFixed(3)), end: Number(end.toFixed(3)) };
+    t = end;
+    return e;
+  });
+}
+
+async function buildSyncEntries(nodes, mp3Buf, dur) {
+  try {
+    const { channelData, sampleRate } = await decode(mp3Buf);
+    const aligned = alignNodes(nodes, silenceIntervals(channelData[0], sampleRate), channelData[0].length / sampleRate);
+    if (aligned) return aligned;
+  } catch (e) { /* decode/analysis failure → fall through */ }
+  console.warn('  sync map falling back to proportional timing');
+  return proportionalNodes(nodes, dur);
+}
+// -----------------------------------------------------------------------------
 
 // Helper to get the actual Git commit time (returns milliseconds)
 function getGitCommitTimeMs(filePath) {
@@ -131,27 +260,30 @@ async function processFile(filePath) {
     return h.digest('hex').slice(0, 16);
   })();
 
+  // Three states: fully current (hash match → skip), audio current but map
+  // stale (text unchanged, map needs realign → decode existing mp3, no TTS),
+  // or needs full regen.
+  let audioFresh = false;
   try {
-    const [prevHash] = await Promise.all([
+    const [prevHash, , ] = await Promise.all([
       fs.readFile(hashPath, 'utf-8'), fs.stat(finalAudioPath), fs.stat(syncMapPath),
     ]);
-    if (prevHash.trim() === textHash) {
-      console.log(`Skipping ${filename} (content unchanged)`);
+    const stored = prevHash.trim();
+    if (stored === `${MAP_VERSION}:${textHash}`) {
+      console.log(`Skipping ${filename} (content + map version unchanged)`);
       return;
     }
+    // Bare hash or other-version hash with same text → audio is current.
+    if (stored === textHash || stored.endsWith(`:${textHash}`)) audioFresh = true;
   } catch (err) {
-    // Missing hash/mp3/map → fall through to the legacy mtime check,
-    // after which the new .hash sidecar takes over.
     try {
       const mdStat = await fs.stat(filePath);
       const mp3Stat = await fs.stat(finalAudioPath);
-      const syncMapStat = await fs.stat(syncMapPath);
       const mdTime = getGitCommitTimeMs(filePath) ?? mdStat.mtimeMs;
       const mp3Time = getGitCommitTimeMs(finalAudioPath) ?? mp3Stat.mtimeMs;
-      const syncMapTime = getGitCommitTimeMs(syncMapPath) ?? syncMapStat.mtimeMs;
-      if (mp3Time >= mdTime && syncMapTime >= mdTime) {
-        console.log(`Skipping ${filename} (legacy mtime up to date)`);
-        return;
+      if (mp3Time >= mdTime) {
+        // Audio is fresh; the map still needs the realign pass.
+        audioFresh = true;
       }
     } catch (e) { /* missing artifact → generate */ }
   }
@@ -173,47 +305,36 @@ async function processFile(filePath) {
 
   if (contentNodes.length === 0) return;
 
+  // The ' ... ' separator is load-bearing twice: it gives the narrator a
+  // breath between blocks AND creates the silence gaps buildSyncEntries
+  // aligns node boundaries to.
   const fullPageText = contentNodes.map(n => n.ttsText).join(' ... ');
 
-  console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
   await fs.mkdir(AUDIO_OUT_DIR, { recursive: true });
   await fs.mkdir(SYNC_MAP_DIR, { recursive: true });
 
-  const mp3 = await openai.audio.speech.create({
-    model: 'kokoro', 
-    voice: 'af_bella',
-    input: fullPageText,
-  });
-
-  const buffer = Buffer.from(await mp3.arrayBuffer());
-  await fs.writeFile(finalAudioPath, buffer);
-
-  const metadata = await mm.parseFile(finalAudioPath);
-  const totalDuration = metadata.format.duration;
-  
-  const totalChars = contentNodes.reduce((acc, n) => acc + n.charCount, 0);
-  
-  let currentTime = 0; 
-  const syncEntries = [];
-
-  for (const item of contentNodes) {
-    const charRatio = item.charCount / totalChars;
-    const speechTimeForNode = totalDuration * charRatio;
-
-    const startTime = currentTime;
-    const endTime = currentTime + speechTimeForNode;
-
-    syncEntries.push({
-      text: item.originalText, 
-      start: Number(startTime.toFixed(3)),
-      end: Number(endTime.toFixed(3))
+  let buffer;
+  if (audioFresh) {
+    console.log(`Realigning sync map for ${filename} (audio current, no TTS call)`);
+    buffer = await fs.readFile(finalAudioPath);
+  } else {
+    console.log(`Generating MP3 & sync map for ${filename} (${contentNodes.length} nodes)...`);
+    const mp3 = await openai.audio.speech.create({
+      model: 'kokoro',
+      voice: 'af_bella',
+      input: fullPageText,
     });
-
-    currentTime = endTime;
+    buffer = Buffer.from(await mp3.arrayBuffer());
+    await fs.writeFile(finalAudioPath, buffer);
   }
 
+  const metadata = await mm.parseBuffer(buffer);
+  const totalDuration = metadata.format.duration;
+
+  const syncEntries = await buildSyncEntries(contentNodes, buffer, totalDuration);
+
   await fs.writeFile(syncMapPath, JSON.stringify(syncEntries, null, 2));
-  await fs.writeFile(hashPath, textHash + '\n');
+  await fs.writeFile(hashPath, `${MAP_VERSION}:${textHash}\n`);
 
   let updatedContent = content;
   if (!updatedContent.includes('audio: ')) {
@@ -245,4 +366,9 @@ async function run() {
   }
 }
 
-run().catch(console.error);
+// Guard: importing this file (e.g. a test harness) must not trigger a run.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  run().catch(console.error);
+}
+
+export { silenceIntervals, alignNodes, buildSyncEntries, proportionalNodes };
