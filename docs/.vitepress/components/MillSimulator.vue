@@ -126,10 +126,23 @@ onUnmounted(() => {
           <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
           <option value="breath">breathing core (☀ + Rad)</option>
           <option value="comet">comet ablation (➤ off-center)</option>
+          <option value="porous">porous rim (ramp→255: dissolves)</option>
+          <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
+          <option value="walled">walled crust (Wall 32 + ☀)</option>
         </select></label>
         <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
           <option value="1">directional</option>
+        </select></label>
+        <label class="mill-field"><span>Curve</span><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
+          <option value="0" selected>flat</option>
+          <option value="1">ramp→255</option>
+          <option value="2">ramp→2cap</option>
+        </select></label>
+        <label class="mill-field"><span>Plane</span><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
+          <option value="2" selected>xy</option>
+          <option value="1">xz</option>
+          <option value="0">yz</option>
         </select></label>
         <label class="mill-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
@@ -141,11 +154,13 @@ onUnmounted(() => {
       <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="mill-well mill-sliders">
-        <label>Slice <input type="range" data-zcenter min="0" max="35" step="1" value="18"><output>18</output></label>
-        <label>Width <input type="range" data-zthick  min="1" max="36" step="1" value="36"><output>36</output></label>
+        <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it">Cut   <input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output></label>
+        <label title="Slab thickness in cells — at max the whole volume shows">Slab  <input type="range" data-slab min="1" max="36" step="1" value="36"><output>36</output></label>
         <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8"><output>8</output></label>
+        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8" title="Friction cap — transit drag parks flux at destinations this dense"><output>8</output></label>
+        <label title="Park probability % — flat capture rate above the Drag cap (M49: 50 is canonical, not sacred)">Park% <input type="range" data-park min="0" max="100" step="1" value="50"><output>50</output></label>
+        <label title="Congestion wall — destinations this dense refuse inflow entirely (M49: the crust wall)">Wall  <input type="range" data-wall min="0" max="128" step="1" value="0"><output>0</output></label>
         <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
         <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
         <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output></label>

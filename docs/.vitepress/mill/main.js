@@ -47,7 +47,8 @@ layout(location=0) in vec2 a_corner;      // billboard quad corner
 uniform sampler3D u_vol;                  // RGB8: r=moving g=rest b=photons
 uniform mat4 u_mvp;
 uniform float u_size;                     // world-space quad half-size
-uniform float u_z_center, u_z_thickness;  // tomographic slab (cell z)
+uniform float u_s_center, u_s_thick;      // tomographic slab (cell coord)
+uniform int u_s_axis;                     // slab normal: 0=x 1=y 2=z
 uniform float u_ghost_alpha;              // opacity outside the slab
 uniform float u_qmin;                     // density floor to render
 uniform int u_colorMode;                  // 0=ember 1=heat 2=flux 3=macro
@@ -69,8 +70,8 @@ void main() {
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
   }
   // slab ghosting: inside half-thickness -> opaque, outside -> silhouette
-  float halfT = u_z_thickness * 0.5;
-  float alpha = abs(float(z) - u_z_center) <= halfT ? 1.0 : u_ghost_alpha;
+  float scoord = u_s_axis == 0 ? float(x) : (u_s_axis == 1 ? float(y) : float(z));
+  float alpha = abs(scoord - u_s_center) <= u_s_thick * 0.5 ? 1.0 : u_ghost_alpha;
   // cubic embed: even-parity FCC sublattice carries its geometry in the
   // channel vectors, so raw grid coords are the honest picture
   vec3 p = vec3(float(x), float(y), float(z));
@@ -253,36 +254,40 @@ export async function initMillSimulator(root, opts = {}) {
 
   // ⌖ vortex ring — THE knot test on this engine. Two concentric rings
   // of moving quanta placed on whichever channel best matches the local
-  // CCW tangent in the slice plane (z=0 face-diagonals only). planck3
-  // could store a persistent spin direction per node; meso3i's rest bin
-  // can't, so injected circulation either self-sustains or thermalizes —
-  // M38 measured ~25 ticks at 44^3. This is the loom-scale retest.
+  // CCW tangent in the current slice plane (any of the three coordinate
+  // planes — the Plane select orients it). planck3 could store a
+  // persistent spin direction per node; meso3i's rest bin can't, so
+  // injected circulation either self-sustains or thermalizes — M38
+  // measured ~25 ticks at 44^3. This is the loom-scale retest.
   const RING_Q = 48;
-  const tangChannel = (dx, dy) => {
-    const l = Math.hypot(dx, dy) || 1;
-    const tx = -dy / l, ty = dx / l;           // CCW tangent
+  const tangChannel = (du, dv, ax, u, v) => {
+    const l = Math.hypot(du, dv) || 1;
+    const tu = -dv / l, tv = du / l;           // CCW tangent in (u,v)
     let best = -1, bd = -Infinity;
     for (let c = 0; c < NMOV; c++) {
-      if (CV[c][2] !== 0) continue;            // equatorial channels only
-      const dot = CV[c][0] * tx + CV[c][1] * ty;
+      if (CV[c][ax] !== 0) continue;           // in-plane channels only
+      const dot = CV[c][u] * tu + CV[c][v] * tv;
       if (dot > bd) { bd = dot; best = c; }
     }
     return best;
   };
-  const injectRing = (lx = CX, ly = CY, lz = CZ) => {
+  const injectRing = (ctr = [CX, CY, CZ]) => {
+    const ax = ui.sAxis, u = (ax + 1) % 3, v = (ax + 2) % 3;
     let n = 0;
     for (const r of [5, 4]) {                  // two concentric rings
       const steps = Math.ceil(2 * Math.PI * r) + 1;
       for (let i = 0; i < steps; i++) {
         const a = (i / steps) * 2 * Math.PI;
-        const x = Math.round(lx + r * Math.cos(a));
-        const y = Math.round(ly + r * Math.sin(a));
-        if (x < 0 || x >= W3 || y < 0 || y >= H3 || lz < 0 || lz >= D3) continue;
-        if (((x + y + lz) & 1) !== 0) continue;  // live parity only
-        const c = tangChannel(x - lx, y - ly);
+        const pt = [ctr[0], ctr[1], ctr[2]];
+        pt[u] = Math.round(ctr[u] + r * Math.cos(a));
+        pt[v] = Math.round(ctr[v] + r * Math.sin(a));
+        const [x, y, z] = pt;
+        if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
+        if (((x + y + z) & 1) !== 0) continue;   // live parity only
+        const c = tangChannel(pt[u] - ctr[u], pt[v] - ctr[v], ax, u, v);
         if (c < 0) continue;
-        const cur = wasm._meso3i_get(x, y, lz, c);
-        wasm._meso3i_set(x, y, lz, c, Math.min(255, cur + RING_Q));
+        const cur = wasm._meso3i_get(x, y, z, c);
+        wasm._meso3i_set(x, y, z, c, Math.min(255, cur + RING_Q));
         n++;
       }
     }
@@ -311,8 +316,8 @@ export async function initMillSimulator(root, opts = {}) {
   const seedLump = (lx, ly, lz) => seedBall(lx, ly, lz, LUMP_R, LUMP_Q);
 
   // Camera ray through a canvas pixel -> lattice cell on the current
-  // slice plane. Camera orbits the lattice center at (yaw, pitch, dist);
-  // world coords ARE grid coords under the cubic embedding.
+  // slice plane (normal = ui.sAxis). Camera orbits the lattice center at
+  // (yaw, pitch, dist); world coords ARE grid coords under cubic embed.
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
     const nx = ((cx - r.left) / r.width) * 2 - 1;
@@ -331,14 +336,14 @@ export async function initMillSimulator(root, opts = {}) {
     // camera world position = Ry(-yaw)*Rx(-pitch)*(0,0,dist) + look-at
     const c1 = { x: 0, y: cam.dist * sph, z: cam.dist * cph };
     const cW = { x: -c1.z * syw + cam.cx, y: c1.y + cam.cy, z: c1.z * cyw + cam.cz };
-    const pz = ui.zCenter;
-    if (Math.abs(dW.z) < 1e-3) return null;  // edge-on: plane never hit
-    const t = (pz - cW.z) / dW.z;
+    const pw = [cW.x, cW.y, cW.z], dw = [dW.x, dW.y, dW.z];
+    if (Math.abs(dw[ui.sAxis]) < 1e-3) return null;  // edge-on: plane never hit
+    const t = (ui.sCut - pw[ui.sAxis]) / dw[ui.sAxis];
     if (t <= 0) return null;
     return {
-      lx: Math.round(cW.x + t * dW.x),
-      ly: Math.round(cW.y + t * dW.y),
-      lz: Math.round(ui.zCenter),
+      lx: Math.round(pw[0] + t * dw[0]),
+      ly: Math.round(pw[1] + t * dw[1]),
+      lz: Math.round(pw[2] + t * dw[2]),
     };
   };
 
@@ -359,8 +364,8 @@ export async function initMillSimulator(root, opts = {}) {
   gl.useProgram(prog);
 
   const U = {};
-  for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
-    'u_ghost_alpha', 'u_qmin', 'u_colorMode',
+  for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_s_center', 'u_s_thick',
+    'u_s_axis', 'u_ghost_alpha', 'u_qmin', 'u_colorMode',
     'u_nx', 'u_ny', 'u_nxy', 'u_step'])
     U[n] = gl.getUniformLocation(prog, n);
 
@@ -478,7 +483,7 @@ export async function initMillSimulator(root, opts = {}) {
         const cell = pickCell(e.clientX, e.clientY);
         if (cell) {
           const n = ui.arm === 'ring'
-            ? injectRing(cell.lx, cell.ly, cell.lz)
+            ? injectRing([cell.lx, cell.ly, cell.lz])
             : seedLump(cell.lx, cell.ly, cell.lz);
           upload(); dirty = true;
           if (ui.arm === 'ring')
@@ -507,8 +512,17 @@ export async function initMillSimulator(root, opts = {}) {
   };
   keepAwake();
   document.addEventListener('visibilitychange', keepAwake);
+  // wheel = zoom; Shift+wheel = scrub the cut plane through the volume
+  let cutAcc = 0;
   canvas.addEventListener('wheel', e => {
     e.preventDefault(); poke();
+    if (e.shiftKey) {
+      cutAcc += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      const step = Math.trunc(cutAcc / 60);
+      if (step) { setCut(ui.sCut + step); cutAcc -= step * 60; }
+      return;
+    }
+    cutAcc = 0;
     tgt.dist = Math.max(20, Math.min(300, tgt.dist * (1 + e.deltaY * 0.001)));
     dirty = true;
   }, { passive: false });
@@ -516,7 +530,7 @@ export async function initMillSimulator(root, opts = {}) {
   // ---------- state / UI ----------
   const ui = {
     playing: true, tickMs: 0, budget: 12, tick: 0, tps: 20, tickDebt: 0,
-    zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
+    sAxis: 2, sCut: D3 >> 1, sSlab: D3, ghostAlpha: 0.06,
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
@@ -526,12 +540,23 @@ export async function initMillSimulator(root, opts = {}) {
   // boot state: a cold lump at center — parked heat, inert in vacuum
   // until the user turns on a drive or a beam
   seedLump(CX, CY, CZ);
-  // sync tuning-slider bounds with the engine's actual depth
-  for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
-    const el = root.querySelector(sel);
-    if (el) { el.max = max; el.value = val;
-      const o = el.parentElement?.querySelector('output'); if (o) o.value = val; }
-  }
+  // slice sliders track whichever plane axis is active
+  const syncSliceUI = () => {
+    const cut = root.querySelector('[data-cut]');
+    const slab = root.querySelector('[data-slab]');
+    if (cut) { cut.max = DIM[ui.sAxis] - 1; cut.value = ui.sCut;
+      const o = cut.parentElement?.querySelector('output'); if (o) o.value = ui.sCut; }
+    if (slab) { slab.max = DIM[ui.sAxis]; slab.value = ui.sSlab;
+      const o = slab.parentElement?.querySelector('output'); if (o) o.value = ui.sSlab; }
+  };
+  const setCut = (v) => {
+    ui.sCut = Math.max(0, Math.min(DIM[ui.sAxis] - 1, v));
+    const el = root.querySelector('[data-cut]');
+    if (el) { el.value = ui.sCut;
+      const o = el.parentElement?.querySelector('output'); if (o) o.value = ui.sCut; }
+    dirty = true;
+  };
+  syncSliceUI();
   // render stride: subsample the lattice when the instance count would
   // crush the GPU (headless-scale grids / weak mobile GPUs). Adjusts on
   // a SUSTAINED window only — a warmup dip (shader compile, first
@@ -606,10 +631,18 @@ export async function initMillSimulator(root, opts = {}) {
   const press = (sel, key, on) => {
     if (ui[key] !== on) root.querySelector(sel)?.click();
   };
+  // M49 friction params: every scene sets all three explicitly so
+  // presets compose cleanly (no flag leaks between scenes)
+  const setFric = (park = 50, curve = 0, wall = 0) => {
+    ctl('[data-park]', park);
+    ctl('[data-fcurve]', String(curve), 'change');
+    ctl('[data-wall]', wall);
+  };
   const SCENES = {
     wound: () => {
       ctl('[data-coll]', '1', 'change');
       ctl('[data-lat]', 16);
+      setFric(50, 0, 0);
       press('[data-pair]', 'pair', true);
       press('[data-beam]', 'beam', false);
       press('[data-drive]', 'drive', true);
@@ -619,6 +652,7 @@ export async function initMillSimulator(root, opts = {}) {
     breath: () => {
       ctl('[data-coll]', '0', 'change');
       ctl('[data-lat]', 1);
+      setFric(50, 0, 0);
       press('[data-pair]', 'pair', false);
       press('[data-beam]', 'beam', false);
       press('[data-drive]', 'drive', true);
@@ -630,11 +664,43 @@ export async function initMillSimulator(root, opts = {}) {
       ctl('[data-lat]', 1);
       ctl('[data-phot]', '2', 'change');
       ctl('[data-bov]', 6);
+      setFric(50, 0, 0);
       press('[data-pair]', 'pair', false);
       press('[data-drive]', 'drive', false);
       press('[data-beam]', 'beam', true);
       wasm._meso3i_clear(); seedLump(CX, CY, CZ);
       say('comet ablation — offset plane wave grazing a cold lump: watch the stimulated plume and core@ drift', 6000);
+    },
+    // M49 capture-rule regimes — the phase boundary is live
+    porous: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      setFric(50, 1, 0);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('porous rim — capture ramps 0→100% only at saturation: the skin never closes and the lump unravels (M49: ~98% mass loss)', 6000);
+    },
+    fossil: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      setFric(50, 2, 0);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('fossil seal — capture hits 100% at 2×cap: the lump traps everything and goes transaction-silent. A scar, not a metabolism', 6000);
+    },
+    walled: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      setFric(50, 0, 32);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', true);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('walled crust — Wall 32: saturated sites refuse inflow; a dense crust builds at the refusal boundary with a hollow core. Add ➤ for the M49 downwind drift', 6500);
     },
   };
   bind('[data-scene]', 'change', e => {
@@ -684,8 +750,23 @@ export async function initMillSimulator(root, opts = {}) {
     const o = e.target.parentElement?.querySelector('output');
     if (o) o.value = e.target.value;
   };
-  bind('[data-zcenter]', 'input', e => { ui.zCenter = +e.target.value; readout(e); dirty = true; });
-  bind('[data-zthick]', 'input', e => { ui.zThick = +e.target.value; readout(e); dirty = true; });
+  bind('[data-axis]', 'change', e => {
+    ui.sAxis = +e.target.value;
+    ui.sCut = DIM[ui.sAxis] >> 1;
+    ui.sSlab = DIM[ui.sAxis];
+    syncSliceUI(); dirty = true;
+    say(`slicing ${['yz', 'xz', 'xy'][ui.sAxis]} — Shift+scroll scrubs the cut · tools drop on this plane`, 5000);
+  });
+  bind('[data-cut]', 'input', e => { ui.sCut = +e.target.value; readout(e); dirty = true; });
+  bind('[data-slab]', 'input', e => { ui.sSlab = +e.target.value; readout(e); dirty = true; });
+  bind('[data-fcurve]', 'change', e => {
+    wasm._meso3i_friccurve(+e.target.value);
+    say(+e.target.value === 1 ? 'capture ramp →255: rim stays porous — watch the lump unravel'
+      : +e.target.value === 2 ? 'capture ramp →2×cap: interior seals — watch breathing die'
+      : 'flat capture gate — the canonical constant', 4500);
+  });
+  bind('[data-park]', 'input', e => { wasm._meso3i_fricp(Math.round(+e.target.value * 2.56)); readout(e); });
+  bind('[data-wall]', 'input', e => { wasm._meso3i_reflect(+e.target.value); readout(e); });
   bind('[data-qmin]', 'input', e => { ui.qmin = +e.target.value; readout(e); dirty = true; });
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
@@ -744,25 +825,25 @@ export async function initMillSimulator(root, opts = {}) {
   }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
-  // quick-view presets: smooth-lerp camera + jump slice values
+  // quick-view presets: smooth-lerp camera + slice plane jump. Each
+  // preset chooses the slab axis its name implies — 'side' is a real
+  // vertical cut, 'bore' a top-down xz slab, 'equator' a horizontal one.
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 45,  zCenter: D3 >> 1, zThick: D3 },
-    equator: { yaw: 0.7,  pitch: 0.18, dist: 50,  zCenter: D3 >> 1, zThick: 4 },
-    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 55,  zCenter: D3 >> 1, zThick: D3 },
-    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 65,  zCenter: D3 >> 1, zThick: 1 },
-    side:    { yaw: 0.7,  pitch: 0.05, dist: 60,  zCenter: D3 >> 1, zThick: D3 },
-    core:    { yaw: 0.9,  pitch: 0.9,  dist: 35,  zCenter: D3 >> 1, zThick: 8 },
-  };
-  const setRange = (sel, v) => {
-    const el = root.querySelector(sel);
-    if (el) { el.value = v; el.dispatchEvent(new Event('input')); }
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 45,  ax: 2, cut: D3 >> 1, slab: D3 },
+    equator: { yaw: 0.7,  pitch: 0.18, dist: 50,  ax: 2, cut: D3 >> 1, slab: 4 },
+    bore:    { yaw: 0.0,  pitch: 1.5,  dist: 55,  ax: 1, cut: H3 >> 1, slab: 8 },
+    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 65,  ax: 2, cut: D3 >> 1, slab: 1 },
+    side:    { yaw: -1.5, pitch: 0.2,  dist: 60,  ax: 0, cut: W3 >> 1, slab: 4 },
+    core:    { yaw: 0.9,  pitch: 0.9,  dist: 35,  ax: 2, cut: D3 >> 1, slab: 8 },
   };
   const applyPreset = (name) => {
     const p = PRESETS[name];
     if (!p) return;
     Object.assign(tgt, { yaw: p.yaw, pitch: p.pitch, dist: p.dist, cx: cenX, cy: cenY, cz: cenZ });
-    ui.zCenter = p.zCenter; ui.zThick = p.zThick;
-    setRange('[data-zcenter]', ui.zCenter); setRange('[data-zthick]', ui.zThick);
+    ui.sAxis = p.ax; ui.sCut = p.cut; ui.sSlab = p.slab;
+    const axSel = root.querySelector('[data-axis]');
+    if (axSel) axSel.value = String(p.ax);
+    syncSliceUI();
     poke(); dirty = true;
   };
   for (const el of root.querySelectorAll('[data-preset]')) {
@@ -858,8 +939,9 @@ export async function initMillSimulator(root, opts = {}) {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.uniformMatrix4fv(U.u_mvp, false, m4.mul(proj, view));
       gl.uniform1f(U.u_size, ui.size);
-      gl.uniform1f(U.u_z_center, ui.zCenter);
-      gl.uniform1f(U.u_z_thickness, ui.zThick);
+      gl.uniform1f(U.u_s_center, ui.sCut);
+      gl.uniform1f(U.u_s_thick, ui.sSlab);
+      gl.uniform1i(U.u_s_axis, ui.sAxis);
       gl.uniform1f(U.u_ghost_alpha, ui.ghostAlpha);
       gl.uniform1f(U.u_qmin, ui.qmin);
       gl.uniform1i(U.u_colorMode, ui.colorMode);
