@@ -91,9 +91,9 @@ onUnmounted(() => {
         <div class="mill-grp grp-time">
           <em>time <button class="mill-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
           <div class="mill-grp-row">
-            <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play pause</span></button>
-            <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step tick</span></button>
-            <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset field</span></button>
+            <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
+            <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step</span></button>
+            <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
           </div>
         </div>
         <div class="mill-grp grp-inject">
@@ -101,26 +101,26 @@ onUnmounted(() => {
           <div class="mill-grp-row">
             <button data-drive aria-pressed="false"
                     title="Convergent feed — 18 spokes pouring flux into the core"
-                    aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">flux feed</span></button>
+                    aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
             <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
-                    aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">photon beam</span></button>
+                    aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">beam</span></button>
             <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
-                    aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">vortex ring</span></button>
+                    aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">ring</span></button>
             <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
-                    aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">cold rock</span></button>
+                    aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">rock</span></button>
             <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
-                    aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pair rules</span></button>
+                    aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pairs</span></button>
             <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
-                    aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary lumps</span></button>
+                    aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary</span></button>
           </div>
         </div>
         <div class="mill-grp grp-ops">
           <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
           <div class="mill-grp-row">
             <button data-spin class="on" aria-pressed="true"
-                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">auto orbit</span></button>
-            <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save snap</span></button>
-            <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load snap</span></button>
+                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
+            <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save</span></button>
+            <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
           </div>
         </div>
         <div class="mill-grp grp-presets">
@@ -424,14 +424,14 @@ onUnmounted(() => {
 .mill-transport { gap: 6px; flex-wrap: wrap; justify-content: center; }
 
 /* control groups — named clusters with micro-captions, DAW-style.
-   The caption tells you what the cluster is FOR; the ? chip opens
-   a card explaining each tool in it. */
+   Caption rides inline on the group's left edge so a group costs
+   exactly one row of height; the ? chip opens a card explaining
+   each tool in it. */
 .mill-grp {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 4px 8px 5px;
+  gap: 6px;
+  padding: 3px 7px;
   background: rgba(8, 12, 24, 0.55);
   border: 1px solid rgba(160, 200, 255, 0.09);
   border-radius: 9px;
@@ -439,20 +439,18 @@ onUnmounted(() => {
 .mill-grp > em {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 3px;
   font: 7.5px monospace;
   font-style: normal;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   opacity: 0.7;
+  white-space: nowrap;
 }
 .mill-grp-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
 }
 .grp-time > em    { color: var(--mill-accent); }
 .grp-inject > em  { color: #ffb35c; }
@@ -485,27 +483,24 @@ onUnmounted(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light);
   cursor: pointer;
 }
-/* transport buttons: glyph over a small caption, two lines */
+/* transport buttons: glyph + short inline label, one compact line */
 .mill-grp-row > button {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  min-width: 42px;
-  min-height: 42px;
-  padding: 3px 5px 7px;
+  gap: 4px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 2px 9px 5px;
   line-height: 1;
 }
-.mill-grp-row > button .g { font-size: 13px; line-height: 1.15; }
+.mill-grp-row > button .g { font-size: 12px; line-height: 1; }
 .mill-grp-row > button .l {
   font-size: 7.5px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.68;
-  max-width: 44px;
-  text-align: center;
-  line-height: 1.25;
+  opacity: 0.7;
+  white-space: nowrap;
 }
 .mill-grp-row > button:active {
   transform: scale(0.94);
@@ -578,6 +573,11 @@ onUnmounted(() => {
   text-transform: uppercase;
   opacity: 0.75;
 }
+/* dropdowns never balloon to their longest option — the collapsed
+   text truncates, the open menu still shows full names */
+.mill-field select[data-scene]  { width: 118px; }
+.mill-field select[data-preset] { width: 92px; }
+.mill-field select[data-colormode] { width: 72px; }
 
 /* ? help chips — tiny round button seated beside each control */
 .mill-help {
