@@ -1,0 +1,91 @@
+
+=== IREFL=0  +x beam (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=22.023 rest=8929 park=6340 refl=0
+  t 200: cm_x=22.094 rest=6438 park=15077 refl=0
+  t 300: cm_x=22.063 rest=5765 park=21103 refl=0
+  t 400: cm_x=21.965 rest=5482 park=26824 refl=0
+  t 500: cm_x=21.996 rest=5289 park=32167 refl=0
+  t 600: cm_x=21.980 rest=5162 park=37406 refl=0
+  t 700: cm_x=22.004 rest=5079 park=42453 refl=0
+  t 800: cm_x=21.980 rest=4982 park=47505 refl=0
+  >> net drift -0.020 cells (TOWARD source)
+
+=== IREFL=0  -x beam (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=21.957 rest=9020 park=6226 refl=0
+  t 200: cm_x=21.957 rest=6578 park=15191 refl=0
+  t 300: cm_x=21.914 rest=5974 park=21340 refl=0
+  t 400: cm_x=21.992 rest=5629 park=27050 refl=0
+  t 500: cm_x=21.988 rest=5490 park=32528 refl=0
+  t 600: cm_x=22.023 rest=5328 park=37913 refl=0
+  t 700: cm_x=22.090 rest=5093 park=43481 refl=0
+  t 800: cm_x=22.066 rest=4937 park=48671 refl=0
+  >> net drift 0.066 cells (TOWARD source)
+
+=== IREFL=32 +x beam (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=21.938 rest=12262 park=465 refl=514
+  t 200: cm_x=21.816 rest=13079 park=1566 refl=1628
+  t 300: cm_x=21.750 rest=13310 park=2945 refl=2767
+  t 400: cm_x=21.629 rest=14391 park=4575 refl=3981
+  t 500: cm_x=21.492 rest=15316 park=5789 refl=5043
+  t 600: cm_x=21.504 rest=15296 park=7229 refl=6199
+  t 700: cm_x=21.445 rest=16046 park=8764 refl=7443
+  t 800: cm_x=21.500 rest=15242 park=10150 refl=8525
+  >> net drift -0.500 cells (TOWARD source)
+
+=== IREFL=32 -x beam (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=22.063 rest=12301 park=506 refl=483
+  t 200: cm_x=22.188 rest=13154 park=1634 refl=1520
+  t 300: cm_x=22.246 rest=13435 park=3162 refl=2781
+  t 400: cm_x=22.359 rest=14504 park=4817 refl=4120
+  t 500: cm_x=22.504 rest=15616 park=6527 refl=5450
+  t 600: cm_x=22.539 rest=16174 park=8113 refl=6621
+  t 700: cm_x=22.605 rest=16272 park=9260 refl=7711
+  t 800: cm_x=22.516 rest=15824 park=10845 refl=8821
+  >> net drift 0.516 cells (TOWARD source)
+
+=== IREFL=64 +x beam (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=21.953 rest=9148 park=5574 refl=146
+  t 200: cm_x=21.992 rest=6802 park=12221 refl=659
+  t 300: cm_x=21.898 rest=6169 park=17354 refl=893
+  t 400: cm_x=22.004 rest=5733 park=21744 refl=1103
+  t 500: cm_x=21.895 rest=5839 park=26006 refl=1402
+  t 600: cm_x=22.047 rest=5336 park=30069 refl=1660
+  t 700: cm_x=21.797 rest=5638 park=33887 refl=1961
+  t 800: cm_x=21.746 rest=5842 park=36526 refl=2506
+  >> net drift -0.254 cells (TOWARD source)
+
+=== IREFL=0  no-beam control (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=22.000 rest=11952 park=0 refl=0
+  t 200: cm_x=22.000 rest=11952 park=0 refl=0
+  t 300: cm_x=22.000 rest=11952 park=0 refl=0
+  t 400: cm_x=22.000 rest=11952 park=0 refl=0
+  t 500: cm_x=22.000 rest=11952 park=0 refl=0
+  t 600: cm_x=22.000 rest=11952 park=0 refl=0
+  t 700: cm_x=22.000 rest=11952 park=0 refl=0
+  t 800: cm_x=22.000 rest=11952 park=0 refl=0
+  >> net drift 0.000 cells (no beam)
+
+=== IREFL=32 no-beam control (seeded mass 11952) ===
+  t   0: cm_x=22.000 rest=11952 park=0 refl=0
+  t  60: cm_x=22.000 rest=11952 park=0 refl=0
+  t 100: cm_x=22.000 rest=11952 park=0 refl=0
+  t 200: cm_x=22.000 rest=11952 park=0 refl=0
+  t 300: cm_x=22.000 rest=11952 park=0 refl=0
+  t 400: cm_x=22.000 rest=11952 park=0 refl=0
+  t 500: cm_x=22.000 rest=11952 park=0 refl=0
+  t 600: cm_x=22.000 rest=11952 park=0 refl=0
+  t 700: cm_x=22.000 rest=11952 park=0 refl=0
+  t 800: cm_x=22.000 rest=11952 park=0 refl=0
+  >> net drift 0.000 cells (no beam)

@@ -1,0 +1,8 @@
+verifying loop closure (m=2):
+  (-4,-4) → (-2,-4) → (0,-4) → (1,-3) → (2,-2) → (1,-1) → (0,0) → (-2,0) → (-4,0) → (-5,-1) → (-6,-2) → (-5,-3)
+scalar baseline      · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  
+drest canonical      · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  
+drest fast-emission  · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  
+drest low-friction   · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  
+drest heavy-drag     · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  
+drest lat4           · 12 sites seeded | t0: Lz=1152 f=288  t40: Lz=0 f=0  t80: Lz=0 f=0  t120: Lz=0 f=0  t160: Lz=0 f=0  t200: Lz=0 f=0  t240: Lz=0 f=0  t280: Lz=0 f=0  t320: Lz=0 f=0  t360: Lz=0 f=0  t400: Lz=0 f=0  

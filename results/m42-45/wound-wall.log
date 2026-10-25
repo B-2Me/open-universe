@@ -1,0 +1,92 @@
+
+=== IDREST IREFL=0  no-beam (wound fossil at rest) (seeded mass 51632, seeded Lz 154624) ===
+  t   0: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t  60: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 200: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 400: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 600: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 800: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 860: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+
+=== IDREST IREFL=0  +x beam (seeded mass 51632, seeded Lz 154624) ===
+  t   0: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t  60: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 200: Lz_park=  46588 cm_x=22.226 pk=15132 sc=630 park=65313 refl=0
+        Lz by shell r0..r7:      0    122   2194   9430  17172   6663   6796   4211
+        pk by shell r0..r7:     74    475   1791   3748   5239   1694   1319    792
+  t 400: Lz_park=  39807 cm_x=22.388 pk=14453 sc=433 park=77575 refl=0
+        Lz by shell r0..r7:      0     43   1614   7044  14228   5970   6494   4414
+        pk by shell r0..r7:    165    469   1733   3319   4929   1543   1462    833
+  t 600: Lz_park=  37591 cm_x=22.447 pk=14252 sc=361 park=88417 refl=0
+        Lz by shell r0..r7:      0     35   1512   6421  13173   5909   6165   4376
+        pk by shell r0..r7:     98    424   1670   3305   4950   1519   1464    822
+  t 800: Lz_park=  36128 cm_x=22.529 pk=14236 sc=324 park=99797 refl=0
+        Lz by shell r0..r7:      0     28   1192   5429  12598   6257   6085   4539
+        pk by shell r0..r7:    169    478   1638   3233   4806   1600   1455    857
+  t 860: Lz_park=  35949 cm_x=22.502 pk=14233 sc=315 park=102911 refl=0
+        Lz by shell r0..r7:      0     23   1242   5459  12371   6331   6020   4503
+        pk by shell r0..r7:    179    516   1628   3215   4790   1617   1439    849
+
+=== IDREST IREFL=32 no-beam (wall sees wound mass?) (seeded mass 51632, seeded Lz 154624) ===
+  t   0: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t  60: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 200: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 400: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 600: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 800: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 860: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+
+=== IDREST IREFL=32 +x beam (wound lump behind crust) (seeded mass 51632, seeded Lz 154624) ===
+  t   0: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t  60: Lz_park= 154624 cm_x=22.000 pk=39680 sc=11952 park=0 refl=0
+        Lz by shell r0..r7:      0   1024  15360  70656  67584      0      0      0
+        pk by shell r0..r7:      0    704   5760  18496  14720      0      0      0
+  t 200: Lz_park= 152240 cm_x=21.964 pk=40762 sc=11778 park=1860 refl=1895
+        Lz by shell r0..r7:      0   1024  15360  68068  67788      0      0      0
+        pk by shell r0..r7:      0    704   6349  18603  15104      0      2      0
+  t 400: Lz_park= 152091 cm_x=21.905 pk=42146 sc=11792 park=4131 refl=3941
+        Lz by shell r0..r7:      0   1024  15360  67961  67746      0      0      0
+        pk by shell r0..r7:      0    704   6780  19387  15275      0      0      0
+  t 600: Lz_park= 151962 cm_x=21.864 pk=43100 sc=11772 park=6350 refl=6126
+        Lz by shell r0..r7:      0   1024  15360  67868  67710      0      0      0
+        pk by shell r0..r7:      0    704   6780  20182  15434      0      0      0
+  t 800: Lz_park= 151852 cm_x=21.826 pk=43992 sc=11783 park=8551 refl=8276
+        Lz by shell r0..r7:      0   1024  15360  67706  67762      0      0      0
+        pk by shell r0..r7:      0    704   6780  20909  15599      0      0      0
+  t 860: Lz_park= 151669 cm_x=21.815 pk=44248 sc=11784 park=9203 refl=8925
+        Lz by shell r0..r7:      0   1024  15360  67535  67750      0      0      0
+        pk by shell r0..r7:      0    704   6780  21107  15656      0      1      0

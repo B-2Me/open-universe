@@ -1,0 +1,12 @@
+phase 1: park the ring
+  t0: Lz_mov=9984 Lz_park=0
+  t20: Lz_mov=272 Lz_park=5464
+  t40: Lz_mov=0 Lz_park=5464
+  t60: Lz_mov=0 Lz_park=5464
+phase 2: drive on — carriers transit the fossil
+  t80: Lz_mov=949 Lz_park=4437
+  t100: Lz_mov=709 Lz_park=3595
+  t120: Lz_mov=497 Lz_park=3080
+  t140: Lz_mov=477 Lz_park=2422
+  t160: Lz_mov=127 Lz_park=2142
+  t180: Lz_mov=232 Lz_park=1871
