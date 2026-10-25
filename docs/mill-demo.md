@@ -20,7 +20,7 @@ pageClass: mill-page
 
 This is `meso3i` compiled to WebAssembly: 93,000 live cells, each carrying 19 integer channels of real quanta. There is no empty space and there are no objects: only directional traffic on a lattice, and the parked deposits that congestion leaves behind. Cyan is moving flux; amber is **parked momentum**: mass, in the only sense this universe has. Every behavior you can produce here is a measured milestone in the [Friction Substrate](/interference/meso-monograph) record (M33–M51), not a scripted animation.
 
-The page boots into the **spin vault** (M50): a wound lump — parked flux that remembers its direction — sealed behind a Wall-32 refusal crust, inert until you feed it. From there the controls are the experiment: **☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset; the **Scene** menu (under **Flags ▾**) reproduces the milestone regimes in one click.
+The page boots into the **spin vault** (M50): a wound lump — parked flux that remembers its direction — sealed behind a Wall-32 refusal crust, inert until you feed it. From there the controls are the experiment, grouped by job: **time** (play/step/reset), **inject** (**☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset), **ops** (orbit, snapshot), and **presets** — the **Scene** menu reproduces the milestone regimes in one click.
 
 ## Play with it
 

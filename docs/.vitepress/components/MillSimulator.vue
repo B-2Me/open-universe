@@ -52,87 +52,109 @@ onUnmounted(() => {
 
 <template>
   <div ref="host" class="mill-simulator">
-    <canvas class="mill-canvas" aria-label="Joule's Mill 3D lattice renderer"></canvas>
+    <div class="mill-stage">
+      <canvas class="mill-canvas" aria-label="Joule's Mill 3D lattice renderer"></canvas>
 
-    <!-- telemetry chip -->
-    <div class="mill-hud" data-hud>booting…</div>
-    <!-- transient status line under the telemetry chip — empty = hidden -->
-    <div class="mill-status" data-status></div>
+      <!-- telemetry chip -->
+      <div class="mill-hud" data-hud>booting…</div>
+      <!-- transient status line under the telemetry chip — empty = hidden -->
+      <div class="mill-status" data-status></div>
 
-    <!-- ? help card — floats over the canvas until dismissed -->
-    <div class="mill-card" data-card hidden>
-      <button class="mill-card-x" data-card-x aria-label="Close">×</button>
-      <div class="mill-card-title" data-card-title></div>
-      <div class="mill-card-body" data-card-body></div>
+      <!-- ? help card — floats over the canvas until dismissed -->
+      <div class="mill-card" data-card hidden>
+        <button class="mill-card-x" data-card-x aria-label="Close">×</button>
+        <div class="mill-card-title" data-card-title></div>
+        <div class="mill-card-body" data-card-body></div>
+      </div>
+
+      <!-- mass-partition sparkline: rest (amber) over flux (violet),
+           each strip auto-scaled — the lump's breath made visible -->
+      <canvas class="mill-graph" data-graph width="156" height="56"
+              title="Mass partition history — rest mass (amber) vs moving flux (violet), last ~240 ticks"></canvas>
+
+      <!-- split-view dressing: center divider + per-pane captions -->
+      <div class="mill-divider"></div>
+      <div class="mill-panetags"><span data-tagl></span><span data-tagr></span></div>
+
+      <!-- always-visible collapse toggle -->
+      <button class="mill-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
+
+      <!-- orientation gizmo — Blender-style viewport overlay, bottom-right;
+           rotates with the camera, double-click/tap resets -->
+      <canvas class="mill-gizmo" data-gizmo width="96" height="96"
+              title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
     </div>
-
-    <!-- mass-partition sparkline: rest (amber) over flux (violet),
-         each strip auto-scaled — the lump's breath made visible -->
-    <canvas class="mill-graph" data-graph width="156" height="56"
-            title="Mass partition history — rest mass (amber) vs moving flux (violet), last ~240 ticks"></canvas>
-
-    <!-- split-view dressing: center divider + per-pane captions -->
-    <div class="mill-divider"></div>
-    <div class="mill-panetags"><span data-tagl></span><span data-tagr></span></div>
-
-    <!-- always-visible collapse toggle -->
-    <button class="mill-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
 
     <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="mill-dock">
-      <div class="mill-well mill-transport" role="group" aria-label="Transport">
-        <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play pause</span></button>
-        <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step tick</span></button>
-        <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset field</span></button>
-        <button data-drive aria-pressed="false"
-                title="Convergent feed — 18 spokes pouring flux into the core"
-                aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">flux feed</span></button>
-        <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
-                aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">photon beam</span></button>
-        <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
-                aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">vortex ring</span></button>
-        <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
-                aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">cold rock</span></button>
-        <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
-                aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pair rules</span></button>
-        <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
-                aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary lumps</span></button>
-        <button data-spin class="on" aria-pressed="true"
-                title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">auto orbit</span></button>
-        <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save snap</span></button>
-        <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load snap</span></button>
-
-        <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
-          <option value="" selected>scene…</option>
-          <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
-          <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
-          <option value="breath">breathing core (☀ + Rad)</option>
-          <option value="comet">comet ablation (➤ off-center)</option>
-          <option value="porous">porous rim (ramp→255: dissolves)</option>
-          <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
-          <option value="walled">walled crust (Wall 32 + ☀)</option>
-        </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
-        <label class="mill-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
-          <option value="full"    selected>Full field</option>
-          <option value="side">Side profile</option>
-          <option value="equator">Equator slab</option>
-          <option value="bore">Top-down</option>
-          <option value="core">Core close-up</option>
-          <option value="lattice">Lattice plane</option>
-        </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
-        <label class="mill-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
-          <option value="0" selected>ember</option>
-          <option value="1">heat</option>
-          <option value="2">flux</option>
-          <option value="3">macro</option>
-        </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
-
-        <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
-        <canvas class="mill-gizmo" data-gizmo width="96" height="96"
-                title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
+      <div class="mill-well mill-transport" role="group" aria-label="Controls">
+        <div class="mill-grp grp-time">
+          <em>time <button class="mill-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
+          <div class="mill-grp-row">
+            <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play pause</span></button>
+            <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step tick</span></button>
+            <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset field</span></button>
+          </div>
+        </div>
+        <div class="mill-grp grp-inject">
+          <em>inject <button class="mill-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
+          <div class="mill-grp-row">
+            <button data-drive aria-pressed="false"
+                    title="Convergent feed — 18 spokes pouring flux into the core"
+                    aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">flux feed</span></button>
+            <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
+                    aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">photon beam</span></button>
+            <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
+                    aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">vortex ring</span></button>
+            <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
+                    aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">cold rock</span></button>
+            <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
+                    aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pair rules</span></button>
+            <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
+                    aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary lumps</span></button>
+          </div>
+        </div>
+        <div class="mill-grp grp-ops">
+          <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
+          <div class="mill-grp-row">
+            <button data-spin class="on" aria-pressed="true"
+                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">auto orbit</span></button>
+            <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save snap</span></button>
+            <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load snap</span></button>
+          </div>
+        </div>
+        <div class="mill-grp grp-presets">
+          <em>presets</em>
+          <div class="mill-grp-row">
+            <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+              <option value="" selected>scene…</option>
+              <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
+              <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
+              <option value="breath">breathing core (☀ + Rad)</option>
+              <option value="comet">comet ablation (➤ off-center)</option>
+              <option value="porous">porous rim (ramp→255: dissolves)</option>
+              <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
+              <option value="walled">walled crust (Wall 32 + ☀)</option>
+            </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
+            <label class="mill-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+              <option value="full"    selected>Full field</option>
+              <option value="side">Side profile</option>
+              <option value="equator">Equator slab</option>
+              <option value="bore">Top-down</option>
+              <option value="core">Core close-up</option>
+              <option value="lattice">Lattice plane</option>
+            </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
+            <label class="mill-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
+              <option value="0" selected>ember</option>
+              <option value="1">heat</option>
+              <option value="2">flux</option>
+              <option value="3">macro</option>
+            </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
+          </div>
+        </div>
+        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
+        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
       </div>
-
-      <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
 
       <div class="mill-well mill-selects">
         <label class="mill-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
@@ -171,8 +193,6 @@ onUnmounted(() => {
           <option value="modes">ember | flux</option>
         </select><button class="mill-help" data-help="split" aria-label="About Split">?</button></label>
       </div>
-
-      <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="mill-well mill-sliders">
         <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it">Cut   <input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output><button class="mill-help" data-help="cut" aria-label="About Cut">?</button></label>
@@ -224,6 +244,14 @@ onUnmounted(() => {
   border-radius: 10px;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+}
+/* stage — relative box that owns the canvas and every overlay; on
+   desktop it gets an explicit height so the dock grows the page */
+.mill-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
 }
 .mill-canvas {
   flex: 1;
@@ -340,11 +368,14 @@ onUnmounted(() => {
 .mill-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .mill-simulator.dock-hidden .mill-dock { display: none; }
 
-/* orientation gizmo — Blender-style axes chip, seated in the
-   transport well */
+/* orientation gizmo — Blender-style axes chip floating on the
+   canvas, bottom-right corner */
 .mill-gizmo {
-  width: 40px;
-  height: 40px;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 44px;
+  height: 44px;
   flex: none;
   border-radius: 50%;
   background: rgba(8, 10, 20, 0.6);
@@ -390,11 +421,57 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-.mill-transport { gap: 4px; flex-wrap: wrap; justify-content: center; }
-.mill-sliders { flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
+.mill-transport { gap: 6px; flex-wrap: wrap; justify-content: center; }
+
+/* control groups — named clusters with micro-captions, DAW-style.
+   The caption tells you what the cluster is FOR; the ? chip opens
+   a card explaining each tool in it. */
+.mill-grp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px 5px;
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid rgba(160, 200, 255, 0.09);
+  border-radius: 9px;
+}
+.mill-grp > em {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font: 7.5px monospace;
+  font-style: normal;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.mill-grp-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.grp-time > em    { color: var(--mill-accent); }
+.grp-inject > em  { color: #ffb35c; }
+.grp-ops > em     { color: #b48cff; }
+.grp-presets > em { color: var(--mill-muted); }
+
+/* accordion wells always claim a full dock line — a partial row
+   beside the transport was what squeezed Tuning into a tall strip */
+.mill-selects,
+.mill-sliders { flex: 1 1 100%; }
+.mill-sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 5px 12px;
+}
+.mill-sliders label { justify-self: start; }
 
 /* raised controls — gradient face, dark rim, top highlight, drop shadow */
-.mill-transport button,
+.mill-grp-row > button,
 .mill-dock select {
   position: relative;
   min-width: 34px;
@@ -409,7 +486,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 /* transport buttons: glyph over a small caption, two lines */
-.mill-transport button {
+.mill-grp-row > button {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -420,8 +497,8 @@ onUnmounted(() => {
   padding: 3px 5px 7px;
   line-height: 1;
 }
-.mill-transport button .g { font-size: 13px; line-height: 1.15; }
-.mill-transport button .l {
+.mill-grp-row > button .g { font-size: 13px; line-height: 1.15; }
+.mill-grp-row > button .l {
   font-size: 7.5px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -430,16 +507,16 @@ onUnmounted(() => {
   text-align: center;
   line-height: 1.25;
 }
-.mill-transport button:active {
+.mill-grp-row > button:active {
   transform: scale(0.94);
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 }
-.mill-transport button.on {
+.mill-grp-row > button.on {
   color: var(--mill-accent);
 }
 /* on state = a small glowing horizontal pill inside the button,
    like an indicator LED under the glyph */
-.mill-transport button.on::after {
+.mill-grp-row > button.on::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -453,13 +530,13 @@ onUnmounted(() => {
   pointer-events: none;
 }
 /* armed tool = filled accent — unmistakably different from a passive toggle */
-.mill-transport button.armed {
+.mill-grp-row > button.armed {
   color: #04141c;
   background: var(--mill-accent);
   border-color: rgba(119, 255, 238, 0.8);
   box-shadow: 0 0 14px rgba(119, 255, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
-.mill-transport button:disabled { opacity: 0.35; cursor: default; }
+.mill-grp-row > button:disabled { opacity: 0.35; cursor: default; }
 
 /* tuning accordions — selects + sliders stay collapsed until asked for;
    on load the dock is just the transport row */
@@ -486,7 +563,7 @@ onUnmounted(() => {
 }
 
 /* selects share one row — a well containing two labeled dropdowns */
-.mill-selects { flex-direction: row; }
+.mill-selects { flex-direction: row; flex-wrap: wrap; justify-content: center; }
 .mill-field {
   display: flex;
   align-items: center;
@@ -634,9 +711,22 @@ onUnmounted(() => {
   opacity: 0.9;
 }
 
+/* desktop: let the dock breathe — fixed viewport height was clipping an
+   expanded Tuning/Flags and forcing inner scrollbars. Here the stage
+   keeps a viewport-anchored height while the page itself scrolls when
+   the dock grows; touch/narrow keeps the svh fit + contained scroll. */
+@media (min-width: 821px) and (pointer: fine) {
+  .mill-simulator { height: auto; min-height: 0; }
+  .mill-stage {
+    flex: none;
+    height: calc(100svh - var(--tool-top, 76px) - 96px);
+    min-height: 320px;
+  }
+}
+
 /* real 44px targets only where fingers live */
 @media (pointer: coarse) {
-  .mill-transport button, .mill-dock select, .mill-uitoggle {
+  .mill-grp-row > button, .mill-dock select, .mill-uitoggle {
     min-width: 44px;
     min-height: 44px;
   }
