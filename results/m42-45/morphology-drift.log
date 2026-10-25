@@ -1,0 +1,17 @@
+morphology axis — fixed R5 geometry, +x beam 800t, drift vs IREFL
+
+-- IREFL=0 --
+  uniform Q16            seed=  3984 end_rest=  4604  drift=-0.152  park=39077 refl=0
+  uniform Q32            seed=  7968 end_rest=  4956  drift=-0.090  park=45504 refl=0
+  uniform Q48            seed= 11952 end_rest=  5111  drift=-0.023  park=50663 refl=0
+  uniform Q96            seed= 23904 end_rest=  4989  drift=-0.051  park=68534 refl=0
+  shell rim96/core8      seed= 19064 end_rest=  5084  drift=+0.000  park=58049 refl=0
+  grown remnant          seed=     0 end_rest=  1295  drift=-0.441  park=33007 refl=0
+
+-- IREFL=32 --
+  uniform Q16            seed=  3984 end_rest=  5914  drift=-0.246  park=16411 refl=5815
+  uniform Q32            seed=  7968 end_rest= 11578  drift=-0.707  park=10355 refl=9184
+  uniform Q48            seed= 11952 end_rest= 15415  drift=-0.539  park=10819 refl=9411
+  uniform Q96            seed= 23904 end_rest= 26609  drift=-0.203  park=11175 refl=9500
+  shell rim96/core8      seed= 19064 end_rest= 22560  drift=-0.230  park=12259 refl=9272
+  grown remnant          seed=     0 end_rest=  4231  drift=-0.051  park=16212 refl=9684
