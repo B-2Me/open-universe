@@ -137,8 +137,10 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;                  // round billboard
-  float a = exp(-r2 * 3.0);               // gaussian falloff, soft foam edge
-  frag = vec4(v_color.rgb * v_color.a * a, 1.0);
+  float a = exp(-r2 * 4.5);               // gaussian falloff, soft foam edge
+  // rgb premultiplied by coverage AND coverage in alpha — the HDR pass
+  // averages (rgb/a) instead of summing, so dense cores keep their hue
+  frag = vec4(v_color.rgb * v_color.a * a, v_color.a * a);
 }`;
 
 // resolve pass — the point cloud accumulates additively into a
@@ -157,7 +159,12 @@ uniform sampler2D u_hdr;
 uniform float u_exposure;
 out vec4 frag;
 void main() {
-  vec3 c = texelFetch(u_hdr, ivec2(gl_FragCoord.xy), 0).rgb * u_exposure;
+  vec4 h = texelFetch(u_hdr, ivec2(gl_FragCoord.xy), 0);
+  // alpha-weighted average — a dense core shows its true palette hue
+  // (gold ember) instead of a clipped white sum; coverage then lifts
+  // brightness with depth so the lump still reads hotter inside
+  vec3 c = h.rgb / max(h.a, 1e-3) + vec3(0.02, 0.02, 0.05);
+  c *= u_exposure * (1.0 + 0.5 * (1.0 - exp(-max(h.a - 1.0, 0.0) * 0.3)));
   frag = vec4(c / (1.0 + c), 1.0);
 }`;
 
@@ -651,7 +658,7 @@ export async function initMillSimulator(root, opts = {}) {
     qmin: 1, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
-    phot: 2, pair: false, drest: 0, exposure: 1.5, split: 'off', scene: '',
+    phot: 2, pair: false, drest: 0, exposure: 1.2, split: 'off', scene: '',
     bdir: '+x', bap: 4, bou: 0, bov: 0,            // laser: dir/aperture/offsets
   };
   // split panes: {layout, mode} per half — mode -1 follows the View select
@@ -1084,7 +1091,7 @@ export async function initMillSimulator(root, opts = {}) {
 
   // ---------- main loop ----------
   upload();
-  let raf = 0, lastT = performance.now(), fps = 0;
+  let raf = 0, lastT = performance.now(), fps = 0, lastDraw = 0;
   const frame = (now) => {
     raf = requestAnimationFrame(frame);
     const dt = now - lastT; lastT = now;
@@ -1150,13 +1157,21 @@ export async function initMillSimulator(root, opts = {}) {
     } else lastSpent = 0;
 
     resize();
-    if (dirty) {
+    // draw-rate cap ~30fps: the field only changes on ticks (≤20tps),
+    // so rendering at vsync just burns GPU redrawing the same frame.
+    // dirty stays set until a draw actually happens — no frame is lost
+    if (dirty && now - lastDraw >= 30) {
+      lastDraw = now;
       const view = m4.mul(m4.translate(0, 0, -cam.dist),
         m4.mul(m4.rotX(cam.pitch), m4.mul(m4.rotY(cam.yaw),
           m4.translate(-cam.cx, -cam.cy, -cam.cz))));
-      if (hdrOK) gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+      if (hdrOK) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.clearColor(0, 0, 0, 0);          // transparent: bg tint lives in the tonemap
+      } else {
+        gl.clearColor(0.02, 0.02, 0.05, 1);
+      }
       gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0.02, 0.02, 0.05, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.uniform1f(U.u_size, ui.size);
       gl.uniform1f(U.u_s_center, ui.sCut);

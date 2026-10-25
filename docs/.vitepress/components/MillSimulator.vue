@@ -189,7 +189,7 @@ onUnmounted(() => {
         <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output><button class="mill-help" data-help="bov" aria-label="About OffV">?</button></label>
         <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output><button class="mill-help" data-help="speed" aria-label="About Speed">?</button></label>
         <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output><button class="mill-help" data-help="zoom" aria-label="About Zoom">?</button></label>
-        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="150"><output>150</output><button class="mill-help" data-help="expo" aria-label="About Glow">?</button></label>
+        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="120"><output>120</output><button class="mill-help" data-help="expo" aria-label="About Glow">?</button></label>
       </div>
     </div>
   </div>
