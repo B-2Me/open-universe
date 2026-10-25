@@ -74,26 +74,26 @@ onUnmounted(() => {
     <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="mill-dock">
       <div class="mill-well mill-transport" role="group" aria-label="Transport">
-        <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
-        <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
-        <button data-reset title="Clear the field"    aria-label="Reset">⟲</button>
+        <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play pause</span></button>
+        <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step tick</span></button>
+        <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset field</span></button>
         <button data-drive aria-pressed="false"
                 title="Convergent feed — 18 spokes pouring flux into the core"
-                aria-label="Toggle convergent drive">☀</button>
+                aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">flux feed</span></button>
         <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
-                aria-label="Toggle photon laser"      aria-pressed="false">➤</button>
+                aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">photon beam</span></button>
         <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
-                aria-label="Vortex ring tool"         aria-pressed="false">⌖</button>
+                aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">vortex ring</span></button>
         <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
-                aria-label="Cold rock tool"           aria-pressed="false">●</button>
+                aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">cold rock</span></button>
         <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
-                aria-label="Toggle antipodal pair rules" aria-pressed="false">⇄</button>
+                aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pair rules</span></button>
         <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
-                aria-label="Drop a binary lump pair">⚭</button>
+                aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary lumps</span></button>
         <button data-spin class="on" aria-pressed="true"
-                title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
-        <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
-        <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
+                title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">auto orbit</span></button>
+        <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save snap</span></button>
+        <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load snap</span></button>
         <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
         <canvas class="mill-gizmo" data-gizmo width="96" height="96"
                 title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
@@ -381,7 +381,7 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-.mill-transport { gap: 4px; }
+.mill-transport { gap: 4px; flex-wrap: wrap; justify-content: center; }
 .mill-sliders { flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
 
 /* raised controls — gradient face, dark rim, top highlight, drop shadow */
@@ -399,6 +399,28 @@ onUnmounted(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light);
   cursor: pointer;
 }
+/* transport buttons: glyph over a small caption, two lines */
+.mill-transport button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 3px 5px 7px;
+  line-height: 1;
+}
+.mill-transport button .g { font-size: 13px; line-height: 1.15; }
+.mill-transport button .l {
+  font-size: 7.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.68;
+  max-width: 44px;
+  text-align: center;
+  line-height: 1.25;
+}
 .mill-transport button:active {
   transform: scale(0.94);
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
@@ -412,7 +434,7 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 3px;
+  bottom: 2px;
   width: 16px;
   height: 3px;
   transform: translateX(-50%);

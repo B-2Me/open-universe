@@ -696,7 +696,7 @@ export async function initMillSimulator(root, opts = {}) {
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
-  bind('[data-play]', 'click', e => { ui.playing = !ui.playing; e.target.textContent = ui.playing ? '⏸' : '▶'; });
+  bind('[data-play]', 'click', e => { ui.playing = !ui.playing; const g = e.currentTarget.querySelector('.g'); if (g) g.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => {
     if (ui.drive || ui.beam) inject();
     wasm._meso3i_drain_edge(3);
