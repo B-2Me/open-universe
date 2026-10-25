@@ -59,6 +59,13 @@ onUnmounted(() => {
     <!-- transient status line under the telemetry chip — empty = hidden -->
     <div class="mill-status" data-status></div>
 
+    <!-- ? help card — floats over the canvas until dismissed -->
+    <div class="mill-card" data-card hidden>
+      <button class="mill-card-x" data-card-x aria-label="Close">×</button>
+      <div class="mill-card-title" data-card-title></div>
+      <div class="mill-card-body" data-card-body></div>
+    </div>
+
     <!-- mass-partition sparkline: rest (amber) over flux (violet),
          each strip auto-scaled — the lump's breath made visible -->
     <canvas class="mill-graph" data-graph width="156" height="56"
@@ -109,24 +116,24 @@ onUnmounted(() => {
           <option value="bore">Top-down</option>
           <option value="core">Core close-up</option>
           <option value="lattice">Lattice plane</option>
-        </select></label>
+        </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
         <label class="mill-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
           <option value="0" selected>ember</option>
           <option value="1">heat</option>
           <option value="2">flux</option>
           <option value="3">macro</option>
-        </select></label>
+        </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
         <label class="mill-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
           <option value="0" selected>uniform</option>
           <option value="1">shell-weighted</option>
           <option value="2">forward-bias</option>
-        </select></label>
+        </select><button class="mill-help" data-help="coll" aria-label="About Collide">?</button></label>
         <label class="mill-field"><span>Phot</span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
           <option value="0">off</option>
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
           <option value="3">absorbed</option>
-        </select></label>
+        </select><button class="mill-help" data-help="phot" aria-label="About Phot">?</button></label>
         <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
           <option value="" selected>scene…</option>
           <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
@@ -136,51 +143,51 @@ onUnmounted(() => {
           <option value="porous">porous rim (ramp→255: dissolves)</option>
           <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
           <option value="walled">walled crust (Wall 32 + ☀)</option>
-        </select></label>
+        </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
         <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
           <option value="1">directional</option>
-        </select></label>
+        </select><button class="mill-help" data-help="drest" aria-label="About Rest">?</button></label>
         <label class="mill-field"><span>Curve</span><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
           <option value="0" selected>flat</option>
           <option value="1">ramp→255</option>
           <option value="2">ramp→2cap</option>
-        </select></label>
+        </select><button class="mill-help" data-help="fcurve" aria-label="About Curve">?</button></label>
         <label class="mill-field"><span>Plane</span><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
           <option value="2" selected>xy</option>
           <option value="1">xz</option>
           <option value="0">yz</option>
-        </select></label>
+        </select><button class="mill-help" data-help="axis" aria-label="About Plane">?</button></label>
         <label class="mill-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>
           <option value="+z">+z</option><option value="-z">−z</option>
-        </select></label>
+        </select><button class="mill-help" data-help="bdir" aria-label="About Dir">?</button></label>
         <label class="mill-field"><span>Split</span><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
           <option value="off" selected>off</option>
           <option value="layout">cube | fcc</option>
           <option value="modes">ember | flux</option>
-        </select></label>
+        </select><button class="mill-help" data-help="split" aria-label="About Split">?</button></label>
       </div>
 
       <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="mill-well mill-sliders">
-        <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it">Cut   <input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output></label>
-        <label title="Slab thickness in cells — at max the whole volume shows">Slab  <input type="range" data-slab min="1" max="36" step="1" value="36"><output>36</output></label>
-        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
-        <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8" title="Friction cap — transit drag parks flux at destinations this dense"><output>8</output></label>
-        <label title="Park probability % — flat capture rate above the Drag cap (M49: 50 is canonical, not sacred)">Park% <input type="range" data-park min="0" max="100" step="1" value="50"><output>50</output></label>
-        <label title="Congestion wall — destinations this dense refuse inflow entirely (M49: the crust wall)">Wall  <input type="range" data-wall min="0" max="128" step="1" value="0"><output>0</output></label>
-        <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
-        <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
-        <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output></label>
-        <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
-        <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
-        <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
-        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output></label>
-        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="150"><output>150</output></label>
+        <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it">Cut   <input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output><button class="mill-help" data-help="cut" aria-label="About Cut">?</button></label>
+        <label title="Slab thickness in cells — at max the whole volume shows">Slab  <input type="range" data-slab min="1" max="36" step="1" value="36"><output>36</output><button class="mill-help" data-help="slab" aria-label="About Slab">?</button></label>
+        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output><button class="mill-help" data-help="size" aria-label="About Size">?</button></label>
+        <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output><button class="mill-help" data-help="qmin" aria-label="About Q≥">?</button></label>
+        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8" title="Friction cap — transit drag parks flux at destinations this dense"><output>8</output><button class="mill-help" data-help="fric" aria-label="About Drag">?</button></label>
+        <label title="Park probability % — flat capture rate above the Drag cap (M49: 50 is canonical, not sacred)">Park% <input type="range" data-park min="0" max="100" step="1" value="50"><output>50</output><button class="mill-help" data-help="park" aria-label="About Park%">?</button></label>
+        <label title="Congestion wall — destinations this dense refuse inflow entirely (M49: the crust wall)">Wall  <input type="range" data-wall min="0" max="128" step="1" value="0"><output>0</output><button class="mill-help" data-help="wall" aria-label="About Wall">?</button></label>
+        <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output><button class="mill-help" data-help="rad" aria-label="About Rad">?</button></label>
+        <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output><button class="mill-help" data-help="lat" aria-label="About Lat">?</button></label>
+        <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output><button class="mill-help" data-help="bap" aria-label="About Ap">?</button></label>
+        <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output><button class="mill-help" data-help="bou" aria-label="About OffU">?</button></label>
+        <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output><button class="mill-help" data-help="bov" aria-label="About OffV">?</button></label>
+        <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output><button class="mill-help" data-help="speed" aria-label="About Speed">?</button></label>
+        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output><button class="mill-help" data-help="zoom" aria-label="About Zoom">?</button></label>
+        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="150"><output>150</output><button class="mill-help" data-help="expo" aria-label="About Glow">?</button></label>
       </div>
     </div>
   </div>
@@ -492,6 +499,65 @@ onUnmounted(() => {
   text-transform: uppercase;
   opacity: 0.75;
 }
+
+/* ? help chips — tiny round button seated beside each control */
+.mill-help {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  font: 9px/15px monospace;
+  text-align: center;
+  color: var(--mill-muted);
+  background: linear-gradient(180deg, var(--mill-btn-top), var(--mill-btn-bot));
+  border: 1px solid var(--mill-bevel-dark);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light);
+  cursor: pointer;
+  opacity: 0.55;
+}
+.mill-help:hover { opacity: 1; color: var(--mill-accent); }
+.mill-help:active { transform: scale(0.9); }
+
+/* help card — floats over the canvas under the status line */
+.mill-card {
+  position: absolute;
+  top: 62px;
+  left: 8px;
+  max-width: min(320px, calc(100% - 24px));
+  padding: 10px 14px 11px;
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--mill-bevel-light);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--mill-bevel-light);
+  backdrop-filter: blur(8px);
+  z-index: 4;
+}
+.mill-card[hidden] { display: none; }
+.mill-card-title {
+  font: 11px monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mill-accent);
+  margin-bottom: 5px;
+  padding-right: 18px;
+}
+.mill-card-body { font: 11px/1.55 monospace; color: var(--mill-muted); }
+.mill-card-x {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font: 12px/16px monospace;
+  color: var(--mill-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.mill-card-x:hover { opacity: 1; color: var(--mill-accent); }
 .mill-dock select {
   appearance: none;
   -webkit-appearance: none;

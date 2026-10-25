@@ -934,6 +934,64 @@ export async function initMillSimulator(root, opts = {}) {
   });
   acc('[data-flags]', 'sel-open');
   acc('[data-tune]', 'tune-open');
+
+  // ? help cards — one delegated listener covers every chip; the Scene
+  // chip resolves whichever scene the select currently names
+  const HELP = {
+    cut: ['Cut', 'position of the slice plane along the Plane axis — cells outside the Slab window ghost to silhouettes. Shift+scroll on the canvas scrubs it through the volume.'],
+    slab: ['Slab', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane. Thin slabs are how you read core/skin anatomy.'],
+    size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
+    qmin: ['Q≥', 'density floor — a cell is clipped unless its brightest channel reads at least this. Raise it to strip haze and expose skeletons.'],
+    fric: ['Drag (IFRIC)', 'transit friction threshold — a carrier arriving at a destination this dense becomes eligible to park as rest mass. The canonical congestion drag.'],
+    park: ['Park% (fricp)', 'capture probability for a qualifying transit — 50 is the measured canonical gate, not a constant of nature (M49). 0 never parks, 100 always does.'],
+    wall: ['Wall (IREFL)', 'congestion refusal — destinations this dense reject inflow outright; carriers turn back instead of entering. The crust/vault builder (M49–M51).'],
+    rad: ['Rad', 'radiation rate — how readily parked rest re-emits as moving flux once its dwell is served.'],
+    lat: ['Lat', 'emission latency — a carrier must dwell this many ticks before the rest channel may radiate it. Long dwell freezes fossils; short keeps lumps breathing.'],
+    bap: ['Ap', 'beam aperture radius — the photon laser fires a checkerboard disc this wide, just inside the drain shell.'],
+    bou: ['OffU', 'beam offset, first axis of the plane normal to Dir — off-center beams graze lumps instead of striking dead center (the M36 comet geometry).'],
+    bov: ['OffV', 'beam offset, second axis of the normal plane — with OffU it places the aperture anywhere on the disc.'],
+    speed: ['Speed', 'tick governor in ticks/sec — c here is 1 cell/tick, so uncapped the lattice outruns the eye. The renderer adapts stride to keep the frame alive.'],
+    zoom: ['Zoom', 'camera distance — same as scroll / pinch.'],
+    expo: ['Glow', 'HDR exposure — how much accumulated light the tonemap passes through. Lower tames saturated cores, higher lifts faint flux.'],
+    focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full field.'],
+    colormode: ['View', 'render channel — ember: parked heat + cyan flux · heat: rest only · flux: moving only · macro: total occupancy, noise stripped.'],
+    coll: ['Collide', 'collision rule variant — uniform is canonical; the others reweight how colliding carriers pick outgoing channels.'],
+    phot: ['Phot (IPHOT)', 'photon coupling — how beam light interacts with parked mass: catalyst / stimulated / absorbed / off. The ➤ beam only exists while this is on.'],
+    scene: ['Scene', 'measured regimes from the meso monograph — one click sets flags, seeds and geometry. Pick a scene, then tap ? again for its card.'],
+    'scene.vault': ['spin vault · M50', 'a wound lump — directional rest parked with real winding — sealed behind a Wall-32 refusal crust. Inert until fed: the recorded vault kept 98% of stored winding under an 800-tick mass beam while accreting ~11% mass.'],
+    'scene.wound': ['wound lump · M42', 'directional rest + Lat 16 + pair rules under convergent feed — parked flux that remembers its channel, storing angular momentum in rest bins.'],
+    'scene.breath': ['breathing core · M33', 'convergent feed plus radiation — the lump feeds and vents until it settles into a steady ember. Watch the sparkline plateau.'],
+    'scene.comet': ['comet ablation · M36', 'an off-center beam erodes the lump asymmetrically — ablation reads as apparent drift; morphology, not flags, decides the direction (M51).'],
+    'scene.porous': ['porous rim · M49', 'capture ramped soft (ramp→255) — the park gate weakens as density climbs and the rim dissolves into froth.'],
+    'scene.fossil': ['fossil seal · M49', 'capture ramped steep (ramp→2cap) — the rim parks first and fossilizes, sealing the lump in a self-made crust.'],
+    'scene.walled': ['walled crust · M49', 'Wall 32 refusal under convergent feed — congestion builds a stratified crust; where new mass lands is morphology, not law.'],
+    'scene.none': ['Scene', 'no scene selected — the field is whatever you built. Pick a scene for its measured-regime card.'],
+    drest: ['Rest (IDREST)', 'rest-channel mode — scalar forgets direction (anonymous parked mass); directional parks "frozen flux" that keeps its channel: the winding memory behind wound lumps and vaults.'],
+    fcurve: ['Curve', 'capture curve — how park probability scales with destination density. Flat is canonical; ramp→255 dissolves lumps, ramp→2cap fossilizes them (M49).'],
+    axis: ['Plane', 'which coordinate Cut/Slab gate on — and the plane armed tools (⌖ ring, ● rock) inject onto.'],
+    bdir: ['Dir', 'beam direction — only the six axial channels travel straight on D3Q19; face diagonals zigzag and fan into spray.'],
+    split: ['Split', 'two lenses on the same live field — cube|fcc compares coordinate systems, ember|flux compares mass channels.'],
+  };
+  const cardEl = root.querySelector('[data-card]');
+  const cardT = root.querySelector('[data-card-title]');
+  const cardB = root.querySelector('[data-card-body]');
+  const hideCard = () => { if (cardEl) { cardEl.hidden = true; delete cardEl.dataset.key; } };
+  root.addEventListener('click', e => {
+    const hb = e.target.closest('[data-help]');
+    if (hb) {
+      e.preventDefault(); e.stopPropagation();
+      let key = hb.dataset.help;
+      if (key === 'scene') key = 'scene.' + (root.querySelector('[data-scene]')?.value || 'none');
+      if (cardEl?.dataset.key === key) { hideCard(); return; }
+      const [t, b] = HELP[key] || [key, 'no notes yet'];
+      if (cardT) cardT.textContent = t;
+      if (cardB) cardB.textContent = b;
+      if (cardEl) { cardEl.dataset.key = key; cardEl.hidden = false; }
+      return;
+    }
+    if (e.target.closest('[data-card-x]')) { hideCard(); return; }
+    if (!e.target.closest('[data-card]')) hideCard();
+  });
   const zoomEl = root.querySelector('[data-zoom]');
   const syncZoom = () => {           // wheel/pinch/preset moved dist externally
     if (!zoomEl) return;
