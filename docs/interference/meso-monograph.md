@@ -9,7 +9,7 @@ audio: /audio/meso-monograph.mp3
 
 # The Friction Substrate: A Multichannel Research Monograph
 
-*Consolidated findings from the `meso3i` campaign (M19–M45): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
+*Consolidated findings from the `meso3i` campaign (M19–M48): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
 
 ---
 
@@ -129,7 +129,7 @@ The mechanism class, *resting mass exchanging momentum with vacuum through direc
 
 ## Part VIII. The Structured-Matter Tier (M39–M45, `loom-meso`)
 
-*M38's boundary was drawn for scalar rest. This part measures what happens when the rest state is given the one thing it lacked: a channel identity. All results on the 72×72×36 loom grid, harnesses in `script/meso/*.mjs`.*
+*M38's boundary was drawn for scalar rest. This part measures what happens when the rest state is given the one thing it lacked: a channel identity. All results on the 72×72×36 Joule's Mill grid, harnesses in `script/meso/*.mjs`.*
 
 ### M39. The photon field (massless directional plane)
 
