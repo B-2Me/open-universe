@@ -9,7 +9,7 @@ audio: /audio/meso-monograph.mp3
 
 # The Friction Substrate: A Multichannel Research Monograph
 
-*Consolidated findings from the `meso3i` campaign (M19–M48): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
+*Consolidated findings from the `meso3i` campaign (M19–M49): a True-FCC integer-occupancy lattice gas on which transit friction produces accreting, venting, persistent, mobile, weakly self-gravitating bound matter. And, since the loom-meso extension, matter that stores angular momentum. Every claim below is anchored to a commit and a headless harness; every engineered rule is flagged as such.*
 
 ---
 
@@ -124,7 +124,8 @@ The mechanism class, *resting mass exchanging momentum with vacuum through direc
 - **Momentum accounting:** IFRIC absorbs transiting momentum into the network (flagged). Mass is exact; momentum is not: that is what friction means.
 - **Retracted:** single-spin `planck3` campaign mechanics (M1–M31), removed from the record as an implementation artifact; history retained in git.
 - **Corrected (M47b):** M37's "mutual attraction via reciprocal ablation". Two findings. (a) Under centered-drive configs the apparent convergence is a *drive-centric infall field*, not a two-body force (solo baselines identical). (b) In the faithful self-radiating regime (fricm>0, no drive) a real short-range pairwise approach exists at sep≤12 but is transient: it reverses as evaporation proceeds; lumps die before contact. Radiation-shadow gravity remains unproven.
-- **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IREFL, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant.
+- **Dormant:** Q-register path (IQMODE/IDIR/IQCAP), ICOND, IGATE, IBIAS/IFLD, DWELL, directed-emit recoil variant. (IREFL left this list at M49 — measured in series with IFRIC: hollow-core crust, ablation-drift reversal.)
+- **Constant-sensitivity (M49):** the M33 gate's `p=½` was never swept until M49. Lump phenomenology survives the flat-p band but scales ~15× in mass across it, and graded capture ramps leave the phase entirely (dissolving or fossil regimes). Every M33–M48 number inherits this dependence.
 - **Branch ledger (`loom-meso`):** IPHOT/IPHOT=3 absorption, IPAIR, ILAT and IDREST are flag-gated authored mechanics in the same honesty class as IFRIC. Under IDREST, `totals()` counts stored directional momentum: a friction park is momentum-neutral (stored, not absorbed). Under IPHOT=3, photon momentum joins the ledger so absorption closes exactly.
 
 ## Part VIII. The Structured-Matter Tier (M39–M45, `loom-meso`)
@@ -242,6 +243,45 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 
 **Standing conclusion:** the substrate now produces matter that **stores angular momentum, acquires it from collisions and from light, shields it behind a latency barrier, transfers it by contact, and annihilates it under internal counter-rotation**. While provably refusing perpetual circulation. "Atoms, not whirlpools" is the measured ontology.
 
+### M49. The capture gate is a parameter, not a law
+
+`script/meso/fric-sweep.mjs` (telemetry: `results/fric-sweep.log`): the two constants M33 froze — the flat park probability `p=½` and the dormant reflection cap — promoted to measured parameters. New flags: `meso3i_fricp(p8)` sets the flat park probability (`p8/256`; 128 reproduces the legacy `irnd()%2` in distribution), `meso3i_friccurve(mode)` grades it by destination rest mass (`0`=flat, `1`=ramp cap→255, `2`=ramp cap→2·cap), and `meso3i_reflect` — present in C since M32d but never exported — is now wired into the wasm.
+
+**A. Universality — a phase parameter, not a default.** Same grown-ember scene (`IFRIC=8`, `fricm=−4`, 72×72×36): rest-mass retention spans ~60× across the capture-rule space.
+
+| capture rule | rest after 300 driven t | after 200 cutoff t | post-cutoff metabolism |
+|---|---|---|---|
+| flat p=25% | 1,421 | 1,282 | quiet (park 93, emit 245) |
+| flat p=50% (canonical) | 6,833 | 5,962 | breathing (park 1,987 ≈ emit 2,900) |
+| flat p=75% | 19,488 | 18,483 | breathing harder (4,194 / 5,236) |
+| ramp cap→255 | 370 | 333 | dead — dissolved |
+| ramp cap→2cap | 21,075 | 21,181 | fossil (park 105, emit 7) |
+
+Lump *persistence* is universal across flat p — every value retains far above ambient — but lump mass and metabolism scale ~15× over p∈[¼,¾]. The graded ramps leave the phase entirely: a soft ramp keeps the rim porous, the skin unravels, and the lump dissolves; a steep ramp makes ρ≥16 a perfect trap and seals into a fossil that can neither grow (park 105 over 200t) nor shrink (emit 7). **The breathing lump needs both a porous rim and a trapping interior; the flat gate happens to bundle them.** M33's p=½ is a viable point mid-window, not a special one — every M33–M48 number carries this constant-dependence as a caveat.
+
+**B. Core-and-skin — the wall builds a crust, not a core.** `IFRIC=8` with `IREFL` in series (checks run serially: park attempt → refusal on the same hop). Radial rest profile of the driven lump, shell sums r0–r7:
+
+| IREFL | r0 | r1 | r2 | r3 | r4 | rest total | reflect events |
+|---|---|---|---|---|---|---|---|
+| 0 | 113 | 459 | 1,767 | 2,453 | 1,946 | 6,773 | 0 |
+| 16 | 19 | 1,301 | 4,915 | 13,143 | 8,989 | 28,392 | 18,367 |
+| 32 | 96 | 1,644 | 5,995 | 13,543 | 9,171 | 30,486 | 12,569 |
+| 64 | 235 | 2,151 | 4,711 | 14,367 | 9,565 | 31,066 | 13,410 |
+
+The wall produces a dense crust at the saturation boundary (r≈3–4 shell ~5× denser, total retained rest ~4.5×) and a **hollow interior** — not the dense-core-in-porous-skin structure one might sketch. Refused carriers bounce up-gradient and re-park at the rim, so mass accumulates *at* the refusal boundary (snowplow, not mantle). The reflect ledger does work comparable to the gate: 12–18k refusals while park drops 81k→14–19k, since refused hops never reach gate-eligible sites. The hollow center is partly injection geometry (drive ring at r≈3, `fricm=−4` swirl), but the shell amplification is the wall's alone.
+
+**C. Drift — the pull reverses sign at the wall.** Canonical M36 replay (44³: grow 200t → carrier-gated freeze 400t → +x-only spoke beam 600t; drift = rest-centroid x during the beam phase):
+
+| IREFL | beam | Δcm_x | direction |
+|---|---|---|---|
+| 0 | +x | −0.445 | **toward** source — M36 pull reproduced |
+| 0 | −x | +0.285 | toward source (mirror) |
+| 32 | +x | +0.234 | **away** from source |
+| 32 | −x | −0.097 | away from source (mirror) |
+| 64 | +x | ~−0.1 | non-monotonic, suppressed |
+
+The reversal is *not* mirror recoil — the wall absorbs the momentum flip by construction, so no recoil channel reaches the lump. Mechanism: lit-face capture is refused, carriers transit to sub-threshold far-side sites and park there; the beam **deposits downstream of the lump** instead of eroding its near face, so the centroid drifts downwind. Ablation-pull lives in the open-porosity regime only; a saturated wall turns the same beam into deposition transport. Caveat: beam-phase reflect counters keep rising (4k→8k), so the wall stays live throughout — and the IREFL=32 remnant is ~2× heavier (3,725 vs 1,855 rest) under identical drive, so the compared lumps are not mass-matched.
+
 ## Milestone Index
 
 *Numbering note: the meso campaign continued the sequential ledger, so the M-numbers below overlap the retracted single-spin M1–M31 range. Every index entry here refers exclusively to `meso3i` experiments; same-numbered `planck3` results are the ones marked retracted in the ledger.*
@@ -271,6 +311,7 @@ Seven counters in `meso3i.c` quantify the irreversible contact events, in quanta
 | M48 | Wave attenuation: zero in vacuum; turbid (~200c λ) below congestion, opaque (~25c) above | `55d2b02` |
 | M47 | Transaction ledger: driven lump ~3.7k events/20t; vacuum wound state exactly silent | `1204e4f` |
 | M47b | M37 resolved: real transient ablation coupling only between self-radiating lumps; bath & broadside null; drive-infall artifact caught | `e002c9d` |
+| M49 | Capture gate is a phase parameter: flat-p band / ramp→dissolve-or-fossil; IREFL builds a hollow-core crust and flips ablation drift to downwind push | `e70fe6e` |
 
 ## The Picture That Emerges
 
