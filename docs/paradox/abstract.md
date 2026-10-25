@@ -1,6 +1,12 @@
 ---
 title: The Abstract Illusions
+audio: /audio/abstract.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Abstract Illusions
 
 When pure, infinitely scalable mathematics is projected onto a physical universe bound by finite hardware limits, it generates logical paradoxes. These illusions occur when we confuse a mathematical abstraction (which has infinite resolution) with physical reality (which has strict material constraints).

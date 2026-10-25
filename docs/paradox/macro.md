@@ -1,6 +1,12 @@
 ---
 title: The Macro-Scale
+audio: /audio/macro.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Macro-Scale
 
 At the scale of biology and chemistry, legacy models ignore the thermodynamic processing required to sustain agency and the physical grain of the vacuum itself. The following paradoxes dissolve when we map them directly to the continuous, chiral friction of the environment.

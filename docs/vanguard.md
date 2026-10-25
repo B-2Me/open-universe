@@ -1,6 +1,11 @@
 ---
 title: The Vanguard
+audio: /audio/vanguard.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Vanguard Lineage: Systems Integration and Philosophical Divergences
 

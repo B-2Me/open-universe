@@ -1,6 +1,11 @@
 ---
 title: The Friction Substrate
+audio: /audio/meso-monograph.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Friction Substrate: A Multichannel Research Monograph
 

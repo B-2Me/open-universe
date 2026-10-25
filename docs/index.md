@@ -1,6 +1,8 @@
 ---
 layout: home
 
+audio: /audio/index.mp3
+
 hero:
   name: "The Open Universe"
   text: "A substrate built to work like reality does. Measured, not assumed."
@@ -27,6 +29,10 @@ features:
   - title: Measured, Not Scripted
     details: Every claim on this site is a headless measurement against the C engine, commit-anchored and reproducible, including the nulls, the confounds we caught, and the claims we retracted.
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 ## The Silhouette It Replaces
 

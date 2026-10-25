@@ -85,7 +85,7 @@ onMounted(async () => {
   injectPlayer()
 
   const pathSegments = window.location.pathname.replace(/^\/open-universe/, '').split('/').filter(Boolean)
-  const pageName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/\.html$/, '') : 'clearing'
+  const pageName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/\.html$/, '') : 'index'
 
   try {
     const response = await fetch(withBase(`/audio/sync-maps/${pageName}.json`))

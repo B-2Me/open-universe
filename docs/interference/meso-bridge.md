@@ -1,6 +1,11 @@
 ---
 title: The Multi-Channel Bridge
+audio: /audio/meso-bridge.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Multi-Channel Bridge: meso3i Findings
 
