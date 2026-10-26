@@ -158,6 +158,13 @@ omnidirectional halo): destroys clock coherence within ~2 bounces.
 the naive expectation, and the most mechanistically interesting result
 of the series.
 
+**E10 (photon-refract, `e5d2dd8`).** With `IPHOT=4` (fluorescence: the
+emit gate may output photons), a photon pulse through a q=96 corridor
+spreads into an exponential re-emission tail — peak arrival +40%,
+still emerging at t=105. Photons detained by mass resume as photons
+after ILAT. c per hop is untouched; effective light speed through
+matter is now a derived quantity.
+
 The emergent account: **time dilation in this substrate is accumulated
 path-length + discrete dwell, with `c` invariant and the horizon as a
 capture boundary.** No drag, no flowing medium, no asymptote.
