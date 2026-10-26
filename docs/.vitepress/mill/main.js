@@ -160,10 +160,12 @@ uniform float u_exposure;
 out vec4 frag;
 void main() {
   vec4 h = texelFetch(u_hdr, ivec2(gl_FragCoord.xy), 0);
-  // alpha-weighted average — a dense core shows its true palette hue
-  // (gold ember) instead of a clipped white sum; coverage then lifts
-  // brightness with depth so the lump still reads hotter inside
-  vec3 c = h.rgb / max(h.a, 1e-3) + vec3(0.02, 0.02, 0.05);
+  // coverage-gated average: below 1 layer the premultiplied color passes
+  // through raw (ghost cells, haze and singles keep their dimness);
+  // above 1 it becomes an average — a dense core shows its true
+  // palette hue instead of a clipped white sum. Coverage then lifts
+  // brightness with depth so the lump still reads hotter inside.
+  vec3 c = h.rgb / max(h.a, 1.0) + vec3(0.02, 0.02, 0.05);
   c *= u_exposure * (1.0 + 0.5 * (1.0 - exp(-max(h.a - 1.0, 0.0) * 0.3)));
   frag = vec4(c / (1.0 + c), 1.0);
 }`;
@@ -451,7 +453,7 @@ export async function initMillSimulator(root, opts = {}) {
   // HDR pipeline: EXT_color_buffer_float lets the additive blend land in
   // a half-float target (no 8-bit clamp), resolved to the canvas by the
   // tonemap pass. Without it we draw straight to the screen as before.
-  const hdrOK = !!gl.getExtension('EXT_color_buffer_float');
+  let hdrOK = !!gl.getExtension('EXT_color_buffer_float');
   let tmProg = null, tmVao = null, fbo = null, hdrTex = null;
   const tmU = {};
   let hdrW = 0, hdrH = 0;
@@ -479,6 +481,15 @@ export async function initMillSimulator(root, opts = {}) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hdrTex, 0);
+    // some drivers expose the extension but won't actually complete the
+    // framebuffer — check once and fall back to direct rendering forever
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      hdrOK = false;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.deleteFramebuffer(fbo);
+      gl.deleteTexture(hdrTex);
+      return;
+    }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   };
 

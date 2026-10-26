@@ -418,6 +418,7 @@ onUnmounted(() => {
   box-shadow:
     0 14px 34px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 var(--mill-bevel-light);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   z-index: 3;
 }
@@ -625,6 +626,7 @@ onUnmounted(() => {
   border: 1px solid var(--mill-bevel-light);
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--mill-bevel-light);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   z-index: 4;
 }
