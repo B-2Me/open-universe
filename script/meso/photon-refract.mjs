@@ -12,7 +12,7 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const wasm = await mod.exports();
 const W = 72, H = 24, D = 24, CY = H >> 1, CZ = D >> 1;
-const X0 = 14, X1 = 52, X2 = 58;
+const X0 = 14, X2 = 58;
 if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
 const NCH = wasm._meso3i_nch(), NMOV = NCH - 1, REST = NCH - 1;
 let XPX = -1;
@@ -20,7 +20,7 @@ for (let c = 0; c < NMOV; c++) {
   const v = [wasm._meso3i_cvc(c, 0), wasm._meso3i_cvc(c, 1), wasm._meso3i_cvc(c, 2)];
   if (v[0] > 0 && v[1] === 0 && v[2] === 0) XPX = c;
 }
-const run = (phot, q) => {
+const run = (phot, q, L) => { const X1 = X0 + L;
   wasm._meso3i_init(W, H, D, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-4);
   wasm._meso3i_fricp(128); wasm._meso3i_drest(0); wasm._meso3i_reflect(0);
@@ -47,8 +47,8 @@ const run = (phot, q) => {
     cum += a; wt += a * t;
   }
   const meanT = cum > 0 ? wt / cum : -1;
-  console.log(`IPHOT=${phot} q=${String(q).padStart(3)}  peak_t=${tPeak}  mean_t=${meanT.toFixed(1)}  total=${cum}`);
+  console.log(`IPHOT=${phot} q=${q} L=${String(L).padStart(2)}  peak_t=${tPeak}  mean_t=${meanT.toFixed(1)}  total=${cum}`);
 };
-console.log('n(rho): photon pulse mean-arrival delay vs corridor density (IPHOT=4)');
-run(0, 0);    // vacuum control
-for (const q of [16, 32, 48, 64, 96]) run(4, q);
+console.log('L-sweep: photon delay vs corridor length at q=32 (bulk-vs-boundary test)');
+run(0, 0, 38);            // vacuum, same flight distance
+for (const L of [8, 16, 24, 32, 38]) run(4, 32, L);
