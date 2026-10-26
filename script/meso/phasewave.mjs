@@ -1,8 +1,10 @@
 // phasewave (E6): IQMODE 6 gives every site a 2-bit beat phase iPH.
-// Design intent: a node's receptive beat sits one tick after an upstream
-// emitter's — a phase ramp iPH ~ x should form a bucket-brigade relay.
-// Test: seed Q on a chain, ramp iPH along x, watch WHERE emissions fire
-// each tick — does the emission front sweep coherently?
+// CORRECTION (E7-era): phset is the PHOTON setter — the ramp calls in
+// the first version wrote photons, not phases (pset is the phase setter
+// and is NOT exported to wasm). All three cases below were effectively
+// iPH=0 flat-phase runs; the tau=4 beat observation stands (it is
+// qmode-driven) but the spatial-relay test was never actually executed
+// — iPH is not writable from the harness without an engine rebuild.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +30,7 @@ const run = (tag, ramp) => {
   for (let x = 8; x <= 52; x++) for (let z = 4; z < D - 4; z++) for (let y = 4; y < H - 4; y++) {
     if ((x + y + z) & 1) continue;
     wasm._meso3i_qset(x, y, z, 4);
-    wasm._meso3i_phset(x, y, z, ramp === 'x' ? (x >> 1) & 3 : ramp === 'sum' ? ((x + y + z) >> 1) & 3 : 0);
+    // iPH not harness-writable (pset unexported) — all cases flat
   }
   // mean x of emission sites per tick (Q drop = emitted)
   const emits = [];
