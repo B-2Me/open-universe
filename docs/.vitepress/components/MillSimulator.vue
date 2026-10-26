@@ -123,6 +123,8 @@ onUnmounted(() => {
             <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
           </div>
         </div>
+        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
+        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
         <div class="mill-grp grp-presets">
           <em>presets</em>
           <div class="mill-grp-row">
@@ -153,8 +155,6 @@ onUnmounted(() => {
             </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
           </div>
         </div>
-        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
-        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
       </div>
 
       <div class="mill-well mill-selects">
@@ -457,6 +457,10 @@ onUnmounted(() => {
 .grp-inject > em  { color: #ffb35c; }
 .grp-ops > em     { color: #b48cff; }
 .grp-presets > em { color: var(--mill-muted); }
+/* presets claims its own full line — the three fields spread evenly
+   across it instead of floating centered with voids on each side */
+.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
+.grp-presets .mill-grp-row { flex: 1; justify-content: space-evenly; }
 
 /* accordion wells always claim a full dock line — a partial row
    beside the transport was what squeezed Tuning into a tall strip */
