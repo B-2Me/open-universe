@@ -162,12 +162,13 @@ of the series.
 emit gate may output photons), a photon pulse through a q=96 corridor
 spreads into an exponential re-emission tail — peak arrival +40%,
 still emerging at t=105. Photons detained by mass resume as photons
-after ILAT. c per hop is untouched; effective light speed through
-matter is now a derived quantity.
+after `ILAT`. The delay curve is non-monotonic in ρ (peak ~q=32) and
+saturates in corridor depth — a detention event, not a per-cell tax.
 
-The emergent account: **time dilation in this substrate is accumulated
-path-length + discrete dwell, with `c` invariant and the horizon as a
-capture boundary.** No drag, no flowing medium, no asymptote.
+> **The Refraction & Dilation Law (E2, E4, E10):** Photons detained in
+> rest resume as photons after `ILAT`; effective refractive index
+> `n(ρ)` and cavity clock lag emerge from discrete dwell and scattered
+> path length, with `c` strictly invariant on every hop.
 
 ## The dimensional bridge (the direction)
 
