@@ -50,16 +50,17 @@ A lattice gas in the honest sense: the descendant of the FHP automata and D3Q19 
 
 - **Coherent light travels forever.** A unidirectional beam never self-scatters: equal co-moving pairs have no momentum-conserving alternative, a selection rule that emerges from pure integer bookkeeping (M47c).
 - **Collisions thermalize: friction binds.** An anisotropic gas isotropizes to `P/ρ ≈ 0.879` in ~25 ticks (M46); congestion drag turns that same flux into parked, persistent matter (M33–M35).
-- **Matter spins, and light can wind it.** Directional rest channels store angular momentum indefinitely (M39, M42); absorbed photons deposit it with the correct sign (M43), a YORP-class mechanism.
+- **Matter spins, and light can wind it.** Directional rest channels store angular momentum indefinitely (M39, M42); absorbed photons deposit it with the correct sign (M43), a YORP-class mechanism. The wound vault holds its winding as a stored record (M50).
 - **Only active matter interacts.** Self-radiating lumps genuinely couple: transiently, at short range (M47b). Passive lumps in a bath or a beam do not pull on each other at all. Le Sage shadowing is dead; transaction-mediated coupling survives.
 - **A medium attenuates; vacuum doesn't.** A pulse through a dilute ambient gas loses flux on a measurable mean free path; through vacuum it loses exactly zero (M48).
 - **Every irreversible event is countable.** The transaction ledger reads zero in free flight, ~3,700 per window in a driven ember, and zero again in the frozen ground state (M47), the substrate's arrow of time, instrumented.
+- **Refraction and clock lag emerge without varying c.** Photons detained in rest resume as photons after `ILAT`; effective refractive index `n(ρ)` and cavity clock dilation emerge from discrete dwell and path length, with `c` strictly invariant on every hop (E2, E4, E10).
 
 And the honest boundaries: no sustained gravitational attraction, no structured chemistry yet, no dimensional bridge to meters or seconds. All measured, all documented: the monograph keeps the confounds and retractions as first-class results.
 
 ## Exploring the Program
 
-*   **[The Friction Substrate](/interference/meso-monograph)**: the canonical empirical record: M19–M48, every mechanism verified or falsified headless.
+*   **[The Friction Substrate](/interference/meso-monograph)**: the canonical empirical record: M19–M51, every mechanism verified or falsified headless.
 *   **[Joule's Mill](/mill-demo)**: the flagship instrument: the full engine live in your browser, with the milestone regimes one click away.
 *   **[The Predictive Roadmap](/interference/roadmap)**: what the engine can still reach, and which bridges it honestly can't.
 *   **[The Planck Field](/field)**: the theoretical program: why a process-ontology substrate, and what the vanguard lineage already established.

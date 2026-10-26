@@ -393,6 +393,14 @@ static void collide_node(uint8_t *n, int si) {
                     n[INCH - 1] -= 2;
                     n[c]++; n[c ^ 1]++;
                     iEV[2] += 2;
+                } else if (IPHOT >= 4) {
+                    /* fluorescence: rest re-emits as PHOTON, not mass —
+                     * the "resume" branch of the refractive cycle
+                     * (absorb->dwell->resume-as-photon, ILAT-gated) */
+                    int c = irnd() % IMOV;
+                    n[INCH - 1]--;
+                    iPA[si * IMOV + c]++; IPHN++;
+                    iEV[2]++;
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
                     iEV[2]++;
@@ -750,7 +758,7 @@ void meso3i_tick(void) {
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
-                if (IPHOT == 3) {
+                if (IPHOT >= 3) {
                     /* absorbed photon (radiation pressure / YORP mode):
                      * the photon is CONSUMED on contact with parked mass —
                      * its momentum transfers into the mass ledger as an
@@ -847,7 +855,7 @@ void meso3i_totals(uint64_t *mass, int64_t *px, int64_t *py, int64_t *pz) {
                 z_ += (int64_t)dr[c] * ICV[c][2];
             }
         }
-        if (IPHOT == 3) {
+        if (IPHOT >= 3) {
             /* photon momentum counts in the ledger under absorbed mode —
              * absorption then closes: -p in flight, +p as ejecta */
             const uint8_t *pp = iPA + (size_t)s * IMOV;

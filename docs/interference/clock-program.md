@@ -158,6 +158,77 @@ omnidirectional halo): destroys clock coherence within ~2 bounces.
 the naive expectation, and the most mechanistically interesting result
 of the series.
 
-The emergent account: **time dilation in this substrate is accumulated
-path-length + discrete dwell, with `c` invariant and the horizon as a
-capture boundary.** No drag, no flowing medium, no asymptote.
+**E10 (photon-refract, `e5d2dd8`).** With `IPHOT=4` (fluorescence: the
+emit gate may output photons), a photon pulse through a q=96 corridor
+spreads into an exponential re-emission tail — peak arrival +40%,
+still emerging at t=105. Photons detained by mass resume as photons
+after `ILAT`. The delay curve is non-monotonic in ρ (peak ~q=32) and
+saturates in corridor depth — a detention event, not a per-cell tax.
+
+> **The Refraction & Dilation Law (E2, E4, E10):** Photons detained in
+> rest resume as photons after `ILAT`; effective refractive index
+> `n(ρ)` and cavity clock lag emerge from discrete dwell and scattered
+> path length, with `c` strictly invariant on every hop.
+
+## The dimensional bridge (the direction)
+
+The E-series measured **relative** lag mechanics — every ratio,
+regime, and cliff is scale-free and survives coarse-graining. The
+absolute scale comes from identification:
+
+- `c = 1 hop/tick` is free: set cell = ℓ_P, tick = t_P and `c` falls
+  out exactly by definition. The substrate already lives at Planck
+  scale.
+- Consequence: E4's 23-tick half-period ≈ 10⁻⁴² s — our structures
+  are Planck-scale seeds, not atoms. Atomic physics (~10⁴³ t_P
+  cycles, ~10³⁰ Planck volumes) is reached only through ensemble
+  statistics — the coarse-graining the E8 ensemble result justified.
+- The bridge closes when a substrate structure is identified with a
+  physical object (a wound vault ↔ nucleon? τ=4 Q-beat ↔ a known
+  emission period?). All measured lag *ratios* then become physical
+  predictions — 40 orders of magnitude cancel in every ratio.
+
+## New directions from here
+
+1. **Identification hunt** — find the substrate structure whose
+   characteristic scale/period matches a known physical anchor; that
+   fixes the bridge.
+2. **n(ρ) mechanism check** — is the q≈32 peak real (deep-penetration
+   dwell chains) or corridor-geometry artifact? Vary corridor length
+   at fixed q: true refraction scales with path length.
+3. **Ensemble dilation** — E8 showed the population survives; measure
+   its *mean period shift* vs density with autocorrelation over long
+   runs — the statistical clock's actual dilation curve.
+4. **Capacity-stealing channel** — the still-untested second
+   mechanism: does a structure processing field traffic run its
+   internal cycles slower (C_s²+C_i² budget as clock physics)?
+5. **Edge-dwell registers** (`iD`) — the last unprobed lag channel:
+   quanta dwelling mid-edge as a third delay mechanism.
+
+## Open assumptions (the honest audit)
+
+- **Capacity-stealing is a second, unmeasured mechanism.** The audits'
+  own framing is *actualization* bandwidth stolen by field processing —
+  the C_s²+C_i² budget — not transit lag. The E1 wound-vault result
+  (internal circulation halves drift response) is that signature, but it
+  has never been run as a clock experiment. There may be two dilation
+  channels; we've measured one.
+- **Static fill ≠ a mass's halo.** E4 seeded parked rest; a real halo is
+  sustained transaction traffic around capturing/emitting structure —
+  occupancy + throughput + active self-focusing (IQMODE7) at once. Each
+  ingredient was tested separately; the combination hasn't been.
+- **Single-particle artifacts.** All probes so far are n=1 packets; an
+  atomic clock is ~10³⁰ ensemble events. The q≥2 "decoherence cliff"
+  may be a single-particle death that a population's mean cycle
+  survives. E8 tests the ensemble cavity.
+- **Two candidate "gravity" terms are conflated.** Passive occupancy
+  (E3) vs active Q-capture (E5) — the ontology's gravity is transaction
+  focusing, not congestion; Q-field strength may be the right
+  independent variable, not ρ.
+- **The lag is a spectrum, not a rate.** Most carriers pass, some
+  detain — the honest comparison to GR is the *ensemble mean of the
+  capture-time distribution*, not a single-packet T(q).
+- **Dimensional bridge still absent.** All numbers are lattice units —
+  ratios and regimes only, never µs/day.
+- **Open boundaries.** Every probe drains edges; the r⁻² halo holds
+  over ~20 cells in a 56-box, untested at larger scale.
