@@ -42,6 +42,7 @@ The substrate is not a metaphor. It runs. The flagship instrument and the milest
 
 *   **[The Friction Substrate](/interference/meso-monograph)**: the canonical record: milestones M19–M48, every claim commit-anchored, including the confounds and retractions.
 *   **[Predictive Roadmap](/interference/roadmap)**: the honest anchors: what the engine can still reach, and which bridges it can't.
+*   **[The Clock Program](/interference/clock-program)**: capacity-stealing time dilation as a measurement proposal — the E1–E4 experiment ladder, the two cruxes, and where the substrate differs from `1 + Φ/c²` regardless of calibration.
 *   **[The Multi-Channel Bridge](/interference/meso-bridge)**: the M19–M38 consolidation: how the multichannel substrate earned its place over the single-spin prototype.
 *   **[Build & Validation Environments](/interference/reproduce)**: run the measurements yourself: the WASM build, the `script/meso` harness map, the native C suite, and the archived telemetry.
 *   **[Planned Audio Sessions](/interference/sessions)**: the living syllabus for the podcast companion.
