@@ -37,10 +37,13 @@ const boot = () => {
 };
 
 // central source: +1 quantum on every moving channel at the core each tick
+// dense variant: pump the source to near-saturation so the field is
+// collision-dominated — does the transport regime go diffusive (1/r)?
+const RATE = +(process.argv[2] || 1);
 const inject = () => {
   for (let c = 0; c < NMOV; c++) {
     const v = wasm._meso3i_get(CX, CY, CZ, c);
-    if (v < 200) wasm._meso3i_set(CX, CY, CZ, c, v + 1);
+    if (v < 240) wasm._meso3i_set(CX, CY, CZ, c, v + RATE);
   }
 };
 
@@ -79,7 +82,7 @@ const slope = (rows, r0, r1) => {
 };
 
 const SETTLE = 600;
-console.log('E3 — radial congestion profile: exponent of rho(r) ~ r^k');
+console.log(`E3 — radial congestion profile (RATE=${RATE}): exponent of rho(r) ~ r^k`);
 console.log('    k = -2.0 ballistic rays | k = -1.0 diffusive (Laplace, GR-like)\n');
 
 // probe A: central flux source vs boundary drain

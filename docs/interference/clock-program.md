@@ -118,3 +118,46 @@ integrate along its own path through the gradient (∫ r⁻² → 1/r), which is
 what the GPS number requires. Whether dilation is local-density or
 path-integrated is now precisely what E2 measures: the transfer function
 between local congestion and internal lag.
+
+**E3-dense.** Cranking the source 16× does not shift the
+regime: slope stays ~r⁻²·⁰⁻²·¹ at ~10× the density. The inverse-square halo
+is structural — carriers follow channel vectors, and the collision rules
+gate on occupancy (capture/park) rather than randomizing direction into a
+diffusive bath. Inverse-square transport is not a dilute-regime accident.
+
+**E2 (clock-lag, `3ed51d5`, `f10aac4`).** Transit lag is *discrete dwell*,
+not continuous drag: with capture off, v_eff = 2.174 cells/t at every
+density — carriers collide but are never slowed. Congestion delay is
+park-and-wait, not friction.
+
+**E1 (clock-drift, `c40b4b6`; vault-cadence, `c5ce356`).** Bound objects
+have no autonomous internal clock: static scalar lumps are frozen
+(wake=0), and the wound vault's winding is a *stored record* — every
+internal phase constant over 2000t. "Time" for a substrate object is its
+transaction rate with the environment. A real clock must be a *flowing*
+resonator. Bonus finding: wound structure halves driven-drift response
+vs. scalar (the C_s²+C_i² bandwidth trade as mechanics).
+
+**E4 (clock-cavity, `9c2cf30`, `dcd7f14`).** A packet between parked
+Q64/IREFL16 mirrors is a working light-clock: clean 23t half-period.
+Static interior density dilates it via path-length scattering
+(23→26.7t at q=4); the first transit is always invariant — `c` is fixed,
+dilation accumulates over cycles. At q≥8 a single absorbing site anywhere
+on the path kills the clock — the horizon is a capture cliff, not an
+asymptote.
+
+**E4b (clock-fizeau, `6771759`).** No medium drag: a −x headwind is
+identical to vacuum; a +x "tailwind" only injects wind mass onto the
+probe channel. The lattice does not flow — only *standing* congestion
+dilates.
+
+**E4c (clock-halo, `0304f58`).** Transverse sustained wind: zero period
+change at all rates — just faster decoherence. Isotropic bath (the honest
+omnidirectional halo): destroys clock coherence within ~2 bounces.
+**Halo flux kills clocks; parked mass slows them** — the inversion of
+the naive expectation, and the most mechanistically interesting result
+of the series.
+
+The emergent account: **time dilation in this substrate is accumulated
+path-length + discrete dwell, with `c` invariant and the horizon as a
+capture boundary.** No drag, no flowing medium, no asymptote.
