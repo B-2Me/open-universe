@@ -55,16 +55,18 @@ onUnmounted(() => {
     <div class="mill-stage">
       <canvas class="mill-canvas" aria-label="Joule's Mill 3D lattice renderer"></canvas>
 
-      <!-- telemetry chip -->
-      <div class="mill-hud" data-hud>booting…</div>
-      <!-- transient status line under the telemetry chip — empty = hidden -->
-      <div class="mill-status" data-status></div>
-
-      <!-- ? help card — floats over the canvas until dismissed -->
-      <div class="mill-card" data-card hidden>
-        <button class="mill-card-x" data-card-x aria-label="Close">×</button>
-        <div class="mill-card-title" data-card-title></div>
-        <div class="mill-card-body" data-card-body></div>
+      <!-- top-left overlay stack — HUD, status and help card share one
+           column so a wrapping line can never overlap a sibling -->
+      <div class="mill-overlay-tl">
+        <div class="mill-hud" data-hud>booting…</div>
+        <!-- transient status line under the telemetry chip — empty = hidden -->
+        <div class="mill-status" data-status></div>
+        <!-- ? help card — floats over the canvas until dismissed -->
+        <div class="mill-card" data-card hidden>
+          <button class="mill-card-x" data-card-x aria-label="Close">×</button>
+          <div class="mill-card-title" data-card-title></div>
+          <div class="mill-card-body" data-card-body></div>
+        </div>
       </div>
 
       <!-- mass-partition sparkline: rest (amber) over flux (violet),
@@ -262,12 +264,24 @@ onUnmounted(() => {
   touch-action: none;
 }
 
-/* telemetry chip — small, top-left, translucent */
-.mill-hud {
+/* top-left overlay column — owns the HUD chip, the status line, and
+   the help card as a vertical stack; nothing inside it can overlap */
+.mill-overlay-tl {
   position: absolute;
   top: 8px;
   left: 8px;
-  max-width: calc(100% - 64px);
+  right: 64px;                      /* clears the ⚙ toggle corner */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* telemetry chip — small, translucent */
+.mill-hud {
+  max-width: 100%;
   padding: 4px 10px;
   font: 11px/1.5 monospace;
   color: var(--mill-accent);
@@ -278,16 +292,12 @@ onUnmounted(() => {
   pointer-events: none;
   text-shadow: 0 0 4px #000;
   overflow-wrap: anywhere;
-  z-index: 3;
 }
 
 /* transient status line — sits under the telemetry chip, never competes
    with it. :empty hides it, so clearing text is the whole off-switch. */
 .mill-status {
-  position: absolute;
-  top: 38px;
-  left: 8px;
-  max-width: calc(100% - 64px);
+  max-width: 100%;
   padding: 3px 9px;
   font: 10px/1.4 monospace;
   color: var(--mill-muted);
@@ -296,7 +306,6 @@ onUnmounted(() => {
   border-radius: 7px;
   pointer-events: none;
   text-shadow: 0 0 4px #000;
-  z-index: 3;
 }
 .mill-status:empty { display: none; }
 
@@ -603,13 +612,11 @@ onUnmounted(() => {
 .mill-help:hover { opacity: 1; color: var(--mill-accent); }
 .mill-help:active { transform: scale(0.9); }
 
-/* help card — floats over the canvas under the status line */
+/* help card — third item in the overlay stack, under the status line */
 .mill-card {
-  position: absolute;
-  top: 62px;
-  left: 8px;
-  max-width: min(320px, calc(100% - 24px));
+  max-width: min(320px, 100%);
   padding: 10px 14px 11px;
+  pointer-events: auto;
   background: rgba(10, 14, 26, 0.92);
   border: 1px solid var(--mill-bevel-light);
   border-radius: 10px;
@@ -736,8 +743,12 @@ onUnmounted(() => {
     min-height: 44px;
   }
   /* iOS Safari force-zooms the page when a focused form control's
-     font-size is under 16px — selects must read 16 on touch */
+     font-size is under 16px — selects must read 16 on touch, and the
+     fixed widths grow to keep the bigger text from truncating */
   .mill-dock select { font-size: 16px; }
+  .mill-field select[data-scene]     { width: 132px; }
+  .mill-field select[data-preset]    { width: 108px; }
+  .mill-field select[data-colormode] { width: 90px; }
   .mill-sliders input[type='range'] { width: 90px; height: 40px; }
   .mill-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
 }
