@@ -128,13 +128,13 @@ onUnmounted(() => {
             <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
           </div>
         </div>
-        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
-        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
+        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">⚑ Flags ▾</button>
+        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
         <div class="mill-grp grp-presets">
           
           <div class="mill-grp-row">
             <em>presets</em>
-            <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+            <label class="mill-field"><span>✦ Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
               <option value="" selected>scene…</option>
               <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
               <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
@@ -144,7 +144,7 @@ onUnmounted(() => {
               <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
               <option value="walled">walled crust (Wall 32 + ☀)</option>
             </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
-            <label class="mill-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+            <label class="mill-field"><span>◎ Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
               <option value="full"    selected>Full field</option>
               <option value="side">Side profile</option>
               <option value="equator">Equator slab</option>
@@ -153,7 +153,7 @@ onUnmounted(() => {
               <option value="lattice">Lattice plane</option>
               <option value="hex">Hex axis (111)</option>
             </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
-            <label class="mill-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
+            <label class="mill-field"><span>◐ View</span><select data-colormode aria-label="Data view" title="Data view">
               <option value="0" selected>ember</option>
               <option value="1">heat</option>
               <option value="2">flux</option>
@@ -436,31 +436,42 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-.mill-transport { gap: 3px; flex-wrap: wrap; justify-content: center; }
+/* row-gap leaves headroom for the legend captions straddling each
+   group's top border when the well wraps to multiple rows */
+.mill-transport { gap: 11px 3px; flex-wrap: wrap; justify-content: center; }
 
 /* control groups — named clusters with micro-captions, DAW-style.
    Caption rides inline on the group's left edge so a group costs
    exactly one row of height; the ? chip opens a card explaining
    each tool in it. */
 .mill-grp {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 6px;
+  padding: 4px 6px 3px;
   background: rgba(8, 12, 24, 0.55);
   border: 1px solid rgba(160, 200, 255, 0.09);
   border-radius: 9px;
 }
+/* caption = fieldset legend — straddles the group's top border in
+   the dead space above the buttons instead of costing a row slot */
 .mill-grp-row > em {
+  position: absolute;
+  top: -7px;
+  left: 7px;
   display: flex;
   align-items: center;
   gap: 2px;
+  padding: 0 3px;
   font: 7.5px monospace;
   font-style: normal;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.7;
+  opacity: 0.8;
   white-space: nowrap;
+  background: var(--mill-well);
+  border-radius: 4px;
 }
 .mill-grp-row {
   display: flex;
@@ -790,29 +801,25 @@ onUnmounted(() => {
     justify-content: center;
   }
   /* inject's six buttons exceed a phone dock — wrap inside the group
-     instead of overflowing sideways; the caption flows inline as the
-     first item so it can't hover vertically centered beside a wrap */
-  .mill-grp-row { flex-wrap: wrap; justify-content: center; }
-  /* stacked square buttons — glyph over word, the dense form factor.
-     The on-state becomes a corner dot instead of the bottom LED bar
-     whose padding a square button doesn't have. */
+     instead of overflowing sideways */
+  .mill-grp-row { flex-wrap: wrap; justify-content: center; gap: 5px; }
+  /* bigger touch buttons: [dot][glyph][label] in one row — the
+     on-state dot leads the row as a real flex item, big enough to
+     actually read at arm's length */
   .mill-grp-row > button {
-    flex-direction: column;
-    gap: 1px;
-    min-width: 46px;
-    padding: 4px 4px 6px;
+    gap: 5px;
+    min-height: 44px;
+    padding: 4px 10px;
   }
-  .mill-grp-row > button .g { font-size: 15px; }
-  .mill-grp-row > button .l { font-size: 6.5px; letter-spacing: 0.04em; }
+  .mill-grp-row > button .g { font-size: 16px; }
+  .mill-grp-row > button .l { font-size: 9px; letter-spacing: 0.05em; }
   .mill-grp-row > button.on::after {
-    width: 5px;
-    height: 5px;
-    left: auto;
-    right: 3px;
-    top: 3px;
-    bottom: auto;
+    position: static;
+    order: -1;
+    width: 8px;
+    height: 8px;
     transform: none;
-    border-radius: 50%;
+    margin-right: -2px;
   }
   .mill-field { gap: 4px; }
   .mill-field > span { font-size: 9px; }
