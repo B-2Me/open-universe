@@ -1,5 +1,5 @@
 // clock-fizeau (E4b): does a moving medium drag a pulse?
-// Corridor x in [14,52] filled with sustained mov flux at q=4 on +x or -x
+// Corridor x in [14,52] filled with sustained moving flux at density=4 on +x or -x
 // channel (the medium). Probe +x pulse launched at x=8, timed to x>=58.
 // Empty corridor = control. Fresnel drag: v_eff shifts with medium's
 // velocity; ballistic medium: no shift.
@@ -15,21 +15,21 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const wasm = await mod.exports();
 
-const W = 72, H = 24, D = 24, CY = H >> 1, CZ = D >> 1;
+const gridW = 72, gridH = 24, gridD = 24, centerY = gridH >> 1, centerZ = gridD >> 1;
 const X0 = 14, X1 = 52, X2 = 58;
-if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
-const NCH = wasm._meso3i_nch(), NMOV = NCH - 1, REST = NCH - 1;
-const CV = []; let XPX = -1, XMX = -1, PDX = -1, MDX = -1;
-for (let c = 0; c < NMOV; c++) {
-  const v = [wasm._meso3i_cvc(c, 0), wasm._meso3i_cvc(c, 1), wasm._meso3i_cvc(c, 2)];
-  CV.push(v);
-  if (v[0] > 0 && v[1] === 0 && v[2] === 0) XPX = c;
-  if (v[0] > 0 && v[1] !== 0 && v[2] === 0) PDX = PDX < 0 ? c : PDX;
-  if (v[0] < 0 && v[1] !== 0 && v[2] === 0) MDX = MDX < 0 ? c : MDX;
-  if (v[0] < 0 && v[1] === 0 && v[2] === 0) XMX = c;
+if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init failed');
+const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
+const chanVec = []; let chPX = -1, chNX = -1, chDiagPX = -1, chDiagNX = -1;
+for (let ch = 0; ch < nMoving; ch++) {
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(dir);
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
+  if (dir[0] > 0 && dir[1] !== 0 && dir[2] === 0) chDiagPX = chDiagPX < 0 ? ch : chDiagPX;
+  if (dir[0] < 0 && dir[1] !== 0 && dir[2] === 0) chDiagNX = chDiagNX < 0 ? ch : chDiagNX;
+  if (dir[0] < 0 && dir[1] === 0 && dir[2] === 0) chNX = ch;
 }
-const boot = () => {
-  wasm._meso3i_init(W, H, D, 1);
+const resetEngine = () => {
+  wasm._meso3i_init(gridW, gridH, gridD, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-4);
   wasm._meso3i_fricp(0);                     // no capture — pure coupling
   wasm._meso3i_friccurve(0); wasm._meso3i_drest(0); wasm._meso3i_reflect(0);
@@ -37,42 +37,42 @@ const boot = () => {
 // sustained medium: re-seed the corridor's leading edge each tick so the
 // flow keeps filling; direction set by channel
 const feedMedium = ch => {
-  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+  for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((X0 + y + z) & 1) continue;
-    const v = wasm._meso3i_get(X0, y, z, ch);
-    if (v < 4) wasm._meso3i_set(X0, y, z, ch, 4);
+    const vEff = wasm._meso3i_get(X0, y, z, ch);
+    if (vEff < 4) wasm._meso3i_set(X0, y, z, ch, 4);
   }
 };
-const movZone = () => {
-  let m = 0;
-  for (let x = X2; x <= X2 + 3; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+const zoneFlux = () => {
+  let mass = 0;
+  for (let x = X2; x <= X2 + 3; x++) for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((x + y + z) & 1) continue;
-    m += wasm._meso3i_get(x, y, z, XPX);   // axial probe channel only
+    mass += wasm._meso3i_get(x, y, z, chPX);   // axial sampleMoments channel only
   }
-  return m;
+  return mass;
 };
-const run = (tag, mch) => {
-  boot();
-  let m0 = 0, tHit = -1; const series = [];
+const run = (tag, mediumChan) => {
+  resetEngine();
+  let injectedMass = 0, tArrived = -1; const series = [];
   for (let t = 0; t < 200; t++) {
-    if (mch >= 0) feedMedium(mch);
+    if (mediumChan >= 0) feedMedium(mediumChan);
     wasm._meso3i_drain_edge(3);
     wasm._meso3i_tick();
-    if (t === 10) {                        // medium steady by now — fire probe
+    if (t === 10) {                        // medium steady by now — fire sampleMoments
       for (let dy = -3; dy <= 3; dy++) for (let dz = -3; dz <= 3; dz++) {
-        const x = 8, y = CY + dy, z = CZ + dz;
+        const x = 8, y = centerY + dy, z = centerZ + dz;
         if ((x + y + z) & 1) continue;
-        wasm._meso3i_set(x, y, z, XPX, 48); m0 += 48;
+        wasm._meso3i_set(x, y, z, chPX, 48); injectedMass += 48;
       }
     }
-    const mz = movZone();
-    if (t > 10 && tHit < 0 && mz >= 12) tHit = t - 10;
+    const mz = zoneFlux();
+    if (t > 10 && tArrived < 0 && mz >= 12) tArrived = t - 10;
     if (t >= 10 && t <= 30 && t % 2 === 0) series.push(mz);
-    if (tHit > 0 && t > tHit + 30) break;
+    if (tArrived > 0 && t > tArrived + 30) break;
   }
-  console.log(`${tag.padEnd(18)} t=${tHit > 0 ? tHit : 'no arrival'}   v=${tHit > 0 ? ((X2 - 10) / tHit).toFixed(2) : '--'}  injected=${m0}  zone-series=[${series.join(',')}]`);
+  console.log(`${tag.padEnd(18)} t=${tArrived > 0 ? tArrived : 'no arrival'}   vEff=${tArrived > 0 ? ((X2 - 10) / tArrived).toFixed(2) : '--'}  injected=${injectedMass}  zone-series=[${series.join(',')}]`);
 };
-console.log('clock-fizeau: probe +x transit through a moving medium (q=4)');
+console.log('clock-fizeau: sampleMoments +x transit through a moving medium (density=4)');
 run('empty corridor', -1);
-run('medium +x (tailwind)', PDX);
-run('medium -x (headwind)', MDX);
+run('medium +x (tailwind)', chDiagPX);
+run('medium -x (headwind)', chDiagNX);

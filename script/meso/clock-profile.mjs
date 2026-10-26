@@ -2,7 +2,7 @@
 // as 1/r (diffusive, Laplace — matches GR's Phi~1/r) or 1/r^2 (ballistic)?
 // A continuous central injector vs. boundary drain reaches a steady radial
 // gradient; shell-averaged moving density vs r gives the exponent.
-// Second probe: occupancy halo around a parked mass lump under the same
+// Second sampleMoments: occupancy halo around a parked mass lump under the same
 // ambient field — the profile a "clock" would actually sit inside.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -17,16 +17,16 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const wasm = await mod.exports();
 
-const W = 56, H = 56, D = 56;
-const CX = W >> 1, CY = H >> 1, CZ = D >> 1;
-if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
-const NCH = wasm._meso3i_nch(), NMOV = NCH - 1, REST = NCH - 1;
-const CV = [];
-for (let c = 0; c < NMOV; c++)
-  CV.push([wasm._meso3i_cvc(c, 0), wasm._meso3i_cvc(c, 1), wasm._meso3i_cvc(c, 2)]);
+const gridW = 56, gridH = 56, gridD = 56;
+const centerX = gridW >> 1, centerY = gridH >> 1, centerZ = gridD >> 1;
+if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init failed');
+const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
+const chanVec = [];
+for (let ch = 0; ch < nMoving; ch++)
+  chanVec.push([wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)]);
 
-const boot = () => {
-  wasm._meso3i_init(W, H, D, 1);
+const resetEngine = () => {
+  wasm._meso3i_init(gridW, gridH, gridD, 1);
   wasm._meso3i_collmode(0);
   wasm._meso3i_friction(8);
   wasm._meso3i_fricmode(-4);
@@ -41,68 +41,68 @@ const boot = () => {
 // collision-dominated — does the transport regime go diffusive (1/r)?
 const RATE = +(process.argv[2] || 1);
 const inject = () => {
-  for (let c = 0; c < NMOV; c++) {
-    const v = wasm._meso3i_get(CX, CY, CZ, c);
-    if (v < 240) wasm._meso3i_set(CX, CY, CZ, c, v + RATE);
+  for (let ch = 0; ch < nMoving; ch++) {
+    const vEff = wasm._meso3i_get(centerX, centerY, centerZ, ch);
+    if (vEff < 240) wasm._meso3i_set(centerX, centerY, centerZ, ch, vEff + RATE);
   }
 };
 
 // shell-averaged density: mean occupancy per live site in [r, r+1)
 const profile = (what) => {
-  const RMAX = Math.min(CX, CY, CZ) - 4;
-  const sum = new Float64Array(RMAX), cnt = new Float64Array(RMAX);
-  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+  const RMAX = Math.min(centerX, centerY, centerZ) - 4;
+  const shellSum = new Float64Array(RMAX), shellCount = new Float64Array(RMAX);
+  for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) for (let x = 0; x < gridW; x++) {
     if ((x + y + z) & 1) continue;
-    const dx = x - CX, dy = y - CY, dz = z - CZ;
+    const dx = x - centerX, dy = y - centerY, dz = z - centerZ;
     const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
     const sh = Math.floor(r);
     if (sh < 1 || sh >= RMAX) continue;
-    let q = 0;
-    if (what === 'mov') for (let c = 0; c < NMOV; c++) q += wasm._meso3i_get(x, y, z, c);
-    else q = wasm._meso3i_get(x, y, z, REST);
-    sum[sh] += q; cnt[sh]++;
+    let density = 0;
+    if (what === 'moving') for (let ch = 0; ch < nMoving; ch++) density += wasm._meso3i_get(x, y, z, ch);
+    else density = wasm._meso3i_get(x, y, z, restCh);
+    shellSum[sh] += density; shellCount[sh]++;
   }
-  const rows = [];
+  const profileRows = [];
   for (let r = 1; r < RMAX; r++)
-    if (cnt[r] > 20) rows.push([r, sum[r] / cnt[r]]);
-  return rows;
+    if (shellCount[r] > 20) profileRows.push([r, shellSum[r] / shellCount[r]]);
+  return profileRows;
 };
 
 // log-log slope over r in [r0, r1] via least squares
-const slope = (rows, r0, r1) => {
-  const pts = rows.filter(([r, d]) => r >= r0 && r <= r1 && d > 0);
-  if (pts.length < 3) return NaN;
-  let sx = 0, sy = 0, sxy = 0, sxx = 0;
-  for (const [r, d] of pts) {
-    const lx = Math.log(r), ly = Math.log(d);
-    sx += lx; sy += ly; sxy += lx * ly; sxx += lx * lx;
+const slope = (profileRows, r0, r1) => {
+  const fitPts = profileRows.filter(([r, shellDensity]) => r >= r0 && r <= r1 && shellDensity > 0);
+  if (fitPts.length < 3) return NaN;
+  let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+  for (const [r, shellDensity] of fitPts) {
+    const lx = Math.log(r), ly = Math.log(shellDensity);
+    sumX += lx; sumY += ly; sumXY += lx * ly; sumXX += lx * lx;
   }
-  const n = pts.length;
-  return (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  const siteCount = fitPts.length;
+  return (siteCount * sumXY - sumX * sumY) / (siteCount * sumXX - sumX * sumX);
 };
 
 const SETTLE = 600;
 console.log(`E3 — radial congestion profile (RATE=${RATE}): exponent of rho(r) ~ r^k`);
 console.log('    k = -2.0 ballistic rays | k = -1.0 diffusive (Laplace, GR-like)\n');
 
-// probe A: central flux source vs boundary drain
-boot();
+// sampleMoments A: central flux source vs boundary drain
+resetEngine();
 for (let t = 0; t < SETTLE; t++) { inject(); wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); }
-const mov = profile('mov');
+const moving = profile('moving');
 console.log('r   rho_mov/site');
-for (const [r, d] of mov) console.log(`${String(r).padStart(3)} ${d.toFixed(3)}`);
+for (const [r, shellDensity] of moving) console.log(`${String(r).padStart(3)} ${shellDensity.toFixed(3)}`);
 for (const [r0, r1] of [[4, 12], [6, 20], [8, 24]])
-  console.log(`  mov slope r[${r0}..${r1}] = ${slope(mov, r0, r1).toFixed(2)}`);
+  console.log(`  moving slope r[${r0}..${r1}] = ${slope(moving, r0, r1).toFixed(2)}`);
 
-// probe B: same field but a parked mass lump instead of a bare source
-boot();
-for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+// sampleMoments B: same field but a parked mass lump instead of a bare source
+resetEngine();
+for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) for (let x = 0; x < gridW; x++) {
   if ((x + y + z) & 1) continue;
-  const dx = x - CX, dy = y - CY, dz = z - CZ;
-  if (dx * dx + dy * dy + dz * dz <= 25) wasm._meso3i_set(x, y, z, REST, 48);
+  const dx = x - centerX, dy = y - centerY, dz = z - centerZ;
+  if (dx * dx + dy * dy + dz * dz <= 25) wasm._meso3i_set(x, y, z, restCh, 48);
 }
 for (let t = 0; t < SETTLE; t++) { inject(); wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); }
-const movL = profile('mov');
-console.log('\nlump present — mov halo outside the body (r>6):');
+const movingLump = profile('moving');
+console.log('\nlump present — moving halo outside the body (r>6):');
 for (const [r0, r1] of [[7, 14], [8, 24]])
-  console.log(`  mov slope r[${r0}..${r1}] = ${slope(movL, r0, r1).toFixed(2)}`);
+  console.log(`  moving slope r[${r0}..${r1}] = ${slope(movingLump, r0, r1).toFixed(2)}`);
