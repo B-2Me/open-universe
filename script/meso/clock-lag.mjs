@@ -32,7 +32,8 @@ const boot = () => {
   wasm._meso3i_friction(8);
   wasm._meso3i_fricmode(-4);
   wasm._meso3i_drest(0);
-  wasm._meso3i_fricp(128);
+  wasm._meso3i_fricp(0);        // no capture — pure transit drag, else
+                                // the corridor eats the pulse (q>=8 = NaN)
   wasm._meso3i_friccurve(0);
   wasm._meso3i_reflect(0);
 };
@@ -44,11 +45,13 @@ const seedCorridor = q => {
   }
 };
 
-const movAt = plane => {
+// bulk-mass arrival: mov in the 4-plane detector zone — a statistical
+// threshold, not a single-particle trigger (coarse-grained observable)
+const movZone = () => {
   let m = 0;
-  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++)
-    if (!((plane + y + z) & 1))
-      for (let c = 0; c < NMOV; c++) m += wasm._meso3i_get(plane, y, z, c);
+  for (let x = X2 - 3; x <= X2; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++)
+    if (!((x + y + z) & 1))
+      for (let c = 0; c < NMOV; c++) m += wasm._meso3i_get(x, y, z, c);
   return m;
 };
 
@@ -56,16 +59,18 @@ const run = q => {
   boot();
   seedCorridor(q);
   for (let t = 0; t < 40; t++) { wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); } // settle
-  // fire: +x pulse at x=8..9 around the center
+  // fire: +x pulse at x=8..10 around the center
+  let m0 = 0;
   for (const x of [8, 10]) for (let dy = -2; dy <= 2; dy++) for (let dz = -2; dz <= 2; dz++) {
     const px = x, py = CY + dy, pz = CZ + dz;
     if ((px + py + pz) & 1) continue;
-    wasm._meso3i_set(px, py, pz, XPX, 64);
+    wasm._meso3i_set(px, py, pz, XPX, 64); m0 += 64;
   }
+  const thresh = Math.max(4, m0 * 0.25);
   let tHit = -1;
   for (let t = 0; t < 400; t++) {
     wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
-    if (tHit < 0 && movAt(X2) > 0) tHit = t;
+    if (tHit < 0 && movZone() >= thresh) tHit = t;
     if (tHit > 0 && t > tHit + 20) break;
   }
   const dist = X2 - 10, v = tHit > 0 ? dist / tHit : NaN;
