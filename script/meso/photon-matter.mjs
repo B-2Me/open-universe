@@ -68,4 +68,4 @@ const run = (phot, q) => {
   console.log(`IPHOT=${phot} q=${q}  rest ${R0}->${wasm._meso3i_rest_mass()}  phThru=${phThru()}  movOut=${movOut()}  peject=${wasm._meso3i_ev(5).toFixed(0)}`);
 };
 console.log('E9 — light through matter: photon coupling vs corridor density');
-for (const phot of [2, 3]) for (const q of [0, 16, 96]) run(phot, q);
+for (const phot of [2, 3, 4]) for (const q of [0, 96]) run(phot, q);
