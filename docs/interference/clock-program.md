@@ -169,6 +169,41 @@ The emergent account: **time dilation in this substrate is accumulated
 path-length + discrete dwell, with `c` invariant and the horizon as a
 capture boundary.** No drag, no flowing medium, no asymptote.
 
+## The dimensional bridge (the direction)
+
+The E-series measured **relative** lag mechanics — every ratio,
+regime, and cliff is scale-free and survives coarse-graining. The
+absolute scale comes from identification:
+
+- `c = 1 hop/tick` is free: set cell = ℓ_P, tick = t_P and `c` falls
+  out exactly by definition. The substrate already lives at Planck
+  scale.
+- Consequence: E4's 23-tick half-period ≈ 10⁻⁴² s — our structures
+  are Planck-scale seeds, not atoms. Atomic physics (~10⁴³ t_P
+  cycles, ~10³⁰ Planck volumes) is reached only through ensemble
+  statistics — the coarse-graining the E8 ensemble result justified.
+- The bridge closes when a substrate structure is identified with a
+  physical object (a wound vault ↔ nucleon? τ=4 Q-beat ↔ a known
+  emission period?). All measured lag *ratios* then become physical
+  predictions — 40 orders of magnitude cancel in every ratio.
+
+## New directions from here
+
+1. **Identification hunt** — find the substrate structure whose
+   characteristic scale/period matches a known physical anchor; that
+   fixes the bridge.
+2. **n(ρ) mechanism check** — is the q≈32 peak real (deep-penetration
+   dwell chains) or corridor-geometry artifact? Vary corridor length
+   at fixed q: true refraction scales with path length.
+3. **Ensemble dilation** — E8 showed the population survives; measure
+   its *mean period shift* vs density with autocorrelation over long
+   runs — the statistical clock's actual dilation curve.
+4. **Capacity-stealing channel** — the still-untested second
+   mechanism: does a structure processing field traffic run its
+   internal cycles slower (C_s²+C_i² budget as clock physics)?
+5. **Edge-dwell registers** (`iD`) — the last unprobed lag channel:
+   quanta dwelling mid-edge as a third delay mechanism.
+
 ## Open assumptions (the honest audit)
 
 - **Capacity-stealing is a second, unmeasured mechanism.** The audits'
