@@ -128,8 +128,6 @@ onUnmounted(() => {
             <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
           </div>
         </div>
-        <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">⚑ Flags ▾</button>
-        <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
         <div class="mill-grp grp-presets">
           
           <div class="mill-grp-row">
@@ -159,6 +157,8 @@ onUnmounted(() => {
               <option value="2">flux</option>
               <option value="3">macro</option>
             </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
+            <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">⚑ Flags ▾</button>
+            <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
           </div>
         </div>
       </div>
@@ -773,7 +773,7 @@ onUnmounted(() => {
      fixed widths grow to keep the bigger text from truncating */
   .mill-dock select { font-size: 16px; }
   .mill-field select[data-scene]     { width: 132px; }
-  .mill-field select[data-preset]    { width: 108px; }
+  .mill-field select[data-preset]    { width: 124px; }
   .mill-field select[data-colormode] { width: 90px; }
   .mill-sliders input[type='range'] { width: 90px; height: 40px; }
   .mill-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
@@ -827,8 +827,27 @@ onUnmounted(() => {
     order: -1;
     width: 11px;
     height: 11px;
+    border-radius: 50%;
     transform: none;
     margin-right: -3px;
+  }
+  /* accordion chips inside the presets row keep their chip styling
+     (the row's transport-button rules would otherwise inflate them) */
+  .mill-grp-row > button.mill-accbtn {
+    font: 10px monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    min-width: 0;
+    padding: 2px 9px;
+    gap: 4px;
+  }
+  /* status text clamped on phones — a 5-line say() shouldn't cover
+     a third of the canvas */
+  .mill-status {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .mill-field { gap: 4px; }
   .mill-field > span { font-size: 9px; }
