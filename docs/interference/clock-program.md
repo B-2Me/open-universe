@@ -214,12 +214,12 @@ absolute scale comes from identification:
    photon is detained once — detention event, not per-cell tax.
 3. ~~Ensemble dilation~~ — **done (E8b)**: ensemble survives but the
    period doesn't shift monotonically; needs resonant drive.
-4. **Capacity-stealing channel** — the still-untested second
-   mechanism: does a structure processing field traffic run its
-   internal cycles slower (C_s²+C_i² budget as clock physics)?
-   Likely needs a *read* register for `iPH` (only `pset` write is
-   exported today) to watch a Q-clock's phase under load — pending
-   register additions, not new physics.
+4. ~~Capacity-stealing channel~~ — **done (E12, `31825b5`)**: refuted
+   for the Q-beat. The `ITICK`-locked emitter can't dilate in rate,
+   and transit flux refills its Q-core — traffic *supplies* the
+   internal cycle (emitted=1 in vacuum, 213k under wind=32).
+   Capacity-stealing survives only as a mechanical budget (E1's
+   drift resistance), not a rate budget. (`pget` now exported.)
 5. ~~Edge-dwell registers~~ — **done (E11)**: `v_eff = 2/k` verified;
    detention aggregates into smooth slowdown.
 
