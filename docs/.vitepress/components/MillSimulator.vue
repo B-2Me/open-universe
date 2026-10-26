@@ -91,16 +91,18 @@ onUnmounted(() => {
     <div class="mill-dock">
       <div class="mill-well mill-transport" role="group" aria-label="Controls">
         <div class="mill-grp grp-time">
-          <em>time <button class="mill-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
+          
           <div class="mill-grp-row">
+            <em>time <button class="mill-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
             <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
             <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step</span></button>
             <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
           </div>
         </div>
         <div class="mill-grp grp-inject">
-          <em>inject <button class="mill-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
+          
           <div class="mill-grp-row">
+            <em>inject <button class="mill-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
             <button data-drive aria-pressed="false"
                     title="Convergent feed — 18 spokes pouring flux into the core"
                     aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
@@ -117,8 +119,9 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="mill-grp grp-ops">
-          <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
+          
           <div class="mill-grp-row">
+            <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
             <button data-spin class="on" aria-pressed="true"
                     title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
             <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save</span></button>
@@ -128,8 +131,9 @@ onUnmounted(() => {
         <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">Flags ▾</button>
         <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
         <div class="mill-grp grp-presets">
-          <em>presets</em>
+          
           <div class="mill-grp-row">
+            <em>presets</em>
             <label class="mill-field"><span>Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
               <option value="" selected>scene…</option>
               <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
@@ -446,7 +450,7 @@ onUnmounted(() => {
   border: 1px solid rgba(160, 200, 255, 0.09);
   border-radius: 9px;
 }
-.mill-grp > em {
+.mill-grp-row > em {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -462,10 +466,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 3px;
 }
-.grp-time > em    { color: var(--mill-accent); }
-.grp-inject > em  { color: #ffb35c; }
-.grp-ops > em     { color: #b48cff; }
-.grp-presets > em { color: var(--mill-muted); }
+.grp-time > .mill-grp-row > em    { color: var(--mill-accent); }
+.grp-inject > .mill-grp-row > em  { color: #ffb35c; }
+.grp-ops > .mill-grp-row > em     { color: #b48cff; }
+.grp-presets > .mill-grp-row > em { color: var(--mill-muted); }
 /* presets claims its own full line — the three fields spread evenly
    across it instead of floating centered with voids on each side */
 .grp-presets { flex: 1 1 100%; justify-content: flex-start; }
@@ -784,8 +788,30 @@ onUnmounted(() => {
     justify-content: center;
   }
   /* inject's six buttons exceed a phone dock — wrap inside the group
-     instead of overflowing sideways */
+     instead of overflowing sideways; the caption flows inline as the
+     first item so it can't hover vertically centered beside a wrap */
   .mill-grp-row { flex-wrap: wrap; justify-content: center; }
+  /* stacked square buttons — glyph over word, the dense form factor.
+     The on-state becomes a corner dot instead of the bottom LED bar
+     whose padding a square button doesn't have. */
+  .mill-grp-row > button {
+    flex-direction: column;
+    gap: 1px;
+    min-width: 46px;
+    padding: 4px 4px 6px;
+  }
+  .mill-grp-row > button .g { font-size: 15px; }
+  .mill-grp-row > button .l { font-size: 6.5px; letter-spacing: 0.04em; }
+  .mill-grp-row > button.on::after {
+    width: 5px;
+    height: 5px;
+    left: auto;
+    right: 3px;
+    top: 3px;
+    bottom: auto;
+    transform: none;
+    border-radius: 50%;
+  }
   .mill-field { gap: 4px; }
   .mill-field > span { font-size: 9px; }
   .mill-dock select { padding: 0 20px 0 8px; }
