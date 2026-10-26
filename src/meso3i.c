@@ -272,6 +272,10 @@ void meso3i_pset(int x, int y, int z, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
 }
+uint8_t meso3i_pget(int x, int y, int z) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    return isite(x, y, z) ? iPH[iidx(x, y, z)] : 0;
+}
 
 /* mode>=4 capture: unconditionally at Q>0 nodes for modes 4-5; mode 6
  * is phase-gated — a node captures arriving flux into Q only during its

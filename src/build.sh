@@ -164,6 +164,7 @@ if emcc meso3i.c \
     '_meso3i_phget',
     '_meso3i_photons',
     '_meso3i_pset',
+    '_meso3i_pget',
     '_meso3i_dwell',
     '_meso3i_edge',
     '_meso3i_qmode',
