@@ -1,5 +1,5 @@
 // clock-halo (E4c): the honest corridor — a cavity clock inside a SUSTAINED
-// flux flow, not static fill. A mass's halo is transaction traffic, and
+// flux flow, not static fill. A mass'sign halo is transaction traffic, and
 // congestion is the dominant dilation term (gravity >> velocity).
 // Transverse +y wind through the cavity can't contaminate the ±x momentum
 // readout. Cases: wind off / low / high — does the round trip dilate?
@@ -15,19 +15,19 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const wasm = await mod.exports();
 
-const W = 72, H = 20, D = 20, CY = H >> 1, CZ = D >> 1;
+const gridW = 72, gridH = 20, gridD = 20, centerY = gridH >> 1, centerZ = gridD >> 1;
 const MX0 = 10, MX1 = 60;
-if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
-const NCH = wasm._meso3i_nch(), NMOV = NCH - 1, REST = NCH - 1;
-const CV = []; let XPX = -1, YPX = -1;
-for (let c = 0; c < NMOV; c++) {
-  const v = [wasm._meso3i_cvc(c, 0), wasm._meso3i_cvc(c, 1), wasm._meso3i_cvc(c, 2)];
-  CV.push(v);
-  if (v[0] > 0 && v[1] === 0 && v[2] === 0) XPX = c;
-  if (v[0] === 0 && v[1] > 0 && v[2] === 0) YPX = c;   // pure +y axial
+if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init failed');
+const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
+const chanVec = []; let chPX = -1, chPY = -1;
+for (let ch = 0; ch < nMoving; ch++) {
+  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(vEff);
+  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
+  if (vEff[0] === 0 && vEff[1] > 0 && vEff[2] === 0) chPY = ch;   // pure +y axial
 }
-const boot = () => {
-  wasm._meso3i_init(W, H, D, 1);
+const resetEngine = () => {
+  wasm._meso3i_init(gridW, gridH, gridD, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-4);
   wasm._meso3i_fricp(128); wasm._meso3i_friccurve(0);
   wasm._meso3i_drest(0); wasm._meso3i_reflect(16);
@@ -35,50 +35,50 @@ const boot = () => {
 // sustained isotropic bath: inject every channel on a mid-cavity sheet —
 // the honest halo: transaction traffic in all directions, not one wind
 const feedWind = rate => {
-  for (let x = MX0 + 6; x < MX1 - 2; x += 2) for (let z = 0; z < D; z += 2) {
-    const y = CY;
+  for (let x = MX0 + 6; x < MX1 - 2; x += 2) for (let z = 0; z < gridD; z += 2) {
+    const y = centerY;
     if ((x + y + z) & 1) continue;
-    for (let c = 0; c < NMOV; c++) {
-      const v = wasm._meso3i_get(x, y, z, c);
-      if (v < rate) wasm._meso3i_set(x, y, z, c, v + rate);
+    for (let ch = 0; ch < nMoving; ch++) {
+      const vEff = wasm._meso3i_get(x, y, z, ch);
+      if (vEff < rate) wasm._meso3i_set(x, y, z, ch, vEff + rate);
     }
   }
 };
-const momX = () => {
-  let m = 0;
-  for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+const signedMomX = () => {
+  let mass = 0;
+  for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((x + y + z) & 1) continue;
-    for (let c = 0; c < NMOV; c++) if (CV[c][0] !== 0)
-      m += CV[c][0] * wasm._meso3i_get(x, y, z, c);
+    for (let ch = 0; ch < nMoving; ch++) if (chanVec[ch][0] !== 0)
+      mass += chanVec[ch][0] * wasm._meso3i_get(x, y, z, ch);
   }
-  return m;
+  return mass;
 };
 const run = rate => {
-  boot();
+  resetEngine();
   for (const xw of [MX0, MX1]) for (let x = xw; x < xw + 3; x++)
-    for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+    for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
       if ((x + y + z) & 1) continue;
-      wasm._meso3i_set(x, y, z, REST, 64);
+      wasm._meso3i_set(x, y, z, restCh, 64);
     }
-  let m0 = 0;
+  let injectedMass = 0;
   for (let dy = -4; dy <= 4; dy++) for (let dz = -4; dz <= 4; dz++) {
-    const x = MX0 + 8, y = CY + dy, z = CZ + dz;
+    const x = MX0 + 8, y = centerY + dy, z = centerZ + dz;
     if ((x + y + z) & 1) continue;
-    wasm._meso3i_set(x, y, z, XPX, 64); m0 += 64;
+    wasm._meso3i_set(x, y, z, chPX, 64); injectedMass += 64;
   }
-  const flips = []; let last = 0;
+  const bounceTicks = []; let last = 0;
   for (let t = 0; t < 400; t++) {
     if (rate) feedWind(rate);
     wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
-    const m = momX();
-    if (Math.abs(m) < 8) continue;
-    const s = Math.sign(m);
-    if (last !== 0 && s !== last) flips.push(t);
-    last = s;
+    const mass = signedMomX();
+    if (Math.abs(mass) < 8) continue;
+    const sign = Math.sign(mass);
+    if (last !== 0 && sign !== last) bounceTicks.push(t);
+    last = sign;
   }
-  const d = r_(flips), T = d.length ? d.reduce((a, b) => a + b, 0) / d.length : NaN;
-  console.log(`wind=${String(rate).padStart(2)}  flips=[${flips.join(',')}]  T_half=${T.toFixed(1)}t`);
-  function r_(f) { return f.map((t, i) => i ? t - f[i - 1] : null).filter(Boolean); }
+  const gaps = intervals(bounceTicks), T = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : NaN;
+  console.log(`wind=${String(rate).padStart(2)}  bounceTicks=[${bounceTicks.join(',')}]  T_half=${T.toFixed(1)}t`);
+  function intervals(fillFrac) { return fillFrac.map((t, i) => i ? t - fillFrac[i - 1] : null).filter(Boolean); }
 };
 console.log('E4c — cavity clock inside a sustained +y flux corridor');
 for (const rate of [0, 1, 4, 8]) run(rate);

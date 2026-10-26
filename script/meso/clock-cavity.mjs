@@ -1,6 +1,6 @@
 // clock-cavity (E4): the honest light-clock. A +x packet bounces between
 // two parked mirrors (Q64/IREFL16 = 0.80 reflectance); signed x-momentum
-// M(t) flips sign at each bounce -> period T. Then rest density q is
+// M(t) bounceTicks sign at each bounce -> period T. Then rest density density is
 // seeded inside the cavity: does the round trip take LONGER (dwell lag
 // = the gravitational-dilation analog)?
 import { readFileSync } from 'node:fs';
@@ -15,74 +15,74 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const wasm = await mod.exports();
 
-const W = 72, H = 20, D = 20, CY = H >> 1, CZ = D >> 1;
+const gridW = 72, gridH = 20, gridD = 20, centerY = gridH >> 1, centerZ = gridD >> 1;
 const MX0 = 10, MX1 = 60;                    // mirror slab positions
-if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
-const NCH = wasm._meso3i_nch(), NMOV = NCH - 1, REST = NCH - 1;
-const CV = []; let XPX = -1;
-for (let c = 0; c < NMOV; c++) {
-  const v = [wasm._meso3i_cvc(c, 0), wasm._meso3i_cvc(c, 1), wasm._meso3i_cvc(c, 2)];
-  CV.push(v);
-  if (v[0] > 0 && v[1] === 0 && v[2] === 0) XPX = c;
+if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init failed');
+const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
+const chanVec = []; let chPX = -1;
+for (let ch = 0; ch < nMoving; ch++) {
+  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(vEff);
+  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
 }
-const boot = () => {
-  wasm._meso3i_init(W, H, D, 1);
+const resetEngine = () => {
+  wasm._meso3i_init(gridW, gridH, gridD, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-4);
   wasm._meso3i_fricp(128); wasm._meso3i_friccurve(0);
   wasm._meso3i_drest(0); wasm._meso3i_reflect(16);
 };
 
 // signed x-momentum inside the cavity
-const momX = () => {
-  let m = 0;
-  for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+const signedMomX = () => {
+  let mass = 0;
+  for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((x + y + z) & 1) continue;
-    for (let c = 0; c < NMOV; c++) if (CV[c][0] !== 0)
-      m += CV[c][0] * wasm._meso3i_get(x, y, z, c);
+    for (let ch = 0; ch < nMoving; ch++) if (chanVec[ch][0] !== 0)
+      mass += chanVec[ch][0] * wasm._meso3i_get(x, y, z, ch);
   }
-  return m;
+  return mass;
 };
 
-const run = (q, f = 1) => {
-  boot();
+const run = (density, fillFrac = 1) => {
+  resetEngine();
   for (const xw of [MX0, MX1]) for (let x = xw; x < xw + 3; x++)
-    for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+    for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
       if ((x + y + z) & 1) continue;
-      wasm._meso3i_set(x, y, z, REST, 64);
+      wasm._meso3i_set(x, y, z, restCh, 64);
     }
-  // interior fill: deterministic sparse fraction f of sites at rest q
-  if (q) for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
+  // interior fill: deterministic sparse fraction fillFrac of sites at rest density
+  if (density) for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((x + y + z) & 1) continue;
-    if (f < 1 && (((x * 7 + y * 3 + z * 11) % 8) / 8) >= f) continue;
-    wasm._meso3i_set(x, y, z, REST, q);
+    if (fillFrac < 1 && (((x * 7 + y * 3 + z * 11) % 8) / 8) >= fillFrac) continue;
+    wasm._meso3i_set(x, y, z, restCh, density);
   }
   // packet: +x flux just right of the left mirror
-  let m0 = 0;
+  let injectedMass = 0;
   for (let dy = -4; dy <= 4; dy++) for (let dz = -4; dz <= 4; dz++) {
-    const x = MX0 + 8, y = CY + dy, z = CZ + dz;
+    const x = MX0 + 8, y = centerY + dy, z = centerZ + dz;
     if ((x + y + z) & 1) continue;
-    wasm._meso3i_set(x, y, z, XPX, 64); m0 += 64;
+    wasm._meso3i_set(x, y, z, chPX, 64); injectedMass += 64;
   }
-  // bounce times = M(t) sign flips
-  const flips = []; let last = 0, mEnd = 0;
+  // bounce times = M(t) sign bounceTicks
+  const bounceTicks = []; let last = 0, endMomentum = 0;
   for (let t = 0; t < 400; t++) {
     wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
-    const m = momX();
-    if (t === 399) mEnd = Math.abs(m);
-    if (Math.abs(m) < 8) continue;                 // dead zone: skip noise
-    const s = Math.sign(m);
-    if (last !== 0 && s !== last) flips.push(t);
-    last = s;
+    const mass = signedMomX();
+    if (t === 399) endMomentum = Math.abs(mass);
+    if (Math.abs(mass) < 8) continue;                 // dead zone: skip noise
+    const sign = Math.sign(mass);
+    if (last !== 0 && sign !== last) bounceTicks.push(t);
+    last = sign;
   }
-  return { flips, m0, mEnd };
+  return { bounceTicks, injectedMass, endMomentum };
 };
 
 console.log('E4 — cavity period vs interior rest density (mirrors x=10..60)');
 const cases = [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
                [8, 0.5], [8, 0.75], [8, 1]];
-for (const [q, f] of cases) {
-  const r = run(q, f);
-  const d = r.flips.map((t, i) => i ? t - r.flips[i - 1] : null).filter(Boolean);
-  const T = d.length ? d.reduce((a, b) => a + b, 0) / d.length : NaN;
-  console.log(`q=${q}x${f}  flips=[${r.flips.join(',')}]  half-period=${T.toFixed(1)}t  survivor=${r.mEnd}`);
+for (const [density, fillFrac] of cases) {
+  const r = run(density, fillFrac);
+  const gaps = r.bounceTicks.map((t, i) => i ? t - r.bounceTicks[i - 1] : null).filter(Boolean);
+  const T = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : NaN;
+  console.log(`density=${density}x${fillFrac}  bounceTicks=[${r.bounceTicks.join(',')}]  half-period=${T.toFixed(1)}t  survivor=${r.endMomentum}`);
 }
