@@ -4,7 +4,7 @@
 // Drift: IREFL=32 + +x beam = lit-face accretion (the regime where
 // lumps genuinely translate — morphology-drift).
 // Confound control: scalar lump under the same beam measures the
-// pure accretion input, subtracted from the vault'sign dM/dt.
+// pure accretion input, subtracted from the vault's dM/dt.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,8 +38,8 @@ const seedWound = (R, Q, sign = 1) => {
     wasm._meso3i_set(x, y, z, restCh, Q);
     const vx = -sign * dy, vy = sign * dx;
     for (let ch = 0; ch < nMoving; ch++) {
-      const gaps = vx * chanVec[ch][0] + vy * chanVec[ch][1];
-      if (gaps > 0) wasm._meso3i_rset(x, y, z, ch, Math.min(255, Math.round(gaps * 8)));
+      const winding = vx * chanVec[ch][0] + vy * chanVec[ch][1];
+      if (winding > 0) wasm._meso3i_rset(x, y, z, ch, Math.min(255, Math.round(winding * 8)));
     }
   }
 };
@@ -71,7 +71,7 @@ const run = (tag, seedFn, drest, beamT) => {
       out.push(`t${t}: rest=${wasm._meso3i_rest_mass()} cm=${(wasm._meso3i_cm(0) / 256).toFixed(2)}`);
     }
   }
-  console.log(`\siteCount${tag}`); out.forEach(sign => console.log('  ' + sign));
+  console.log(`\n${tag}`); out.forEach(sign => console.log('  ' + sign));
 };
 console.log('E1 v3 — wound vault drift clock (IREFL=32, +x beam 800t)');
 run('static vault', () => seedWound(5, 48), 1, -1);

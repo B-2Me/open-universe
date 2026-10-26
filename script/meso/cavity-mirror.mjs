@@ -20,10 +20,10 @@ const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannel
 const chanVec = [];
 let chPX = -1, chNX = -1;
 for (let ch = 0; ch < nMoving; ch++) {
-  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
-  chanVec.push(vEff);
-  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
-  if (vEff[0] < 0 && vEff[1] === 0 && vEff[2] === 0) chNX = ch;
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(dir);
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
+  if (dir[0] < 0 && dir[1] === 0 && dir[2] === 0) chNX = ch;
 }
 
 wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-4);
@@ -53,7 +53,7 @@ const backFlux = () => {  // -x flux anywhere in the return zone x<24
   }
   return mass;
 };
-const corridorFlux = () => {  // total movProfile in x>24 (beyond launch, before wall)
+const corridorFlux = () => {  // total moving in x>24 (beyond launch, before wall)
   let mass = 0;
   for (let x = 24; x < 54; x++) for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
     if ((x + y + z) & 1) continue;

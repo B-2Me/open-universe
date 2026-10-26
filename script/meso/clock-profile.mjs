@@ -1,5 +1,5 @@
 // clock-profile (E3): does ambient congestion around a steady source fall
-// as 1/r (diffusive, Laplace — matches GR'sign Phi~1/r) or 1/r^2 (ballistic)?
+// as 1/r (diffusive, Laplace — matches GR's Phi~1/r) or 1/r^2 (ballistic)?
 // A continuous central injector vs. boundary drain reaches a steady radial
 // gradient; shell-averaged moving density vs r gives the exponent.
 // Second sampleMoments: occupancy halo around a parked mass lump under the same
@@ -58,7 +58,7 @@ const profile = (what) => {
     const sh = Math.floor(r);
     if (sh < 1 || sh >= RMAX) continue;
     let density = 0;
-    if (what === 'movProfile') for (let ch = 0; ch < nMoving; ch++) density += wasm._meso3i_get(x, y, z, ch);
+    if (what === 'moving') for (let ch = 0; ch < nMoving; ch++) density += wasm._meso3i_get(x, y, z, ch);
     else density = wasm._meso3i_get(x, y, z, restCh);
     shellSum[sh] += density; shellCount[sh]++;
   }
@@ -70,11 +70,11 @@ const profile = (what) => {
 
 // log-log slope over r in [r0, r1] via least squares
 const slope = (profileRows, r0, r1) => {
-  const fitPts = profileRows.filter(([r, gaps]) => r >= r0 && r <= r1 && gaps > 0);
+  const fitPts = profileRows.filter(([r, shellDensity]) => r >= r0 && r <= r1 && shellDensity > 0);
   if (fitPts.length < 3) return NaN;
   let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-  for (const [r, gaps] of fitPts) {
-    const lx = Math.log(r), ly = Math.log(gaps);
+  for (const [r, shellDensity] of fitPts) {
+    const lx = Math.log(r), ly = Math.log(shellDensity);
     sumX += lx; sumY += ly; sumXY += lx * ly; sumXX += lx * lx;
   }
   const siteCount = fitPts.length;
@@ -83,16 +83,16 @@ const slope = (profileRows, r0, r1) => {
 
 const SETTLE = 600;
 console.log(`E3 — radial congestion profile (RATE=${RATE}): exponent of rho(r) ~ r^k`);
-console.log('    k = -2.0 ballistic rays | k = -1.0 diffusive (Laplace, GR-like)\siteCount');
+console.log('    k = -2.0 ballistic rays | k = -1.0 diffusive (Laplace, GR-like)\n');
 
 // sampleMoments A: central flux source vs boundary drain
 resetEngine();
 for (let t = 0; t < SETTLE; t++) { inject(); wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); }
-const movProfile = profile('movProfile');
+const moving = profile('moving');
 console.log('r   rho_mov/site');
-for (const [r, gaps] of movProfile) console.log(`${String(r).padStart(3)} ${gaps.toFixed(3)}`);
+for (const [r, shellDensity] of moving) console.log(`${String(r).padStart(3)} ${shellDensity.toFixed(3)}`);
 for (const [r0, r1] of [[4, 12], [6, 20], [8, 24]])
-  console.log(`  movProfile slope r[${r0}..${r1}] = ${slope(movProfile, r0, r1).toFixed(2)}`);
+  console.log(`  moving slope r[${r0}..${r1}] = ${slope(moving, r0, r1).toFixed(2)}`);
 
 // sampleMoments B: same field but a parked mass lump instead of a bare source
 resetEngine();
@@ -102,7 +102,7 @@ for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) for (let x = 0; 
   if (dx * dx + dy * dy + dz * dz <= 25) wasm._meso3i_set(x, y, z, restCh, 48);
 }
 for (let t = 0; t < SETTLE; t++) { inject(); wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); }
-const movLumpProfile = profile('movProfile');
-console.log('\nlump present — movProfile halo outside the body (r>6):');
+const movingLump = profile('moving');
+console.log('\nlump present — moving halo outside the body (r>6):');
 for (const [r0, r1] of [[7, 14], [8, 24]])
-  console.log(`  movProfile slope r[${r0}..${r1}] = ${slope(movLumpProfile, r0, r1).toFixed(2)}`);
+  console.log(`  moving slope r[${r0}..${r1}] = ${slope(movingLump, r0, r1).toFixed(2)}`);

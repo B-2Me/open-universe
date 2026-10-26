@@ -1,5 +1,5 @@
-// clock-qgrav (E5): the cavity clock inside a Q-mass'sign self-focusing
-// field — IQMODE 7'sign mass-attracts-mass term (capture p ~ (1+Q)/16).
+// clock-qgrav (E5): the cavity clock inside a Q-mass's self-focusing
+// field — IQMODE 7's mass-attracts-mass term (capture p ~ (1+Q)/16).
 // A Q blob sits ON the bounce path at cavity center: the packet must
 // transit the "gravitational" well each leg. T_half vs Q density.
 import { readFileSync } from 'node:fs';
@@ -20,9 +20,9 @@ if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init faile
 const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
 const chanVec = []; let chPX = -1;
 for (let ch = 0; ch < nMoving; ch++) {
-  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
-  chanVec.push(vEff);
-  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(dir);
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
 }
 const resetEngine = qmode => {
   wasm._meso3i_init(gridW, gridH, gridD, 1);

@@ -1,5 +1,5 @@
-// clock-drift v2 (E1): does translation change a lump'sign internal cadence?
-// The cycle we can measure headless: radiative turnover — movProfile quanta
+// clock-drift v2 (E1): does translation change a lump's internal cadence?
+// The cycle we can measure headless: radiative turnover — moving quanta
 // emitted per tick into the downstream wakeFlux of a self-radiating lump.
 // A = static lump. B = same lump under sustained +x beam (morphology-
 // drift regime — it actually translates). Beam confound is bounded by
@@ -45,7 +45,7 @@ const beam = () => {   // +x beam aimed at the lump (morphology-drift spoke(1))
       wasm._meso3i_set(sumX, sumY, sz, ch, wasm._meso3i_get(sumX, sumY, sz, ch) + 1);
   }
 };
-// movProfile mass in the downstream wakeFlux slab (x in [cx+7, cx+11])
+// moving mass in the downstream wakeFlux slab (x in [cx+7, cx+11])
 const wakeFlux = cx => {
   let mass = 0;
   for (let x = cx + 7; x <= cx + 11; x++) for (let z = centerZ - 8; z <= centerZ + 8; z++)
@@ -68,6 +68,6 @@ for (const withBeam of [false, true]) {
       series.push(`t${t}:wakeFlux=${wakeFlux(Math.round(wasm._meso3i_cm(0) / 256))},cm=${(wasm._meso3i_cm(0) / 256).toFixed(1)},rest=${wasm._meso3i_rest_mass()}`);
     }
   }
-  console.log(`\siteCount${withBeam ? 'drifting (+x beam)' : 'static (no beam)'}`);
+  console.log(`\n${withBeam ? 'drifting (+x beam)' : 'static (no beam)'}`);
   for (const sign of series) console.log('  ' + sign);
 }

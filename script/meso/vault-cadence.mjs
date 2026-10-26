@@ -1,4 +1,4 @@
-// vault-cadence (E1 v4a): find the vault'sign tickable internal cycle.
+// vault-cadence (E1 v4a): find the vault's tickable internal cycle.
 // Read the directional-rest field (rget) and emit candidate order
 // parameters — whichever advances steadily is the clock phase:
 //   C   = circulation  (shellSum of parked momentum dot tangential-hat)
@@ -35,8 +35,8 @@ for (let dz = -5; dz <= 5; dz++) for (let dy = -5; dy <= 5; dy++) for (let dx = 
   wasm._meso3i_set(x, y, z, restCh, 48);
   const vx = -dy, vy = dx;
   for (let ch = 0; ch < nMoving; ch++) {
-    const gaps = vx * chanVec[ch][0] + vy * chanVec[ch][1];
-    if (gaps > 0) wasm._meso3i_rset(x, y, z, ch, Math.min(255, Math.round(gaps * 8)));
+    const winding = vx * chanVec[ch][0] + vy * chanVec[ch][1];
+    if (winding > 0) wasm._meso3i_rset(x, y, z, ch, Math.min(255, Math.round(winding * 8)));
   }
 }
 

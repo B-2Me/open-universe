@@ -1,7 +1,7 @@
-// clock-lag (E2): the lag-vs-density transfer function fillFrac(rho).
+// clock-lag (E2): the lag-vs-density transfer function f(rho).
 // A corridor of seeded rest density density blocks x in [X0,X1); a +x pulse is
 // timed from launch to first-arrival at X2. v_eff(rho) = the drag a
-// bound clock'sign internal carriers feel inside congested space.
+// bound clock's internal carriers feel inside congested space.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,8 +22,8 @@ if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init faile
 const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
 let chPX = -1;                             // +x axial channel
 for (let ch = 0; ch < nMoving; ch++) {
-  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
-  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
 }
 
 const resetEngine = () => {
@@ -45,7 +45,7 @@ const seedCorridor = density => {
   }
 };
 
-// bulk-mass arrival: movProfile in the 4-plane detector zone — a statistical
+// bulk-mass arrival: moving in the 4-plane detector zone — a statistical
 // threshold, not a single-particle trigger (coarse-grained observable)
 const zoneFlux = () => {
   let mass = 0;

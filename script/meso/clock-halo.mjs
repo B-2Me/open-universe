@@ -1,5 +1,5 @@
 // clock-halo (E4c): the honest corridor — a cavity clock inside a SUSTAINED
-// flux flow, not static fill. A mass'sign halo is transaction traffic, and
+// flux flow, not static fill. A mass's halo is transaction traffic, and
 // congestion is the dominant dilation term (gravity >> velocity).
 // Transverse +y wind through the cavity can't contaminate the ±x momentum
 // readout. Cases: wind off / low / high — does the round trip dilate?
@@ -21,10 +21,10 @@ if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init faile
 const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
 const chanVec = []; let chPX = -1, chPY = -1;
 for (let ch = 0; ch < nMoving; ch++) {
-  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
-  chanVec.push(vEff);
-  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
-  if (vEff[0] === 0 && vEff[1] > 0 && vEff[2] === 0) chPY = ch;   // pure +y axial
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(dir);
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
+  if (dir[0] === 0 && dir[1] > 0 && dir[2] === 0) chPY = ch;   // pure +y axial
 }
 const resetEngine = () => {
   wasm._meso3i_init(gridW, gridH, gridD, 1);

@@ -1,7 +1,7 @@
 // clock-photon (E7): photons never collide and carry no mass — the pure
 // transit sampleMoments. Same corridor geometry as clock-lag: photon +x packet
 // timed through rest density density — if transit is invariant even at density>=8
-// (where the movProfile pulse got eaten), photons are the control that proves
+// (where the moving pulse got eaten), photons are the control that proves
 // the lag mechanics are collision-driven.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -21,9 +21,9 @@ if (wasm._meso3i_init(gridW, gridH, gridD, 1) !== 0) throw new Error('init faile
 const nChannels = wasm._meso3i_nch(), nMoving = nChannels - 1, restCh = nChannels - 1;
 const chanVec = []; let chPX = -1;
 for (let ch = 0; ch < nMoving; ch++) {
-  const vEff = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
-  chanVec.push(vEff);
-  if (vEff[0] > 0 && vEff[1] === 0 && vEff[2] === 0) chPX = ch;
+  const dir = [wasm._meso3i_cvc(ch, 0), wasm._meso3i_cvc(ch, 1), wasm._meso3i_cvc(ch, 2)];
+  chanVec.push(dir);
+  if (dir[0] > 0 && dir[1] === 0 && dir[2] === 0) chPX = ch;
 }
 const resetEngine = () => {
   wasm._meso3i_init(gridW, gridH, gridD, 1);
