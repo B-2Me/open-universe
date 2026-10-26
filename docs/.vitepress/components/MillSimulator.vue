@@ -132,7 +132,7 @@ onUnmounted(() => {
           
           <div class="mill-grp-row">
             <em>presets</em>
-            <label class="mill-field"><span class="mill-flab"><i>✦</i><i>Scene</i></span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+            <label class="mill-field"><button class="mill-flab" type="button" data-help="scene" aria-label="About Scene" title="About Scene"><i>✦</i><i>Scene</i></button><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
               <option value="" selected>scene…</option>
               <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
               <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
@@ -141,8 +141,8 @@ onUnmounted(() => {
               <option value="porous">porous rim (ramp→255: dissolves)</option>
               <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
               <option value="walled">walled crust (Wall 32 + ☀)</option>
-            </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
-            <label class="mill-field"><span class="mill-flab"><i>◎</i><i>Focus</i></span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+            </select></label>
+            <label class="mill-field"><button class="mill-flab" type="button" data-help="focus" aria-label="About Focus" title="About Focus"><i>◎</i><i>Focus</i></button><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
               <option value="full"    selected>Full field</option>
               <option value="side">Side profile</option>
               <option value="equator">Equator slab</option>
@@ -150,13 +150,13 @@ onUnmounted(() => {
               <option value="core">Core close-up</option>
               <option value="lattice">Lattice plane</option>
               <option value="hex">Hex axis (111)</option>
-            </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
-            <label class="mill-field"><span class="mill-flab"><i>◐</i><i>View</i></span><select data-colormode aria-label="Data view" title="Data view">
+            </select></label>
+            <label class="mill-field"><button class="mill-flab" type="button" data-help="colormode" aria-label="About View" title="About View"><i>◐</i><i>View</i></button><select data-colormode aria-label="Data view" title="Data view">
               <option value="0" selected>ember</option>
               <option value="1">heat</option>
               <option value="2">flux</option>
               <option value="3">macro</option>
-            </select><button class="mill-help" data-help="colormode" aria-label="About View">?</button></label>
+            </select></label>
             <button class="mill-accbtn" data-flags aria-expanded="false" title="Flag selects">⚑ Flags ▾</button>
             <button class="mill-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
           </div>
@@ -164,41 +164,41 @@ onUnmounted(() => {
       </div>
 
       <div class="mill-well mill-selects">
-        <label class="mill-field"><span class="mill-flab"><i>⟐</i><i>Collide</i></span><select data-coll aria-label="Collision mode" title="Collision rule variant">
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="coll" aria-label="About Collide" title="About Collide"><i>⟐</i><i>Collide</i></button><select data-coll aria-label="Collision mode" title="Collision rule variant">
           <option value="0" selected>uniform</option>
           <option value="1">shell-weighted</option>
           <option value="2">forward-bias</option>
-        </select><button class="mill-help" data-help="coll" aria-label="About Collide">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>γ</i><i>Phot</i></span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="phot" aria-label="About Phot" title="About Phot"><i>γ</i><i>Phot</i></button><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
           <option value="0">off</option>
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
           <option value="3">absorbed</option>
-        </select><button class="mill-help" data-help="phot" aria-label="About Phot">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>▣</i><i>Rest</i></span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="drest" aria-label="About Rest" title="About Rest"><i>▣</i><i>Rest</i></button><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
           <option value="1">directional</option>
-        </select><button class="mill-help" data-help="drest" aria-label="About Rest">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>∿</i><i>Curve</i></span><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="fcurve" aria-label="About Curve" title="About Curve"><i>∿</i><i>Curve</i></button><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
           <option value="0" selected>flat</option>
           <option value="1">ramp→255</option>
           <option value="2">ramp→2cap</option>
-        </select><button class="mill-help" data-help="fcurve" aria-label="About Curve">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>◧</i><i>Plane</i></span><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="axis" aria-label="About Plane" title="About Plane"><i>◧</i><i>Plane</i></button><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
           <option value="2" selected>xy</option>
           <option value="1">xz</option>
           <option value="0">yz</option>
-        </select><button class="mill-help" data-help="axis" aria-label="About Plane">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>↦</i><i>Dir</i></span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="bdir" aria-label="About Dir" title="About Dir"><i>↦</i><i>Dir</i></button><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>
           <option value="+z">+z</option><option value="-z">−z</option>
-        </select><button class="mill-help" data-help="bdir" aria-label="About Dir">?</button></label>
-        <label class="mill-field"><span class="mill-flab"><i>◫</i><i>Split</i></span><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
+        </select></label>
+        <label class="mill-field"><button class="mill-flab" type="button" data-help="split" aria-label="About Split" title="About Split"><i>◫</i><i>Split</i></button><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
           <option value="off" selected>off</option>
           <option value="layout">cube | fcc</option>
           <option value="modes">ember | flux</option>
-        </select><button class="mill-help" data-help="split" aria-label="About Split">?</button></label>
+        </select></label>
       </div>
 
       <div class="mill-well mill-sliders">
@@ -621,8 +621,8 @@ onUnmounted(() => {
   color: var(--mill-muted);
   white-space: nowrap;
 }
-/* stacked field labels — icon over word, same language as the
-   transport buttons */
+/* stacked field labels — icon over word, and the whole label IS the
+   ? button: bordered like the old chip, green hover glow, click scale */
 .mill-flab {
   display: flex;
   flex-direction: column;
@@ -630,7 +630,20 @@ onUnmounted(() => {
   gap: 0;
   line-height: 1;
   white-space: nowrap;
+  padding: 2px 6px;
+  font-family: monospace;
+  color: var(--mill-muted);
+  background: none;                    /* info helper, not a button */
+  border: 1px solid rgba(143, 255, 158, 0.22);
+  border-radius: 7px;
+  cursor: help;
 }
+.mill-flab:hover {
+  border-color: rgba(143, 255, 158, 0.65);
+  color: #8fff9e;
+  box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
+}
+.mill-flab:active { transform: scale(0.93); }
 .mill-flab i { font-style: normal; }
 .mill-flab i:first-child { font-size: 12px; line-height: 1.15; }
 .mill-flab i:last-child {
