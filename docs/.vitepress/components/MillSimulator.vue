@@ -202,21 +202,21 @@ onUnmounted(() => {
       </div>
 
       <div class="mill-well mill-sliders">
-        <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it">Cut   <input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output><button class="mill-help" data-help="cut" aria-label="About Cut">?</button></label>
-        <label title="Slab thickness in cells — at max the whole volume shows">Slab  <input type="range" data-slab min="1" max="36" step="1" value="36"><output>36</output><button class="mill-help" data-help="slab" aria-label="About Slab">?</button></label>
-        <label>Size  <input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output><button class="mill-help" data-help="size" aria-label="About Size">?</button></label>
-        <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output><button class="mill-help" data-help="qmin" aria-label="About Q≥">?</button></label>
-        <label>Drag  <input type="range" data-fric    min="0" max="32" step="1" value="8" title="Friction cap — transit drag parks flux at destinations this dense"><output>8</output><button class="mill-help" data-help="fric" aria-label="About Drag">?</button></label>
-        <label title="Park probability % — flat capture rate above the Drag cap (M49: 50 is canonical, not sacred)">Park% <input type="range" data-park min="0" max="100" step="1" value="50"><output>50</output><button class="mill-help" data-help="park" aria-label="About Park%">?</button></label>
-        <label title="Congestion wall — destinations this dense refuse inflow entirely (M49: the crust wall)">Wall  <input type="range" data-wall min="0" max="128" step="1" value="0"><output>0</output><button class="mill-help" data-help="wall" aria-label="About Wall">?</button></label>
-        <label>Rad   <input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output><button class="mill-help" data-help="rad" aria-label="About Rad">?</button></label>
-        <label>Lat   <input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output><button class="mill-help" data-help="lat" aria-label="About Lat">?</button></label>
-        <label>Ap    <input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output><button class="mill-help" data-help="bap" aria-label="About Ap">?</button></label>
-        <label>OffU  <input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output><button class="mill-help" data-help="bou" aria-label="About OffU">?</button></label>
-        <label>OffV  <input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output><button class="mill-help" data-help="bov" aria-label="About OffV">?</button></label>
-        <label>Speed <input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output><button class="mill-help" data-help="speed" aria-label="About Speed">?</button></label>
-        <label>Zoom  <input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output><button class="mill-help" data-help="zoom" aria-label="About Zoom">?</button></label>
-        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux">Glow  <input type="range" data-expo min="40" max="300" step="5" value="120"><output>120</output><button class="mill-help" data-help="expo" aria-label="About Glow">?</button></label>
+        <label title="Cut position along the Plane axis — Shift+scroll on the canvas scrubs it"><button class="mill-shelp" type="button" data-help="cut" aria-label="About Cut" title="About Cut">Cut</button><input type="range" data-cut min="0" max="35" step="1" value="18"><output>18</output></label>
+        <label title="Slab thickness in cells — at max the whole volume shows"><button class="mill-shelp" type="button" data-help="slab" aria-label="About Slab" title="About Slab">Slab</button><input type="range" data-slab min="1" max="36" step="1" value="36"><output>36</output></label>
+        <label><button class="mill-shelp" type="button" data-help="size" aria-label="About Size" title="About Size">Size</button><input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
+        <label><button class="mill-shelp" type="button" data-help="qmin" aria-label="About Q≥" title="About Q≥">Q≥</button><input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
+        <label><button class="mill-shelp" type="button" data-help="fric" aria-label="About Drag" title="About Drag">Drag</button><input type="range" data-fric    min="0" max="32" step="1" value="8" title="Friction cap — transit drag parks flux at destinations this dense"><output>8</output></label>
+        <label title="Park probability % — flat capture rate above the Drag cap (M49: 50 is canonical, not sacred)"><button class="mill-shelp" type="button" data-help="park" aria-label="About Park%" title="About Park%">Park%</button><input type="range" data-park min="0" max="100" step="1" value="50"><output>50</output></label>
+        <label title="Congestion wall — destinations this dense refuse inflow entirely (M49: the crust wall)"><button class="mill-shelp" type="button" data-help="wall" aria-label="About Wall" title="About Wall">Wall</button><input type="range" data-wall min="0" max="128" step="1" value="0"><output>0</output></label>
+        <label><button class="mill-shelp" type="button" data-help="rad" aria-label="About Rad" title="About Rad">Rad</button><input type="range" data-rad     min="0" max="8"  step="1" value="4"><output>4</output></label>
+        <label><button class="mill-shelp" type="button" data-help="lat" aria-label="About Lat" title="About Lat">Lat</button><input type="range" data-lat     min="1" max="32" step="1" value="1" title="Emission latency — carrier must dwell this many ticks before rest can radiate"><output>1</output></label>
+        <label><button class="mill-shelp" type="button" data-help="bap" aria-label="About Ap" title="About Ap">Ap</button><input type="range" data-bap     min="1" max="8"  step="1" value="4" title="Laser aperture radius"><output>4</output></label>
+        <label><button class="mill-shelp" type="button" data-help="bou" aria-label="About OffU" title="About OffU">OffU</button><input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
+        <label><button class="mill-shelp" type="button" data-help="bov" aria-label="About OffV" title="About OffV">OffV</button><input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
+        <label><button class="mill-shelp" type="button" data-help="speed" aria-label="About Speed" title="About Speed">Speed</button><input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
+        <label><button class="mill-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output></label>
+        <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux"><button class="mill-shelp" type="button" data-help="expo" aria-label="About Glow" title="About Glow">Glow</button><input type="range" data-expo min="40" max="300" step="5" value="120"><output>120</output></label>
       </div>
     </div>
   </div>
@@ -606,9 +606,14 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .mill-accbtn:active { transform: scale(0.94); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); }
-.mill-dock.tune-open .mill-accbtn {
-  color: var(--mill-accent);
-  border-color: rgba(119, 255, 238, 0.45);
+/* expanded accordion chip = filled accent — unmistakably "click to
+   close", scoped per-button so each only lights for its own group */
+.mill-dock.sel-open [data-flags],
+.mill-dock.tune-open [data-tune] {
+  color: #04141c;
+  background: var(--mill-accent);
+  border-color: rgba(119, 255, 238, 0.8);
+  box-shadow: 0 0 14px rgba(119, 255, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 /* selects share one row — a well containing two labeled dropdowns */
@@ -644,6 +649,22 @@ onUnmounted(() => {
   box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
 }
 .mill-flab:active { transform: scale(0.93); }
+/* slider labels get the same transparent ?-button treatment */
+.mill-shelp {
+  font: 10px monospace;
+  color: var(--mill-muted);
+  background: none;
+  border: 1px solid rgba(143, 255, 158, 0.22);
+  border-radius: 6px;
+  padding: 1px 5px;
+  cursor: help;
+}
+.mill-shelp:hover {
+  border-color: rgba(143, 255, 158, 0.65);
+  color: #8fff9e;
+  box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
+}
+.mill-shelp:active { transform: scale(0.93); }
 .mill-flab i { font-style: normal; }
 .mill-flab i:first-child { font-size: 12px; line-height: 1.15; }
 .mill-flab i:last-child {
