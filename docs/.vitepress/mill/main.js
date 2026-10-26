@@ -160,13 +160,12 @@ uniform float u_exposure;
 out vec4 frag;
 void main() {
   vec4 h = texelFetch(u_hdr, ivec2(gl_FragCoord.xy), 0);
-  // coverage-gated average: below 1 layer the premultiplied color passes
-  // through raw (ghost cells, haze and singles keep their dimness);
-  // above 1 it becomes an average — a dense core shows its true
-  // palette hue instead of a clipped white sum. Coverage then lifts
-  // brightness with depth so the lump still reads hotter inside.
-  vec3 c = h.rgb / max(h.a, 1.0) + vec3(0.02, 0.02, 0.05);
-  c *= u_exposure * (1.0 + 0.5 * (1.0 - exp(-max(h.a - 1.0, 0.0) * 0.3)));
+  // soft-additive resolve (the Ember look): sqrt compresses the
+  // accumulated sum the way film compresses light — sparse regions
+  // stay translucent, depth gradients survive, and dense cores glow
+  // warm instead of clipping flat-white. Bounded: max ~0.88.
+  vec3 c = sqrt(h.rgb) + vec3(0.02, 0.02, 0.05);
+  c *= u_exposure;
   frag = vec4(c / (1.0 + c), 1.0);
 }`;
 

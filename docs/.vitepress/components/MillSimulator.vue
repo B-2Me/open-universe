@@ -406,11 +406,11 @@ onUnmounted(() => {
   align-self: center;
   margin: 6px auto;
   max-width: calc(100% - 16px);
-  padding: 5px 8px;
+  padding: 4px 8px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px 6px;
+  gap: 3px 6px;
   align-items: center;
   background: var(--mill-panel);
   border: 1px solid var(--mill-bevel-dark);
@@ -436,9 +436,9 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-/* row-gap leaves headroom for the legend captions straddling each
-   group's top border when the well wraps to multiple rows */
-.mill-transport { gap: 11px 3px; flex-wrap: wrap; justify-content: center; }
+/* row-gap is exactly the legend's overhang — captions float into the
+   gap between rows instead of costing vertical space */
+.mill-transport { gap: 9px 3px; flex-wrap: wrap; justify-content: center; }
 
 /* control groups — named clusters with micro-captions, DAW-style.
    Caption rides inline on the group's left edge so a group costs
@@ -482,6 +482,12 @@ onUnmounted(() => {
 .grp-inject > .mill-grp-row > em  { color: #ffb35c; }
 .grp-ops > .mill-grp-row > em     { color: #b48cff; }
 .grp-presets > .mill-grp-row > em { color: var(--mill-muted); }
+/* group borders echo their legend colors — a whisper of function
+   color-coding, not a rainbow */
+.grp-time    { border-color: rgba(127, 255, 238, 0.22); }
+.grp-inject  { border-color: rgba(255, 179, 92, 0.26); }
+.grp-ops     { border-color: rgba(180, 140, 255, 0.26); }
+.grp-presets { border-color: rgba(160, 200, 255, 0.15); }
 /* presets claims its own full line — the three fields spread evenly
    across it instead of floating centered with voids on each side */
 .grp-presets { flex: 1 1 100%; justify-content: flex-start; }
@@ -609,23 +615,26 @@ onUnmounted(() => {
 .mill-field select[data-preset] { width: 92px; }
 .mill-field select[data-colormode] { width: 72px; }
 
-/* ? help chips — tiny round button seated beside each control */
+/* ? help chips — small neon-green button seated beside each control */
 .mill-help {
   flex: none;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   padding: 0;
-  font: 9px/15px monospace;
+  font: bold 9px/15px monospace;
   text-align: center;
-  color: var(--mill-muted);
-  background: linear-gradient(180deg, var(--mill-btn-top), var(--mill-btn-bot));
-  border: 1px solid var(--mill-bevel-dark);
+  color: #8fff9e;
+  background: linear-gradient(180deg, #1e4a2c, #0d2416);
+  border: 1px solid rgba(143, 255, 158, 0.4);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(143, 255, 158, 0.25);
   cursor: pointer;
-  opacity: 0.55;
+  opacity: 0.85;
 }
-.mill-help:hover { opacity: 1; color: var(--mill-accent); }
+.mill-help:hover {
+  opacity: 1;
+  box-shadow: 0 0 9px rgba(143, 255, 158, 0.55), inset 0 1px 0 rgba(143, 255, 158, 0.3);
+}
 .mill-help:active { transform: scale(0.9); }
 
 /* help card — third item in the overlay stack, under the status line */
@@ -816,10 +825,10 @@ onUnmounted(() => {
   .mill-grp-row > button.on::after {
     position: static;
     order: -1;
-    width: 8px;
-    height: 8px;
+    width: 11px;
+    height: 11px;
     transform: none;
-    margin-right: -2px;
+    margin-right: -3px;
   }
   .mill-field { gap: 4px; }
   .mill-field > span { font-size: 9px; }
