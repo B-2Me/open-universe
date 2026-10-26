@@ -83,6 +83,13 @@ Legacy physics obscures this friction by relying on pure, abstract mathematics. 
 
 Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic structures strictly as algorithmic fluid dynamics across the finite-bandwidth 12-port FCC lattice. Chemistry is the physical mechanism by which the substrate optimizes and routes traffic around massive topological deadlocks.
 
+> **Which substrate, where they deviate.** Three engines have carried this ontology, and the vocabulary below needs its engine tag:
+>
+> *   **`planck.c` / `planck3.c` (single-spin prototype, M12–M18 — retracted for measurement):** Boolean ports — one bit per channel. *This* is where "Pauli exclusion as a hardware limit" lives: a third loop collides with an occupied bit. Its ABC screw-axis geometry is retained (the claims are kept below as the theory's map, not the record).
+> *   **`meso3i.c` (canonical substrate, M19–M51 + E-series):** same True-FCC geometry — the ABC stacking *is* the FCC lattice; the six channels ⊥(1,1,1) still form a hexagonal ring with exactly two chiral routings (CW/CCW — measured as the wound vault's `C = ±1`). What changed is occupancy: `uint8` populations (255 deep, Maxwell–Boltzmann) replaced Boolean bits, so the hard exclusion is gone — any "Pauli" analog here would emerge from collision statistics, not routing capacity. It also adds the registers the prototype never had: directional rest (stored winding), Q-core condensate with τ=4 emission, per-site `iPH` phase clocks, edge-dwell delay lines, and a parallel photon field.
+>
+> **Current focus:** `meso3i` — the live engine behind [Joule's Mill](/mill-demo) and the [clock program](/interference/clock-program)'s E-series. The single-spin claims below are the map it is measured against, not the record.
+
 ### 1. The Compound Impedance (Atomic Unwinding)
 *   **The Nucleus as Deadlock:** An atomic nucleus is not a cluster of solid spheres; it is a **Compound Impedance**, a massive, contiguous zone of congestion gravity.
 *   **Topological Integers:** The atomic number is the exact integer eigenvalue (bandwidth rating) of that deadlock. Elements are strictly discrete because they represent the specific, phase-locked geometries that can sustainably route traffic on the chiral grid. Iron (26), for example, is a deeply stable 26-loop topological closure.
