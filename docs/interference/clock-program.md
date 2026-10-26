@@ -161,3 +161,31 @@ of the series.
 The emergent account: **time dilation in this substrate is accumulated
 path-length + discrete dwell, with `c` invariant and the horizon as a
 capture boundary.** No drag, no flowing medium, no asymptote.
+
+## Open assumptions (the honest audit)
+
+- **Capacity-stealing is a second, unmeasured mechanism.** The audits'
+  own framing is *actualization* bandwidth stolen by field processing —
+  the C_s²+C_i² budget — not transit lag. The E1 wound-vault result
+  (internal circulation halves drift response) is that signature, but it
+  has never been run as a clock experiment. There may be two dilation
+  channels; we've measured one.
+- **Static fill ≠ a mass's halo.** E4 seeded parked rest; a real halo is
+  sustained transaction traffic around capturing/emitting structure —
+  occupancy + throughput + active self-focusing (IQMODE7) at once. Each
+  ingredient was tested separately; the combination hasn't been.
+- **Single-particle artifacts.** All probes so far are n=1 packets; an
+  atomic clock is ~10³⁰ ensemble events. The q≥2 "decoherence cliff"
+  may be a single-particle death that a population's mean cycle
+  survives. E8 tests the ensemble cavity.
+- **Two candidate "gravity" terms are conflated.** Passive occupancy
+  (E3) vs active Q-capture (E5) — the ontology's gravity is transaction
+  focusing, not congestion; Q-field strength may be the right
+  independent variable, not ρ.
+- **The lag is a spectrum, not a rate.** Most carriers pass, some
+  detain — the honest comparison to GR is the *ensemble mean of the
+  capture-time distribution*, not a single-packet T(q).
+- **Dimensional bridge still absent.** All numbers are lattice units —
+  ratios and regimes only, never µs/day.
+- **Open boundaries.** Every probe drains edges; the r⁻² halo holds
+  over ~20 cells in a 56-box, untested at larger scale.
