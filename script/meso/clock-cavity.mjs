@@ -43,15 +43,17 @@ const momX = () => {
   return m;
 };
 
-const run = q => {
+const run = (q, f = 1) => {
   boot();
   for (const xw of [MX0, MX1]) for (let x = xw; x < xw + 3; x++)
     for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
       if ((x + y + z) & 1) continue;
       wasm._meso3i_set(x, y, z, REST, 64);
     }
+  // interior fill: deterministic sparse fraction f of sites at rest q
   if (q) for (let x = MX0 + 4; x < MX1; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) {
     if ((x + y + z) & 1) continue;
+    if (f < 1 && (((x * 7 + y * 3 + z * 11) % 8) / 8) >= f) continue;
     wasm._meso3i_set(x, y, z, REST, q);
   }
   // packet: +x flux just right of the left mirror
@@ -76,9 +78,11 @@ const run = q => {
 };
 
 console.log('E4 — cavity period vs interior rest density (mirrors x=10..60)');
-for (const q of [0, 4, 8, 16, 32]) {
-  const r = run(q);
+const cases = [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
+               [8, 0.5], [8, 0.75], [8, 1]];
+for (const [q, f] of cases) {
+  const r = run(q, f);
   const d = r.flips.map((t, i) => i ? t - r.flips[i - 1] : null).filter(Boolean);
   const T = d.length ? d.reduce((a, b) => a + b, 0) / d.length : NaN;
-  console.log(`q=${String(q).padStart(2)}  flips=[${r.flips.join(',')}]  half-period=${T.toFixed(1)}t  survivor=${r.mEnd}`);
+  console.log(`q=${q}x${f}  flips=[${r.flips.join(',')}]  half-period=${T.toFixed(1)}t  survivor=${r.mEnd}`);
 }
