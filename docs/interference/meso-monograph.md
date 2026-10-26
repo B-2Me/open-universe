@@ -135,7 +135,7 @@ The mechanism class, *resting mass exchanging momentum with vacuum through direc
 
 ### M39. The photon field (massless directional plane)
 
-A parallel `u8` population per (site, moving channel): photons carry direction but no mass, never collide, stream at channel speed, drain at the boundary. Coupling modes: `IPHOT 0` uncoupled, `1` catalyst (licenses the carrier-gated emission gate without adding mass), `2` stimulated (each arriving photon may eject a rest quantum into *its own channel*), `3` absorbed (the ejecting photon is consumed, momentum transfers into the mass ledger).
+A parallel `u8` population per (site, moving channel): photons carry direction but no mass, never collide, stream at channel speed, drain at the boundary. Coupling modes: `IPHOT 0` uncoupled, `1` catalyst (licenses the carrier-gated emission gate without adding mass), `2` stimulated (each arriving photon may eject a rest quantum into *its own channel*), `3` absorbed (the ejecting photon is consumed, momentum transfers into the mass ledger), `4` fluorescence (the emit gate may re-emit parked mass as photons — absorb→dwell→resume-as-photon closes a refractive cycle; see the E10 measurement in [the clock program](/interference/clock-program)).
 
 - Ring fossil (727 rest), 150t of a 1-cell +x pencil beam: off → untouched; catalyst → 626; stimulated → 623, with ~528 photons in flight.
 - Thick lump (23.9k) under a plane wave: catalyst −71.5% (isotropic boil, smears); stimulated −67.8% (confined to the beam row, drills a tunnel). No measurable centroid recoil at this scale.
@@ -171,7 +171,7 @@ One rest bin per channel: a friction-parked quantum lands in `rest[c]` and re-em
 
 ### M44. The no-go: no live circulation
 
-A closed channel loop (12-node hexagonal polygon. Every hop lands on the next loop site, so emitted quanta are auto-aimed forward) was swept over emission rate, friction, latency, and IDREST. **Every regime collapses `Lz_mov` to zero by t≈40.** The bucket brigade is subcritical *by construction*: emission needs `m>0` (a carrier present), but every hop either parks the carrier or passes it through without production. Once flux hits zero nothing re-ignites. The substrate has matter that *remembers* rotation but cannot *be* rotation: a stationary ground state, not a perpetual whirlpool.
+A closed channel loop (12-node hexagonal polygon. Every hop lands on the next loop site, so emitted quanta are auto-aimed forward) was swept over emission rate, friction, latency, and IDREST. **Every regime collapses `Lz_mov` to zero by t≈40.** The bucket brigade is subcritical *by construction*: emission needs `m>0` (a carrier present), but every hop either parks the carrier or passes it through without production. Once flux hits zero nothing re-ignites. The substrate has matter that *remembers* rotation but cannot *be* rotation: a stationary ground state, not a perpetual whirlpool. (The rest-emission verdict stands; the Q-register's `iPH` phased clocks are a different mechanism — E6 measured a real traveling emission front when `iPH` is ramped, not a channel loop.)
 
 ### M45. Spin-contact dynamics
 

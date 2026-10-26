@@ -176,7 +176,7 @@ alignment scheme changes again.
 
 ## meso3i harnesses + telemetry layout
 
-- `script/meso/*.mjs` — the 28 self-contained meso3i experiment
+- `script/meso/*.mjs` — the ~50 self-contained meso3i experiment
   harnesses behind the M33–M48 monograph milestones (m37-bath,
   photon-test, drest-*, transactions, wavefront-isotropy, lump-ablate,
   yorp-*, eos-thermalize, stress-tensor …). Each loads

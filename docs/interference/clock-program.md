@@ -127,7 +127,8 @@ diffusive bath. Inverse-square transport is not a dilute-regime accident.
 
 **E2 (clock-lag, `3ed51d5`, `f10aac4`).** Transit lag is *discrete dwell*,
 not continuous drag: with capture off, v_eff = 2.174 cells/t at every
-density — carriers collide but are never slowed. Congestion delay is
+density — carriers collide but are never slowed *by congestion*.
+Congestion delay is
 park-and-wait, not friction.
 
 **E1 (clock-drift, `c40b4b6`; vault-cadence, `c5ce356`).** Bound objects
@@ -165,6 +166,21 @@ still emerging at t=105. Photons detained by mass resume as photons
 after `ILAT`. The delay curve is non-monotonic in ρ (peak ~q=32) and
 saturates in corridor depth — a detention event, not a per-cell tax.
 
+**E8b (clock-ensemble-ac, `5118759`).** The population clock survives
+congestion but bleeds — ~9 momentum flips then the cavity runs dry.
+Mean half-period does not shift monotonically with density; the
+per-packet dilation of E4 washes out in the bulk sign oscillation.
+Honest negative: the ensemble keeps ticking, but a usable period
+statistic needs a resonant drive, not a decaying cavity.
+
+**E11 (dwell-probe, `5118759`).** The edge delay-line register
+verified: `DWELL=k` gives `v_eff = 2/k` exactly (0.96, 0.64, 0.48
+for k=2,3,4 — axial base rate 2 cells/tick divided by k). Uniform
+detention aggregates into smooth slowdown: the substrate can express
+effective `v = c/k` built from discrete waits. Third lag channel
+confirmed; also the first *engineered* slowdown (a knob, not an
+emergent effect — honest distinction).
+
 > **The Refraction & Dilation Law (E2, E4, E10):** Photons detained in
 > rest resume as photons after `ILAT`; effective refractive index
 > `n(ρ)` and cavity clock lag emerge from discrete dwell and scattered
@@ -193,17 +209,19 @@ absolute scale comes from identification:
 1. **Identification hunt** — find the substrate structure whose
    characteristic scale/period matches a known physical anchor; that
    fixes the bridge.
-2. **n(ρ) mechanism check** — is the q≈32 peak real (deep-penetration
-   dwell chains) or corridor-geometry artifact? Vary corridor length
-   at fixed q: true refraction scales with path length.
-3. **Ensemble dilation** — E8 showed the population survives; measure
-   its *mean period shift* vs density with autocorrelation over long
-   runs — the statistical clock's actual dilation curve.
+2. ~~n(ρ) mechanism check~~ — **done (E10c)**: delay grows with
+   corridor length (bulk, not boundary) but saturates once every
+   photon is detained once — detention event, not per-cell tax.
+3. ~~Ensemble dilation~~ — **done (E8b)**: ensemble survives but the
+   period doesn't shift monotonically; needs resonant drive.
 4. **Capacity-stealing channel** — the still-untested second
    mechanism: does a structure processing field traffic run its
    internal cycles slower (C_s²+C_i² budget as clock physics)?
-5. **Edge-dwell registers** (`iD`) — the last unprobed lag channel:
-   quanta dwelling mid-edge as a third delay mechanism.
+   Likely needs a *read* register for `iPH` (only `pset` write is
+   exported today) to watch a Q-clock's phase under load — pending
+   register additions, not new physics.
+5. ~~Edge-dwell registers~~ — **done (E11)**: `v_eff = 2/k` verified;
+   detention aggregates into smooth slowdown.
 
 ## Open assumptions (the honest audit)
 
@@ -217,10 +235,17 @@ absolute scale comes from identification:
   sustained transaction traffic around capturing/emitting structure —
   occupancy + throughput + active self-focusing (IQMODE7) at once. Each
   ingredient was tested separately; the combination hasn't been.
-- **Single-particle artifacts.** All probes so far are n=1 packets; an
-  atomic clock is ~10³⁰ ensemble events. The q≥2 "decoherence cliff"
-  may be a single-particle death that a population's mean cycle
-  survives. E8 tests the ensemble cavity.
+- **Single-particle artifacts — resolved (E8, E8b).** The ensemble
+  clock survives densities that kill a lone packet — the q≥2 cliff
+  was an n=1 artifact. But the ensemble's *period* doesn't shift
+  monotonically; the bulk oscillation outlasts decoherence without
+  cleanly dilating. A usable statistical clock still needs a resonant
+  drive or lossless mirrors.
+- **"Never slowed" has an exception.** E11's `DWELL` delay line
+  produces uniform `v = c/k` — smooth slowdown built from discrete
+  waits. Congestion never slows a carrier mid-hop, but engineered
+  detention registers can. The invariant is `c` per *hop*, not per
+  unit time spent in transit.
 - **Two candidate "gravity" terms are conflated.** Passive occupancy
   (E3) vs active Q-capture (E5) — the ontology's gravity is transaction
   focusing, not congestion; Q-field strength may be the right
