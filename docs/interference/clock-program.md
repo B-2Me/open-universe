@@ -95,3 +95,26 @@ Where the substrate disagrees with `1 + Φ/c²` regardless of calibration:
 
 The pitch is not "more accurate than relativity." It is: *relativity has a
 zero where the substrate has a knob — and the knob is measurable.*
+
+## First measurements (the record so far)
+
+**E3 (clock-profile, commit `f373ef7`).** A steady central source against
+boundary drains, 56³, 600t settle: shell-averaged moving density falls as
+~r⁻²·⁰⁻²·⁶; a parked lump's halo reads ~r⁻²·⁰. **The transport regime is
+ballistic — which is what the ontology predicts.** Mass generates a radial
+momentum-transfer field; a ballistic field falls as 1/r², and 1/r² flux
+density *is* inverse-square force. A diffusive 1/r halo would have been the
+bad result — it cannot produce inverse-square force from ray transport.
+
+This corrects the framing this document originally carried: the comparison
+baseline is *observation* (GPS, Hafele–Keating), not GR's functional form.
+Field and potential are different objects — the potential is what the field
+integrates to along the path. The substrate does not need its congestion to
+resemble Φ; it needs its force field to look like g ∝ 1/r², and it does.
+
+**The re-posed Crux 2.** A sitting clock lags from local congestion ρ(r) ∝
+1/r² — but a clock's internal cycle *traverses* the field, so its lag may
+integrate along its own path through the gradient (∫ r⁻² → 1/r), which is
+what the GPS number requires. Whether dilation is local-density or
+path-integrated is now precisely what E2 measures: the transfer function
+between local congestion and internal lag.
