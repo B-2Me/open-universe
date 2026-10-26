@@ -94,7 +94,7 @@ onUnmounted(() => {
           
           <div class="mill-grp-row">
             <em>time <button class="mill-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
-            <button data-play  title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
+            <button data-play  class="tog on" title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
             <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step</span></button>
             <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
           </div>
@@ -103,16 +103,16 @@ onUnmounted(() => {
           
           <div class="mill-grp-row">
             <em>inject <button class="mill-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
-            <button data-drive aria-pressed="false"
+            <button data-drive class="tog" aria-pressed="false"
                     title="Convergent feed — 18 spokes pouring flux into the core"
                     aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
-            <button data-beam  title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
+            <button data-beam  class="tog" title="Photon laser — apertured plane wave on an axial channel; Dir/Ap/OffU/OffV shape it, Phot sets the coupling"
                     aria-label="Toggle photon laser"      aria-pressed="false"><span class="g">➤</span><span class="l">beam</span></button>
             <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
                     aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">ring</span></button>
             <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
                     aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">rock</span></button>
-            <button data-pair  title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
+            <button data-pair  class="tog" title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
                     aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pairs</span></button>
             <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
                     aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary</span></button>
@@ -122,7 +122,7 @@ onUnmounted(() => {
           
           <div class="mill-grp-row">
             <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
-            <button data-spin class="on" aria-pressed="true"
+            <button data-spin class="tog on" aria-pressed="true"
                     title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
             <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save</span></button>
             <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
@@ -549,9 +549,9 @@ onUnmounted(() => {
   font-size: 15px;
   line-height: 1.1;
 }
-/* status pill — always rendered as an unlit slot so the button's
-   width never changes on toggle; .on lights it */
-.mill-grp-row > button .g::before {
+/* status pill — rendered only on toggles (.tog) as an unlit slot so
+   the button's width never changes on toggle; .on lights it */
+.mill-grp-row > button.tog .g::before {
   content: '';
   width: 12px;
   height: 5px;
