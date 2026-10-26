@@ -392,11 +392,11 @@ onUnmounted(() => {
   align-self: center;
   margin: 6px auto;
   max-width: calc(100% - 16px);
-  padding: 7px 10px;
+  padding: 5px 8px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px 10px;
+  gap: 4px 6px;
   align-items: center;
   background: var(--mill-panel);
   border: 1px solid var(--mill-bevel-dark);
@@ -412,8 +412,8 @@ onUnmounted(() => {
 .mill-well {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 2px 7px;
   background: var(--mill-well);
   border: 1px solid var(--mill-bevel-dark);
   border-radius: 10px;
@@ -421,7 +421,7 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-.mill-transport { gap: 6px; flex-wrap: wrap; justify-content: center; }
+.mill-transport { gap: 3px; flex-wrap: wrap; justify-content: center; }
 
 /* control groups — named clusters with micro-captions, DAW-style.
    Caption rides inline on the group's left edge so a group costs
@@ -430,8 +430,8 @@ onUnmounted(() => {
 .mill-grp {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 7px;
+  gap: 5px;
+  padding: 2px 6px;
   background: rgba(8, 12, 24, 0.55);
   border: 1px solid rgba(160, 200, 255, 0.09);
   border-radius: 9px;
@@ -439,10 +439,10 @@ onUnmounted(() => {
 .mill-grp > em {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   font: 7.5px monospace;
   font-style: normal;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.7;
   white-space: nowrap;
@@ -490,8 +490,8 @@ onUnmounted(() => {
   justify-content: center;
   gap: 4px;
   min-width: 0;
-  min-height: 30px;
-  padding: 2px 9px 5px;
+  min-height: 28px;
+  padding: 1px 7px 4px;
   line-height: 1;
 }
 .mill-grp-row > button .g { font-size: 12px; line-height: 1; }
@@ -539,8 +539,8 @@ onUnmounted(() => {
 .mill-dock:not(.tune-open) .mill-sliders { display: none; }
 .mill-accbtn {
   min-width: 34px;
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 30px;
+  padding: 0 10px;
   font: 11px monospace;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -562,7 +562,7 @@ onUnmounted(() => {
 .mill-field {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font: 11px monospace;
   color: var(--mill-muted);
   white-space: nowrap;
@@ -640,9 +640,9 @@ onUnmounted(() => {
 .mill-dock select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 22px;
+  padding-right: 18px;
   font-size: 11px;
-  min-height: 30px;
+  min-height: 26px;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6'%3E%3Cpath d='M0 0l4 6 4-6z' fill='%239eefff'/%3E%3C/svg%3E"),
     linear-gradient(180deg, var(--mill-btn-top), var(--mill-btn-bot));
