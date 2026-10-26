@@ -132,7 +132,7 @@ onUnmounted(() => {
           
           <div class="mill-grp-row">
             <em>presets</em>
-            <label class="mill-field"><span>✦ Scene</span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
+            <label class="mill-field"><span class="mill-flab"><i>✦</i><i>Scene</i></span><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
               <option value="" selected>scene…</option>
               <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
               <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
@@ -142,7 +142,7 @@ onUnmounted(() => {
               <option value="fossil">fossil seal (ramp→2cap: freezes)</option>
               <option value="walled">walled crust (Wall 32 + ☀)</option>
             </select><button class="mill-help" data-help="scene" aria-label="About the selected scene">?</button></label>
-            <label class="mill-field"><span>◎ Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+            <label class="mill-field"><span class="mill-flab"><i>◎</i><i>Focus</i></span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
               <option value="full"    selected>Full field</option>
               <option value="side">Side profile</option>
               <option value="equator">Equator slab</option>
@@ -151,7 +151,7 @@ onUnmounted(() => {
               <option value="lattice">Lattice plane</option>
               <option value="hex">Hex axis (111)</option>
             </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
-            <label class="mill-field"><span>◐ View</span><select data-colormode aria-label="Data view" title="Data view">
+            <label class="mill-field"><span class="mill-flab"><i>◐</i><i>View</i></span><select data-colormode aria-label="Data view" title="Data view">
               <option value="0" selected>ember</option>
               <option value="1">heat</option>
               <option value="2">flux</option>
@@ -164,37 +164,37 @@ onUnmounted(() => {
       </div>
 
       <div class="mill-well mill-selects">
-        <label class="mill-field"><span>Collide</span><select data-coll aria-label="Collision mode" title="Collision rule variant">
+        <label class="mill-field"><span class="mill-flab"><i>⟐</i><i>Collide</i></span><select data-coll aria-label="Collision mode" title="Collision rule variant">
           <option value="0" selected>uniform</option>
           <option value="1">shell-weighted</option>
           <option value="2">forward-bias</option>
         </select><button class="mill-help" data-help="coll" aria-label="About Collide">?</button></label>
-        <label class="mill-field"><span>Phot</span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
+        <label class="mill-field"><span class="mill-flab"><i>γ</i><i>Phot</i></span><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
           <option value="0">off</option>
           <option value="1">catalyst</option>
           <option value="2" selected>stimulated</option>
           <option value="3">absorbed</option>
         </select><button class="mill-help" data-help="phot" aria-label="About Phot">?</button></label>
-        <label class="mill-field"><span>Rest</span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
+        <label class="mill-field"><span class="mill-flab"><i>▣</i><i>Rest</i></span><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
           <option value="1">directional</option>
         </select><button class="mill-help" data-help="drest" aria-label="About Rest">?</button></label>
-        <label class="mill-field"><span>Curve</span><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
+        <label class="mill-field"><span class="mill-flab"><i>∿</i><i>Curve</i></span><select data-fcurve aria-label="Capture curve" title="Capture curve — how park probability depends on destination density (M49): flat is the canonical 50% gate; ramps grade it — soft dissolves the lump, steep fossilizes it">
           <option value="0" selected>flat</option>
           <option value="1">ramp→255</option>
           <option value="2">ramp→2cap</option>
         </select><button class="mill-help" data-help="fcurve" aria-label="About Curve">?</button></label>
-        <label class="mill-field"><span>Plane</span><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
+        <label class="mill-field"><span class="mill-flab"><i>◧</i><i>Plane</i></span><select data-axis aria-label="Slice plane" title="Slice plane — which coordinate the Cut/Slab sliders gate on; armed tools inject on this plane">
           <option value="2" selected>xy</option>
           <option value="1">xz</option>
           <option value="0">yz</option>
         </select><button class="mill-help" data-help="axis" aria-label="About Plane">?</button></label>
-        <label class="mill-field"><span>Dir</span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
+        <label class="mill-field"><span class="mill-flab"><i>↦</i><i>Dir</i></span><select data-bdir aria-label="Beam direction" title="Beam direction — axial channels are the only straight lines on this lattice">
           <option value="+x" selected>+x</option><option value="-x">−x</option>
           <option value="+y">+y</option><option value="-y">−y</option>
           <option value="+z">+z</option><option value="-z">−z</option>
         </select><button class="mill-help" data-help="bdir" aria-label="About Dir">?</button></label>
-        <label class="mill-field"><span>Split</span><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
+        <label class="mill-field"><span class="mill-flab"><i>◫</i><i>Split</i></span><select data-split aria-label="Split view" title="Split view — two lenses on the same live field: cube|fcc compares coordinate systems, ember|flux compares mass channels">
           <option value="off" selected>off</option>
           <option value="layout">cube | fcc</option>
           <option value="modes">ember | flux</option>
@@ -455,15 +455,18 @@ onUnmounted(() => {
   border-radius: 9px;
 }
 /* caption = fieldset legend — straddles the group's top border in
-   the dead space above the buttons instead of costing a row slot */
+   the dead space above the buttons instead of costing a row slot.
+   Fixed 14px height so its ? chip lives fully inside the legend
+   and can't clip across the border. */
 .mill-grp-row > em {
   position: absolute;
-  top: -7px;
+  top: -8px;
   left: 7px;
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 3px;
+  height: 14px;
+  padding: 0 4px;
   font: 7.5px monospace;
   font-style: normal;
   letter-spacing: 0.12em;
@@ -472,6 +475,13 @@ onUnmounted(() => {
   white-space: nowrap;
   background: var(--mill-well);
   border-radius: 4px;
+  z-index: 1;
+}
+.mill-grp-row > em .mill-help {
+  width: 12px;
+  height: 12px;
+  font-size: 7.5px;
+  line-height: 12px;
 }
 .mill-grp-row {
   display: flex;
@@ -519,18 +529,26 @@ onUnmounted(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--mill-bevel-light);
   cursor: pointer;
 }
-/* transport buttons: glyph + short inline label, one compact line */
+/* transport buttons: icon row over label — the on-dot shares the
+   icon row (a ::before inside .g), the word sits beneath */
 .mill-grp-row > button {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 1px;
   min-width: 0;
-  min-height: 28px;
-  padding: 1px 7px 4px;
+  min-height: 38px;
+  padding: 3px 7px;
   line-height: 1;
 }
-.mill-grp-row > button .g { font-size: 12px; line-height: 1; }
+.mill-grp-row > button .g {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 15px;
+  line-height: 1.1;
+}
 .mill-grp-row > button .l {
   font-size: 7.5px;
   letter-spacing: 0.06em;
@@ -545,19 +563,14 @@ onUnmounted(() => {
 .mill-grp-row > button.on {
   color: var(--mill-accent);
 }
-/* on state = a small glowing horizontal pill inside the button,
-   like an indicator LED under the glyph */
-.mill-grp-row > button.on::after {
+/* on state = a glowing dot that leads the icon row, icon-scale */
+.mill-grp-row > button.on .g::before {
   content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 2px;
-  width: 16px;
-  height: 3px;
-  transform: translateX(-50%);
-  border-radius: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: var(--mill-accent);
-  box-shadow: 0 0 7px rgba(119, 255, 238, 0.9), 0 0 2px rgba(119, 255, 238, 0.7);
+  box-shadow: 0 0 8px rgba(119, 255, 238, 0.9), 0 0 2px rgba(119, 255, 238, 0.7);
   pointer-events: none;
 }
 /* armed tool = filled accent — unmistakably different from a passive toggle */
@@ -603,9 +616,21 @@ onUnmounted(() => {
   color: var(--mill-muted);
   white-space: nowrap;
 }
-.mill-field > span {
-  font-size: 10px;
-  letter-spacing: 0.08em;
+/* stacked field labels — icon over word, same language as the
+   transport buttons */
+.mill-flab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+.mill-flab i { font-style: normal; }
+.mill-flab i:first-child { font-size: 12px; line-height: 1.15; }
+.mill-flab i:last-child {
+  font-size: 6.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.75;
 }
@@ -812,32 +837,23 @@ onUnmounted(() => {
   /* inject's six buttons exceed a phone dock — wrap inside the group
      instead of overflowing sideways */
   .mill-grp-row { flex-wrap: wrap; justify-content: center; gap: 5px; }
-  /* bigger touch buttons: [dot][glyph][label] in one row — the
-     on-state dot leads the row as a real flex item, big enough to
-     actually read at arm's length */
+  /* bigger touch targets — the stacked layout already shares the
+     on-dot with the icon row globally */
   .mill-grp-row > button {
-    gap: 5px;
     min-height: 44px;
-    padding: 4px 10px;
+    padding: 4px 9px;
   }
-  .mill-grp-row > button .g { font-size: 16px; }
-  .mill-grp-row > button .l { font-size: 9px; letter-spacing: 0.05em; }
-  .mill-grp-row > button.on::after {
-    position: static;
-    order: -1;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    transform: none;
-    margin-right: -3px;
-  }
-  /* accordion chips inside the presets row keep their chip styling
-     (the row's transport-button rules would otherwise inflate them) */
+  .mill-grp-row > button .g { font-size: 17px; }
+  .mill-grp-row > button .l { font-size: 8px; letter-spacing: 0.05em; }
+  /* accordion chips inside the presets row stay horizontal chips —
+     the row's stacked-button rules would otherwise inflate them */
   .mill-grp-row > button.mill-accbtn {
+    flex-direction: row;
     font: 10px monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     min-width: 0;
+    min-height: 30px;
     padding: 2px 9px;
     gap: 4px;
   }
