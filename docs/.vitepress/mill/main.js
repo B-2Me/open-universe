@@ -964,7 +964,7 @@ export async function initMillSimulator(root, opts = {}) {
     'grp-time': ['time controls', '⏸ play/pause the tick loop · ⏭ step exactly one tick · ⟲ reset — clears the field (re-seeds a wound lump while Rest=directional).'],
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 18-spoke flux drive · ➤ beam — photon laser, shaped by Dir/Ap/OffU/OffV · ⌖ ring — arm, then tap the slice plane to inject circulation · ● rock — arm, tap to drop a cold lump · ⇄ pair rules — momentum-honest bind/unbind: rest radiates back-to-back pairs, head-on collisions bind into rest · ⚭ binary — drops the M37 two-lump pair to watch mutual-ablation attraction.'],
     'grp-ops': ['session ops', '⟳ auto orbit — turntable camera · ⧉ save snap — stash field + flags · ⤺ load snap — restore it.'],
-    focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full field.'],
+    focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full field. Hex axis looks straight down the (1,1,1) body diagonal — FCC close-packed planes face you and the honeycomb layering shows face-on.'],
     colormode: ['View', 'render channel — ember: parked heat + cyan flux · heat: rest only · flux: moving only · macro: total occupancy, noise stripped.'],
     coll: ['Collide', 'collision rule variant — uniform is canonical; the others reweight how colliding carriers pick outgoing channels.'],
     phot: ['Phot (IPHOT)', 'photon coupling — how beam light interacts with parked mass: catalyst / stimulated / absorbed / off. The ➤ beam only exists while this is on.'],
@@ -1066,6 +1066,10 @@ export async function initMillSimulator(root, opts = {}) {
     lattice: { yaw: 0.7,  pitch: 0.6,  dist: 65,  ax: 2, cut: D3 >> 1, slab: 1 },
     side:    { yaw: -1.5, pitch: 0.2,  dist: 60,  ax: 0, cut: W3 >> 1, slab: 4 },
     core:    { yaw: 0.9,  pitch: 0.9,  dist: 35,  ax: 2, cut: D3 >> 1, slab: 8 },
+    // looking straight down the (1,1,1) body diagonal — FCC's close-packed
+    // planes face the camera and the honeycomb layering shows face-on.
+    // yaw=-pi/4, pitch=asin(1/sqrt(3)) puts the camera exactly on the ray
+    hex:     { yaw: -0.7854, pitch: 0.6155, dist: 55, ax: 2, cut: D3 >> 1, slab: D3 },
   };
   const applyPreset = (name) => {
     const p = PRESETS[name];

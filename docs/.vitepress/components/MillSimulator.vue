@@ -143,6 +143,7 @@ onUnmounted(() => {
               <option value="bore">Top-down</option>
               <option value="core">Core close-up</option>
               <option value="lattice">Lattice plane</option>
+              <option value="hex">Hex axis (111)</option>
             </select><button class="mill-help" data-help="focus" aria-label="About Focus">?</button></label>
             <label class="mill-field"><span>View</span><select data-colormode aria-label="Data view" title="Data view">
               <option value="0" selected>ember</option>
@@ -730,6 +731,9 @@ onUnmounted(() => {
     min-width: 44px;
     min-height: 44px;
   }
+  /* iOS Safari force-zooms the page when a focused form control's
+     font-size is under 16px — selects must read 16 on touch */
+  .mill-dock select { font-size: 16px; }
   .mill-sliders input[type='range'] { width: 90px; height: 40px; }
   .mill-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
 }
@@ -748,9 +752,14 @@ onUnmounted(() => {
     max-width: calc(100% - 8px);
     /* a fully-expanded dock can't be allowed to squeeze the canvas to
        zero — cap it and let it scroll internally */
+    max-height: 52vh;
     max-height: 52svh;
     overflow-y: auto;
+    overflow-x: hidden;            /* a wrapping group must never
+                                      scroll the dock sideways */
     overscroll-behavior: contain;
+    touch-action: manipulation;    /* rapid button taps must not
+                                      trigger double-tap zoom */
   }
   /* both control wells must wrap — seven labeled selects and twelve
      transport buttons never fit one narrow row */
@@ -759,6 +768,9 @@ onUnmounted(() => {
     flex-wrap: wrap;
     justify-content: center;
   }
+  /* inject's six buttons exceed a phone dock — wrap inside the group
+     instead of overflowing sideways */
+  .mill-grp-row { flex-wrap: wrap; justify-content: center; }
   .mill-field { gap: 4px; }
   .mill-field > span { font-size: 9px; }
   .mill-dock select { padding: 0 20px 0 8px; }
@@ -772,7 +784,15 @@ onUnmounted(() => {
     width: 110px;
     height: 40px;
   }
-  .mill-gizmo { width: 34px; height: 34px; }
+  /* the gizmo stays an overlay chip on phones — smaller, tucked into
+     the corner, dimmed so it reads as chrome not a control row */
+  .mill-gizmo {
+    width: 30px;
+    height: 30px;
+    right: 6px;
+    bottom: 6px;
+    opacity: 0.65;
+  }
 }
 
 /* short viewports of any kind (wide but landscape-short, split-screen):
