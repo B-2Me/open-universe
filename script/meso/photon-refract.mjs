@@ -36,15 +36,19 @@ const run = (phot, q) => {
     if ((x + y + z) & 1) continue;
     wasm._meso3i_phset(x, y, z, XPX, 64); m0 += 64;
   }
-  const arr = [];
+  // mean arrival delay: cumulative photon arrivals, mass-weighted t
+  let cum = 0, wt = 0, peak = 0, tPeak = -1;
   for (let t = 0; t < 200; t++) {
     wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
     let a = 0;
     for (let x = X2; x < W - 1; x++) for (let z = 0; z < D; z++) for (let y = 0; y < H; y++)
       if (!((x + y + z) & 1)) a += wasm._meso3i_phget(x, y, z, XPX);
-    if (t % 5 === 0 && (a > 0 || t < 60)) arr.push(`t${t}:${a}`);
+    if (a > peak) { peak = a; tPeak = t; }
+    cum += a; wt += a * t;
   }
-  console.log(`IPHOT=${phot} q=${q}: [${arr.join(', ')}]`);
+  const meanT = cum > 0 ? wt / cum : -1;
+  console.log(`IPHOT=${phot} q=${String(q).padStart(3)}  peak_t=${tPeak}  mean_t=${meanT.toFixed(1)}  total=${cum}`);
 };
-run(0, 96);   // control: photons immune — should be clean t~25 arrival only
-run(4, 96);   // refractive: absorb->dwell->resume — late tail expected
+console.log('n(rho): photon pulse mean-arrival delay vs corridor density (IPHOT=4)');
+run(0, 0);    // vacuum control
+for (const q of [16, 32, 48, 64, 96]) run(4, q);
