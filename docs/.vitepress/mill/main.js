@@ -897,8 +897,8 @@ export async function initMillSimulator(root, opts = {}) {
   bind('[data-coll]', 'change', e => { wasm._meso3i_collmode(+e.target.value); });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;
-    e.target.setAttribute('aria-pressed', String(ui.turntable));
-    e.target.classList.toggle('on', ui.turntable);
+    e.currentTarget.setAttribute('aria-pressed', String(ui.turntable));
+    e.currentTarget.classList.toggle('on', ui.turntable);
     poke();
   });
   const readout = e => {

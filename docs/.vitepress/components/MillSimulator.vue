@@ -549,6 +549,16 @@ onUnmounted(() => {
   font-size: 15px;
   line-height: 1.1;
 }
+/* status pill — always rendered as an unlit slot so the button's
+   width never changes on toggle; .on lights it */
+.mill-grp-row > button .g::before {
+  content: '';
+  width: 12px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(160, 200, 255, 0.13);
+  pointer-events: none;
+}
 .mill-grp-row > button .l {
   font-size: 7.5px;
   letter-spacing: 0.06em;
@@ -563,15 +573,10 @@ onUnmounted(() => {
 .mill-grp-row > button.on {
   color: var(--mill-accent);
 }
-/* on state = a glowing dot that leads the icon row, icon-scale */
+/* on state = the pill slot lights */
 .mill-grp-row > button.on .g::before {
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
   background: var(--mill-accent);
   box-shadow: 0 0 8px rgba(119, 255, 238, 0.9), 0 0 2px rgba(119, 255, 238, 0.7);
-  pointer-events: none;
 }
 /* armed tool = filled accent — unmistakably different from a passive toggle */
 .mill-grp-row > button.armed {
