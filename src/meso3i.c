@@ -809,11 +809,7 @@ void meso3i_tick(void) {
                                 if (iE[ni] < 255) iE[ni]++;
                                 absorbed++;
                             }
-                        p -= absorbed; IPHN -= absorbed;
-                        iEV[5] += absorbed;
-                        continue;   /* mode>=5 never ablates — a missed
-                                     * n-roll is a pass, not ejection */
-                    }
+                    } else {
                     for (int u = 0; u < p; u++)
                         if (parked && (int)(irnd() & 255) < parked) {
                             int pick = parked > iB[ri]
@@ -831,6 +827,7 @@ void meso3i_tick(void) {
                             uint32_t v = iB[di] + 1;
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
                         }
+                    }
                     p -= absorbed;
                     IPHN -= absorbed;
                     iEV[5] += absorbed;
