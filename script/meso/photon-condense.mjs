@@ -17,9 +17,9 @@ const run=(phot)=>{
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(0);
   w._meso3i_fricmode(-4); w._meso3i_drest(0); w._meso3i_reflect(0);
   w._meso3i_phot(phot);
-  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=4;x<8;x++)
+  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=4;x<6;x++)
     if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,0,64);
-  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=36;x<40;x++)
+  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=36;x<38;x++)
     if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,1,64);
   // collide for 30t (peak creation), then freeze photon interaction —
   // the burst clears, can the created mass freeze out in vacuum?
