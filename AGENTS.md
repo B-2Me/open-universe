@@ -176,7 +176,15 @@ alignment scheme changes again.
 
 ## meso3i harnesses + telemetry layout
 
-- `script/meso/*.mjs` — the ~50 self-contained meso3i experiment
+- `script/meso/*.mjs` — the ~51 self-contained meso3i experiment
+  harnesses. As of the E-series: every meso3i setter is exported,
+  including `pget`/`pset` (iPH phase registers), `dwell`/`edge`
+  (edge delay lines), and the full field-coupling layer
+  (`bias`/`condense`/`gate`/`field`) — previously unprobed knobs that
+  were written in C but never wired to the harness. Field-coupling
+  caveat: `atti(r)` is a *cliff* at `IRSAT` (default 8), not a
+  plateau — dense lumps read `atti=0`; IBIAS pulls only in `1..8`
+  fringes. `meso3i_gate` also enables `IGATE` side-effects.
   harnesses behind the M33–M48 monograph milestones (m37-bath,
   photon-test, drest-*, transactions, wavefront-isotropy, lump-ablate,
   yorp-*, eos-thermalize, stress-tensor …). Each loads
