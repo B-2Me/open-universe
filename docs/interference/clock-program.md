@@ -186,23 +186,32 @@ emergent effect — honest distinction).
 > `n(ρ)` and cavity clock lag emerge from discrete dwell and scattered
 > path length, with `c` strictly invariant on every hop.
 
-## The dimensional bridge (the direction)
+## The dimensional bridge
 
-The E-series measured **relative** lag mechanics — every ratio,
-regime, and cliff is scale-free and survives coarse-graining. The
-absolute scale comes from identification:
+**Formal bridge — grounded.** The unit assignment is an ontological
+identification, not a measured result:
 
-- `c = 1 hop/tick` is free: set cell = ℓ_P, tick = t_P and `c` falls
-  out exactly by definition. The substrate already lives at Planck
-  scale.
-- Consequence: E4's 23-tick half-period ≈ 10⁻⁴² s — our structures
-  are Planck-scale seeds, not atoms. Atomic physics (~10⁴³ t_P
-  cycles, ~10³⁰ Planck volumes) is reached only through ensemble
-  statistics — the coarse-graining the E8 ensemble result justified.
-- The bridge closes when a substrate structure is identified with a
-  physical object (a wound vault ↔ nucleon? τ=4 Q-beat ↔ a known
-  emission period?). All measured lag *ratios* then become physical
-  predictions — 40 orders of magnitude cancel in every ratio.
+| Substrate unit | Physical unit |
+|---|---|
+| `cell` (hop length) | `ℓ_P = 1.616×10⁻³⁵ m` |
+| `tick` (hop period) | `t_P = 5.39×10⁻⁴⁴ s` |
+| `c = 1 hop/tick` | `ℓ_P/t_P = c` — exact by construction |
+
+With this assignment every measured ratio is already physical:
+E4's 23-tick cavity half-period is `1.24×10⁻⁴² s`; the E10 photon
+delay tail's ~80-tick span is `4.3×10⁻⁴² s`; E11's `v = 2/k` dwell
+law is a literal refractive-index law `n = k`. **The E-series is a
+Planck-resolution measurement record.**
+
+**Structural bridge — open.** Which substrate structure *is* a
+physical object is the harder identification: the atomic regime
+(~10⁴³ t_P cycles, ~10³⁰ Planck volumes — an electron is ~10³ cells
+across) is reachable only through ensemble statistics, not direct
+simulation. The coarse-graining path is the program's own premise —
+substrate structures are Planck-scale seeds whose population
+statistics produce atomic-scale physics. All measured lag *ratios*
+survive that coarse-graining intact — the absolute scale was always
+the identification step's job.
 
 ## New directions from here
 
