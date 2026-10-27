@@ -56,7 +56,17 @@ mechanism has an established solid-state precedent.
   `IPAIR`-class pair production can fire from photon collisions is
   the current open mechanics question on the identification's edge.
 
-Until one of those lands: the substrate is a conserved integer
+## The first measured constant
+
+Under `IPHOT>=7` (per-quantum decay — Einstein A-coefficient on the
+lattice), the Solid Bar reaches a **steady-state partition**:
+~28% of total energy lives as free photons, ~72% as bound `n` —
+**invariant across n=10/50/200** (27–29%). That's a dimensionless
+constant of the substrate: the ratio of emission rate to
+reabsorption rate, exactly what a real cavity's radiation-to-matter
+partition encodes.
+
+Until more land: the substrate is a conserved integer
 ontology that *resembles* Planck-scale physics the way a wind tunnel
 resembles weather — the measurements are real, the identification is
 still hunting.
