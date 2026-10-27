@@ -77,7 +77,8 @@ const run = (density, fillFrac = 1) => {
   return { bounceTicks, injectedMass, endMomentum };
 };
 
-console.log('E4 — cavity period vs interior rest density (mirrors x=10..60)');
+const PHOT = +(process.argv[2] || 0);
+console.log(`E4-rv PHOT=${PHOT} — cavity period vs interior density`);
 const cases = [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
                [8, 0.5], [8, 0.75], [8, 1]];
 for (const [density, fillFrac] of cases) {
