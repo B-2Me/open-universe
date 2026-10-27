@@ -733,7 +733,14 @@ void meso3i_tick(void) {
                  * Momentum absorbed by the network (flagged, inelastic).
                  * IDREST: park on the channel's own rest bin instead —
                  * "frozen flux": momentum stored, not absorbed. */
-                if (IDREST) {
+                if (IPHOT >= 6) {
+                    /* thermalize: the carrier is absorbed as EXCITATION —
+                     * mass -> bound energy at contact (collision->n, the
+                     * convection channel). Energy delivered without mass
+                     * deposit: real heating, not accretion. */
+                    uint32_t v = iE[ni] + n[c];
+                    iE[ni] = v > 255 ? 255 : (uint8_t)v;
+                } else if (IDREST) {
                     uint32_t v = iRB[(size_t)ni * IMOV + c] + n[c];
                     iRB[(size_t)ni * IMOV + c] = v > 255 ? 255 : (uint8_t)v;
                 } else {
