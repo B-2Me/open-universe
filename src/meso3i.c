@@ -71,6 +71,7 @@ static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICP = 128;        /* flat park probability num/256 (128 = legacy p=1/2) */
 static int      IPTH = 0;            /* absorb threshold nu (0 = all absorb) */
+static int      INSH = 0;            /* transit down-shift k: 1/k chance per parked hop (0 = off) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -241,11 +242,17 @@ void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
 void meso3i_erate(int m) { EMASK = m; }
 void meso3i_phth(int t)    { IPTH = t; }
+void meso3i_nushift(int k) { INSH = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
 /* parked population in the directional bins at a site — iRA is the
  * canonical (post-swap) plane; iRB is only coherent mid-tick */
+static int drest_at(const uint8_t *base, int si);
+static int parked_now(int si) {
+    return (int)iB[si * INCH + INCH - 1] +
+           (IDREST ? drest_at(iRB, si) : 0);
+}
 static int drest_at(const uint8_t *base, int si) {
     const uint8_t *dr = base + (size_t)si * IMOV;
     int s = 0;
@@ -904,7 +911,19 @@ void meso3i_tick(void) {
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
                         }
                 }
-                int pi = ni * IMOV * NNU + c * NNU + nu;
+                int pi;
+                if (INSH && nu > 0 && parked_now(ni) &&
+                    (int)(irnd() % (uint32_t)INSH) == 0) {
+                    /* transit dissipation: the photon drops one energy
+                     * bin crossing matter, depositing 1 unit into the
+                     * site's excitation — a mechanical 'tired light'
+                     * channel (flagged). */
+                    uint32_t e = iE[ni] + p;
+                    iE[ni] = e > 255 ? 255 : (uint8_t)e;
+                    pi = ni * IMOV * NNU + c * NNU + (nu - 1);
+                } else {
+                    pi = ni * IMOV * NNU + c * NNU + nu;
+                }
                 uint32_t v = iPB[pi] + p;
                 if (v > 255) { IPHN -= (int)(v - 255); v = 255; }
                 iPB[pi] = (uint8_t)v;
