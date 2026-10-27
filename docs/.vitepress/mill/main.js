@@ -547,7 +547,7 @@ export async function initMillSimulator(root, opts = {}) {
 
   // ---------- camera / controls ----------
   // cubic embedding: the camera orbits the lattice center directly
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 45, cx: cenX, cy: cenY, cz: cenZ };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 68, cx: cenX, cy: cenY, cz: cenZ };
   const tgt = { ...cam };                 // preset targets (smooth lerp)
   // lastInteract in the past → turntable spins from the first frame
   let dirty = true, lastInteract = -1e4;
@@ -842,6 +842,20 @@ export async function initMillSimulator(root, opts = {}) {
       wasm._meso3i_clear(); seedLump(CX, CY, CZ);
       say('walled crust — Wall 32: saturated sites refuse inflow; a dense crust builds at the refusal boundary with a hollow core. Under a beam, accretion happens on the lit face (M51)', 6500);
     },
+    // default: the lone ember under iE thermalize — radiates photons,
+    // re-absorbs as excitation n (magenta). The E20 greenhouse scene.
+    ember: () => {
+      ctl('[data-coll]', '0', 'change');
+      ctl('[data-lat]', 1);
+      ctl('[data-phot]', '5', 'change');
+      ctl('[data-drest]', '0', 'change');
+      setFric(50, 0, 0);
+      press('[data-pair]', 'pair', false);
+      press('[data-beam]', 'beam', false);
+      press('[data-drive]', 'drive', false);
+      wasm._meso3i_clear(); seedLump(CX, CY, CZ);
+      say('glowing ember — the lump radiates photons, re-absorbs them as bound excitation n (magenta): matter made of heat (E20)', 6500);
+    },
     // M50-B: the spin vault — directional rest behind a refusal crust.
     // The wall turns beam ablation into winding-fed accretion.
     vault: () => {
@@ -1063,14 +1077,14 @@ export async function initMillSimulator(root, opts = {}) {
 
   // default scene: the spin vault (M50) — runs through the same code
   // path as a menu pick so every flag/widget ends in the measured state
-  SCENES.vault(); ui.scene = 'vault';
+  SCENES.ember(); ui.scene = 'ember';
   upload(); dirty = true;
 
   // quick-view presets: smooth-lerp camera + slice plane jump. Each
   // preset chooses the slab axis its name implies — 'side' is a real
   // vertical cut, 'bore' a top-down xz slab, 'equator' a horizontal one.
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 45,  ax: 2, cut: D3 >> 1, slab: D3 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 68,  ax: 2, cut: D3 >> 1, slab: D3 },
     equator: { yaw: 0.7,  pitch: 0.18, dist: 50,  ax: 2, cut: D3 >> 1, slab: 4 },
     bore:    { yaw: 0.0,  pitch: 1.5,  dist: 55,  ax: 1, cut: H3 >> 1, slab: 8 },
     lattice: { yaw: 0.7,  pitch: 0.6,  dist: 65,  ax: 2, cut: D3 >> 1, slab: 1 },

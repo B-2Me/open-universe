@@ -45,7 +45,7 @@ precision highp sampler3D;
 const vec2 CORNER[6] = vec2[6](
   vec2(-1.0,-1.0), vec2(1.0,-1.0), vec2(1.0,1.0),
   vec2(-1.0,-1.0), vec2(1.0,1.0),  vec2(-1.0,1.0));
-uniform sampler3D u_vol;                  // RGB8: r=moving g=rest b=photons
+uniform sampler3D u_vol;                  // RGBA8: r=moving g=rest b=photons a=excitation n
 uniform mat4 u_mvp;
 uniform float u_size;
 uniform float u_z_center, u_z_thickness;
@@ -61,11 +61,12 @@ void main() {
   int x = (id % u_nx) * u_step;
   int y = ((id / u_nx) % u_ny) * u_step;
   int z = (id / u_nxy) * u_step;
-  vec3 rg = texelFetch(u_vol, ivec3(x, y, z), 0).rgb;
+  vec4 rg = texelFetch(u_vol, ivec3(x, y, z), 0);
   float mov = rg.r * 255.0;
   float rest = rg.g * 255.0;
   float ph = rg.b * 255.0;
-  float d = max(mov, max(rest, ph));
+  float exc = rg.a * 255.0;   // bound radiation n (Planck's)
+  float d = max(mov, max(rest, max(ph, exc)));
   v_uv = a_corner;
   if (d < u_qmin) {                        // vacuum + dead parity: clip
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
@@ -111,6 +112,11 @@ void main() {
   // vacuum in every color mode
   float g = pow(ph / 255.0, 0.6);
   rgb += mix(vec3(0.30, 0.10, 0.80), vec3(0.85, 0.70, 1.00), g) * g * 1.6;
+  // excitation n: bound radiation — hot magenta, the ember within.
+  // distinct from violet (free photons) and amber (rest mass):
+  // this is Planck's n — stored light inside a still-massive site.
+  float eg = pow(exc / 255.0, 0.55);
+  rgb += mix(vec3(0.60, 0.02, 0.25), vec3(1.00, 0.65, 0.85), eg) * eg * 1.8;
   // visibility floor: real occupancies run ~5-120, far below the 255
   // normalization — a sparse dim ember must still read against the void
   rgb = rgb * 1.8 + vec3(0.028);
@@ -168,6 +174,8 @@ export async function initEmberSimulator(root, opts = {}) {
   wasm._meso3i_collmode(0);
   wasm._meso3i_friction(8);
   wasm._meso3i_fricmode(-4);
+  wasm._meso3i_phot(5);   // thermalize mode: photons emit + absorb into
+                        // excitation n (magenta) — the E20 greenhouse scene
 
   // channel vectors out of the engine itself — the same table the
   // physics uses, so the spoke geometry can't drift from the rules
@@ -262,7 +270,7 @@ export async function initEmberSimulator(root, opts = {}) {
   }
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_3D, tex);
-  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB8, W3, H3, D3, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, W3, H3, D3, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
   for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST],
     [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]])
     gl.texParameteri(gl.TEXTURE_3D, k, v);
@@ -272,7 +280,7 @@ export async function initEmberSimulator(root, opts = {}) {
   const upload = () => {
     wasm._meso3i_rg_refresh();
     const h8 = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
-    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGB, gl.UNSIGNED_BYTE,
+    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGBA, gl.UNSIGNED_BYTE,
       h8.subarray(rgPtr, rgPtr + N3 * 3));
   };
 

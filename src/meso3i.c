@@ -939,7 +939,7 @@ int meso3i_dim(int a)      { return a == 0 ? IW : a == 1 ? IH : ID; }
 int meso3i_cvc(int c, int k) { return c < 0 || c >= INCH ? 0 : ICV[c][k]; }
 
 const uint8_t *meso3i_rg_refresh(void) {
-    if (!iRG) iRG = malloc((size_t)IN * 3);
+    if (!iRG) iRG = malloc((size_t)IN * 4);
     long long cx = 0, cy = 0, cz = 0;
     st_rest = st_mov = 0;
     for (int s = 0; s < IN; s++) {
@@ -947,14 +947,15 @@ const uint8_t *meso3i_rg_refresh(void) {
         int mov = 0;
         for (int c = 0; c < IMOV; c++) mov += n[c];
         int rest = n[INCH - 1] + (IDREST ? drest_at(iRA, s) : 0);
-        iRG[s * 3]     = (uint8_t)(mov > 255 ? 255 : mov);
-        iRG[s * 3 + 1] = (uint8_t)rest;
+        iRG[s * 4]     = (uint8_t)(mov > 255 ? 255 : mov);
+        iRG[s * 4 + 1] = (uint8_t)rest;
         if (IPHN) {
             const uint8_t *pp = iPA + (size_t)s * IMOV;
             int ph = 0;
             for (int c = 0; c < IMOV; c++) ph += pp[c];
-            iRG[s * 3 + 2] = (uint8_t)(ph > 255 ? 255 : ph);
-        } else iRG[s * 3 + 2] = 0;
+            iRG[s * 4 + 2] = (uint8_t)(ph > 255 ? 255 : ph);
+        } else iRG[s * 4 + 2] = 0;
+        iRG[s * 4 + 3] = iE ? iE[s] : 0;   /* bound excitation n */
         st_mov += mov; st_rest += rest;
         int x = s % IW, y = (s / IW) % IH, z = s / (IW * IH);
         cx += (long long)rest * x;

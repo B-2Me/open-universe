@@ -99,6 +99,17 @@ onUnmounted(() => {
             <button data-reset title="Clear the field"    aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
           </div>
         </div>
+        <div class="mill-grp grp-ops">
+          
+          <div class="mill-grp-row">
+            <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
+            <button data-spin class="tog on" aria-pressed="true"
+                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
+            <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save</span></button>
+            <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
+          </div>
+        </div>
+        <div class="mill-grp-line">
         <div class="mill-grp grp-inject">
           
           <div class="mill-grp-row">
@@ -111,22 +122,13 @@ onUnmounted(() => {
             <button data-ring  title="Vortex tool — arm, then tap the slice plane to inject a circulation ring"
                     aria-label="Vortex ring tool"         aria-pressed="false"><span class="g">⌖</span><span class="l">ring</span></button>
             <button data-lump  title="Rock tool — arm, then tap the slice plane to drop a cold lump"
-                    aria-label="Cold rock tool"           aria-pressed="false"><span class="g">●</span><span class="l">rock</span></button>
+                    aria-label="Cold rock tool"           aria-pressed="false"><span class="g">⬤</span><span class="l">rock</span></button>
             <button data-pair  class="tog" title="Antipodal pairs — momentum-honest wind/unwind: rest radiates back-to-back, head-on collisions bind into rest"
                     aria-label="Toggle antipodal pair rules" aria-pressed="false"><span class="g">⇄</span><span class="l">pairs</span></button>
             <button data-binary title="M37 binary preset — drop two lumps a few cells apart to watch mutual-ablation attraction"
                     aria-label="Drop a binary lump pair"><span class="g">⚭</span><span class="l">binary</span></button>
           </div>
         </div>
-        <div class="mill-grp grp-ops">
-          
-          <div class="mill-grp-row">
-            <em>ops <button class="mill-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
-            <button data-spin class="tog on" aria-pressed="true"
-                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
-            <button data-snap  title="Snapshot state"     aria-label="Save snapshot"><span class="g">⧉</span><span class="l">save</span></button>
-            <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled><span class="g">⤺</span><span class="l">load</span></button>
-          </div>
         </div>
         <div class="mill-grp grp-presets">
           
@@ -134,6 +136,7 @@ onUnmounted(() => {
             <em>presets</em>
             <label class="mill-field"><button class="mill-flab" type="button" data-help="scene" aria-label="About Scene" title="About Scene"><i>✦</i><i>Scene</i></button><select data-scene aria-label="Physics scene preset" title="One-click measured regimes — sets flags, seeds, and geometry">
               <option value="" selected>scene…</option>
+              <option value="ember">glowing ember (photons→n)</option>
               <option value="vault">spin vault (rest[18] + Wall 32: M50)</option>
               <option value="wound">wound lump (Lat 16 + ⇄ + ☀)</option>
               <option value="breath">breathing core (☀ + Rad)</option>
@@ -172,8 +175,10 @@ onUnmounted(() => {
         <label class="mill-field"><button class="mill-flab" type="button" data-help="phot" aria-label="About Phot" title="About Phot"><i>γ</i><i>Phot</i></button><select data-phot aria-label="Photon coupling" title="Photon coupling — how light interacts with parked mass">
           <option value="0">off</option>
           <option value="1">catalyst</option>
-          <option value="2" selected>stimulated</option>
+          <option value="2">stimulated</option>
           <option value="3">absorbed</option>
+          <option value="4" selected>fluoresce</option>
+          <option value="5">thermalize (n)</option>
         </select></label>
         <label class="mill-field"><button class="mill-flab" type="button" data-help="drest" aria-label="About Rest" title="About Rest"><i>▣</i><i>Rest</i></button><select data-drest aria-label="Rest channel mode" title="Rest channel — scalar forgets direction; directional parks 'frozen flux' that keeps its channel">
           <option value="0" selected>scalar</option>
@@ -215,7 +220,7 @@ onUnmounted(() => {
         <label><button class="mill-shelp" type="button" data-help="bou" aria-label="About OffU" title="About OffU">OffU</button><input type="range" data-bou     min="-16" max="16" step="1" value="0" title="Beam offset — first axis of the plane normal to Dir"><output>0</output></label>
         <label><button class="mill-shelp" type="button" data-help="bov" aria-label="About OffV" title="About OffV">OffV</button><input type="range" data-bov     min="-16" max="16" step="1" value="0" title="Beam offset — second axis of the plane normal to Dir"><output>0</output></label>
         <label><button class="mill-shelp" type="button" data-help="speed" aria-label="About Speed" title="About Speed">Speed</button><input type="range" data-speed   min="1" max="60" step="1" value="20"><output>20</output></label>
-        <label><button class="mill-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom    min="20" max="300" step="1" value="45"><output>45</output></label>
+        <label><button class="mill-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom    min="20" max="300" step="1" value="68"><output>45</output></label>
         <label title="HDR exposure — how much accumulated light the tonemap passes through; lower tames dense cores, higher lifts faint flux"><button class="mill-shelp" type="button" data-help="expo" aria-label="About Glow" title="About Glow">Glow</button><input type="range" data-expo min="40" max="300" step="5" value="120"><output>120</output></label>
       </div>
     </div>
@@ -500,6 +505,8 @@ onUnmounted(() => {
 .grp-presets { border-color: rgba(160, 200, 255, 0.15); }
 /* presets claims its own full line — the three fields spread evenly
    across it instead of floating centered with voids on each side */
+.mill-grp-line { flex: 1 1 100%; display: flex; justify-content: center; }
+.grp-inject .mill-grp-row { justify-content: center; }
 .grp-presets { flex: 1 1 100%; justify-content: flex-start; }
 .grp-presets .mill-grp-row { flex: 1; justify-content: space-evenly; }
 
@@ -539,29 +546,36 @@ onUnmounted(() => {
   gap: 1px;
   min-width: 0;
   min-height: 38px;
-  padding: 3px 7px;
+  padding: 1px 4px;
   line-height: 1;
+  position: relative;
 }
 .mill-grp-row > button .g {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 15px;
+  gap: 2px;
+  font-size: 21px;
   line-height: 1.1;
 }
+/* toggle icons get the room the slimmed pill freed — slightly larger */
+.mill-grp-row > button.tog .g { font-size: 22px; }
 /* status pill — rendered only on toggles (.tog) as an unlit slot so
    the button's width never changes on toggle; .on lights it */
 .mill-grp-row > button.tog .g::before {
   content: '';
-  width: 12px;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 10px;
   height: 5px;
   border-radius: 3px;
-  background: rgba(160, 200, 255, 0.13);
+  background: #9a94b8;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(200, 195, 235, 0.35);
   pointer-events: none;
 }
 .mill-grp-row > button .l {
-  font-size: 7.5px;
-  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   opacity: 0.7;
   white-space: nowrap;
@@ -575,8 +589,8 @@ onUnmounted(() => {
 }
 /* on state = the pill slot lights */
 .mill-grp-row > button.on .g::before {
-  background: var(--mill-accent);
-  box-shadow: 0 0 8px rgba(119, 255, 238, 0.9), 0 0 2px rgba(119, 255, 238, 0.7);
+  background: #ffb35c;
+  box-shadow: 0 0 8px rgba(255, 179, 92, 0.95), 0 0 3px rgba(255, 179, 92, 0.85);
 }
 /* armed tool = filled accent — unmistakably different from a passive toggle */
 .mill-grp-row > button.armed {
