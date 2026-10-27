@@ -962,9 +962,15 @@ onUnmounted(() => {
   .mill-gizmo {
     width: 42px;
     height: 42px;
-    right: 6px;
+    right: 52px;
     bottom: 6px;
     opacity: 0.65;
+  }
+  .mill-zoomlens {
+    width: 42px;
+    height: 42px;
+    right: 6px;
+    bottom: 6px;
   }
 }
 
