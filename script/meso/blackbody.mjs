@@ -19,6 +19,7 @@ const wasm = await mod.exports();
 const W = 48, H = 48, D = 48, CX = 24, CY = 24, CZ = 24;
 if (wasm._meso3i_init(W, H, D, 1) !== 0) throw new Error('init failed');
 const NMOV = wasm._meso3i_nch() - 1, REST = NMOV;
+const PHOT = +(process.argv[2] || 4);
 const run = (k, bath) => {
   wasm._meso3i_init(W, H, D, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(0);
@@ -59,10 +60,16 @@ const run = (k, bath) => {
   for (let t = 0; t < 40; t++) { reseed(); wasm._meso3i_drain_edge(3); wasm._meso3i_tick(); }
   const rate = wasm._meso3i_ev(2) / 40;
   wasm._meso3i_rg_refresh();
-  console.log(`k=${k} bath=${bath}  rest ${r0} -> ${wasm._meso3i_rest_mass()}  emit_rate=${rate.toFixed(1)}/t  [${series.join(' ')}]`);
+    let exc = 0;
+  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if ((x + y + z) & 1) continue;
+    const dx = x - CX, dy = y - CY, dz = z - CZ;
+    if (dx * dx + dy * dy + dz * dz <= 196) exc += wasm._meso3i_eget(x, y, z);
+  }
+  console.log(`k=${k} bath=${bath} phot=${PHOT} n=${exc}  rest ${r0} -> ${wasm._meso3i_rest_mass()}  emit_rate=${rate.toFixed(1)}/t  [${series.join(' ')}]`);
 };
 console.log('E18b — hot lump under SUSTAINED flux drive (infinite reservoir)');
-for (const k of [4, 16]) { run(k, false); run(k, true); }
+for (const k of [16]) { run(k, false); run(k, true); }
 
 // E18c — the honest "earth surface": a FINITE parked bath that can
 // equilibrate with the lump (no reseed — shared reservoir).
