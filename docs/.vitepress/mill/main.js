@@ -1142,7 +1142,7 @@ export async function initMillSimulator(root, opts = {}) {
     // looking straight down the (1,1,1) body diagonal — FCC's close-packed
     // planes face the camera and the honeycomb layering shows face-on.
     // yaw=-pi/4, pitch=asin(1/sqrt(3)) puts the camera exactly on the ray
-    hex:     { yaw: -0.7854, pitch: 0.6155, dist: 55, ax: 2, cut: D3 >> 1, slab: D3 },
+    hex:     { yaw: -0.7854, pitch: 0.6155, dist: 70, ax: 2, cut: D3 >> 1, slab: D3 },
   };
   const applyPreset = (name) => {
     const p = PRESETS[name];
