@@ -54,4 +54,4 @@ const run = phot => {
   console.log(`IPHOT=${phot}  cold-lump rest=${kr} mov=${km} n=${kn}  [${series.join(' ')}]`);
 };
 console.log('E19b — quantum number: does absorbed energy raise n in the cold lump?');
-run(5);
+run(4); run(5);
