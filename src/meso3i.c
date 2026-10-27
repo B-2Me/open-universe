@@ -432,12 +432,21 @@ static void collide_node(uint8_t *n, int si) {
             }
         }
     }
-    /* thermal decay: excited sites shed n back into a photon —
-     * the resume branch of conduction (warming in place is now real) */
-    if (IPHOT >= 5 && iE[si] && (irnd() & 7) == 0) {
+    /* thermal decay: excited sites shed n back into photons —
+     * the resume branch of conduction (warming in place is real).
+     * IPHOT>=7: per-quantum decay (Einstein A — each quantum rolls
+     * independently, emission rate proportional to occupation n).
+     * IPHOT 5-6: flat per-site rate (one quantum per ~8 ticks). */
+    if (IPHOT >= 7 && iE[si]) {
+        int lv = iE[si];
+        for (int u = 0; u < lv; u++)
+            if ((irnd() & 7) == 0) {
+                iE[si]--;
+                iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
+            }
+    } else if (IPHOT >= 5 && iE[si] && (irnd() & 7) == 0) {
         iE[si]--;
-        int c = irnd() % IMOV;
-        iPA[si * IMOV + c]++; IPHN++;
+        iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
     }
     /* pair capture (IPAIR): a populated antipodal pair may bind into
      * rest mass — the wind side of the cycle. Zero net momentum either
