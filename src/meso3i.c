@@ -72,6 +72,7 @@ static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICP = 128;        /* flat park probability num/256 (128 = legacy p=1/2) */
 static int      IPTH = 0;            /* absorb threshold nu (0 = all absorb) */
 static int      INSH = 0;            /* transit down-shift k: 1/k chance per parked hop (0 = off) */
+static int      IPTB = 0;            /* coherence barrier: photon interact only once iPT >= k (0 = always) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -245,6 +246,7 @@ void meso3i_phot(int m) { IPHOT = m; }
 void meso3i_erate(int m) { EMASK = m; }
 void meso3i_phth(int t)    { IPTH = t; }
 void meso3i_nushift(int k) { INSH = k; }
+void meso3i_iptbar(int k)  { IPTB = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -845,7 +847,7 @@ void meso3i_tick(void) {
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
-                if (IPHOT >= 3 && nu + 1 >= IPTH) {
+                if (IPHOT >= 3 && nu + 1 >= IPTH && iPT[ni] >= IPTB) {
                     /* absorbed photon (radiation pressure / YORP mode):
                      * the photon is CONSUMED on contact with parked mass —
                      * its momentum transfers into the mass ledger as an
@@ -948,8 +950,10 @@ void meso3i_tick(void) {
             const uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
             int any = 0;
             for (int j = 0; j < IMOV * NNU; j++) if (pa[j]) { any = 1; break; }
+            /* leaky integrator: light ramps up, darkness decays it —
+             * residue persists between pulses (history, not flash) */
             if (any) { if (iPT[si] < 255) iPT[si]++; }
-            else iPT[si] = 0;
+            else if (iPT[si]) iPT[si]--;
         }
         /* pair production (IPHOT>=8): head-on photons on antipodal
          * channels crystallize into rest mass — gamma+gamma -> matter,
