@@ -17,7 +17,7 @@ const W=48,H=48,D=48,CX=14,KX=34,CY=24,CZ=24;
 w._meso3i_init(W,H,D,1);
 const NMOV=w._meso3i_nch()-1, REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(0);
-w._meso3i_fricmode(16); w._meso3i_drest(0); w._meso3i_reflect(0);
+w._meso3i_fricmode(0);    // no mass emit: lumps frozen, only n radiates w._meso3i_drest(0); w._meso3i_reflect(0);
 w._meso3i_phot(5);
 const lump=(cx,exc)=>{
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -36,5 +36,5 @@ for(let t=0;t<600;t++){
   if(t%100===0){ const [am,ae]=zone(CX),[bm,be]=zone(KX);
     series.push(`t${t}:A${ae}/m${am} B${be}/m${bm}`); }
 }
-console.log('E22 — radiative equilibrium: n/m convergence');
+console.log('E22c — frozen mass, radiating n: does n/m converge?');
 console.log(series.join('\n'));
