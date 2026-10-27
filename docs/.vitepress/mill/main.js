@@ -669,7 +669,7 @@ export async function initMillSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 12, tick: 0, tps: 20, tickDebt: 0,
     sAxis: 2, sCut: D3 >> 1, sSlab: D3, ghostAlpha: 0.06,
-    qmin: 5, size: 0.55, colorMode: 0,
+    qmin: 2, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
     phot: 2, pair: false, drest: 0, exposure: 1.2, split: 'off', scene: '',
