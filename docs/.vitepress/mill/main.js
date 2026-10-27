@@ -141,10 +141,10 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;                  // round billboard
-  float a = exp(-r2 * 4.5);               // gaussian falloff, soft foam edge
+  float a = exp(-r2 * 3.0);               // gaussian falloff, soft foam edge
   // rgb premultiplied by coverage AND coverage in alpha — the HDR pass
   // averages (rgb/a) instead of summing, so dense cores keep their hue
-  frag = vec4(v_color.rgb * v_color.a * a, 1.0);   // additive ONE,ONE: force opaque alpha like Loom/Ember
+  frag = vec4(v_color.rgb * v_color.a * a, v_color.a * a);
 }`;
 
 // resolve pass — the point cloud accumulates additively into a
