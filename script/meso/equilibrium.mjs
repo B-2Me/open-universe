@@ -34,9 +34,9 @@ const zone=(cx)=>{ let m=0,e=0;
     if(dx*dx+dy*dy+dz*dz<=36){ m+=w._meso3i_get(x,y,z,REST); e+=w._meso3i_eget(x,y,z); } }
   return [m,e]; };
 const series=[];
-for(let t=0;t<600;t++){
+for(let t=0;t<5000;t++){
   w._meso3i_tick();
-  if(t%100===0){ const [am,ae]=zone(CX),[bm,be]=zone(KX);
+  if(t%500===0){ const [am,ae]=zone(CX),[bm,be]=zone(KX);
     let fn=0; for (let x = CX + 3; x <= KX - 3; x++)
       if (!((x + CY + CZ) & 1)) fn += w._meso3i_eget(x, CY, CZ);
     series.push(`t${t}:A${ae} wire${fn} B${be}`); }
