@@ -129,7 +129,7 @@ void main() {
   rgb += mix(vec3(0.60, 0.02, 0.25), vec3(1.00, 0.65, 0.85), eg) * eg * 1.8;
   // visibility floor: real occupancies run ~5-120, far below the 255
   // normalization — a sparse dim ember must still read against the void
-  rgb = rgb * 1.8 + vec3(0.028);
+  rgb = rgb * 1.15 + vec3(0.028);
   v_color = vec4(rgb, alpha);
 }`;
 
@@ -960,30 +960,22 @@ export async function initMillSimulator(root, opts = {}) {
       say('same field, two channels — parked heat left, moving flux right', 6000);
   });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
-  // zoom lens — drag up/down to zoom, twist around the ring also works;
-  // double-click resets. The bright reticle ring breathes with dist.
+  // zoom lens — RADIAL drag: distance from center is the zoom level.
+  // Pull outward = pull back (zoom out), toward center = zoom in.
+  // Absolute mapping — the pointer position reads as the dist itself.
   const zlens = root.querySelector('[data-zoomlens]');
   const zctx = zlens?.getContext('2d');
   if (zlens && zctx) {
-    let zy = null, lastA = null;
-    const ang = e => {
-      const r = zlens.getBoundingClientRect();
-      return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2));
-    };
+    let zy = null;
     zlens.addEventListener('pointerdown', e => {
-      zy = e.clientY; lastA = ang(e); zlens.setPointerCapture(e.pointerId);
+      zy = e.clientY; zlens.setPointerCapture(e.pointerId);
     });
     zlens.addEventListener('pointermove', e => {
-      if (zy === null) return;
-      let d = (e.clientY - zy) * 0.5;
-      const a = ang(e);                       // tangential twist zooms too
-      let da = a - lastA;
-      if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
-      if (Math.abs(da) > 0.01) d += da * 40;
-      tgt.dist = Math.max(20, Math.min(300, tgt.dist + d));
-      zy = e.clientY; lastA = a; dirty = true;
+      if (zy === null) return;                      // relative drag: up = in, down = out
+      tgt.dist = Math.max(20, Math.min(300, tgt.dist + (e.clientY - zy) * 0.5));
+      zy = e.clientY; dirty = true;
     });
-    zlens.addEventListener('pointerup', () => { zy = null; lastA = null; syncZoom(); });
+    zlens.addEventListener('pointerup', () => { zy = null; syncZoom(); });
     zlens.addEventListener('dblclick', e => { e.preventDefault(); tgt.dist = 68; dirty = true; });
   }
   const drawLens = () => {
