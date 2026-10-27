@@ -17,7 +17,7 @@ const W=48,H=48,D=48,CX=14,KX=34,CY=24,CZ=24;
 w._meso3i_init(W,H,D,1);
 const NMOV=w._meso3i_nch()-1, REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(0);
-w._meso3i_fricmode(0);    // no mass emit: lumps frozen, only n radiates w._meso3i_drest(0); w._meso3i_reflect(0);
+w._meso3i_fricmode(-500); // rest inert: mass pinned, only n radiates w._meso3i_drest(0); w._meso3i_reflect(0);
 w._meso3i_phot(5);
 const lump=(cx,exc)=>{
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -25,6 +25,9 @@ const lump=(cx,exc)=>{
     if(dx*dx+dy*dy+dz*dz<=16){ w._meso3i_set(x,y,z,REST,64); if(exc) w._meso3i_eset(x,y,z,exc); } }
 };
 lump(CX,200); lump(KX,0);   // hot + cold, same mass
+// conduction filament: parked wire bridging the lumps (the Fourier path)
+for (let x = CX + 3; x <= KX - 3; x++)
+  if (!((x + CY + CZ) & 1)) w._meso3i_set(x, CY, CZ, REST, 16);
 const zone=(cx)=>{ let m=0,e=0;
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     if((x+y+z)&1)continue; const dx=x-cx,dy=y-CY,dz=z-CZ;
@@ -34,7 +37,9 @@ const series=[];
 for(let t=0;t<600;t++){
   w._meso3i_tick();
   if(t%100===0){ const [am,ae]=zone(CX),[bm,be]=zone(KX);
-    series.push(`t${t}:A${ae}/m${am} B${be}/m${bm}`); }
+    let fn=0; for (let x = CX + 3; x <= KX - 3; x++)
+      if (!((x + CY + CZ) & 1)) fn += w._meso3i_eget(x, CY, CZ);
+    series.push(`t${t}:A${ae} wire${fn} B${be}`); }
 }
-console.log('E22c — frozen mass, radiating n: does n/m converge?');
+console.log('E23 — conduction filament: n diffuses along the mass wire');
 console.log(series.join('\n'));
