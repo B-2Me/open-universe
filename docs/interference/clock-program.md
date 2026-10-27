@@ -217,7 +217,11 @@ diffusion** (R: 0->8598 while L cools) — energy transfers cell-to-cell
 as n->photon->n. **E25: the clock is excitation-invariant** — n=50
 preload gives identical bounceTicks to cold at every density; thermal
 `n` lives on the photon plane and never touches mass-channel transit.
-A hot cavity ticks exactly like a cold one.
+A hot cavity ticks exactly like a cold one. **E26 takes the claim
+from architectural to emergent**: a probe photon pulse crossing a
+dense photon bath *on the same iPA plane* arrives with a bit-identical
+profile — light is blind to light at full `c`, Maxwellian
+superposition measured on a shared discrete channel.
 
 **Re-validation (`iE` era).** Prior results survive the new register:
 E4's cavity clock unchanged (vacuum emits nothing to thermalize, 23t);
