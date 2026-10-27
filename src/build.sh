@@ -158,6 +158,7 @@ if emcc meso3i.c \
     '_meso3i_save',
     '_meso3i_restore',
     '_meso3i_phot',
+    '_meso3i_erate',
     '_meso3i_pair',
     '_meso3i_lat',
     '_meso3i_phset',

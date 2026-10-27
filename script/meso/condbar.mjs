@@ -12,6 +12,7 @@ const mod = { exports: {} };
 new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const N0 = Number(process.argv[2] || 50);
+const M0 = Number(process.argv[4] || 64);
 const w = await mod.exports();
 const W=24,H=12,D=12;
 w._meso3i_init(W,H,D,1);
@@ -19,9 +20,10 @@ const NMOV=w._meso3i_nch()-1, REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(0);
 w._meso3i_fricmode(-500); w._meso3i_drest(0); w._meso3i_reflect(0);
 w._meso3i_phot(Number(process.argv[3] || 5));
+if (process.argv[5]) w._meso3i_erate(Number(process.argv[5]));
 for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   if((x+y+z)&1)continue;
-  w._meso3i_set(x,y,z,REST,64);
+  w._meso3i_set(x,y,z,REST,M0);
   if(x<W/2) w._meso3i_eset(x,y,z,N0);
 }
 const sum=(a,b)=>{ let n=0,m=0;

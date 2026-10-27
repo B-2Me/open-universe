@@ -70,6 +70,7 @@ static uint8_t *iE;                  /* excitation level n (Planck oscillator):
 static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICP = 128;        /* flat park probability num/256 (128 = legacy p=1/2) */
+static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
 static int      IFRICM;              /* rest-inertia: 0=rest collides; k=rest inert, radiates ~1/4k */
@@ -236,6 +237,7 @@ static inline int fricp_num(int rho) {
 }
 void meso3i_fricmode(int m) { IFRICM = m; }
 void meso3i_phot(int m) { IPHOT = m; }
+void meso3i_erate(int m) { EMASK = m; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -440,11 +442,11 @@ static void collide_node(uint8_t *n, int si) {
     if (IPHOT >= 7 && iE[si]) {
         int lv = iE[si];
         for (int u = 0; u < lv; u++)
-            if ((irnd() & 7) == 0) {
+            if ((irnd() & EMASK) == 0) {
                 iE[si]--;
                 iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
             }
-    } else if (IPHOT >= 5 && iE[si] && (irnd() & 7) == 0) {
+    } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
         iE[si]--;
         iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
     }
