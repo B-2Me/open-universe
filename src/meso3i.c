@@ -121,8 +121,8 @@ static int      NGRP;
  *   4 drain       mass quanta zeroed at the open boundary shell
  *   5 peject      parked mass ejected by photon contact (IPHOT 2/3)
  *   6 reflect     hop refused by congestion wall (IREFL) */
-static uint64_t iEV[7];
-double meso3i_ev(int k)     { return (k >= 0 && k < 7) ? (double)iEV[k] : 0; }
+static uint64_t iEV[8];   /* 7 = pair production (photon+photon -> rest) */
+double meso3i_ev(int k)     { return (k >= 0 && k < 8) ? (double)iEV[k] : 0; }
 void   meso3i_ev_reset(void) { memset(iEV, 0, sizeof iEV); }
 
 static uint32_t irng = 0xC0FFEEu;
@@ -878,6 +878,21 @@ void meso3i_tick(void) {
             }
         }
         uint8_t *tp = iPA; iPA = iPB; iPB = tp;
+        /* pair production (IPHOT>=8): head-on photons on antipodal
+         * channels crystallize into rest mass — gamma+gamma -> matter,
+         * the last leg of the mass<->photon<->n triangle. Energy and
+         * momentum conserved; no parked mass required (in vacuum). */
+        if (IPHOT >= 8)
+        for (int si = 0; si < IN; si++) {
+            uint8_t *pa = iPA + (size_t)si * IMOV;
+            for (int c = 0; c < IMOV; c += 2)
+                while (pa[c] && pa[c ^ 1] && (irnd() & 7) == 0) {
+                    pa[c]--; pa[c ^ 1]--; IPHN -= 2;
+                    uint32_t v = iB[si * INCH + INCH - 1] + 2;
+                    iB[si * INCH + INCH - 1] = v > 255 ? 255 : (uint8_t)v;
+                    iEV[7] += 2;
+                }
+        }
     }
 
     uint8_t *t = iA; iA = iB; iB = t;
