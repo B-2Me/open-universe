@@ -223,6 +223,15 @@ dense photon bath *on the same iPA plane* arrives with a bit-identical
 profile — light is blind to light at full `c`, Maxwellian
 superposition measured on a shared discrete channel.
 
+**E27–E29 (light → matter).** `IPHOT>=8` fires Breit-Wheeler on the
+lattice: antipodal photon pairs crystallize into rest mass (E27).
+The product can't persist inside its own bath — beams shred what
+they make (E28, five geometries). But **E29 cracks it**: a convergent
+6-fold photon implosion pair-produces 920 quanta at the focus, then
+the bath's own momentum carries it radially away — leaving a frozen
+lump in clean vacuum, stable 270+t. Structure assembled from pure
+light; the freeze-out is geometric, not expansion.
+
 **Re-validation (`iE` era).** Prior results survive the new register:
 E4's cavity clock unchanged (vacuum emits nothing to thermalize, 23t);
 E18b accretion identical; E10's refractive tail *gained* physics — the
