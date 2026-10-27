@@ -99,3 +99,40 @@ const runEq = (k, bathQ) => {
 };
 console.log('E18c — finite parked bath: does the lump equilibrate or keep accreting?');
 runEq(4, 4); runEq(4, 16);
+
+// E18d — finite MOVING bath: carriers that can exchange AND deplete.
+// Seed a one-shot shell of dilute flux around the lump — the honest
+// equilibration question: lump cools into the bath, bath drains away.
+const runEqMov = (k, bathQ) => {
+  wasm._meso3i_init(W, H, D, 1);
+  wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-k);
+  wasm._meso3i_fricp(128); wasm._meso3i_drest(0); wasm._meso3i_reflect(0);
+  wasm._meso3i_phot(4);
+  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if ((x + y + z) & 1) continue;
+    const dx = x - CX, dy = y - CY, dz = z - CZ;
+    const r2 = dx * dx + dy * dy + dz * dz;
+    if (r2 <= 16) wasm._meso3i_set(x, y, z, REST, 128);
+    else if (r2 <= 196 && (x * 3 + y * 5 + z * 7) % 3 === 0)
+      wasm._meso3i_set(x, y, z, (x + 2 * y + 3 * z) % NMOV, bathQ);
+  }
+  wasm._meso3i_rg_refresh();
+  const r0 = wasm._meso3i_rest_mass();
+  const series = [];
+  for (let t = 0; t < 400; t++) {
+    wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
+    if (t % 40 === 0) {
+      wasm._meso3i_rg_refresh();
+      let inLump = 0;
+      for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        if ((x + y + z) & 1) continue;
+        const dx = x - CX, dy = y - CY, dz = z - CZ;
+        if (dx * dx + dy * dy + dz * dz <= 16) inLump += wasm._meso3i_get(x, y, z, REST);
+      }
+      series.push(`t${t}:L${inLump}T${wasm._meso3i_rest_mass()}`);
+    }
+  }
+  console.log(`k=${k} bathQ=${bathQ}  [${series.join(' ')}]`);
+};
+console.log('E18d — finite moving bath: lump-vs-bath equilibration');
+runEqMov(4, 4); runEqMov(4, 16);
