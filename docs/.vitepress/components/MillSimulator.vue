@@ -83,7 +83,12 @@ onUnmounted(() => {
 
       <!-- orientation gizmo — Blender-style viewport overlay, bottom-right;
            rotates with the camera, double-click/tap resets -->
-      <canvas class="mill-gizmo" data-gizmo width="96" height="96"
+      <div class="mill-zoomctl" data-zoomorb role="slider" tabindex="0"
+           aria-label="Zoom — drag vertically, tap +/−, double-click to reset"
+           title="Zoom — drag or tap +/−, double-click resets">
+        <b>+</b><i><em data-zoomthumb></em></i><b>−</b>
+      </div>
+      <canvas class="mill-gizmo" data-gizmo width="128" height="128"
               title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
     </div>
 
@@ -387,14 +392,61 @@ onUnmounted(() => {
 .mill-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .mill-simulator.dock-hidden .mill-dock { display: none; }
 
+/* zoom control — vertical −/drag/+ pill docked beside the gizmo */
+.mill-zoomctl {
+  position: absolute;
+  right: 76px;
+  bottom: 10px;
+  width: 30px;
+  height: 64px;
+  border-radius: 15px;
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid rgba(160, 200, 255, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  cursor: ns-resize;
+  opacity: 0.85;
+  touch-action: none;
+  user-select: none;
+}
+.mill-zoomctl b {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mill-muted);
+  line-height: 1;
+  pointer-events: none;
+}
+.mill-zoomctl i {   /* grip track between + and − */
+  position: relative;
+  width: 3px;
+  flex: 1;
+  margin: 4px 0;
+  border-radius: 2px;
+  background: rgba(160, 200, 255, 0.25);
+  pointer-events: none;
+}
+.mill-zoomctl i em {  /* zoom-level thumb — rides the track */
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  transform: translate(-50%, 50%);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--mill-accent);
+  box-shadow: 0 0 6px rgba(119, 255, 238, 0.8);
+}
 /* orientation gizmo — Blender-style axes chip floating on the
    canvas, bottom-right corner */
 .mill-gizmo {
   position: absolute;
   right: 10px;
   bottom: 10px;
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   flex: none;
   border-radius: 50%;
   background: rgba(8, 10, 20, 0.6);
@@ -557,15 +609,23 @@ onUnmounted(() => {
   font-size: 21px;
   line-height: 1.1;
 }
-/* toggle icons get the room the slimmed pill freed — slightly larger */
-.mill-grp-row > button.tog .g { font-size: 22px; }
+/* toggle icons get the room the slimmed pill freed — slightly larger,
+   nudged right so the glyph visually shares the pill's corner space */
+.mill-grp-row > button.tog .g { font-size: 22px; margin-left: 11px; }
+/* per-glyph weight tuning — some glyphs run small/large at equal pt:
+   rock's filled disc is heavy, binary's knot is faint, load is thin */
+.mill-grp-row > button[data-rock] .g   { font-size: 17px; }
+.mill-grp-row > button[data-binary] .g { font-size: 24px; }
+.mill-grp-row > button[data-unsnap] .g { font-size: 23px; }
+.mill-grp-row > button[data-ring] .g   { font-size: 23px; }
+.mill-grp-row > button[data-beam] .g   { font-size: 19px; }
 /* status pill — rendered only on toggles (.tog) as an unlit slot so
    the button's width never changes on toggle; .on lights it */
 .mill-grp-row > button.tog .g::before {
   content: '';
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 9px;
+  left: 5px;
   width: 10px;
   height: 5px;
   border-radius: 3px;
@@ -934,8 +994,8 @@ onUnmounted(() => {
   /* the gizmo stays an overlay chip on phones — smaller, tucked into
      the corner, dimmed so it reads as chrome not a control row */
   .mill-gizmo {
-    width: 30px;
-    height: 30px;
+    width: 42px;
+    height: 42px;
     right: 6px;
     bottom: 6px;
     opacity: 0.65;

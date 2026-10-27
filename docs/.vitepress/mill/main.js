@@ -956,6 +956,25 @@ export async function initMillSimulator(root, opts = {}) {
       say('same field, two channels — parked heat left, moving flux right', 6000);
   });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
+  // zoom orb — vertical drag zooms, double-click resets to default
+  const zorb = root.querySelector('[data-zoomorb]');
+  if (zorb) {
+    let zy = null;
+    zorb.addEventListener('pointerdown', e => { zy = e.clientY; zorb.setPointerCapture(e.pointerId); });
+    zorb.addEventListener('pointermove', e => {
+      if (zy === null) return;
+      tgt.dist = Math.max(20, Math.min(300, tgt.dist + (e.clientY - zy) * 0.4));
+      zy = e.clientY; dirty = true;
+    });
+    zorb.addEventListener('pointerup', e => {
+      if (zy !== null && Math.abs(e.clientY - zy) < 3) {   // tap: top half +, bottom half −
+        const r = zorb.getBoundingClientRect();
+        tgt.dist = Math.max(20, Math.min(300, tgt.dist + (e.clientY < r.top + r.height / 2 ? -6 : 6)));
+      }
+      zy = null; syncZoom(); dirty = true;
+    });
+    zorb.addEventListener('dblclick', e => { e.preventDefault(); tgt.dist = 68; syncZoom(); dirty = true; });
+  }
   bind('[data-expo]', 'input', e => { ui.exposure = +e.target.value / 100; readout(e); dirty = true; });
   // dock accordions — Flags (selects) and Tuning (sliders) collapse by
   // class on the dock root so both stay out of the way on load
@@ -1066,6 +1085,9 @@ export async function initMillSimulator(root, opts = {}) {
     let lastTap = 0;
     const resetView = () => applyPreset('full');
     gizmo.addEventListener('dblclick', e => { e.preventDefault(); resetView(); });
+    canvas.addEventListener('dblclick', e => {   // zoom-only reset
+      tgt.dist = 68; syncZoom(); dirty = true;
+    });
     gizmo.addEventListener('pointerdown', e => {   // double-tap for touch
       e.preventDefault(); e.stopPropagation();
       const t = performance.now();
