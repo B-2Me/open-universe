@@ -856,7 +856,7 @@ export async function initMillSimulator(root, opts = {}) {
       setFric(50, 0, 0);
       press('[data-pair]', 'pair', false);
       press('[data-beam]', 'beam', false);
-      press('[data-drive]', 'drive', false);
+      press('[data-drive]', 'drive', true);
       wasm._meso3i_clear(); seedLump(CX, CY, CZ);
       say('glowing ember — the lump radiates photons, re-absorbs them as bound excitation n (magenta): matter made of heat (E20)', 6500);
     },
