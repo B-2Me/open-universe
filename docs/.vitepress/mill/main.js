@@ -1228,7 +1228,8 @@ export async function initMillSimulator(root, opts = {}) {
       if (spent > 0) { upload(); dirty = true; }
     } else lastSpent = 0;
 
-    resize();
+    // resize handled by ResizeObserver — the per-frame clientWidth read
+    // was forcing a layout query 60x/sec for nothing
     // draw-rate cap ~30fps: the field only changes on ticks (≤20tps),
     // so rendering at vsync just burns GPU redrawing the same frame.
     // dirty stays set until a draw actually happens — no frame is lost
