@@ -356,6 +356,7 @@ Corrected statement for M49-C: the wall converts ablation-erosion into accretion
 | M49 | Capture gate is a phase parameter: flat-p band / ramp→dissolve-or-fossil; IREFL builds a hollow-core crust and flips ablation drift (grown remnant — see M50) | `e70fe6e` |
 | M50 | iR/drest fix + M42–45 re-verified; drift is morphology-dependent (mass-matched: wall→lit-face accretion, upstream march); IREFL×IDREST spin vault | `0946f9c`, `6282abb` |
 | M51 | Morphology axis resolved: M36 pull is grown-structure-specific; wall gives density-windowed upstream accretion on seeded lumps (peak Q32); M49 "push" was a transient | `480fd20` |
+| E-series | iE excitation register (Planck's `n`): mass↔photon↔n fully reversible; three heat channels measured (radiation E19b, convection E21, conduction E23/E24); First Law + dynamic photon gas + Fourier diffusion verified; E25 clock excitation-invariant | `8393ace` |
 
 ## The Picture That Emerges
 

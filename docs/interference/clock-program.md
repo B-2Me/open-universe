@@ -202,6 +202,23 @@ Mass↔photon↔excitation is a full reversible cycle; the substrate can now
 express an object made of heat. `iE` is photon-specific: massive-carrier
 kinetic energy still has no thermalization channel (E18b re-validation).
 
+**E21–E25 (thermodynamics closed).** `IPHOT>=6` collision->`n`
+verified: carriers thermalize into excitation (E21, n=329k vs 0
+control). The conduction arc: open-space equilibration fails — photons
+self-recycle or drain (E22, three variants); a mass filament conducts
+`n` continuously (E23, B warms monotonically) but long-run still leaks
+to the free photon sea. Four audit bugs found and fixed: `iE` edge
+drain, snapshot coverage, `IPHOT>=5` ablation fall-through, and photon
+deletion on missed rolls (the real killer — unabsorbed photons were
+deleted while IPHN stayed frozen). Post-fix the Solid Conduction Bar
+(matter-dense closed box, hot/cold step) shows **First Law bitwise
+conservation, a steady ~600-photon dynamic gas, and real Fourier
+diffusion** (R: 0->8598 while L cools) — energy transfers cell-to-cell
+as n->photon->n. **E25: the clock is excitation-invariant** — n=50
+preload gives identical bounceTicks to cold at every density; thermal
+`n` lives on the photon plane and never touches mass-channel transit.
+A hot cavity ticks exactly like a cold one.
+
 **Re-validation (`iE` era).** Prior results survive the new register:
 E4's cavity clock unchanged (vacuum emits nothing to thermalize, 23t);
 E18b accretion identical; E10's refractive tail *gained* physics — the
