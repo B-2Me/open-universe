@@ -17,15 +17,15 @@ const run=(phot)=>{
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(0);
   w._meso3i_fricmode(-4); w._meso3i_drest(0); w._meso3i_reflect(0);
   w._meso3i_phot(phot);
-  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=4;x<12;x++)
+  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=4;x<8;x++)
     if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,0,64);
-  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=36;x<44;x++)
+  for(let z=8;z<40;z++)for(let y=8;y<40;y++)for(let x=36;x<40;x++)
     if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,1,64);
-  // collide for 60t, then freeze photon interaction (phot=0) and
-  // let the field settle — can created mass outlive its own bath?
-  for(let t=0;t<60;t++){ w._meso3i_drain_edge(3); w._meso3i_tick(); }
+  // collide for 30t (peak creation), then freeze photon interaction —
+  // the burst clears, can the created mass freeze out in vacuum?
+  for(let t=0;t<16;t++){ w._meso3i_drain_edge(3); w._meso3i_tick(); }
   w._meso3i_phot(0);
-  for(let t=0;t<240;t++){ w._meso3i_drain_edge(3); w._meso3i_tick(); }
+  for(let t=0;t<284;t++){ w._meso3i_drain_edge(3); w._meso3i_tick(); }
   w._meso3i_rg_refresh();
   // rest census + spatial coherence (does rest cluster or scatter?)
   let rest=0, sites=0, cx=0;
