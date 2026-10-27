@@ -49,6 +49,6 @@ const run = (phot, density, L) => { const X1 = X0 + L;
   const meanT = cum > 0 ? wt / cum : -1;
   console.log(`IPHOT=${phot} density=${density} L=${String(L).padStart(2)}  peak_t=${tPeak}  mean_t=${meanT.toFixed(1)}  total=${cum}`);
 };
-console.log('L-sweep: photon delay vs corridor length at density=32 (bulk-vs-boundary test)');
-run(0, 0, 38);            // vacuum, same flight distance
-for (const L of [8, 16, 24, 32, 38]) run(4, 32, L);
+console.log('refract under IPHOT=5 (iE thermalize): does the delay tail change?');
+run(0, 0, 38);
+for (const phot of [4, 5]) for (const density of [16, 32, 96]) run(phot, density, 38);
