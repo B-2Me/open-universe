@@ -56,15 +56,25 @@ mechanism has an established solid-state precedent.
   `IPAIR`-class pair production can fire from photon collisions is
   the current open mechanics question on the identification's edge.
 
-## The first measured constant
+## The first measured law — the partition equation of state
 
 Under `IPHOT>=7` (per-quantum decay — Einstein A-coefficient on the
-lattice), the Solid Bar reaches a **steady-state partition**:
-~28% of total energy lives as free photons, ~72% as bound `n` —
-**invariant across n=10/50/200** (27–29%). That's a dimensionless
-constant of the substrate: the ratio of emission rate to
-reabsorption rate, exactly what a real cavity's radiation-to-matter
-partition encodes.
+lattice), sweeping the bar's mass density at fixed energy yields a
+clean partition curve (`T_total` conserved at 43,200 throughout):
+
+| density m | photons | f_rad | regime |
+|---|---|---|---|
+| 16 | 28,110 | 65% | radiation-dominated |
+| 32 | 20,242 | 47% | ~equality |
+| 64 | 11,880 | 28% | matter-leaning |
+| 128 | 4,791 | 11% | matter-dominated |
+
+The data fits `f_rad(m) = m_eq / (m + m_eq)` with **m_eq ≈ 30** —
+the equilibrium exchange curve (the 128-point dips under it where
+channel saturation bites). The real invariant is the **matter-
+radiation equality density m_eq ≈ 30**: the crossover where the
+substrate flips regimes — a direct analog of the cosmological
+equality epoch, and the substrate's first anchored parameter.
 
 Until more land: the substrate is a conserved integer
 ontology that *resembles* Planck-scale physics the way a wind tunnel
