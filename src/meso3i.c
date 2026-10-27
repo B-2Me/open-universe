@@ -64,6 +64,9 @@ static int      IFLD;                /* external-field weight strength */
 static int      IFV[3];              /* field vector (components -1,0,+1) */
 static int      IQCAP;               /* Q overflow capacity (mode>=5) */
 static uint8_t *iPH;                 /* per-site phase offset 0..3 (mode 6) */
+static uint8_t *iE;                  /* excitation level n (Planck oscillator):
+                                        IPHOT>=5 absorb raises n at fixed mass;
+                                        thermal decay sheds n back as photons */
 static int      IREFL;               /* congestion-reflection cap; 0=off */
 static int      IFRIC;               /* routing friction: density cap; 0=off */
 static int      IFRICP = 128;        /* flat park probability num/256 (128 = legacy p=1/2) */
@@ -179,13 +182,14 @@ int meso3i_init(int w, int h, int d, int axial) {
     iR = malloc((size_t)IN * sizeof(uint32_t));
     iQ = calloc((size_t)IN, 1);
     iPH = calloc((size_t)IN, 1);
+    iE = calloc((size_t)IN, 1);
     iPA = calloc((size_t)IN * IMOV, 1);
     iPB = calloc((size_t)IN * IMOV, 1);
     iLT = calloc((size_t)IN, 1);
     iRA = calloc((size_t)IN * IMOV, 1);
     iRB = calloc((size_t)IN * IMOV, 1);
     if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT ||
-        !iRA || !iRB) return -2;
+        !iRA || !iRB || !iE) return -2;
     build_pairs();
     return 0;
 }
@@ -275,6 +279,14 @@ void meso3i_pset(int x, int y, int z, uint8_t v) {
 uint8_t meso3i_pget(int x, int y, int z) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     return isite(x, y, z) ? iPH[iidx(x, y, z)] : 0;
+}
+uint8_t meso3i_eget(int x, int y, int z) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    return isite(x, y, z) ? iE[iidx(x, y, z)] : 0;
+}
+void meso3i_eset(int x, int y, int z, uint8_t v) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (isite(x, y, z)) iE[iidx(x, y, z)] = v;
 }
 
 /* mode>=4 capture: unconditionally at Q>0 nodes for modes 4-5; mode 6
@@ -419,6 +431,13 @@ static void collide_node(uint8_t *n, int si) {
                 iEV[2]++;
             }
         }
+    }
+    /* thermal decay: excited sites shed n back into a photon —
+     * the resume branch of conduction (warming in place is now real) */
+    if (IPHOT >= 5 && iE[si] && (irnd() & 7) == 0) {
+        iE[si]--;
+        int c = irnd() % IMOV;
+        iPA[si * IMOV + c]++; IPHN++;
     }
     /* pair capture (IPAIR): a populated antipodal pair may bind into
      * rest mass — the wind side of the cycle. Zero net momentum either
@@ -775,6 +794,18 @@ void meso3i_tick(void) {
                     int dsum = IDREST ? drest_at(iRB, ni) : 0;
                     int parked = iB[ri] + dsum;
                     int absorbed = 0;
+                    if (IPHOT >= 5) {
+                        /* thermalize: photon absorbed as EXCITATION —
+                         * n++ at fixed mass, no ejection (Planck's n) */
+                        for (int u = 0; u < p; u++)
+                            if (parked && (int)(irnd() & 255) < parked) {
+                                if (iE[ni] < 255) iE[ni]++;
+                                absorbed++;
+                            }
+                        p -= absorbed; IPHN -= absorbed;
+                        iEV[5] += absorbed;
+                        if (!p) continue;
+                    }
                     for (int u = 0; u < p; u++)
                         if (parked && (int)(irnd() & 255) < parked) {
                             int pick = parked > iB[ri]

@@ -25,15 +25,16 @@ const lump = (cx, q) => {
   }
 };
 const zoneMass = (cx, rad) => {
-  let rest = 0, mov = 0;
+  let rest = 0, mov = 0, nExc = 0;
   for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     if ((x + y + z) & 1) continue;
     const dx = x - cx, dy = y - CY, dz = z - CZ;
     if (dx * dx + dy * dy + dz * dz > rad * rad) continue;
     rest += wasm._meso3i_get(x, y, z, REST);
+    if (wasm._meso3i_eget) nExc += wasm._meso3i_eget(x, y, z);
     for (let c = 0; c < NMOV; c++) mov += wasm._meso3i_get(x, y, z, c);
   }
-  return [rest, mov];
+  return [rest, mov, nExc];
 };
 const run = phot => {
   wasm._meso3i_init(W, H, D, 1);
@@ -45,12 +46,12 @@ const run = phot => {
   for (let t = 0; t < 400; t++) {
     wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
     if (t % 80 === 0) {
-      const [kr, km] = zoneMass(KX, 8);
-      series.push(`t${t}:r${kr}m${km}`);
+      const [kr, km, kn] = zoneMass(KX, 8);
+      series.push(`t${t}:r${kr}m${km}n${kn}`);
     }
   }
-  const [kr, km] = zoneMass(KX, 8);
-  console.log(`IPHOT=${phot}  cold-lump zone rest=${kr} mov=${km}  [${series.join(' ')}]`);
+  const [kr, km, kn] = zoneMass(KX, 8);
+  console.log(`IPHOT=${phot}  cold-lump rest=${kr} mov=${km} n=${kn}  [${series.join(' ')}]`);
 };
-console.log('E19 — photon-mediated conduction: hot lump (x16) heats cold lump (x40)?');
-run(0); run(4);
+console.log('E19b — quantum number: does absorbed energy raise n in the cold lump?');
+run(5);
