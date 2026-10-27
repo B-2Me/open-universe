@@ -83,11 +83,9 @@ onUnmounted(() => {
 
       <!-- orientation gizmo — Blender-style viewport overlay, bottom-right;
            rotates with the camera, double-click/tap resets -->
-      <div class="mill-zoomctl" data-zoomorb role="slider" tabindex="0"
-           aria-label="Zoom — drag vertically, tap +/−, double-click to reset"
-           title="Zoom — drag or tap +/−, double-click resets">
-        <b>+</b><i><em data-zoomthumb></em></i><b>−</b>
-      </div>
+      <canvas class="mill-zoomlens" data-zoomlens width="128" height="128"
+              title="Zoom lens — drag up/down or twist to zoom; double-click resets"
+              aria-label="Zoom lens — drag or twist to zoom, double-click to reset"></canvas>
       <canvas class="mill-gizmo" data-gizmo width="128" height="128"
               title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
     </div>
@@ -392,58 +390,26 @@ onUnmounted(() => {
 .mill-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .mill-simulator.dock-hidden .mill-dock { display: none; }
 
-/* zoom control — vertical −/drag/+ pill docked beside the gizmo */
-.mill-zoomctl {
+/* zoom lens — circular dial at the canvas edge, sibling chrome to the
+   gizmo: faint reticle rings, one bright ring rides in/out with zoom */
+.mill-zoomlens {
   position: absolute;
-  right: 76px;
+  right: 10px;
   bottom: 10px;
-  width: 30px;
-  height: 64px;
-  border-radius: 15px;
-  background: rgba(8, 10, 20, 0.6);
-  border: 1px solid rgba(160, 200, 255, 0.18);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 0;
-  cursor: ns-resize;
-  opacity: 0.85;
-  touch-action: none;
-  user-select: none;
-}
-.mill-zoomctl b {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--mill-muted);
-  line-height: 1;
-  pointer-events: none;
-}
-.mill-zoomctl i {   /* grip track between + and − */
-  position: relative;
-  width: 3px;
-  flex: 1;
-  margin: 4px 0;
-  border-radius: 2px;
-  background: rgba(160, 200, 255, 0.25);
-  pointer-events: none;
-}
-.mill-zoomctl i em {  /* zoom-level thumb — rides the track */
-  position: absolute;
-  left: 50%;
-  bottom: 30%;
-  transform: translate(-50%, 50%);
-  width: 9px;
-  height: 9px;
+  width: 56px;
+  height: 56px;
+  flex: none;
   border-radius: 50%;
-  background: var(--mill-accent);
-  box-shadow: 0 0 6px rgba(119, 255, 238, 0.8);
+  background: rgba(8, 10, 20, 0.6);
+  cursor: ns-resize;
+  opacity: 0.9;
+  touch-action: none;
 }
 /* orientation gizmo — Blender-style axes chip floating on the
    canvas, bottom-right corner */
 .mill-gizmo {
   position: absolute;
-  right: 10px;
+  right: 76px;
   bottom: 10px;
   width: 64px;
   height: 64px;

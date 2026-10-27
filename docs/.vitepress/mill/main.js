@@ -960,25 +960,60 @@ export async function initMillSimulator(root, opts = {}) {
       say('same field, two channels — parked heat left, moving flux right', 6000);
   });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
-  // zoom orb — vertical drag zooms, double-click resets to default
-  const zorb = root.querySelector('[data-zoomorb]');
-  if (zorb) {
-    let zy = null;
-    zorb.addEventListener('pointerdown', e => { zy = e.clientY; zorb.setPointerCapture(e.pointerId); });
-    zorb.addEventListener('pointermove', e => {
+  // zoom lens — drag up/down to zoom, twist around the ring also works;
+  // double-click resets. The bright reticle ring breathes with dist.
+  const zlens = root.querySelector('[data-zoomlens]');
+  const zctx = zlens?.getContext('2d');
+  if (zlens && zctx) {
+    let zy = null, lastA = null;
+    const ang = e => {
+      const r = zlens.getBoundingClientRect();
+      return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2));
+    };
+    zlens.addEventListener('pointerdown', e => {
+      zy = e.clientY; lastA = ang(e); zlens.setPointerCapture(e.pointerId);
+    });
+    zlens.addEventListener('pointermove', e => {
       if (zy === null) return;
-      tgt.dist = Math.max(20, Math.min(300, tgt.dist + (e.clientY - zy) * 0.4));
-      zy = e.clientY; dirty = true;
+      let d = (e.clientY - zy) * 0.5;
+      const a = ang(e);                       // tangential twist zooms too
+      let da = a - lastA;
+      if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+      if (Math.abs(da) > 0.01) d += da * 40;
+      tgt.dist = Math.max(20, Math.min(300, tgt.dist + d));
+      zy = e.clientY; lastA = a; dirty = true;
     });
-    zorb.addEventListener('pointerup', e => {
-      if (zy !== null && Math.abs(e.clientY - zy) < 3) {   // tap: top half +, bottom half −
-        const r = zorb.getBoundingClientRect();
-        tgt.dist = Math.max(20, Math.min(300, tgt.dist + (e.clientY < r.top + r.height / 2 ? -6 : 6)));
-      }
-      zy = null; syncZoom(); dirty = true;
-    });
-    zorb.addEventListener('dblclick', e => { e.preventDefault(); tgt.dist = 68; syncZoom(); dirty = true; });
+    zlens.addEventListener('pointerup', () => { zy = null; lastA = null; syncZoom(); });
+    zlens.addEventListener('dblclick', e => { e.preventDefault(); tgt.dist = 68; dirty = true; });
   }
+  const drawLens = () => {
+    if (!zctx) return;
+    const S = zlens.width, c = S / 2, R = S * 0.42;
+    const f = (tgt.dist - 20) / 280;          // 0 = zoomed in, 1 = zoomed out
+    zctx.clearRect(0, 0, S, S);
+    // faint reticle rings
+    zctx.strokeStyle = 'rgba(160, 200, 255, 0.22)';
+    zctx.lineWidth = S * 0.014;
+    for (const rr of [0.55, 0.8]) { zctx.beginPath(); zctx.arc(c, c, R * rr, 0, 7); zctx.stroke(); }
+    // crosshair ticks
+    zctx.strokeStyle = 'rgba(160, 200, 255, 0.35)';
+    zctx.beginPath();
+    zctx.moveTo(c - R, c); zctx.lineTo(c - R * 0.82, c);
+    zctx.moveTo(c + R * 0.82, c); zctx.lineTo(c + R, c);
+    zctx.moveTo(c, c - R); zctx.lineTo(c, c - R * 0.82);
+    zctx.moveTo(c, c + R * 0.82); zctx.lineTo(c, c + R);
+    zctx.stroke();
+    // the focus ring — radius = current zoom (big ring = far, small = near)
+    const fr = R * (0.18 + 0.72 * f);
+    zctx.strokeStyle = 'rgba(127, 255, 238, 0.95)';
+    zctx.lineWidth = S * 0.028;
+    zctx.shadowColor = 'rgba(127, 255, 238, 0.8)'; zctx.shadowBlur = S * 0.06;
+    zctx.beginPath(); zctx.arc(c, c, fr, 0, 7); zctx.stroke();
+    zctx.shadowBlur = 0;
+    // center dot — the focal point
+    zctx.fillStyle = 'rgba(127, 255, 238, 0.9)';
+    zctx.beginPath(); zctx.arc(c, c, S * 0.025, 0, 7); zctx.fill();
+  };
   bind('[data-expo]', 'input', e => { ui.exposure = +e.target.value / 100; readout(e); dirty = true; });
   // dock accordions — Flags (selects) and Tuning (sliders) collapse by
   // class on the dock root so both stay out of the way on load
@@ -1277,7 +1312,7 @@ export async function initMillSimulator(root, opts = {}) {
         gl.bindTexture(gl.TEXTURE_3D, tex);
       }
       syncZoom();
-      drawGizmo();
+      drawGizmo(); drawLens();
       dirty = false;
     }
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
