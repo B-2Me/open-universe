@@ -87,6 +87,7 @@ static int      ILAT = 1;            /* emission latency: carrier-gated radiatio
                                         (canonical). >1 lets freshly-bound mass
                                         survive transient flux — only sustained
                                         transit unwinds. */
+static uint8_t *iPT;               /* photon transit counter: consecutive ticks a site carries light (arrival cadence) */
 static uint8_t *iLT;                 /* per-site consecutive-transit counter */
 static int      IDREST;              /* directional rest ("frozen flux"): a
                                         friction-parked quantum lands in rest[c],
@@ -190,9 +191,10 @@ int meso3i_init(int w, int h, int d, int axial) {
     iPA = calloc((size_t)IN * IMOV * NNU, 1);
     iPB = calloc((size_t)IN * IMOV * NNU, 1);
     iLT = calloc((size_t)IN, 1);
+    iPT = calloc((size_t)IN, 1);
     iRA = calloc((size_t)IN * IMOV, 1);
     iRB = calloc((size_t)IN * IMOV, 1);
-    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT ||
+    if (!iA || !iB || !iD || !iR || !iQ || !iPH || !iPA || !iPB || !iLT || !iPT ||
         !iRA || !iRB || !iE) return -2;
     build_pairs();
     return 0;
@@ -297,6 +299,11 @@ uint8_t meso3i_phget_nu(int x, int y, int z, int c, int nu) {
     return iPA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV * NNU + c * NNU + (nu - 1)];
 }
 int meso3i_photons(void) { return IPHN; }
+uint8_t meso3i_ptget(int x, int y, int z) {
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (!isite(x, y, z)) return 0;
+    return iPT[iidx(x, y, z)];
+}
 /* total photon ENERGY: sum over bins of nu * occupancy */
 int meso3i_phenergy(void) {
     long e = 0;
@@ -935,6 +942,15 @@ void meso3i_tick(void) {
             }
         }
         uint8_t *tp = iPA; iPA = iPB; iPB = tp;
+        /* arrival cadence: consecutive ticks each site carries light —
+         * the iLT analog for photons. A detector register, not a rule. */
+        for (int si = 0; si < IN; si++) {
+            const uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
+            int any = 0;
+            for (int j = 0; j < IMOV * NNU; j++) if (pa[j]) { any = 1; break; }
+            if (any) { if (iPT[si] < 255) iPT[si]++; }
+            else iPT[si] = 0;
+        }
         /* pair production (IPHOT>=8): head-on photons on antipodal
          * channels crystallize into rest mass — gamma+gamma -> matter,
          * the last leg of the mass<->photon<->n triangle. Energy and
