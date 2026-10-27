@@ -144,7 +144,7 @@ void main() {
   float a = exp(-r2 * 4.5);               // gaussian falloff, soft foam edge
   // rgb premultiplied by coverage AND coverage in alpha — the HDR pass
   // averages (rgb/a) instead of summing, so dense cores keep their hue
-  frag = vec4(v_color.rgb * v_color.a * a, v_color.a * a);
+  frag = vec4(v_color.rgb * v_color.a * a, 1.0);   // additive ONE,ONE: force opaque alpha like Loom/Ember
 }`;
 
 // resolve pass — the point cloud accumulates additively into a
