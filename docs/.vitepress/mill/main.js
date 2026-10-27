@@ -44,7 +44,7 @@ const VERT = `#version 300 es
 precision highp float;
 precision highp sampler3D;
 layout(location=0) in vec2 a_corner;      // billboard quad corner
-uniform sampler3D u_vol;                  // RGB8: r=moving g=rest b=photons
+uniform sampler3D u_vol;                  // RGBA8: r=moving g=rest b=photons a=excitation n
 uniform mat4 u_mvp;
 uniform float u_size;                     // world-space quad half-size
 uniform float u_s_center, u_s_thick;      // tomographic slab (cell coord)
@@ -62,11 +62,12 @@ void main() {
   int x = (id % u_nx) * u_step;
   int y = ((id / u_nx) % u_ny) * u_step;
   int z = (id / u_nxy) * u_step;
-  vec3 rg = texelFetch(u_vol, ivec3(x, y, z), 0).rgb;
+  vec4 rg = texelFetch(u_vol, ivec3(x, y, z), 0);
   float mov = rg.r * 255.0;
   float rest = rg.g * 255.0;
   float ph = rg.b * 255.0;
-  float d = max(mov, max(rest, ph));
+  float exc = rg.a * 255.0;
+  float d = max(mov, max(rest, max(ph, exc)));
   v_uv = a_corner;
   if (d < u_qmin) {                       // vacuum + dead parity: clip
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
@@ -123,6 +124,9 @@ void main() {
   // vacuum in every color mode
   float g = pow(ph / 255.0, 0.6);
   rgb += mix(vec3(0.30, 0.10, 0.80), vec3(0.85, 0.70, 1.00), g) * g * 1.6;
+  // excitation n: bound radiation — hot magenta, the ember within
+  float eg = pow(exc / 255.0, 0.55);
+  rgb += mix(vec3(0.60, 0.02, 0.25), vec3(1.00, 0.65, 0.85), eg) * eg * 1.8;
   // visibility floor: real occupancies run ~5-120, far below the 255
   // normalization — a sparse dim ember must still read against the void
   rgb = rgb * 1.8 + vec3(0.028);
@@ -506,7 +510,7 @@ export async function initMillSimulator(root, opts = {}) {
   }
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_3D, tex);
-  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB8, W3, H3, D3, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, W3, H3, D3, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
   for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST],
     [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]])
     gl.texParameteri(gl.TEXTURE_3D, k, v);
@@ -517,8 +521,8 @@ export async function initMillSimulator(root, opts = {}) {
     wasm._meso3i_rg_refresh();
     // re-fetch the heap view each frame — ALLOW_MEMORY_GROWTH can detach it
     const h8 = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
-    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGB, gl.UNSIGNED_BYTE,
-      h8.subarray(rgPtr, rgPtr + N3 * 3));
+    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGBA, gl.UNSIGNED_BYTE,
+      h8.subarray(rgPtr, rgPtr + N3 * 4));
   };
 
   // iOS Safari kills GPU contexts aggressively — signal + let the page
@@ -665,7 +669,7 @@ export async function initMillSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 12, tick: 0, tps: 20, tickDebt: 0,
     sAxis: 2, sCut: D3 >> 1, sSlab: D3, ghostAlpha: 0.06,
-    qmin: 1, size: 0.55, colorMode: 0,
+    qmin: 5, size: 0.55, colorMode: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, arm: null,      // arm: 'ring' | 'lump'
     phot: 2, pair: false, drest: 0, exposure: 1.2, split: 'off', scene: '',
