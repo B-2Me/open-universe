@@ -991,28 +991,16 @@ export async function initMillSimulator(root, opts = {}) {
     const S = zlens.width, c = S / 2, R = S * 0.42;
     const f = (tgt.dist - 20) / 280;          // 0 = zoomed in, 1 = zoomed out
     zctx.clearRect(0, 0, S, S);
-    // faint reticle rings
+    // faint rim
     zctx.strokeStyle = 'rgba(160, 200, 255, 0.22)';
-    zctx.lineWidth = S * 0.014;
-    for (const rr of [0.55, 0.8]) { zctx.beginPath(); zctx.arc(c, c, R * rr, 0, 7); zctx.stroke(); }
-    // crosshair ticks
-    zctx.strokeStyle = 'rgba(160, 200, 255, 0.35)';
-    zctx.beginPath();
-    zctx.moveTo(c - R, c); zctx.lineTo(c - R * 0.82, c);
-    zctx.moveTo(c + R * 0.82, c); zctx.lineTo(c + R, c);
-    zctx.moveTo(c, c - R); zctx.lineTo(c, c - R * 0.82);
-    zctx.moveTo(c, c + R * 0.82); zctx.lineTo(c, c + R);
-    zctx.stroke();
-    // the focus ring — radius = current zoom (big ring = far, small = near)
-    const fr = R * (0.18 + 0.72 * f);
-    zctx.strokeStyle = 'rgba(127, 255, 238, 0.95)';
-    zctx.lineWidth = S * 0.028;
-    zctx.shadowColor = 'rgba(127, 255, 238, 0.8)'; zctx.shadowBlur = S * 0.06;
-    zctx.beginPath(); zctx.arc(c, c, fr, 0, 7); zctx.stroke();
-    zctx.shadowBlur = 0;
-    // center dot — the focal point
-    zctx.fillStyle = 'rgba(127, 255, 238, 0.9)';
-    zctx.beginPath(); zctx.arc(c, c, S * 0.025, 0, 7); zctx.fill();
+    zctx.lineWidth = S * 0.016;
+    zctx.beginPath(); zctx.arc(c, c, R, 0, 7); zctx.stroke();
+    // numeric zoom: 1.0x = default dist 68 — closer reads bigger
+    const zoom = 68 / tgt.dist;
+    zctx.fillStyle = 'rgba(127, 255, 238, 0.95)';
+    zctx.font = `600 ${S * 0.21}px monospace`;
+    zctx.textAlign = 'center'; zctx.textBaseline = 'middle';
+    zctx.fillText(zoom.toFixed(1) + 'x', c, c);
   };
   bind('[data-expo]', 'input', e => { ui.exposure = +e.target.value / 100; readout(e); dirty = true; });
   // dock accordions — Flags (selects) and Tuning (sliders) collapse by
