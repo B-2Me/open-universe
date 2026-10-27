@@ -33,7 +33,7 @@ const run = (k, bath) => {
   wasm._meso3i_rg_refresh();
   const r0 = wasm._meso3i_rest_mass();
   const series = [];
-  const reseed = () => {              // ambient bath: sparse sustained flux
+  const reseed = () => {              // sustained reservoir — NOT ambient equilibrium
     if (!bath) return;
     for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       if ((x + y + z) & 1) continue;
@@ -61,5 +61,41 @@ const run = (k, bath) => {
   wasm._meso3i_rg_refresh();
   console.log(`k=${k} bath=${bath}  rest ${r0} -> ${wasm._meso3i_rest_mass()}  emit_rate=${rate.toFixed(1)}/t  [${series.join(' ')}]`);
 };
-console.log('E18b — cooling at earth surface: hot lump + ambient bath');
+console.log('E18b — hot lump under SUSTAINED flux drive (infinite reservoir)');
 for (const k of [4, 16]) { run(k, false); run(k, true); }
+
+// E18c — the honest "earth surface": a FINITE parked bath that can
+// equilibrate with the lump (no reseed — shared reservoir).
+const runEq = (k, bathQ) => {
+  wasm._meso3i_init(W, H, D, 1);
+  wasm._meso3i_collmode(0); wasm._meso3i_friction(8); wasm._meso3i_fricmode(-k);
+  wasm._meso3i_fricp(128); wasm._meso3i_drest(0); wasm._meso3i_reflect(0);
+  wasm._meso3i_phot(4);
+  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if ((x + y + z) & 1) continue;
+    const dx = x - CX, dy = y - CY, dz = z - CZ;
+    const r2 = dx * dx + dy * dy + dz * dz;
+    if (r2 <= 16) wasm._meso3i_set(x, y, z, REST, 128);       // hot lump
+    else if (r2 <= 196) wasm._meso3i_set(x, y, z, REST, bathQ); // finite parked bath shell
+  }
+  wasm._meso3i_rg_refresh();
+  const r0 = wasm._meso3i_rest_mass();
+  const series = [];
+  for (let t = 0; t < 400; t++) {
+    wasm._meso3i_drain_edge(3); wasm._meso3i_tick();
+    if (t % 40 === 0) { wasm._meso3i_rg_refresh(); series.push(`t${t}:r${wasm._meso3i_rest_mass()}`); }
+  }
+  // lump-vs-bath split at end
+  wasm._meso3i_rg_refresh();
+  let inLump = 0, inBath = 0;
+  for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if ((x + y + z) & 1) continue;
+    const dx = x - CX, dy = y - CY, dz = z - CZ;
+    const r2 = dx * dx + dy * dy + dz * dz;
+    const m = wasm._meso3i_get(x, y, z, REST);
+    if (r2 <= 16) inLump += m; else if (r2 <= 196) inBath += m;
+  }
+  console.log(`k=${k} bathQ=${bathQ}  total ${r0}->${wasm._meso3i_rest_mass()}  lump=${inLump} bath=${inBath}  [${series.join(' ')}]`);
+};
+console.log('E18c — finite parked bath: does the lump equilibrate or keep accreting?');
+runEq(4, 4); runEq(4, 16);
