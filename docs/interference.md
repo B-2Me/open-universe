@@ -32,7 +32,7 @@ This assumes a frictionless, perfectly scalable universe. But when we measure ph
 
 The substrate is not a metaphor. It runs. The flagship instrument and the milestone builds that led to it:
 
-*   **[Joule's Mill](/mill-demo)**: the flagship engine, live in your browser. A 93,000-cell True-FCC lattice gas with the full measured rule set: directional rest, photon coupling, pair rules, latency gating, and one-click milestone scenes.
+*   **[Joule's Mill](/mill-demo)**: the flagship engine, live in your browser. A 93,000-cell True-FCC lattice gas with the full measured rule set: directional rest, photon coupling, the `iE` excitation register (bound `n`), pair rules, latency gating, and one-click milestone scenes.
 *   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: convergent drive, carrier beam, cold rocks, and the walk-toward-the-light comet drift at 44³.
 *   **[Hopf's Loom](/loom-demo)**: the earlier single-spin 3D engine (a milestone showcase): a 400,000-node volume renderer orbiting a woven 19-loop Hopfion.
 *   **[The Hopfion Zoo](/hopfion-zoo)**: the prototype's measured knot dictionary: thirty-seven stable geometries from the single-spin era.

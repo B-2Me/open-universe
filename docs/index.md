@@ -53,6 +53,7 @@ A lattice gas in the honest sense: the descendant of the FHP automata and D3Q19 
 - **Matter spins, and light can wind it.** Directional rest channels store angular momentum indefinitely (M39, M42); absorbed photons deposit it with the correct sign (M43), a YORP-class mechanism. The wound vault holds its winding as a stored record (M50).
 - **Only active matter interacts.** Self-radiating lumps genuinely couple: transiently, at short range (M47b). Passive lumps in a bath or a beam do not pull on each other at all. Le Sage shadowing is dead; transaction-mediated coupling survives.
 - **A medium attenuates; vacuum doesn't.** A pulse through a dilute ambient gas loses flux on a measurable mean free path; through vacuum it loses exactly zero (M48).
+- **Matter can be made of heat.** The excitation register `iE` — Planck's `n` — lets absorbed photons raise a bound object's energy at fixed mass and shed back as light; a lump can end as a massless hot object (E20).
 - **Every irreversible event is countable.** The transaction ledger reads zero in free flight, ~3,700 per window in a driven ember, and zero again in the frozen ground state (M47), the substrate's arrow of time, instrumented.
 - **Refraction and clock lag emerge without varying c.** Photons detained in rest resume as photons after `ILAT`; effective refractive index `n(ρ)` and cavity clock dilation emerge from discrete dwell and path length, with `c` strictly invariant on every hop (E2, E4, E10).
 

@@ -20,7 +20,7 @@ pageClass: mill-page
 
 This is `meso3i` compiled to WebAssembly: 93,000 live cells, each carrying 19 integer channels of real quanta. There is no empty space and there are no objects: only directional traffic on a lattice, and the parked deposits that congestion leaves behind. Cyan is moving flux; amber is **parked momentum**: mass, in the only sense this universe has. Every behavior you can produce here is a measured milestone in the [Friction Substrate](/interference/meso-monograph) record (M33–M51), not a scripted animation.
 
-The page boots into the **spin vault** (M50): a wound lump — parked flux that remembers its direction — sealed behind a Wall-32 refusal crust, inert until you feed it. From there the controls are the experiment, grouped by job: **time** (play/step/reset), **inject** (**☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset), **ops** (orbit, snapshot), and **presets** — the **Scene** menu reproduces the milestone regimes in one click.
+The page boots into the **glowing ember**: a lone lump under feed, radiating photons that re-absorb as **bound excitation** — Planck's `n`, glowing magenta where light gets stored inside matter. It's the E20 greenhouse scene live. From there the controls are the experiment, grouped by job: **time** (play/step/reset), **inject** (**☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset), **ops** (orbit, snapshot), and **presets** — the **Scene** menu reproduces the milestone regimes in one click.
 
 ## Play with it
 
@@ -35,6 +35,8 @@ The page boots into the **spin vault** (M50): a wound lump — parked flux that 
   - *catalyst*: a transiting photon licenses the carrier-gated emission gate.
   - *stimulated*. Each photon may kick a rest quantum into *its own channel*: coherent directional ablation, the mechanism under M36's walk.
   - *absorbed*, photon momentum is deposited into **directional rest**: light literally writes spin into matter (M43, a YORP-class mechanism).
+  - *fluoresce*. The emit gate outputs photons: a hot lump becomes a true light source (E10's refractive detention path).
+  - *thermalize (n)*. Absorbed photons raise the **excitation register** `n` at fixed mass — no ejection. `n` decays back as photons: matter can be made of heat (E19–E20).
 - **⇄ (pair rules)**: the momentum-honest wind/unwind cycle: `2·rest ⇄ c + c¹`. Rest sheds mass as back-to-back antipodal pairs, and head-on collisions can bind a pair back into rest. Measured caveat: the colliding pair is itself a carrier, so a binding site also lights its own emission gate. Unwind tends to dominate wind wherever they meet.
 - **⌖ (vortex tool)**: arm it, tap the slice plane: injects two concentric rings of moving quanta on the best-tangent equatorial channels. A circulation seed. Watch it thermalize into parked heat (M38/M44's boundary), or park it as *directional* rest and the winding survives frozen (M42).
 - **● (rock tool)**: arm it, tap the slice plane: drops a cold rest-mass lump, the proven-persistent control case.
@@ -53,7 +55,7 @@ The page boots into the **spin vault** (M50): a wound lump — parked flux that 
 
 ### The pipeline
 
-`meso3i_rg_refresh()` packs {moving, rest, photons} into an RGB8 buffer inside the Wasm heap → `gl.texSubImage3D` per frame → one instanced billboard draw. Cyan ramp = moving flux, blackbody ramp = parked rest mass, violet = the photon field (additive in every palette: a beam must read through vacuum).
+`meso3i_rg_refresh()` packs {moving, rest, photons, excitation} into an RGBA8 buffer inside the Wasm heap → `gl.texSubImage3D` per frame → one instanced billboard draw. Cyan ramp = moving flux, blackbody ramp = parked rest mass, violet = the photon field, **magenta = bound excitation `n`** (the ember within: stored radiation inside still-massive sites).
 
 ### What this instrument measures
 

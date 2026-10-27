@@ -186,6 +186,28 @@ emergent effect — honest distinction).
 > `n(ρ)` and cavity clock lag emerge from discrete dwell and scattered
 > path length, with `c` strictly invariant on every hop.
 
+**E18–E20 (thermal arc — the `iE` excitation register).** The substrate
+gained Planck's `n`: a per-site excitation level where absorbed photons
+raise bound energy *at fixed mass* (`IPHOT>=5`), shed back as light on a
+thermal decay beat. The measured arc: vacuum cooling is exponential and
+emission linear in mass (E18); a sustained flux bath accretes, it does
+not cool (E18b — ambient medium is a mass *feeder*); a parked ambient
+bath is perfectly inert — no equilibration channel exists without
+transiting carriers (E18c); a finite moving bath equilibrates once then
+starves (E18d). Heat exchange is transaction-mediated all the way down.
+The capstone (E20, `8b2447a`): a lump radiating into a photon-absorbing
+bath in a closed box — radiation is trapped by the medium and returns as
+excitation, and the lump ends as a massless hot object, pure `n`.
+Mass↔photon↔excitation is a full reversible cycle; the substrate can now
+express an object made of heat. `iE` is photon-specific: massive-carrier
+kinetic energy still has no thermalization channel (E18b re-validation).
+
+**Re-validation (`iE` era).** Prior results survive the new register:
+E4's cavity clock unchanged (vacuum emits nothing to thermalize, 23t);
+E18b accretion identical; E10's refractive tail *gained* physics — the
+`n`-reservoir roughly doubles detention and turns the corridor into a
+persistent photon source.
+
 ## The dimensional bridge
 
 **Formal bridge — grounded.** The unit assignment is an ontological
