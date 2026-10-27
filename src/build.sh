@@ -165,6 +165,7 @@ if emcc meso3i.c \
     '_meso3i_phset_nu',
     '_meso3i_phget_nu',
     '_meso3i_phenergy',
+    '_meso3i_phth',
     '_meso3i_phget',
     '_meso3i_photons',
     '_meso3i_pset',
