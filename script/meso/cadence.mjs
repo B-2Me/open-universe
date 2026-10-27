@@ -32,9 +32,18 @@ const run=(withSlab)=>{
     for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=40;x<W;x++){
       if((x+y+z)&1)continue;
       for(let nu=1;nu<=4;nu++) det+=w._meso3i_phget_nu(x,y,z,12,nu); }
-    if(det>50) arrivals.push(`t${t}:${det}`);
+    arrivals.push([t,det]);
   }
-  console.log(`slab=${withSlab}: arrivals=[${arrivals.join(' ')}]`);
+  // per-pulse arrival centroid: window [base, base+12) around each expected pulse
+  const cents=[];
+  for(let p=0;p<4;p++){
+    const t0=6+8+p*10;   // expected arrival ~t16+p*10 in free flight
+    let num=0,den=0;
+    for(const [t,d] of arrivals) if(t>=t0&&t<t0+14&&d>200){ num+=t*d; den+=d; }
+    if(den) cents.push((num/den).toFixed(2));
+  }
+  const spacings=cents.slice(1).map((c,i)=>(parseFloat(c)-parseFloat(cents[i])).toFixed(2));
+  console.log(`slab=${withSlab}: centroids=[${cents.join(', ')}] spacings=[${spacings.join(', ')}]`);
 };
 console.log('E35 — cadence dilation: T=10 pulse train through detaining slab');
 run(false); run(true);
