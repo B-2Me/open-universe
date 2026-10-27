@@ -912,8 +912,13 @@ void meso3i_tick(void) {
                         }
                 }
                 int pi;
-                if (INSH && nu > 0 && parked_now(ni) &&
-                    (int)(irnd() % (uint32_t)INSH) == 0) {
+                /* INSH>0: flat 1/k shift chance (additive loss).
+                 * INSH<0: P = nu/|k| shift chance (multiplicative
+                 * loss — the blackbody-preserving condition). */
+                int shift = INSH > 0
+                    ? (int)(irnd() % (uint32_t)INSH) == 0
+                    : INSH < 0 && (int)(irnd() % (uint32_t)(-INSH)) < nu + 1;
+                if (shift && nu > 0 && parked_now(ni)) {
                     /* transit dissipation: the photon drops one energy
                      * bin crossing matter, depositing 1 unit into the
                      * site's excitation — a mechanical 'tired light'
