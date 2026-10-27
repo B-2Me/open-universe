@@ -43,7 +43,7 @@ const signedMomX = () => {
   return mass;
 };
 
-const run = (density, fillFrac = 1) => {
+const run = (density, fillFrac = 1, exc = 0) => {
   resetEngine();
   for (const xw of [MX0, MX1]) for (let x = xw; x < xw + 3; x++)
     for (let z = 0; z < gridD; z++) for (let y = 0; y < gridH; y++) {
@@ -55,6 +55,7 @@ const run = (density, fillFrac = 1) => {
     if ((x + y + z) & 1) continue;
     if (fillFrac < 1 && (((x * 7 + y * 3 + z * 11) % 8) / 8) >= fillFrac) continue;
     wasm._meso3i_set(x, y, z, restCh, density);
+    if (exc) wasm._meso3i_eset(x, y, z, exc);
   }
   // packet: +x flux just right of the left mirror
   let injectedMass = 0;
@@ -81,8 +82,9 @@ const PHOT = +(process.argv[2] || 0);
 console.log(`E4-rv PHOT=${PHOT} — cavity period vs interior density`);
 const cases = [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
                [8, 0.5], [8, 0.75], [8, 1]];
+const EXC = Number(process.argv[3] || 0);
 for (const [density, fillFrac] of cases) {
-  const r = run(density, fillFrac);
+  const r = run(density, fillFrac, EXC);
   const gaps = r.bounceTicks.map((t, i) => i ? t - r.bounceTicks[i - 1] : null).filter(Boolean);
   const T = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : NaN;
   console.log(`density=${density}x${fillFrac}  bounceTicks=[${r.bounceTicks.join(',')}]  half-period=${T.toFixed(1)}t  survivor=${r.endMomentum}`);
