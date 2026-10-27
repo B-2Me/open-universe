@@ -12,22 +12,32 @@ const mod = { exports: {} };
 new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
 const w = await mod.exports();
+// channel vectors (D3Q19): 12 face-diagonals + 6 axial — used for aim
+const CHV = [[1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],
+             [1,0,-1],[-1,0,1],[0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1],
+             [2,0,0],[-2,0,0],[0,2,0],[0,-2,0],[0,0,2],[0,0,-2]];
 const W=48,H=48,D=48,C=24,NMOV=w._meso3i_nch()-1,REST=NMOV;
+const TWIST = Number(process.argv[2] || 0);
 const run=(phot)=>{
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(0);
-  w._meso3i_fricmode(-4); w._meso3i_drest(0); w._meso3i_reflect(0);
-  w._meso3i_phot(phot);
+  w._meso3i_fricmode(-4); w._meso3i_drest(Number(process.argv[3] || 1)); w._meso3i_reflect(0);
+  w._meso3i_phot(TWIST ? 9 : phot);
   // spherical shell r in [18,20]: each photon on the axial channel
   // pointing most toward center (6-fold implosion)
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     if((x+y+z)&1)continue;
     const dx=x-C,dy=y-C,dz=z-C,r2=dx*dx+dy*dy+dz*dz;
     if(r2<324||r2>441)continue;
-    const ax=Math.abs(dx),ay=Math.abs(dy),az=Math.abs(dz);
+    // chiral twist: aim at center + tangential offset (orbital Lz about z)
+    // aim at center + tangential offset (orbital Lz about z) —
+    // keep the original axial-axis pick; only the aim direction twists
+    const r=Math.sqrt(r2), k=TWIST ? 6 : 0;
+    const vx=(C + k*(-dy/r)) - x, vy=(C + k*(dx/r)) - y, vz=C - z;
+    const ax=Math.abs(vx),ay=Math.abs(vy),az=Math.abs(vz);
     let ch;
-    if(ax>=ay&&ax>=az) ch = dx>0?13:12;      // ±x
-    else if(ay>=ax&&ay>=az) ch = dy>0?15:14; // ±y
-    else ch = dz>0?17:16;                    // ±z
+    if(ax>=ay&&ax>=az) ch = vx>0?12:13;
+    else if(ay>=ax&&ay>=az) ch = vy>0?14:15;
+    else ch = vz>0?16:17;
     w._meso3i_phset(x,y,z,ch,128);
   }
   w._meso3i_ev_reset();
@@ -37,7 +47,14 @@ const run=(phot)=>{
     if(t%30===0){ w._meso3i_rg_refresh();
       series.push(`t${t}:rest=${w._meso3i_rest_mass()} pp=${w._meso3i_ev(7)} ph=${w._meso3i_photons()}`); }
   }
-  console.log(`phot=${phot} [${series.join(' | ')}]`);
+  // Lz of the lump: directional-rest winding about z through its volume
+  let lz=0, dr_tot=0;
+  for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if((x+y+z)&1)continue; const dx=x-C,dy=y-C;
+    for(let c=12;c<18;c++){ const v=w._meso3i_rget(x,y,z,c); if(!v)continue; dr_tot+=v;
+      const sgn=(c&1)?-1:1, ax=(c-12)>>1;
+      if(ax===0) lz+=sgn*v*dy; else if(ax===1) lz-=sgn*v*dx; } }
+  console.log(`phot=${phot} twist=${TWIST} [${series.join(' | ')}] Lz=${lz} drest=${dr_tot}`);
 };
-console.log('E29 — convergent photon implosion: does the focus keep its mass?');
+console.log(`E30 — chiral implosion (twist=${TWIST}): spinning matter from light?`);
 run(8);

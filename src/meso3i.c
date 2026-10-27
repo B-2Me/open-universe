@@ -885,13 +885,28 @@ void meso3i_tick(void) {
         if (IPHOT >= 8)
         for (int si = 0; si < IN; si++) {
             uint8_t *pa = iPA + (size_t)si * IMOV;
-            for (int c = 0; c < IMOV; c += 2)
-                while (pa[c] && pa[c ^ 1] && (irnd() & 7) == 0) {
-                    pa[c]--; pa[c ^ 1]--; IPHN -= 2;
-                    uint32_t v = iB[si * INCH + INCH - 1] + 2;
-                    iB[si * INCH + INCH - 1] = v > 255 ? 255 : (uint8_t)v;
+            for (int c = 0; c < IMOV; c++)
+            for (int c2 = c + 1; c2 < IMOV; c2++) {
+                /* non-antipodal allowed (IPHOT>=9): pairs meeting at
+                 * an angle carry net momentum -> orbital spin can be
+                 * stored. IPHOT==8 keeps collinear antipodes only. */
+                if (IPHOT == 8 && c2 != (c ^ 1)) continue;
+                while (pa[c] && pa[c2] && (irnd() & 7) == 0) {
+                    pa[c]--; pa[c2]--; IPHN -= 2;
+                    if (IDREST) {
+                        /* chiral: each quantum freezes onto the channel
+                         * it arrived on — the pair's net momentum (and
+                         * any orbital winding) is stored verbatim */
+                        uint8_t *dr = iRB + (size_t)si * IMOV;
+                        if (dr[c] < 255) dr[c]++;
+                        if (dr[c2] < 255) dr[c2]++;
+                    } else {
+                        uint32_t v = iB[si * INCH + INCH - 1] + 2;
+                        iB[si * INCH + INCH - 1] = v > 255 ? 255 : (uint8_t)v;
+                    }
                     iEV[7] += 2;
                 }
+            }
         }
     }
 
