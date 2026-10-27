@@ -811,7 +811,8 @@ void meso3i_tick(void) {
                             }
                         p -= absorbed; IPHN -= absorbed;
                         iEV[5] += absorbed;
-                        if (!p) continue;
+                        continue;   /* mode>=5 never ablates — a missed
+                                     * n-roll is a pass, not ejection */
                     }
                     for (int u = 0; u < p; u++)
                         if (parked && (int)(irnd() & 255) < parked) {
@@ -999,6 +1000,7 @@ void meso3i_drain_edge(int t) {
             memset(iRA + (size_t)si * IMOV, 0, IMOV);
         }
         memset(iA + (size_t)si * INCH, 0, INCH);
+        iE[si] = 0;   /* drain excitation at the edge too */
         if (IPHN) {
             uint8_t *pp = iPA + (size_t)si * IMOV;
             for (int c = 0; c < IMOV; c++) IPHN -= pp[c];
@@ -1018,7 +1020,7 @@ static int      iSNAP_N, iSNAP_CH, iSNAP_TICK, iSNAP_PHN;
 static uint32_t iSNAP_RNG;
 
 void meso3i_save(void) {
-    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV * 2 + (size_t)IN * 3
+    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV * 2 + (size_t)IN * 4
                     + (size_t)IN * IMOV * IKMAX * sizeof(uint16_t);
     if (iSNAP_SZ < sz) {
         free(iSNAP);
@@ -1033,6 +1035,7 @@ void meso3i_save(void) {
     memcpy(p, iLT, (size_t)IN);                               p += IN;
     memcpy(p, iQ,  (size_t)IN);                               p += IN;
     memcpy(p, iPH, (size_t)IN);                               p += IN;
+    memcpy(p, iE,  (size_t)IN);                               p += IN;
     memcpy(p, iD,  (size_t)IN * IMOV * IKMAX * sizeof(uint16_t));
     iSNAP_N = IN; iSNAP_CH = INCH;
     iSNAP_TICK = ITICK; iSNAP_PHN = IPHN; iSNAP_RNG = irng;
@@ -1046,6 +1049,7 @@ int meso3i_restore(void) {
     memcpy(iLT, p, (size_t)IN);                               p += IN;
     memcpy(iQ,  p, (size_t)IN);                               p += IN;
     memcpy(iPH, p, (size_t)IN);                               p += IN;
+    memcpy(iE,  p, (size_t)IN);                               p += IN;
     memcpy(iD,  p, (size_t)IN * IMOV * IKMAX * sizeof(uint16_t));
     ITICK = iSNAP_TICK; IPHN = iSNAP_PHN; irng = iSNAP_RNG;
     return 0;
