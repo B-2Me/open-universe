@@ -98,7 +98,8 @@ static int      IDREST;              /* directional rest ("frozen flux"): a
                                         0 = canonical scalar rest bin. */
 static uint8_t *iRA, *iRB;           /* directional rest bins [site][IMOV] */
 static int      IPHN;                /* live photon count — photon sweep skipped at 0 */
-static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV + c]: directional,
+#define NNU 4                                   /* photon frequency bins (nu=1..NNU) */
+static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV*NNU + c*NNU + nu]: directional,
                                         massless, non-colliding messengers */
 static int      ITICK;               /* global tick counter for the clock */
 static uint32_t *iR;                 /* pre-collision per-site mass map */
@@ -184,8 +185,8 @@ int meso3i_init(int w, int h, int d, int axial) {
     iQ = calloc((size_t)IN, 1);
     iPH = calloc((size_t)IN, 1);
     iE = calloc((size_t)IN, 1);
-    iPA = calloc((size_t)IN * IMOV, 1);
-    iPB = calloc((size_t)IN * IMOV, 1);
+    iPA = calloc((size_t)IN * IMOV * NNU, 1);
+    iPB = calloc((size_t)IN * IMOV * NNU, 1);
     iLT = calloc((size_t)IN, 1);
     iRA = calloc((size_t)IN * IMOV, 1);
     iRB = calloc((size_t)IN * IMOV, 1);
@@ -201,7 +202,7 @@ void meso3i_clear(void) {
     memset(iQ, 0, (size_t)IN);
     memset(iPH, 0, (size_t)IN);
     memset(iPA, 0, (size_t)IN * IMOV);
-    memset(iPB, 0, (size_t)IN * IMOV);
+    memset(iPB, 0, (size_t)IN * IMOV * NNU);
     memset(iLT, 0, (size_t)IN);
     memset(iRA, 0, (size_t)IN * IMOV);
     memset(iRB, 0, (size_t)IN * IMOV);
@@ -265,15 +266,35 @@ void meso3i_phset(int x, int y, int z, int c, uint8_t v) {
     if (c < 0 || c >= IMOV) return;
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (!isite(x, y, z)) return;
-    int si = iidx(x, y, z) * IMOV + c;
+    int si = iidx(x, y, z) * IMOV * NNU + c * NNU;
+    IPHN += (int)v - iPA[si];
+    iPA[si] = v;
+}
+/* frequency-binned access: nu = 1..NNU (energy of the photon). */
+void meso3i_phset_nu(int x, int y, int z, int c, int nu, uint8_t v) {
+    if (c < 0 || c >= IMOV || nu < 1 || nu > NNU) return;
+    x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
+    if (!isite(x, y, z)) return;
+    int si = iidx(x, y, z) * IMOV * NNU + c * NNU + (nu - 1);
     IPHN += (int)v - iPA[si];
     iPA[si] = v;
 }
 uint8_t meso3i_phget(int x, int y, int z, int c) {
     if (c < 0 || c >= IMOV) return 0;
-    return iPA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV + c];
+    return iPA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV * NNU + c * NNU];
+}
+uint8_t meso3i_phget_nu(int x, int y, int z, int c, int nu) {
+    if (c < 0 || c >= IMOV || nu < 1 || nu > NNU) return 0;
+    return iPA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID)) * IMOV * NNU + c * NNU + (nu - 1)];
 }
 int meso3i_photons(void) { return IPHN; }
+/* total photon ENERGY: sum over bins of nu * occupancy */
+int meso3i_phenergy(void) {
+    long e = 0;
+    for (int s = 0; s < IN * IMOV * NNU; s += NNU)
+        for (int nu = 0; nu < NNU; nu++) e += (long)iPA[s + nu] * (nu + 1);
+    return (int)e;
+}
 void meso3i_pset(int x, int y, int z, uint8_t v) {
     x = iwrap(x, IW); y = iwrap(y, IH); z = iwrap(z, ID);
     if (isite(x, y, z)) iPH[iidx(x, y, z)] = v & 3;
@@ -417,7 +438,7 @@ static void collide_node(uint8_t *n, int si) {
                      * (absorb->dwell->resume-as-photon, ILAT-gated) */
                     int c = irnd() % IMOV;
                     n[INCH - 1]--;
-                    iPA[si * IMOV + c]++; IPHN++;
+                    iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
                     iEV[2]++;
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
@@ -441,14 +462,22 @@ static void collide_node(uint8_t *n, int si) {
      * IPHOT 5-6: flat per-site rate (one quantum per ~8 ticks). */
     if (IPHOT >= 7 && iE[si]) {
         int lv = iE[si];
-        for (int u = 0; u < lv; u++)
+        for (int u = 0; u < lv; u++) {
+            if (!iE[si]) break;
             if ((irnd() & EMASK) == 0) {
-                iE[si]--;
-                iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
+                /* each emitted photon draws nu from the site's
+                 * occupation — hotter sites reach higher nu
+                 * (Wien displacement, mechanically) */
+                int cap = iE[si] < NNU ? iE[si] : NNU;
+                int nu = 1 + (int)(irnd() % (uint32_t)cap);
+                iE[si] -= nu;
+                iPA[si * IMOV * NNU + (irnd() % IMOV) * NNU + nu - 1]++;
+                IPHN++;
             }
+        }
     } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
         iE[si]--;
-        iPA[si * IMOV + (irnd() % IMOV)]++; IPHN++;
+        iPA[si * IMOV * NNU + (irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
     }
     /* pair capture (IPAIR): a populated antipodal pair may bind into
      * rest mass — the wind side of the cycle. Zero net momentum either
@@ -787,14 +816,15 @@ void meso3i_tick(void) {
      * (the emitted quantum's momentum comes from beam alignment —
      * flagged, like every other non-invariant in this engine). */
     if (IPHN) {
-        memset(iPB, 0, (size_t)IN * IMOV);
+        memset(iPB, 0, (size_t)IN * IMOV * NNU);
         for (int z = 0; z < ID; z++)
         for (int y = 0; y < IH; y++)
         for (int x = 0; x < IW; x++) {
             if (!isite(x, y, z)) continue;
-            const uint8_t *ps = iPA + (size_t)iidx(x, y, z) * IMOV;
-            for (int c = 0; c < IMOV; c++) {
-                int p = ps[c];
+            const uint8_t *ps = iPA + (size_t)iidx(x, y, z) * IMOV * NNU;
+            for (int c = 0; c < IMOV; c++)
+            for (int nu = 0; nu < NNU; nu++) {
+                int p = ps[c * NNU + nu];
                 if (!p) continue;
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
@@ -817,7 +847,8 @@ void meso3i_tick(void) {
                          * n++ at fixed mass, no ejection (Planck's n) */
                         for (int u = 0; u < p; u++)
                             if (parked && (int)(irnd() & 255) < parked) {
-                                if (iE[ni] < 255) iE[ni]++;
+                                uint32_t e = iE[ni] + nu + 1;   /* energy-conserving absorb */
+                                iE[ni] = e > 255 ? 255 : (uint8_t)e;
                                 absorbed++;
                             }
                     } else {
@@ -835,7 +866,7 @@ void meso3i_tick(void) {
                             }
                             parked--; absorbed++;
                             int di = ni * INCH + c;
-                            uint32_t v = iB[di] + 1;
+                            uint32_t v = iB[di] + nu + 1;
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
                         }
                     }
@@ -871,7 +902,7 @@ void meso3i_tick(void) {
                             iB[di] = v > 255 ? 255 : (uint8_t)v;
                         }
                 }
-                int pi = ni * IMOV + c;
+                int pi = ni * IMOV * NNU + c * NNU + nu;
                 uint32_t v = iPB[pi] + p;
                 if (v > 255) { IPHN -= (int)(v - 255); v = 255; }
                 iPB[pi] = (uint8_t)v;
@@ -884,24 +915,26 @@ void meso3i_tick(void) {
          * momentum conserved; no parked mass required (in vacuum). */
         if (IPHOT >= 8)
         for (int si = 0; si < IN; si++) {
-            uint8_t *pa = iPA + (size_t)si * IMOV;
+            uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
             for (int c = 0; c < IMOV; c++)
             for (int c2 = c + 1; c2 < IMOV; c2++) {
                 /* non-antipodal allowed (IPHOT>=9): pairs meeting at
                  * an angle carry net momentum -> orbital spin can be
                  * stored. IPHOT==8 keeps collinear antipodes only. */
                 if (IPHOT == 8 && c2 != (c ^ 1)) continue;
-                while (pa[c] && pa[c2] && (irnd() & 7) == 0) {
-                    pa[c]--; pa[c2]--; IPHN -= 2;
+                for (int nu = 0; nu < NNU; nu++)
+                while (pa[c * NNU + nu] && pa[c2 * NNU + nu] &&
+                       (irnd() & 7) == 0) {
+                    /* same-frequency photon pair fuses: 2*nu quanta of
+                     * energy crystallize into rest/directional mass */
+                    pa[c * NNU + nu]--; pa[c2 * NNU + nu]--; IPHN -= 2;
                     if (IDREST) {
-                        /* chiral: each quantum freezes onto the channel
-                         * it arrived on — the pair's net momentum (and
-                         * any orbital winding) is stored verbatim */
                         uint8_t *dr = iRB + (size_t)si * IMOV;
-                        if (dr[c] < 255) dr[c]++;
-                        if (dr[c2] < 255) dr[c2]++;
+                        uint32_t v1 = dr[c] + nu + 1, v2 = dr[c2] + nu + 1;
+                        dr[c]  = v1 > 255 ? 255 : (uint8_t)v1;
+                        dr[c2] = v2 > 255 ? 255 : (uint8_t)v2;
                     } else {
-                        uint32_t v = iB[si * INCH + INCH - 1] + 2;
+                        uint32_t v = iB[si * INCH + INCH - 1] + 2 * (nu + 1);
                         iB[si * INCH + INCH - 1] = v > 255 ? 255 : (uint8_t)v;
                     }
                     iEV[7] += 2;
@@ -996,9 +1029,9 @@ const uint8_t *meso3i_rg_refresh(void) {
         iRG[s * 4]     = (uint8_t)(mov > 255 ? 255 : mov);
         iRG[s * 4 + 1] = (uint8_t)rest;
         if (IPHN) {
-            const uint8_t *pp = iPA + (size_t)s * IMOV;
+            const uint8_t *pp = iPA + (size_t)s * IMOV * NNU;
             int ph = 0;
-            for (int c = 0; c < IMOV; c++) ph += pp[c];
+            for (int c = 0; c < IMOV * NNU; c++) ph += pp[c];
             iRG[s * 4 + 2] = (uint8_t)(ph > 255 ? 255 : ph);
         } else iRG[s * 4 + 2] = 0;
         iRG[s * 4 + 3] = iE ? iE[s] : 0;   /* bound excitation n */
@@ -1040,9 +1073,9 @@ void meso3i_drain_edge(int t) {
         memset(iA + (size_t)si * INCH, 0, INCH);
         iE[si] = 0;   /* drain excitation at the edge too */
         if (IPHN) {
-            uint8_t *pp = iPA + (size_t)si * IMOV;
-            for (int c = 0; c < IMOV; c++) IPHN -= pp[c];
-            memset(pp, 0, IMOV);
+            uint8_t *pp = iPA + (size_t)si * IMOV * NNU;
+            for (int c = 0; c < IMOV * NNU; c++) IPHN -= pp[c];
+            memset(pp, 0, IMOV * NNU);
         }
     }
 }
@@ -1058,7 +1091,7 @@ static int      iSNAP_N, iSNAP_CH, iSNAP_TICK, iSNAP_PHN;
 static uint32_t iSNAP_RNG;
 
 void meso3i_save(void) {
-    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV * 2 + (size_t)IN * 4
+    const size_t sz = (size_t)IN * INCH + (size_t)IN * IMOV * (NNU + 1) + (size_t)IN * 4
                     + (size_t)IN * IMOV * IKMAX * sizeof(uint16_t);
     if (iSNAP_SZ < sz) {
         free(iSNAP);
@@ -1068,7 +1101,7 @@ void meso3i_save(void) {
     if (!iSNAP) return;
     uint8_t *p = iSNAP;
     memcpy(p, iA,  (size_t)IN * INCH);                        p += (size_t)IN * INCH;
-    memcpy(p, iPA, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(p, iPA, (size_t)IN * IMOV * NNU);                  p += (size_t)IN * IMOV * NNU;
     memcpy(p, iRA, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
     memcpy(p, iLT, (size_t)IN);                               p += IN;
     memcpy(p, iQ,  (size_t)IN);                               p += IN;
@@ -1082,7 +1115,7 @@ int meso3i_restore(void) {
     if (!iSNAP || iSNAP_N != IN || iSNAP_CH != INCH) return -1;
     uint8_t *p = iSNAP;
     memcpy(iA,  p, (size_t)IN * INCH);                        p += (size_t)IN * INCH;
-    memcpy(iPA, p, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
+    memcpy(iPA, p, (size_t)IN * IMOV * NNU);                  p += (size_t)IN * IMOV * NNU;
     memcpy(iRA, p, (size_t)IN * IMOV);                        p += (size_t)IN * IMOV;
     memcpy(iLT, p, (size_t)IN);                               p += IN;
     memcpy(iQ,  p, (size_t)IN);                               p += IN;
