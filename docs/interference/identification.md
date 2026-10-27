@@ -51,10 +51,12 @@ mechanism has an established solid-state precedent.
   (decay width, detention factor, equilibrium density) can be pinned
   to a dimensionless real-world ratio, the bridge graduates from
   "units by construction" to "a constant of the system."
-- **The missing leg.** Photon–photon interaction is exactly zero
-  (E26) — real light does scatter (Delbrück/QED, tiny). Whether
-  `IPAIR`-class pair production can fire from photon collisions is
-  the current open mechanics question on the identification's edge.
+- ~~The missing leg.~~ **Closed (E27, `29c4ec0`).** `IPHOT>=8`
+  fires Breit-Wheeler on the lattice: antipodal photon pairs at a
+  shared site crystallize into rest mass — head-on beams in vacuum
+  produce real `rest` (control: zero). The mass↔photon↔`n` triangle
+  is now fully closed — every energy form interconverts with
+  integer conservation.
 
 ## The first measured law — the partition equation of state
 
