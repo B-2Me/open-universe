@@ -361,3 +361,19 @@ motion of worldlines — never an in-transit medium effect.
 This is a mechanism constraint, not a cosmological verdict: it
 closes the tired-light/dwell/backlog mechanism class and verifies
 the only dilation mechanism that exists in the ontology.
+
+- **E42b detector cleanup — the arc is now airtight both ways.**
+  The E42 v=0.5 "24-tick spacing" was a detector artifact, not
+  physics: axial photons stay on their x-parity lane forever, so a
+  single-column detector was blind to alternating pulses. Dual-parity
+  detection (x=44+45) now shows recede stretching (~11.25, ~12.5)
+  AND approach compressing (~8.75) — T(1±v/c) verified both
+  directions, zero free parameters.
+- **E43 attenuation law — the "dimmer" observable is Beer-Lambert.**
+  Ablation-mode beam through parked slabs: ln(T) is linear in BOTH
+  depth and density — T = e^(-a·rho·L). Exponential absorption per
+  hop, not geometric spreading. (Re-emission contamination ruled out
+  by ablation mode.) Together with the kinematic dilation result,
+  the two supernova observables are now separately characterized:
+  duration stretches only kinematically; flux falls off
+  exponentially with matter depth.
