@@ -27,6 +27,14 @@ $$E_{dissipated} = \sum_{n=1}^{N} \mu \cdot \Delta x_n$$
 
 You cannot divide space smaller than the fundamental grain of reality, and the sequence of actualization is strictly bound by the minimum temporal duration (Planck time). 
 
+### The Droplet Singularity: Continuous Math vs. Discrete Hardware
+
+Consider water beading from a faucet. If you model the falling droplet using classical continuous fluid dynamics (the Navier-Stokes equations), the equations predict that the neck connecting the droplet to the faucet narrows to an infinitely sharp cusp with zero volume, infinite curvature, and infinite pressure. The continuous math literally demands a singularity.
+
+In the physical world, your kitchen sink does not create a singularity. Water is quantized into discrete H₂O molecules (~0.28 nm wide). The neck cannot narrow to zero volume; it narrows to the width of a single molecule, where continuous differential calculus breaks down, and the droplet cleanly snaps away.
+
+General Relativity's singularities (at black hole centers and the Big Bang) are the exact same mathematical artifact. They only exist because continuous calculus assumes spacetime is an infinitely divisible sheet, forcing the math to divide by zero. The moment space has a discrete floor at the Planck scale, zero volume is physically impossible, density has a finite ceiling, and the "singularity" vanishes into a state of maximum discrete packing.
+
 ## The Mechanics of Computation: Transition, Friction, and Limits
 
 To formalize the discrete causal lattice, we must define the exact mathematical conditions that govern how the 12-port FCC (Face-Centered Cubic) grid re-renders traffic every Planck tick. There are no continuums, no infinities, and no external forces. There is only the localized state vector, the transition operator, and the hardware limits of the substrate.
