@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -312,6 +312,7 @@ void meso3i_phth(int t)      { IPTH = t; }
 void meso3i_nushift(int k)   { (void)k; }
 void meso3i_iptbar(int k)    { IPTB = k; }
 void meso3i_fusemin(int k)   { IFUS = k; }
+void meso3i_fusecad(int k)   { IFCAD = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -502,6 +503,7 @@ void meso3i_tick(void) {
         for (int i = 0; i < fin; i++) {
             int s = iFLIST[i];
             PlanckNode *na = A + s;
+            if (iPTF[s] < IFCAD) continue;     /* fusecad gate */
             for (int c = 0; c < IMOV; c++)
             for (int c2 = c + 1; c2 < IMOV; c2++) {
                 if (IPHOT == 8 && c2 != (c ^ 1)) continue;

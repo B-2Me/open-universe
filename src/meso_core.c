@@ -32,7 +32,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, *iR;
 static int64_t   iEV[8];
 
 static inline uint32_t irnd(void) {
@@ -290,6 +290,7 @@ void meso3i_phth(int t)      { IPTH = t; }
 void meso3i_nushift(int k)   { (void)k; }
 void meso3i_iptbar(int k)    { IPTB = k; }
 void meso3i_fusemin(int k)   { IFUS = k; }
+void meso3i_fusecad(int k)   { IFCAD = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
