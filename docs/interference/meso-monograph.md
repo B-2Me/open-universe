@@ -155,6 +155,12 @@ Momentum-honest wind/unwind: `2·rest ⇄ c + c¹`. Rest radiates back-to-back p
 - Pair-collision site with IPAIR: rest 66 at Lat 1 → **130 at Lat 8**. The first configuration where binding beat decay.
 - Interpretation: parked mass is metastable with an *activation barrier*. Sporadic flux scatters, sustained bombardment unwinds. Lumps self-shield: the congested skin parks transients so the interior never sustains transit.
 
+### M41b. Arrival tempo `iPT` — photon "energy" as measured cadence
+
+`iPT`: the photon-arrival sibling of `iLT` — a per-site counter of consecutive ticks carrying light wavefronts (leaky: −1/tick in darkness). Where `iLT` measures **mass** tempo, `iPT` measures **photon** tempo — same mechanism family, different field, independent registers.
+
+This register carries a real result: **photon "energy" on this substrate is arrival tempo, not a stored attribute.** The E45 `fusecad(k)` gate (`6c73db3`) showed fusion can be gated on `iPT ≥ k` — dense trains fuse (~5,200), sparse trains at *matched total count* fuse zero at every threshold. A "hard photon" is a dense arrival front; a "soft photon" is a sparse one. No ν tag needed — the node reads tempo from what arrives, the way a real detector reads energy from timing. The per-photon ν register was retired as bookkeeping; energy lives in the temporal structure where it belongs.
+
 ### M42. Directional rest, `rest[18]` (IDREST), "frozen flux"
 
 One rest bin per channel: a friction-parked quantum lands in `rest[c]` and re-emits onto channel `c`. Momentum is stored on park and handed back on emit. Scalar rest remains the canonical default.
