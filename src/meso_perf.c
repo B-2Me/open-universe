@@ -39,6 +39,7 @@ static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
 static int       NACT;              /* active count */
+static uint8_t  *iPTF;              /* persistent flat iPT (quiet sites stay 0) */
 static uint32_t *iNNF;              /* generation flag: in next list */
 static int      *iFLIST;            /* merged final list */
 static int icmp_(const void *a, const void *b) { return *(const int *)a - *(const int *)b; }
@@ -227,6 +228,7 @@ void meso3i_init(int w, int h, int d, int axial) {
     iNLIST = malloc((size_t)IN * sizeof(int));
     iFLIST = malloc((size_t)IN * sizeof(int));
     iNNF   = calloc((size_t)IN, sizeof(uint32_t));
+    iPTF   = calloc((size_t)IN, 1);
     NACT = 0; NGEN = 0;
     NA = calloc((size_t)IN, sizeof(PlanckNode));
     NB = calloc((size_t)IN, sizeof(PlanckNode));
@@ -269,7 +271,7 @@ void meso3i_eset(int x, int y, int z, int v) {
         if (v && !iACT[si]) { iACT[si] = 1; iALIST[NACT++] = si; } }
 }
 uint8_t meso3i_ptget(int x, int y, int z) {
-    return NA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))].pt;
+    return iPTF[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))];
 }
 uint8_t meso3i_ltget(int x, int y, int z) {
     return NA[iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID))].lt;
@@ -337,16 +339,17 @@ void meso3i_tick(void) {
 
     /* 2. node collisions — active sites only (empty cells draw
      *    zero RNG in all engines, so skipping preserves parity) */
-    memset(B, 0, (size_t)IN * sizeof(PlanckNode));
     for (int i = 0; i < NACT; i++)
         collide_node(NA + iALIST[i], B + iALIST[i]);
 
-    memset(A, 0, (size_t)IN * sizeof(PlanckNode));
-
-    /* carry stationary registers — actives only */
+    /* carry + clear: actives get full stationary regs AND zeroed
+     * channel fields (arrivals accumulate onto zeros) — replaces
+     * the O(IN) full-plane memset */
     for (int i = 0; i < NACT; i++) {
         int s = iALIST[i];
         A[s].n = B[s].n; A[s].lt = B[s].lt; A[s].pt = B[s].pt;
+        memset(A[s].mass, 0, IMOV);
+        memset(A[s].phot, 0, IMOV);
         A[s].mass[REST] = B[s].mass[REST];
         memcpy(A[s].drest, B[s].drest, IMOV);
     }
@@ -363,7 +366,7 @@ void meso3i_tick(void) {
             int ni = iidx(iwrap(x + ICV[c][0], IW),
                           iwrap(y + ICV[c][1], IH),
                           iwrap(z + ICV[c][2], ID));
-            if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; } iACT[ni] = 1;
+            if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; if (!iACT[ni]) memset(&A[ni], 0, sizeof(PlanckNode)); } iACT[ni] = 1;
             if (IFRIC && iR[ni] >= IFRIC &&
                 (int)(irnd() & 255) < IFRICP) {
                 if (IPHOT >= 6) {
@@ -399,8 +402,8 @@ void meso3i_tick(void) {
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
-                if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; } iACT[ni] = 1;
-                if (IPHOT >= 3 && B[ni].pt >= IPTB && 1 >= IPTH) {
+                if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; if (!iACT[ni]) memset(&A[ni], 0, sizeof(PlanckNode)); } iACT[ni] = 1;
+                if (IPHOT >= 3 && iPTF[ni] >= IPTB && 1 >= IPTH) {
                     int parked = A[ni].mass[REST] + drest_sum(A + ni);
                     int absorbed = 0;
                     if (IPHOT >= 5) {
@@ -475,7 +478,7 @@ void meso3i_tick(void) {
             else if (a >= NACT || iNLIST[b] < iALIST[a]) si = iNLIST[b++];
             else { si = iNLIST[b++]; a++; }
             PlanckNode *n = A + si;
-            int nonempty = n->n | n->pt | n->mass[REST];
+            int nonempty = n->n | iPTF[si] | n->mass[REST];
             for (int c = 0; c < IMOV && !nonempty; c++)
                 if (n->mass[c] || n->drest[c] || n->phot[c]) nonempty = 1;
             if (nonempty) iFLIST[fin++] = si;
@@ -489,8 +492,9 @@ void meso3i_tick(void) {
             int s = iFLIST[i];
             int any = 0;
             for (int c = 0; c < IMOV; c++) if (A[s].phot[c]) { any = 1; break; }
-            A[s].pt = any ? (B[s].pt < 255 ? B[s].pt + 1 : 255)
-                          : (B[s].pt ? B[s].pt - 1 : 0);
+            iPTF[s] = any ? (iPTF[s] < 255 ? iPTF[s] + 1 : 255)
+                          : (iPTF[s] ? iPTF[s] - 1 : 0);
+            A[s].pt = iPTF[s];
         }
         /* pair production (IPHOT>=8): photon sites only */
         if (IPHOT >= 8)
