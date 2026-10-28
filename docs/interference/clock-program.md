@@ -318,3 +318,46 @@ the identification step's job.
   ratios and regimes only, never µs/day.
 - **Open boundaries.** Every probe drains edges; the r⁻² halo holds
   over ~20 cells in a 56-box, untested at larger scale.
+
+
+---
+
+## E34–E42: The Cadence Dilation Arc — a substrate theorem
+
+The photon-frequency branch (`NNU=4`, `feature/photon-frequency`,
+merged `ca6bb2d`) gave light an energy spectrum for the first time:
+emission draws `nu` from local occupation `n` (Wien displacement
+measured), absorb deposits `nu` into `iE` (energy conserved), pair
+production fuses same-`nu` photon pairs into `2*nu` mass.
+
+That opened the cosmological question: can any transit mechanism
+stretch light's arrival cadence `(1+z)` on a static lattice?
+The arc produced five falsifications and one verification:
+
+- **E34 additive spectral shift — falsified.** Down-shifting
+  photons through a medium collapses the spectrum onto `nu=1` —
+  the Compton-distortion objection to Zwicky tired-light, reproduced
+  on a 4-bin integer plane. Multiplicative `nu/(1+z)` can't resolve
+  in 4 bins.
+- **E35 uniform detention — falsified.** Static slab preserves
+  T=10 pulse spacing exactly; delay is uniform per pulse.
+- **E36/E38 self-deposited mass + light-history nodes — falsified.**
+  Deposited mass saturates into a static corridor; a leaky iPT
+  integrator forgets in the dark gap between pulses.
+- **E41 corridor queue backlog — falsified.** Congestion meters
+  bursts out at a fixed drain rate (out_dur ~150t regardless of
+  tin/L/rho): additive, not scale-invariant.
+- **E42 kinematic Doppler — VERIFIED.** A receding emitter at
+  v=+0.25 cells/tick stretches arrival spacing to ~11.25, matching
+  `T(1+v/c_eff)` with zero free parameters. Approaching and faster
+  runs show detector artifacts, not mechanism failure.
+
+**Substrate theorem (commit-anchored, `9b2031a`):** under invariant
+hop speed `c`, interaction with a static medium changes photon
+*amplitude* (absorption), never transit velocity or inter-pulse
+cadence. Dilation on this lattice is strictly kinematic — relative
+motion of worldlines — never an in-transit medium effect.
+
+This is a mechanism constraint, not a cosmological verdict: it
+closes the tired-light/dwell/backlog mechanism class and verifies
+the only dilation mechanism that exists in the ontology.
