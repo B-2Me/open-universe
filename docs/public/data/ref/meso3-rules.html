@@ -443,14 +443,19 @@
       <h3>Measured scaling (wasm, 30 ticks, same 576-site slab)</h3>
       <table>
         <thead>
-          <tr><th>Grid</th><th>meso3i</th><th>meso_core</th><th>meso_perf</th><th>Winner</th></tr>
+          <tr><th>Grid</th><th>meso3i</th><th>meso_core</th><th>meso_perf</th></tr>
         </thead>
         <tbody>
-          <tr><td>24×12×12</td><td>100ms</td><td>45ms</td><td>73ms</td><td>core (list overhead dominates)</td></tr>
-          <tr><td>48×24×24</td><td>400ms</td><td>384ms</td><td>170ms</td><td><strong>perf</strong> — crossover ~48³</td></tr>
-          <tr><td>96×48×48</td><td>3930ms</td><td>2994ms</td><td><strong>369ms</strong></td><td><strong>perf 8.1× vs core, 10.6× vs 3i</strong></td></tr>
+          <tr><td>24×12×12</td><td>100ms</td><td>45ms</td><td>73ms</td></tr>
+          <tr><td>48×24×24</td><td>400ms</td><td>384ms</td><td>170ms</td></tr>
+          <tr><td>96×48×48</td><td>3930ms</td><td>2994ms</td><td><strong>369ms</strong></td></tr>
         </tbody>
       </table>
+      <ul>
+        <li><strong>24³</strong> — core wins; the active-list sort/merge overhead dominates on small, dense states.</li>
+        <li><strong>48³</strong> — perf takes the lead; the crossover sits at roughly 48³ with this workload.</li>
+        <li><strong>96³</strong> — perf wins decisively: 8.1× vs core, 10.6× vs meso3i — cost scales with occupied sites, not grid cells.</li>
+      </ul>
 
       <div class="math-callout">
         meso3i / core: cost ∝ grid cells (double the grid, ~4× the cost)<br>
