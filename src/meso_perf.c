@@ -257,6 +257,7 @@ void meso3i_phset(int x, int y, int z, int c, uint8_t v) {
     int si = iidx(iwrap(x, IW), iwrap(y, IH), iwrap(z, ID));
     IPHN += (int)v - NA[si].phot[c];
     NA[si].phot[c] = v;
+    if (v && !iACT[si]) { iACT[si] = 1; iALIST[NACT++] = si; }
 }
 uint8_t meso3i_phget(int x, int y, int z, int c) {
     if (c < 0 || c >= IMOV) return 0;
