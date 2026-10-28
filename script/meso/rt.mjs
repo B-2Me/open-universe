@@ -12,12 +12,17 @@ const w = await mod.exports();
 w._meso3i_init(24,12,12,1);
 // seed hot excitation on even sites, tick, then scan photon coords
 const NMOV=w._meso3i_nch()-1,REST=NMOV;
-w._meso3i_collmode(0); w._meso3i_friction(0); w._meso3i_drest(0); w._meso3i_reflect(0); w._meso3i_phot(7); w._meso3i_fricmode(-500);
-for(let z=0;z<12;z++)for(let y=0;y<12;y++)for(let x=0;x<24;x++)
-  if(!((x+y+z)&1)){ w._meso3i_set(x,y,z,REST,4); w._meso3i_eset(x,y,z,20); }
-for(let t=0;t<5;t++) w._meso3i_tick();
-let hits=0,odd=0; const seen=[];
-for(let z=0;z<12;z++)for(let y=0;y<12;y++)for(let x=0;x<24;x++){
-  let p=0; for(let c=0;c<NMOV;c++) p+=w._meso3i_phget(x,y,z,c);
-  if(p){ hits++; if((x+y+z)&1)odd++; if(seen.length<5)seen.push(`(${x},${y},${z}):${p}`); } }
-console.log('sites-with-photons:',hits,'odd-parity:',odd,'IPHN:',w._meso3i_photons(),'first:',seen.join(' '));
+// absorb smoke: photons seeded INSIDE a mass slab — does parked fire?
+var NMOV2=w._meso3i_nch()-1, REST2=NMOV2;
+w._meso3i_init(24,12,12,1); w._meso3i_collmode(0); w._meso3i_friction(8);
+w._meso3i_fricmode(16); w._meso3i_fricp(128); w._meso3i_drest(0);
+w._meso3i_reflect(0); w._meso3i_phot(5); w._meso3i_phth(0);
+for(let z=0;z<12;z++)for(let y=0;y<12;y++)for(let x=8;x<16;x++)
+  if(!((x+y+z)&1)) w._meso3i_set(x,y,z,REST2,64);
+for(let z=0;z<12;z++)for(let y=0;y<12;y++)for(let x=4;x<8;x++)
+  if(!((x+y+z)&1)) w._meso3i_phset_nu(x,y,z,12,1,32);   // OUTSIDE slab, beam aimed at it
+let exc=()=>{let e=0;for(let z=0;z<12;z++)for(let y=0;y<12;y++)for(let x=8;x<16;x++)
+  if(!((x+y+z)&1))e+=w._meso3i_eget(x,y,z);return e;};
+console.log('seeded IPHN:',w._meso3i_photons());
+for(let t=0;t<6;t++){ w._meso3i_tick();
+  console.log(`t${t+1}: IPHN=${w._meso3i_photons()} slabN=${exc()}`); }
