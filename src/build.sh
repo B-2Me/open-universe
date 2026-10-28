@@ -202,3 +202,43 @@ else
   echo "❌ Error: meso3i compilation failed!"
   exit 1
 fi
+
+# --- meso_core: stripped production kernel (RFC) ---
+if emcc meso_core.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1   -s ALLOW_MEMORY_GROWTH=1   -s EXPORT_NAME="'createEmberCore'"   -s EXPORTED_FUNCTIONS="[
+    '_meso3i_init',
+    '_meso3i_seed',
+    '_meso3i_tick',
+    '_meso3i_get',
+    '_meso3i_set',
+    '_meso3i_collmode',
+    '_meso3i_friction',
+    '_meso3i_fricp',
+    '_meso3i_reflect',
+    '_meso3i_fricmode',
+    '_meso3i_dim',
+    '_meso3i_nch',
+    '_meso3i_rg_refresh',
+    '_meso3i_rest_mass',
+    '_meso3i_mov_mass',
+    '_meso3i_drain_edge',
+    '_meso3i_phot',
+    '_meso3i_erate',
+    '_meso3i_pair',
+    '_meso3i_lat',
+    '_meso3i_phset',
+    '_meso3i_phget',
+    '_meso3i_photons',
+    '_meso3i_rget',
+    '_meso3i_eget',
+    '_meso3i_eset',
+    '_meso3i_ptget',
+    '_meso3i_ltget',
+    '_meso3i_ev',
+    '_meso3i_ev_reset',
+    '_malloc',
+    '_free'
+  ]"   -o ../docs/public/wasm/ember/meso_core.js; then
+    echo "✅ meso_core compiled successfully."
+else
+    echo "❌ Error: meso_core compilation failed!"
+fi
