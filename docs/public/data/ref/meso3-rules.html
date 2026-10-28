@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planck Node Architecture: Data Layout & Tick Execution Rules</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --code-bg: #090d16;
+      --table-header: #1e293b;
+      --table-row-alt: #162032;
+      --highlight: #f59e0b;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle { color: var(--accent); font-size: 1.1rem; font-weight: 500; }
+
+    .meta-badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      margin-right: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--accent);
+    }
+
+    .meta-badge.green {
+      border-color: var(--success);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 1.2rem;
+      background-color: var(--accent);
+      border-radius: 2px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p { margin-bottom: 1rem; color: var(--text); }
+    ul, ol { margin-left: 1.5rem; margin-bottom: 1.25rem; }
+    li { margin-bottom: 0.5rem; }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #38bdf8;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 0.9rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--table-header);
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    tr:nth-child(even) { background: var(--table-row-alt); }
+    tr:last-child td { border-bottom: none; }
+
+    .math-callout {
+      background: #1e293b;
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem 0;
+      border-radius: 0 8px 8px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .tag-int {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .tag-speed {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Planck Node Architecture</h1>
+      <div class="subtitle">Data Layout, Tick Execution Pipeline & the Three-Kernel Engine Family</div>
+      <div class="meta-badge">Substrate: True-FCC D3Q19 Integer Lattice Gas</div>
+      <div class="meta-badge green">Kernels: meso3i · meso_core · meso_perf — bitwise-identical under canonical physics</div>
+    </header>
+
+    <section>
+      <h2>1. Coordinate Stencil & Even-Parity Sub-Lattice</h2>
+      <p>
+        The substrate runs on a 3D Face-Centered Cubic (FCC) lattice mapped onto a regular cubic coordinate array.
+        Only the <strong>even-parity sites</strong> exist as physical nodes:
+      </p>
+
+      <div class="math-callout">
+        Physical Site Condition: (x + y + z) % 2 == 0
+      </div>
+
+      <p>
+        Odd-parity coordinates (where <code>(x + y + z) % 2 != 0</code>) are non-sites and hold zero memory.
+        Because of this parity geometry:
+      </p>
+      <ul>
+        <li><strong>Face-diagonal neighbors:</strong> 12 channels with step size <code>(±1, ±1, 0)</code>, <code>(±1, 0, ±1)</code>, <code>(0, ±1, ±1)</code>. Because <code>(±1) + (±1) + 0 = 0 or ±2</code> (even), single-step hops always land on valid even-parity sites.</li>
+        <li><strong>Axial neighbors:</strong> 6 channels with step size <code>(±2, 0, 0)</code>, <code>(0, ±2, 0)</code>, <code>(0, 0, ±2)</code>. Axial steps use stride 2 so that hops never land on invalid odd coordinates.</li>
+        <li><strong>Stacking:</strong> Classic 12-neighbor close-packed crystal structure with A-B-C-A-B-C plane stacking.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Single Planck Node Memory State (Registers)</h2>
+      <p>
+        Every active node carries exactly zero floating-point variables. All states are unsigned integers (quanta counts):
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Register</th>
+            <th>C Type / Buffer</th>
+            <th>Channels</th>
+            <th>Physical Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Moving Mass</strong></td>
+            <td><code>uint8_t mass[18]</code></td>
+            <td>18 channels</td>
+            <td>Moving quanta counts streaming along 12 face and 6 axial channels at link speed c = 1 hop/tick.</td>
+          </tr>
+          <tr>
+            <td><strong>Scalar Rest</strong></td>
+            <td><code>uint8_t mass[18]</code></td>
+            <td>1 channel</td>
+            <td>Direction vector (0,0,0). Stationary mass trapped at the node; collides or radiates on carrier transit.</td>
+          </tr>
+          <tr>
+            <td><strong>Directional Rest</strong></td>
+            <td><code>uint8_t drest[18]</code></td>
+            <td>18 channels</td>
+            <td>"Frozen flux" (IDREST=1). Friction-parked quanta store their arrival channel, locking angular momentum (Lz) into resting mass.</td>
+          </tr>
+          <tr>
+            <td><strong>Bound Excitation</strong></td>
+            <td><code>uint8_t n (iE)</code></td>
+            <td>1 scalar</td>
+            <td>Planck's n oscillator state. Absorbed photons raise bound thermal energy at fixed mass; sheds back via Einstein A21 decay.</td>
+          </tr>
+          <tr>
+            <td><strong>Massless Photons</strong></td>
+            <td><code>uint8_t phot[18]</code></td>
+            <td>18 channels</td>
+            <td>Massless messenger particles. Hop at invariant c = 1 hop/tick, never collide with each other. meso3i carries 4 frequency bins (NNU=4); core/perf carry a single species.</td>
+          </tr>
+          <tr>
+            <td><strong>Transit Counter</strong></td>
+            <td><code>uint8_t lt (iLT)</code></td>
+            <td>1 scalar</td>
+            <td>Counts consecutive ticks that moving mass transits this node. Used for latency gating (ILAT) to shield young matter.</td>
+          </tr>
+          <tr>
+            <td><strong>Arrival Counter</strong></td>
+            <td><code>uint8_t pt (iPT)</code></td>
+            <td>1 scalar</td>
+            <td>Temporal cadence detector: counts consecutive ticks carrying light wavefronts (leaky integrator — decays 1/tick in darkness).</td>
+          </tr>
+          <tr>
+            <td><strong>Edge Dwell Delay</strong></td>
+            <td><code>uint16_t iD[18][4]</code></td>
+            <td>18 × 4 stages</td>
+            <td>Sub-light delay-line pipeline (DWELL=k). Produces effective velocity v_eff = c / k built from discrete waiting stages. <em>meso3i only — stripped in core/perf.</em></td>
+          </tr>
+          <tr>
+            <td><strong>Core Register</strong></td>
+            <td><code>uint8_t iQ</code></td>
+            <td>1 scalar</td>
+            <td>Bound soliton-like core mass register used in condensation and peristaltic expansion regimes. <em>meso3i only.</em></td>
+          </tr>
+          <tr>
+            <td><strong>Phase Offset</strong></td>
+            <td><code>uint8_t iPH</code></td>
+            <td>1 scalar</td>
+            <td>Local clock phase offset (0..3) for staggered, per-node emission beats. <em>meso3i only.</em></td>
+          </tr>
+          <tr>
+            <td><strong>Density Snapshot</strong></td>
+            <td><code>uint32_t iR</code></td>
+            <td>1 scalar</td>
+            <td>Pre-collision mass map snapshot. Ensures spatial routing and friction checks are strictly synchronous.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Production layout: the 64-byte PlanckNode</h3>
+      <p>
+        <code>meso_core.c</code> / <code>meso_perf.c</code> pack the verified triad into a single cache-line-aligned
+        struct (AoS — array of structs), replacing meso3i's ten scattered SoA planes:
+      </p>
+      <pre>typedef struct __attribute__((aligned(64))) {
+    uint8_t mass[19];   /* 12 face + 6 axial + 1 scalar rest   */
+    uint8_t drest[18];  /* directional rest bins (frozen flux) */
+    uint8_t phot[18];   /* photon channels                     */
+    uint8_t n;          /* bound excitation                    */
+    uint8_t lt;         /* consecutive mass-transit ticks      */
+    uint8_t pt;         /* photon-arrival cadence (leaky)      */
+    uint8_t pad[6];
+} PlanckNode;           /* exactly 64 bytes = one L1 cache line */</pre>
+      <p>
+        Registers present in meso3i but stripped in production (dwell delay lines, Q-cores, gates,
+        fields, phase offsets) are the <em>exploratory scaffolding</em> — meso3i stays the canonical
+        audit reference; core/perf carry the verified thermodynamic triad only.
+      </p>
+    </section>
+
+    <section>
+      <h2>3. The Ordered Tick Execution Pipeline (7 Steps)</h2>
+      <p>
+        Every tick advances the universal state machine through seven deterministic phases inside <code>void meso3i_tick(void)</code>:
+      </p>
+
+      <div class="card">
+        <h3>Step 1: Edge Delivery (Sub-Light Delay Line)</h3>
+        <p>If <code>DWELL > 1</code>, quanta waiting in stage 0 of the edge buffer arrive at their destination nodes and land in local channel buffers. All deeper delay stages shift down by one slot (<code>j → j - 1</code>). <em>(Canonical: DWELL=1 — direct hop.)</em></p>
+      </div>
+
+      <div class="card">
+        <h3>Step 2: Synchronous Density Snapshot</h3>
+        <p>Every node computes its total local mass: <code>mass = moving_channels + scalar_rest + directional_rest</code>. This is cached globally into <code>iR[site]</code> so subsequent routing and friction decisions see a completely synchronous snapshot of the lattice.</p>
+      </div>
+
+      <div class="card">
+        <h3>Step 3: Local Node Interactions (<code>collide_node</code>)</h3>
+        <p>Executes locally at every site without cross-grid communication:</p>
+        <ul>
+          <li><strong>Transit Cadence:</strong> If moving mass is present, <code>iLT++</code>; if quiet, reset <code>iLT = 0</code>.</li>
+          <li><strong>Carrier-Gated Boil-Off:</strong> Parked mass can re-emit into moving channels. When <code>IFRICM < 0</code>, emission requires a transiting carrier dwelling for at least <code>ILAT</code> ticks. If <code>IDREST=1</code>, quanta return to their original directional channel.</li>
+          <li><strong>Thermal Spontaneous Decay:</strong> If excitation <code>iE > 0</code>, the node probabilistically sheds bound energy (<code>iE--</code>) and emits a free photon (Einstein A21 spontaneous emission).</li>
+          <li><strong>Pair Capture (Breit-Wheeler / Winding):</strong> Opposing quanta meeting head-on <code>{c, -c}</code> probabilistically bind into rest mass, locking the collision axis in directional rest.</li>
+          <li><strong>Pair-Group Collision Shuffle:</strong> Two moving quanta are picked. The engine computes their vector sum <code>c_i + c_j</code>, looks up the equal-sum momentum group from <code>GPAIRS</code>, and swaps them for another member pair. Mass and momentum are conserved exactly.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Step 4: Core Clock Emission & Overflow</h3>
+        <p>If Q-mode is active, nodes on their local clock beat emit excess core mass into moving channels. Any core mass exceeding capacity migrates to the lowest-density neighbor (gradient conduction). <em>(Canonical: IQMODE=0 — skipped.)</em></p>
+      </div>
+
+      <div class="card">
+        <h3>Step 5: Mass Streaming (Spatial Transport)</h3>
+        <p>Quanta in moving channels attempt to advance along their channel vector <code>c</code>:</p>
+        <ul>
+          <li><strong>Rest Mass:</strong> Remains stationary at the current node (<code>Δx = 0</code>).</li>
+          <li><strong>Transit Drag (Space-as-Friction):</strong> If the destination density <code>iR[dest] >= IFRIC</code>, arriving quanta shed momentum and park into directional rest (or thermalize into excitation <code>iE</code> under IPHOT ≥ 6).</li>
+          <li><strong>Elastic Reflection (Wall Refusal):</strong> If destination density exceeds <code>IREFL</code>, the hop is refused <em>deterministically</em> — the quantum reflects onto the opposite channel (<code>c ⊕ 1</code>) at the source node. No RNG is consumed — a hard congestion wall, not a probabilistic one.</li>
+          <li><strong>Free Flight:</strong> Otherwise, quanta land cleanly in channel <code>c</code> at the destination node.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Step 6: Massless Photon Streaming & Matter Coupling</h3>
+        <p>Photons advance along directional channels (<code>iPA → iPB</code>):</p>
+        <ul>
+          <li><strong>Vacuum Flight:</strong> Photons never collide with each other; speed of light c = 1 hop/tick is invariant.</li>
+          <li><strong>Absorption (IPHOT ≥ 5):</strong> Per-quantum roll against post-stream parked mass — absorbed photons raise bound excitation <code>iE += ν</code> (energy-conserving).</li>
+          <li><strong>Ablation (IPHOT 3–4 / stimulated IPHOT=2):</strong> Photons eject parked mass onto the photon's own channel — radiation pressure, momentum conserved.</li>
+          <li><strong>Pair Production:</strong> Converging or opposing photon beams in vacuum fuse into rest mass (IPHOT ≥ 8, energy and momentum conserved).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Step 7: Double-Buffer Swap</h3>
+        <p>Pointers swap (<code>iA ↔ iB</code>, <code>iPA ↔ iPB</code>, <code>iRA ↔ iRB</code>), and the global clock advances (<code>ITICK++</code>). <em>core/perf land the final state back in the read plane — no pointer swap needed.</em></p>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. The Three-Kernel Engine Family</h2>
+      <p>
+        The same canonical physics now runs on three verified kernels — each bitwise-identical
+        in totals under the tested configuration (verified by <code>script/meso/parity-check.mjs</code>
+        and <code>perf-check.mjs</code>, not asserted):
+      </p>
+
+      <table>
+        <thead>
+          <tr><th>Kernel</th><th>Layout</th><th>Cost per tick</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>meso3i.c</strong></td>
+            <td>10+ scattered SoA planes</td>
+            <td>O(cells) — sweeps all</td>
+            <td>Canonical audit reference — all exploratory flags frozen here.</td>
+          </tr>
+          <tr>
+            <td><strong>meso_core.c</strong></td>
+            <td>64-byte PlanckNode AoS</td>
+            <td>O(cells) — better locality</td>
+            <td>Parity-verified clone (~1.4×) — clean production baseline.</td>
+          </tr>
+          <tr>
+            <td><strong>meso_perf.c</strong></td>
+            <td>PlanckNode + active list</td>
+            <td>O(occupied sites)</td>
+            <td>Sparse-optimized — skips empty cells; dominates at large grids.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Measured scaling (wasm, 30 ticks, same 576-site slab)</h3>
+      <table>
+        <thead>
+          <tr><th>Grid</th><th>meso3i</th><th>meso_core</th><th>meso_perf</th><th>Winner</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>24×12×12</td><td>100ms</td><td>45ms</td><td>73ms</td><td>core (list overhead dominates)</td></tr>
+          <tr><td>48×24×24</td><td>400ms</td><td>384ms</td><td>170ms</td><td><strong>perf</strong> — crossover ~48³</td></tr>
+          <tr><td>96×48×48</td><td>3930ms</td><td>2994ms</td><td><strong>369ms</strong></td><td><strong>perf 8.1× vs core, 10.6× vs 3i</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="math-callout">
+        meso3i / core: cost ∝ grid cells (double the grid, ~4× the cost)<br>
+        meso_perf:     cost ∝ occupied sites (same content, ~flat cost)
+      </div>
+
+      <h3>How meso_perf keeps bitwise parity while skipping cells</h3>
+      <p>
+        The insight that makes the optimization free of correctness cost: <strong>empty cells
+        consume zero RNG draws in every phase</strong> — collide, stream, and pair production
+        only draw on sites with content. Skipping them changes speed, never the random stream.
+        The invariants that make it exact:
+      </p>
+      <ul>
+        <li><strong>si-ascending processing</strong> — all phases iterate sites in row-major <code>iidx</code> order (meso3i's z,y,x), or the RNG draws map to wrong sites.</li>
+        <li><strong>Global stationary carry</strong> — rest/drest/n/lt are copied for all actives before streaming; per-site copies inside the loop would wipe arrivals written by earlier sources.</li>
+        <li><strong>Fresh-only zeroing</strong> — a first-touch destination is cleared with a 64-byte memset only if it wasn't already carried (<code>iACT == 0</code>), replacing the O(IN) full-plane memset.</li>
+        <li><strong>iPTF flat cadence register</strong> — persistent per-site counter (mirrors meso3i's iPT plane), updated only for touched sites; quiet sites stay 0 forever.</li>
+        <li><strong>Generation-stamped next-list</strong> — <code>iNNF[si] == NGEN</code> dedupes arrivals without clearing a flag array each tick.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. The Parity Invariant (what bitwise-identity actually requires)</h2>
+      <p>
+        Bitwise-identical trajectories across kernels require the <strong>exact same RNG
+        consumption order</strong>, not just the same rules:
+      </p>
+      <ul>
+        <li><strong>Site order</strong> — collide and stream phases must visit sites in the same sequence (flat ascending si).</li>
+        <li><strong>Short-circuit draws</strong> — friction rolls consume RNG only when <code>iR[ni] ≥ IFRIC</code>; absorb rolls only when parked mass is present; pair-capture rolls only when both channels are occupied. Gates must short-circuit identically.</li>
+        <li><strong>Loop-bound dynamics</strong> — the emission loop bound <code>u &lt; n[REST] + dsum</code> shrinks as mass depletes mid-loop.</li>
+        <li><strong>Channel-batch vs per-quantum</strong> — friction parks an entire channel batch on one roll; absorb rolls once per photon. The granularity is part of the physics.</li>
+        <li><strong>Deterministic paths</strong> — IREFL is a hard wall (no draw); seeded init leaves <code>irng = 0xC0FFEE</code> untouched (the 4th init arg is the axial flag, not a seed).</li>
+      </ul>
+      <p>
+        Practical consequence: cross-engine parity holds under the <em>canonical ν=1 photon
+        configurations</em> (phot ∈ {5,6}, IDREST semantics, flat friction). ν > 1 frequency
+        physics is meso3i-only (NNU=4 bins).
+      </p>
+    </section>
+
+    <footer>
+      <span>Open Universe / Planck Field Architecture</span>
+      <span>Sources: src/meso3i.c · src/meso_core.c · src/meso_perf.c</span>
+    </footer>
+  </div>
+
+</body>
+</html>
