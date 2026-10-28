@@ -169,6 +169,7 @@ if emcc meso3i.c \
     '_meso3i_nushift',
     '_meso3i_ptget',
     '_meso3i_iptbar',
+    '_meso3i_fusemin',
     '_meso3i_phget',
     '_meso3i_photons',
     '_meso3i_pset',

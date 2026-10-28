@@ -17,7 +17,7 @@ for(const nu of [1,2,3,4]){
   const NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
   w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0);
-  w._meso3i_phot(9);
+  w._meso3i_phot(9); w._meso3i_fusemin(2);
   for(let z=6;z<18;z++)for(let y=6;y<18;y++){
     if(!((4+y+z)&1))  w._meso3i_phset_nu(4,y,z,12,nu,16);
     if(!((44+y+z)&1)) w._meso3i_phset_nu(44,y,z,13,nu,16);   // even-x: same lane
