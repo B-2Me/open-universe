@@ -13,6 +13,7 @@ new Function('module', 'exports', 'require', '__dirname', '__filename', src)
   (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso_perf.js');
 const REFIRE = Number(process.argv[2] || 4);   /* ticks between feeds; 0 = one-shot */
 const FEED   = Number(process.argv[3] || 32);  /* photons per channel per feed */
+const FEEDT  = Number(process.argv[4] || 200); /* cut the bath at this tick */
 const W=96,H=48,D=48,C=[W/2,H/2,D/2];
 const w = await mod.exports();
 w._meso3i_init(W,H,D,1);
@@ -38,8 +39,8 @@ fire(128);          /* the implosion */
 w._meso3i_ev_reset();
 const series=[];
 for(let t=0;t<300;t++){
-  if(REFIRE && t%REFIRE===0 && t>0 && t<200) fire(FEED);
+  if(REFIRE && t%REFIRE===0 && t>0 && t<FEEDT) fire(FEED);
   w._meso3i_drain_edge(2); w._meso3i_tick();
-  if(t%60===0) series.push(`t${t}:rest=${w._meso3i_rest_mass()} pp=${w._meso3i_ev(7)} ph=${w._meso3i_photons()}`);
+  if(t%30===0) series.push(`t${t}:rest=${w._meso3i_rest_mass()} pp=${w._meso3i_ev(7)} ph=${w._meso3i_photons()}`);
 }
 console.log(`sustained refire=${REFIRE} feed=${FEED} [${series.join(' | ')}]`);
