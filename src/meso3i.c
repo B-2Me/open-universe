@@ -74,6 +74,7 @@ static int      IPTH = 0;            /* absorb threshold nu (0 = all absorb) */
 static int      INSH = 0;            /* transit down-shift k: 1/k chance per parked hop (0 = off) */
 static int      IPTB = 0;            /* coherence barrier: photon interact only once iPT >= k (0 = always) */
 static int      IFUS = 0;            /* fusion threshold: pair production requires nu+1 >= k (0 = off) */
+static int      IFCAD = 0;           /* fusion cadence gate: pair production requires iPT >= k (0 = off) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -249,6 +250,7 @@ void meso3i_phth(int t)    { IPTH = t; }
 void meso3i_nushift(int k) { INSH = k; }
 void meso3i_iptbar(int k)  { IPTB = k; }
 void meso3i_fusemin(int k) { IFUS = k; }
+void meso3i_fusecad(int k) { IFCAD = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -963,12 +965,14 @@ void meso3i_tick(void) {
          * momentum conserved; no parked mass required (in vacuum). */
         if (IPHOT >= 8)
         for (int si = 0; si < IN; si++) {
+            if (iPT[si] < IFCAD) continue;   /* cadence gate: quiet
+                 * nodes can't fuse — energy measured as arrival tempo */
             uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
             for (int c = 0; c < IMOV; c++)
             for (int c2 = c + 1; c2 < IMOV; c2++) {
                 /* non-antipodal allowed (IPHOT>=9): pairs meeting at
                  * an angle carry net momentum -> orbital spin can be
-                 * stored. IPHOT==8 keeps collinear antipodes only. */
+                     * stored. IPHOT==8 keeps collinear antipodes only. */
                 if (IPHOT == 8 && c2 != (c ^ 1)) continue;
                 for (int nu = 0; nu < NNU; nu++)
                 while (nu + 1 >= IFUS && pa[c * NNU + nu] && pa[c2 * NNU + nu] &&
