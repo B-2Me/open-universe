@@ -32,7 +32,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, *iR;
+static int       IPTH, IPTB, IFUS, *iR;
 static int64_t   iEV[8];
 
 static inline uint32_t irnd(void) {
@@ -289,6 +289,7 @@ void meso3i_drest(int m)     { (void)m; }
 void meso3i_phth(int t)      { IPTH = t; }
 void meso3i_nushift(int k)   { (void)k; }
 void meso3i_iptbar(int k)    { IPTB = k; }
+void meso3i_fusemin(int k)   { IFUS = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -451,7 +452,7 @@ void meso3i_tick(void) {
             for (int c = 0; c < IMOV; c++)
             for (int c2 = c + 1; c2 < IMOV; c2++) {
                 if (IPHOT == 8 && c2 != (c ^ 1)) continue;
-                while (na->phot[c] && na->phot[c2] && (irnd() & 7) == 0) {
+                while (IFUS <= 1 && na->phot[c] && na->phot[c2] && (irnd() & 7) == 0) {
                     na->phot[c]--; na->phot[c2]--; IPHN -= 2;
                     if (na->drest[c] < 255) na->drest[c]++;
                     if (na->drest[c2] < 255) na->drest[c2]++;
