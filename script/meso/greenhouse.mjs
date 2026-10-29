@@ -20,6 +20,7 @@ const run = (phot, bathQ, drain) => {
   wasm._meso3i_init(W, H, D, 1);
   wasm._meso3i_collmode(0); wasm._meso3i_friction(0);
   wasm._meso3i_fricmode(16); wasm._meso3i_drest(0); wasm._meso3i_reflect(0);
+  if (wasm._meso3i_scatter) wasm._meso3i_scatter(Number(process.env.SCATTER || 0));
   wasm._meso3i_phot(phot);
   for (let z = 0; z < D; z++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     if ((x + y + z) & 1) continue;

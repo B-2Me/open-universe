@@ -19,6 +19,7 @@ for(const gap of [1,4]){
   const NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
   w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0);
+  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0));
   w._meso3i_phot(9); w._meso3i_fusecad(cad);
   for(let t=0;t<40;t++){
     if(t<16 && t%gap===0)
