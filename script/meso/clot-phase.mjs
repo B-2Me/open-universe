@@ -51,3 +51,25 @@ for (const sc of [128]) {
   w2._meso3i_rg_refresh();
   console.log(`clot sc=${sc}: iE_total=${ie} rest=${w2._meso3i_rest_mass()} phn=${w2._meso3i_photons()}`);
 }
+
+// E63c: discharge curve — cut the feed, watch the clot's iE drain
+for (const sc of [128]) {
+  const w3 = await (()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,join(here,'../../docs/public/wasm/ember'),'meso3i.js');return m.exports();})();
+  const W=48,H=24,D=24;
+  w3._meso3i_init(W,H,D,1);
+  const NMOV=w3._meso3i_nch()-1,REST=NMOV;
+  w3._meso3i_collmode(0);w3._meso3i_friction(8);w3._meso3i_fricmode(4);
+  w3._meso3i_fricp(128);w3._meso3i_drest(1);w3._meso3i_reflect(0);
+  w3._meso3i_phot(9); w3._meso3i_scatter(sc); w3._meso3i_iecost(1);
+  const ie=()=>{let s=0;for(let z=6;z<18;z++)for(let y=6;y<18;y++)for(let x=16;x<40;x++)
+    if(!((x+y+z)&1)) s+=w3._meso3i_eget(x,y,z); return s;};
+  const out=[];
+  for(let t=0;t<600;t++){
+    if(t<200&&t%4===0)for(let z=6;z<18;z++)for(let y=6;y<18;y++)for(let x=16;x<40;x++){
+      if(!((x+y+z)&1)){ w3._meso3i_phset_nu(x,y,z,13,1,16); w3._meso3i_phset_nu(x,y,z,12,1,16); }
+    }
+    w3._meso3i_drain_edge(4); w3._meso3i_tick();
+    if(t%100===0){w3._meso3i_rg_refresh();out.push(`t${t}:iE=${ie()} rest=${w3._meso3i_rest_mass()}`);}
+  }
+  console.log(`discharge: ${out.join(' | ')}`);
+}
