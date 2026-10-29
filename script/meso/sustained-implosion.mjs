@@ -19,7 +19,12 @@ const w = await mod.exports();
 w._meso3i_init(W,H,D,1);
 const NMOV=w._meso3i_nch()-1,REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
-w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0); w._meso3i_phot(9);
+w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0); const PMODE = Number(process.env.PHOT || 9);
+w._meso3i_phot(PMODE);
+const RCB = Number(process.env.RECOMB || 0);
+if (w._meso3i_recomb) w._meso3i_recomb(RCB);
+const ANH = Number(process.env.ANNIH || 0);
+if (w._meso3i_annih) w._meso3i_annih(ANH);
 const fire=(n)=>{
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     if((x+y+z)&1)continue;

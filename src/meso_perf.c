@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -164,6 +164,16 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
                 iEV[2]++;
             }
         }
+    }
+
+    /* drest annihilation (fusion inverse): opposing bins -> photon pair */
+    if (IANNIH) {
+        for (int c = 0; c < IMOV; c += 2)
+            while (nb->drest[c] && nb->drest[c ^ 1] && (int)(irnd() & 255) < IANNIH) {
+                nb->drest[c]--; nb->drest[c ^ 1]--;
+                nb->phot[c]++; nb->phot[c ^ 1]++;
+                IPHN += 2; iEV[4] += 2;
+            }
     }
 
     /* thermal decay: IPHOT>=7 per-quantum (nu drawn from occupation —
@@ -314,6 +324,8 @@ void meso3i_nushift(int k)   { (void)k; }
 void meso3i_iptbar(int k)    { IPTB = k; }
 void meso3i_fusemin(int k)   { IFUS = k; }
 void meso3i_fusecad(int k)   { IFCAD = k; }
+void meso3i_recomb(int k)    { IRECOMB = k; }
+void meso3i_annih(int k)     { IANNIH = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -372,6 +384,13 @@ void meso3i_tick(void) {
             if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; if (!iACT[ni]) memset(&A[ni], 0, sizeof(PlanckNode)); } iACT[ni] = 1;
             if (IFRIC && iR[ni] >= IFRIC &&
                 (int)(irnd() & 255) < IFRICP) {
+                if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
+                    uint32_t v2 = A[ni].phot[c] + p;
+                    A[ni].phot[c] = v2 > 255 ? 255 : (uint8_t)v2;
+                    IPHN += p;
+                    iEV[0] += p;
+                    continue;
+                }
                 if (IPHOT >= 6) {
                     uint32_t v = A[ni].n + p;
                     A[ni].n = v > 255 ? 255 : (uint8_t)v;

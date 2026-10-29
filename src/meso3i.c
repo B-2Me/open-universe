@@ -75,6 +75,8 @@ static int      INSH = 0;            /* transit down-shift k: 1/k chance per par
 static int      IPTB = 0;            /* coherence barrier: photon interact only once iPT >= k (0 = always) */
 static int      IFUS = 0;            /* fusion threshold: pair production requires nu+1 >= k (0 = off) */
 static int      IFCAD = 0;           /* fusion cadence gate: pair production requires iPT >= k (0 = off) */
+static int      IRECOMB = 0;         /* radiative recombination: parked quantum converts to photon w/ p = k/256 (0 = off) */
+static int      IANNIH = 0;          /* drest annihilation: opposing directional-rest bins -> antipodal photon pair, per-quantum roll k/256 (0 = off) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -251,6 +253,8 @@ void meso3i_nushift(int k) { INSH = k; }
 void meso3i_iptbar(int k)  { IPTB = k; }
 void meso3i_fusemin(int k) { IFUS = k; }
 void meso3i_fusecad(int k) { IFCAD = k; }
+void meso3i_recomb(int k)  { IRECOMB = k; }
+void meso3i_annih(int k)   { IANNIH = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -477,6 +481,22 @@ static void collide_node(uint8_t *n, int si) {
             }
         }
     }
+    /* drest annihilation: opposing directional-rest bins meeting at a
+     * node are the substrate's particle/antiparticle pair — they
+     * annihilate back into antipodal photons (the fusion inverse).
+     * Per-quantum roll; momentum-balanced (c, c^1). */
+    if (IANNIH && IDREST) {
+        uint8_t *adr = iRA + (size_t)si * IMOV;
+        for (int c = 0; c < IMOV; c += 2) {
+            while (adr[c] && adr[c ^ 1] && (int)(irnd() & 255) < IANNIH) {
+                adr[c]--; adr[c ^ 1]--;
+                uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
+                pa[c * NNU]++; pa[(c ^ 1) * NNU]++;
+                IPHN += 2; iEV[4] += 2;
+            }
+        }
+    }
+
     /* thermal decay: excited sites shed n back into photons —
      * the resume branch of conduction (warming in place is real).
      * IPHOT>=7: per-quantum decay (Einstein A — each quantum rolls
@@ -795,6 +815,17 @@ void meso3i_tick(void) {
                  * Momentum absorbed by the network (flagged, inelastic).
                  * IDREST: park on the channel's own rest bin instead —
                  * "frozen flux": momentum stored, not absorbed. */
+                if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
+                    /* radiative recombination: the park sheds the
+                     * quantum's mass as LIGHT — moving quantum -> photon
+                     * on its own channel at the destination (mass->light
+                     * conversion; the mass is lost to radiation) */
+                    uint32_t v2 = iPB[(size_t)ni * IMOV * NNU + c * NNU] + n[c];
+                    iPB[(size_t)ni * IMOV * NNU + c * NNU] = v2 > 255 ? 255 : (uint8_t)v2;
+                    IPHN += n[c];
+                    iEV[0] += n[c];
+                    continue;
+                }
                 if (IPHOT >= 6) {
                     /* thermalize: the carrier is absorbed as EXCITATION —
                      * mass -> bound energy at contact (collision->n, the
