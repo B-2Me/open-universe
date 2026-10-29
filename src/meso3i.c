@@ -875,7 +875,7 @@ void meso3i_tick(void) {
                 for (int pc = 0; pc < IMOV * NNU; pc++) lum += pa_[pc];
                 fp -= lum * IFRLUM / 8;
             }
-            if (IFRIC && (int)iR[ni] >= IFRIC &&
+            if (IFRIC && (int)iR[ni] >= (IFRIC > 0 ? IFRIC : IMOV) &&   /* IFRIC<0: derive — congested when parked > channel count */
                 roll_(si, fp)) {
                 /* network drag (space-is-friction): a transit hop into a
                  * congested node sheds momentum — the quantum lands in the
