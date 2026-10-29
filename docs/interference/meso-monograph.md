@@ -428,3 +428,27 @@ the E51/E52 negatives (no Eddington ceiling) locate the missing
 nonlinearity: there is no blow-off channel — deflected mass reroutes,
 never leaves. Mastering the substrate = mastering this fork structure,
 not tuning knobs.
+
+### M53. The routing substrate: transactions as handshakes, Eddington as link congestion
+
+The E46–E53 arc's conceptual capstone — the substrate is a **network
+with reliable delivery**, and its "missing physics" is vocabulary we
+already had:
+
+- **Quanta = the budget** (conserved payload); **photons = the transfer
+  mechanism** (offer packets). Absorb/fuse rolls are the **ACK
+  handshake** — energy only moves on confirmation; pass-through and
+  IREFL are declined offers (Schlatter–Kastner transaction ontology,
+  J. Phys. Commun. 7 065009).
+- **Friction = congestion control**; `iR` density = link load;
+  `friclum` = back-pressure; dwell lines = store-and-forward.
+- **The Eddington limit = link-capacity contention**: outgoing
+  luminosity and incoming feed travel *independent* channels today —
+  they never share bandwidth, so accretion never chokes. The emergent
+  fix: a shared per-channel throughput budget
+  (`phot_out + mass_in ≤ capacity`) makes a shining lump squeeze its
+  own inflow — the ceiling emerges as congestion collapse, not as an
+  authored force balance. Radiation pressure is link saturation.
+- The E54 self-loop finding reframes: fusion↔annih is a closed
+  detailed-balance loop — net conversion only exists when photons
+  *leave the network* (drain = the open boundary / cold reservoir).
