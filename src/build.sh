@@ -210,6 +210,7 @@ if emcc meso3i.c \
     '_meso3i_lens',
     '_meso3i_randmode',
     '_meso3i_nuscat',
+    '_meso3i_photdecay',
     '_malloc',
     '_free'
   ]" \

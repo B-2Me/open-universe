@@ -82,7 +82,8 @@ static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
 static int      IEPUSH = 0;
-static int      INUSCAT = 0;         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
+static int      INUSCAT = 0;
+static int      IPHOTDEC = 0;          /* photon decay: lone photon -> nu+1 mass, no partner (fractal photon->mass path) */         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
 static int      ILENS = 0;
 static int      IRANDM = 0;          /* 0=legacy RNG, 1=deterministic site-phase */
            /* adjacent-sense: mass reroutes to least-dense neighbor (pressure), photons deflect toward dense (lensing) */          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
@@ -280,6 +281,7 @@ void meso3i_iepush(int k)   { IEPUSH = k; }
 void meso3i_lens(int k)     { ILENS = k; }
 void meso3i_randmode(int k) { IRANDM = k; }
 void meso3i_nuscat(int k)   { INUSCAT = k; }
+void meso3i_photdecay(int k) { IPHOTDEC = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -847,15 +849,19 @@ void meso3i_tick(void) {
             int nz = iwrap(z + ICV[c][2], ID);
             int ni = iidx(nx, ny, nz);
             int cc0 = c;
-            if (ILENS && iR[ni] >= ILENS) {
-                /* pressure-avoidance: the destination is crowded —
-                 * reroute onto the least-dense neighbor channel */
-                int best = (int)iR[ni], bc = -1;
+            int lthr = ILENS < 0 ? -ILENS : ILENS;
+            if (ILENS && iR[ni] >= lthr) {
+                /* ILENS>0 pressure-avoidance (least-dense);
+                 * ILENS<0 attraction — reroute toward the MOST-dense
+                 * neighbor: mass seeks the crowd (gravity-analog) */
+                int seekMax = ILENS < 0;
+                int best = seekMax ? -1 : (int)iR[ni], bc = -1;
                 for (int cc = 0; cc < IMOV; cc++) {
                     int n3 = iidx(iwrap(x + ICV[cc][0], IW),
                                   iwrap(y + ICV[cc][1], IH),
                                   iwrap(z + ICV[cc][2], ID));
-                    if ((int)iR[n3] < best) { best = iR[n3]; bc = cc; }
+                    int rr = (int)iR[n3];
+                    if (seekMax ? rr > best : rr < best) { best = rr; bc = cc; }
                 }
                 if (bc >= 0) {
                     nx = iwrap(x + ICV[bc][0], IW);
@@ -969,6 +975,26 @@ void meso3i_tick(void) {
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
+                if (IPHOTDEC && roll_(iidx(x, y, z), IPHOTDEC)) {
+                    /* lone-photon decay: the transaction amount becomes
+                     * mass directly — nu+1 quanta deposit on the photon's
+                     * own channel (fractal photon->mass, no pair needed).
+                     * A spontaneous nucleus channel: a lone hot photon
+                     * crystallizes into a mass seed. */
+                    uint8_t *pb = iPB + (size_t)iidx(x, y, z) * IMOV * NNU;
+                    pb[c * NNU + nu]--; IPHN--;
+                    int ri = iidx(x, y, z) * INCH + INCH - 1;
+                    if (IDREST) {
+                        uint8_t *dr = iRB + (size_t)iidx(x, y, z) * IMOV;
+                        uint32_t v = dr[c] + nu + 1;
+                        dr[c] = v > 255 ? 255 : (uint8_t)v;
+                    } else {
+                        uint32_t v = iB[ri] + nu + 1;
+                        iB[ri] = v > 255 ? 255 : (uint8_t)v;
+                    }
+                    iEV[7]++;
+                    continue;
+                }
                 if (IPHOT >= 3 && nu + 1 >= IPTH && iPT[ni] >= IPTB) {
                     /* absorbed photon (radiation pressure / YORP mode):
                      * the photon is CONSUMED on contact with parked mass —
