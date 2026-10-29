@@ -19,9 +19,9 @@ for(const xL of Xs)for(let z=5;z<11;z++)for(let y=5;y<11;y++)
   for(let x=xL;x<xL+6;x++) if(!((x+y+z)&1)) w._meso3i_set(x,y,z,REST,64);
 const out=[];
 for(let t=0;t<300;t++){
-  if(t%4===0)for(let z=4;z<12;z++)for(let y=4;y<12;y++){
-    for(let x=4;x<8;x++)  if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,12,16);
-    for(let x=56;x<60;x++)if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,13,16);
+  if(t%4===0)for(const xL of Xs)for(let z=4;z<12;z++)for(let y=4;y<12;y++){
+    for(let x=xL-4;x<xL;x++)   if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,12,16);
+    for(let x=xL+6;x<xL+10;x++)if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,13,16);
   }
   w._meso3i_drain_edge(3); w._meso3i_tick();
   if(t%20===0){
