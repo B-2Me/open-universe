@@ -78,6 +78,7 @@ static int      IFCAD = 0;           /* fusion cadence gate: pair production req
 static int      IRECOMB = 0;         /* radiative recombination: parked quantum converts to photon w/ p = k/256 (0 = off) */
 static int      IANNIH = 0;          /* drest annihilation: opposing directional-rest bins -> antipodal photon pair, per-quantum roll k/256 (0 = off) */
 static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 — outgoing photon flux fights the park (Eddington back-pressure) */
+static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link-pair refused when photon load >= k (0 = off) — Eddington as congestion */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -257,6 +258,7 @@ void meso3i_fusecad(int k) { IFCAD = k; }
 void meso3i_recomb(int k)  { IRECOMB = k; }
 void meso3i_annih(int k)   { IANNIH = k; }
 void meso3i_friclum(int k) { IFRLUM = k; }
+void meso3i_linkcap(int k)  { ILINKCAP = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -866,6 +868,21 @@ void meso3i_tick(void) {
                 iB[di] = v > 255 ? 255 : (uint8_t)v;
                 iEV[6] += n[c];
                 continue;
+            }
+            if (ILINKCAP) {
+                const uint8_t *pa2 = iPA + (size_t)ni * IMOV * NNU;
+                int load = 0;
+                for (int nu = 0; nu < NNU; nu++) load += pa2[c * NNU + nu] + pa2[(c ^ 1) * NNU + nu];
+                if (load >= ILINKCAP) {
+                    /* link saturated with photon traffic — the hop is
+                     * refused (bounce to antipode at source): luminosity
+                     * chokes the inflow = Eddington as link congestion */
+                    int di = si * INCH + (c ^ 1);
+                    uint32_t v = iB[di] + n[c];
+                    iB[di] = v > 255 ? 255 : (uint8_t)v;
+                    iEV[6] += n[c];
+                    continue;
+                }
             }
             int di = ni * INCH + c;
             uint32_t v = iB[di] + n[c];

@@ -20,6 +20,8 @@ const NMOV=w._meso3i_nch()-1,REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
 w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0);
 w._meso3i_phot(8); w._meso3i_annih(ANNIH);
+const LC = Number(process.env.LINKCAP || 0);
+if (w._meso3i_linkcap) w._meso3i_linkcap(LC);
 const FL = Number(process.env.FRICLUM || 0);
 if (w._meso3i_friclum) w._meso3i_friclum(FL);
 // primordial lump to shine: dense rest seed at center
@@ -49,7 +51,7 @@ const feed=(n)=>{
 const series=[];
 for(let t=0;t<300;t++){
   if(t>0 && t%4===0) feed(FEED);
-  w._meso3i_tick();
+  w._meso3i_drain_edge(4); w._meso3i_tick();
   if(t%30===0) series.push(`t${t}:rest=${w._meso3i_rest_mass()} mov=${w._meso3i_mov_mass()} ph=${w._meso3i_photons()}`);
 }
 console.log(`eddington annih=${ANNIH} feed=${FEED} [${series.join(' | ')}]`);

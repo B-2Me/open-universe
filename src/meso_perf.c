@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -330,6 +330,7 @@ void meso3i_fusecad(int k)   { IFCAD = k; }
 void meso3i_recomb(int k)    { IRECOMB = k; }
 void meso3i_annih(int k)     { IANNIH = k; }
 void meso3i_friclum(int k)   { IFRLUM = k; }
+void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -413,6 +414,12 @@ void meso3i_tick(void) {
             }
             if (IREFL && iR[ni] >= IREFL) {
                 uint32_t v = na->mass[c ^ 1] + p;
+                na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
+                iEV[6] += p;
+                continue;
+            }
+            if (ILINKCAP && iPTF[ni] >= ILINKCAP) {
+                uint32_t v = na->mass[c ^ 1] + p;   /* bounce: node saturated w/ photons */
                 na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
                 iEV[6] += p;
                 continue;
