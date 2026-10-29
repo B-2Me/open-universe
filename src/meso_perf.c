@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -134,6 +134,7 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
 
     int dsum = drest_sum(nb);
     int parked = n[REST] + dsum;
+    if (IECOST && parked && (int)nb->n < IECOST && !nb->lt) return;
     if (IFRICM && parked && (IFRICM > 0 || nb->lt >= ILAT ||
                              (IPHOT == 1 && phot_at(nb)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
@@ -331,6 +332,7 @@ void meso3i_recomb(int k)    { IRECOMB = k; }
 void meso3i_annih(int k)     { IANNIH = k; }
 void meso3i_friclum(int k)   { IFRLUM = k; }
 void meso3i_linkcap(int k)   { ILINKCAP = k; }
+void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 

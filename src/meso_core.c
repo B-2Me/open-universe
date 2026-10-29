@@ -32,7 +32,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, *iR;
 static int64_t   iEV[8];
 
 static inline uint32_t irnd(void) {
@@ -122,6 +122,20 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
 
     int dsum = drest_sum(nb);
     int parked = n[REST] + dsum;
+    /* drest annihilation (fusion inverse): opposing bins -> photon pair */
+    if (IANNIH) {
+        for (int c = 0; c < IMOV; c += 2) {
+            int pairs = nb->drest[c] < nb->drest[c ^ 1] ? nb->drest[c] : nb->drest[c ^ 1];
+            int rate = (IANNIH * pairs) >> 8;
+            for (int u = 0; u < pairs && (int)(irnd() & 255) < rate; u++) {
+                nb->drest[c]--; nb->drest[c ^ 1]--;
+                nb->phot[c]++; nb->phot[c ^ 1]++;
+                IPHN += 2; iEV[4] += 2;
+            }
+        }
+    }
+    /* iecost: energy funds work — emission needs iE>=k OR transit (lt>0) */
+    if (IECOST && parked && (int)nb->n < IECOST && !nb->lt) return;
     if (IFRICM && parked && (IFRICM > 0 || nb->lt >= ILAT ||
                              (IPHOT == 1 && phot_at(nb)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
@@ -291,6 +305,11 @@ void meso3i_nushift(int k)   { (void)k; }
 void meso3i_iptbar(int k)    { IPTB = k; }
 void meso3i_fusemin(int k)   { IFUS = k; }
 void meso3i_fusecad(int k)   { IFCAD = k; }
+void meso3i_recomb(int k)    { IRECOMB = k; }
+void meso3i_annih(int k)     { IANNIH = k; }
+void meso3i_friclum(int k)   { IFRLUM = k; }
+void meso3i_linkcap(int k)   { ILINKCAP = k; }
+void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -342,8 +361,21 @@ void meso3i_tick(void) {
             int ni = iidx(iwrap(x + ICV[c][0], IW),
                           iwrap(y + ICV[c][1], IH),
                           iwrap(z + ICV[c][2], ID));
+            int fp = IFRICP;
+            if (IFRLUM) {
+                int lum = 0;
+                for (int pc = 0; pc < IMOV; pc++) lum += B[ni].phot[pc];
+                fp -= lum * IFRLUM / 8;
+            }
             if (IFRIC && iR[ni] >= IFRIC &&
-                (int)(irnd() & 255) < IFRICP) {
+                (int)(irnd() & 255) < fp) {
+                if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
+                    uint32_t v2 = A[ni].phot[c] + p;
+                    A[ni].phot[c] = v2 > 255 ? 255 : (uint8_t)v2;
+                    IPHN += p;
+                    iEV[0] += p;
+                    continue;
+                }
                 if (IPHOT >= 6) {
                     uint32_t v = A[ni].n + p;
                     A[ni].n = v > 255 ? 255 : (uint8_t)v;
@@ -355,6 +387,12 @@ void meso3i_tick(void) {
                 continue;
             }
             if (IREFL && iR[ni] >= IREFL) {
+                uint32_t v = na->mass[c ^ 1] + p;
+                na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
+                iEV[6] += p;
+                continue;
+            }
+            if (ILINKCAP && B[ni].pt >= ILINKCAP) {
                 uint32_t v = na->mass[c ^ 1] + p;
                 na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
                 iEV[6] += p;
