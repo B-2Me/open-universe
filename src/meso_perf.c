@@ -429,6 +429,15 @@ void meso3i_tick(void) {
                 for (int pc = 0; pc < IMOV; pc++) lum += B[ni].phot[pc];
                 fp -= lum * IFRLUM / 8;
             }
+            if (IEPUSH < 0 && A[ni].n >= -IEPUSH &&
+                A[ni].mass[REST] < 255) {
+                /* iepush-in: energy captures mass — charged site binds an
+                 * arriving quantum into rest, paying iE (binding energy) */
+                A[ni].n -= -IEPUSH;
+                A[ni].mass[REST]++;
+                iEV[0]++;
+                continue;
+            }
             if (IFRIC && iR[ni] >= IFRIC &&
                 (int)(irnd() & 255) < fp) {
                 if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
@@ -454,7 +463,17 @@ void meso3i_tick(void) {
                 iEV[6] += p;
                 continue;
             }
-            if (ILINKCAP && iPTF[ni] >= ILINKCAP) {
+            int lcthr = ILINKCAP < 0 ? -ILINKCAP : ILINKCAP;
+            if (lcthr && iPTF[ni] >= lcthr) {
+                if (ILINKCAP < 0) {
+                    /* linkcap-force: pressure pushes through saturation —
+                     * quantum delivered anyway (forces through the crowd) */
+                    uint32_t v = A[ni].mass[c] + p;
+                    if (v > 255) iEV[9] += v - 255;
+                    A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
+                    iEV[6] += p;
+                    continue;
+                }
                 uint32_t v = na->mass[c ^ 1] + p;   /* bounce: node saturated w/ photons */
                 na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
                 iEV[6] += p;
