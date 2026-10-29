@@ -17,7 +17,8 @@ const run=(stepEvery)=>{   // >0 recede (-x), <0 approach (+x)
   const W=48,H=24,D=24,NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(8);
   w._meso3i_fricmode(16); w._meso3i_fricp(128); w._meso3i_drest(0);
-  w._meso3i_reflect(0); w._meso3i_phot(0);
+  w._meso3i_reflect(0);
+  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0)); w._meso3i_phot(0);
   let ex=stepEvery>0?26:14;
   const counts=[];
   for(let t=0;t<110;t++){
