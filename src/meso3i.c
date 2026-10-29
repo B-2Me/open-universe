@@ -80,6 +80,7 @@ static int      IANNIH = 0;          /* drest annihilation: opposing directional
 static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 — outgoing photon flux fights the park (Eddington back-pressure) */
 static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link-pair refused when photon load >= k (0 = off) — Eddington as congestion */
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
+static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -261,6 +262,7 @@ void meso3i_annih(int k)   { IANNIH = k; }
 void meso3i_friclum(int k) { IFRLUM = k; }
 void meso3i_linkcap(int k)  { ILINKCAP = k; }
 void meso3i_iecost(int k)   { IECOST = k; }
+void meso3i_scatter(int k)  { ISCATT = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -1010,6 +1012,19 @@ void meso3i_tick(void) {
                     pi = ni * IMOV * NNU + c * NNU + (nu - 1);
                 } else {
                     pi = ni * IMOV * NNU + c * NNU + nu;
+                }
+                if (ISCATT && pi >= 0) {
+                    /* scatter: declined-transaction redirect — the
+                     * photon interacts at the matter site, keeps flying
+                     * on a random channel at the same nu — optical depth */
+                    int rho2 = iR[ni];
+                    for (int u = 0; u < p; u++)
+                        if (rho2 && (int)(irnd() & 255) < ISCATT) {
+                            int c2 = (int)(irnd() % IMOV);
+                            int pi2 = ni * IMOV * NNU + c2 * NNU + nu;
+                            if (iPB[pi2] < 255) iPB[pi2]++;
+                            p--;
+                        }
                 }
                 uint32_t v = iPB[pi] + p;
                 if (v > 255) { IPHN -= (int)(v - 255); v = 255; }

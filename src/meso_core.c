@@ -32,7 +32,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, *iR;
 static int64_t   iEV[10];
 
 static inline uint32_t irnd(void) {
@@ -310,6 +310,7 @@ void meso3i_annih(int k)     { IANNIH = k; }
 void meso3i_friclum(int k)   { IFRLUM = k; }
 void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_iecost(int k)    { IECOST = k; }
+void meso3i_scatter(int k)   { ISCATT = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -471,6 +472,15 @@ void meso3i_tick(void) {
                             iEV[5]++;
                             uint32_t v = A[ni].mass[c] + 1;
                             A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
+                        }
+                }
+                if (ISCATT) {
+                    int rho2 = iR[ni];
+                    for (int u = 0; u < p; u++)
+                        if (rho2 && (int)(irnd() & 255) < ISCATT) {
+                            int c2 = (int)(irnd() % IMOV);
+                            if (A[ni].phot[c2] < 255) A[ni].phot[c2]++;
+                            p--;
                         }
                 }
                 uint32_t v = A[ni].phot[c] + p;
