@@ -19,6 +19,7 @@ const run=(L,rho)=>{
   w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
   w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0);
   w._meso3i_phot(3); w._meso3i_phth(0);   /* ablation: photon dies on contact, no re-emission */
+  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0));
   // slab x in [16,16+L)
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=16;x<16+L;x++)
     if(!((x+y+z)&1)) w._meso3i_set(x,y,z,REST,rho);

@@ -205,6 +205,7 @@ if emcc meso3i.c \
     '_meso3i_rset',
     '_meso3i_ev',
     '_meso3i_ev_reset',
+    '_meso3i_scatter',
     '_malloc',
     '_free'
   ]" \

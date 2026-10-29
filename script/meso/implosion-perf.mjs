@@ -19,6 +19,8 @@ const run = async (f, W, H, D) => {
   const NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
   w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0); w._meso3i_phot(9);
+const SC = Number(process.env.SCATTER || 0);
+if (w._meso3i_scatter) w._meso3i_scatter(SC);
   const cx=W/2,cy=H/2,cz=D/2,r=W/5;
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     const dx=x-cx,dy=y-cy,dz=z-cz,rr=Math.sqrt(dx*dx+dy*dy+dz*dz);
