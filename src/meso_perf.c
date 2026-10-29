@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, IGET, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -369,6 +369,7 @@ void meso3i_iepush(int k)    { IEPUSH = k; }
 void meso3i_massbnc(int k)   { IMASSB = k; }
 void meso3i_photdecay(int k) { IPHOTDEC = k; }
 void meso3i_egate(int k)     { IEG = k; }
+void meso3i_iget(int k)      { IGET = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -484,6 +485,17 @@ void meso3i_tick(void) {
                 iEV[6] += p;
                 continue;
             }
+            if (IGET && iR[ni] >= IGET) {
+                /* iget: arrival consults the crowd too — mirror of egate.
+                 * A site already at its carrying capacity refuses the hop:
+                 * the quantum bounces back to the sender on the antipodal
+                 * channel. Friction-level cap, not the 255 byte cap — a
+                 * lump can't grow past what its routing can hold. */
+                uint32_t bv = na->mass[c ^ 1] + p;
+                na->mass[c ^ 1] = bv > 255 ? 255 : (uint8_t)bv;
+                iEV[6] += p;
+                continue;
+            }
             int lcthr = ILINKCAP < 0 ? -ILINKCAP : ILINKCAP;
             if (lcthr && iPTF[ni] >= lcthr) {
                 if (ILINKCAP < 0) {
@@ -525,17 +537,18 @@ void meso3i_tick(void) {
                 int p = nb->phot[c];
                 if (!p) continue;
                 if (IPHOTDEC && (int)(irnd() & 255) < IPHOTDEC) {
-                    /* lone-photon decay, BALANCED: the deposit lands on c
-                     * or antipode c^1 alternately — energy arrives without
-                     * a net stream direction (wound deposit leaks back out
-                     * its own channel; balanced stock holds) */
+                    /* lone-photon decay, BALANCED: consume the quantum from
+                     * the delivery count — it never streams; becomes mass
+                     * at the source site (A[si].drest is memcpy'd, safe).
+                     * Deposit alternates c / antipode c^1 — balanced stock
+                     * (wound deposit leaks back out its own channel). */
                     PlanckNode *na2 = A + si;
-                    na2->phot[c]--;
                     int dc = (irnd() & 1) ? c : (c ^ 1);
                     uint32_t v = na2->drest[dc] + 1;
                     na2->drest[dc] = v > 255 ? 255 : (uint8_t)v;
                     iEV[7]++;
-                    continue;
+                    IPHN--; p--;
+                    if (!p) continue;
                 }
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
