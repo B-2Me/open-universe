@@ -384,3 +384,47 @@ A recorded run, real telemetry, not an animation mock: `test_replay` ran the can
 <FrictionReplay />
 
 Or run it yourself. The same engine, live in your browser: **[Joule's Mill](/mill-demo)** compiles `meso3i` to WebAssembly with the full measured rule set. Directional rest, photon coupling, pair rules, latency, and one-click milestone scenes. (The earlier 44³ build, [Yarkovsky's Ember](/ember-demo), is preserved as a milestone.)
+
+### M52. The transition ledger: the substrate as a reaction network
+
+The E46–E51 arc revealed that the engine's knobs are not independent
+mechanics — they are **competing branches at shared decision points**.
+The honest decomposition, extracted from the code itself:
+
+**Fork 1 — the park fork** (every arriving mass quantum):
+```
+moving[c] → rest/drest/iE at destination   (IFRIC park, roll < fricp_num)
+          → phot[c] at destination          (IRECOMB radiative branch)
+          → moving[c^1] at source           (IREFL congestion bounce)
+          → moving[c] at destination        (free flight)
+park rate = f(iR density) − IFRLUM·luminosity — the branches SHARE the roll
+```
+
+**Fork 2 — the photon-arrival fork** (every photon):
+```
+phot[c] → absorbed: parked → iE             (IPHOT≥5, per-quantum roll)
+        → ablation: parked → moving[c] mass (IPHOT 2–4)
+        → coherence-barrier refuse          (IPTB gate on iPT)
+        → free stream                        (invariant c)
+```
+
+**The rest-stock ledger** (what a lump holds, why it balances):
+```
+inflow:   γ+γ → drest[c]+drest[c^1]   (fusion, iPT≥IFCAD gated, ν≥IFUS)
+outflow:  drest pairs → γ+γ            (annih, stock drain ∝ pairs)
+          parked → moving mass         (boil-off, mass conserved)
+          parked → γ (IPHOT≥4 variant) (fluorescence unwind)
+```
+
+**The cadence registers** (detection, not storage): `iPT` photon tempo
+(the fusion energy gate), `iLT` mass tempo (emission barrier). Energy
+is measured tempo, not stored attribute — E45's core finding.
+
+**Consequence**: parameter sweeps are *not* identifiable per-knob — the
+branches share decision points, so constants are coupled rates in one
+reaction network. The E50 equilibrium (annih=64 → ~20k plateau,
+plateau ∝ feed) is the first measured balance of the stock ledger;
+the E51/E52 negatives (no Eddington ceiling) locate the missing
+nonlinearity: there is no blow-off channel — deflected mass reroutes,
+never leaves. Mastering the substrate = mastering this fork structure,
+not tuning knobs.
