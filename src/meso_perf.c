@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -197,6 +197,18 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
         nb->n--;
         nb->phot[irnd() % IMOV]++; IPHN++;
     }
+    /* iepush: energy funds mechanical motion — spend k excitation to
+     * kick scalar rest onto a random moving channel (pressure) */
+    if (IEPUSH && nb->mass[REST] && nb->n >= IEPUSH &&
+        (irnd() & 255) < nb->n) {
+        nb->n -= IEPUSH;
+        nb->mass[REST]--;
+        int c2 = (int)(irnd() % IMOV);
+        uint32_t v = nb->mass[c2] + 1;
+        if (v > 255) { iEV[9]++; v = 255; }
+        nb->mass[c2] = (uint8_t)v;
+        iEV[1]++;
+    }
 
     /* IPAIR: antipodal moving pairs bind into rest at ~1/(4k) */
     if (IPAIR) {
@@ -334,6 +346,8 @@ void meso3i_friclum(int k)   { IFRLUM = k; }
 void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_scatter(int k)   { ISCATT = k; }
+void meso3i_lens(int k)      { ILENS = k; }
+void meso3i_iepush(int k)    { IEPUSH = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -389,6 +403,25 @@ void meso3i_tick(void) {
             int ni = iidx(iwrap(x + ICV[c][0], IW),
                           iwrap(y + ICV[c][1], IH),
                           iwrap(z + ICV[c][2], ID));
+            int lthr = ILENS < 0 ? -ILENS : ILENS;
+            if (ILENS && iR[ni] >= lthr) {
+                /* ILENS>0 avoid density (pressure); <0 seek it (attraction) */
+                int seekMax = ILENS < 0;
+                int best = seekMax ? -1 : (int)iR[ni], bc = -1;
+                for (int cc = 0; cc < IMOV; cc++) {
+                    int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                                  iwrap(y + ICV[cc][1], IH),
+                                  iwrap(z + ICV[cc][2], ID));
+                    int rr = (int)iR[n3];
+                    if (seekMax ? rr > best : rr < best) { best = rr; bc = cc; }
+                }
+                if (bc >= 0) {
+                    int nx = iwrap(x + ICV[bc][0], IW);
+                    int ny = iwrap(y + ICV[bc][1], IH);
+                    int nz = iwrap(z + ICV[bc][2], ID);
+                    ni = iidx(nx, ny, nz);
+                }
+            }
             if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; if (!iACT[ni]) memset(&A[ni], 0, sizeof(PlanckNode)); } iACT[ni] = 1;
             int fp = IFRICP;
             if (IFRLUM) {
