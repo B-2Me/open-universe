@@ -539,11 +539,11 @@ static void collide_node(uint8_t *n, int si) {
         for (int u = 0; u < lv; u++) {
             if (!iE[si]) break;
             if ((irnd() & EMASK) == 0) {
-                /* each emitted photon draws nu from the site's
-                 * occupation — hotter sites reach higher nu
-                 * (Wien displacement, mechanically) */
-                int cap = iE[si] < NNU ? iE[si] : NNU;
-                int nu = 1 + (int)(irnd() % (uint32_t)cap);
+                /* transaction-nu: the photon's frequency IS the charge
+                 * released — site spends min(iE,NNU), emitting nu equal
+                 * to the transaction amount (Planck: E=hnu, literally).
+                 * Hot sites emit hot photons deterministically. */
+                int nu = iE[si] < NNU ? iE[si] : NNU;
                 iE[si] -= nu;
                 iPA[si * IMOV * NNU + pick_(si, IMOV) * NNU + nu - 1]++;
                 IPHN++;
