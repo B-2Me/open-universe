@@ -73,3 +73,29 @@ for (const sc of [128]) {
   }
   console.log(`discharge: ${out.join(' | ')}`);
 }
+
+// E63d: two batteries — is the discharged remnant WOUND (drest) or dead (scalar)?
+for (const sc of [128]) {
+  const w4 = await (()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,join(here,'../../docs/public/wasm/ember'),'meso3i.js');return m.exports();})();
+  const W=48,H=24,D=24;
+  w4._meso3i_init(W,H,D,1);
+  const NMOV=w4._meso3i_nch()-1,REST=NMOV;
+  w4._meso3i_collmode(0);w4._meso3i_friction(8);w4._meso3i_fricmode(4);
+  w4._meso3i_fricp(128);w4._meso3i_drest(1);w4._meso3i_reflect(0);
+  w4._meso3i_phot(9); w4._meso3i_scatter(sc); w4._meso3i_iecost(1);
+  const ie=()=>{let s=0;for(let z=6;z<18;z++)for(let y=6;y<18;y++)for(let x=16;x<40;x++)
+    if(!((x+y+z)&1)) s+=w4._meso3i_eget(x,y,z); return s;};
+  const dr=()=>{let s=0;for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if((x+y+z)&1)continue; for(let c=0;c<NMOV;c++) s+=w4._meso3i_rget(x,y,z,c);} return s;};
+  const sc2=()=>{let s=0;for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if((x+y+z)&1)continue; s+=w4._meso3i_get(x,y,z,REST);} return s;};
+  const out=[];
+  for(let t=0;t<600;t++){
+    if(t<200&&t%4===0)for(let z=6;z<18;z++)for(let y=6;y<18;y++)for(let x=16;x<40;x++){
+      if(!((x+y+z)&1)){ w4._meso3i_phset_nu(x,y,z,13,1,16); w4._meso3i_phset_nu(x,y,z,12,1,16); }
+    }
+    w4._meso3i_drain_edge(4); w4._meso3i_tick();
+    if(t%200===0) out.push(`t${t}:iE=${ie()} drest=${dr()} scalar=${sc2()}`);
+  }
+  console.log(`two-battery: ${out.join(' | ')}`);
+}
