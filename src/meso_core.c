@@ -32,9 +32,16 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, IEPUSH, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, IEPUSH, ILENS, IRANDM, *iR;
 static int64_t   iEV[10];
 
+static uint32_t irnd(void);   /* fwd decl for pick_/roll_ */
+static inline int pick_(int si, int k) {
+    return IRANDM ? ((si * 7 + ITICK) % k) : (int)(irnd() % (uint32_t)k);
+}
+static inline int roll_(int si, int k) {
+    return IRANDM ? (((si * 7 + ITICK) % 256) < k) : ((int)(irnd() & 255) < k);
+}
 static inline uint32_t irnd(void) {
     irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
     return irng;
@@ -105,7 +112,7 @@ static int phot_at(const PlanckNode *n) {
 
 /* collide_node — exact port of meso3i's five stages, adapted to PlanckNode.
  * Writes post-collision state into nb at the same site (local only). */
-static void collide_node(const PlanckNode *na, PlanckNode *nb) {
+static void collide_node(const PlanckNode *na, PlanckNode *nb, int si) {
     /* carry stationary registers */
     nb->n = na->n;
     nb->pt = na->pt;
@@ -145,17 +152,17 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
             int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
             if (pick < n[REST]) {
                 if (IPAIR && n[REST] >= 2) {
-                    int c = irnd() % IMOV;
+                    int c = pick_(si, IMOV);
                     n[REST] -= 2;
                     n[c]++; n[c ^ 1]++;
                     iEV[2] += 2;
                 } else if (IPHOT >= 4) {
-                    int c = irnd() % IMOV;
+                    int c = pick_(si, IMOV);
                     n[REST]--;
                     nb->phot[c]++; IPHN++;
                     iEV[2]++;
                 } else {
-                    n[REST]--; n[irnd() % IMOV]++;
+                    n[REST]--; n[pick_(si, IMOV)]++;
                     iEV[2]++;
                 }
             } else {
@@ -178,20 +185,20 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
                 int cap = nb->n < NNU ? nb->n : NNU;
                 int nu = 1 + (int)(irnd() % (uint32_t)cap);
                 nb->n -= nu;
-                nb->phot[irnd() % IMOV]++; IPHN++;
+                nb->phot[pick_(si, IMOV)]++; IPHN++;
             }
         }
     } else if (IPHOT >= 5 && nb->n && (irnd() & EMASK) == 0) {
         nb->n--;
-        nb->phot[irnd() % IMOV]++; IPHN++;
+        nb->phot[pick_(si, IMOV)]++; IPHN++;
     }
     /* iepush: energy funds mechanical motion — spend k excitation to
      * kick scalar rest onto a random moving channel (pressure) */
     if (IEPUSH && nb->mass[REST] && nb->n >= IEPUSH &&
-        (irnd() & 255) < nb->n) {
+        roll_(si, nb->n)) {
         nb->n -= IEPUSH;
         nb->mass[REST]--;
-        int c2 = (int)(irnd() % IMOV);
+        int c2 = pick_(si, IMOV);
         uint32_t v = nb->mass[c2] + 1;
         if (v > 255) { iEV[9]++; v = 255; }
         nb->mass[c2] = (uint8_t)v;
@@ -324,6 +331,8 @@ void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_scatter(int k)   { ISCATT = k; }
 void meso3i_iepush(int k)    { IEPUSH = k; }
+void meso3i_lens(int k)      { ILENS = k; }
+void meso3i_randmode(int k) { IRANDM = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -348,7 +357,7 @@ void meso3i_tick(void) {
     /* 2. node collisions (flat si order — identical RNG consumption) */
     memset(B, 0, (size_t)IN * sizeof(PlanckNode));
     for (int s = 0; s < IN; s++)
-        collide_node(NA + s, B + s);
+        collide_node(NA + s, B + s, s);
 
     memset(A, 0, (size_t)IN * sizeof(PlanckNode));
 
@@ -382,7 +391,7 @@ void meso3i_tick(void) {
                 fp -= lum * IFRLUM / 8;
             }
             if (IFRIC && iR[ni] >= IFRIC &&
-                (int)(irnd() & 255) < fp) {
+                roll_(si, fp)) {
                 if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
                     uint32_t v2 = A[ni].phot[c] + p;
                     A[ni].phot[c] = v2 > 255 ? 255 : (uint8_t)v2;
@@ -437,14 +446,14 @@ void meso3i_tick(void) {
                     int absorbed = 0;
                     if (IPHOT >= 5) {
                         for (int u = 0; u < p; u++)
-                            if (parked && (int)(irnd() & 255) < parked) {
+                            if (parked && roll_(si, parked)) {
                                 uint32_t e = A[ni].n + 1;
                                 A[ni].n = e > 255 ? 255 : (uint8_t)e;
                                 absorbed++;
                             }
                     } else {
                         for (int u = 0; u < p; u++)
-                            if (parked && (int)(irnd() & 255) < parked) {
+                            if (parked && roll_(si, parked)) {
                                 int pick = parked > A[ni].mass[REST]
                                     ? (int)(irnd() % (uint32_t)parked) : 0;
                                 if (pick < A[ni].mass[REST]) {
@@ -469,7 +478,7 @@ void meso3i_tick(void) {
                 if (IPHOT == 2) {
                     int parked = A[ni].mass[REST] + drest_sum(A + ni);
                     for (int u = 0; u < p; u++)
-                        if (parked && (int)(irnd() & 255) < parked) {
+                        if (parked && roll_(si, parked)) {
                             int pick = parked > A[ni].mass[REST]
                                 ? (int)(irnd() % (uint32_t)parked) : 0;
                             if (pick < A[ni].mass[REST]) {
@@ -487,11 +496,33 @@ void meso3i_tick(void) {
                             A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
                         }
                 }
-                if (ISCATT) {
+                if (ISCATT || ILENS) {
                     int rho2 = iR[ni];
+                    int denseAdj = -1;
+                    if (ILENS) {
+                        int bx = x + ICV[c][0], by = y + ICV[c][1], bz = z + ICV[c][2];
+                        for (int cc = 0; cc < IMOV; cc++) {
+                            int n4 = iidx(iwrap(bx + ICV[cc][0], IW),
+                                          iwrap(by + ICV[cc][1], IH),
+                                          iwrap(bz + ICV[cc][2], ID));
+                            if (denseAdj < 0 || (int)iR[n4] > (int)iR[denseAdj]) denseAdj = n4;
+                        }
+                    }
+                    if (ILENS && !rho2 && denseAdj >= 0) rho2 = iR[denseAdj] | 1;
                     for (int u = 0; u < p; u++)
-                        if (rho2 && (int)(irnd() & 255) < ISCATT) {
-                            int c2 = (int)(irnd() % IMOV);
+                        if ((rho2 || (ILENS && denseAdj >= 0)) &&
+                            (int)(irnd() & 255) < (ISCATT < 0 ? -ISCATT : (ISCATT ? ISCATT : ILENS))) {
+                            int c2;
+                            if (ISCATT < 0 || (ILENS && denseAdj >= 0)) {
+                                int best = -1;
+                                int bx = x - ICV[c][0], by = y - ICV[c][1], bz = z - ICV[c][2];
+                                for (int cc = 0; cc < IMOV; cc++) {
+                                    int n2 = iidx(iwrap(bx + ICV[cc][0], IW),
+                                                  iwrap(by + ICV[cc][1], IH),
+                                                  iwrap(bz + ICV[cc][2], ID));
+                                    if ((int)iR[n2] > best) { best = iR[n2]; c2 = cc; }
+                                }
+                            } else c2 = (int)(irnd() % IMOV);
                             if (A[ni].phot[c2] < 255) A[ni].phot[c2]++;
                             p--;
                         }

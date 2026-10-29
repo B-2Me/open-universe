@@ -81,7 +81,10 @@ static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 —
 static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link-pair refused when photon load >= k (0 = off) — Eddington as congestion */
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
-static int      IEPUSH = 0;          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
+static int      IEPUSH = 0;
+static int      ILENS = 0;
+static int      IRANDM = 0;          /* 0=legacy RNG, 1=deterministic site-phase */
+           /* adjacent-sense: mass reroutes to least-dense neighbor (pressure), photons deflect toward dense (lensing) */          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -143,6 +146,14 @@ static uint32_t irng = 0xC0FFEEu;
 static inline uint32_t irnd(void) {
     irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
     return irng;
+}
+/* pick_(si,k): deterministic phase or RNG — (si*7+tick)%k spreads phases */
+static inline int pick_(int si, int k) {
+    return IRANDM ? ((si * 7 + ITICK) % k) : (int)(irnd() % (uint32_t)k);
+}
+/* roll_(si,k): deterministic duty cycle or RNG — (si*7+tick)%256 < k */
+static inline int roll_(int si, int k) {
+    return IRANDM ? (((si * 7 + ITICK) % 256) < k) : ((int)(irnd() & 255) < k);
 }
 
 static inline int isite(int x, int y, int z) { return ((x + y + z) & 1) == 0; }
@@ -265,6 +276,8 @@ void meso3i_linkcap(int k)  { ILINKCAP = k; }
 void meso3i_iecost(int k)   { IECOST = k; }
 void meso3i_scatter(int k)  { ISCATT = k; }
 void meso3i_iepush(int k)   { IEPUSH = k; }
+void meso3i_lens(int k)     { ILENS = k; }
+void meso3i_randmode(int k) { IRANDM = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -469,7 +482,7 @@ static void collide_node(uint8_t *n, int si) {
                 if (IPAIR && n[INCH - 1] >= 2) {
                     /* pair emission: rest sheds as a back-to-back
                      * antipodal pair — zero net momentum, honest decay */
-                    int c = irnd() % IMOV;
+                    int c = pick_(si, IMOV);
                     n[INCH - 1] -= 2;
                     n[c]++; n[c ^ 1]++;
                     iEV[2] += 2; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
@@ -477,12 +490,12 @@ static void collide_node(uint8_t *n, int si) {
                     /* fluorescence: rest re-emits as PHOTON, not mass —
                      * the "resume" branch of the refractive cycle
                      * (absorb->dwell->resume-as-photon, ILAT-gated) */
-                    int c = irnd() % IMOV;
+                    int c = pick_(si, IMOV);
                     n[INCH - 1]--;
                     iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
                     iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 } else {
-                    n[INCH - 1]--; n[irnd() % IMOV]++;
+                    n[INCH - 1]--; n[pick_(si, IMOV)]++;
                     iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 }
             } else {
@@ -532,18 +545,18 @@ static void collide_node(uint8_t *n, int si) {
                 int cap = iE[si] < NNU ? iE[si] : NNU;
                 int nu = 1 + (int)(irnd() % (uint32_t)cap);
                 iE[si] -= nu;
-                iPA[si * IMOV * NNU + (irnd() % IMOV) * NNU + nu - 1]++;
+                iPA[si * IMOV * NNU + pick_(si, IMOV) * NNU + nu - 1]++;
                 IPHN++;
             }
         }
     } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
         iE[si]--;
-        iPA[si * IMOV * NNU + (irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
+        iPA[si * IMOV * NNU + pick_(si, IMOV) * NNU]++; IPHN++;   /* nu=1 */
     }
     /* iepush: energy funds mechanical motion — spend k iE to kick a
      * scalar-rest quantum onto a random moving channel (pressure) */
     if (IEPUSH && iA[si * INCH + INCH-1] && iE[si] >= IEPUSH &&
-        (irnd() & 255) < iE[si]) {
+        roll_(si, iE[si])) {
         iE[si] -= IEPUSH;
         iA[si * INCH + INCH-1]--;
         int c2 = (int)(irnd() % IMOV);
@@ -762,7 +775,7 @@ void meso3i_tick(void) {
                 /* peristaltic swell: dump ALL Q isotropically into
                  * random moving channels — the expansion beat */
                 int nq = iQ[s];
-                for (int u = 0; u < nq; u++) n[irnd() % IMOV]++;
+                for (int u = 0; u < nq; u++) n[pick_(s, IMOV)]++;
                 iQ[s] = 0;
             } else if (IQMODE >= 3 && IDIR >= 0) {
                 /* emit count: 1/beat baseline; with IQCAP, proportional
@@ -831,6 +844,24 @@ void meso3i_tick(void) {
             int ny = iwrap(y + ICV[c][1], IH);
             int nz = iwrap(z + ICV[c][2], ID);
             int ni = iidx(nx, ny, nz);
+            int cc0 = c;
+            if (ILENS && iR[ni] >= ILENS) {
+                /* pressure-avoidance: the destination is crowded —
+                 * reroute onto the least-dense neighbor channel */
+                int best = (int)iR[ni], bc = -1;
+                for (int cc = 0; cc < IMOV; cc++) {
+                    int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                                  iwrap(y + ICV[cc][1], IH),
+                                  iwrap(z + ICV[cc][2], ID));
+                    if ((int)iR[n3] < best) { best = iR[n3]; bc = cc; }
+                }
+                if (bc >= 0) {
+                    nx = iwrap(x + ICV[bc][0], IW);
+                    ny = iwrap(y + ICV[bc][1], IH);
+                    nz = iwrap(z + ICV[bc][2], ID);
+                    ni = iidx(nx, ny, nz); c = bc;
+                }
+            }
             if (qcapture(ni)) {
                 uint32_t q = iQ[ni] + n[c];   /* core captures the hop */
                 iQ[ni] = q > 255 ? 255 : (uint8_t)q;
@@ -845,7 +876,7 @@ void meso3i_tick(void) {
                 fp -= lum * IFRLUM / 8;
             }
             if (IFRIC && (int)iR[ni] >= IFRIC &&
-                (int)(irnd() & 255) < fp) {
+                roll_(si, fp)) {
                 /* network drag (space-is-friction): a transit hop into a
                  * congested node sheds momentum — the quantum lands in the
                  * destination's REST channel as parked heat. Entry rate ∝
@@ -953,14 +984,14 @@ void meso3i_tick(void) {
                         /* thermalize: photon absorbed as EXCITATION —
                          * n++ at fixed mass, no ejection (Planck's n) */
                         for (int u = 0; u < p; u++)
-                            if (parked && (int)(irnd() & 255) < parked) {
+                            if (parked && roll_(ni, parked)) {
                                 uint32_t e = iE[ni] + nu + 1;   /* energy-conserving absorb */
                                 iE[ni] = e > 255 ? 255 : (uint8_t)e;
                                 absorbed++;
                             }
                     } else {
                     for (int u = 0; u < p; u++)
-                        if (parked && (int)(irnd() & 255) < parked) {
+                        if (parked && roll_(ni, parked)) {
                             int pick = parked > iB[ri]
                                 ? (int)(irnd() % (uint32_t)parked) : 0;
                             if (pick < iB[ri]) {
@@ -987,7 +1018,7 @@ void meso3i_tick(void) {
                     int dsum = IDREST ? drest_at(iRB, ni) : 0;
                     int parked = iB[ri] + dsum;
                     for (int u = 0; u < p; u++)
-                        if (parked && (int)(irnd() & 255) < parked) {
+                        if (parked && roll_(ni, parked)) {
                             /* eject into the photon's channel — the
                              * photon fixes the direction either way;
                              * draw proportionally from scalar vs its
@@ -1030,11 +1061,36 @@ void meso3i_tick(void) {
                 if (ISCATT && pi >= 0) {
                     /* scatter: declined-transaction redirect — the
                      * photon interacts at the matter site, keeps flying
-                     * on a random channel at the same nu — optical depth */
+                     * on another channel at the same nu — optical depth.
+                     * ISCATT<0: density-seeking — deflect toward the
+                     * neighbor with max local density (light bends
+                     * toward congestion); >0: random channel */
                     int rho2 = iR[ni];
+                    int denseAdj = -1;
+                    if (ILENS) {   /* perimeter sense: does the photon
+                                     * see mass ahead on any channel? */
+                        int bx = x + ICV[c][0], by = y + ICV[c][1], bz = z + ICV[c][2];
+                        for (int cc = 0; cc < IMOV; cc++) {
+                            int n4 = iidx(iwrap(bx + ICV[cc][0], IW),
+                                          iwrap(by + ICV[cc][1], IH),
+                                          iwrap(bz + ICV[cc][2], ID));
+                            if (iR[n4] > (denseAdj < 0 ? -1 : iR[denseAdj])) denseAdj = n4;
+                        }
+                    }
+                    if (ILENS && !rho2 && denseAdj >= 0) rho2 = iR[denseAdj] | 1;
                     for (int u = 0; u < p; u++)
-                        if (rho2 && (int)(irnd() & 255) < ISCATT) {
-                            int c2 = (int)(irnd() % IMOV);
+                        if ((rho2 || (ILENS && denseAdj >= 0)) &&
+                            roll_(ni, ISCATT < 0 ? -ISCATT : (ISCATT ? ISCATT : ILENS))) {
+                            int c2;
+                            if (ISCATT < 0 || (ILENS && denseAdj >= 0)) {   /* lensing: seek congestion */
+                                int best = -1, bx = x - ICV[c][0], by = y - ICV[c][1], bz = z - ICV[c][2];
+                                for (int cc = 0; cc < IMOV; cc++) {
+                                    int n2 = iidx(iwrap(bx + ICV[cc][0], IW),
+                                                  iwrap(by + ICV[cc][1], IH),
+                                                  iwrap(bz + ICV[cc][2], ID));
+                                    if (iR[n2] > best) { best = iR[n2]; c2 = cc; }
+                                }
+                            } else c2 = (int)(irnd() % IMOV);
                             int pi2 = ni * IMOV * NNU + c2 * NNU + nu;
                             if (iPB[pi2] < 255) iPB[pi2]++;
                             p--;
