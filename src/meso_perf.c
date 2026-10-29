@@ -45,7 +45,7 @@ static int      *iFLIST;            /* merged final list */
 static int icmp_(const void *a, const void *b) { return *(const int *)a - *(const int *)b; }
 static uint32_t  NGEN;              /* current generation */
 static int      *iR;
-static int64_t   iEV[8];
+static int64_t   iEV[10];
 
 static inline uint32_t irnd(void) {
     irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
@@ -308,7 +308,7 @@ int meso3i_mov_mass(void) {
         for (int c = 0; c < IMOV; c++) m += NA[s].mass[c];
     return (int)m;
 }
-int64_t meso3i_ev(int i) { return i < 0 || i >= 8 ? 0 : iEV[i]; }
+int64_t meso3i_ev(int i) { return i < 0 || i >= 10 ? 0 : iEV[i]; }
 void meso3i_ev_reset(void) { memset(iEV, 0, sizeof(iEV)); }
 
 void meso3i_friction(int k)  { IFRIC = k; }
@@ -427,6 +427,7 @@ void meso3i_tick(void) {
                 continue;
             }
             uint32_t v = A[ni].mass[c] + p;
+            if (v > 255) iEV[9] += v - 255;
             A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
         }
     }
@@ -566,13 +567,19 @@ void meso3i_tick(void) {
 }
 
 void meso3i_drain_edge(int t) {
+    /* iEV[8] = drain counter, iEV[9] = cap-overflow counter */
     for (int z = 0; z < ID; z++)
     for (int y = 0; y < IH; y++)
     for (int x = 0; x < IW; x++) {
         if (x >= t && x < IW - t && y >= t && y < IH - t &&
             z >= t && z < ID - t) continue;
         int si = iidx(x, y, z);
-        for (int c = 0; c < IMOV; c++) IPHN -= NA[si].phot[c];
+        int64_t dr = NA[si].mass[REST];
+        for (int c = 0; c < IMOV; c++) {
+            dr += NA[si].mass[c] + NA[si].drest[c] + NA[si].phot[c];
+            IPHN -= NA[si].phot[c];
+        }
+        iEV[8] += dr;   /* drained quanta (all species — quantum ledger) */
         memset(&NA[si], 0, sizeof(PlanckNode));
     }
 }
