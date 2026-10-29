@@ -82,6 +82,7 @@ static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
 static int      IEPUSH = 0;
+static int      INUSCAT = 0;         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
 static int      ILENS = 0;
 static int      IRANDM = 0;          /* 0=legacy RNG, 1=deterministic site-phase */
            /* adjacent-sense: mass reroutes to least-dense neighbor (pressure), photons deflect toward dense (lensing) */          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
@@ -278,6 +279,7 @@ void meso3i_scatter(int k)  { ISCATT = k; }
 void meso3i_iepush(int k)   { IEPUSH = k; }
 void meso3i_lens(int k)     { ILENS = k; }
 void meso3i_randmode(int k) { IRANDM = k; }
+void meso3i_nuscat(int k)   { INUSCAT = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -1082,7 +1084,20 @@ void meso3i_tick(void) {
                         if ((rho2 || (ILENS && denseAdj >= 0)) &&
                             roll_(ni, ISCATT < 0 ? -ISCATT : (ISCATT ? ISCATT : ILENS))) {
                             int c2;
-                            if (ISCATT < 0 || (ILENS && denseAdj >= 0)) {   /* lensing: seek congestion */
+                            if (INUSCAT) {
+                                /* nu-split: hot photons flee density
+                                 * (penetrate), cold photons seek it
+                                 * (trap) — spectral routing */
+                                int seek = (nu + 1) <= INUSCAT;   /* cold: toward */
+                                int best = seek ? -1 : 1 << 30, bx = x - ICV[c][0], by = y - ICV[c][1], bz = z - ICV[c][2];
+                                for (int cc = 0; cc < IMOV; cc++) {
+                                    int n2 = iidx(iwrap(bx + ICV[cc][0], IW),
+                                                  iwrap(by + ICV[cc][1], IH),
+                                                  iwrap(bz + ICV[cc][2], ID));
+                                    int rr = iR[n2];
+                                    if (seek ? rr > best : rr < best) { best = rr; c2 = cc; }
+                                }
+                            } else if (ISCATT < 0 || (ILENS && denseAdj >= 0)) {   /* lensing: seek congestion */
                                 int best = -1, bx = x - ICV[c][0], by = y - ICV[c][1], bz = z - ICV[c][2];
                                 for (int cc = 0; cc < IMOV; cc++) {
                                     int n2 = iidx(iwrap(bx + ICV[cc][0], IW),
