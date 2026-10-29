@@ -347,6 +347,11 @@ void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_scatter(int k)   { ISCATT = k; }
 void meso3i_lens(int k)      { ILENS = k; }
+void meso3i_dset(int x, int y, int z, int c, uint8_t v) {
+    int si = iidx(x, y, z);
+    if (!iACT[si]) { iACT[si] = 1; iALIST[NACT++] = si; memset(&NA[si], 0, sizeof(PlanckNode)); }
+    NA[si].drest[c] = v;
+}
 void meso3i_iepush(int k)    { IEPUSH = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
