@@ -536,12 +536,13 @@ void meso3i_tick(void) {
             for (int c = 0; c < IMOV; c++) {
                 int p = nb->phot[c];
                 if (!p) continue;
-                if (IPHOTDEC && (int)(irnd() & 255) < IPHOTDEC) {
-                    /* lone-photon decay, BALANCED: consume the quantum from
-                     * the delivery count — it never streams; becomes mass
-                     * at the source site (A[si].drest is memcpy'd, safe).
-                     * Deposit alternates c / antipode c^1 — balanced stock
-                     * (wound deposit leaks back out its own channel). */
+                if (IPHOTDEC && iR[si] >= IPHOTDEC &&
+                    (int)(irnd() & 255) < IPHOTDEC) {
+                    /* grounded decay: photon->mass only WHERE MASS EXISTS
+                     * (iR >= k — the catalyst/nucleus partner; vacuum
+                     * photons never convert, matching pair production).
+                     * BALANCED deposit on c / c^1 — energy arrives without
+                     * a net stream direction. */
                     PlanckNode *na2 = A + si;
                     int dc = (irnd() & 1) ? c : (c ^ 1);
                     uint32_t v = na2->drest[dc] + 1;
