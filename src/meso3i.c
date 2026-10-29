@@ -447,7 +447,11 @@ static void collide_node(uint8_t *n, int si) {
      * gate without contributing mass — a massless carrier probe. */
     int dsum = IDREST ? drest_at(iRA, si) : 0;
     int parked = n[INCH - 1] + dsum;
-    if (IECOST && parked && (int)iE[si] < IECOST) return;
+    /* energy-funds-work, nature's variant: emission needs stored iE
+     * OR an arriving transit quantum whose impact energy pays on
+     * arrival (iLT>0 = mass is landing here this window). Cold AND
+     * quiet can't emit; cold but bombarded can — impact pays. */
+    if (IECOST && parked && (int)iE[si] < IECOST && !iLT[si]) return;
     if (IFRICM && parked && (IFRICM > 0 || iLT[si] >= ILAT ||
                              (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
