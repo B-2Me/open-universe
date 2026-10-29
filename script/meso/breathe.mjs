@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const src = readFileSync(join(here, '../../docs/public/wasm/ember/meso_perf.js'), 'utf8');
 const mod = { exports: {} };
-for (const ep of [0, 8]) {
+for (const ep of [4, 8, 16]) {
   const w = await (()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,join(here,'../../docs/public/wasm/ember'),'meso_perf.js');return m.exports();})();
   const W=32,H=16,D=16;
   w._meso3i_init(W,H,D,1);
@@ -20,7 +20,7 @@ for (const ep of [0, 8]) {
   for(let z=5;z<11;z++)for(let y=5;y<11;y++)for(let x=14;x<20;x++)
     if(!((x+y+z)&1)) w._meso3i_set(x,y,z,REST,64);
   const out=[];
-  for(let t=0;t<300;t++){
+  for(let t=0;t<240;t++){
     if(t%4===0)for(let z=4;z<12;z++)for(let y=4;y<12;y++)for(let x=8;x<14;x++)
       if(!((x+y+z)&1)) w._meso3i_phset(x,y,z,12,16);
     w._meso3i_drain_edge(3); w._meso3i_tick();
