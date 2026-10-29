@@ -77,6 +77,7 @@ static int      IFUS = 0;            /* fusion threshold: pair production requir
 static int      IFCAD = 0;           /* fusion cadence gate: pair production requires iPT >= k (0 = off) */
 static int      IRECOMB = 0;         /* radiative recombination: parked quantum converts to photon w/ p = k/256 (0 = off) */
 static int      IANNIH = 0;          /* drest annihilation: opposing directional-rest bins -> antipodal photon pair, per-quantum roll k/256 (0 = off) */
+static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 — outgoing photon flux fights the park (Eddington back-pressure) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -255,6 +256,7 @@ void meso3i_fusemin(int k) { IFUS = k; }
 void meso3i_fusecad(int k) { IFCAD = k; }
 void meso3i_recomb(int k)  { IRECOMB = k; }
 void meso3i_annih(int k)   { IANNIH = k; }
+void meso3i_friclum(int k) { IFRLUM = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -806,8 +808,15 @@ void meso3i_tick(void) {
                 iEV[3] += n[c];
                 continue;
             }
+            int fp = fricp_num((int)iR[ni]);
+            if (IFRLUM) {
+                int lum = 0;
+                const uint8_t *pa_ = iPA + (size_t)ni * IMOV * NNU;
+                for (int pc = 0; pc < IMOV * NNU; pc++) lum += pa_[pc];
+                fp -= lum * IFRLUM / 8;
+            }
             if (IFRIC && (int)iR[ni] >= IFRIC &&
-                (int)(irnd() & 255) < fricp_num((int)iR[ni])) {
+                (int)(irnd() & 255) < fp) {
                 /* network drag (space-is-friction): a transit hop into a
                  * congested node sheds momentum — the quantum lands in the
                  * destination's REST channel as parked heat. Entry rate ∝

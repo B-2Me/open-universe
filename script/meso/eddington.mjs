@@ -20,6 +20,8 @@ const NMOV=w._meso3i_nch()-1,REST=NMOV;
 w._meso3i_collmode(0); w._meso3i_friction(8); w._meso3i_fricmode(16);
 w._meso3i_fricp(128); w._meso3i_drest(1); w._meso3i_reflect(0);
 w._meso3i_phot(8); w._meso3i_annih(ANNIH);
+const FL = Number(process.env.FRICLUM || 0);
+if (w._meso3i_friclum) w._meso3i_friclum(FL);
 // primordial lump to shine: dense rest seed at center
 for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const dx=x-C[0],dy=y-C[1],dz=z-C[2],r2=dx*dx+dy*dy+dz*dz;

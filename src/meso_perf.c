@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -326,6 +326,7 @@ void meso3i_fusemin(int k)   { IFUS = k; }
 void meso3i_fusecad(int k)   { IFCAD = k; }
 void meso3i_recomb(int k)    { IRECOMB = k; }
 void meso3i_annih(int k)     { IANNIH = k; }
+void meso3i_friclum(int k)   { IFRLUM = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -382,8 +383,14 @@ void meso3i_tick(void) {
                           iwrap(y + ICV[c][1], IH),
                           iwrap(z + ICV[c][2], ID));
             if (iNNF[ni] != NGEN) { iNNF[ni] = NGEN; iNLIST[nn++] = ni; if (!iACT[ni]) memset(&A[ni], 0, sizeof(PlanckNode)); } iACT[ni] = 1;
+            int fp = IFRICP;
+            if (IFRLUM) {
+                int lum = 0;   /* photons sit in B pre-stream */
+                for (int pc = 0; pc < IMOV; pc++) lum += B[ni].phot[pc];
+                fp -= lum * IFRLUM / 8;
+            }
             if (IFRIC && iR[ni] >= IFRIC &&
-                (int)(irnd() & 255) < IFRICP) {
+                (int)(irnd() & 255) < fp) {
                 if (IRECOMB && (int)(irnd() & 255) < IRECOMB) {
                     uint32_t v2 = A[ni].phot[c] + p;
                     A[ni].phot[c] = v2 > 255 ? 255 : (uint8_t)v2;
