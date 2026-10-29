@@ -81,6 +81,7 @@ static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 —
 static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link-pair refused when photon load >= k (0 = off) — Eddington as congestion */
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
+static int      IEPUSH = 0;          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -263,6 +264,7 @@ void meso3i_friclum(int k) { IFRLUM = k; }
 void meso3i_linkcap(int k)  { ILINKCAP = k; }
 void meso3i_iecost(int k)   { IECOST = k; }
 void meso3i_scatter(int k)  { ISCATT = k; }
+void meso3i_iepush(int k)   { IEPUSH = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -537,6 +539,18 @@ static void collide_node(uint8_t *n, int si) {
     } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
         iE[si]--;
         iPA[si * IMOV * NNU + (irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
+    }
+    /* iepush: energy funds mechanical motion — spend k iE to kick a
+     * scalar-rest quantum onto a random moving channel (pressure) */
+    if (IEPUSH && iA[si * INCH + INCH-1] && iE[si] >= IEPUSH &&
+        (irnd() & 255) < iE[si]) {
+        iE[si] -= IEPUSH;
+        iA[si * INCH + INCH-1]--;
+        int c2 = (int)(irnd() % IMOV);
+        uint32_t v = iA[si * INCH + c2] + 1;
+        if (v > 255) { iEV[9]++; v = 255; }
+        iA[si * INCH + c2] = (uint8_t)v;
+        iEV[1]++;
     }
     /* pair capture (IPAIR): a populated antipodal pair may bind into
      * rest mass — the wind side of the cycle. Zero net momentum either

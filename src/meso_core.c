@@ -32,7 +32,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, IEPUSH, *iR;
 static int64_t   iEV[10];
 
 static inline uint32_t irnd(void) {
@@ -185,6 +185,18 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
         nb->n--;
         nb->phot[irnd() % IMOV]++; IPHN++;
     }
+    /* iepush: energy funds mechanical motion — spend k excitation to
+     * kick scalar rest onto a random moving channel (pressure) */
+    if (IEPUSH && nb->mass[REST] && nb->n >= IEPUSH &&
+        (irnd() & 255) < nb->n) {
+        nb->n -= IEPUSH;
+        nb->mass[REST]--;
+        int c2 = (int)(irnd() % IMOV);
+        uint32_t v = nb->mass[c2] + 1;
+        if (v > 255) { iEV[9]++; v = 255; }
+        nb->mass[c2] = (uint8_t)v;
+        iEV[1]++;
+    }
 
     /* IPAIR: antipodal moving pairs bind into rest at ~1/(4k) */
     if (IPAIR) {
@@ -311,6 +323,7 @@ void meso3i_friclum(int k)   { IFRLUM = k; }
 void meso3i_linkcap(int k)   { ILINKCAP = k; }
 void meso3i_iecost(int k)    { IECOST = k; }
 void meso3i_scatter(int k)   { ISCATT = k; }
+void meso3i_iepush(int k)    { IEPUSH = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 

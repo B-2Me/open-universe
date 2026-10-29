@@ -206,6 +206,7 @@ if emcc meso3i.c \
     '_meso3i_ev',
     '_meso3i_ev_reset',
     '_meso3i_scatter',
+    '_meso3i_iepush',
     '_malloc',
     '_free'
   ]" \
@@ -259,6 +260,7 @@ if emcc meso_core.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1
     '_meso3i_linkcap',
     '_meso3i_iecost',
     '_meso3i_scatter',
+    '_meso3i_iepush',
     '_meso3i_iptbar',
     '_malloc',
     '_free'
