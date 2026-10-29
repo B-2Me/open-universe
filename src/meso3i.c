@@ -133,8 +133,8 @@ static int      NGRP;
  *   4 drain       mass quanta zeroed at the open boundary shell
  *   5 peject      parked mass ejected by photon contact (IPHOT 2/3)
  *   6 reflect     hop refused by congestion wall (IREFL) */
-static uint64_t iEV[8];   /* 7 = pair production (photon+photon -> rest) */
-double meso3i_ev(int k)     { return (k >= 0 && k < 8) ? (double)iEV[k] : 0; }
+static uint64_t iEV[10];  /* 7=pair prod; 8=drain counter (all species); 9=cap overflow */
+double meso3i_ev(int k)     { return (k >= 0 && k < 10) ? (double)iEV[k] : 0; }
 void   meso3i_ev_reset(void) { memset(iEV, 0, sizeof iEV); }
 
 static uint32_t irng = 0xC0FFEEu;
@@ -893,6 +893,7 @@ void meso3i_tick(void) {
             }
             int di = ni * INCH + c;
             uint32_t v = iB[di] + n[c];
+            if (v > 255) iEV[9] += v - 255;
             iB[di] = v > 255 ? 255 : (uint8_t)v;   /* hard cap safety */
         }
     }
@@ -1184,12 +1185,16 @@ void meso3i_drain_edge(int t) {
             z >= t && z < ID - t) continue;
         int si = iidx(x, y, z);
         const uint8_t *na = iA + (size_t)si * INCH;
-        for (int c = 0; c < INCH; c++) iEV[4] += na[c];
+        int64_t drq = 0;
+        for (int c = 0; c < INCH; c++) { iEV[4] += na[c]; drq += na[c]; }
         if (IDREST) {
             const uint8_t *dr = iRA + (size_t)si * IMOV;
-            for (int c = 0; c < IMOV; c++) iEV[4] += dr[c];
+            for (int c = 0; c < IMOV; c++) { iEV[4] += dr[c]; drq += dr[c]; }
             memset(iRA + (size_t)si * IMOV, 0, IMOV);
         }
+        {   const uint8_t *pa_ = iPA + (size_t)si * IMOV * NNU;
+            for (int c = 0; c < IMOV * NNU; c++) drq += pa_[c]; }
+        iEV[8] += drq;   /* drained quanta — all species */
         memset(iA + (size_t)si * INCH, 0, INCH);
         iE[si] = 0;   /* drain excitation at the edge too */
         if (IPHN) {

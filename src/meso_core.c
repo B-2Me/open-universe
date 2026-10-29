@@ -33,7 +33,7 @@ static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
 static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, *iR;
-static int64_t   iEV[8];
+static int64_t   iEV[10];
 
 static inline uint32_t irnd(void) {
     irng ^= irng << 13; irng ^= irng >> 17; irng ^= irng << 5;
@@ -285,7 +285,7 @@ int meso3i_mov_mass(void) {
         for (int c = 0; c < IMOV; c++) m += NA[s].mass[c];
     return (int)m;
 }
-int64_t meso3i_ev(int i) { return i < 0 || i >= 8 ? 0 : iEV[i]; }
+int64_t meso3i_ev(int i) { return i < 0 || i >= 10 ? 0 : iEV[i]; }
 void meso3i_ev_reset(void) { memset(iEV, 0, sizeof(iEV)); }
 
 void meso3i_friction(int k)  { IFRIC = k; }
@@ -399,6 +399,7 @@ void meso3i_tick(void) {
                 continue;
             }
             uint32_t v = A[ni].mass[c] + p;
+            if (v > 255) iEV[9] += v - 255;
             A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
         }
     }
@@ -510,7 +511,12 @@ void meso3i_drain_edge(int t) {
         if (x >= t && x < IW - t && y >= t && y < IH - t &&
             z >= t && z < ID - t) continue;
         int si = iidx(x, y, z);
-        for (int c = 0; c < IMOV; c++) IPHN -= NA[si].phot[c];
+        int64_t drq = NA[si].mass[REST];
+        for (int c = 0; c < IMOV; c++) {
+            drq += NA[si].mass[c] + NA[si].drest[c] + NA[si].phot[c];
+            IPHN -= NA[si].phot[c];
+        }
+        iEV[8] += drq;   /* drained quanta — all species */
         memset(&NA[si], 0, sizeof(PlanckNode));
     }
 }
