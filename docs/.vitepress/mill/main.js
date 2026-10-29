@@ -248,6 +248,7 @@ export async function initMillSimulator(root, opts = {}) {
   wasm._meso3i_friction(8);
   wasm._meso3i_fricmode(-4);
   wasm._meso3i_phot(2);                    // photon mode: stimulated emission
+  if (wasm._meso3i_iecost) wasm._meso3i_iecost(1);  // energy funds work: boil-off spends iE (cold sites lock)
 
   // channel vectors out of the engine itself — the same table the
   // physics uses, so injection geometry can't drift from the rules

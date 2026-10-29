@@ -175,6 +175,7 @@ if emcc meso3i.c \
     '_meso3i_annih',
     '_meso3i_friclum',
     '_meso3i_linkcap',
+    '_meso3i_iecost',
     '_meso3i_phget',
     '_meso3i_photons',
     '_meso3i_pset',

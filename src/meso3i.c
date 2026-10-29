@@ -79,6 +79,7 @@ static int      IRECOMB = 0;         /* radiative recombination: parked quantum 
 static int      IANNIH = 0;          /* drest annihilation: opposing directional-rest bins -> antipodal photon pair, per-quantum roll k/256 (0 = off) */
 static int      IFRLUM = 0;          /* radiative drag: park roll -= lum*k/8 — outgoing photon flux fights the park (Eddington back-pressure) */
 static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link-pair refused when photon load >= k (0 = off) — Eddington as congestion */
+static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      EMASK = 7;         /* thermal decay mask: 1/(EMASK+1) per quantum */
 static int      IFRICC;              /* park-probability curve: 0=flat p8/256,
                                         1=ramp cap->255, 2=ramp cap->2*cap */
@@ -259,6 +260,7 @@ void meso3i_recomb(int k)  { IRECOMB = k; }
 void meso3i_annih(int k)   { IANNIH = k; }
 void meso3i_friclum(int k) { IFRLUM = k; }
 void meso3i_linkcap(int k)  { ILINKCAP = k; }
+void meso3i_iecost(int k)   { IECOST = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -445,6 +447,7 @@ static void collide_node(uint8_t *n, int si) {
      * gate without contributing mass — a massless carrier probe. */
     int dsum = IDREST ? drest_at(iRA, si) : 0;
     int parked = n[INCH - 1] + dsum;
+    if (IECOST && parked && (int)iE[si] < IECOST) return;
     if (IFRICM && parked && (IFRICM > 0 || iLT[si] >= ILAT ||
                              (IPHOT == 1 && phot_at(si)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
@@ -461,7 +464,7 @@ static void collide_node(uint8_t *n, int si) {
                     int c = irnd() % IMOV;
                     n[INCH - 1] -= 2;
                     n[c]++; n[c ^ 1]++;
-                    iEV[2] += 2;
+                    iEV[2] += 2; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 } else if (IPHOT >= 4) {
                     /* fluorescence: rest re-emits as PHOTON, not mass —
                      * the "resume" branch of the refractive cycle
@@ -469,10 +472,10 @@ static void collide_node(uint8_t *n, int si) {
                     int c = irnd() % IMOV;
                     n[INCH - 1]--;
                     iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
-                    iEV[2]++;
+                    iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
-                    iEV[2]++;
+                    iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 }
             } else {
                 /* directional bin: emit back onto the channel it parked
