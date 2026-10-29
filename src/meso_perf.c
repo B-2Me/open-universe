@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -117,7 +117,7 @@ static int phot_at(const PlanckNode *n) {
 
 /* collide_node — exact port of meso3i's five stages, adapted to PlanckNode.
  * Writes post-collision state into nb at the same site (local only). */
-static void collide_node(const PlanckNode *na, PlanckNode *nb) {
+static void collide_node(const PlanckNode *na, PlanckNode *nb, int si) {
     /* carry stationary registers */
     nb->n = na->n;
     nb->pt = na->pt;
@@ -138,12 +138,23 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
     if (IFRICM && parked && (IFRICM > 0 || nb->lt >= ILAT ||
                              (IPHOT == 1 && phot_at(nb)))) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
+        /* egate: emission consults the crowd — suppress the roll where
+         * local density iR >= IEG (deep-in-the-lump quanta can't escape;
+         * mass asks 'is it crowded?' before leaving, mirroring the
+         * photon absorb gate on iPT) */
+        /* egate: density gates the BOIL-OFF fork only — mass->moving is
+         * suppressed where local density iR >= IEG (deep-in-the-lump
+         * quanta can't stream out), but the mass->photon radiation path
+         * stays free (two transactions sharing one loop, different
+         * gates: the site radiates even when it can't shed mass) */
+        int eg = IEG && iR[si] >= IEG ? 1 : 0;
         for (int u = 0; u < n[REST] + dsum; u++) {
             if (irnd() % (4 * k) != 0) continue;
             int tot = n[REST] + dsum;
             int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
             if (pick < n[REST]) {
                 if (IPAIR && n[REST] >= 2) {
+                    if (eg) continue;
                     int c = irnd() % IMOV;
                     n[REST] -= 2;
                     n[c]++; n[c ^ 1]++;
@@ -154,10 +165,12 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
                     nb->phot[c]++; IPHN++;
                     iEV[2]++;
                 } else {
+                    if (eg) continue;
                     n[REST]--; n[irnd() % IMOV]++;
                     iEV[2]++;
                 }
             } else {
+                if (eg) continue;
                 int w = pick - n[REST], c = 0;
                 for (; c < IMOV - 1; c++) { if (w < nb->drest[c]) break; w -= nb->drest[c]; }
                 nb->drest[c]--; dsum--;
@@ -353,6 +366,9 @@ void meso3i_dset(int x, int y, int z, int c, uint8_t v) {
     NA[si].drest[c] = v;
 }
 void meso3i_iepush(int k)    { IEPUSH = k; }
+void meso3i_massbnc(int k)   { IMASSB = k; }
+void meso3i_photdecay(int k) { IPHOTDEC = k; }
+void meso3i_egate(int k)     { IEG = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -382,7 +398,7 @@ void meso3i_tick(void) {
     /* 2. node collisions — active sites only (empty cells draw
      *    zero RNG in all engines, so skipping preserves parity) */
     for (int i = 0; i < NACT; i++)
-        collide_node(NA + iALIST[i], B + iALIST[i]);
+        collide_node(NA + iALIST[i], B + iALIST[i], iALIST[i]);
 
     /* carry + clear: actives get full stationary regs AND zeroed
      * channel fields (arrivals accumulate onto zeros) — replaces
@@ -485,8 +501,17 @@ void meso3i_tick(void) {
                 continue;
             }
             uint32_t v = A[ni].mass[c] + p;
-            if (v > 255) iEV[9] += v - 255;
-            A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
+            if (IMASSB && v > 255) {
+                /* mass-cap bounce: refusal IS the repulsion — the offer
+                 * fails when the site can't accept; bounce the quantum
+                 * back to the sender on the antipodal channel */
+                uint32_t bv = na->mass[c ^ 1] + p;
+                na->mass[c ^ 1] = bv > 255 ? 255 : (uint8_t)bv;
+                iEV[6] += p;
+            } else {
+                if (v > 255) iEV[9] += v - 255;
+                A[ni].mass[c] = v > 255 ? 255 : (uint8_t)v;
+            }
         }
     }
 
@@ -499,6 +524,19 @@ void meso3i_tick(void) {
             for (int c = 0; c < IMOV; c++) {
                 int p = nb->phot[c];
                 if (!p) continue;
+                if (IPHOTDEC && (int)(irnd() & 255) < IPHOTDEC) {
+                    /* lone-photon decay, BALANCED: the deposit lands on c
+                     * or antipode c^1 alternately — energy arrives without
+                     * a net stream direction (wound deposit leaks back out
+                     * its own channel; balanced stock holds) */
+                    PlanckNode *na2 = A + si;
+                    na2->phot[c]--;
+                    int dc = (irnd() & 1) ? c : (c ^ 1);
+                    uint32_t v = na2->drest[dc] + 1;
+                    na2->drest[dc] = v > 255 ? 255 : (uint8_t)v;
+                    iEV[7]++;
+                    continue;
+                }
                 int ni = iidx(iwrap(x + ICV[c][0], IW),
                               iwrap(y + ICV[c][1], IH),
                               iwrap(z + ICV[c][2], ID));
