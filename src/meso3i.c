@@ -490,7 +490,11 @@ static void collide_node(uint8_t *n, int si) {
     if (IANNIH && IDREST) {
         uint8_t *adr = iRA + (size_t)si * IMOV;
         for (int c = 0; c < IMOV; c += 2) {
-            while (adr[c] && adr[c ^ 1] && (int)(irnd() & 255) < IANNIH) {
+            /* two-body rate: per-quantum roll scaled by pair density —
+             * burn/tick ~ pairs^2 * IANNIH/256 — luminosity ~ M^2 */
+            int pairs = adr[c] < adr[c ^ 1] ? adr[c] : adr[c ^ 1];
+            int rate = (IANNIH * pairs) >> 8;
+            for (int u = 0; u < pairs && (int)(irnd() & 255) < rate; u++) {
                 adr[c]--; adr[c ^ 1]--;
                 uint8_t *pa = iPA + (size_t)si * IMOV * NNU;
                 pa[c * NNU]++; pa[(c ^ 1) * NNU]++;

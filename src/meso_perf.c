@@ -168,12 +168,15 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb) {
 
     /* drest annihilation (fusion inverse): opposing bins -> photon pair */
     if (IANNIH) {
-        for (int c = 0; c < IMOV; c += 2)
-            while (nb->drest[c] && nb->drest[c ^ 1] && (int)(irnd() & 255) < IANNIH) {
+        for (int c = 0; c < IMOV; c += 2) {
+            int pairs = nb->drest[c] < nb->drest[c ^ 1] ? nb->drest[c] : nb->drest[c ^ 1];
+            int rate = (IANNIH * pairs) >> 8;   /* density^2 burn */
+            for (int u = 0; u < pairs && (int)(irnd() & 255) < rate; u++) {
                 nb->drest[c]--; nb->drest[c ^ 1]--;
                 nb->phot[c]++; nb->phot[c ^ 1]++;
                 IPHN += 2; iEV[4] += 2;
             }
+        }
     }
 
     /* thermal decay: IPHOT>=7 per-quantum (nu drawn from occupation —
