@@ -99,3 +99,29 @@ for (const sc of [128]) {
   }
   console.log(`two-battery: ${out.join(' | ')}`);
 }
+
+// E63e: is the clot's drest actually WOUND (net Lz) or balanced pairs?
+for (const sc of [128]) {
+  const w5 = await (()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,join(here,'../../docs/public/wasm/ember'),'meso3i.js');return m.exports();})();
+  const W=48,H=24,D=24;
+  w5._meso3i_init(W,H,D,1);
+  const NMOV=w5._meso3i_nch()-1,REST=NMOV;
+  w5._meso3i_collmode(0);w5._meso3i_friction(8);w5._meso3i_fricmode(4);
+  w5._meso3i_fricp(128);w5._meso3i_drest(1);w5._meso3i_reflect(0);
+  w5._meso3i_phot(9); w5._meso3i_scatter(sc); w5._meso3i_iecost(1);
+  for(let t=0;t<200;t++){
+    if(t%4===0)for(let z=6;z<18;z++)for(let y=6;y<18;y++)for(let x=16;x<40;x++){
+      if(!((x+y+z)&1)){ w5._meso3i_phset_nu(x,y,z,13,1,16); w5._meso3i_phset_nu(x,y,z,12,1,16); }
+    }
+    w5._meso3i_drain_edge(4); w5._meso3i_tick();
+  }
+  // net momentum per channel pair + Lz
+  let lz=0,net=0,dr=0;
+  for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if((x+y+z)&1)continue; const dx=x-24,dy=y-12;
+    for(let c=12;c<18;c++){ const v=w5._meso3i_rget(x,y,z,c); if(!v)continue; dr+=v;
+      const sgn=(c&1)?-1:1,ax=(c-12)>>1;
+      if(ax===0) lz+=sgn*v*dy; else if(ax===1) lz-=sgn*v*dx;
+      net+=sgn*v; } }
+  console.log(`clot winding check: drest=${dr} netMom=${net} Lz=${lz}`);
+}
