@@ -15,7 +15,8 @@ const run=(k)=>{
   const W=48,H=24,D=24,NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(8);
   w._meso3i_fricmode(16); w._meso3i_fricp(128); w._meso3i_drest(0);
-  w._meso3i_reflect(0); w._meso3i_phot(5); w._meso3i_phth(0); w._meso3i_nushift(k);
+  w._meso3i_reflect(0);
+  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0)); w._meso3i_phot(5); w._meso3i_phth(0); w._meso3i_nushift(k);
   // dilute medium x in [16,36]: sparse rest (25% sites, thin fill)
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=16;x<36;x++)
     if(!((x+y+z)&1)&&((x*7+y*11+z*13)%4===0)) w._meso3i_set(x,y,z,REST,8);

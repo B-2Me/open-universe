@@ -15,7 +15,8 @@ const run=(th)=>{
   const W=24,H=12,D=12,NMOV=w._meso3i_nch()-1,REST=NMOV;
   w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(8);
   w._meso3i_fricmode(16); w._meso3i_fricp(128); w._meso3i_drest(0);
-  w._meso3i_reflect(0); w._meso3i_phot(5); w._meso3i_phth(th);
+  w._meso3i_reflect(0);
+  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0)); w._meso3i_phot(5); w._meso3i_phth(th);
   // slab x in [8,16], full y/z; beam nu=1+nu=4 on +x channel at x in [4,8)
   for(let z=0;z<D;z++)for(let y=0;y<H;y++)for(let x=8;x<16;x++)
     if(!((x+y+z)&1)) w._meso3i_set(x,y,z,REST,64);
