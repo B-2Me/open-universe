@@ -598,7 +598,6 @@ void link3_tick(void) {
              * A session can't look like UDP: established links route
              * preferentially (the bound exchange gets its own channel). */
             int idx = si * LMOV + c;
-            int duplex = (up > 0 && dn > 0);
             /* LISTEN: a link whose endpoint holds mass is an open
              * socket — the junction is ready to absorb (passive open).
              * Mass makes the port listen; vacuum transit stays UDP. */
@@ -606,26 +605,30 @@ void link3_tick(void) {
             for (int cc = 0; cc < LMOV; cc++) mass += lDR[ni*LMOV+cc];
             if (mass > 16 && lSST[idx] == 0) lSST[idx] = 1;   /* UDP -> LISTEN */
             if (mass <= 16 && lSST[idx] == 1) lSST[idx] = 0;  /* port closed — no mass to absorb */
-            if (duplex) {
+            /* session traffic = an ACK on the wire — ANY traffic on
+             * an active session counts (either direction — receiving
+             * IS the keepalive). ESTAB = session traffic seen within
+             * the timeout; CLOSED = no traffic for the window. */
+            int traffic = up > 0 || dn > 0;
+            if (traffic && lSST[idx] >= 1) {
                 lSAGE[idx] = 0;
-                /* keepalive: on an established session, duplex traffic
-                 * prompts re-emission — the catch prompts a throw.
-                 * Charged endpoints answer back — the session
-                 * sustains itself through reciprocal exchange. */
-                if (lSST[idx] == 3 && lIE[ni] > 16 && LPHOT) {
+                /* keepalive: received traffic prompts a reply — the
+                 * catch prompts a throw. Charged endpoints answer back
+                 * — the session self-sustains through the ACK chain. */
+                if (lSST[idx] >= 2 && lIE[ni] > 16 && LPHOT) {
                     uint32_t e = lIE[ni];
                     int out = e > 8 ? 8 : e;
                     lIE[ni] = e - out;
-                    uint32_t v = lPH[ni*LMOV+(c^1)] + out;   /* answer back down the wire */
+                    uint32_t v = lPH[ni*LMOV+(c^1)] + out;
                     lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                     LIPH += out;
                 }
-                if (lSST[idx] == 1) lSST[idx] = 2;          /* SYN: duplex at a LISTENING port */
-                else if (lSST[idx] == 2 && lSESS[idx] > 8) lSST[idx] = 3;  /* ESTAB: sustained */
+                if (lSST[idx] == 1) lSST[idx] = 2;          /* SYN: traffic at a LISTEN port */
+                else if (lSST[idx] == 2 && lSESS[idx] > 4) lSST[idx] = 3;  /* ESTAB: sustained */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
                 LIEV[14]++;
             } else if (lSST[idx] >= 2) {
-                if (++lSAGE[idx] > 32) {                     /* timeout: 32 ticks */
+                if (++lSAGE[idx] > 32) {                     /* timeout: no traffic 32 ticks */
                     lSST[idx] = 4;                           /* CLOSED */
                     lSESS[idx] = 0;
                     LIEV[15]++;
