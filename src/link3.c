@@ -50,7 +50,8 @@ static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */    
 static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
 static uint8_t  *lPH, *lPH2;         /* [site*LMOV + c] photons in flight si->ni */
 static uint16_t *lLOAD;
-static uint16_t *lFLUX;              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
+static uint16_t *lFLUX;
+static uint8_t  *lSESS;              /* [site*LMOV + c] session strength — EMA of duplex traffic on the wire */              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
 static uint8_t  *lUPd, *lPHd;        /* delivered-this-tick buffers */
 
 /* flags — same names as meso3i where the mechanic carries over */
@@ -99,6 +100,7 @@ int link3_init(int w, int h, int d, int axial) {
     lPH2  = calloc((size_t)LN * LMOV, 1);
     lLOAD = calloc((size_t)LN * LMOV, 2);
     lFLUX = calloc(LN, 2);
+    lSESS = calloc((size_t)LN * LMOV, 1);
     lUPd  = calloc((size_t)LN * LMOV, 1);
     lPHd  = calloc((size_t)LN * LMOV, 1);
     LTICK = 0; LIPH = 0;
@@ -137,6 +139,7 @@ void link3_rset(int x,int y,int z,int c,int v){ if(c<LMOV)lDR[lidx(x,y,z)*LMOV+c
 int  link3_upget(int x,int y,int z,int c){ return c<LMOV?lUP[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_phget(int x,int y,int z,int c){ return c<LMOV?lPH[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_load(int x,int y,int z,int c){ return c<LMOV?lLOAD[lidx(x,y,z)*LMOV+c]:0; }
+int  link3_sess(int x,int y,int z,int c){ return c<LMOV?lSESS[lidx(x,y,z)*LMOV+c]:0; }
 
 void link3_set(int x,int y,int z,int c,int v) {
     int si = lidx(x,y,z);
@@ -535,6 +538,31 @@ void link3_tick(void) {
         uint32_t v = lPH[i] + lPHd[i];
         if (v > 255) { LIPH -= v - 255; v = 255; }
         lPH[i] = v;
+    }
+
+    /* session strength: a wire's session is live when it carries
+     * duplex traffic — both directions moving (mass or photons).
+     * Session = established duplex exchange, measured as EMA of
+     * duplex flow — the bound-state register per link. */
+    for (int z = 0; z < LD; z++)
+    for (int y = 0; y < LH; y++)
+    for (int x = 0; x < LW; x++) {
+        if (((x + y + z) & 1)) continue;
+        int si = lidx(x, y, z);
+        for (int c = 0; c < LMOV; c++) {
+            int ni = lidx(lwrap(x + LCV[c][0], LW),
+                          lwrap(y + LCV[c][1], LH),
+                          lwrap(z + LCV[c][2], LD));
+            /* duplex flow: up on this link + dn on the antipodal link
+             * (ni's c^1 channel back toward si) — the session's
+             * bidirectional traffic */
+            int up = lUP[si*LMOV+c] + lPH[si*LMOV+c];
+            int dn = lUP[ni*LMOV+(c^1)] + lPH[ni*LMOV+(c^1)];
+            int flow = (up < dn ? up : dn) >> 2;   /* duplex = min of directions */
+            int s = lSESS[si*LMOV+c];
+            s = (s * 7 + flow * 8) >> 3;           /* EMA toward duplex flow */
+            lSESS[si*LMOV+c] = s > 255 ? 255 : s;
+        }
     }
 
     /* 4. link load decay — utilization meter relaxes (EMA >> 2) */
