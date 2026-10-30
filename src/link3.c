@@ -205,13 +205,16 @@ void link3_tick(void) {
             }
         }
         /* wound conveyor: drest leaks onto its own channel — the
-         * propulsion mechanic (wound mass emits where it wound). */
+         * propulsion mechanic (wound mass emits where it wound).
+         * Deterministic rate gate — a fraction of each channel's
+         * wound stock converts per tick (queue fairness, no dice). */
         for (int c = 0; c < LMOV; c++) {
-            if (lDR[si*LMOV+c] && ((lrnd() & 255) < 32)) {
-                lDR[si*LMOV+c]--;
-                uint32_t v = lUP[si*LMOV+c] + 1;
+            int leak = ((int)lDR[si*LMOV+c] * 32) >> 8;
+            if (leak) {
+                lDR[si*LMOV+c] -= leak;
+                uint32_t v = lUP[si*LMOV+c] + leak;
                 lUP[si*LMOV+c] = v > 255 ? 255 : v;
-                LIEV[3]++;
+                LIEV[3] += leak;
             }
         }
         /* iE decay -> photon (depletion -loop): charge emits light.
