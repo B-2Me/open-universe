@@ -270,7 +270,14 @@ void link3_tick(void) {
         if (LIEB && lIE[si] >= LIEB) {
             int dump = lIE[si] >> 2;
             lIE[si] -= dump;
+            /* session-directed burst: the bound pair dumps down its
+             * strongest ESTABLISHED session wire — the exchange is
+             * the photon economy's preferred channel, not isotropic. */
             int c = (si + LTICK) % LMOV;
+            { int bv = -1; for (int cc = 0; cc < LMOV; cc++)
+                  if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
+                      bv = lSESS[si*LMOV+cc]; c = cc;
+                  } }
             uint32_t v = lPH[si*LMOV+c] + dump;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH += dump; LIEV[11] += dump;
@@ -284,7 +291,18 @@ void link3_tick(void) {
          * recoil: emitter quantum pushed antipodal (momentum). */
         if (LPHOT && lIE[si] && (lrnd() % (uint32_t)(32 - busy * 4)) == 0) {
             lIE[si]--;
+            /* directional emission: photons inherit the lump's
+             * structure — prefer the dominant drest channel (the
+             * winding axis) or the strongest session — the lump's
+             * shape steers where its light goes. */
             int c = (int)(lrnd() % (uint32_t)LMOV);
+            { int bv = 0;
+              for (int cc = 0; cc < LMOV; cc++)
+                  if (lDR[si*LMOV+cc] > bv) { bv = lDR[si*LMOV+cc]; c = cc; }
+              for (int cc = 0; cc < LMOV; cc++)
+                  if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
+                      bv = lSESS[si*LMOV+cc]; c = cc;
+                  } }
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
@@ -459,6 +477,18 @@ void link3_tick(void) {
             int p = lPH[si*LMOV+c];
             if (!p) continue;
             lPH[si*LMOV+c] = 0;
+            /* self-collimation: photons prefer channels that already
+             * carry photon flow — light follows light, the waveguide
+             * effect. The exchange concentrates on the lit path. */
+            if (LPHOT >= 4) {
+                int bestc = c, bestv = 0;
+                for (int cc = 0; cc < LMOV; cc++) {
+                    if (cc == (c^1)) continue;          /* don't U-turn */
+                    int v = lPH[si*LMOV+cc];
+                    if (v > bestv) { bestv = v; bestc = cc; }
+                }
+                if (bestv > 0) c = bestc;
+            }
             int ni = lidx(lwrap(x + LCV[c][0], LW),
                           lwrap(y + LCV[c][1], LH),
                           lwrap(z + LCV[c][2], LD));
@@ -490,17 +520,25 @@ void link3_tick(void) {
              * link's session — at an ESTABLISHED session endpoint it
              * VOLLEYS back (the exchange continues — catch prompts
              * throw); at a LISTEN port it absorbs (the transaction
-             * completes); in UDP transit it streams. TCP packets get
-             * acknowledged and relayed; UDP packets get consumed. */
+             * completes); in UDP transit it streams. */
             int sst = lSST[ni*LMOV+c];
             if (sst == 3 && LPHOT) {
-                /* established session: volley the photon back down the
-                 * wire — the bound exchange is a ping-pong, not a drain.
-                 * The photon stays in flight on the return channel. */
                 uint32_t v = lPH[ni*LMOV+(c^1)] + p;
                 lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
-                LIEV[14] += p;   /* session volley (shares sess counter) */
+                LIEV[14] += p;
                 continue;
+            }
+            /* absorption echo: at a LISTENing port (SYN+), an absorbed
+             * photon gets re-emitted back down the wire it came on —
+             * c^1, antipodal, toward the sender. The catch prompts a
+             * throw back along the same channel — the exchange's
+             * natural direction is the wire it arrived on. */
+            if (sst == 2 && LPHOT && lIE[ni] > 0) {
+                lIE[ni]--;
+                uint32_t v = lPH[ni*LMOV+(c^1)] + 1;
+                lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                LIPH++;
+                LIEV[14]++;
             }
             if (LPHOT >= 5 && mass > 96 && p > 0 && (lrnd() & 31) < 2) {
                 /* weak-coupling absorption: photon capture is RARE per
@@ -587,6 +625,13 @@ void link3_tick(void) {
             int up = lUP[si*LMOV+c] + lPH[si*LMOV+c];
             int dn = lUP[ni*LMOV+(c^1)] + lPH[ni*LMOV+(c^1)];
             int flow = (up < dn ? up : dn) >> 2;   /* duplex = min of directions */
+            /* session bias: a wire toward a MASSIVE endpoint is the
+             * preferred session direction — the pair's exchange
+             * concentrates on the connecting axis. Mass attracts the
+             * session; the session steers the flow. */
+            int emass = lREST[ni];
+            for (int cc = 0; cc < LMOV; cc++) emass += lDR[ni*LMOV+cc];
+            if (emass > 48) flow += flow >> 1;   /* mass-weighted: heavy endpoint boosts the session */
             int s = lSESS[si*LMOV+c];
             s = (s * 7 + flow * 8) >> 3;           /* EMA toward duplex flow */
             lSESS[si*LMOV+c] = s > 255 ? 255 : s;
