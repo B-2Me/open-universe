@@ -45,6 +45,7 @@ static uint8_t  *lREST;              /* [site] scalar mass stock */
 static uint8_t  *lDR;                /* [site*LMOV + c] wound mass */
 static uint8_t  *lIE;                /* [site] stored excitation */
 static uint8_t  *lIQ;
+static uint8_t  *lDW;                /* [site*LMOV*LKMAX] dwell delay line — mass parks at the junction for LKMAX-stage ticks before streaming (meso3i's parking) */
 static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */                /* [site] collision register */
 
 /* link registers (operator: the wire's own state) */
@@ -65,6 +66,8 @@ static uint8_t  *lPHNUd;             /* delivered nu tags */
 static int LFRIC = 8;                /* link congestion cap -> park (retention) */
 static int LEMIT = 32;               /* deterministic emission rate /256 per tick */
 static int LPHOT = 0;                /* photon conversion level (0=off) */
+static int LDWELL = 1;               /* dwell stages — how long mass parks at a junction (meso3i delay line) */
+static int LKMAX  = 8;
 static int LPHSPR = 0;               /* emission aperture spread (0-255) — the emitter's angular slop: photons born on near-neighbor channels, then fly straight */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
@@ -122,6 +125,7 @@ int link3_init(int w, int h, int d, int axial) {
     lUP2  = calloc((size_t)LN * LMOV, 1);
     lPH   = calloc((size_t)LN * LMOV, 1);
     lPHNU = calloc((size_t)LN * LMOV, 1);
+    lDW   = calloc((size_t)LN * LMOV * LKMAX, 1);
     lSNU  = calloc(LN, 1);
     lPH2  = calloc((size_t)LN * LMOV, 1);
     lLOAD = calloc((size_t)LN * LMOV, 2);
@@ -146,6 +150,7 @@ void link3_friction(int k)      { LFRIC = k; }
 void link3_emit(int k)          { LEMIT = k; }
 void link3_phot(int k)          { LPHOT = k; }
 void link3_phspread(int k)      { LPHSPR = k; }
+void link3_dwell(int k)         { LDWELL = k < 1 ? 1 : (k > LKMAX ? LKMAX : k); }
 void link3_recoil(int k)        { LRECOIL = k; }
 void link3_comove(int k)        { LCOMOVE = k; }
 void link3_iqmode(int k)        { LIQ = k; }
@@ -275,7 +280,10 @@ void link3_tick(void) {
          * a body). The winding CIRCULATES — it doesn't leave as mass;
          * the lump's spin is structure, not fuel. The mass stays bound;
          * the direction flows. */
-        for (int c = 0; c < LMOV; c++) {
+        /* parked wound mass stays put — the winding is STRUCTURE,
+         * not transport (meso3i: parked flux stays put). The lump's
+         * drest is its internal state; mass only moves on lUP. */
+        if (0) for (int c = 0; c < LMOV; c++) {
             int leak = ((int)lDR[si*LMOV+c] * 32) >> 8;
             if (leak) {
                 lDR[si*LMOV+c] -= leak;
@@ -285,14 +293,6 @@ void link3_tick(void) {
                 uint32_t v = lDR[nx*LMOV+c] + leak;
                 lDR[nx*LMOV+c] = v > 255 ? 255 : v;
                 LIEV[3] += leak;
-                /* the transfer also pushes a parked quantum forward —
-                 * winding moves mass downstream (the conveyor drags
-                 * the lump's interior toward its spin axis). */
-                if (lREST[si] >= leak) {
-                    lREST[si] -= leak;
-                    uint32_t m = lDR[nx*LMOV+c] + leak;
-                    lDR[nx*LMOV+c] = m > 255 ? 255 : m;
-                }
             }
         }
         /* iE burst: charge saturates -> dump the reservoir as a photon
@@ -465,9 +465,23 @@ void link3_tick(void) {
         int si = lidx(x, y, z);
         for (int c = 0; c < LMOV; c++) {
             int n = lUP[si*LMOV+c];
+            /* dwell shift: the delay line advances one stage per tick —
+             * stage 0 exits to lUPd (moves on), deeper stages wait.
+             * Mass that lingers here is PARKED — the junction holds
+             * it (meso3i's parking mechanic). */
+            for (int st = 0; st < LDWELL - 1; st++) {
+                uint8_t *D = &lDW[(size_t)si*LMOV*LKMAX + c*LKMAX];
+                if (st == 0) { n += D[0]; D[0] = 0; }
+                else if (D[st]) { D[st-1] += D[st]; D[st] = 0; }
+            }
             if (!n) continue;
             lUP[si*LMOV+c] = 0;
             lFLUX[si] += n;   /* departing flux — the junction's motion cost */
+            if (LDWELL > 1) {
+                /* park the mass in the dwell line — it waits here */
+                lDW[(size_t)si*LMOV*LKMAX + c*LKMAX + LDWELL - 1] += n > 255 ? 255 : n;
+                continue;
+            }
             int ni = lidx(lwrap(x + LCV[c][0], LW),
                           lwrap(y + LCV[c][1], LH),
                           lwrap(z + LCV[c][2], LD));
