@@ -333,7 +333,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
-            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : dch2 + 8;   /* nu = emitter's transition energy (iE shed) */
+            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : (lIE[si] >> 4) + 8;   /* nu = the transition the charge affords — hotter lumps emit hotter light */
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
