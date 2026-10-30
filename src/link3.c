@@ -49,12 +49,15 @@ static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */    
 /* link registers (operator: the wire's own state) */
 static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
 static uint8_t  *lPH, *lPH2;         /* [site*LMOV + c] photons in flight si->ni */
+static uint8_t  *lPHNU;              /* [site*LMOV + c] photon nu tag — the offer's config (emitter's structure signature) */
 static uint16_t *lLOAD;
 static uint16_t *lFLUX;
 static uint8_t  *lSESS;              /* [site*LMOV + c] session strength — duplex EMA */
 static uint8_t  *lSST;               /* [site*LMOV + c] session state: 0=UDP,1=LISTEN,2=SYN,3=ESTAB,4=CLOSED */
-static uint8_t  *lSAGE;              /* [site*LMOV + c] session age — ticks since last duplex traffic */              /* [site*LMOV + c] session strength — EMA of duplex traffic on the wire */              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
+static uint8_t  *lSAGE;
+static uint16_t *lBOND;              /* [site*LMOV + c] bond strength — accumulated session depth (structural, not traffic) */              /* [site*LMOV + c] session age — ticks since last duplex traffic */              /* [site*LMOV + c] session strength — EMA of duplex traffic on the wire */              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
 static uint8_t  *lUPd, *lPHd;        /* delivered-this-tick buffers */
+static uint8_t  *lPHNUd;             /* delivered nu tags */
 
 /* flags — same names as meso3i where the mechanic carries over */
 static int LFRIC = 8;                /* link congestion cap -> park (retention) */
@@ -99,14 +102,17 @@ int link3_init(int w, int h, int d, int axial) {
     lUP   = calloc((size_t)LN * LMOV, 1);
     lUP2  = calloc((size_t)LN * LMOV, 1);
     lPH   = calloc((size_t)LN * LMOV, 1);
+    lPHNU = calloc((size_t)LN * LMOV, 1);
     lPH2  = calloc((size_t)LN * LMOV, 1);
     lLOAD = calloc((size_t)LN * LMOV, 2);
     lFLUX = calloc(LN, 2);
     lSESS = calloc((size_t)LN * LMOV, 1);
     lSST  = calloc((size_t)LN * LMOV, 1);
     lSAGE = calloc((size_t)LN * LMOV, 1);
+    lBOND = calloc((size_t)LN * LMOV, 2);
     lUPd  = calloc((size_t)LN * LMOV, 1);
     lPHd  = calloc((size_t)LN * LMOV, 1);
+    lPHNUd= calloc((size_t)LN * LMOV, 1);
     LTICK = 0; LIPH = 0;
     memset(LIEV, 0, sizeof LIEV);
     return 0;
@@ -145,6 +151,7 @@ int  link3_phget(int x,int y,int z,int c){ return c<LMOV?lPH[lidx(x,y,z)*LMOV+c]
 int  link3_load(int x,int y,int z,int c){ return c<LMOV?lLOAD[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sess(int x,int y,int z,int c){ return c<LMOV?lSESS[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sst(int x,int y,int z,int c){ return c<LMOV?lSST[lidx(x,y,z)*LMOV+c]:0; }
+int  link3_bond(int x,int y,int z,int c){ return c<LMOV?lBOND[lidx(x,y,z)*LMOV+c]:0; }
 
 void link3_set(int x,int y,int z,int c,int v) {
     int si = lidx(x,y,z);
@@ -160,6 +167,7 @@ void link3_phset(int x,int y,int z,int c,int v) {
     int si = lidx(x,y,z);
     LIPH += v - lPH[si*LMOV+c];
     lPH[si*LMOV+c] = v<0?0:v>255?255:v;
+    lPHNU[si*LMOV+c] = c;   /* a raw photon's config is its direction */
 }
 static uint64_t lmass_total(void) {
     uint64_t m = 0;
@@ -274,10 +282,14 @@ void link3_tick(void) {
              * strongest ESTABLISHED session wire — the exchange is
              * the photon economy's preferred channel, not isotropic. */
             int c = (si + LTICK) % LMOV;
+            int dch = -1, dv = 0;
+            for (int cc = 0; cc < LMOV; cc++)
+                if (lDR[si*LMOV+cc] > dv) { dv = lDR[si*LMOV+cc]; dch = cc; }
             { int bv = -1; for (int cc = 0; cc < LMOV; cc++)
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
+            lPHNU[si*LMOV+c] = dch < 0 ? 255 : dch;   /* nu = emitter's winding signature */
             uint32_t v = lPH[si*LMOV+c] + dump;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH += dump; LIEV[11] += dump;
@@ -296,13 +308,16 @@ void link3_tick(void) {
              * winding axis) or the strongest session — the lump's
              * shape steers where its light goes. */
             int c = (int)(lrnd() % (uint32_t)LMOV);
+            int dch2 = -1, dv2 = 0;
+            for (int cc = 0; cc < LMOV; cc++)
+                if (lDR[si*LMOV+cc] > dv2) { dv2 = lDR[si*LMOV+cc]; dch2 = cc; }
             { int bv = 0;
-              for (int cc = 0; cc < LMOV; cc++)
-                  if (lDR[si*LMOV+cc] > bv) { bv = lDR[si*LMOV+cc]; c = cc; }
+              if (dch2 >= 0) c = dch2;
               for (int cc = 0; cc < LMOV; cc++)
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
+            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : dch2;   /* nu = emitter's signature */
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
@@ -546,7 +561,29 @@ void link3_tick(void) {
                 LIPH++;
                 LIEV[14]++;
             }
-            if (LPHOT >= 5 && mass > 96 && p > 0 && (lrnd() & 31) < 2) {
+            /* the SDP negotiation: the site's acceptance filter is its
+             * own dominant channel (its structure signature — what it
+             * "speaks"). A photon whose nu tag matches the site's
+             * config gets 200-OK'd (absorbs); a mismatch gets volleyed
+             * back (reject — the offer declined). nu=255 unmarked
+             * photons negotiate at base rate. */
+            int nu = lPHNU[si*LMOV+c];
+            int cfg = -1, cv = 0;
+            for (int cc = 0; cc < LMOV; cc++)
+                if (lDR[ni*LMOV+cc] > cv) { cv = lDR[ni*LMOV+cc]; cfg = cc; }
+            int compat = (nu == 255) ? 1 : (nu == cfg ? 4 : 0);
+            /* negotiation only at a LISTENING endpoint — vacuum
+             * transit just streams (nobody's home to answer) */
+            if (compat == 0 && mass > 96 && LPHOT) {
+                /* reject: the offer's config doesn't match — the
+                 * photon volleys back toward its sender (declined) */
+                uint32_t v = lPH[ni*LMOV+(c^1)] + p;
+                lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                lPHNU[ni*LMOV+(c^1)] = nu;
+                LIEV[15]++;
+                continue;
+            }
+            if (LPHOT >= 5 && mass > 96 && p > 0 && (lrnd() & 31) < compat * 2) {
                 /* weak-coupling absorption: photon capture is RARE per
                  * encounter (~6% — the mean free path is many hops).
                  * Most photons transmit or volley; only occasionally
@@ -604,12 +641,14 @@ void link3_tick(void) {
                 }
             }
             lPHd[ni*LMOV+c] += p > 255 ? 255 : p;
+            lPHNUd[ni*LMOV+c] = lPHNU[si*LMOV+c];
         }
     }
     for (int i = 0; i < LN * LMOV; i++) {
         uint32_t v = lPH[i] + lPHd[i];
         if (v > 255) { LIPH -= v - 255; v = 255; }
         lPH[i] = v;
+        if (lPHd[i]) lPHNU[i] = lPHNUd[i];
     }
 
     /* session strength: a wire's session is live when it carries
@@ -682,12 +721,22 @@ void link3_tick(void) {
                 else if (lSST[idx] == 2 && lSESS[idx] > 4) lSST[idx] = 3;  /* ESTAB: sustained */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
                 LIEV[14]++;
+                /* the BOND: session depth accumulating — the channel's
+                 * structural holding grows while connected (exchange
+                 * history embedding into the wire — the bond is the
+                 * connection's own mass, not the flow). */
+                if (lSST[idx] == 3) {
+                    uint32_t b = lBOND[idx] + 1;
+                    lBOND[idx] = b > 65535 ? 65535 : b;
+                }
             } else if (lSST[idx] >= 2) {
                 if (++lSAGE[idx] > 32) {                     /* timeout: no traffic 32 ticks */
                     lSST[idx] = 4;                           /* CLOSED */
                     lSESS[idx] = 0;
                     LIEV[15]++;
                 }
+            } else if (lBOND[idx]) {
+                lBOND[idx] >>= 1;   /* dead channel's structure drains */
             }
         }
     }
