@@ -624,7 +624,11 @@ static void collide_node(uint8_t *n, int si) {
         roll_(si, iE[si])) {
         iE[si] -= IEPUSH;
         iA[si * INCH + INCH-1]--;
-        int c2 = (int)(irnd() % IMOV);
+        /* winding-coupled kick: a wound lump kicks mass along its
+         * dominant drest channel — emitted quanta carry the winding
+         * (spin transfer through accretion, the dipole-analog's
+         * emission end). Unwound sites fall back to a pick. */
+        int c2 = IDREST ? drbest_(si) : (int)(irnd() % IMOV);
         uint32_t v = iA[si * INCH + c2] + 1;
         if (v > 255) { iEV[9]++; v = 255; }
         iA[si * INCH + c2] = (uint8_t)v;
