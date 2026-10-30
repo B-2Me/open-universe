@@ -65,7 +65,7 @@ static uint8_t  *lPHNUd;             /* delivered nu tags */
 static int LFRIC = 8;                /* link congestion cap -> park (retention) */
 static int LEMIT = 32;               /* deterministic emission rate /256 per tick */
 static int LPHOT = 0;                /* photon conversion level (0=off) */
-static int LPHSPR = 0;               /* photon angular diffusion rate (0-255) — beams diverge */
+static int LPHSPR = 0;               /* emission aperture spread (0-255) — the emitter's angular slop: photons born on near-neighbor channels, then fly straight */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
 static int LIQ = 1;
@@ -328,6 +328,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
+            if (LPHSPR && (lrnd() & 255) < LPHSPR) c = LNEI[c][lrnd() & 3];   /* aperture spread at birth */
             lPHNU[si*LMOV+c] = dch < 0 ? 255 : dch + (dump >> 4);   /* nu = the burst's energy quantum */
             uint32_t v = lPH[si*LMOV+c] + dump;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
@@ -356,6 +357,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
+            if (LPHSPR && (lrnd() & 255) < LPHSPR) c = LNEI[c][lrnd() & 3];   /* aperture spread: the emitter can't perfectly collimate — born on a neighbor channel */
             lPHNU[si*LMOV+c] = lSNU[si];   /* emit AT the site's own line — the lump's photons carry its characteristic transition, matching its absorption spectrum */
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
@@ -546,23 +548,6 @@ void link3_tick(void) {
             int ni = lidx(lwrap(x + LCV[c][0], LW),
                           lwrap(y + LCV[c][1], LH),
                           lwrap(z + LCV[c][2], LD));
-            /* angular diffusion: a fraction of the beam scatters onto
-             * near-parallel channels — real beams diverge (finite-
-             * source spread). The cone opens with distance traveled. */
-            if (LPHSPR && p > 1) {
-                int sp = (p * LPHSPR) >> 8;
-                if (sp) {
-                    int cc = LNEI[c][lrnd() & 3];
-                    int nn = lidx(lwrap(x + LCV[cc][0], LW),
-                                  lwrap(y + LCV[cc][1], LH),
-                                  lwrap(z + LCV[cc][2], LD));
-                    uint32_t v = lPHd[nn*LMOV+cc] + sp;
-                    lPHd[nn*LMOV+cc] = v > 255 ? 255 : v;
-                    lPHNUd[nn*LMOV+cc] = lPHNU[si*LMOV+c];
-                    p -= sp;
-                    if (!p) continue;
-                }
-            }
             /* absorb: photons arriving at parked mass -> iE (substrate:
              * bound energy; operator: the wire deposits into node) */
             int mass = lREST[ni];
