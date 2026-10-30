@@ -83,7 +83,8 @@ static int      IECOST = 0;          /* energy-funds-work: each boil-off emissio
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
 static int      IEPUSH = 0;
 static int      INUSCAT = 0;
-static int      IPHOTDEC = 0;          /* photon decay: lone photon -> nu+1 mass, no partner (fractal photon->mass path) */         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
+static int      IPHOTDEC = 0;
+static int      INUUP = 0;             /* nu upshift: photon GAINS a bin crossing a hot site (iE>=k), draws 1 iE — inverse-Compton analog, the missing upshift end */          /* photon decay: lone photon -> nu+1 mass, no partner (fractal photon->mass path) */         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
 static int      ILENS = 0;
 static int      IRANDM = 0;          /* 0=legacy RNG, 1=deterministic site-phase */
            /* adjacent-sense: mass reroutes to least-dense neighbor (pressure), photons deflect toward dense (lensing) */          /* energy funds motion: site spends k iE to kick scalar rest -> moving (thermal pressure / convection) */
@@ -282,6 +283,7 @@ void meso3i_lens(int k)     { ILENS = k; }
 void meso3i_randmode(int k) { IRANDM = k; }
 void meso3i_nuscat(int k)   { INUSCAT = k; }
 void meso3i_photdecay(int k) { IPHOTDEC = k; }
+void meso3i_nuup(int k)      { INUUP = k; }
 void meso3i_pair(int m) { IPAIR = m; }
 void meso3i_lat(int n) { ILAT = n; }
 void meso3i_drest(int m) { IDREST = m; }
@@ -1083,6 +1085,16 @@ void meso3i_tick(void) {
                     uint32_t e = iE[ni] + p;
                     iE[ni] = e > 255 ? 255 : (uint8_t)e;
                     pi = ni * IMOV * NNU + c * NNU + (nu - 1);
+                } else if (INUUP && nu + 1 < NNU && iE[ni] >= INUUP &&
+                           (int)(irnd() & 255) < iE[ni]) {
+                    /* nuup: the photon GAINS a bin crossing a hot site —
+                     * draws 1 unit of iE out of the medium (inverse
+                     * Compton: cold light picks up energy from hot
+                     * matter). Rate ∝ site's charge — hotter sites
+                     * upshift more often. The missing upshift end. */
+                    iE[ni]--;
+                    pi = ni * IMOV * NNU + c * NNU + (nu + 1);
+                    iEV[5]++;
                 } else {
                     pi = ni * IMOV * NNU + c * NNU + nu;
                 }

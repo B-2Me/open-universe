@@ -211,6 +211,7 @@ if emcc meso3i.c \
     '_meso3i_randmode',
     '_meso3i_nuscat',
     '_meso3i_photdecay',
+    '_meso3i_nuup',
     '_malloc',
     '_free'
   ]" \
