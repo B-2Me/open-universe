@@ -288,8 +288,8 @@ void link3_tick(void) {
             int dch = -1, dv = 0;
             for (int cc = 0; cc < LMOV; cc++)
                 if (lDR[si*LMOV+cc] > dv) { dv = lDR[si*LMOV+cc]; dch = cc; }
-            if (dch >= 0) lSNU[si] = dch + (lIE[si] >> 4);   /* nu = winding + charge */
-            else lSNU[si] = lIE[si] >> 4;
+            if (dch >= 0) lSNU[si] = dch + (lIE[si] >> 2);   /* nu = winding + charge */
+            else lSNU[si] = lIE[si] >> 2;
         }
         if (LIEB && lIE[si] >= LIEB) {
             int dump = lIE[si] >> 2;
@@ -595,14 +595,12 @@ void link3_tick(void) {
             int cfg = lSNU[ni];
             if (mass > 96 && LPHOT && p > 0) {
                 if (nu > cfg) {
-                    /* partial handoff: the site takes its line's
-                     * worth of ENERGY per photon — each photon
-                     * deposits (nu - cfg) worth... no: deposits cfg
-                     * worth (the transition it can take), continuing
-                     * at nu - cfg. Energy-conserving: iE += dep*nu
-                     * absorbed... photons deposit their excess. */
-                    int dep = p > 4 ? 4 : p;          /* photons depositing */
-                    uint32_t e = lIE[cat] + dep * 4;   /* energy in = photons * their deposit */
+                    /* partial handoff: each photon deposits its
+                     * transition worth and continues at reduced nu.
+                     * iE gains the photon's actual energy — deposits
+                     * scale with nu (absorption charges the lump). */
+                    int dep = p > 4 ? 4 : p;
+                    uint32_t e = lIE[cat] + dep * (nu > 8 ? nu >> 2 : 4);
                     lIE[cat] = e > 255 ? 255 : e;
                     LIEV[7] += dep;
                     p -= dep;
