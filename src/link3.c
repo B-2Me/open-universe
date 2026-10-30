@@ -486,7 +486,30 @@ void link3_tick(void) {
                 }
                 if (bmass >= 96) mass = bmass;   /* convert onto DENSE mass only — thin corridor deposits don't catalyze */
             }
-            if (LPHOT >= 5 && mass > 96 && p > 0) {
+            /* session-state gating: the photon's fate depends on the
+             * link's session — at an ESTABLISHED session endpoint it
+             * VOLLEYS back (the exchange continues — catch prompts
+             * throw); at a LISTEN port it absorbs (the transaction
+             * completes); in UDP transit it streams. TCP packets get
+             * acknowledged and relayed; UDP packets get consumed. */
+            int sst = lSST[ni*LMOV+c];
+            if (sst == 3 && LPHOT) {
+                /* established session: volley the photon back down the
+                 * wire — the bound exchange is a ping-pong, not a drain.
+                 * The photon stays in flight on the return channel. */
+                uint32_t v = lPH[ni*LMOV+(c^1)] + p;
+                lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                LIEV[14] += p;   /* session volley (shares sess counter) */
+                continue;
+            }
+            if (LPHOT >= 5 && mass > 96 && p > 0 && (lrnd() & 31) < 2) {
+                /* weak-coupling absorption: photon capture is RARE per
+                 * encounter (~6% — the mean free path is many hops).
+                 * Most photons transmit or volley; only occasionally
+                 * does a transaction complete (Kastner: absorption
+                 * needs a compatible transition — selective, not
+                 * every encounter). The exchange sustains because
+                 * photons shuttle many times before one captures. */
                 /* motion-diluted absorption: a lump that's moving gets
                  * only a partial handoff — the photon grazes a target
                  * already leaving. Deposited charge ∝ stillness —
@@ -585,6 +608,18 @@ void link3_tick(void) {
             if (mass <= 16 && lSST[idx] == 1) lSST[idx] = 0;  /* port closed — no mass to absorb */
             if (duplex) {
                 lSAGE[idx] = 0;
+                /* keepalive: on an established session, duplex traffic
+                 * prompts re-emission — the catch prompts a throw.
+                 * Charged endpoints answer back — the session
+                 * sustains itself through reciprocal exchange. */
+                if (lSST[idx] == 3 && lIE[ni] > 16 && LPHOT) {
+                    uint32_t e = lIE[ni];
+                    int out = e > 8 ? 8 : e;
+                    lIE[ni] = e - out;
+                    uint32_t v = lPH[ni*LMOV+(c^1)] + out;   /* answer back down the wire */
+                    lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                    LIPH += out;
+                }
                 if (lSST[idx] == 1) lSST[idx] = 2;          /* SYN: duplex at a LISTENING port */
                 else if (lSST[idx] == 2 && lSESS[idx] > 8) lSST[idx] = 3;  /* ESTAB: sustained */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
