@@ -305,7 +305,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
-            lPHNU[si*LMOV+c] = dch < 0 ? 255 : dch;   /* nu = emitter's winding signature */
+            lPHNU[si*LMOV+c] = dch < 0 ? 255 : dch + (dump >> 4);   /* nu = the burst's energy quantum */
             uint32_t v = lPH[si*LMOV+c] + dump;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH += dump; LIEV[11] += dump;
@@ -333,7 +333,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
-            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : dch2;   /* nu = emitter's signature */
+            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : dch2 + 8;   /* nu = emitter's transition energy (iE shed) */
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
@@ -595,16 +595,20 @@ void link3_tick(void) {
             int cfg = lSNU[ni];
             if (mass > 96 && LPHOT && p > 0) {
                 if (nu > cfg) {
-                    /* partial handoff: site takes its line's worth,
-                     * photon continues at reduced nu (redshifted!) */
-                    int dep = p > 4 ? 4 : p;
-                    uint32_t e = lIE[cat] + dep;
+                    /* partial handoff: the site takes its line's
+                     * worth of ENERGY per photon — each photon
+                     * deposits (nu - cfg) worth... no: deposits cfg
+                     * worth (the transition it can take), continuing
+                     * at nu - cfg. Energy-conserving: iE += dep*nu
+                     * absorbed... photons deposit their excess. */
+                    int dep = p > 4 ? 4 : p;          /* photons depositing */
+                    uint32_t e = lIE[cat] + dep * 4;   /* energy in = photons * their deposit */
                     lIE[cat] = e > 255 ? 255 : e;
-                    LIPH -= dep;
                     LIEV[7] += dep;
                     p -= dep;
-                    nu -= cfg + 1;   /* the photon's remaining energy drops */
+                    nu -= cfg + 1;
                     lPHNU[si*LMOV+c] = nu > 0 ? nu : 0;
+                    LIPH -= dep;
                     if (!p) continue;
                 }
             }
@@ -644,7 +648,7 @@ void link3_tick(void) {
                     LIEV[8] += dep;
                     continue;
                 }
-                uint32_t e = lIE[cat] + dep;
+                uint32_t e = lIE[cat] + dep * (nu > 0 ? nu : 1);   /* photons deposit their nu */
                 lIE[cat] = e > 255 ? 255 : e;
                 LIPH -= dep;
                 LIEV[7] += dep;
