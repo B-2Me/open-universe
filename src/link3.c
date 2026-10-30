@@ -58,6 +58,8 @@ static int LPHOT = 0;                /* photon conversion level (0=off) */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
 static int LIQ = 1;                  /* iQ condensation on opposing streams */
+static int LEG = 0;                 /* egate: junction density gates emission */
+static int LIEC = 0;                /* iecost: emission spends iE */
 static int LPHDEC = 0;              /* photdecay: photon -> drest at catalyst-mass */
 static int LFUS = 0;                /* fusion: photon pair on junction -> drest pair */
 static int LDRAIN = 0;
@@ -108,6 +110,8 @@ void link3_iqmode(int k)        { LIQ = k; }
 void link3_drain_edge(int k)    { LDRAIN = k; }
 void link3_photdecay(int k)    { LPHDEC = k; }
 void link3_fusion(int k)       { LFUS = k; }
+void link3_egate(int k)         { LEG = k; }
+void link3_iecost(int k)        { LIEC = k; }
 uint64_t link3_ev(int i)        { return LIEV[i & 15]; }
 uint64_t link3_photons(void)    { return LIPH; }
 int  link3_rest(int x,int y,int z){ return lREST[lidx(x,y,z)]; }
@@ -168,8 +172,27 @@ void link3_tick(void) {
         /* deterministic emission: REST sheds LEMIT/256 of its stock to
          * moving channels — rate gate, not dice (queue fairness). */
         if (LEMIT && lREST[si]) {
-            int out = ((int)lREST[si] * LEMIT) >> 8;
+            /* emission as a junction decision — the loops:
+             * iE-boost: a charged junction emits harder (its own
+             *   energy funds radiation — depletion loop)
+             * egate:    junction density modulates the rate —
+             *   +k suppresses in crowd (retention), -k vents (outflow)
+             * iecost:   each emission spends charge (the budget) */
+            /* charge MODULATES, doesn't dominate — iE as a
+             * bounded multiplier on the base rate (hot junction
+             * emits up to ~3x, not +60x). The mass's own rate
+             * stays the rule; the charge is a modifier. */
+            int rate = LEMIT + ((LEMIT * (lIE[si] >> 5)) >> 2);
+            if (LEG) {
+                int jr = lREST[si];
+                for (int cc = 0; cc < LMOV; cc++) jr += lDR[si*LMOV+cc];
+                if (jr >= (LEG < 0 ? -LEG : LEG))
+                    rate = LEG > 0 ? (rate >> 3) : rate << 1;
+            }
+            int out = ((int)lREST[si] * rate) >> 8;
+            if (LIEC && lIE[si] >= LIEC) { out = out ? out : 1; }
             if (out) {
+                if (LIEC) { int cst = out * LIEC; lIE[si] -= lIE[si] < cst ? lIE[si] : cst; }
                 lREST[si] -= out;
                 for (int u = 0; u < out; u++) {
                     /* round-robin channel spread — deterministic
