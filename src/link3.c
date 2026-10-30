@@ -49,6 +49,7 @@ static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */    
 /* link registers (operator: the wire's own state) */
 static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
 static uint8_t  *lPH, *lPH2;         /* [site*LMOV + c] photons in flight si->ni */
+static uint8_t  *lSNU;               /* [site] site nu — its characteristic frequency (absorption line) */
 static uint8_t  *lPHNU;              /* [site*LMOV + c] photon nu tag — the offer's config (emitter's structure signature) */
 static uint16_t *lLOAD;
 static uint16_t *lFLUX;
@@ -103,6 +104,7 @@ int link3_init(int w, int h, int d, int axial) {
     lUP2  = calloc((size_t)LN * LMOV, 1);
     lPH   = calloc((size_t)LN * LMOV, 1);
     lPHNU = calloc((size_t)LN * LMOV, 1);
+    lSNU  = calloc(LN, 1);
     lPH2  = calloc((size_t)LN * LMOV, 1);
     lLOAD = calloc((size_t)LN * LMOV, 2);
     lFLUX = calloc(LN, 2);
@@ -141,6 +143,8 @@ void link3_ieburst(int k)       { LIEB = k; }
 uint64_t link3_ev(int i)        { return LIEV[i & 15]; }
 uint64_t link3_photons(void)    { return LIPH; }
 int  link3_rest(int x,int y,int z){ return lREST[lidx(x,y,z)]; }
+int  link3_snu(int x,int y,int z){ return lSNU[lidx(x,y,z)]; }
+void link3_snu_set(int x,int y,int z,int v){ lSNU[lidx(x,y,z)] = v&255; }
 int  link3_drest(int x,int y,int z,int c){ return c<LMOV?lDR[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_eget(int x,int y,int z){ return lIE[lidx(x,y,z)]; }
 int  link3_qget(int x,int y,int z){ return lIQ[lidx(x,y,z)]; }
@@ -275,6 +279,17 @@ void link3_tick(void) {
          * burst (the capacitor discharge — charge -> hold -> dump ->
          * recharge: the lump's heartbeat, same oscillator shape as the
          * iQ collision domain but on the energy register). */
+        /* site nu derivation: the lump's spectral signature =
+         * dominant winding + charge band — its absorption line
+         * shifts with excitation (the atom's lines move as it's
+         * ionized — frequency IS the structure's state). */
+        {
+            int dch = -1, dv = 0;
+            for (int cc = 0; cc < LMOV; cc++)
+                if (lDR[si*LMOV+cc] > dv) { dv = lDR[si*LMOV+cc]; dch = cc; }
+            if (dch >= 0) lSNU[si] = dch + (lIE[si] >> 4);   /* nu = winding + charge */
+            else lSNU[si] = lIE[si] >> 4;
+        }
         if (LIEB && lIE[si] >= LIEB) {
             int dump = lIE[si] >> 2;
             lIE[si] -= dump;
@@ -568,9 +583,11 @@ void link3_tick(void) {
              * back (reject — the offer declined). nu=255 unmarked
              * photons negotiate at base rate. */
             int nu = lPHNU[si*LMOV+c];
-            int cfg = -1, cv = 0;
-            for (int cc = 0; cc < LMOV; cc++)
-                if (lDR[ni*LMOV+cc] > cv) { cv = lDR[ni*LMOV+cc]; cfg = cc; }
+            /* site nu = its characteristic frequency — dominant
+             * drest channel + charge band (the lump's spectral line).
+             * Sites accept photons whose nu matches THEIR nu — a real
+             * frequency spectrum, not just direction. */
+            int cfg = lSNU[ni];
             int compat = (nu == 255) ? 1 : (nu == cfg ? 4 : 0);
             /* negotiation only at a LISTENING endpoint — vacuum
              * transit just streams (nobody's home to answer) */
