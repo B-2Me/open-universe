@@ -169,6 +169,7 @@ void link3_tick(void) {
 
     /* 1. junction collide — parked registers interact (substrate) */
     for (int si = 0; si < LN; si++) {
+        int x_ = si % LW, y_ = (si / LW) % LH, z_ = si / (LW * LH);
         /* deterministic emission: REST sheds LEMIT/256 of its stock to
          * moving channels — rate gate, not dice (queue fairness). */
         if (LEMIT && lREST[si]) {
@@ -204,17 +205,30 @@ void link3_tick(void) {
                 LIEV[2] += out;
             }
         }
-        /* wound conveyor: drest leaks onto its own channel — the
-         * propulsion mechanic (wound mass emits where it wound).
-         * Deterministic rate gate — a fraction of each channel's
-         * wound stock converts per tick (queue fairness, no dice). */
+        /* wound conveyor: the winding PROPAGATES — a wound site hands
+         * a share of its drest to the downstream neighbor's drest (the
+         * spin transfers through the lump like angular momentum through
+         * a body). The winding CIRCULATES — it doesn't leave as mass;
+         * the lump's spin is structure, not fuel. The mass stays bound;
+         * the direction flows. */
         for (int c = 0; c < LMOV; c++) {
             int leak = ((int)lDR[si*LMOV+c] * 32) >> 8;
             if (leak) {
                 lDR[si*LMOV+c] -= leak;
-                uint32_t v = lUP[si*LMOV+c] + leak;
-                lUP[si*LMOV+c] = v > 255 ? 255 : v;
+                int nx = lidx(lwrap(x_ + LCV[c][0], LW),
+                              lwrap(y_ + LCV[c][1], LH),
+                              lwrap(z_ + LCV[c][2], LD));
+                uint32_t v = lDR[nx*LMOV+c] + leak;
+                lDR[nx*LMOV+c] = v > 255 ? 255 : v;
                 LIEV[3] += leak;
+                /* the transfer also pushes a parked quantum forward —
+                 * winding moves mass downstream (the conveyor drags
+                 * the lump's interior toward its spin axis). */
+                if (lREST[si] >= leak) {
+                    lREST[si] -= leak;
+                    uint32_t m = lDR[nx*LMOV+c] + leak;
+                    lDR[nx*LMOV+c] = m > 255 ? 255 : m;
+                }
             }
         }
         /* iE decay -> photon (depletion -loop): charge emits light.
@@ -271,19 +285,42 @@ void link3_tick(void) {
                 LIEV[6] += n;      /* refused -> parked on source */
                 continue;
             }
-            /* junction congestion: mass arriving at a crowded node
-             * parks into drest (retention +loop — density breeds
-             * density). Operator: the junction's queue is full ->
-             * packet buffers locally. */
-            int jr = lREST[ni];
-            for (int cc = 0; cc < LMOV; cc++) jr += lDR[ni*LMOV+cc];
-            if (LFRIC && jr >= LFRIC) {
-                uint32_t v = lDR[ni*LMOV+c] + n;
-                lDR[ni*LMOV+c] = v > 255 ? 255 : v;
-                LIEV[6] += n;
-                lLOAD[si*LMOV+c] += n;
-                continue;
+            /* LINK-LEVEL backpressure: a packet in flight continues
+             * on its channel (transit persistence = momentum). It
+             * parks ONLY when the continuation wire refuses — the
+             * outgoing link ni->c is loaded. Junction density doesn't
+             * buffer transit traffic; the wire's own load does.
+             * Parked mass lands on its channel's drest (the winding
+             * it carried). This is the duplex model earning its keep:
+             * parking is a per-LINK decision, momentum persists. */
+            int busy = lLOAD[ni*LMOV+c];          /* continuation wire load */
+            if (LFRIC && busy >= LFRIC) {
+                /* strict friction: the continuation wire is loaded —
+                 * the packet buffers at this junction (meso3i's hard
+                 * park penalty, relocated to the wire-level signal).
+                 * Transit persists only on a genuinely free link —
+                 * momentum is free in vacuum, costly in traffic. */
+                int park = n, esc = 0;
+                if (park) {
+                    /* winding sustenance: parked mass lands on the
+                     * junction's DOMINANT drest channel — a wound lump
+                     * re-winds its arrivals onto its own spin axis
+                     * (the spin is renewable, fed by accretion — like
+                     * a spinning body entraining captured material). */
+                    int bc = c, best = 0;
+                    for (int cc = 0; cc < LMOV; cc++)
+                        if (lDR[ni*LMOV+cc] > best) { best = lDR[ni*LMOV+cc]; bc = cc; }
+                    if (best >= 16) c = bc;
+                    uint32_t v = lDR[ni*LMOV+c] + park;
+                    lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    LIEV[6] += park;
+                }
+                if (esc) lUPd[ni*LMOV+c] += esc;
+            } else {
+                lUPd[ni*LMOV+c] += n > 255 ? 255 : n;
             }
+            lLOAD[si*LMOV+c] += n;
+            continue;
             lUPd[ni*LMOV+c] += n > 255 ? 255 : n;
             lLOAD[si*LMOV+c] += n;   /* flow meter — the wire's load */
             LIEV[0] += n;
