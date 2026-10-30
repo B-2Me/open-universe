@@ -43,7 +43,8 @@ static int LMOV, LCV[19][3];
 static uint8_t  *lREST;              /* [site] scalar mass stock */
 static uint8_t  *lDR;                /* [site*LMOV + c] wound mass */
 static uint8_t  *lIE;                /* [site] stored excitation */
-static uint8_t  *lIQ;                /* [site] collision register */
+static uint8_t  *lIQ;
+static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */                /* [site] collision register */
 
 /* link registers (operator: the wire's own state) */
 static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
@@ -57,7 +58,9 @@ static int LEMIT = 32;               /* deterministic emission rate /256 per tic
 static int LPHOT = 0;                /* photon conversion level (0=off) */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
-static int LIQ = 1;                  /* iQ condensation on opposing streams */
+static int LIQ = 1;
+static int LIQCAP = 64;             /* iQ collision buffer cap -> flush */
+static int LIQDW = 8;               /* collision backoff: ticks buffered before flush */                  /* iQ condensation on opposing streams */
 static int LEG = 0;                 /* egate: junction density gates emission */
 static int LIEC = 0;                /* iecost: emission spends iE */
 static int LPHDEC = 0;              /* photdecay: photon -> drest at catalyst-mass */
@@ -85,6 +88,7 @@ int link3_init(int w, int h, int d, int axial) {
     lDR   = calloc((size_t)LN * LMOV, 1);
     lIE   = calloc(LN, 1);
     lIQ   = calloc(LN, 1);
+    lIQD  = calloc(LN, 1);
     lUP   = calloc((size_t)LN * LMOV, 1);
     lUP2  = calloc((size_t)LN * LMOV, 1);
     lPH   = calloc((size_t)LN * LMOV, 1);
@@ -107,6 +111,8 @@ void link3_phot(int k)          { LPHOT = k; }
 void link3_recoil(int k)        { LRECOIL = k; }
 void link3_comove(int k)        { LCOMOVE = k; }
 void link3_iqmode(int k)        { LIQ = k; }
+void link3_iqcap(int k)         { LIQCAP = k; }
+void link3_iqdwell(int k)       { LIQDW = k; }
 void link3_drain_edge(int k)    { LDRAIN = k; }
 void link3_photdecay(int k)    { LPHDEC = k; }
 void link3_fusion(int k)       { LFUS = k; }
@@ -245,8 +251,10 @@ void link3_tick(void) {
                 lUP[si*LMOV+(c^1)] = m > 255 ? 255 : m;
             }
         }
-        /* iQ condensation: opposing in-flight streams at the junction
-         * condense into core mass (the collision register). */
+        /* iQ collision domain: opposing in-flight streams at the
+         * junction collide and buffer (the collision register).
+         * The buffer holds for a BACKOFF dwell, then flushes —
+         * the collision domain breathes: collide -> hold -> dump. */
         if (LIQ) {
             for (int c = 0; c < LMOV; c += 2) {
                 int a = lUP[si*LMOV+c], b = lUP[si*LMOV+(c^1)];
@@ -257,6 +265,24 @@ void link3_tick(void) {
                     lIQ[si] = q > 255 ? 255 : q;
                     LIEV[5] += pr;
                 }
+            }
+            /* backoff: the buffered collision holds LIQDW ticks before
+             * the junction can flush it — a real collision domain's
+             * retry delay, not instant release */
+            if (lIQ[si]) {
+                if (lIQ[si] >= LIQCAP && ++lIQD[si] >= LIQDW) {
+                    /* flush: the buffered mass bursts back onto the
+                     * moving streams — antipodal pair release
+                     * (momentum-balanced, like the collision was) */
+                    int c = (si + LTICK) % LMOV;
+                    int burst = lIQ[si] >> 1;
+                    lIQ[si] -= 2 * burst;
+                    lIQD[si] = 0;
+                    uint32_t v;
+                    v = lUP[si*LMOV+c] + burst;   lUP[si*LMOV+c] = v > 255 ? 255 : v;
+                    v = lUP[si*LMOV+(c^1)] + burst; lUP[si*LMOV+(c^1)] = v > 255 ? 255 : v;
+                    LIEV[10] += burst;
+                } else if (lIQ[si] < LIQCAP) lIQD[si] = 0;
             }
         }
     }
