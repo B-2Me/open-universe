@@ -58,6 +58,8 @@ static int LPHOT = 0;                /* photon conversion level (0=off) */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
 static int LIQ = 1;                  /* iQ condensation on opposing streams */
+static int LPHDEC = 0;              /* photdecay: photon -> drest at catalyst-mass */
+static int LFUS = 0;                /* fusion: photon pair on junction -> drest pair */
 static int LDRAIN = 0;
 static int LTICK = 0;
 static uint64_t LIEV[16];
@@ -104,6 +106,8 @@ void link3_recoil(int k)        { LRECOIL = k; }
 void link3_comove(int k)        { LCOMOVE = k; }
 void link3_iqmode(int k)        { LIQ = k; }
 void link3_drain_edge(int k)    { LDRAIN = k; }
+void link3_photdecay(int k)    { LPHDEC = k; }
+void link3_fusion(int k)       { LFUS = k; }
 uint64_t link3_ev(int i)        { return LIEV[i & 15]; }
 uint64_t link3_photons(void)    { return LIPH; }
 int  link3_rest(int x,int y,int z){ return lREST[lidx(x,y,z)]; }
@@ -289,11 +293,40 @@ void link3_tick(void) {
             int mass = lREST[ni];
             for (int cc = 0; cc < LMOV; cc++) mass += lDR[ni*LMOV+cc];
             if (LPHOT >= 5 && mass > 32 && p > 0) {
+                /* photdecay: the transaction completes as MASS — the
+                 * photon's energy re-crystallizes into bound structure
+                 * (Kastner: absorbed energy joins the absorber). The
+                 * catalyst IS the mass (pair-production needs a
+                 * partner). Deposit on the arrival channel's drest —
+                 * momentum preserved as winding. */
+                if (LPHDEC && (lrnd() & 255) < LPHDEC) {
+                    uint32_t v = lDR[ni*LMOV+c] + p;
+                    lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    LIPH -= p;
+                    LIEV[8] += p;
+                    continue;
+                }
                 uint32_t e = lIE[ni] + p;
                 lIE[ni] = e > 255 ? 255 : e;
                 LIPH -= p;
                 LIEV[7] += p;
                 continue;
+            }
+            /* fusion: photon pairs meeting at a bare junction can
+             * materialize (gamma-gamma pair production) — opposing
+             * photon streams at a near-vacuum site -> drest pair.
+             * Needs BOTH directions present (the transaction needs
+             * a partner, like real gg -> ee needs momentum balance). */
+            if (LFUS && lPHd[ni*LMOV+(c^1)] && mass < 8 && p > 0) {
+                int a = p < lPHd[ni*LMOV+(c^1)] ? p : lPHd[ni*LMOV+(c^1)];
+                if ((lrnd() & 255) < LFUS) {
+                    lPHd[ni*LMOV+(c^1)] -= a;
+                    uint32_t v = lDR[ni*LMOV+c] + a;
+                    lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    LIPH -= 2*a;
+                    LIEV[9] += a;
+                    continue;
+                }
             }
             lPHd[ni*LMOV+c] += p > 255 ? 255 : p;
         }
