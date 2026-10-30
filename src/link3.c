@@ -316,7 +316,10 @@ void link3_tick(void) {
         }
         if (LIEB && lIE[si] >= LIEB) {
             int dump = lIE[si] >> 2;
-            lIE[si] -= dump;
+            int nu_e = lSNU[si] < 1 ? 1 : lSNU[si];
+            dump = dump / nu_e;                 /* photon COUNT = energy / per-photon nu */
+            if (dump < 1) dump = 1;
+            lIE[si] -= dump * nu_e;             /* debit the carried energy — conserved */
             /* session-directed burst: the bound pair dumps down its
              * strongest ESTABLISHED session wire — the exchange is
              * the photon economy's preferred channel, not isotropic. */
@@ -329,7 +332,7 @@ void link3_tick(void) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
             if (LPHSPR && (lrnd() & 255) < LPHSPR) c = LNEI[c][lrnd() & 3];   /* aperture spread at birth */
-            lPHNU[si*LMOV+c] = dch < 0 ? 255 : dch + (dump >> 4);   /* nu = the burst's energy quantum */
+            lPHNU[si*LMOV+c] = nu_e;   /* each burst photon carries the line's energy — count*nu = iE spent */
             uint32_t v = lPH[si*LMOV+c] + dump;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH += dump; LIEV[11] += dump;
@@ -342,7 +345,6 @@ void link3_tick(void) {
         /* iE decay -> photon (depletion -loop): charge emits light.
          * recoil: emitter quantum pushed antipodal (momentum). */
         if (LPHOT && lIE[si] && (lrnd() % (uint32_t)(32 - busy * 4)) == 0) {
-            lIE[si]--;
             /* directional emission: photons inherit the lump's
              * structure — prefer the dominant drest channel (the
              * winding axis) or the strongest session — the lump's
@@ -358,7 +360,15 @@ void link3_tick(void) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
             if (LPHSPR && (lrnd() & 255) < LPHSPR) c = LNEI[c][lrnd() & 3];   /* aperture spread: the emitter can't perfectly collimate — born on a neighbor channel */
-            lPHNU[si*LMOV+c] = lSNU[si];   /* emit AT the site's own line — the lump's photons carry its characteristic transition, matching its absorption spectrum */
+            /* nu-conserving emission: the photon carries the site's
+             * line energy, DEBITED from iE. If the lump can't afford
+             * its full line it emits cooler — energy is real, not
+             * a label: iE out = photon nu out. */
+            int nu_e = lSNU[si];
+            if (nu_e > lIE[si]) nu_e = lIE[si];
+            if (nu_e < 1) nu_e = 1;
+            lIE[si] -= nu_e;
+            lPHNU[si*LMOV+c] = nu_e;
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
@@ -587,6 +597,7 @@ void link3_tick(void) {
             if (sst == 3 && LPHOT && emass > 16) {
                 uint32_t v = lPH[ni*LMOV+(c^1)] + p;
                 lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                lPHNU[ni*LMOV+(c^1)] = lPHNU[si*LMOV+c];   /* same photons redirected — keep their energy */
                 LIEV[14] += p;
                 continue;
             }
@@ -599,6 +610,7 @@ void link3_tick(void) {
                 lIE[ni]--;
                 uint32_t v = lPH[ni*LMOV+(c^1)] + 1;
                 lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                lPHNU[ni*LMOV+(c^1)] = 1;   /* the echo costs 1 iE — tag 1, no free energy */
                 LIPH++;
                 LIEV[14]++;
             }
@@ -628,6 +640,11 @@ void link3_tick(void) {
                     uint32_t e = lIE[cat] + dep * (nu > 8 ? nu >> 2 : 4);
                     lIE[cat] = e > 255 ? 255 : e;
                     LIEV[7] += dep;
+                    /* absorption recoil: the absorber is pushed along
+                     * the photon's direction — exchange transmits
+                     * momentum (radiation pressure). */
+                    { uint32_t k = lUP[cat*LMOV+c] + dep;
+                      lUP[cat*LMOV+c] = k > 255 ? 255 : k; }
                     p -= dep;
                     nu -= cfg + 1;
                     lPHNU[si*LMOV+c] = nu > 0 ? nu : 0;
@@ -673,6 +690,10 @@ void link3_tick(void) {
                 }
                 uint32_t e = lIE[cat] + dep * (nu > 0 ? nu : 1);   /* photons deposit their nu */
                 lIE[cat] = e > 255 ? 255 : e;
+                /* absorption recoil: the absorber is pushed along
+                 * the photon's direction — momentum transfer. */
+                { uint32_t k = lUP[cat*LMOV+c] + dep;
+                  lUP[cat*LMOV+c] = k > 255 ? 255 : k; }
                 LIPH -= dep;
                 LIEV[7] += dep;
                 continue;
