@@ -805,13 +805,9 @@ void link3_tick(void) {
              * IS the keepalive). ESTAB = session traffic seen within
              * the timeout; CLOSED = no traffic for the window. */
             int traffic = up > 0 || dn > 0;
-            /* hub preference: a MASSIVE endpoint's socket attracts
-             * sessions — its many ports make it a preferential target
-             * (the Barabasi-Albert attachment: sessions prefer dense
-             * endpoints). Saturated -> hub wins (many ports catch the
-             * flow); sparse -> peer-peer (one focused duplex beats
-             * a spread hub — the hub can't hold weak sessions). */
-            int pref = mass > 128 ? 3 : mass > 48 ? 1 : 0;   /* hub gets the boost */
+            /* peer-only: all endpoints equal — no preferential
+             * attachment. Sessions form on duplex traffic alone. */
+            int pref = 0;
             if (traffic && lSST[idx] >= 1) {
                 lSAGE[idx] = 0;
                 /* keepalive: received traffic prompts a reply — the
