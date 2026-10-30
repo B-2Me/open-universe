@@ -121,6 +121,13 @@ static int      IPHN;                /* live photon count — photon sweep skipp
 static uint8_t *iPA, *iPB;           /* photon planes [site*IMOV*NNU + c*NNU + nu]: directional,
                                         massless, non-colliding messengers */
 static int      ITICK;               /* global tick counter for the clock */
+/* TSEED[type]: a few dice per tick — one seed per mechanic TYPE.
+ * The single-TSEED experiment showed one shared driver couples ALL
+ * mass decisions to the same phase -> coherent gulping. Per-type
+ * seeds decorrelate across mechanics (park/emit/drift/pick each get
+ * their own driver) while bounding dice to a handful per tick. */
+enum { TS_EMIT, TS_PARK, TS_CHAN, TS_PICK, TS_DRIFT, TS_N };
+static int      TSEED[TS_N];
 static uint32_t *iR;                 /* pre-collision per-site mass map */
 static int      INPAIR;              /* unordered pairs incl doubles */
 static uint16_t GID[19][19];         /* group id for pair (i<=j) */
@@ -158,10 +165,62 @@ static inline int pick_(int si, int k) {
 static inline int roll_(int si, int k) {
     return IRANDM ? (((si * 7 + ITICK) % 256) < k) : ((int)(irnd() & 255) < k);
 }
+/* dpick_/droll_: ALWAYS deterministic — mass never dices. The tracked
+ * species follows site-phase rules; only photons keep the honest
+ * fuzz of unresolved microstructure. Same phase form as pick_/roll_
+ * but unconditional — no flag, no dice. */
+/* dpick_/droll_/dpickq_/drbest_/demitchan_: deterministic mass
+ * helpers — MEASURED and documented as insufficient: per-site
+ * coherence jets mass out (directional bias), shared-TSEED coherence
+ * gulps it in (correlated park/emit -> runaway). Per-quantum
+ * independence IS the decorrelation the lump needs; kept for
+ * targeted use where coherence is actually wanted. */
+static inline int dpick_(int si, int ty, int k) {
+    return (si * 7 + TSEED[ty]) % k;
+}
+static inline int droll_(int si, int ty, int k) {
+    return ((si * 7 + TSEED[ty]) % 256) < k;
+}
+/* dpickq_: per-quantum variant — the emission loop calls it once per
+ * parked quantum u; without it every quantum at a site gets the SAME
+ * pick value -> all-or-nothing emission bursts. Each quantum needs
+ * its own deterministic slot in the phase. */
+static inline int dpickq_(int si, int ty, int u, int k) {
+    return (si * 7 + TSEED[ty] + u * 13) % k;
+}
+
+/* drbest_(si): the site's dominant winding channel — emitted photons
+ * carry the lump's directional signature (dipole emission). Falls
+ * back to phase pick when unwound (no drest stock). */
+static inline int drbest_(int si) {
+    int best = 0, bc = -1;
+    for (int c = 0; c < IMOV; c++) {
+        int v = iRA[si * IMOV + c];
+        if (v > best) { best = v; bc = c; }
+    }
+    return bc >= 0 ? bc : dpick_(si, TS_CHAN, IMOV);
+}
 
 static inline int isite(int x, int y, int z) { return ((x + y + z) & 1) == 0; }
+
 static inline int iidx(int x, int y, int z)  { return (z * IH + y) * IW + x; }
 static inline int iwrap(int v, int n)        { v %= n; return v < 0 ? v + n : v; }
+
+/* demitchan_(si): emission follows the PRESSURE gradient — the site
+ * emits onto the channel whose destination has the least local
+ * density (decompression, not a pick). */
+static inline int demitchan_(int si) {
+    int x = si % IW, y = (si / IW) % IH, z = si / (IW * IH);
+    int best = 1 << 30, bc = 0;
+    for (int cc = 0; cc < IMOV; cc++) {
+        int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                      iwrap(y + ICV[cc][1], IH),
+                      iwrap(z + ICV[cc][2], ID));
+        int rr = iR[n3];
+        if (rr < best) { best = rr; bc = cc; }
+    }
+    return bc;
+}
 
 static void build_pairs(void) {
     NGRP = 0; INPAIR = 0;
@@ -480,7 +539,7 @@ static void collide_node(uint8_t *n, int si) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
         uint8_t *dr = iRA + (size_t)si * IMOV;
         for (int u = 0; u < n[INCH - 1] + dsum; u++) {
-            if (irnd() % (4 * k) != 0) continue;
+            if ((int)(irnd() % (4 * k)) != 0) continue;
             int tot = n[INCH - 1] + dsum;
             int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
             if (pick < n[INCH - 1]) {
@@ -501,7 +560,7 @@ static void collide_node(uint8_t *n, int si) {
                     iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
                     iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 } else {
-                    n[INCH - 1]--; n[pick_(si, IMOV)]++;
+                    n[INCH - 1]--; n[irnd() % IMOV]++;
                     iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 }
             } else {
@@ -557,7 +616,7 @@ static void collide_node(uint8_t *n, int si) {
         }
     } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
         iE[si]--;
-        iPA[si * IMOV * NNU + pick_(si, IMOV) * NNU]++; IPHN++;   /* nu=1 */
+        iPA[si * IMOV * NNU + (int)(irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
     }
     /* iepush: energy funds mechanical motion — spend k iE to kick a
      * scalar-rest quantum onto a random moving channel (pressure) */
@@ -580,7 +639,7 @@ static void collide_node(uint8_t *n, int si) {
     if (IPAIR) {
         int k = IFRICM ? (IFRICM < 0 ? -IFRICM : IFRICM) : 4;
         for (int c = 0; c + 1 < IMOV; c += 2)
-            if (n[c] && n[c + 1] && irnd() % (4 * k) == 0) {
+            if (n[c] && n[c + 1] && (int)(irnd() % (4 * k)) == 0) {
                 n[c]--; n[c + 1]--;
                 iEV[1] += 2;
                 if (IDREST) {
@@ -828,6 +887,7 @@ void meso3i_tick(void) {
         }
     }
     ITICK++;
+    for (int i = 0; i < TS_N; i++) TSEED[i] = (int)irnd();
 
     /* 3. stream: rest stays; moving quanta go direct (DWELL=1) or into
      *    the edge delay line at stage DWELL-1 */
