@@ -539,7 +539,17 @@ static void collide_node(uint8_t *n, int si) {
         int k = IFRICM < 0 ? -IFRICM : IFRICM;
         uint8_t *dr = iRA + (size_t)si * IMOV;
         for (int u = 0; u < n[INCH - 1] + dsum; u++) {
-            if ((int)(irnd() % (4 * k)) != 0) continue;
+            /* stimulated emission: photon cadence shrinks the emission
+             * divisor — a lit site (iPT high) sheds mass faster. The
+             * mass->photon fork is context-aware: mirrors photdecay's
+             * catalyst gate on the inverse direction. */
+            /* charge-gated emission: a charged lump (iE high — has been
+             * absorbing light) radiates harder — the stored energy funds
+             * its own glow. Context-aware mass->photon fork, self-
+             * regulating (emit drains iE -> the loop bounds). */
+            int dk = 4 * k - ((int)iE[si] >> 4);
+            if (dk < 2) dk = 2;
+            if ((int)(irnd() % (uint32_t)dk) != 0) continue;
             int tot = n[INCH - 1] + dsum;
             int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
             if (pick < n[INCH - 1]) {
@@ -614,7 +624,14 @@ static void collide_node(uint8_t *n, int si) {
                 IPHN++;
             }
         }
-    } else if (IPHOT >= 5 && iE[si] && (irnd() & EMASK) == 0) {
+    } else if (IPHOT >= 5 && iE[si] &&
+               /* stimulated-emission gate: the mass->photon fork is
+                * context-aware too — a site already bathed in light
+                * (iPT high) emits more readily, mirroring photdecay's
+                * catalyst gate (photons near mass convert). Rate ∝
+                * photon cadence — resonant photons stimulate the
+                * transaction. */
+               (irnd() & (EMASK + (iPT[si] >> 1))) == 0) {
         iE[si]--;
         iPA[si * IMOV * NNU + (int)(irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
     }
