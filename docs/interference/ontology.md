@@ -89,7 +89,22 @@ at fusion/annihilation/absorb/emission forks. Measured closed ledger
 ## Open frontiers
 
 - `iQ` register — wired, never fires (capture conditions unprobed)
-- 3D lattices, larger clusters (does the bond hold in bulk?)
+- Asymmetric-conversion lensing (edge-grazing beams depleting on the
+  mass-facing side via catalyst-gated decay — predicted, faint)
 - Winding exchange — spin transfer through mass accretion
 - Whether any closed bound state truly self-sustains (the
   ground-state analog — a bond whose photons never leak)
+
+## New mechanics since E65 (all flag-gated, default off)
+
+`scatter`± (deflect/toward-density), `nuscat` (spectral routing —
+hot flee/cold trap), `lens`± (avoid/attract — +72% mass held),
+`randmode` (deterministic phase picks — same physics, zero dice),
+`iecost`, `iepush`± (kick out/capture), `linkcap`± (refuse/force),
+`massbnc` (cap-refusal bounce), `egate` (density-gated boil-off —
+the flattened-dynamic fix), `iget` (arrival capacity gate),
+`photdecay` (catalyst-gated photon->mass, EMASK-mirrored, balanced),
+`nuup` (photon gains nu through hot sites — inverse-Compton).
+
+Mechanics are ends of gradients — physics emerges where ends
+contest at shared junctions, not inside any single flag.
