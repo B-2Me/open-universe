@@ -62,7 +62,8 @@ static int LIQ = 1;
 static int LIQCAP = 64;             /* iQ collision buffer cap -> flush */
 static int LIQDW = 8;               /* collision backoff: ticks buffered before flush */                  /* iQ condensation on opposing streams */
 static int LEG = 0;                 /* egate: junction density gates emission */
-static int LIEC = 0;                /* iecost: emission spends iE */
+static int LIEC = 0;
+static int LIEB = 0;                /* iE burst: charge saturates -> photon dump */                /* iecost: emission spends iE */
 static int LPHDEC = 0;              /* photdecay: photon -> drest at catalyst-mass */
 static int LFUS = 0;                /* fusion: photon pair on junction -> drest pair */
 static int LDRAIN = 0;
@@ -118,6 +119,7 @@ void link3_photdecay(int k)    { LPHDEC = k; }
 void link3_fusion(int k)       { LFUS = k; }
 void link3_egate(int k)         { LEG = k; }
 void link3_iecost(int k)        { LIEC = k; }
+void link3_ieburst(int k)       { LIEB = k; }
 uint64_t link3_ev(int i)        { return LIEV[i & 15]; }
 uint64_t link3_photons(void)    { return LIPH; }
 int  link3_rest(int x,int y,int z){ return lREST[lidx(x,y,z)]; }
@@ -235,6 +237,23 @@ void link3_tick(void) {
                     uint32_t m = lDR[nx*LMOV+c] + leak;
                     lDR[nx*LMOV+c] = m > 255 ? 255 : m;
                 }
+            }
+        }
+        /* iE burst: charge saturates -> dump the reservoir as a photon
+         * burst (the capacitor discharge — charge -> hold -> dump ->
+         * recharge: the lump's heartbeat, same oscillator shape as the
+         * iQ collision domain but on the energy register). */
+        if (LIEB && lIE[si] >= LIEB) {
+            int dump = lIE[si] >> 2;
+            lIE[si] -= dump;
+            int c = (si + LTICK) % LMOV;
+            uint32_t v = lPH[si*LMOV+c] + dump;
+            lPH[si*LMOV+c] = v > 255 ? 255 : v;
+            LIPH += dump; LIEV[11] += dump;
+            if (LRECOIL && lREST[si] >= dump) {
+                lREST[si] -= dump;
+                uint32_t r = lUP[si*LMOV+(c^1)] + dump;
+                lUP[si*LMOV+(c^1)] = r > 255 ? 255 : r;
             }
         }
         /* iE decay -> photon (depletion -loop): charge emits light.
