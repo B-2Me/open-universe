@@ -51,7 +51,9 @@ static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
 static uint8_t  *lPH, *lPH2;         /* [site*LMOV + c] photons in flight si->ni */
 static uint16_t *lLOAD;
 static uint16_t *lFLUX;
-static uint8_t  *lSESS;              /* [site*LMOV + c] session strength — EMA of duplex traffic on the wire */              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
+static uint8_t  *lSESS;              /* [site*LMOV + c] session strength — duplex EMA */
+static uint8_t  *lSST;               /* [site*LMOV + c] session state: 0=UDP,1=LISTEN,2=SYN,3=ESTAB,4=CLOSED */
+static uint8_t  *lSAGE;              /* [site*LMOV + c] session age — ticks since last duplex traffic */              /* [site*LMOV + c] session strength — EMA of duplex traffic on the wire */              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
 static uint8_t  *lUPd, *lPHd;        /* delivered-this-tick buffers */
 
 /* flags — same names as meso3i where the mechanic carries over */
@@ -101,6 +103,8 @@ int link3_init(int w, int h, int d, int axial) {
     lLOAD = calloc((size_t)LN * LMOV, 2);
     lFLUX = calloc(LN, 2);
     lSESS = calloc((size_t)LN * LMOV, 1);
+    lSST  = calloc((size_t)LN * LMOV, 1);
+    lSAGE = calloc((size_t)LN * LMOV, 1);
     lUPd  = calloc((size_t)LN * LMOV, 1);
     lPHd  = calloc((size_t)LN * LMOV, 1);
     LTICK = 0; LIPH = 0;
@@ -140,6 +144,7 @@ int  link3_upget(int x,int y,int z,int c){ return c<LMOV?lUP[lidx(x,y,z)*LMOV+c]
 int  link3_phget(int x,int y,int z,int c){ return c<LMOV?lPH[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_load(int x,int y,int z,int c){ return c<LMOV?lLOAD[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sess(int x,int y,int z,int c){ return c<LMOV?lSESS[lidx(x,y,z)*LMOV+c]:0; }
+int  link3_sst(int x,int y,int z,int c){ return c<LMOV?lSST[lidx(x,y,z)*LMOV+c]:0; }
 
 void link3_set(int x,int y,int z,int c,int v) {
     int si = lidx(x,y,z);
@@ -562,6 +567,35 @@ void link3_tick(void) {
             int s = lSESS[si*LMOV+c];
             s = (s * 7 + flow * 8) >> 3;           /* EMA toward duplex flow */
             lSESS[si*LMOV+c] = s > 255 ? 255 : s;
+            /* session lifecycle — the link's TCP state machine:
+             * UDP(0): sessionless traffic, no state
+             * SYN(1): handshake — first duplex exchange seen
+             * ESTAB(2): established — sustained duplex (the bound state)
+             * CLOSED(3): session dropped — duplex died, aged out
+             * A session can't look like UDP: established links route
+             * preferentially (the bound exchange gets its own channel). */
+            int idx = si * LMOV + c;
+            int duplex = (up > 0 && dn > 0);
+            /* LISTEN: a link whose endpoint holds mass is an open
+             * socket — the junction is ready to absorb (passive open).
+             * Mass makes the port listen; vacuum transit stays UDP. */
+            int mass = lREST[ni];
+            for (int cc = 0; cc < LMOV; cc++) mass += lDR[ni*LMOV+cc];
+            if (mass > 16 && lSST[idx] == 0) lSST[idx] = 1;   /* UDP -> LISTEN */
+            if (mass <= 16 && lSST[idx] == 1) lSST[idx] = 0;  /* port closed — no mass to absorb */
+            if (duplex) {
+                lSAGE[idx] = 0;
+                if (lSST[idx] == 1) lSST[idx] = 2;          /* SYN: duplex at a LISTENING port */
+                else if (lSST[idx] == 2 && lSESS[idx] > 8) lSST[idx] = 3;  /* ESTAB: sustained */
+                if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
+                LIEV[14]++;
+            } else if (lSST[idx] >= 2) {
+                if (++lSAGE[idx] > 32) {                     /* timeout: 32 ticks */
+                    lSST[idx] = 4;                           /* CLOSED */
+                    lSESS[idx] = 0;
+                    LIEV[15]++;
+                }
+            }
         }
     }
 
