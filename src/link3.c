@@ -704,6 +704,13 @@ void link3_tick(void) {
              * IS the keepalive). ESTAB = session traffic seen within
              * the timeout; CLOSED = no traffic for the window. */
             int traffic = up > 0 || dn > 0;
+            /* hub preference: a MASSIVE endpoint's socket attracts
+             * sessions — its many ports make it a preferential target
+             * (the Barabasi-Albert attachment: sessions prefer dense
+             * endpoints). Saturated -> hub wins (many ports catch the
+             * flow); sparse -> peer-peer (one focused duplex beats
+             * a spread hub — the hub can't hold weak sessions). */
+            int pref = mass > 128 ? 3 : mass > 48 ? 1 : 0;   /* hub gets the boost */
             if (traffic && lSST[idx] >= 1) {
                 lSAGE[idx] = 0;
                 /* keepalive: received traffic prompts a reply — the
@@ -717,8 +724,8 @@ void link3_tick(void) {
                     lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                     LIPH += out;
                 }
-                if (lSST[idx] == 1) lSST[idx] = 2;          /* SYN: traffic at a LISTEN port */
-                else if (lSST[idx] == 2 && lSESS[idx] > 4) lSST[idx] = 3;  /* ESTAB: sustained */
+                if (lSST[idx] == 1 && (lSESS[idx] > 1 || pref)) lSST[idx] = 2;  /* SYN: traffic at a LISTEN port */
+                else if (lSST[idx] == 2 && lSESS[idx] > (4 - pref)) lSST[idx] = 3;  /* ESTAB: hub promotes easier */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
                 LIEV[14]++;
                 /* the BOND: session depth accumulating — the channel's
