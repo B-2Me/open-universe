@@ -536,8 +536,53 @@ void meso3i_tick(void) {
             for (int c = 0; c < IMOV; c++) {
                 int p = nb->phot[c];
                 if (!p) continue;
-                if (IPHOTDEC && iR[si] >= IPHOTDEC &&
-                    (int)(irnd() & 255) < IPHOTDEC) {
+                int catOk = 0;
+                if (IPHOTDEC) {
+                    /* catalyst within RANGE: a neighbor's iR >= k means a
+                     * lump's surface is adjacent — edge-grazing photons
+                     * can convert; true-vacuum photons stay immune.
+                     * Direction term: a wound neighbor resonates — its
+                     * drest stock on THIS photon's channel (or antipode)
+                     * means the photon streams with/against the winding
+                     * it grazes -> preferential conversion. */
+                    for (int cc = 0; cc < IMOV; cc++) {
+                        int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                                      iwrap(y + ICV[cc][1], IH),
+                                      iwrap(z + ICV[cc][2], ID));
+                        if (iR[n3] >= IPHOTDEC) { catOk = 1; break; }
+                    }
+                    if (catOk) {
+                        /* direction resonance: a wound neighbor's stock
+                         * on this photon's channel (c) or antipode
+                         * (c^1) — the photon streams with/against the
+                         * winding it grazes -> resonant conversion */
+                        catOk = 0;
+                        for (int cc = 0; cc < IMOV; cc++) {
+                            int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                                          iwrap(y + ICV[cc][1], IH),
+                                          iwrap(z + ICV[cc][2], ID));
+                            if (iR[n3] >= IPHOTDEC &&
+                                B[n3].drest[c] + B[n3].drest[c ^ 1] >= IPHOTDEC) {
+                                catOk = 2; break; }
+                        }
+                        if (!catOk) {
+                            for (int cc = 0; cc < IMOV; cc++) {
+                                int n3 = iidx(iwrap(x + ICV[cc][0], IW),
+                                              iwrap(y + ICV[cc][1], IH),
+                                              iwrap(z + ICV[cc][2], ID));
+                                if (iR[n3] >= IPHOTDEC) { catOk = 1; break; }
+                            }
+                        }
+                    }
+                }
+                if (IPHOTDEC && catOk &&
+                    (catOk == 2 ? (irnd() & (EMASK >> 2)) == 0
+                                : (irnd() & EMASK) == 0)) {
+                    /* grounded rate: decay mirrors emission's coupling —
+                     * mass->light and light->mass at the same intrinsic
+                     * rate (EMASK), gated by catalyst (near-mass). The
+                     * conversion fork's ends balance — one coupling,
+                     * two directions. */
                     /* grounded decay: photon->mass only WHERE MASS EXISTS
                      * (iR >= k — the catalyst/nucleus partner; vacuum
                      * photons never convert, matching pair production).
