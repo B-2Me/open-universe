@@ -152,6 +152,7 @@ void link3_eset(int x,int y,int z,int v){ lIE[lidx(x,y,z)] = v<0?0:v>255?255:v; 
 void link3_rset(int x,int y,int z,int c,int v){ if(c<LMOV)lDR[lidx(x,y,z)*LMOV+c]=v<0?0:v>255?255:v; }
 int  link3_upget(int x,int y,int z,int c){ return c<LMOV?lUP[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_phget(int x,int y,int z,int c){ return c<LMOV?lPH[lidx(x,y,z)*LMOV+c]:0; }
+int  link3_phnu(int x,int y,int z,int c){ return c<LMOV?lPHNU[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_load(int x,int y,int z,int c){ return c<LMOV?lLOAD[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sess(int x,int y,int z,int c){ return c<LMOV?lSESS[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sst(int x,int y,int z,int c){ return c<LMOV?lSST[lidx(x,y,z)*LMOV+c]:0; }
@@ -171,7 +172,7 @@ void link3_phset(int x,int y,int z,int c,int v) {
     int si = lidx(x,y,z);
     LIPH += v - lPH[si*LMOV+c];
     lPH[si*LMOV+c] = v<0?0:v>255?255:v;
-    lPHNU[si*LMOV+c] = c;   /* a raw photon's config is its direction */
+    lPHNU[si*LMOV+c] = 32;  /* fresh photons enter ENERGETIC — high nu, redshiftable */
 }
 static uint64_t lmass_total(void) {
     uint64_t m = 0;
