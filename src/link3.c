@@ -327,15 +327,31 @@ void link3_tick(void) {
             int dch = -1, dv = 0;
             for (int cc = 0; cc < LMOV; cc++)
                 if (lDR[si*LMOV+cc] > dv) { dv = lDR[si*LMOV+cc]; dch = cc; }
-            { int bv = -1; for (int cc = 0; cc < LMOV; cc++)
-                  if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
-                      bv = lSESS[si*LMOV+cc]; c = cc;
-                  } }
-            if (LPHSPR && (lrnd() & 255) < LPHSPR) c = LNEI[c][lrnd() & 3];   /* aperture spread at birth */
-            lPHNU[si*LMOV+c] = nu_e;   /* each burst photon carries the line's energy — count*nu = iE spent */
-            uint32_t v = lPH[si*LMOV+c] + dump;
-            lPH[si*LMOV+c] = v > 255 ? 255 : v;
-            LIPH += dump; LIEV[11] += dump;
+            /* broadcast emission: a node feeds ALL its active session
+             * channels each tick — the burst splits across every link
+             * carrying negotiation traffic (duplex needs both directions
+             * moving simultaneously — one-direction-per-tick can't hold
+             * two sessions). */
+            int nport = 0;
+            for (int cc = 0; cc < LMOV; cc++)
+                if (lSST[si*LMOV+cc] >= 1 && lSESS[si*LMOV+cc] > 0) nport++;
+            /* no live traffic anywhere: announce on ALL ports — a new
+             * node broadcasts on every channel until a peer answers
+             * (else emission hijacks onto an arbitrary first channel
+             * and sessions can never start). */
+            int per = dump / (nport ? nport : LMOV);
+            if (per < 1) per = 1;
+            int sent = 0;
+            for (int cc = 0; cc < LMOV; cc++) {
+                if (nport && !(lSST[si*LMOV+cc] >= 1 && lSESS[si*LMOV+cc] > 0)) continue;
+                int dc = cc;
+                if (LPHSPR && (lrnd() & 255) < LPHSPR) dc = LNEI[cc][lrnd() & 3];   /* aperture spread at birth */
+                lPHNU[si*LMOV+dc] = nu_e;
+                uint32_t v = lPH[si*LMOV+dc] + per;
+                lPH[si*LMOV+dc] = v > 255 ? 255 : v;
+                sent += per;
+            }
+            LIPH += sent; LIEV[11] += sent;
             if (LRECOIL && lREST[si] >= dump) {
                 lREST[si] -= dump;
                 uint32_t r = lUP[si*LMOV+(c^1)] + dump;
@@ -821,8 +837,8 @@ void link3_tick(void) {
                     lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                     LIPH += out;
                 }
-                if (lSST[idx] == 1 && (lSESS[idx] > 1 || pref)) lSST[idx] = 2;  /* SYN: traffic at a LISTEN port */
-                else if (lSST[idx] == 2 && lSESS[idx] > (4 - pref)) lSST[idx] = 3;  /* ESTAB: hub promotes easier */
+                if (lSST[idx] == 1 && lSESS[idx] > 0) lSST[idx] = 2;  /* SYN: any duplex traffic promotes */
+                else if (lSST[idx] == 2 && lSESS[idx] > 1) lSST[idx] = 3;  /* ESTAB: sustained duplex */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
                 LIEV[14]++;
                 /* the BOND: session depth accumulating — the channel's
