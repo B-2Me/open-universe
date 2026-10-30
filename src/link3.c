@@ -38,6 +38,7 @@ static const int8_t LDIR6[6][3] = {
 
 static int LW, LH, LD, LN;
 static int LMOV, LCV[19][3];
+static int LNEI[18][4];            /* angular neighbors — the diffusion cone */
 
 /* site registers (substrate: parked/bound state at the junction) */
 static uint8_t  *lREST;              /* [site] scalar mass stock */
@@ -64,6 +65,7 @@ static uint8_t  *lPHNUd;             /* delivered nu tags */
 static int LFRIC = 8;                /* link congestion cap -> park (retention) */
 static int LEMIT = 32;               /* deterministic emission rate /256 per tick */
 static int LPHOT = 0;                /* photon conversion level (0=off) */
+static int LPHSPR = 0;               /* photon angular diffusion rate (0-255) — beams diverge */
 static int LRECOIL = 1;              /* momentum-conserving emission */
 static int LCOMOVE = 1;              /* co-moving charge on hops */
 static int LIQ = 1;
@@ -95,6 +97,22 @@ int link3_init(int w, int h, int d, int axial) {
     LMOV = 12 + (axial ? 6 : 0);
     for (int c = 0; c < 12; c++) for (int k = 0; k < 3; k++) LCV[c][k] = LDIR12[c][k];
     for (int c = 0; c < 6;  c++) for (int k = 0; k < 3; k++) LCV[12 + c][k] = LDIR6[c][k];
+    /* angular neighbors: the 4 channels nearest to each direction
+     * (excluding self and exact reverse) — the diffusion cone's
+     * legs. Photons scatter to near-parallel channels, not U-turns. */
+    for (int c = 0; c < LMOV; c++) {
+        int best[4] = {0,0,0,0}, bs[4] = {-9,-9,-9,-9};
+        for (int cc = 0; cc < LMOV; cc++) {
+            if (cc == c || cc == (c^1)) continue;
+            int dot = LCV[c][0]*LCV[cc][0] + LCV[c][1]*LCV[cc][1] + LCV[c][2]*LCV[cc][2];
+            int norm = (LCV[c][0]*LCV[c][0]+LCV[c][1]*LCV[c][1]+LCV[c][2]*LCV[c][2])
+                     * (LCV[cc][0]*LCV[cc][0]+LCV[cc][1]*LCV[cc][1]+LCV[cc][2]*LCV[cc][2]);
+            int sc = dot * 4 / (norm > 0 ? norm : 1);   /* cos * 4 */
+            for (int k = 0; k < 4; k++)
+                if (sc > bs[k]) { for (int j = 3; j > k; j--) { bs[j]=bs[j-1]; best[j]=best[j-1]; } bs[k]=sc; best[k]=cc; break; }
+        }
+        for (int k = 0; k < 4; k++) LNEI[c][k] = best[k];
+    }
     lREST = calloc(LN, 1);
     lDR   = calloc((size_t)LN * LMOV, 1);
     lIE   = calloc(LN, 1);
@@ -127,6 +145,7 @@ void link3_seed(uint32_t s)     { lrng = s ? s : 0xC0FFEEu; }
 void link3_friction(int k)      { LFRIC = k; }
 void link3_emit(int k)          { LEMIT = k; }
 void link3_phot(int k)          { LPHOT = k; }
+void link3_phspread(int k)      { LPHSPR = k; }
 void link3_recoil(int k)        { LRECOIL = k; }
 void link3_comove(int k)        { LCOMOVE = k; }
 void link3_iqmode(int k)        { LIQ = k; }
@@ -527,6 +546,23 @@ void link3_tick(void) {
             int ni = lidx(lwrap(x + LCV[c][0], LW),
                           lwrap(y + LCV[c][1], LH),
                           lwrap(z + LCV[c][2], LD));
+            /* angular diffusion: a fraction of the beam scatters onto
+             * near-parallel channels — real beams diverge (finite-
+             * source spread). The cone opens with distance traveled. */
+            if (LPHSPR && p > 1) {
+                int sp = (p * LPHSPR) >> 8;
+                if (sp) {
+                    int cc = LNEI[c][lrnd() & 3];
+                    int nn = lidx(lwrap(x + LCV[cc][0], LW),
+                                  lwrap(y + LCV[cc][1], LH),
+                                  lwrap(z + LCV[cc][2], LD));
+                    uint32_t v = lPHd[nn*LMOV+cc] + sp;
+                    lPHd[nn*LMOV+cc] = v > 255 ? 255 : v;
+                    lPHNUd[nn*LMOV+cc] = lPHNU[si*LMOV+c];
+                    p -= sp;
+                    if (!p) continue;
+                }
+            }
             /* absorb: photons arriving at parked mass -> iE (substrate:
              * bound energy; operator: the wire deposits into node) */
             int mass = lREST[ni];

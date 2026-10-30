@@ -320,6 +320,7 @@ if emcc link3.c \
     '_link3_friction',
     '_link3_emit',
     '_link3_phot',
+    '_link3_phspread',
     '_link3_recoil',
     '_link3_comove',
     '_link3_iqmode',
