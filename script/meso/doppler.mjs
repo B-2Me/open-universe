@@ -1,6 +1,6 @@
-// doppler (E42b): kinematic cadence stretch — moving emitter, static grid.
-// Clean detector: thin single-cell pulses + first-arrival clustering.
-// Axial c_eff = 2 cells/tick. Expect T_arr = T_emit * (1 + v/2).
+// doppler (E118): a drifting wound lump emits photons — does the
+// light arrive compressed ahead (+x) and stretched behind (-x)?
+// The Doppler signature in the substrate's cadence register.
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,44 +9,24 @@ const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const src = readFileSync(join(here, '../../docs/public/wasm/ember/meso3i.js'), 'utf8');
 const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename', src)
-  (mod, mod.exports, require, join(here, '../../docs/public/wasm/ember'), 'meso3i.js');
-const w = await mod.exports();
-const T=10, DETX=44;
-const run=(stepEvery)=>{   // >0 recede (-x), <0 approach (+x)
-  const W=48,H=24,D=24,NMOV=w._meso3i_nch()-1,REST=NMOV;
-  w._meso3i_init(W,H,D,1); w._meso3i_collmode(0); w._meso3i_friction(8);
-  w._meso3i_fricmode(16); w._meso3i_fricp(128); w._meso3i_drest(0);
-  w._meso3i_reflect(0);
-  if (w._meso3i_scatter) w._meso3i_scatter(Number(process.env.SCATTER || 0)); w._meso3i_phot(0);
-  let ex=stepEvery>0?26:14;
-  const counts=[];
-  for(let t=0;t<110;t++){
-    if(t>0 && t%Math.abs(stepEvery)===0) ex += stepEvery>0?-1:1;
-    // thin pulse: ONE site, single tick injection
-    if(t%T===0 && t<60 && ex>0 && ex<W)
-      for(let z=8;z<16;z++)for(let y=8;y<16;y++)
-        if(!((ex+y+z)&1)) w._meso3i_phset_nu(ex,y,z,12,1,4);
-    w._meso3i_tick();
-    let det=0;
-    for(const dx of [DETX,DETX+1])   /* both parity lanes: axial photons
-      stay on their x-parity forever — a single detector column is
-      blind to half the pulses */
-    for(let z=0;z<D;z++)for(let y=0;y<H;y++){
-      if((dx+y+z)&1)continue;
-      for(let nu=1;nu<=4;nu++) det+=w._meso3i_phget_nu(dx,y,z,12,nu); }
-    counts.push(det);
+for (const [tag,wind] of [['unwound',0],['wound+x',12]]) {
+  const w = await (()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,join(here,'../../docs/public/wasm/ember'),'meso3i.js');return m.exports();})();
+  const W=64,H=16,D=16;
+  w._meso3i_init(W,H,D,1);
+  const NMOV=w._meso3i_nch()-1,REST=NMOV;
+  w._meso3i_collmode(0);w._meso3i_friction(8);w._meso3i_fricmode(4);
+  w._meso3i_fricp(128);w._meso3i_drest(1);w._meso3i_reflect(0);
+  w._meso3i_phot(5); w._meso3i_recoil(1);
+  // charged lump — emits photons steadily; wound version drifts +x
+  for(let z=4;z<12;z++)for(let y=4;y<12;y++)for(let x=28;x<36;x++)
+    if(!((x+y+z)&1)){ w._meso3i_set(x,y,z,REST,64); w._meso3i_eset(x,y,z,240);
+                      if(wind)w._meso3i_rset(x,y,z,wind,64); }
+  for(let t=0;t<120;t++) w._meso3i_tick();
+  // photon density ahead (x>36) vs behind (x<28) of the lump path
+  let ahead=0,behind=0;
+  for(let z=4;z<12;z++)for(let y=4;y<12;y++){
+    for(let x=40;x<58;x++)for(let c=0;c<NMOV;c++)ahead+=w._meso3i_phget(x,y,z,c);
+    for(let x=6;x<26;x++)for(let c=0;c<NMOV;c++)behind+=w._meso3i_phget(x,y,z,c);
   }
-  // cluster: first tick of each run where det>0 (leading edges)
-  const firsts=[]; let quiet=true;
-  for(let t=0;t<counts.length;t++){
-    if(counts[t]>0 && quiet){ firsts.push(t); quiet=false; }
-    if(counts[t]===0) quiet=true;
-  }
-  const sp=firsts.slice(1).map((p,i)=>p-firsts[i]);
-  const v = stepEvery===0 ? 0 : 1/stepEvery;
-  const pred = stepEvery===0 ? '1.00' : (1+v/2).toFixed(3);
-  console.log(`k=${stepEvery} v=${v.toFixed(3)}: firsts=[${firsts.slice(0,6).join(',')}] spacings=[${sp.slice(0,5).join(',')}] predicted x${pred}`);
-};
-console.log('E42b — Doppler (thin pulses + leading edge): recede/approach, T=10, c=2');
-run(0); run(4); run(2); run(-4);
+  console.log(`${tag}: photons ahead(+x)=${ahead} behind(-x)=${behind} asym=${((ahead-behind)/Math.max(ahead+behind,1)).toFixed(3)}`);
+}
