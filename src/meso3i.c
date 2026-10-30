@@ -1041,6 +1041,19 @@ void meso3i_tick(void) {
             uint32_t v = iB[di] + n[c];
             if (v > 255) iEV[9] += v - 255;
             iB[di] = v > 255 ? 255 : (uint8_t)v;   /* hard cap safety */
+            /* co-moving charge: mass carries its excitation — each hopping
+             * quantum takes a share of the source's iE with it (bound
+             * light, not site-bound). Without this a lump's energy gets
+             * left behind as it moves — its internal clock dissolves. */
+            if (iE[si]) {
+                int share = (int)((uint32_t)iE[si] * (uint32_t)n[c] / (uint32_t)(iR[si] ? iR[si] : 1));
+                if (share > iE[si]) share = iE[si];
+                if (share > 0) {
+                    iE[si] -= share;
+                    uint32_t e = iE[ni] + share;
+                    iE[ni] = e > 255 ? 255 : (uint8_t)e;
+                }
+            }
         }
     }
 
