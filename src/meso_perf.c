@@ -147,9 +147,16 @@ static void collide_node(const PlanckNode *na, PlanckNode *nb, int si) {
          * quanta can't stream out), but the mass->photon radiation path
          * stays free (two transactions sharing one loop, different
          * gates: the site radiates even when it can't shed mass) */
-        int eg = IEG && iR[si] >= IEG ? 1 : 0;
+        /* egate's two ends: +k suppresses boil-off where crowded (dense
+         * holds — the nucleation fix); -k BOOSTS it where crowded
+         * (dense vents — pressure ejection, the Eddington-outflow end).
+         * Same density gate, opposite response. */
+        int eg = IEG > 0 && iR[si] >= IEG ? 1 : 0;
+        int eb = IEG < 0 && iR[si] >= -IEG ? 1 : 0;
         for (int u = 0; u < n[REST] + dsum; u++) {
-            if (irnd() % (4 * k) != 0) continue;
+            int kk = eb ? 2 : 4 * k;
+            if (kk < 2) kk = 2;
+            if (irnd() % kk != 0) continue;
             int tot = n[REST] + dsum;
             int pick = tot > 0 ? (int)(irnd() % (uint32_t)tot) : 0;
             if (pick < n[REST]) {

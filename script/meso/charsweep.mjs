@@ -33,6 +33,7 @@ const cases=[
   ['massbnc=1',{massbnc:1}],
   ['iget=32',{iget:32}],
   ['egate=8',{egate:8}],
+  ['egate=-8',{egate:-8}],
   ['photdecay=8',{photdecay:8}],
   ['linkcap=4',{linkcap:4}],
   ['lens=-8',{lens:-8}],
