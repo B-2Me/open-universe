@@ -321,6 +321,7 @@ if emcc link3.c \
     '_link3_emit',
     '_link3_phot',
     '_link3_phspread',
+    '_link3_dwell',
     '_link3_recoil',
     '_link3_comove',
     '_link3_iqmode',
@@ -343,4 +344,60 @@ if emcc link3.c \
 else
   echo "❌ Error: link3 compilation failed!"
   exit 1
+fi
+
+# --- link3_perf: optimized iteration (strided odd-skip) ---
+if emcc link3_perf.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1   -s ALLOW_MEMORY_GROWTH=1   -s EXPORT_NAME="'createLink3P'"   -s EXPORTED_FUNCTIONS="[
+    '_link3p_init',
+    '_link3p_seed',
+    '_link3p_tick',
+    '_link3p_get',
+    '_link3p_set',
+    '_link3p_phset',
+    '_link3p_phget',
+    '_link3p_phnu',
+    '_link3p_upget',
+    '_link3p_load',
+    '_link3p_sess',
+    '_link3p_sst',
+    '_link3p_bond',
+    '_link3p_snu',
+    '_link3p_snu_set',
+    '_link3p_rset',
+    '_link3p_drest',
+    '_link3p_eget',
+    '_link3p_eset',
+    '_link3p_qget',
+    '_link3p_rest',
+    '_link3p_nch',
+    '_link3p_dim',
+    '_link3p_rest_mass',
+    '_link3p_mov_mass',
+    '_link3p_photons',
+    '_link3p_ev',
+    '_link3p_ev_reset',
+    '_link3p_friction',
+    '_link3p_emit',
+    '_link3p_phot',
+    '_link3p_phspread',
+    '_link3p_dwell',
+    '_link3p_recoil',
+    '_link3p_comove',
+    '_link3p_iqmode',
+    '_link3p_iqcap',
+    '_link3p_iqdwell',
+    '_link3p_drain_edge',
+    '_link3p_photdecay',
+    '_link3p_fusion',
+    '_link3p_annih',
+    '_link3p_egate',
+    '_link3p_iecost',
+    '_link3p_ieburst',
+    '_link3p_grav',
+    '_malloc',
+    '_free'
+  ]"   -o ../docs/public/wasm/ember/link3_perf.js; then
+    echo "link3_perf compiled successfully."
+else
+    echo "Error: link3_perf compilation failed!"
 fi
