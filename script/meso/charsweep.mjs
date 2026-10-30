@@ -39,6 +39,8 @@ const cases=[
   ['lens=-8',{lens:-8}],
   ['lens=8',{lens:8}],
   ['iepush=8',{iepush:8}],
+  ['mscat=16',{mscat:16}],
+  ['photbnc=1',{photbnc:1}],
 ];
 const base=await run({});
 for(const [tag,fl] of cases){

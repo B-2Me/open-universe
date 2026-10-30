@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, IGET, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, IGET, IMSCAT, IPHOTBNC, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -377,6 +377,8 @@ void meso3i_massbnc(int k)   { IMASSB = k; }
 void meso3i_photdecay(int k) { IPHOTDEC = k; }
 void meso3i_egate(int k)     { IEG = k; }
 void meso3i_iget(int k)      { IGET = k; }
+void meso3i_mscat(int k)     { IMSCAT = k; }
+void meso3i_photbnc(int k)   { IPHOTBNC = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -516,6 +518,20 @@ void meso3i_tick(void) {
                 }
                 uint32_t v = na->mass[c ^ 1] + p;   /* bounce: node saturated w/ photons */
                 na->mass[c ^ 1] = v > 255 ? 255 : (uint8_t)v;
+                iEV[6] += p;
+                continue;
+            }
+            if (IMSCAT && phot_at(B + ni) >= IMSCAT) {
+                /* mscat: light pushes mass — the photon mirror of
+                 * scatter/nuscat (photon deflects on mass). A quantum
+                 * entering a photon-crowded site gets deflected off its
+                 * channel — radiation pressure as a real coupling, not
+                 * an authored force. The momentum ledger closes both
+                 * ways: mass bends light, light pushes mass. */
+                int c2 = (int)(irnd() % IMOV);
+                if (c2 == c) c2 = c ^ 1;
+                uint32_t v = A[ni].mass[c2] + p;
+                A[ni].mass[c2] = v > 255 ? 255 : (uint8_t)v;
                 iEV[6] += p;
                 continue;
             }
@@ -676,6 +692,17 @@ void meso3i_tick(void) {
                         }
                 }
                 uint32_t v = A[ni].phot[c] + p;
+                if (IPHOTBNC && v > 255) {
+                    /* photbnc: the massbnc mirror — a saturated photon
+                     * bin refuses the arrival and bounces it back on
+                     * the antipode, instead of silently eating the
+                     * overflow (the photon side of refusal). */
+                    int ov = (int)(v - 255);
+                    A[ni].phot[c] = 255;
+                    uint32_t bv = A[si].phot[c ^ 1] + ov;
+                    A[si].phot[c ^ 1] = bv > 255 ? 255 : (uint8_t)bv;
+                    continue;
+                }
                 if (v > 255) { IPHN -= (int)(v - 255); v = 255; }
                 A[ni].phot[c] = (uint8_t)v;
             }
