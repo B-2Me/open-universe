@@ -49,7 +49,8 @@ static uint8_t  *lIQD;              /* iQ dwell counter — backoff timer */    
 /* link registers (operator: the wire's own state) */
 static uint8_t  *lUP, *lUP2;         /* [site*LMOV + c] mass in flight si->ni */
 static uint8_t  *lPH, *lPH2;         /* [site*LMOV + c] photons in flight si->ni */
-static uint16_t *lLOAD;              /* [site*LMOV + c] EMA link utilization */
+static uint16_t *lLOAD;
+static uint16_t *lFLUX;              /* [site] flux through junction this tick — the motion budget */              /* [site*LMOV + c] EMA link utilization */
 static uint8_t  *lUPd, *lPHd;        /* delivered-this-tick buffers */
 
 /* flags — same names as meso3i where the mechanic carries over */
@@ -65,7 +66,9 @@ static int LEG = 0;                 /* egate: junction density gates emission */
 static int LIEC = 0;
 static int LIEB = 0;                /* iE burst: charge saturates -> photon dump */                /* iecost: emission spends iE */
 static int LPHDEC = 0;              /* photdecay: photon -> drest at catalyst-mass */
-static int LFUS = 0;                /* fusion: photon pair on junction -> drest pair */
+static int LFUS = 0;                /* fusion: photon pair -> drest, energy-threshold gated */
+static int LANNIH = 0;              /* annih: drest pair -> photon pair (the mirror) */                /* fusion: photon pair on junction -> drest pair */
+static int LGRAV = 0;               /* mass falls toward mass — density-gradient attraction */
 static int LDRAIN = 0;
 static int LTICK = 0;
 static uint64_t LIEV[16];
@@ -95,6 +98,7 @@ int link3_init(int w, int h, int d, int axial) {
     lPH   = calloc((size_t)LN * LMOV, 1);
     lPH2  = calloc((size_t)LN * LMOV, 1);
     lLOAD = calloc((size_t)LN * LMOV, 2);
+    lFLUX = calloc(LN, 2);
     lUPd  = calloc((size_t)LN * LMOV, 1);
     lPHd  = calloc((size_t)LN * LMOV, 1);
     LTICK = 0; LIPH = 0;
@@ -115,8 +119,10 @@ void link3_iqmode(int k)        { LIQ = k; }
 void link3_iqcap(int k)         { LIQCAP = k; }
 void link3_iqdwell(int k)       { LIQDW = k; }
 void link3_drain_edge(int k)    { LDRAIN = k; }
+void link3_grav(int k)          { LGRAV = k; }
 void link3_photdecay(int k)    { LPHDEC = k; }
 void link3_fusion(int k)       { LFUS = k; }
+void link3_annih(int k)         { LANNIH = k; }
 void link3_egate(int k)         { LEG = k; }
 void link3_iecost(int k)        { LIEC = k; }
 void link3_ieburst(int k)       { LIEB = k; }
@@ -178,6 +184,15 @@ void link3_tick(void) {
     /* 1. junction collide — parked registers interact (substrate) */
     for (int si = 0; si < LN; si++) {
         int x_ = si % LW, y_ = (si / LW) % LH, z_ = si / (LW * LH);
+        /* the C_max budget: flux through the junction (translation)
+         * competes with internal cycling for the tick's throughput —
+         * hops spent moving are hops denied to internal work. The
+         * junction's internal rate scales down as its flux rises —
+         * the moving-clock dilation as a local budget, not geometry. */
+        int busy = lFLUX[si] >> 5;              /* flux in 1/32 units */
+        if (busy > 6) busy = 6;                 /* cap at ~19% suppression */
+        int bscale = 8 - busy;                  /* internal budget scale /8 */
+        lFLUX[si] = 0;
         /* deterministic emission: REST sheds LEMIT/256 of its stock to
          * moving channels — rate gate, not dice (queue fairness). */
         if (LEMIT && lREST[si]) {
@@ -191,7 +206,8 @@ void link3_tick(void) {
              * bounded multiplier on the base rate (hot junction
              * emits up to ~3x, not +60x). The mass's own rate
              * stays the rule; the charge is a modifier. */
-            int rate = LEMIT + ((LEMIT * (lIE[si] >> 5)) >> 2);
+            int rate = (LEMIT * bscale) >> 3;
+            rate += ((LEMIT * (lIE[si] >> 5)) >> 2);
             if (LEG) {
                 int jr = lREST[si];
                 for (int cc = 0; cc < LMOV; cc++) jr += lDR[si*LMOV+cc];
@@ -258,7 +274,7 @@ void link3_tick(void) {
         }
         /* iE decay -> photon (depletion -loop): charge emits light.
          * recoil: emitter quantum pushed antipodal (momentum). */
-        if (LPHOT && lIE[si] && (lrnd() & 31) == 0) {
+        if (LPHOT && lIE[si] && (lrnd() % (uint32_t)(32 - busy * 4)) == 0) {
             lIE[si]--;
             int c = (int)(lrnd() % (uint32_t)LMOV);
             uint32_t v = lPH[si*LMOV+c] + 1;
@@ -269,6 +285,47 @@ void link3_tick(void) {
                 uint32_t m = lUP[si*LMOV+(c^1)] + 1;
                 lUP[si*LMOV+(c^1)] = m > 255 ? 255 : m;
             }
+        }
+        /* annihilation — the fusion mirror: opposing drest pairs
+         * burn to antipodal photons (density^2, the mass side's
+         * pair-production run in reverse). Momentum-conserving:
+         * wound mass on {c,c^1} -> photons on {c,c^1}. */
+        if (LANNIH) {
+            for (int c = 0; c < LMOV; c += 2) {
+                int a = lDR[si*LMOV+c] < lDR[si*LMOV+(c^1)] ? lDR[si*LMOV+c] : lDR[si*LMOV+(c^1)];
+                int burn = (LANNIH * a) >> 8;
+                if (burn > a) burn = a;
+                if (burn) {
+                    lDR[si*LMOV+c] -= burn; lDR[si*LMOV+(c^1)] -= burn;
+                    uint32_t v;
+                    v = lPH[si*LMOV+c] + burn;   lPH[si*LMOV+c] = v > 255 ? 255 : v;
+                    v = lPH[si*LMOV+(c^1)] + burn; lPH[si*LMOV+(c^1)] = v > 255 ? 255 : v;
+                    LIPH += 2*burn;
+                    LIEV[12] += burn;
+                }
+            }
+        }
+        /* LGRAV — gravity as capture asymmetry, not a force: parked
+         * mass jitters to a RANDOM neighbor (thermal — mass isn't
+         * perfectly still). No densest-search, no field — the node
+         * doesn't know where density is. The asymmetry is in the
+         * CAPTURE: jittered mass that lands at a dense junction gets
+         * parked (the existing LFRIC mechanic); mass that jitters
+         * away keeps moving. Net drift toward density from random
+         * walk + differential sticking — diffusion-limited
+         * aggregation, the substrate's honest gravity. */
+        /* density-bound jitter: parked mass jitters LESS where it's
+         * already dense (the lump holds its own — binding energy).
+         * Sparse mass wanders freely; dense mass stays bound — the
+         * asymmetry that makes gravity one-directional. */
+        int jitter = LGRAV;
+        if (lREST[si] >= 48) jitter = LGRAV >> 3;   /* bound mass jitters 1/8 */
+        if (LGRAV && lREST[si] > 1 && (lrnd() & 255) < jitter) {
+            lREST[si]--;
+            int c = (int)(lrnd() % (uint32_t)LMOV);
+            uint32_t v = lUP[si*LMOV+c] + 1;
+            lUP[si*LMOV+c] = v > 255 ? 255 : v;
+            LIEV[13]++;
         }
         /* iQ collision domain: opposing in-flight streams at the
          * junction collide and buffer (the collision register).
@@ -289,7 +346,7 @@ void link3_tick(void) {
              * the junction can flush it — a real collision domain's
              * retry delay, not instant release */
             if (lIQ[si]) {
-                if (lIQ[si] >= LIQCAP && ++lIQD[si] >= LIQDW) {
+                if (lIQ[si] >= LIQCAP && ++lIQD[si] >= (LIQDW + busy)) {
                     /* flush: the buffered mass bursts back onto the
                      * moving streams — antipodal pair release
                      * (momentum-balanced, like the collision was) */
@@ -318,6 +375,7 @@ void link3_tick(void) {
             int n = lUP[si*LMOV+c];
             if (!n) continue;
             lUP[si*LMOV+c] = 0;
+            lFLUX[si] += n;   /* departing flux — the junction's motion cost */
             int ni = lidx(lwrap(x + LCV[c][0], LW),
                           lwrap(y + LCV[c][1], LH),
                           lwrap(z + LCV[c][2], LD));
@@ -400,24 +458,49 @@ void link3_tick(void) {
              * bound energy; operator: the wire deposits into node) */
             int mass = lREST[ni];
             for (int cc = 0; cc < LMOV; cc++) mass += lDR[ni*LMOV+cc];
-            if (LPHOT >= 5 && mass > 32 && p > 0) {
-                /* photdecay: the transaction completes as MASS — the
-                 * photon's energy re-crystallizes into bound structure
-                 * (Kastner: absorbed energy joins the absorber). The
-                 * catalyst IS the mass (pair-production needs a
-                 * partner). Deposit on the arrival channel's drest —
-                 * momentum preserved as winding. */
+            /* catalyst zone: the mass check extends to neighbors — a
+             * photon passing NEAR mass converts ONTO it (the nucleus
+             * takes the recoil — the energy joins the catalyst, not
+             * the photon's own site). Deposits land at the mass, so
+             * accretion LOCALIZES at existing structure — the seed
+             * eats its surroundings, not a corridor. */
+            int cat = ni;
+            if (mass < 32 && LPHDEC) {
+                int nx_ = ni % LW, ny_ = (ni / LW) % LH, nz_ = ni / (LW * LH);
+                int bmass = 0;
+                for (int cc = 0; cc < LMOV; cc++) {
+                    int nn = lidx(lwrap(nx_ + LCV[cc][0], LW),
+                                  lwrap(ny_ + LCV[cc][1], LH),
+                                  lwrap(nz_ + LCV[cc][2], LD));
+                    int nm_ = lREST[nn];
+                    for (int dd = 0; dd < LMOV; dd++) nm_ += lDR[nn*LMOV+dd];
+                    if (nm_ > bmass) { bmass = nm_; cat = nn; }
+                }
+                if (bmass >= 96) mass = bmass;   /* convert onto DENSE mass only — thin corridor deposits don't catalyze */
+            }
+            if (LPHOT >= 5 && mass > 96 && p > 0) {
+                /* motion-diluted absorption: a lump that's moving gets
+                 * only a partial handoff — the photon grazes a target
+                 * already leaving. Deposited charge ∝ stillness —
+                 * the chase-path means the moving absorber absorbs
+                 * less per encounter (the clock's charge-in slows
+                 * with motion, matching the budget on the dump-out
+                 * side). */
+                int still = 255 - (lFLUX[ni] >> 2);
+                if (still < 0) still = 0;
+                int dep = (p * still) >> 8;
+                if (dep < 1) dep = 1;
                 if (LPHDEC && (lrnd() & 255) < LPHDEC) {
-                    uint32_t v = lDR[ni*LMOV+c] + p;
-                    lDR[ni*LMOV+c] = v > 255 ? 255 : v;
-                    LIPH -= p;
-                    LIEV[8] += p;
+                    uint32_t v = lDR[cat*LMOV+c] + dep;
+                    lDR[cat*LMOV+c] = v > 255 ? 255 : v;
+                    LIPH -= dep;
+                    LIEV[8] += dep;
                     continue;
                 }
-                uint32_t e = lIE[ni] + p;
-                lIE[ni] = e > 255 ? 255 : e;
-                LIPH -= p;
-                LIEV[7] += p;
+                uint32_t e = lIE[cat] + dep;
+                lIE[cat] = e > 255 ? 255 : e;
+                LIPH -= dep;
+                LIEV[7] += dep;
                 continue;
             }
             /* fusion: photon pairs meeting at a bare junction can
@@ -426,11 +509,20 @@ void link3_tick(void) {
              * Needs BOTH directions present (the transaction needs
              * a partner, like real gg -> ee needs momentum balance). */
             if (LFUS && lPHd[ni*LMOV+(c^1)] && mass < 8 && p > 0) {
+                /* fusion as real pair production: energy threshold —
+                 * the site's photon DENSITY must exceed LFUS (the
+                 * 2mc^2 analog — light materializes only where light
+                 * is dense enough). Opposing streams meeting in
+                 * vacuum -> BALANCED drest pair {c, c^1} (net-zero
+                 * momentum, like a real gamma-gamma -> ee). */
+                int pdens = p + lPHd[ni*LMOV+(c^1)];
+                for (int cc = 0; cc < LMOV; cc++) pdens += lPH[ni*LMOV+cc];
                 int a = p < lPHd[ni*LMOV+(c^1)] ? p : lPHd[ni*LMOV+(c^1)];
-                if ((lrnd() & 255) < LFUS) {
+                if (a && pdens >= LFUS) {
                     lPHd[ni*LMOV+(c^1)] -= a;
-                    uint32_t v = lDR[ni*LMOV+c] + a;
-                    lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    uint32_t v;
+                    v = lDR[ni*LMOV+c] + a;     lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    v = lDR[ni*LMOV+(c^1)] + a; lDR[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                     LIPH -= 2*a;
                     LIEV[9] += a;
                     continue;
