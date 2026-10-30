@@ -534,13 +534,14 @@ void link3_tick(void) {
     }
 
     /* 3. photon stream — photons keep their fuzz; absorbed at mass.
-     * ALL cells process: photons live on links, not junctions. Axis
-     * channels hop even->odd->even through midpoint cells (transit
-     * only — junction gates can't fire there: lREST/lSNU/lDR are
-     * zero on odd cells anyway). */
+     * Even sites only: ALL channels are parity-preserving (diagonals
+     * stride sqrt2 cells, axes stride 2 cells) — odd cells are never
+     * destinations, they're just the geometric midpoints of axis
+     * links, not junctions. */
     for (int z = 0; z < LD; z++)
     for (int y = 0; y < LH; y++)
     for (int x = 0; x < LW; x++) {
+        if (((x + y + z) & 1)) continue;
         int si = lidx(x, y, z);
         for (int c = 0; c < LMOV; c++) {
             int p = lPH[si*LMOV+c];
