@@ -34,7 +34,7 @@ static PlanckNode *NA, *NB;
 static uint32_t  irng = 0xC0FFEEu;
 static int       IFRIC, IFRICP = 128, IFRICM, IREFL, ILAT = 8;
 static int       EMASK = 7, IPAIR, IPHOT, IPHN, ITICK;
-static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, IGET, IMSCAT, IPHOTBNC, *iR;
+static int       IPTH, IPTB, IFUS, IFCAD, IRECOMB, IANNIH, IFRLUM, ILINKCAP, IECOST, ISCATT, ILENS, IEPUSH, IMASSB, IPHOTDEC, IEG, IGET, IMSCAT, IPHOTBNC, IMDRAG, IPDRAG, *iR;
 static uint8_t  *iACT;              /* nonzero -> site occupied */
 static int      *iALIST;            /* active site list (cur tick) */
 static int      *iNLIST;            /* next-tick list */
@@ -379,6 +379,8 @@ void meso3i_egate(int k)     { IEG = k; }
 void meso3i_iget(int k)      { IGET = k; }
 void meso3i_mscat(int k)     { IMSCAT = k; }
 void meso3i_photbnc(int k)   { IPHOTBNC = k; }
+void meso3i_mdrag(int k)      { IMDRAG = k; }
+void meso3i_pdrag(int k)      { IPDRAG = k; }
 void meso3i_dwell(int k)     { (void)k; }
 void meso3i_rg_refresh(void) { }
 
@@ -535,7 +537,21 @@ void meso3i_tick(void) {
                 iEV[6] += p;
                 continue;
             }
-            uint32_t v = A[ni].mass[c] + p;
+            int mc = c;
+            if (IPDRAG) {
+                /* photdrag: the species inverse — mass inside light
+                 * inherits the LIGHT's direction — a quantum arriving at
+                 * a photon-dense site gets carried onto the dominant
+                 * photon channel (the photon wind pushes mass
+                 * downstream, not just deflects it). */
+                const PlanckNode *nd = B + ni;
+                int best = 0, bc = -1;
+                for (int cc = 0; cc < IMOV; cc++)
+                    if (nd->phot[cc] > best) { best = nd->phot[cc]; bc = cc; }
+                if (best >= IPDRAG) mc = bc;
+            }
+            uint32_t v = A[ni].mass[mc] + p;
+            c = mc;
             if (IMASSB && v > 255) {
                 /* mass-cap bounce: refusal IS the repulsion — the offer
                  * fails when the site can't accept; bounce the quantum
@@ -691,20 +707,32 @@ void meso3i_tick(void) {
                             p--;
                         }
                 }
-                uint32_t v = A[ni].phot[c] + p;
+                int pc = c;
+                if (IMDRAG) {
+                    /* massdrag: light inside mass inherits the mass's
+                     * direction — a photon arriving at a wound site is
+                     * delivered onto the dominant drest channel (light
+                     * rides the lump's motion, co-moving light). */
+                    const PlanckNode *nd = B + ni;
+                    int best = 0, bc = -1;
+                    for (int cc = 0; cc < IMOV; cc++)
+                        if (nd->drest[cc] > best) { best = nd->drest[cc]; bc = cc; }
+                    if (best >= IMDRAG && bc >= 0) pc = bc;
+                }
+                uint32_t v = A[ni].phot[pc] + p;
                 if (IPHOTBNC && v > 255) {
                     /* photbnc: the massbnc mirror — a saturated photon
                      * bin refuses the arrival and bounces it back on
                      * the antipode, instead of silently eating the
                      * overflow (the photon side of refusal). */
                     int ov = (int)(v - 255);
-                    A[ni].phot[c] = 255;
+                    A[ni].phot[pc] = 255;
                     uint32_t bv = A[si].phot[c ^ 1] + ov;
                     A[si].phot[c ^ 1] = bv > 255 ? 255 : (uint8_t)bv;
                     continue;
                 }
                 if (v > 255) { IPHN -= (int)(v - 255); v = 255; }
-                A[ni].phot[c] = (uint8_t)v;
+                A[ni].phot[pc] = (uint8_t)v;
             }
         }
     }   /* end if (IPHN) photon stream */
