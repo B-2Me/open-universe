@@ -241,6 +241,19 @@ void link3_tick(void) {
                 LIEV[6] += n;      /* refused -> parked on source */
                 continue;
             }
+            /* junction congestion: mass arriving at a crowded node
+             * parks into drest (retention +loop — density breeds
+             * density). Operator: the junction's queue is full ->
+             * packet buffers locally. */
+            int jr = lREST[ni];
+            for (int cc = 0; cc < LMOV; cc++) jr += lDR[ni*LMOV+cc];
+            if (LFRIC && jr >= LFRIC) {
+                uint32_t v = lDR[ni*LMOV+c] + n;
+                lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                LIEV[6] += n;
+                lLOAD[si*LMOV+c] += n;
+                continue;
+            }
             lUPd[ni*LMOV+c] += n > 255 ? 255 : n;
             lLOAD[si*LMOV+c] += n;   /* flow meter — the wire's load */
             LIEV[0] += n;
