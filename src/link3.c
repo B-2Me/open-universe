@@ -288,8 +288,12 @@ void link3_tick(void) {
             int dch = -1, dv = 0;
             for (int cc = 0; cc < LMOV; cc++)
                 if (lDR[si*LMOV+cc] > dv) { dv = lDR[si*LMOV+cc]; dch = cc; }
-            if (dch >= 0) lSNU[si] = dch + (lIE[si] >> 2);   /* nu = winding + charge */
-            else lSNU[si] = lIE[si] >> 2;
+            /* quantized line: the lump's nu is a DISCRETE level
+             * (winding + charge in steps of 4 — allowed transitions,
+             * not a continuum. The lump's spectrum has real lines). */
+            int band = (lIE[si] >> 2) & ~3;   /* charge band in steps of 4 */
+            if (dch >= 0) lSNU[si] = dch + band;
+            else lSNU[si] = band;
         }
         if (LIEB && lIE[si] >= LIEB) {
             int dump = lIE[si] >> 2;
@@ -333,7 +337,7 @@ void link3_tick(void) {
                   if (lSST[si*LMOV+cc] == 3 && lSESS[si*LMOV+cc] > bv) {
                       bv = lSESS[si*LMOV+cc]; c = cc;
                   } }
-            lPHNU[si*LMOV+c] = dch2 < 0 ? 255 : (lIE[si] >> 4) + 8;   /* nu = the transition the charge affords — hotter lumps emit hotter light */
+            lPHNU[si*LMOV+c] = lSNU[si];   /* emit AT the site's own line — the lump's photons carry its characteristic transition, matching its absorption spectrum */
             uint32_t v = lPH[si*LMOV+c] + 1;
             lPH[si*LMOV+c] = v > 255 ? 255 : v;
             LIPH++; LIEV[4]++;
