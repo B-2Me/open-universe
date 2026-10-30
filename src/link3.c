@@ -522,7 +522,13 @@ void link3_tick(void) {
              * throw); at a LISTEN port it absorbs (the transaction
              * completes); in UDP transit it streams. */
             int sst = lSST[ni*LMOV+c];
-            if (sst == 3 && LPHOT) {
+            /* the volley needs a LIVE endpoint — a session's echo only
+             * fires if the far end still holds mass (a listener). A
+             * dead endpoint's channel lets the photon stream on — the
+             * ghost session dies when the mass leaves. */
+            int emass = lREST[ni];
+            for (int cc = 0; cc < LMOV; cc++) emass += lDR[ni*LMOV+cc];
+            if (sst == 3 && LPHOT && emass > 16) {
                 uint32_t v = lPH[ni*LMOV+(c^1)] + p;
                 lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                 LIEV[14] += p;
@@ -533,7 +539,7 @@ void link3_tick(void) {
              * c^1, antipodal, toward the sender. The catch prompts a
              * throw back along the same channel — the exchange's
              * natural direction is the wire it arrived on. */
-            if (sst == 2 && LPHOT && lIE[ni] > 0) {
+            if (sst == 2 && LPHOT && lIE[ni] > 0 && emass > 16) {
                 lIE[ni]--;
                 uint32_t v = lPH[ni*LMOV+(c^1)] + 1;
                 lPH[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
@@ -648,6 +654,10 @@ void link3_tick(void) {
              * Mass makes the port listen; vacuum transit stays UDP. */
             int mass = lREST[ni];
             for (int cc = 0; cc < LMOV; cc++) mass += lDR[ni*LMOV+cc];
+            /* a dead endpoint closes the session outright — the bond
+             * needs BOTH sockets live. Residual channel traffic can't
+             * hold a session whose endpoint is gone. */
+            if (mass <= 16 && lSST[idx] >= 2) { lSST[idx] = 4; lSESS[idx] = 0; LIEV[15]++; }
             if (mass > 16 && lSST[idx] == 0) lSST[idx] = 1;   /* UDP -> LISTEN */
             if (mass <= 16 && lSST[idx] == 1) lSST[idx] = 0;  /* port closed — no mass to absorb */
             /* session traffic = an ACK on the wire — ANY traffic on
