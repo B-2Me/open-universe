@@ -82,6 +82,7 @@ static int      ILINKCAP = 0;        /* shared link budget: mass hop onto a link
 static int      IECOST = 0;          /* energy-funds-work: each boil-off emission spends k iE quanta (0 = off) — the buffer deploys, not just re-radiates */
 static int      ISCATT = 0;          /* scatter: declined-absorb photons deflect to a random channel (nu preserved), k/256 per quantum per matter-site */
 static int      IEPUSH = 0;
+static int      IRECOIL = 0;           /* momentum-conserving emission: emitter recoils antipodal to its photon */
 static int      INUSCAT = 0;
 static int      IPHOTDEC = 0;
 static int      INUUP = 0;             /* nu upshift: photon GAINS a bin crossing a hot site (iE>=k), draws 1 iE — inverse-Compton analog, the missing upshift end */          /* photon decay: lone photon -> nu+1 mass, no partner (fractal photon->mass path) */         /* nu-split scatter: hot photons (nu>k) deflect AWAY from density, cold (nu<=k) deflect TOWARD */
@@ -338,6 +339,7 @@ void meso3i_linkcap(int k)  { ILINKCAP = k; }
 void meso3i_iecost(int k)   { IECOST = k; }
 void meso3i_scatter(int k)  { ISCATT = k; }
 void meso3i_iepush(int k)   { IEPUSH = k; }
+void meso3i_recoil(int k)   { IRECOIL = k; }
 void meso3i_lens(int k)     { ILENS = k; }
 void meso3i_randmode(int k) { IRANDM = k; }
 void meso3i_nuscat(int k)   { INUSCAT = k; }
@@ -568,6 +570,13 @@ static void collide_node(uint8_t *n, int si) {
                     int c = pick_(si, IMOV);
                     n[INCH - 1]--;
                     iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
+                    if (IRECOIL && n[INCH - 1]) {
+                        /* recoil: a parked quantum is pushed onto the
+                         * antipode — photon +c, mass -c, momentum
+                         * conserved (else single-channel emission
+                         * leaks momentum the engine never tracks) */
+                        n[INCH - 1]--; n[c ^ 1]++;
+                    }
                     iEV[2]++; if (IECOST) iE[si] -= iE[si] < IECOST ? iE[si] : IECOST;
                 } else {
                     n[INCH - 1]--; n[irnd() % IMOV]++;
@@ -625,15 +634,14 @@ static void collide_node(uint8_t *n, int si) {
             }
         }
     } else if (IPHOT >= 5 && iE[si] &&
-               /* stimulated-emission gate: the mass->photon fork is
-                * context-aware too — a site already bathed in light
-                * (iPT high) emits more readily, mirroring photdecay's
-                * catalyst gate (photons near mass convert). Rate ∝
-                * photon cadence — resonant photons stimulate the
-                * transaction. */
                (irnd() & (EMASK + (iPT[si] >> 1))) == 0) {
         iE[si]--;
-        iPA[si * IMOV * NNU + (int)(irnd() % IMOV) * NNU]++; IPHN++;   /* nu=1 */
+        int c = (int)(irnd() % IMOV);
+        iPA[si * IMOV * NNU + c * NNU]++; IPHN++;   /* nu=1 */
+        if (IRECOIL && iA[si * INCH + INCH - 1]) {
+            iA[si * INCH + INCH - 1]--;
+            iA[si * INCH + (c ^ 1)]++;
+        }
     }
     /* iepush: energy funds mechanical motion — spend k iE to kick a
      * scalar-rest quantum onto a random moving channel (pressure) */

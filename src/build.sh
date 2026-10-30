@@ -198,6 +198,7 @@ if emcc meso3i.c \
     '_meso3i_field',
     '_meso3i_qcap',
     '_meso3i_qget',
+    '_meso3i_recoil',
     '_meso3i_qset',
     '_meso3i_totals',
     '_meso3i_drest',
@@ -213,6 +214,7 @@ if emcc meso3i.c \
     '_meso3i_photdecay',
     '_meso3i_nuup',
     '_meso3i_qget',
+    '_meso3i_recoil',
     '_malloc',
     '_free'
   ]" \
