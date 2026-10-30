@@ -533,11 +533,14 @@ void link3_tick(void) {
         lUP[i] = v > 255 ? 255 : v;
     }
 
-    /* 3. photon stream — photons keep their fuzz; absorbed at mass */
+    /* 3. photon stream — photons keep their fuzz; absorbed at mass.
+     * ALL cells process: photons live on links, not junctions. Axis
+     * channels hop even->odd->even through midpoint cells (transit
+     * only — junction gates can't fire there: lREST/lSNU/lDR are
+     * zero on odd cells anyway). */
     for (int z = 0; z < LD; z++)
     for (int y = 0; y < LH; y++)
     for (int x = 0; x < LW; x++) {
-        if (((x + y + z) & 1)) continue;
         int si = lidx(x, y, z);
         for (int c = 0; c < LMOV; c++) {
             int p = lPH[si*LMOV+c];
@@ -641,10 +644,10 @@ void link3_tick(void) {
                     lIE[cat] = e > 255 ? 255 : e;
                     LIEV[7] += dep;
                     /* absorption recoil: the absorber is pushed along
-                     * the photon's direction — exchange transmits
-                     * momentum (radiation pressure). */
-                    { uint32_t k = lUP[cat*LMOV+c] + dep;
-                      lUP[cat*LMOV+c] = k > 255 ? 255 : k; }
+                     * the photon's direction — the kick parks as the
+                     * lump's own wound mass (drest = momentum). */
+                    { uint32_t k = lDR[cat*LMOV+c] + dep;
+                      lDR[cat*LMOV+c] = k > 255 ? 255 : k; }
                     p -= dep;
                     nu -= cfg + 1;
                     lPHNU[si*LMOV+c] = nu > 0 ? nu : 0;
@@ -691,9 +694,9 @@ void link3_tick(void) {
                 uint32_t e = lIE[cat] + dep * (nu > 0 ? nu : 1);   /* photons deposit their nu */
                 lIE[cat] = e > 255 ? 255 : e;
                 /* absorption recoil: the absorber is pushed along
-                 * the photon's direction — momentum transfer. */
-                { uint32_t k = lUP[cat*LMOV+c] + dep;
-                  lUP[cat*LMOV+c] = k > 255 ? 255 : k; }
+                 * the photon's direction — momentum parks as drest. */
+                { uint32_t k = lDR[cat*LMOV+c] + dep;
+                  lDR[cat*LMOV+c] = k > 255 ? 255 : k; }
                 LIPH -= dep;
                 LIEV[7] += dep;
                 continue;
