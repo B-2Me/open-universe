@@ -279,3 +279,67 @@ if emcc meso_core.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1
 else
     echo "❌ Error: meso_core compilation failed!"
 fi
+
+# --- link3: network-ontology engine (links, sessions, nu spectrum) ---
+if emcc link3.c \
+  -DGIT_REV=\"$GIT_REV\" \
+  -O3 \
+  -s WASM=1 \
+  -s MODULARIZE=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -s EXPORT_NAME="'createLink3'" \
+  -s EXPORTED_FUNCTIONS="[
+    '_link3_init',
+    '_link3_seed',
+    '_link3_tick',
+    '_link3_get',
+    '_link3_set',
+    '_link3_phset',
+    '_link3_phget',
+    '_link3_phnu',
+    '_link3_upget',
+    '_link3_load',
+    '_link3_sess',
+    '_link3_sst',
+    '_link3_bond',
+    '_link3_snu',
+    '_link3_snu_set',
+    '_link3_rset',
+    '_link3_drest',
+    '_link3_eget',
+    '_link3_eset',
+    '_link3_qget',
+    '_link3_rest',
+    '_link3_nch',
+    '_link3_dim',
+    '_link3_rest_mass',
+    '_link3_mov_mass',
+    '_link3_photons',
+    '_link3_ev',
+    '_link3_ev_reset',
+    '_link3_friction',
+    '_link3_emit',
+    '_link3_phot',
+    '_link3_recoil',
+    '_link3_comove',
+    '_link3_iqmode',
+    '_link3_iqcap',
+    '_link3_iqdwell',
+    '_link3_drain_edge',
+    '_link3_photdecay',
+    '_link3_fusion',
+    '_link3_annih',
+    '_link3_egate',
+    '_link3_iecost',
+    '_link3_ieburst',
+    '_link3_grav',
+    '_malloc',
+    '_free'
+  ]" \
+  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
+  -o ../docs/public/wasm/ember/link3.js; then
+  echo "✅ link3 (ember) compiled successfully."
+else
+  echo "❌ Error: link3 compilation failed!"
+  exit 1
+fi

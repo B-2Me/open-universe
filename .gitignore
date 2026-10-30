@@ -7,6 +7,12 @@ docs/public/wasm/loom/planck3.js
 docs/public/wasm/loom/planck3.wasm
 docs/public/wasm/ember/meso3i.js
 docs/public/wasm/ember/meso3i.wasm
+docs/public/wasm/ember/meso_core.js
+docs/public/wasm/ember/meso_core.wasm
+docs/public/wasm/ember/meso_perf.js
+docs/public/wasm/ember/meso_perf.wasm
+docs/public/wasm/ember/link3.js
+docs/public/wasm/ember/link3.wasm
 
 # Build artifacts / local tooling
 node_modules/
