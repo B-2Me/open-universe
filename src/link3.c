@@ -583,14 +583,31 @@ void link3_tick(void) {
              * back (reject — the offer declined). nu=255 unmarked
              * photons negotiate at base rate. */
             int nu = lPHNU[si*LMOV+c];
-            /* site nu = its characteristic frequency — dominant
-             * drest channel + charge band (the lump's spectral line).
-             * Sites accept photons whose nu matches THEIR nu — a real
-             * frequency spectrum, not just direction. */
+            /* graded handoff (Compton): the site takes what its line
+             * accepts and the photon continues at LOWER nu — partial
+             * energy transfer, not all-or-nothing. site nu = the
+             * site's line (winding + charge band); photon nu = its
+             * energy tag. nu > line -> site takes its share, photon
+             * continues downgraded; nu == line -> full absorb;
+             * nu < line -> the photon can't fill the transition —
+             * passes through (or volleys if the site demands more). */
             int cfg = lSNU[ni];
-            int compat = (nu == 255) ? 1 : (nu == cfg ? 4 : 0);
-            /* negotiation only at a LISTENING endpoint — vacuum
-             * transit just streams (nobody's home to answer) */
+            if (mass > 96 && LPHOT && p > 0) {
+                if (nu > cfg) {
+                    /* partial handoff: site takes its line's worth,
+                     * photon continues at reduced nu (redshifted!) */
+                    int dep = p > 4 ? 4 : p;
+                    uint32_t e = lIE[cat] + dep;
+                    lIE[cat] = e > 255 ? 255 : e;
+                    LIPH -= dep;
+                    LIEV[7] += dep;
+                    p -= dep;
+                    nu -= cfg + 1;   /* the photon's remaining energy drops */
+                    lPHNU[si*LMOV+c] = nu > 0 ? nu : 0;
+                    if (!p) continue;
+                }
+            }
+            int compat = (nu == 255) ? 1 : (nu == cfg ? 4 : (nu > cfg ? 2 : 0));
             if (compat == 0 && mass > 96 && LPHOT) {
                 /* reject: the offer's config doesn't match — the
                  * photon volleys back toward its sender (declined) */
