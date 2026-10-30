@@ -212,6 +212,7 @@ if emcc meso3i.c \
     '_meso3i_nuscat',
     '_meso3i_photdecay',
     '_meso3i_nuup',
+    '_meso3i_qget',
     '_malloc',
     '_free'
   ]" \
