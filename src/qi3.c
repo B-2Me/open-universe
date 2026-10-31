@@ -45,8 +45,8 @@ static int8_t QChannelVec[18][3] = {
 static uint32_t *qMass, *qWinding, *qLevel, *qCharge;
 static uint32_t *qMassFlight, *qMassFlight_next;
 static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
-static uint32_t *qConfirm, *qSessionStrength;
-static uint8_t  *qSessionState;
+static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
+static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
 static uint64_t qEvents[24];
 static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
                             * 1 = quadratic well: levels E_n = E0/n^2,
@@ -99,9 +99,9 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qPhoton_next    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qPhotonNu       =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qPhotonNu_next  =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
-    qConfirm        =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
-    qSessionState   =calloc((size_t)QSites*QChannels,1);
-    qSessionStrength=calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qConfirm        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qSessionState   =calloc((size_t)QSites*(QChannels/2),1);
+    qSessionStrength=calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
             qPhoton&&qPhoton_next&&qPhotonNu&&qPhotonNu_next&&qConfirm&&
             qSessionState&&qSessionStrength)?0:-1;
@@ -112,7 +112,7 @@ EMS_API void qi3_tick(void){
     qTick++;
     memset(qMassFlight_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
     memset(qPhoton_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
-    memset(qConfirm,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qConfirm,0,(size_t)QSites*(QChannels/2)*sizeof(uint32_t));
 
     /* Phase 1 — junction collide: redistribute in-flight mass.
      * Opposing channels annihilate into parked mass + charge. */
@@ -217,16 +217,15 @@ EMS_API void qi3_tick(void){
                 match=(nu%line==0&&nu>=line);
             }
             if(match){
-                int oc=c^1;
-                qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
-                /* a completed transaction IS a bond event on the
-                 * channel FACING the emitter (oc — the photon
-                 * arrived on c, the partner sits the other way) */
-                qSessionStrength[si*QChannels+oc]+=offer;
-                if(qSessionState[si*QChannels+oc]==0){
-                    qSessionState[si*QChannels+oc]=1;qEvents[10]++;
-                } else if(qSessionState[si*QChannels+oc]==1){
-                    qSessionState[si*QChannels+oc]=2;qEvents[11]++;
+                int oc=c^1, edge=(c>>1);
+                /* confirm + bond live on the shared EDGE — offer out
+                 * on c, confirm back on oc, same edge both ways */
+                qConfirm[si*(QChannels/2)+edge]+=offer;
+                qSessionStrength[si*(QChannels/2)+edge]+=offer;
+                if(qSessionState[si*(QChannels/2)+edge]==0){
+                    qSessionState[si*(QChannels/2)+edge]=1;qEvents[10]++;
+                } else if(qSessionState[si*(QChannels/2)+edge]==1){
+                    qSessionState[si*(QChannels/2)+edge]=2;qEvents[11]++;
                 }
                 uint32_t take=offer;qPhoton_next[si*QChannels+c]-=take;
                 qCharge[si]+=take*(uint32_t)nu;
@@ -256,13 +255,13 @@ EMS_API void qi3_tick(void){
      * a bond is a history of actualized events, not a traffic
      * average. SYN->ESTAB on repeat transactions; the bond rests
      * rather than times out (slow decay, not instant drop). */
-    for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++){
-        uint32_t s=qSessionStrength[si*QChannels+c];
-        if(s>8)qSessionStrength[si*QChannels+c]-=(s>>6);   /* slow decay */
-        else if(s)qSessionStrength[si*QChannels+c]=s-1;
-        if(qSessionState[si*QChannels+c]&&
-           qSessionStrength[si*QChannels+c]==0){
-            qSessionState[si*QChannels+c]=0;qEvents[12]++;
+    for(int si=0;si<QSites;si++)for(int e=0;e<QChannels/2;e++){
+        uint32_t s=qSessionStrength[si*(QChannels/2)+e];
+        if(s>8)qSessionStrength[si*(QChannels/2)+e]-=(s>>6);
+        else if(s)qSessionStrength[si*(QChannels/2)+e]=s-1;
+        if(qSessionState[si*(QChannels/2)+e]&&
+           qSessionStrength[si*(QChannels/2)+e]==0){
+            qSessionState[si*(QChannels/2)+e]=0;qEvents[12]++;
         }
     }
 
@@ -285,13 +284,25 @@ EMS_API void qi3_tick(void){
         int emit=dumpE/line;if(emit<1){emit=1;dumpE=line;}
         if(dumpE>e)dumpE=e;
         int nout=0;
-        for(int c=0;c<QChannels;c++)if(qSessionState[si*QChannels+c])nout++;
-        if(!nout)nout=QChannels;                    /* broadcast before sessions */
-        int per=emit/nout;if(per<1)per=1;
-        for(int c=0;c<QChannels;c++){
-            if(nout!=QChannels&&!qSessionState[si*QChannels+c])continue;
-            int ni=si*QChannels+c;
-            qPhoton_next[ni]+=per;qPhotonNu_next[ni]=line;
+        for(int e=0;e<QChannels/2;e++)
+            if(qSessionState[si*(QChannels/2)+e])nout++;
+        int per;
+        if(!nout){                                   /* broadcast: all channels */
+            per=emit/QChannels;if(per<1)per=1;
+            for(int c=0;c<QChannels;c++){
+                qPhoton_next[si*QChannels+c]+=per;
+                qPhotonNu_next[si*QChannels+c]=line;
+            }
+        } else {                                     /* duplex on live edges */
+            per=emit/(nout*2);if(per<1)per=1;
+            for(int e=0;e<QChannels/2;e++){
+                if(!qSessionState[si*(QChannels/2)+e])continue;
+                for(int d=0;d<2;d++){
+                    int c=(e<<1)|d;
+                    qPhoton_next[si*QChannels+c]+=per;
+                    qPhotonNu_next[si*QChannels+c]=line;
+                }
+            }
         }
         qCharge[si]=e>(uint32_t)dumpE?e-(uint32_t)dumpE:0;
         siteUnwind(si,(uint32_t)dumpE);         /* emitting unwinds */
@@ -374,16 +385,16 @@ EMS_API int qi3_winding_get(int x,int y,int z,int c){
 }
 EMS_API int qi3_session_state(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
-    return qSessionState[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
+    return qSessionState[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
 }
 EMS_API int qi3_session_strength(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
-    return qSessionStrength[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
+    return qSessionStrength[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
 }
 EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
-    return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
+    return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
 }
 EMS_API uint64_t qi3_event(int i){ return qEvents[i & 31]; }
 EMS_API uint64_t qi3_photon_count(void){ uint64_t m=0;
