@@ -58,6 +58,22 @@ static uint64_t qRngSeed = 88172645463325252ULL;
 
 static inline int siteIndex(int x,int y,int z){ return (z*QHeight+y)*QWidth+x; }
 static inline int wrapCoord(int v,int m){ v%=m; if(v<0)v+=m; return v; }
+static inline int siteLevel(int si){
+    uint64_t w=0;
+    for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
+    int n=1+(int)(w>>8);if(n>8)n=8;return n;   /* winding-banded level */
+}
+static inline void siteUnwind(int si,uint32_t amount){
+    /* drain winding proportionally across channels — emission and
+     * stimulated drops unwind the circulation, not a scalar bank. */
+    uint64_t w=0;
+    for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
+    if(!w)return;
+    for(int c=0;c<QChannels;c++){
+        uint32_t d=(uint32_t)(((uint64_t)qWinding[si*QChannels+c]*amount)/w);
+        qWinding[si*QChannels+c]-=d<qWinding[si*QChannels+c]?d:qWinding[si*QChannels+c];
+    }
+}
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
     return (uint8_t)((qRngSeed*0x2545F4914F6CDD1DULL)>>56); }
 
@@ -158,7 +174,7 @@ EMS_API void qi3_tick(void){
                  * upward gaps E(n->m) = 256/n^2-256/m^2 (m>n), or is
                  * stimulated to emit downward gaps E(n->m)=256/m^2-
                  * 256/n^2 (m<n). n derived from charge, not stored. */
-                int n=1+(qCharge[si]>>5);if(n>8)n=8;
+                int n=siteLevel(si);
                 int En=256/(n*n);
                 for(int m=1;m<=8;m++){
                     if(m>n&&nu==En-256/(m*m)){match=1;break;}
@@ -187,6 +203,7 @@ EMS_API void qi3_tick(void){
                 qPhotonNu_next[si*QChannels+c]=nu;
                 qCharge[si]=qCharge[si]>cloned*(uint32_t)nu
                     ? qCharge[si]-cloned*(uint32_t)nu : 0;
+                siteUnwind(si,cloned*(uint32_t)nu);   /* fell a level */
                 qEvents[17]+=cloned;
             }
         }
@@ -215,7 +232,7 @@ EMS_API void qi3_tick(void){
         if(e<32||!mass)continue;
         int line;
         if(qGapMode==1){
-            int n=2+(e>>5);if(n>8)n=8;          /* charge-derived level */
+            int n=siteLevel(si);if(n<2)n=2;     /* circulation-derived */
             line=256-256/(n*n);                 /* ground->n gap */
         } else {
             line=mass>4?mass>>2:1;
@@ -235,6 +252,7 @@ EMS_API void qi3_tick(void){
             qPhoton_next[ni]+=per;qPhotonNu_next[ni]=line;
         }
         qCharge[si]=e>(uint32_t)dumpE?e-(uint32_t)dumpE:0;
+        siteUnwind(si,(uint32_t)dumpE);         /* emitting unwinds */
         qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
     }
 

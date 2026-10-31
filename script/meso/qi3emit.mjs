@@ -15,7 +15,9 @@ const CV = [[1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],
 const wrap=(v,m)=>((v%m)+m)%m;
 const gaps = {192:2,228:3,240:4,246:5,249:6,251:7,252:8};
 
-for (const chg of [48, 96, 160, 224]) {
+// winding sets the level now: n = 1 + (totalWinding >> 8).
+// wind 1,4,8 channels to reach different levels; charge = fuel.
+for (const windChans of [1, 4, 8, 16]) {
   const q = await (() => {
     const m = { exports: {} };
     new Function('module','exports','require','__dirname','__filename',src)(m, m.exports, require, DIR, 'qi3.js');
@@ -24,7 +26,9 @@ for (const chg of [48, 96, 160, 224]) {
   q._qi3_init(32, 32, 32, 0);
   q._qi3_gap_mode(1);
   q._qi3_mass_set(16, 16, 16, 160);
-  q._qi3_charge_set(16, 16, 16, chg);
+  q._qi3_charge_set(16, 16, 16, 255);
+  for (let c = 0; c < windChans; c++) q._qi3_winding_set(16, 16, 16, c, 400);
+  const level = 1 + Math.floor(windChans * 400 / 256);
   for (let t = 0; t < 12; t++) q._qi3_tick();
   // census emitted photon nus in a 12-cell radius
   const hist = {};
@@ -33,7 +37,6 @@ for (const chg of [48, 96, 160, 224]) {
       const ph=q._qi3_photon_get(x,y,z,c);
       if(ph){ const nu=q._qi3_photon_nu(x,y,z,c); hist[nu]=(hist[nu]||0)+ph; }
     }
-  const n=2+(chg>>5);
-  console.log(`charge=${chg} (n=${n}, gap=${256-Math.floor(256/n/n)}): emitted nu census=`,
+  console.log(`winding on ${windChans} chans (level~${Math.min(level,8)}): emitted nu census=`,
     JSON.stringify(hist));
 }
