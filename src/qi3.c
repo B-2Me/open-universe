@@ -68,12 +68,18 @@ static inline uint32_t edgeLen2(int c){
 }
 static uint64_t siteLoopE(int si){
     /* energy of the loop configuration: matched winding per edge
-       weighted by 1/length^2 — tight loops bind harder. */
+       weighted by 1/reach^2 — tight loops bind harder. Reach is
+       the edge's MEASURED distance (qBondDist — a bond's real span)
+       when known, else the channel's geometric reach. Loops on
+       long edges are extended structures, looser-bound. */
     uint64_t E=0;
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m)E+=(uint64_t)(m*m)*4/edgeLen2(2*e);   /* E~winding^2/L^2 */
+        if(!m)continue;
+        uint32_t reach=qBondDist[si*(QChannels/2)+e];
+        uint64_t L2=reach?(uint64_t)reach*reach:edgeLen2(2*e);
+        E+=(uint64_t)(m*m)*4/L2;
     }
     return E;
 }
@@ -109,7 +115,9 @@ static int qi3geoGap(int si,int bands){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
         uint64_t take=m*2; if(take>need)take=need;
-        E+=(uint64_t)take*4/edgeLen2(2*e);
+        uint32_t reach=qBondDist[si*(QChannels/2)+e];
+        uint64_t L2=reach?(uint64_t)reach*reach:edgeLen2(2*e);
+        E+=(uint64_t)take*4/L2;
         need-=take; if(!need)break;
     }
     int nu=(int)(E>>4);if(nu<1)nu=1;if(nu>255)nu=255;return nu;
