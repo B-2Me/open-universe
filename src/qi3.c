@@ -462,6 +462,18 @@ EMS_API void qi3_tick(void){
                 qBondDist[ei]=qAckRtt[si*QChannels+c];
                 qSessionStrength[ei]+=n;
                 if(qSessionState[ei]<2){qSessionState[ei]++;qEvents[14]++;}
+                /* the transaction relocates STRUCTURE: the emitter's
+                 * loop sheds a quantum that traveled to the absorber —
+                 * conserved-quantity delivery, TI-style. The hole
+                 * hops: emitter drains -> becomes the void. */
+                {
+                    int e2=(c>>1)<<1;              /* edge's channels */
+                    uint32_t deb=n<<5;
+                    uint32_t a=qWinding[si*QChannels+e2],
+                             b=qWinding[si*QChannels+e2+1];
+                    if(a>deb)qWinding[si*QChannels+e2]=a-deb;
+                    else if(b>deb)qWinding[si*QChannels+e2+1]=b-deb;
+                }
                 qAck[si*QChannels+c]=0;
                 continue;
             }
