@@ -83,7 +83,7 @@ static int LANNIH = 0;              /* annih: drest pair -> photon pair (the mir
 static int LGRAV = 0;               /* mass falls toward mass — density-gradient attraction */
 static int LDRAIN = 0;
 static int LTICK = 0;
-static uint64_t LIEV[16];
+static uint64_t LIEV[18];
 static uint64_t LIPH = 0;            /* live-photon ledger */
 
 static uint32_t lrng = 0xC0FFEEu;
@@ -164,7 +164,7 @@ void link3_annih(int k)         { LANNIH = k; }
 void link3_egate(int k)         { LEG = k; }
 void link3_iecost(int k)        { LIEC = k; }
 void link3_ieburst(int k)       { LIEB = k; }
-uint64_t link3_ev(int i)        { return LIEV[i & 15]; }
+uint64_t link3_ev(int i)        { return LIEV[i & 31]; }
 uint64_t link3_photons(void)    { return LIPH; }
 int  link3_rest(int x,int y,int z){ return lREST[lidx(x,y,z)]; }
 int  link3_snu(int x,int y,int z){ return lSNU[lidx(x,y,z)]; }
@@ -591,7 +591,7 @@ void link3_tick(void) {
                * Coulomb tail). nu IS the mediator's mass. */
               int leak2 = (int)((uint32_t)p * (uint32_t)lPHNU[si*LMOV+c] >> 9);
               eat += leak2;
-              if (eat) { p -= eat; LIEV[7] += eat; LIPH -= eat; }
+              if (eat) { p -= eat; LIEV[17] += eat; LIPH -= eat; }
               if (!p) continue; }
             /* self-collimation: photons prefer channels that already
              * carry photon flow — light follows light, the waveguide
@@ -690,11 +690,13 @@ void link3_tick(void) {
                     uint32_t e = lIE[cat] + dep * (nu > 8 ? nu >> 2 : 4);
                     lIE[cat] = e > 255 ? 255 : e;
                     LIEV[7] += dep;
-                    /* absorption recoil: the absorber is pushed along
-                     * the photon's direction — the kick parks as the
-                     * lump's own wound mass (drest = momentum). */
-                    { uint32_t k = lDR[cat*LMOV+c] + dep;
-                      lDR[cat*LMOV+c] = k > 255 ? 255 : k; }
+                    /* absorption recoil: the kick is nu-weighted —
+                     * p = E/c in c=1 units, momentum proportional to
+                     * the photon's energy. */
+                    { uint32_t kk = dep * (nu > 8 ? nu >> 3 : 1);
+                      uint32_t k = lDR[cat*LMOV+c] + kk;
+                      lDR[cat*LMOV+c] = k > 255 ? 255 : k;
+                      LIEV[16] += kk; }
                     p -= dep;
                     nu -= cfg + 1;
                     lPHNU[si*LMOV+c] = nu > 0 ? nu : 0;
@@ -740,10 +742,13 @@ void link3_tick(void) {
                 }
                 uint32_t e = lIE[cat] + dep * (nu > 0 ? nu : 1);   /* photons deposit their nu */
                 lIE[cat] = e > 255 ? 255 : e;
-                /* absorption recoil: the absorber is pushed along
-                 * the photon's direction — momentum parks as drest. */
-                { uint32_t k = lDR[cat*LMOV+c] + dep;
-                  lDR[cat*LMOV+c] = k > 255 ? 255 : k; }
+                /* absorption recoil: the kick is nu-weighted —
+                 * p = E/c in c=1 units — momentum proportional to
+                 * the photon's energy. */
+                { uint32_t kk = dep * (nu > 8 ? nu >> 3 : 1);
+                  uint32_t k = lDR[cat*LMOV+c] + kk;
+                  lDR[cat*LMOV+c] = k > 255 ? 255 : k;
+                  LIEV[16] += kk; }
                 LIPH -= dep;
                 LIEV[7] += dep;
                 continue;
@@ -760,16 +765,28 @@ void link3_tick(void) {
                  * is dense enough). Opposing streams meeting in
                  * vacuum -> BALANCED drest pair {c, c^1} (net-zero
                  * momentum, like a real gamma-gamma -> ee). */
-                int pdens = p + lPHd[ni*LMOV+(c^1)];
-                for (int cc = 0; cc < LMOV; cc++) pdens += lPH[ni*LMOV+cc];
+                /* fusion threshold on DELIVERED ENERGY (count*nu),
+                 * not just count — the 2mc^2 analog: pair production
+                 * needs enough energy in the collision, not just
+                 * enough photons (low-nu light can't materialize). */
+                int pdens = (p * lPHNU[si*LMOV+c]) +
+                            (lPHd[ni*LMOV+(c^1)] * lPHNUd[ni*LMOV+(c^1)]);
+                for (int cc = 0; cc < LMOV; cc++)
+                    pdens += lPH[ni*LMOV+cc] * lPHNU[ni*LMOV+cc];
                 int a = p < lPHd[ni*LMOV+(c^1)] ? p : lPHd[ni*LMOV+(c^1)];
                 if (a && pdens >= LFUS) {
                     lPHd[ni*LMOV+(c^1)] -= a;
+                    /* energy-conserving fusion: the deposited mass
+                     * carries the photons' nu — heavy quanta make more
+                     * mass per photon (E=mc^2: the pair's mass IS the
+                     * light's energy, not just its count). */
+                    int dep = a * lPHNU[si*LMOV+c] >> 4;
+                    if (dep < 1) dep = 1;
                     uint32_t v;
-                    v = lDR[ni*LMOV+c] + a;     lDR[ni*LMOV+c] = v > 255 ? 255 : v;
-                    v = lDR[ni*LMOV+(c^1)] + a; lDR[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
+                    v = lDR[ni*LMOV+c] + dep;     lDR[ni*LMOV+c] = v > 255 ? 255 : v;
+                    v = lDR[ni*LMOV+(c^1)] + dep; lDR[ni*LMOV+(c^1)] = v > 255 ? 255 : v;
                     LIPH -= 2*a;
-                    LIEV[9] += a;
+                    LIEV[9] += dep;
                     continue;
                 }
             }
