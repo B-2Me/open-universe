@@ -152,14 +152,17 @@ EMS_API void qi3_tick(void){
              * same node may absorb differently. */
             int line=(mass+(qWinding[si*QChannels+c]>>2))>>2;
             if(line<1)line=1;
-            int match;
+            int match=0, stim=0;
             if(qGapMode==1){
-                /* quadratic-well candidate: E_n = 256/n^2, absorb iff
-                 * nu equals a ground->n gap (converging series). */
-                match=0;
-                for(int n=2;n<=8;n++){
-                    int gap=256-256/(n*n);
-                    if(nu==gap){match=1;break;}
+                /* level-dependent transitions: site at level n absorbs
+                 * upward gaps E(n->m) = 256/n^2-256/m^2 (m>n), or is
+                 * stimulated to emit downward gaps E(n->m)=256/m^2-
+                 * 256/n^2 (m<n). n derived from charge, not stored. */
+                int n=1+(qCharge[si]>>5);if(n>8)n=8;
+                int En=256/(n*n);
+                for(int m=1;m<=8;m++){
+                    if(m>n&&nu==En-256/(m*m)){match=1;break;}
+                    if(m<n&&nu==256/(m*m)-En){stim=1;break;}
                 }
             } else {
                 match=(nu%line==0&&nu>=line);
@@ -172,6 +175,13 @@ EMS_API void qi3_tick(void){
                 int d=qWinding[si*QChannels+c]+((take*nu)>>3);
                 qWinding[si*QChannels+c]=d>255?255:d;    /* nu-weighted recoil */
                 qEvents[3]+=take;qEvents[16]+=take*nu;
+            } else if(stim){
+                /* clone: site falls one level, emits identical photon —
+                 * the original continues unabsorbed. */
+                qPhoton_next[si*QChannels+c]+=offer;
+                qPhotonNu_next[si*QChannels+c]=nu;
+                int e=qCharge[si]-32;if(e<0)e=0;qCharge[si]=e;
+                qEvents[17]+=offer;
             }
         }
     }
