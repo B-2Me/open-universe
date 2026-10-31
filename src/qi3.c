@@ -383,6 +383,26 @@ EMS_API void qi3_tick(void){
         }
     }
 
+    /* Attractor drain: only complete winding bands are stable — the
+     * fractional remainder below the last full band evaporates as
+     * photons. Quantization is enforced by dynamics (intermediates
+     * decay), not by measurement bins — the level is still read,
+     * but now only real stable states persist to be read. */
+    for(int si=0;si<QSites;si++){
+        if(!qMass[si])continue;
+        uint64_t w=0;
+        for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
+        uint64_t rem=w&255;                     /* below the band edge */
+        if(!rem)continue;
+        uint64_t shed=w>rem?rem:w;              /* shed to the floor */
+        for(int c=0;c<QChannels;c++){
+            uint32_t d=(uint32_t)(qWinding[si*QChannels+c]*shed/(w?w:1));
+            if(d>qWinding[si*QChannels+c])d=qWinding[si*QChannels+c];
+            qWinding[si*QChannels+c]-=d;
+            if(d){qPhoton_next[si*QChannels+c]+=1;qPhotonNu_next[si*QChannels+c]=(uint32_t)rem;}
+        }
+    }
+
     /* commit streamed buffers */
     for(int i=0;i<QSites*QChannels;i++){
         qMassFlight[i]+=qMassFlight_next[i];
