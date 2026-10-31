@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>link3 quantum statistics</title>
+<style>
+  body{background:#0d1117;color:#c9d1d9;font:13px monospace;padding:16px}
+  canvas{background:#161b22;border:1px solid #30363d;margin:6px;display:block}
+  .row{display:flex;flex-wrap:wrap}
+  h3{margin:14px 0 4px;color:#58a6ff;font-size:12px;text-transform:uppercase}
+  #log{white-space:pre}
+</style></head><body>
+<h2>link3 — professional quantum statistics</h2>
+<div id="log">loading…</div>
+<div class="row">
+<div><h3>1. two-point corr C(τ) — &lt;φ+(t)φ−(t+τ)&gt;</h3><canvas id="c1" width="400" height="200"></canvas></div>
+<div><h3>2. spatial corr C(r) — &lt;ρ(x)ρ(x+r)&gt;</h3><canvas id="c2" width="400" height="200"></canvas></div>
+</div><div class="row">
+<div><h3>3. structure factor S(k) — momentum spectrum</h3><canvas id="c3" width="400" height="200"></canvas></div>
+<div><h3>4. bipartition — mutual info L|R halves</h3><canvas id="c4" width="400" height="200"></canvas></div>
+</div><div class="row">
+<div><h3>5. ensemble: correlator mean ± 1σ (8 restarts)</h3><canvas id="c5" width="400" height="200"></canvas></div>
+<div><h3>flux φ+ (red) vs φ− (cyan) — the volley</h3><canvas id="c6" width="400" height="200"></canvas></div>
+</div>
+<script type="module">
+const H='./docs/public/wasm/ember';
+const src=await (await fetch(H+'/link3.js')).text();
+const mk=async()=>{const m={exports:{}};new Function('module','exports','require','__dirname','__filename',src)(m,m.exports,require,H,'link3.js');return m.exports();};
+const log=s=>document.getElementById('log').textContent=s;
+const W=64,Y=20,Z=20,NMOV=18,REST=18;
+function seedPair(w){
+  w._link3_init(W,Y,Z,1);
+  w._link3_friction(32);w._link3_emit(4);w._link3_phot(5);w._link3_drain_edge(2);
+  w._link3_ieburst(160);w._link3_egate(16);w._link3_phspread(96);w._link3_dwell(4);
+  for(let z=6;z<13;z++)for(let y=6;y<13;y++){
+    for(let x=26;x<30;x++)if(!((x+y+z)&1)){w._link3_set(x,y,z,REST,64);w._link3_eset(x,y,z,160);w._link3_rset(x,y,z,12,96);}
+    for(let x=34;x<38;x++)if(!((x+y+z)&1)){w._link3_set(x,y,z,REST,64);w._link3_eset(x,y,z,160);w._link3_rset(x,y,z,13,96);}
+  }
+}
+// measurements
+const gapFlux=(w,c)=>{let s=0;for(let z=0;z<Z;z++)for(let y=0;y<Y;y++)for(let x=28;x<36;x++)
+  if(!((x+y+z)&1))s+=w._link3_phget(x,y,z,c);return s;};
+const densX=(w)=>{const d=new Array(W).fill(0);
+  for(let z=0;z<Z;z++)for(let y=0;y<Y;y++)for(let x=0;x<W;x++){
+    if((x+y+z)&1)continue;for(let c=0;c<NMOV;c++)d[x]+=w._link3_phget(x,y,z,c);}
+  return d;};
+const inv=(w,a,b)=>{let s=0;for(let z=0;z<Z;z++)for(let y=0;y<Y;y++)for(let x=a;x<b;x++){
+  if((x+y+z)&1)continue;let v=w._link3_rest(x,y,z);for(let c=0;c<NMOV;c++)v+=w._link3_drest(x,y,z,c);
+  s+=v+w._link3_eget(x,y,z);}return s;};
+const corr=(A,B)=>{const n=Math.min(A.length,B.length);
+  const mA=A.slice(-n).reduce((a,b)=>a+b)/n,mB=B.slice(-n).reduce((a,b)=>a+b)/n;
+  let c=0,vA=0,vB=0;
+  for(let i=0;i<n;i++){const a=A[A.length-n+i]-mA,b=B[B.length-n+i]-mB;c+=a*b;vA+=a*a;vB+=b*b;}
+  return c/Math.sqrt(vA*vB||1);};
+function draw(id,series,ymin,ymax,color,band){
+  const cv=document.getElementById(id),g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const n=series.length;if(!n)return;
+  const y0=v=>cv.height-8-(v-ymin)/(ymax-ymin||1)*(cv.height-16);
+  if(band){g.fillStyle='rgba(88,166,255,.15)';g.beginPath();
+    for(let i=0;i<n;i++){const y=y0(series[i]+band[i]);i?g.lineTo(i*cv.width/n,y):g.moveTo(0,y);}
+    for(let i=n-1;i>=0;i--)g.lineTo(i*cv.width/n,y0(series[i]-band[i]));g.fill();}
+  g.strokeStyle=color;g.beginPath();
+  for(let i=0;i<n;i++){const y=y0(series[i]);i?g.lineTo(i*cv.width/n,y):g.moveTo(0,y);}
+  g.stroke();
+}
+const T=400,K=8;
+const ens=[];
+for(let k=0;k<K;k++){
+  const w=await mk();seedPair(w);
+  const run={fp:[],fm:[],ctau:new Array(40).fill(0),cr:[],sk:[],mi:[],il:[],ir:[]};
+  for(let t=0;t<T;t++){
+    w._link3_tick();
+    run.fp.push(gapFlux(w,12));run.fm.push(gapFlux(w,13));
+    const d=densX(w);run.cr.push(d);
+    run.il.push(inv(w,20,32));run.ir.push(inv(w,34,48));
+  }
+  // temporal correlator at lags
+  for(let lag=0;lag<40;lag++){
+    const a=run.fp.slice(100),b=run.fm.slice(100);
+    const shifted=b.slice(lag);const a2=a.slice(0,shifted.length);
+    run.ctau[lag]=corr(a2,shifted);
+  }
+  // spatial correlator (last frame): <rho(x)rho(x+r)> - means
+  const d=run.cr[run.cr.length-1];
+  const m=d.reduce((a,b)=>a+b)/d.length;
+  for(let r=0;r<32;r++){let c=0,v=0,n=0;
+    for(let x=0;x<W-r;x++){c+=(d[x]-m)*(d[x+r]-m);v+=(d[x]-m)**2;n++;}
+    run.cr[r]=c/Math.max(1,v);}
+  // structure factor S(k)
+  for(let k2=1;k2<=16;k2++){let re=0,im=0;
+    for(let x=0;x<W;x++){const a=2*Math.PI*k2*x/W;re+=d[x]*Math.cos(a);im+=d[x]*Math.sin(a);}
+    run.sk[k2-1]=(re*re+im*im);}
+  // mutual info between halves (time series)
+  run.mi=run.il.map((v,i)=>corr(run.il.slice(0,i+1),run.ir.slice(0,i+1)));
+  ens.push(run);
+  log(`restart ${k+1}/${K}`);
+}
+// ensemble means + sigma
+const mean=(f)=>ens[0].ctau.map((_,i)=>ens.reduce((s,r)=>s+r.ctau[i],0)/K);
+const sd=(f)=>ens[0].ctau.map((_,i)=>{const m=ens.reduce((s,r)=>s+r.ctau[i],0)/K;
+  return Math.sqrt(ens.reduce((s,r)=>s+(r.ctau[i]-m)**2,0)/K);});
+draw('c1',ens[0].ctau,-1,1,'#f85149');
+draw('c2',ens[0].cr.slice(0,32),-0.5,1,'#58a6ff');
+draw('c3',ens[0].sk,0,Math.max(...ens[0].sk),'#3fb950');
+draw('c4',ens[0].mi.filter((_,i)=>i%8===0),-1,1,'#d29922');
+const mct=mean(),sct=sd();
+draw('c5',mct,-1,1,'#bc8cff',sct);
+draw('c6',ens[0].fp.slice(300),0,Math.max(...ens[0].fp.slice(300)),'#f85149');
+const g=document.getElementById('c6').getContext('2d');
+{const n=100,s=ens[0].fm.slice(300),mx=Math.max(...s,1);
+ g.strokeStyle='#39c5cf';g.beginPath();
+ for(let i=0;i<n;i++){const y=200-8-s[i]/mx*184;i?g.lineTo(i*4,y):g.moveTo(0,y);}g.stroke();}
+log(`done. corr(phi+,phi-) connected = ${corr(ens[0].fp.slice(100),ens[0].fm.slice(100)).toFixed(3)}`);
+</script></body></html>
