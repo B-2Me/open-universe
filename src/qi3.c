@@ -55,6 +55,9 @@ static uint32_t *qAckTtl, *qAckTtl_next;         /* hops remaining home */
 static uint32_t *qAckRtt, *qAckRtt_next;         /* round-trip delivered */
 static uint32_t *qBondDist;                      /* measured edge distance */
 static uint64_t qEvents[24];
+static int qGapShift = 0;  /* emitted-nu downshift: scale separation
+                            (transitions << rest energy, the alpha^2
+                            analog — emitted light can't re-fuse) */
 static int qGapMode = 0;   /* level-function candidates — falsifiable:
                             * 0 harmonic comb (nu % line == 0)
                             * 1 quadratic well E0/n^2 (converging)
@@ -530,7 +533,8 @@ EMS_API void qi3_tick(void){
         if(nout==1)c=(edlive<<1)|(randByte()&1);   /* emit on the bond */
         else c=randByte()%QChannels;                /* else random dir */
         qPhoton_next[si*QChannels+c]+=1;
-        qPhotonNu_next[si*QChannels+c]=line;
+        qPhotonNu_next[si*QChannels+c]=line>>qGapShift;
+        if(!qPhotonNu_next[si*QChannels+c])qPhotonNu_next[si*QChannels+c]=1;
         qPhotonBirth_next[si*QChannels+c]=(uint32_t)qTick;
         siteUnwind(si,(uint32_t)line);          /* fell one band */
         qEvents[4]++;qEvents[20]+=line;
@@ -643,6 +647,7 @@ EMS_API int qi3_session_strength(int x,int y,int z,int c){
     return qSessionStrength[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
 }
 EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
+EMS_API void qi3_gap_scale(int s){ qGapShift=s; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
