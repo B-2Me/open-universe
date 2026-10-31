@@ -300,6 +300,7 @@ if emcc qi3.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1   -s 
     '_qi3_winding_get',
     '_qi3_session_state',
     '_qi3_session_strength',
+    '_qi3_confirm_get',
     '_qi3_event',
     '_qi3_photon_count',
     '_malloc',

@@ -252,6 +252,10 @@ EMS_API int qi3_session_strength(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qSessionStrength[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
+EMS_API int qi3_confirm_get(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
+}
 EMS_API uint64_t qi3_event(int i){ return qEvents[i & 31]; }
 EMS_API uint64_t qi3_photon_count(void){ uint64_t m=0;
     for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++)m+=qPhoton[si*QChannels+c];return m; }
