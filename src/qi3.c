@@ -42,11 +42,11 @@ static int8_t QChannelVec[18][3] = {
     {2,0,0},{-2,0,0},{0,2,0},{0,-2,0},{0,0,2},{0,0,-2}
 };
 
-static uint8_t  *qMass, *qWinding, *qLevel, *qCharge;
-static uint8_t  *qMassFlight, *qMassFlight_next;
-static uint8_t  *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
-static uint8_t  *qConfirm;
-static uint8_t  *qSessionState, *qSessionStrength;
+static uint32_t *qMass, *qWinding, *qLevel, *qCharge;
+static uint32_t *qMassFlight, *qMassFlight_next;
+static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
+static uint32_t *qConfirm, *qSessionStrength;
+static uint8_t  *qSessionState;
 static uint64_t qEvents[24];
 static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
                             * 1 = quadratic well: levels E_n = E0/n^2,
@@ -64,19 +64,19 @@ static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<
 EMS_API int qi3_init(int width,int height,int depth,int mov){
     QWidth=width;QHeight=height;QDepth=depth;QSites=QWidth*QHeight*QDepth;
     if(mov>0&&mov<=18)QChannels=mov;
-    qMass           =calloc((size_t)QSites,1);
-    qWinding        =calloc((size_t)QSites*QChannels,1);
-    qLevel          =calloc((size_t)QSites,1);
-    qCharge         =calloc((size_t)QSites,1);
-    qMassFlight     =calloc((size_t)QSites*QChannels,1);
-    qMassFlight_next=calloc((size_t)QSites*QChannels,1);
-    qPhoton         =calloc((size_t)QSites*QChannels,1);
-    qPhoton_next    =calloc((size_t)QSites*QChannels,1);
-    qPhotonNu       =calloc((size_t)QSites*QChannels,1);
-    qPhotonNu_next  =calloc((size_t)QSites*QChannels,1);
-    qConfirm        =calloc((size_t)QSites*QChannels,1);
+    qMass           =calloc((size_t)QSites,sizeof(uint32_t));
+    qWinding        =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qLevel          =calloc((size_t)QSites,sizeof(uint32_t));
+    qCharge         =calloc((size_t)QSites,sizeof(uint32_t));
+    qMassFlight     =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qMassFlight_next=calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qPhoton         =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qPhoton_next    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qPhotonNu       =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qPhotonNu_next  =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qConfirm        =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qSessionState   =calloc((size_t)QSites*QChannels,1);
-    qSessionStrength=calloc((size_t)QSites*QChannels,1);
+    qSessionStrength=calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
             qPhoton&&qPhoton_next&&qPhotonNu&&qPhotonNu_next&&qConfirm&&
             qSessionState&&qSessionStrength)?0:-1;
@@ -85,9 +85,9 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
 EMS_API int qi3_channel_count(void){ return QChannels+1; }
 EMS_API void qi3_tick(void){
     qTick++;
-    memset(qMassFlight_next,0,(size_t)QSites*QChannels);
-    memset(qPhoton_next,0,(size_t)QSites*QChannels);
-    memset(qConfirm,0,(size_t)QSites*QChannels);
+    memset(qMassFlight_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qPhoton_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qConfirm,0,(size_t)QSites*QChannels*sizeof(uint32_t));
 
     /* Phase 1 — junction collide: redistribute in-flight mass.
      * Opposing channels annihilate into parked mass + charge. */
@@ -97,8 +97,8 @@ EMS_API void qi3_tick(void){
         int hit=a<b?a:b;
         if(hit>0){
             qMassFlight[si*QChannels+c]-=hit;qMassFlight[si*QChannels+oc]-=hit;
-            int m=qMass[si]+hit*2;if(m>255)m=255;qMass[si]=m;
-            int e=qCharge[si]+hit*2;if(e>255)e=255;qCharge[si]=e;
+            qMass[si]+=hit*2;
+            qCharge[si]+=hit*2;
             qEvents[0]+=hit*2;qEvents[9]+=hit;
         }
     }
@@ -170,25 +170,23 @@ EMS_API void qi3_tick(void){
             if(match){
                 int oc=c^1;
                 qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
-                int take=offer;qPhoton_next[si*QChannels+c]-=take;
-                int e=qCharge[si]+take*nu;
-                qEvents[18]+=take*nu;                    /* E deposited */
-                if(e>255){qEvents[19]+=e-255;e=255;}     /* E capped away */
-                qCharge[si]=e;
-                int d=qWinding[si*QChannels+c]+((take*nu)>>3);
-                qWinding[si*QChannels+c]=d>255?255:d;    /* nu-weighted recoil */
+                uint32_t take=offer;qPhoton_next[si*QChannels+c]-=take;
+                qCharge[si]+=take*(uint32_t)nu;
+                qEvents[18]+=(uint64_t)take*nu;          /* E deposited */
+                qWinding[si*QChannels+c]+=((uint32_t)take*nu)>>3; /* nu recoil */
                 qEvents[3]+=take;qEvents[16]+=take*nu;
             } else if(stim){
                 /* clone: site falls one level, emits identical photon —
                  * the original continues unabsorbed. */
                 /* clone energy must come from the level drop — emit
                  * only what the charge can pay for, ledger the rest */
-                int afford=qCharge[si]/nu;
-                int cloned=offer<afford?offer:afford;
+                uint32_t afford=nu?(qCharge[si]/(uint32_t)nu):0;
+                uint32_t cloned=offer<afford?offer:afford;
                 qEvents[21]+=(uint64_t)(offer-cloned)*nu;  /* E shortfall */
                 qPhoton_next[si*QChannels+c]+=cloned;
                 qPhotonNu_next[si*QChannels+c]=nu;
-                int e=qCharge[si]-cloned*nu;if(e<0)e=0;qCharge[si]=e;
+                qCharge[si]=qCharge[si]>cloned*(uint32_t)nu
+                    ? qCharge[si]-cloned*(uint32_t)nu : 0;
                 qEvents[17]+=cloned;
             }
         }
@@ -236,13 +234,14 @@ EMS_API void qi3_tick(void){
             int ni=si*QChannels+c;
             qPhoton_next[ni]+=per;qPhotonNu_next[ni]=line;
         }
-        e-=dumpE;if(e<0)e=0;qCharge[si]=e;qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
+        qCharge[si]=e>(uint32_t)dumpE?e-(uint32_t)dumpE:0;
+        qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
     }
 
     /* commit streamed buffers */
     for(int i=0;i<QSites*QChannels;i++){
-        uint32_t v=qMassFlight[i]+qMassFlight_next[i];if(v>255)v=255;qMassFlight[i]=v;
-        v=qPhoton[i]+qPhoton_next[i];if(v>255)v=255;qPhoton[i]=v;
+        qMassFlight[i]+=qMassFlight_next[i];
+        qPhoton[i]+=qPhoton_next[i];
         if(qPhoton_next[i])qPhotonNu[i]=qPhotonNu_next[i];
     }
 }
@@ -250,7 +249,7 @@ EMS_API void qi3_tick(void){
 EMS_API void qi3_photon_set(int x,int y,int z,int c,int v){
     if(c>=QChannels)return;
     int si=siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth));
-    qPhoton[si*QChannels+c]=v>255?255:v; qPhotonNu[si*QChannels+c]=32;
+    qPhoton[si*QChannels+c]=(uint32_t)v; qPhotonNu[si*QChannels+c]=32;
 }
 EMS_API int qi3_photon_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
@@ -258,33 +257,33 @@ EMS_API int qi3_photon_get(int x,int y,int z,int c){
 }
 EMS_API void qi3_photon_nu_set(int x,int y,int z,int c,int v){
     if(c<QChannels)
-        qPhotonNu[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c]=v<0?0:v>255?255:v;
+        qPhotonNu[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c]=(uint32_t)(v<0?0:v);
 }
 EMS_API int qi3_photon_nu(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qPhotonNu[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
 EMS_API void qi3_mass_set(int x,int y,int z,int v){
-    qMass[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=v>255?255:v;
+    qMass[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=(uint32_t)v;
 }
 EMS_API int qi3_mass_get(int x,int y,int z){
     return qMass[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
 }
 EMS_API void qi3_charge_set(int x,int y,int z,int v){
-    qCharge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=v>255?255:v;
+    qCharge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=(uint32_t)v;
 }
 EMS_API int qi3_charge_get(int x,int y,int z){
     return qCharge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
 }
 EMS_API void qi3_level_set(int x,int y,int z,int v){
-    qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=v>255?255:v;
+    qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=(uint32_t)v;
 }
 EMS_API int qi3_level_get(int x,int y,int z){
     return qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
 }
 EMS_API void qi3_winding_set(int x,int y,int z,int c,int v){
     if(c<QChannels)
-        qWinding[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c]=v<0?0:v>255?255:v;
+        qWinding[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c]=(uint32_t)(v<0?0:v);
 }
 EMS_API int qi3_winding_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
