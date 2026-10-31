@@ -96,3 +96,28 @@ buffered (no order dependence within the tick).
 - Ratios and shapes, not absolute values; confounds logged
 - Every mechanic falsifiable; regressions re-run after changes
 - No virtual photons — every exchange is a real photon on a real channel
+
+## Build-out completed (the audit queue)
+
+- **9 duplex edges** — structure is per-edge (bonds, confirms,
+  sessions); transit stays per-channel (18 dirs)
+- **Two-beat heartbeat + lottery** — offers arm INCIPIENT
+  transactions held on the edge; next tick a weighted lottery
+  (count*nu*(1+bond)) actualizes ONE per site; losers rejoin
+- **Circulation object** — absorption splits deposits across
+  edge pairs (closed loops); level = matched-loop content
+- **Quantized emission** — one quantum per transition, site
+  emits the ACTUAL gap n->n-1, paid by siteUnwind; charge is
+  bound energy that THERMALIZES into winding
+- **Attractor drain** — quantization enforced dynamically:
+  only complete winding bands persist (sub-quantum = forming)
+- **E_n family** — gap_mode 1-4: {E0/n^2, E0/n, E0*n, E0*n^2}
+  falsifiable candidates sharing one transition table
+- **RTT handshake** — offers carry birth ticks; actualization
+  spawns an ACK that walks back ttl=tau hops delivering
+  RTT=2*tau as qBondDist — retarded confirm, real latency,
+  dual-end bond credit
+- **Conservation** — uint32 registers, sealed ledger, exact
+  nu=128 kinematic fusion wall, fusion launches pairs apart
+- **Phase structure measured** — cold vacuum / stochastic
+  nucleation band (P(ignite) sigmoid) / saturated hot phase
