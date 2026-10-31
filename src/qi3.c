@@ -64,14 +64,23 @@ static inline int siteLevel(int si){
     int n=1+(int)(w>>8);if(n>8)n=8;return n;   /* winding-banded level */
 }
 static inline void siteUnwind(int si,uint32_t amount){
-    /* drain winding proportionally across channels — emission and
-     * stimulated drops unwind the circulation, not a scalar bank. */
+    (void)amount;
+    /* quantized unwind: a level drop removes exactly ONE band's
+     * worth of circulation (parked structure, not a fuel tank —
+     * the meso3i/link3 lesson: wound mass is structure, it stays
+     * until a transition drops it a band). Drain evenly per
+     * channel until total winding sits in the next band down. */
     uint64_t w=0;
     for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
-    if(!w)return;
+    int n=1+(int)(w>>8);if(n>8)n=8;
+    if(n<=1)return;                              /* ground: nothing to shed */
+    uint64_t target=(uint64_t)(n-2)<<8;          /* top of the n-1 band */
+    if(w<=target)return;
+    uint64_t shed=w-target;
     for(int c=0;c<QChannels;c++){
-        uint32_t d=(uint32_t)(((uint64_t)qWinding[si*QChannels+c]*amount)/w);
-        qWinding[si*QChannels+c]-=d<qWinding[si*QChannels+c]?d:qWinding[si*QChannels+c];
+        uint32_t d=(uint32_t)(qWinding[si*QChannels+c]*shed/w);
+        if(d>qWinding[si*QChannels+c])d=qWinding[si*QChannels+c];
+        qWinding[si*QChannels+c]-=d;
     }
 }
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
