@@ -177,6 +177,7 @@ void link3_rset(int x,int y,int z,int c,int v){ if(c<LMOV)lDR[lidx(x,y,z)*LMOV+c
 int  link3_upget(int x,int y,int z,int c){ return c<LMOV?lUP[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_phget(int x,int y,int z,int c){ return c<LMOV?lPH[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_phnu(int x,int y,int z,int c){ return c<LMOV?lPHNU[lidx(x,y,z)*LMOV+c]:0; }
+void link3_phnu_set(int x,int y,int z,int c,int v){ if(c<LMOV)lPHNU[lidx(x,y,z)*LMOV+c]=v<0?0:v>255?255:v; }
 int  link3_load(int x,int y,int z,int c){ return c<LMOV?lLOAD[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sess(int x,int y,int z,int c){ return c<LMOV?lSESS[lidx(x,y,z)*LMOV+c]:0; }
 int  link3_sst(int x,int y,int z,int c){ return c<LMOV?lSST[lidx(x,y,z)*LMOV+c]:0; }
@@ -577,6 +578,21 @@ void link3_tick(void) {
             int p = lPH[si*LMOV+c];
             if (!p) continue;
             lPH[si*LMOV+c] = 0;
+            /* channel resistance around mass: transiting a dense site
+             * costs a share of the photon population (Beer-Lambert —
+             * the medium screens the channel, exponential with the
+             * mass column along the path). */
+            { int m0 = lREST[si];
+              for (int cc = 0; cc < LMOV; cc++) m0 += lDR[si*LMOV+cc];
+              int eat = (int)((uint32_t)p * (uint32_t)(m0 > 255 ? 255 : m0) >> 10);
+              /* transit loss scales with nu: heavy quanta decay in
+               * flight (massive mediators — finite range, nuclear),
+               * light quanta travel forever (massless — the 1/r^2
+               * Coulomb tail). nu IS the mediator's mass. */
+              int leak2 = (int)((uint32_t)p * (uint32_t)lPHNU[si*LMOV+c] >> 9);
+              eat += leak2;
+              if (eat) { p -= eat; LIEV[7] += eat; LIPH -= eat; }
+              if (!p) continue; }
             /* self-collimation: photons prefer channels that already
              * carry photon flow — light follows light, the waveguide
              * effect. The exchange concentrates on the lit path. */
@@ -838,7 +854,7 @@ void link3_tick(void) {
                     LIPH += out;
                 }
                 if (lSST[idx] == 1 && lSESS[idx] > 0) lSST[idx] = 2;  /* SYN: any duplex traffic promotes */
-                else if (lSST[idx] == 2 && lSESS[idx] > 1) lSST[idx] = 3;  /* ESTAB: sustained duplex */
+                else if (lSST[idx] == 2 && lSESS[idx] > 3) lSST[idx] = 3;  /* ESTAB: strong duplex only — the mutual-exclusion threshold: broadcast flux dilutes below this with distance */
                 if (lSST[idx] == 4) lSST[idx] = 0;          /* fresh start after close */
                 LIEV[14]++;
                 /* the BOND: session depth accumulating — the channel's
