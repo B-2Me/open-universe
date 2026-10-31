@@ -17,8 +17,8 @@ const q = await (() => {
 q._qi3_init(40, 40, 40, 0);
 q._qi3_gap_mode(1);
 // two charged lumps 8 cells apart on x — facing channel c12 (+x)/c13 (-x)
-q._qi3_mass_set(16, 20, 20, 160); q._qi3_charge_set(16, 20, 20, 96);
-q._qi3_mass_set(24, 20, 20, 160); q._qi3_charge_set(24, 20, 20, 96);
+q._qi3_mass_set(16, 20, 20, 160); q._qi3_charge_set(16, 20, 20, 1024);
+q._qi3_mass_set(24, 20, 20, 160); q._qi3_charge_set(24, 20, 20, 1024);
 
 console.log('t    gapFlux  sessAB  sessBA  chargeA chargeB  stim');
 for (let t = 0; t <= 60; t += 10) {

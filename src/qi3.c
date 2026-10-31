@@ -48,7 +48,7 @@ static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
 static uint32_t *qHeld, *qHeldNu;                /* incipient offers held */
-static uint8_t  *qHeldDir;                       /* which dir of the edge */
+static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
 static uint64_t qEvents[24];
 static int qGapMode = 0;   /* level-function candidates — falsifiable:
                             * 0 harmonic comb (nu % line == 0)
@@ -79,10 +79,20 @@ static uint64_t qRngSeed = 88172645463325252ULL;
 
 static inline int siteIndex(int x,int y,int z){ return (z*QHeight+y)*QWidth+x; }
 static inline int wrapCoord(int v,int m){ v%=m; if(v<0)v+=m; return v; }
-static inline int siteLevel(int si){
+static inline uint64_t loopWinding(int si){
+    /* the CLOSED-circulation content: winding balanced across each
+     * edge pair forms a loop through the edge and back — the internal
+     * structure is closed circulations, and the level derives from
+     * their total, not scattered deposits. */
     uint64_t w=0;
-    for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
-    int n=1+(int)(w>>8);if(n>8)n=8;return n;   /* winding-banded level */
+    for(int e=0;e<QChannels/2;e++)
+        w+=2*(qWinding[si*QChannels+2*e]<qWinding[si*QChannels+2*e+1]
+              ?qWinding[si*QChannels+2*e]:qWinding[si*QChannels+2*e+1]);
+    return w;
+}
+static inline int siteLevel(int si){
+    uint64_t w=loopWinding(si);
+    int n=1+(int)(w>>8);if(n>8)n=8;return n;   /* loop-banded level */
 }
 static inline void siteUnwind(int si,uint32_t amount){
     (void)amount;
@@ -124,6 +134,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
+    qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
     qSessionState   =calloc((size_t)QSites*(QChannels/2),1);
     qSessionStrength=calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
@@ -159,10 +170,34 @@ EMS_API void qi3_tick(void){
             if(!h)continue;
             uint64_t wt=(uint64_t)h*nu*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
             if(acc+wt>pick&&wt){
-                /* WINNER actualizes: deposit + bond + confirm pulse */
+                int cc=(e<<1)|qHeldDir[si*(QChannels/2)+e];
+                if(qHeldStim[si*(QChannels/2)+e]){
+                    /* stimulated winner: ONE clone per trigger — the
+                     * site falls one level and releases nu; the
+                     * emitted photon's energy is the transition gap,
+                     * not the offer's intensity. One atom, one
+                     * transition, one quantum — no multiplicative
+                     * runaway. */
+                    if(siteLevel(si)>1){
+                        qPhoton[si*QChannels+cc]+=h+1;
+                        qPhotonNu[si*QChannels+cc]=nu;
+                        siteUnwind(si,nu);          /* fell one band */
+                        qEvents[17]++;
+                    } else {
+                        qPhoton[si*QChannels+cc]+=h; /* can't drop: pass */
+                        qPhotonNu[si*QChannels+cc]=nu;
+                    }
+                    qHeldStim[si*(QChannels/2)+e]=0;
+                    acc+=wt;qHeld[si*(QChannels/2)+e]=0;continue;
+                }
+                /* WINNER actualizes: deposit + bond + confirm pulse —
+                 * recoil winds a CLOSED loop (split across the edge
+                 * pair so the deposit circulates — a loop object,
+                 * not a scalar bank) */
                 qCharge[si]+=h*nu;
                 qEvents[18]+=(uint64_t)h*nu;
-                qWinding[si*QChannels+(e<<1|qHeldDir[si*(QChannels/2)+e])]+=(h*nu)>>3;
+                qWinding[si*QChannels+cc]+=(h*nu)>>4;
+                qWinding[si*QChannels+(cc^1)]+=(h*nu)>>4;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
                 qSessionStrength[si*(QChannels/2)+e]+=h;
                 if(qSessionState[si*(QChannels/2)+e]<2)
@@ -180,16 +215,21 @@ EMS_API void qi3_tick(void){
         }
     }
 
-    /* Phase 1 — junction collide: redistribute in-flight mass.
-     * Opposing channels annihilate into parked mass + charge. */
+    /* Phase 1 — junction collide: opposing in-flight mass emits
+     * back-to-back photons (matter/antimatter -> light), leaving a
+     * small charge residue — annihilation radiation, not bookkeeping. */
     for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++){
         int oc=c^1;
         int a=qMassFlight[si*QChannels+c],b=qMassFlight[si*QChannels+oc];
         int hit=a<b?a:b;
         if(hit>0){
             qMassFlight[si*QChannels+c]-=hit;qMassFlight[si*QChannels+oc]-=hit;
-            qMass[si]+=hit*2;
-            qCharge[si]+=hit*2;
+            int nu=qMass[si]>4?(int)(qMass[si]>>2):64;
+            qPhoton_next[si*QChannels+c]+=hit;
+            qPhoton_next[si*QChannels+oc]+=hit;
+            qPhotonNu_next[si*QChannels+c]=nu;
+            qPhotonNu_next[si*QChannels+oc]=nu;
+            qCharge[si]+=hit;                      /* binding residue */
             qEvents[0]+=hit*2;qEvents[9]+=hit;
         }
     }
@@ -215,14 +255,20 @@ EMS_API void qi3_tick(void){
         for(int c=0;c<QChannels;c++){
             int v=qPhoton[si*QChannels+c];if(!v)continue;
             int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
-            int keep=v;if((qTick%nu)==0)keep=v-1;   /* nu-gated loss */
-            qEvents[7]+=v-keep;
-            if(!keep){qPhoton[si*QChannels+c]-=v;continue;}
+            if((qTick%nu)==0){                       /* nu-gated transit
+                 * loss: one photon is absorbed by the medium — its
+                 * energy deposits into site charge (the sink), the
+                 * population loses one quantum. Range ~1/nu intact. */
+                if(qMass[si])qCharge[si]+=nu;
+                qEvents[7]+=nu;
+                v--;
+                if(!v){qPhoton[si*QChannels+c]=0;continue;}
+            }
             int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c;
-            qPhoton_next[ni]+=keep;qPhotonNu_next[ni]=nu;
+            qPhoton_next[ni]+=v;qPhotonNu_next[ni]=nu;
             qPhoton[si*QChannels+c]-=v;
         }
     }
@@ -254,10 +300,14 @@ EMS_API void qi3_tick(void){
                 qPhoton_next[si*QChannels+c]-=pair;
                 qPhoton_next[si*QChannels+oc]-=pair;
                 uint64_t dep=pair*(nua+nub);
-                qMass[si]+=(uint32_t)(dep>>4);          /* E -> rest mass */
-                qCharge[si]+=(uint32_t)(dep>>3);        /* residual charge */
-                qWinding[si*QChannels+c]+=pair;         /* the pair winds */
-                qWinding[si*QChannels+oc]+=pair;
+                qMass[si]+=(uint32_t)(dep>>5);          /* creation residue */
+                qCharge[si]+=(uint32_t)(dep>>3);
+                /* the pair LAUNCHES apart on the two channels —
+                 * gamma+gamma -> e+e- flies, not a static pile */
+                qMassFlight_next[si*QChannels+c]+=pair;
+                qMassFlight_next[si*QChannels+oc]+=pair;
+                qWinding[si*QChannels+c]+=pair>>2;      /* residual wound */
+                qWinding[si*QChannels+oc]+=pair>>2;
                 qEvents[23]+=pair;mass=1;
             }
         }
@@ -271,7 +321,7 @@ EMS_API void qi3_tick(void){
             int line=(mass+(qWinding[si*QChannels+c]>>2))>>2;
             if(line<1)line=1;
             int match=0, stim=0;
-            if(qGapMode==1){
+            if(qGapMode>=1&&qGapMode<=4){
                 /* level-dependent transitions: site at level n absorbs
                  * upward gaps E(n->m) = 256/n^2-256/m^2 (m>n), or is
                  * stimulated to emit downward gaps E(n->m)=256/m^2-
@@ -296,19 +346,15 @@ EMS_API void qi3_tick(void){
                 qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
                 qPhoton_next[si*QChannels+c]-=offer;
             } else if(stim){
-                /* clone: site falls one level, emits identical photon —
-                 * the original continues unabsorbed. */
-                /* clone energy must come from the level drop — emit
-                 * only what the charge can pay for, ledger the rest */
-                uint32_t afford=nu?(qCharge[si]/(uint32_t)nu):0;
-                uint32_t cloned=offer<afford?offer:afford;
-                qEvents[21]+=(uint64_t)(offer-cloned)*nu;  /* E shortfall */
-                qPhoton_next[si*QChannels+c]+=cloned;
-                qPhotonNu_next[si*QChannels+c]=nu;
-                qCharge[si]=qCharge[si]>cloned*(uint32_t)nu
-                    ? qCharge[si]-cloned*(uint32_t)nu : 0;
-                siteUnwind(si,cloned*(uint32_t)nu);   /* fell a level */
-                qEvents[17]+=cloned;
+                /* stim arms an INCIPIENT too — it enters the lottery
+                 * like absorption; flagged so a win clones instead
+                 * of absorbing (stimulation competes, it's not a
+                 * deterministic trigger). */
+                int edge=(c>>1);
+                int ei=si*(QChannels/2)+edge;
+                qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
+                qHeldStim[ei]=1;
+                qPhoton_next[si*QChannels+c]-=offer;
             }
         }
     }
@@ -341,43 +387,37 @@ EMS_API void qi3_tick(void){
             if(!qMass[si])continue;
             mass=qMass[si];
         }
-        if(e<32||!mass)continue;
+        if(!mass)continue;
+        /* bound energy thermalizes into circulation: charge organizes
+         * into winding on a loop pair — the absorbed-energy pool feeds
+         * the internal structure. */
+        if(e>=32){
+            int ch=randByte()%QChannels, conv=e>>4;
+            if(conv){
+                qWinding[si*QChannels+ch]+=(uint32_t)conv>>1;
+                qWinding[si*QChannels+(ch^1)]+=(uint32_t)conv>>1;
+                qCharge[si]=e-conv;
+            }
+        }
+        /* ONE quantum per transition: a site at level n>=2 falls
+         * n->n-1 and emits a single photon at that gap — the level
+         * structure pays (siteUnwind), emission is a transition,
+         * not a bank dump. */
+        int n=siteLevel(si);
+        if(n<2)continue;
         int line;
-        if(qGapMode==1){
-            int n=siteLevel(si);if(n<2)n=2;     /* circulation-derived */
-            line=qi3gapE(n,1);                  /* ground->n gap */
-        } else {
-            line=mass>4?mass>>2:1;
-        }
-        /* emit ENERGY, not count: dump e>>3 charge as photons at the
-         * line — count = energy/line so the ledger stays closed. */
-        int dumpE=e>>3;if(dumpE<1)continue;
-        int emit=dumpE/line;if(emit<1){emit=1;dumpE=line;}
-        if(dumpE>e)dumpE=e;
-        int nout=0;
-        for(int e=0;e<QChannels/2;e++)
-            if(qSessionState[si*(QChannels/2)+e])nout++;
-        int per;
-        if(!nout){                                   /* broadcast: all channels */
-            per=emit/QChannels;if(per<1)per=1;
-            for(int c=0;c<QChannels;c++){
-                qPhoton_next[si*QChannels+c]+=per;
-                qPhotonNu_next[si*QChannels+c]=line;
-            }
-        } else {                                     /* duplex on live edges */
-            per=emit/(nout*2);if(per<1)per=1;
-            for(int e=0;e<QChannels/2;e++){
-                if(!qSessionState[si*(QChannels/2)+e])continue;
-                for(int d=0;d<2;d++){
-                    int c=(e<<1)|d;
-                    qPhoton_next[si*QChannels+c]+=per;
-                    qPhotonNu_next[si*QChannels+c]=line;
-                }
-            }
-        }
-        qCharge[si]=e>(uint32_t)dumpE?e-(uint32_t)dumpE:0;
-        siteUnwind(si,(uint32_t)dumpE);         /* emitting unwinds */
-        qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
+        if(qGapMode>=1&&qGapMode<=4)line=qi3gapE(n,n-1);
+        else line=mass>4?mass>>2:1;
+        int c;
+        int nout=0, edlive=-1;
+        for(int ed=0;ed<QChannels/2;ed++)
+            if(qSessionState[si*(QChannels/2)+ed]){nout++;edlive=ed;}
+        if(nout==1)c=(edlive<<1)|(randByte()&1);   /* emit on the bond */
+        else c=randByte()%QChannels;                /* else random dir */
+        qPhoton_next[si*QChannels+c]+=1;
+        qPhotonNu_next[si*QChannels+c]=line;
+        siteUnwind(si,(uint32_t)line);          /* fell one band */
+        qEvents[4]++;qEvents[20]+=line;
     }
 
     /* Phase 6b — annihilation: antipodal winding on an axis (a
@@ -412,6 +452,7 @@ EMS_API void qi3_tick(void){
         if(!qMass[si])continue;
         uint64_t w=0;
         for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
+        if(w<256)continue;                      /* forming: keep sub-quantum */
         uint64_t rem=w&255;                     /* below the band edge */
         if(!rem)continue;
         uint64_t shed=w>rem?rem:w;              /* shed to the floor */
