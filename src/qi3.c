@@ -131,18 +131,22 @@ EMS_API void qi3_tick(void){
         }
     }
 
-    /* Phase 4 — transaction pass (the heartbeat): offer at a massive
-     * site arms a confirmation on the reverse link if nu matches an
-     * allowed gap (all-or-nothing; structure derives the gap). */
+    /* Phase 4 — transaction pass (the heartbeat): every edge on every
+     * node evaluates its offers independently in the same tick — an
+     * absorber is a statistical region of absorber-active edges, not
+     * a named object; its extent is derived, not assumed. Buffered
+     * reads (qPhoton_next) keep all edges simultaneous. */
     for(int si=0;si<QSites;si++){
         int mass=qMass[si];
         for(int c=0;c<QChannels;c++){
             int offer=qPhoton_next[si*QChannels+c];
             if(!offer||!mass)continue;
             int nu=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
-            /* gap rule: absorb if the site's own line divides nu —
-             * line = mass>>2 (structure-derived, not a table). */
-            int line=mass>4?mass>>2:1;
+            /* edge-local line: the channel's own winding + site mass
+             * set what this edge can absorb — different edges of the
+             * same node may absorb differently. */
+            int line=(mass+(qWinding[si*QChannels+c]>>2))>>2;
+            if(line<1)line=1;
             if(nu%line==0&&nu>=line){
                 int oc=c^1;
                 qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */

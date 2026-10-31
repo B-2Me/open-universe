@@ -54,14 +54,24 @@ because the circulation changed, not because a counter incremented.
 
 ### The transaction (replaces absorb-on-contact)
 
-1. Photon (offer, ν) transits a massive site
-2. Site checks its gap table: does ν match an allowed transition?
-   - exact match → arm a CONFIRMATION on the reverse channel
+Absorbers are per-EDGE, not per-site, and statistical in extent: we
+don't know how large an absorber is at Planck granularity — it may
+span one edge or twenty. Everything is in a way an absorber; "where
+the absorber is" is a derived/statistical question per tick. One tick
+evaluates ALL edges on ALL nodes simultaneously — each channel's
+offers judged independently against that edge's own state, decisions
+buffered (no order dependence within the tick).
+
+1. Photon (offer, ν) transits a site on edge c
+2. The EDGE evaluates: does ν match a transition this edge can
+   express? (derived from that channel's winding/mass density — an
+   extended absorber is a contiguous region of absorber-active edges)
+   - match → arm a CONFIRMATION on the reverse channel
    - no match → photon passes (the offer declined — no partial fills)
-3. Confirmation returns to emitter-region / completes the transaction:
-   photon absorbed, absorber level rises n'→n
-4. Emission: a site in level n can fall n→n' emitting ν = gap(n,n') —
-   the photon's ν IS the level difference (spectrum = structure)
+3. Confirmation returns / completes the transaction: photon absorbed,
+   the edge's state transitions (level change = circulation change)
+4. Emission: an excited edge can fall to a lower stable configuration,
+   emitting ν = the transition (spectrum = structure)
 
 ### Why this could produce 1/n²-like series (candidates to measure)
 
