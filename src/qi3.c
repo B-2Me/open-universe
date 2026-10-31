@@ -226,8 +226,11 @@ EMS_API void qi3_tick(void){
                 if(!a||!b)continue;
                 uint32_t nua=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
                 uint32_t nub=qPhotonNu_next[si*QChannels+oc]?qPhotonNu_next[si*QChannels+oc]:1;
-                uint64_t E=a*(uint64_t)nua+b*(uint64_t)nub;
-                if(E<512)continue;                      /* energy gate */
+                /* gate on QUANTUM energy, not population: pair
+                 * production needs each photon above threshold
+                 * (gamma+gamma -> e+e- needs ~mc2 EACH), a crowd of
+                 * weak photons can't fuse. */
+                if(nua+nub<256)continue;
                 uint32_t pair=a<b?a:b;
                 qPhoton_next[si*QChannels+c]-=pair;
                 qPhoton_next[si*QChannels+oc]-=pair;
@@ -307,9 +310,17 @@ EMS_API void qi3_tick(void){
 
     /* Phase 6 — emission: charged massive sites emit offers at their
      * line nu (gap-mode aware: mode 1 emits at the level gap the
-     * site's charge implies — level derived, not stored). */
+     * site's charge implies — level derived, not stored). A lump
+     * out of charge burns its own mass — mass is a persistence
+     * ledger with an evaporation channel, not a ratchet. */
     for(int si=0;si<QSites;si++){
         int mass=qMass[si],e=qCharge[si];
+        if(mass&&e<32){                          /* evaporate */
+            int burn=mass>>4;if(burn<1)burn=1;
+            e+=burn*8;qMass[si]=mass-burn;
+            if(!qMass[si])continue;
+            mass=qMass[si];
+        }
         if(e<32||!mass)continue;
         int line;
         if(qGapMode==1){
