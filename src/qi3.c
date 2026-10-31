@@ -82,15 +82,118 @@ EMS_API void qi3_tick(void){
     qTick++;
     memset(qMassFlight_next,0,(size_t)QSites*QChannels);
     memset(qPhoton_next,0,(size_t)QSites*QChannels);
-    /* phases land here — junction collide, mass stream, photon
-     * stream (offers), transaction pass (confirmations), sessions,
-     * emission (level drops). Skeleton first: registers + tick
-     * structure, mechanics land one pass at a time. */
-    for (int i = 0; i < QSites * QChannels; i++) {
-        uint32_t v = qPhoton[i] + qPhoton_next[i];
-        if (v > 255) v = 255;
-        qPhoton[i] = v;
-        if (qPhoton_next[i]) qPhotonNu[i] = qPhotonNu_next[i];
+    memset(qConfirm,0,(size_t)QSites*QChannels);
+
+    /* Phase 1 — junction collide: redistribute in-flight mass.
+     * Opposing channels annihilate into parked mass + charge. */
+    for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++){
+        int oc=c^1;
+        int a=qMassFlight[si*QChannels+c],b=qMassFlight[si*QChannels+oc];
+        int hit=a<b?a:b;
+        if(hit>0){
+            qMassFlight[si*QChannels+c]-=hit;qMassFlight[si*QChannels+oc]-=hit;
+            int m=qMass[si]+hit*2;if(m>255)m=255;qMass[si]=m;
+            int e=qCharge[si]+hit*2;if(e>255)e=255;qCharge[si]=e;
+            qEvents[0]+=hit*2;qEvents[9]+=hit;
+        }
+    }
+
+    /* Phase 2 — mass stream: parked structure stays put (link3's
+     * drest clamp), in-flight mass moves to the facing channel. */
+    for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+        int si=siteIndex(x,y,z);
+        for(int c=0;c<QChannels;c++){
+            int v=qMassFlight[si*QChannels+c];if(!v)continue;
+            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
+            qMassFlight_next[siteIndex(nx,ny,nz)*QChannels+c]+=v;
+            qMassFlight[si*QChannels+c]-=v;
+        }
+    }
+
+    /* Phase 3 — photon stream (offers): propagate, transit decay
+     * scales with nu (range ~ 1/nu). */
+    for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+        int si=siteIndex(x,y,z);
+        for(int c=0;c<QChannels;c++){
+            int v=qPhoton[si*QChannels+c];if(!v)continue;
+            int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
+            int keep=v;if((qTick%nu)==0)keep=v-1;   /* nu-gated loss */
+            qEvents[7]+=v-keep;
+            if(!keep){qPhoton[si*QChannels+c]-=v;continue;}
+            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
+            int ni=siteIndex(nx,ny,nz)*QChannels+c;
+            qPhoton_next[ni]+=keep;qPhotonNu_next[ni]=nu;
+            qPhoton[si*QChannels+c]-=v;
+        }
+    }
+
+    /* Phase 4 — transaction pass (the heartbeat): offer at a massive
+     * site arms a confirmation on the reverse link if nu matches an
+     * allowed gap (all-or-nothing; structure derives the gap). */
+    for(int si=0;si<QSites;si++){
+        int mass=qMass[si];
+        for(int c=0;c<QChannels;c++){
+            int offer=qPhoton_next[si*QChannels+c];
+            if(!offer||!mass)continue;
+            int nu=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
+            /* gap rule: absorb if the site's own line divides nu —
+             * line = mass>>2 (structure-derived, not a table). */
+            int line=mass>4?mass>>2:1;
+            if(nu%line==0&&nu>=line){
+                int oc=c^1;
+                qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
+                int take=offer;qPhoton_next[si*QChannels+c]-=take;
+                int e=qCharge[si]+take*nu;if(e>255)e=255;qCharge[si]=e;
+                int d=qWinding[si*QChannels+c]+((take*nu)>>3);
+                qWinding[si*QChannels+c]=d>255?255:d;    /* nu-weighted recoil */
+                qEvents[3]+=take;qEvents[16]+=take*nu;
+            }
+        }
+    }
+
+    /* Phase 5 — session strength: duplex EMA on matching links. */
+    for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++){
+        int flow=qPhoton_next[si*QChannels+c];
+        if(flow){
+            int s=qSessionStrength[si*QChannels+c];
+            qSessionStrength[si*QChannels+c]=s+((flow-s)>>2);
+            if(qSessionState[si*QChannels+c]==0&&flow>4)
+                {qSessionState[si*QChannels+c]=1;qEvents[10]++;}
+            else if(qSessionState[si*QChannels+c]==1&&qSessionStrength[si*QChannels+c]>30)
+                {qSessionState[si*QChannels+c]=2;qEvents[11]++;}
+        } else if(qSessionState[si*QChannels+c]){
+            qSessionState[si*QChannels+c]=0;qSessionStrength[si*QChannels+c]>>=1;qEvents[12]++;
+        }
+    }
+
+    /* Phase 6 — emission: charged massive sites emit offers at their
+     * line nu, broadcast on idle channels or split on live sessions. */
+    for(int si=0;si<QSites;si++){
+        int mass=qMass[si],e=qCharge[si];
+        if(e<32||!mass)continue;
+        int line=mass>4?mass>>2:1;
+        int emit=e>>3;if(emit<1)continue;
+        int nout=0;
+        for(int c=0;c<QChannels;c++)if(qSessionState[si*QChannels+c])nout++;
+        if(!nout)nout=QChannels;                    /* broadcast before sessions */
+        int per=emit/nout;if(per<1)per=1;
+        for(int c=0;c<QChannels;c++){
+            if(nout!=QChannels&&!qSessionState[si*QChannels+c])continue;
+            int ni=si*QChannels+c;
+            qPhoton_next[ni]+=per;qPhotonNu_next[ni]=line;
+        }
+        e-=emit;if(e<0)e=0;qCharge[si]=e;qEvents[4]+=emit;
+    }
+
+    /* commit streamed buffers */
+    for(int i=0;i<QSites*QChannels;i++){
+        uint32_t v=qMassFlight[i]+qMassFlight_next[i];if(v>255)v=255;qMassFlight[i]=v;
+        v=qPhoton[i]+qPhoton_next[i];if(v>255)v=255;qPhoton[i]=v;
+        if(qPhoton_next[i])qPhotonNu[i]=qPhotonNu_next[i];
     }
 }
 
