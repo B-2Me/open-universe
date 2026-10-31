@@ -47,8 +47,13 @@ static uint32_t *qMassFlight, *qMassFlight_next;
 static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
-static uint32_t *qHeld, *qHeldNu;                /* incipient offers held */
+static uint32_t *qHeld, *qHeldNu, *qHeldBirth;   /* incipient offers held */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
+static uint32_t *qPhotonBirth, *qPhotonBirth_next;/* offer birth tick tag */
+static uint32_t *qAck, *qAck_next;               /* returning confirms */
+static uint32_t *qAckTtl, *qAckTtl_next;         /* hops remaining home */
+static uint32_t *qAckRtt, *qAckRtt_next;         /* round-trip delivered */
+static uint32_t *qBondDist;                      /* measured edge distance */
 static uint64_t qEvents[24];
 static int qGapMode = 0;   /* level-function candidates — falsifiable:
                             * 0 harmonic comb (nu % line == 0)
@@ -135,11 +140,23 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
+    qHeldBirth      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qPhotonBirth    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qPhotonBirth_next=calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAck            =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAck_next       =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAckTtl         =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAckTtl_next    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAckRtt         =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qAckRtt_next    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
+    qBondDist       =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qSessionState   =calloc((size_t)QSites*(QChannels/2),1);
     qSessionStrength=calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
             qPhoton&&qPhoton_next&&qPhotonNu&&qPhotonNu_next&&qConfirm&&
-            qSessionState&&qSessionStrength)?0:-1;
+            qSessionState&&qSessionStrength&&qHeldBirth&&qPhotonBirth&&
+            qPhotonBirth_next&&qAck&&qAck_next&&qAckTtl&&qAckTtl_next&&
+            qAckRtt&&qAckRtt_next&&qBondDist)?0:-1;
 }
 
 EMS_API int qi3_channel_count(void){ return QChannels+1; }
@@ -147,6 +164,10 @@ EMS_API void qi3_tick(void){
     qTick++;
     memset(qMassFlight_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
     memset(qPhoton_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qPhotonBirth_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qAck_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qAckTtl_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
+    memset(qAckRtt_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
     memset(qConfirm,0,(size_t)QSites*(QChannels/2)*sizeof(uint32_t));
 
     /* Resolution pass (heartbeat beat 2): incipient offers armed last
@@ -204,6 +225,17 @@ EMS_API void qi3_tick(void){
                     qSessionState[si*(QChannels/2)+e]++;
                 qEvents[qSessionState[si*(QChannels/2)+e]==1?10:11]++;
                 qConfirm[si*(QChannels/2)+e]+=h;
+                /* the ACK returns home: tau = offer's transit time,
+                 * ack walks back ttl=tau hops carrying RTT=2*tau —
+                 * the emitter's edge receives a measured distance. */
+                {
+                    int tau=(int)(qTick-qHeldBirth[si*(QChannels/2)+e]);
+                    if(tau>40)tau=40;if(tau<1)tau=1;   /* lattice bound */
+                    int oc2=cc^1;
+                    qAck_next[si*QChannels+oc2]+=1;
+                    qAckTtl_next[si*QChannels+oc2]=tau;
+                    qAckRtt_next[si*QChannels+oc2]=2*tau;
+                }
             } else {
                 /* DECLINED: the offer rejoins the stream */
                 int c=(e<<1)|qHeldDir[si*(QChannels/2)+e];
@@ -269,6 +301,7 @@ EMS_API void qi3_tick(void){
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c;
             qPhoton_next[ni]+=v;qPhotonNu_next[ni]=nu;
+            qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
             qPhoton[si*QChannels+c]-=v;
         }
     }
@@ -344,6 +377,7 @@ EMS_API void qi3_tick(void){
                 int edge=(c>>1);
                 int ei=si*(QChannels/2)+edge;
                 qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
+                qHeldBirth[ei]=qPhotonBirth_next[si*QChannels+c];
                 qPhoton_next[si*QChannels+c]-=offer;
             } else if(stim){
                 /* stim arms an INCIPIENT too — it enters the lottery
@@ -356,6 +390,34 @@ EMS_API void qi3_tick(void){
                 qHeldStim[ei]=1;
                 qPhoton_next[si*QChannels+c]-=offer;
             }
+        }
+    }
+
+    /* Phase 4b — ACK transit: returning confirms walk their ttl
+     * down to zero; the site where ttl expires is the emitter —
+     * its edge gets the measured distance (RTT/2 = hop distance),
+     * and the bond credits on BOTH ends of the same transaction. */
+    for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+        int si=siteIndex(x,y,z);
+        for(int c=0;c<QChannels;c++){
+            uint32_t n=qAck[si*QChannels+c];if(!n)continue;
+            uint32_t ttl=qAckTtl[si*QChannels+c];
+            if(ttl==0){
+                int ei=si*(QChannels/2)+(c>>1);
+                qBondDist[ei]=qAckRtt[si*QChannels+c];
+                qSessionStrength[ei]+=n;
+                if(qSessionState[ei]<2){qSessionState[ei]++;qEvents[14]++;}
+                qAck[si*QChannels+c]=0;
+                continue;
+            }
+            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
+            int ni=siteIndex(nx,ny,nz)*QChannels+c;
+            qAck_next[ni]+=n;
+            qAckTtl_next[ni]=ttl-1;
+            qAckRtt_next[ni]=qAckRtt[si*QChannels+c];
+            qAck[si*QChannels+c]-=n;
         }
     }
 
@@ -416,6 +478,7 @@ EMS_API void qi3_tick(void){
         else c=randByte()%QChannels;                /* else random dir */
         qPhoton_next[si*QChannels+c]+=1;
         qPhotonNu_next[si*QChannels+c]=line;
+        qPhotonBirth_next[si*QChannels+c]=(uint32_t)qTick;
         siteUnwind(si,(uint32_t)line);          /* fell one band */
         qEvents[4]++;qEvents[20]+=line;
     }
@@ -468,7 +531,9 @@ EMS_API void qi3_tick(void){
     for(int i=0;i<QSites*QChannels;i++){
         qMassFlight[i]+=qMassFlight_next[i];
         qPhoton[i]+=qPhoton_next[i];
-        if(qPhoton_next[i])qPhotonNu[i]=qPhotonNu_next[i];
+        if(qPhoton_next[i]){qPhotonNu[i]=qPhotonNu_next[i];qPhotonBirth[i]=qPhotonBirth_next[i];}
+        qAck[i]+=qAck_next[i];
+        if(qAck_next[i]){qAckTtl[i]=qAckTtl_next[i];qAckRtt[i]=qAckRtt_next[i];}
     }
 }
 
@@ -476,6 +541,7 @@ EMS_API void qi3_photon_set(int x,int y,int z,int c,int v){
     if(c>=QChannels)return;
     int si=siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth));
     qPhoton[si*QChannels+c]=(uint32_t)v; qPhotonNu[si*QChannels+c]=32;
+    qPhotonBirth[si*QChannels+c]=(uint32_t)qTick;
 }
 EMS_API int qi3_photon_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
@@ -527,6 +593,14 @@ EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
+EMS_API int qi3_bond_dist(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qBondDist[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
+EMS_API int qi3_ack_get(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qAck[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
 EMS_API uint64_t qi3_event(int i){ return qEvents[i & 31]; }
 EMS_API uint64_t qi3_photon_count(void){ uint64_t m=0;
