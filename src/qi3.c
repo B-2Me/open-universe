@@ -54,7 +54,8 @@ static uint32_t *qAck, *qAck_next;               /* returning confirms */
 static uint32_t *qAckTtl, *qAckTtl_next;         /* hops remaining home */
 static uint32_t *qAckRtt, *qAckRtt_next;         /* round-trip delivered */
 static uint32_t *qBondDist;                      /* measured edge distance */
-static uint64_t qEvents[24];
+static uint32_t *qSiteWind;                      /* per-site totals (scratch) */
+static uint64_t qEvents[32];
 static int qGapShift = 0;  /* emitted-nu downshift: scale separation
                             (transitions << rest energy, the alpha^2
                             analog — emitted light can't re-fuse) */
@@ -196,6 +197,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qAckRtt         =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qAckRtt_next    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qBondDist       =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qSiteWind       =calloc((size_t)QSites,sizeof(uint32_t));
     qSessionState   =calloc((size_t)QSites*(QChannels/2),1);
     qSessionStrength=calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
@@ -485,6 +487,37 @@ EMS_API void qi3_tick(void){
             qAckTtl_next[ni]=ttl-1;
             qAckRtt_next[ni]=qAckRtt[si*QChannels+c];
             qAck[si*QChannels+c]-=n;
+        }
+    }
+
+    /* Phase 4c — winding conduction: circulation flows down its
+     * own gradient along edges — a wound site sheds a quantum
+     * into a low-winding neighbor, so the hole relocates TOWARD
+     * the donor. Loop-preserving: both channels of the edge
+     * move together. Fick's-law diffusion on the loop field. */
+    for(int si=0;si<QSites;si++){
+        uint32_t w=0;
+        for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
+        qSiteWind[si]=w;
+    }
+    for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+        int si=siteIndex(x,y,z);
+        for(int e=0;e<QChannels/2;e++){
+            int c=e<<1;
+            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
+            int ni=siteIndex(nx,ny,nz);
+            int d=(int)qSiteWind[si]-(int)qSiteWind[ni];
+            if(d<8)continue;
+            uint32_t k=(uint32_t)(d>>5);if(k>16)k=16;if(!k)k=1;
+            uint32_t a=qWinding[si*QChannels+e*2],b=qWinding[si*QChannels+e*2+1];
+            uint32_t m=a<b?a:b;if(k>m)k=m;if(!k)continue;
+            qWinding[si*QChannels+e*2]-=k;
+            qWinding[si*QChannels+e*2+1]-=k;
+            qWinding[ni*QChannels+e*2]+=k;
+            qWinding[ni*QChannels+e*2+1]+=k;
+            qEvents[24]+=k;
         }
     }
 
