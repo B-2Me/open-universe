@@ -50,11 +50,30 @@ static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
 static uint32_t *qHeld, *qHeldNu;                /* incipient offers held */
 static uint8_t  *qHeldDir;                       /* which dir of the edge */
 static uint64_t qEvents[24];
-static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
-                            * 1 = quadratic well: levels E_n = E0/n^2,
-                            *     absorb iff nu == a level gap (converging
-                            *     series — candidate for Rydberg-family
-                            *     structure; measurement decides) */
+static int qGapMode = 0;   /* level-function candidates — falsifiable:
+                            * 0 harmonic comb (nu % line == 0)
+                            * 1 quadratic well E0/n^2 (converging)
+                            * 2 coulomb shell E0/n  (converging)
+                            * 3 harmonic oscillator E0*n (linear)
+                            * 4 particle-in-box E0*n^2 (diverging) */
+static int qi3levelE(int n){
+    switch(qGapMode){
+        case 1: return 256/(n*n);
+        case 2: return 256/n;
+        case 3: return n>0?256/n:0;          /* Em = E0/n for emit... */
+        case 4: return 256/(n*n);
+        default: return 256/(n*n);
+    }
+}
+/* level gap m->n transition energy: |E_m - E_n| under candidate
+ * shapes. For diverging families (3,4) E grows with n: */
+static int qi3gapE(int a,int b){
+    int Ea, Eb;
+    if(qGapMode==3){ Ea=16*a; Eb=16*b; }        /* E0*n, E0=16 */
+    else if(qGapMode==4){ Ea=4*a*a; Eb=4*b*b; } /* E0*n^2, E0=4 */
+    else { Ea=qi3levelE(a); Eb=qi3levelE(b); }
+    int g=Ea-Eb; return g<0?-g:g;
+}
 static uint64_t qTick, qPhotonLedger;
 static uint64_t qRngSeed = 88172645463325252ULL;
 
@@ -258,10 +277,11 @@ EMS_API void qi3_tick(void){
                  * stimulated to emit downward gaps E(n->m)=256/m^2-
                  * 256/n^2 (m<n). n derived from charge, not stored. */
                 int n=siteLevel(si);
-                int En=256/(n*n);
                 for(int m=1;m<=8;m++){
-                    if(m>n&&nu==En-256/(m*m)){match=1;break;}
-                    if(m<n&&nu==256/(m*m)-En){stim=1;break;}
+                    if(m!=n&&nu==qi3gapE(n,m)){
+                        if(m>n)match=1; else stim=1;
+                        break;
+                    }
                 }
             } else {
                 match=(nu%line==0&&nu>=line);
@@ -325,7 +345,7 @@ EMS_API void qi3_tick(void){
         int line;
         if(qGapMode==1){
             int n=siteLevel(si);if(n<2)n=2;     /* circulation-derived */
-            line=256-256/(n*n);                 /* ground->n gap */
+            line=qi3gapE(n,1);                  /* ground->n gap */
         } else {
             line=mass>4?mass>>2:1;
         }
@@ -372,7 +392,7 @@ EMS_API void qi3_tick(void){
             if(pair<16)continue;                       /* stability floor */
             uint32_t burst=pair>>3;if(burst<1)burst=1;
             int n=siteLevel(si);if(n<2)n=2;
-            int nu=qGapMode==1?(256-256/(n*n)):(qMass[si]>4?qMass[si]>>2:1);
+            int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
             qWinding[si*QChannels+c]-=burst;
             qWinding[si*QChannels+oc]-=burst;
             qPhoton_next[si*QChannels+c]+=burst;
