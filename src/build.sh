@@ -280,6 +280,37 @@ else
     echo "❌ Error: meso_core compilation failed!"
 fi
 
+
+# --- qi3: transactional substrate ("QI realized") ---
+if emcc qi3.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1   -s ALLOW_MEMORY_GROWTH=1   -s EXPORT_NAME="'createQi3'"   -s EXPORTED_FUNCTIONS="[
+    '_qi3_init',
+    '_qi3_channel_count',
+    '_qi3_tick',
+    '_qi3_photon_set',
+    '_qi3_photon_get',
+    '_qi3_photon_nu',
+    '_qi3_photon_nu_set',
+    '_qi3_mass_set',
+    '_qi3_mass_get',
+    '_qi3_charge_set',
+    '_qi3_charge_get',
+    '_qi3_level_set',
+    '_qi3_level_get',
+    '_qi3_winding_set',
+    '_qi3_winding_get',
+    '_qi3_session_state',
+    '_qi3_session_strength',
+    '_qi3_event',
+    '_qi3_photon_count',
+    '_malloc',
+    '_free'
+  ]"   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']"   -o ../docs/public/wasm/ember/qi3.js; then
+  echo "✅ qi3 (ember) compiled successfully."
+else
+  echo "❌ Error: qi3 compilation failed!"
+  exit 1
+fi
+
 # --- link3: network-ontology engine (links, sessions, nu spectrum) ---
 if emcc link3.c \
   -DGIT_REV=\"$GIT_REV\" \
