@@ -159,6 +159,30 @@ EMS_API void qi3_tick(void){
      * reads (qPhoton_next) keep all edges simultaneous. */
     for(int si=0;si<QSites;si++){
         int mass=qMass[si];
+        /* fusion at vacuum: opposing offers arriving in the same tick
+         * with enough combined energy deposit rest mass + charge —
+         * pair production, thresholded by total E (E -> m). */
+        if(!mass){
+            for(int c=0;c<QChannels;c++){
+                int oc=c^1;
+                uint32_t a=qPhoton_next[si*QChannels+c];
+                uint32_t b=qPhoton_next[si*QChannels+oc];
+                if(!a||!b)continue;
+                uint32_t nua=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
+                uint32_t nub=qPhotonNu_next[si*QChannels+oc]?qPhotonNu_next[si*QChannels+oc]:1;
+                uint64_t E=a*(uint64_t)nua+b*(uint64_t)nub;
+                if(E<512)continue;                      /* energy gate */
+                uint32_t pair=a<b?a:b;
+                qPhoton_next[si*QChannels+c]-=pair;
+                qPhoton_next[si*QChannels+oc]-=pair;
+                uint64_t dep=pair*(nua+nub);
+                qMass[si]+=(uint32_t)(dep>>4);          /* E -> rest mass */
+                qCharge[si]+=(uint32_t)(dep>>3);        /* residual charge */
+                qWinding[si*QChannels+c]+=pair;         /* the pair winds */
+                qWinding[si*QChannels+oc]+=pair;
+                qEvents[23]+=pair;mass=1;
+            }
+        }
         for(int c=0;c<QChannels;c++){
             int offer=qPhoton_next[si*QChannels+c];
             if(!offer||!mass)continue;
@@ -254,6 +278,29 @@ EMS_API void qi3_tick(void){
         qCharge[si]=e>(uint32_t)dumpE?e-(uint32_t)dumpE:0;
         siteUnwind(si,(uint32_t)dumpE);         /* emitting unwinds */
         qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
+    }
+
+    /* Phase 6b — annihilation: antipodal winding on an axis (a
+     * particle/antiparticle pair wound on facing channels) decays
+     * into equal back-to-back photon populations at the site line. */
+    for(int si=0;si<QSites;si++){
+        for(int c=0;c<QChannels;c++){
+            int oc=c^1;
+            uint32_t a=qWinding[si*QChannels+c];
+            uint32_t b=qWinding[si*QChannels+oc];
+            uint32_t pair=a<b?a:b;
+            if(pair<16)continue;                       /* stability floor */
+            uint32_t burst=pair>>3;if(burst<1)burst=1;
+            int n=siteLevel(si);if(n<2)n=2;
+            int nu=qGapMode==1?(256-256/(n*n)):(qMass[si]>4?qMass[si]>>2:1);
+            qWinding[si*QChannels+c]-=burst;
+            qWinding[si*QChannels+oc]-=burst;
+            qPhoton_next[si*QChannels+c]+=burst;
+            qPhoton_next[si*QChannels+oc]+=burst;
+            qPhotonNu_next[si*QChannels+c]=nu;
+            qPhotonNu_next[si*QChannels+oc]=nu;
+            qEvents[5]+=burst;                          /* annihilation */
+        }
     }
 
     /* commit streamed buffers */
