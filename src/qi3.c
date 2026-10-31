@@ -47,6 +47,8 @@ static uint32_t *qMassFlight, *qMassFlight_next;
 static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
+static uint32_t *qHeld, *qHeldNu;                /* incipient offers held */
+static uint8_t  *qHeldDir;                       /* which dir of the edge */
 static uint64_t qEvents[24];
 static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
                             * 1 = quadratic well: levels E_n = E0/n^2,
@@ -100,6 +102,9 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qPhotonNu       =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qPhotonNu_next  =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qConfirm        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qSessionState   =calloc((size_t)QSites*(QChannels/2),1);
     qSessionStrength=calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     return (qMass&&qWinding&&qLevel&&qCharge&&qMassFlight&&qMassFlight_next&&
@@ -113,6 +118,48 @@ EMS_API void qi3_tick(void){
     memset(qMassFlight_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
     memset(qPhoton_next,0,(size_t)QSites*QChannels*sizeof(uint32_t));
     memset(qConfirm,0,(size_t)QSites*(QChannels/2)*sizeof(uint32_t));
+
+    /* Resolution pass (heartbeat beat 2): incipient offers armed last
+     * tick compete — ONE actualizes per site per tick, weighted by
+     * count*nu*(1+edge bond) (Born-like lottery). Losers' offers
+     * return to the stream — declined transactions continue. */
+    for(int si=0;si<QSites;si++){
+        uint64_t totW=0;
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t h=qHeld[si*(QChannels/2)+e];
+            if(h)totW+=(uint64_t)h*qHeldNu[si*(QChannels/2)+e]
+                       *(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
+        }
+        if(!totW)continue;
+        uint64_t pick=(uint64_t)randByte()*randByte();
+        pick=(pick*totW)>>16;
+        uint64_t acc=0;
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t h=qHeld[si*(QChannels/2)+e];
+            uint32_t nu=qHeldNu[si*(QChannels/2)+e];
+            if(!h)continue;
+            uint64_t wt=(uint64_t)h*nu*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
+            if(acc+wt>pick&&wt){
+                /* WINNER actualizes: deposit + bond + confirm pulse */
+                qCharge[si]+=h*nu;
+                qEvents[18]+=(uint64_t)h*nu;
+                qWinding[si*QChannels+(e<<1|qHeldDir[si*(QChannels/2)+e])]+=(h*nu)>>3;
+                qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
+                qSessionStrength[si*(QChannels/2)+e]+=h;
+                if(qSessionState[si*(QChannels/2)+e]<2)
+                    qSessionState[si*(QChannels/2)+e]++;
+                qEvents[qSessionState[si*(QChannels/2)+e]==1?10:11]++;
+                qConfirm[si*(QChannels/2)+e]+=h;
+            } else {
+                /* DECLINED: the offer rejoins the stream */
+                int c=(e<<1)|qHeldDir[si*(QChannels/2)+e];
+                qPhoton[si*QChannels+c]+=h;
+                qPhotonNu[si*QChannels+c]=nu;
+            }
+            acc+=wt;
+            qHeld[si*(QChannels/2)+e]=0;
+        }
+    }
 
     /* Phase 1 — junction collide: redistribute in-flight mass.
      * Opposing channels annihilate into parked mass + charge. */
@@ -217,21 +264,14 @@ EMS_API void qi3_tick(void){
                 match=(nu%line==0&&nu>=line);
             }
             if(match){
-                int oc=c^1, edge=(c>>1);
-                /* confirm + bond live on the shared EDGE — offer out
-                 * on c, confirm back on oc, same edge both ways */
-                qConfirm[si*(QChannels/2)+edge]+=offer;
-                qSessionStrength[si*(QChannels/2)+edge]+=offer;
-                if(qSessionState[si*(QChannels/2)+edge]==0){
-                    qSessionState[si*(QChannels/2)+edge]=1;qEvents[10]++;
-                } else if(qSessionState[si*(QChannels/2)+edge]==1){
-                    qSessionState[si*(QChannels/2)+edge]=2;qEvents[11]++;
-                }
-                uint32_t take=offer;qPhoton_next[si*QChannels+c]-=take;
-                qCharge[si]+=take*(uint32_t)nu;
-                qEvents[18]+=(uint64_t)take*nu;          /* E deposited */
-                qWinding[si*QChannels+c]+=((uint32_t)take*nu)>>3; /* nu recoil */
-                qEvents[3]+=take;qEvents[16]+=take*nu;
+                /* arm an INCIPIENT transaction: the offer is held on
+                 * the edge until the resolution pass actualizes (or
+                 * declines) it next tick — the heartbeat takes two
+                 * beats: edge reacts first, node resolves after. */
+                int edge=(c>>1);
+                int ei=si*(QChannels/2)+edge;
+                qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
+                qPhoton_next[si*QChannels+c]-=offer;
             } else if(stim){
                 /* clone: site falls one level, emits identical photon —
                  * the original continues unabsorbed. */
