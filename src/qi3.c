@@ -47,7 +47,7 @@ static uint8_t  *qMassFlight, *qMassFlight_next;
 static uint8_t  *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint8_t  *qConfirm;
 static uint8_t  *qSessionState, *qSessionStrength;
-static uint64_t qEvents[18];
+static uint64_t qEvents[24];
 static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
                             * 1 = quadratic well: levels E_n = E0/n^2,
                             *     absorb iff nu == a level gap (converging
@@ -171,17 +171,25 @@ EMS_API void qi3_tick(void){
                 int oc=c^1;
                 qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
                 int take=offer;qPhoton_next[si*QChannels+c]-=take;
-                int e=qCharge[si]+take*nu;if(e>255)e=255;qCharge[si]=e;
+                int e=qCharge[si]+take*nu;
+                qEvents[18]+=take*nu;                    /* E deposited */
+                if(e>255){qEvents[19]+=e-255;e=255;}     /* E capped away */
+                qCharge[si]=e;
                 int d=qWinding[si*QChannels+c]+((take*nu)>>3);
                 qWinding[si*QChannels+c]=d>255?255:d;    /* nu-weighted recoil */
                 qEvents[3]+=take;qEvents[16]+=take*nu;
             } else if(stim){
                 /* clone: site falls one level, emits identical photon —
                  * the original continues unabsorbed. */
-                qPhoton_next[si*QChannels+c]+=offer;
+                /* clone energy must come from the level drop — emit
+                 * only what the charge can pay for, ledger the rest */
+                int afford=qCharge[si]/nu;
+                int cloned=offer<afford?offer:afford;
+                qEvents[21]+=(uint64_t)(offer-cloned)*nu;  /* E shortfall */
+                qPhoton_next[si*QChannels+c]+=cloned;
                 qPhotonNu_next[si*QChannels+c]=nu;
-                int e=qCharge[si]-32;if(e<0)e=0;qCharge[si]=e;
-                qEvents[17]+=offer;
+                int e=qCharge[si]-cloned*nu;if(e<0)e=0;qCharge[si]=e;
+                qEvents[17]+=cloned;
             }
         }
     }
@@ -214,7 +222,11 @@ EMS_API void qi3_tick(void){
         } else {
             line=mass>4?mass>>2:1;
         }
-        int emit=e>>3;if(emit<1)continue;
+        /* emit ENERGY, not count: dump e>>3 charge as photons at the
+         * line — count = energy/line so the ledger stays closed. */
+        int dumpE=e>>3;if(dumpE<1)continue;
+        int emit=dumpE/line;if(emit<1){emit=1;dumpE=line;}
+        if(dumpE>e)dumpE=e;
         int nout=0;
         for(int c=0;c<QChannels;c++)if(qSessionState[si*QChannels+c])nout++;
         if(!nout)nout=QChannels;                    /* broadcast before sessions */
@@ -224,7 +236,7 @@ EMS_API void qi3_tick(void){
             int ni=si*QChannels+c;
             qPhoton_next[ni]+=per;qPhotonNu_next[ni]=line;
         }
-        e-=emit;if(e<0)e=0;qCharge[si]=e;qEvents[4]+=emit;
+        e-=dumpE;if(e<0)e=0;qCharge[si]=e;qEvents[4]+=emit;qEvents[20]+=(uint64_t)dumpE;
     }
 
     /* commit streamed buffers */
