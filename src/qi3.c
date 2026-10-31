@@ -61,6 +61,22 @@ static int qGapMode = 0;   /* level-function candidates — falsifiable:
                             * 2 coulomb shell E0/n  (converging)
                             * 3 harmonic oscillator E0*n (linear)
                             * 4 particle-in-box E0*n^2 (diverging) */
+static inline uint32_t edgeLen2(int c){
+    /* squared reach of channel c: axis (12-17) span 2 cells,
+       diagonals span sqrt(2) -> use squared lengths */
+    return c>=12?4:2;
+}
+static uint64_t siteLoopE(int si){
+    /* energy of the loop configuration: matched winding per edge
+       weighted by 1/length^2 — tight loops bind harder. */
+    uint64_t E=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m)E+=(uint64_t)(m*m)*4/edgeLen2(2*e);   /* E~winding^2/L^2 */
+    }
+    return E;
+}
 static int qi3levelE(int n){
     switch(qGapMode){
         case 1: return 256/(n*n);
@@ -78,6 +94,25 @@ static int qi3gapE(int a,int b){
     else if(qGapMode==4){ Ea=4*a*a; Eb=4*b*b; } /* E0*n^2, E0=4 */
     else { Ea=qi3levelE(a); Eb=qi3levelE(b); }
     int g=Ea-Eb; return g<0?-g:g;
+}
+/* mode 5 — GEOMETRIC: gaps derive from the loop's edge mix.
+   Emitted nu = the loop-energy released when one band drops —
+   sites with the same n but different circulation patterns emit
+   different nu (the spectrum IS the structure). */
+static int qi3geoGap(int si,int bands){
+    if(bands<1)return 0;
+    /* find the energy price of the tightest band-worth of loops:
+       walk edges, charge the cheapest-shed first (loose loops go). */
+    uint64_t need=(uint64_t)bands<<8;
+    uint64_t E=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+        uint32_t m=a<b?a:b;
+        uint64_t take=m*2; if(take>need)take=need;
+        E+=(uint64_t)take*4/edgeLen2(2*e);
+        need-=take; if(!need)break;
+    }
+    int nu=(int)(E>>4);if(nu<1)nu=1;if(nu>255)nu=255;return nu;
 }
 static uint64_t qTick, qPhotonLedger;
 static uint64_t qRngSeed = 88172645463325252ULL;
@@ -360,10 +395,19 @@ EMS_API void qi3_tick(void){
                  * stimulated to emit downward gaps E(n->m)=256/m^2-
                  * 256/n^2 (m<n). n derived from charge, not stored. */
                 int n=siteLevel(si);
-                for(int m=1;m<=8;m++){
-                    if(m!=n&&nu==qi3gapE(n,m)){
-                        if(m>n)match=1; else stim=1;
-                        break;
+                if(qGapMode==5){
+                    /* geometric: accept offers at the loop's actual
+                     * transition energies — absorb bands up, stim
+                     * bands down. */
+                    for(int bnd=1;bnd<=n-1&&bnd<8;bnd++)
+                        if(nu==qi3geoGap(si,bnd)){match=1;break;}
+                    if(!match&&nu==qi3geoGap(si,1))stim=1;
+                } else {
+                    for(int m=1;m<=8;m++){
+                        if(m!=n&&nu==qi3gapE(n,m)){
+                            if(m>n)match=1; else stim=1;
+                            break;
+                        }
                     }
                 }
             } else {
@@ -468,7 +512,8 @@ EMS_API void qi3_tick(void){
         int n=siteLevel(si);
         if(n<2)continue;
         int line;
-        if(qGapMode>=1&&qGapMode<=4)line=qi3gapE(n,n-1);
+        if(qGapMode==5)line=qi3geoGap(si,1);
+        else if(qGapMode>=1&&qGapMode<=4)line=qi3gapE(n,n-1);
         else line=mass>4?mass>>2:1;
         int c;
         int nout=0, edlive=-1;
