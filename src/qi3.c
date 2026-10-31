@@ -192,11 +192,18 @@ EMS_API void qi3_tick(void){
     }
 
     /* Phase 6 — emission: charged massive sites emit offers at their
-     * line nu, broadcast on idle channels or split on live sessions. */
+     * line nu (gap-mode aware: mode 1 emits at the level gap the
+     * site's charge implies — level derived, not stored). */
     for(int si=0;si<QSites;si++){
         int mass=qMass[si],e=qCharge[si];
         if(e<32||!mass)continue;
-        int line=mass>4?mass>>2:1;
+        int line;
+        if(qGapMode==1){
+            int n=2+(e>>5);if(n>8)n=8;          /* charge-derived level */
+            line=256-256/(n*n);                 /* ground->n gap */
+        } else {
+            line=mass>4?mass>>2:1;
+        }
         int emit=e>>3;if(emit<1)continue;
         int nout=0;
         for(int c=0;c<QChannels;c++)if(qSessionState[si*QChannels+c])nout++;
