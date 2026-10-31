@@ -219,6 +219,15 @@ EMS_API void qi3_tick(void){
             if(match){
                 int oc=c^1;
                 qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
+                /* a completed transaction IS a bond event on the
+                 * channel FACING the emitter (oc — the photon
+                 * arrived on c, the partner sits the other way) */
+                qSessionStrength[si*QChannels+oc]+=offer;
+                if(qSessionState[si*QChannels+oc]==0){
+                    qSessionState[si*QChannels+oc]=1;qEvents[10]++;
+                } else if(qSessionState[si*QChannels+oc]==1){
+                    qSessionState[si*QChannels+oc]=2;qEvents[11]++;
+                }
                 uint32_t take=offer;qPhoton_next[si*QChannels+c]-=take;
                 qCharge[si]+=take*(uint32_t)nu;
                 qEvents[18]+=(uint64_t)take*nu;          /* E deposited */
@@ -242,18 +251,18 @@ EMS_API void qi3_tick(void){
         }
     }
 
-    /* Phase 5 — session strength: duplex EMA on matching links. */
+    /* Phase 5 — bonds are event-ledgers: strength accrues on
+     * completed transactions (set in phase 4) and decays slowly —
+     * a bond is a history of actualized events, not a traffic
+     * average. SYN->ESTAB on repeat transactions; the bond rests
+     * rather than times out (slow decay, not instant drop). */
     for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++){
-        int flow=qPhoton_next[si*QChannels+c];
-        if(flow){
-            int s=qSessionStrength[si*QChannels+c];
-            qSessionStrength[si*QChannels+c]=s+((flow-s)>>2);
-            if(qSessionState[si*QChannels+c]==0&&flow>4)
-                {qSessionState[si*QChannels+c]=1;qEvents[10]++;}
-            else if(qSessionState[si*QChannels+c]==1&&qSessionStrength[si*QChannels+c]>30)
-                {qSessionState[si*QChannels+c]=2;qEvents[11]++;}
-        } else if(qSessionState[si*QChannels+c]){
-            qSessionState[si*QChannels+c]=0;qSessionStrength[si*QChannels+c]>>=1;qEvents[12]++;
+        uint32_t s=qSessionStrength[si*QChannels+c];
+        if(s>8)qSessionStrength[si*QChannels+c]-=(s>>6);   /* slow decay */
+        else if(s)qSessionStrength[si*QChannels+c]=s-1;
+        if(qSessionState[si*QChannels+c]&&
+           qSessionStrength[si*QChannels+c]==0){
+            qSessionState[si*QChannels+c]=0;qEvents[12]++;
         }
     }
 
