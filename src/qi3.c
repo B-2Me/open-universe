@@ -48,6 +48,11 @@ static uint8_t  *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint8_t  *qConfirm;
 static uint8_t  *qSessionState, *qSessionStrength;
 static uint64_t qEvents[18];
+static int qGapMode = 0;   /* 0 = harmonic comb (nu % line == 0)
+                            * 1 = quadratic well: levels E_n = E0/n^2,
+                            *     absorb iff nu == a level gap (converging
+                            *     series — candidate for Rydberg-family
+                            *     structure; measurement decides) */
 static uint64_t qTick, qPhotonLedger;
 static uint64_t qRngSeed = 88172645463325252ULL;
 
@@ -147,7 +152,19 @@ EMS_API void qi3_tick(void){
              * same node may absorb differently. */
             int line=(mass+(qWinding[si*QChannels+c]>>2))>>2;
             if(line<1)line=1;
-            if(nu%line==0&&nu>=line){
+            int match;
+            if(qGapMode==1){
+                /* quadratic-well candidate: E_n = 256/n^2, absorb iff
+                 * nu equals a ground->n gap (converging series). */
+                match=0;
+                for(int n=2;n<=8;n++){
+                    int gap=256-256/(n*n);
+                    if(nu==gap){match=1;break;}
+                }
+            } else {
+                match=(nu%line==0&&nu>=line);
+            }
+            if(match){
                 int oc=c^1;
                 qConfirm[si*QChannels+oc]+=offer;        /* arm reverse */
                 int take=offer;qPhoton_next[si*QChannels+c]-=take;
@@ -252,6 +269,7 @@ EMS_API int qi3_session_strength(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qSessionStrength[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
+EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
