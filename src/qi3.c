@@ -775,6 +775,14 @@ EMS_API int qi3_ack_get(int x,int y,int z,int c){
     return qAck[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
 EMS_API uint64_t qi3_event(int i){ return qEvents[i & 31]; }
+EMS_API int qi3_held_get(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qHeld[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
+EMS_API int qi3_held_phase(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qHeldPhase[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
 EMS_API int qi3_win_edge(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qWinEdge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
