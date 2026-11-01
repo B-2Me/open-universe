@@ -56,6 +56,9 @@ static uint32_t *qAckRtt, *qAckRtt_next;         /* round-trip delivered */
 static uint32_t *qBondDist;                      /* measured edge distance */
 static uint32_t *qSiteWind;                      /* per-site totals (scratch) */
 static uint64_t qEvents[32];
+static int qUnwindShift = 2; /* fractional unwind: shed 1>>shift of the
+                              weakest loop per emission. 2=quarter,
+                              3=eighth, 1=half — the binding-depth knob. */
 static int qPhaseMode = 0; /* 0 classical | 1 coherence lottery:
                             incipients carry phase nu*transit,
                             in-phase candidates boost each other —
@@ -132,7 +135,7 @@ static int qi3geoGap(int si,int bands){
     /* fractional transition: the shed is a QUARTER of the weakest
      * loop — the emitted nu is that fraction's geometric energy,
      * not the whole loop's. Deeper binding, smaller transitions. */
-    int nu=(int)((uint64_t)(bm>>2)*2/L2);
+    int nu=(int)((uint64_t)(bm>>qUnwindShift)*2/L2);
     if(nu<1)nu=1;if(nu>255)nu=255;return nu;
 }
 static uint64_t qTick, qPhotonLedger;
@@ -185,7 +188,7 @@ static inline void siteUnwind(int si,uint32_t amount){
      * Deep binding: the level structure is metastable, not a bank. */
     uint32_t a=qWinding[si*QChannels+be*2],b=qWinding[si*QChannels+be*2+1];
     uint32_t m=a<b?a:b;
-    uint32_t shed=m>>2;if(shed<1)shed=1;
+    uint32_t shed=m>>qUnwindShift;if(shed<1)shed=1;
     uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
     qWinding[si*QChannels+be*2]-=da;
     qWinding[si*QChannels+be*2+1]-=db;
@@ -771,6 +774,7 @@ EMS_API int qi3_session_strength(int x,int y,int z,int c){
 EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API void qi3_gap_scale(int s){ qGapShift=s; }
 EMS_API void qi3_phase_mode(int m){ qPhaseMode=m; }
+EMS_API void qi3_unwind_shift(int s){ qUnwindShift=s; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
