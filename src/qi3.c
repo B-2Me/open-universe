@@ -461,8 +461,8 @@ EMS_API void qi3_tick(void){
         if(hit>0){
             qMassFlight[si*QChannels+c]-=hit;qMassFlight[si*QChannels+oc]-=hit;
             int nu=qMass[si]>4?(int)(qMass[si]>>2):64;
-            qPhoton_next[si*QChannels+c]=1;   /* one photon per channel */
-            qPhoton_next[si*QChannels+oc]=1;
+            qPhoton_next[si*QChannels+c]+=hit;
+            qPhoton_next[si*QChannels+oc]+=hit;
             qPhotonNu_next[si*QChannels+c]=nu;
             qPhotonNu_next[si*QChannels+oc]=nu;
             qCharge[si]+=hit;                      /* binding residue */
@@ -498,18 +498,20 @@ EMS_API void qi3_tick(void){
              * regions thermalize photons; sparse vacuum lets them
              * pass — the medium's own structure is the drag. */
             /* vacuum absorption: the node's LOCAL DENSITY is its
-             * opacity — a single photon decays with probability scaled
-             * by the neighbor-sampled density. This is an INTERNAL
-             * process — the medium's own thermalization — so it runs
-             * on the internal clock, not transit: a photon gets ~16
-             * hops to find a transaction before the vacuum nabs it. */
+             * opacity — each photon in the channel decays with
+             * probability scaled by the neighbor-sampled density
+             * (bosons: a count decays by a fraction, not per-photon
+             * all-or-nothing). Runs on the internal clock — the
+             * medium's own thermalization, not transit. */
             uint32_t density=qLocalDensity[si]+1;
-            if((qTick%(1<<qCycleShift))==0&&(randByte()&255)<(int)((density>>2)&255)){
-                qPhoton[si*QChannels+c]=0;
-                qHeat[si]+=nu;
-                qEvents[7]+=nu;
-                continue;
+            if((qTick%(1<<qCycleShift))==0){
+                uint32_t decay=((uint32_t)v*(density>>2))>>8;
+                if(decay<1&&(randByte()&7)==0)decay=1;    /* floor: ~1/8 */
+                if(decay>(uint32_t)v)decay=v;
+                if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
+                    qEvents[7]+=(uint64_t)decay*nu;}
             }
+            if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
             /* stochastic propagation: the photon isn't a laminar flux —
              * it's a quantum that JITTERS. It may continue forward
              * (mostly) or scatter to a random channel — the medium
@@ -523,14 +525,16 @@ EMS_API void qi3_tick(void){
             int ny=wrapCoord(y+QChannelVec[c2][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c2][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c2;
-            /* one photon per channel — PRESENCE, not population. On
-             * collision the higher-nu photon wins (the stronger offer
-             * survives; the channel holds one signal, not a queue). */
-            if(!qPhoton_next[ni]||nu>qPhotonNu_next[ni]){
-                qPhoton_next[ni]=1;qPhotonNu_next[ni]=nu;
+            /* bosonic flux: photons are a COUNT on the channel — they
+             * don't exclude (same mode piles up freely). On mixed
+             * arrivals the populations superpose; nu tags the stronger
+             * component (an approximation of a wavepacket). */
+            qPhoton_next[ni]+=v;
+            if(!qPhotonNu_next[ni]||nu>qPhotonNu_next[ni]){
+                qPhotonNu_next[ni]=nu;
                 qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
             }
-            qPhoton[si*QChannels+c]=0;
+            qPhoton[si*QChannels+c]-=v;
         }
     }
 
@@ -957,8 +961,8 @@ EMS_API void qi3_tick(void){
             int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
             qWinding[si*QChannels+c]-=burst;
             qWinding[si*QChannels+oc]-=burst;
-            qPhoton_next[si*QChannels+c]=1;   /* one photon per channel */
-            qPhoton_next[si*QChannels+oc]=1;
+            qPhoton_next[si*QChannels+c]+=burst;
+            qPhoton_next[si*QChannels+oc]+=burst;
             qPhotonNu_next[si*QChannels+c]=nu;
             qPhotonNu_next[si*QChannels+oc]=nu;
             qEvents[5]+=burst;                          /* annihilation */
