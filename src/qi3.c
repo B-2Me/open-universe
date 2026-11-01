@@ -71,6 +71,9 @@ static uint32_t *qHeat;      /* vacuum heat reservoir per site — the
                               the flux by structure. */
 static int qTempShift = 6;   /* global target: vacuum heat ~ 1<<shift
                               per site — the authored cosmic background */
+static int qFusionWall = 256;/* mass-fusion ratio: nua+nub >= wall traps
+                              2 flux -> 1 rest. 128=1:1, 256=2:1, 384=3:1
+                              — the scale's conversion rate, a hypothesis */
 static int qCycleShift  = 0; /* internal-cycle rate: the node's structure
                               cycles every 2^shift ticks — the sub-tick
                               clock at the macro scale. The photon hops
@@ -552,7 +555,7 @@ EMS_API void qi3_tick(void){
                  * production needs each photon above threshold
                  * (gamma+gamma -> e+e- needs ~mc2 EACH), a crowd of
                  * weak photons can't fuse. */
-                if(nua+nub<256)continue;
+                if(nua+nub<(uint32_t)qFusionWall)continue;
                 uint32_t pair=a<b?a:b;
                 qPhoton_next[si*QChannels+c]-=pair;
                 qPhoton_next[si*QChannels+oc]-=pair;
@@ -1004,6 +1007,8 @@ EMS_API void qi3_gap_scale(int s){ qGapShift=s; }
 EMS_API void qi3_phase_mode(int m){ qPhaseMode=m; }
 EMS_API void qi3_unwind_shift(int s){ qUnwindShift=s; }
 EMS_API void qi3_cycle_shift(int s){ qCycleShift=s; }
+EMS_API void qi3_temp_shift(int s){ qTempShift=s; }
+EMS_API void qi3_fusion_wall(int w){ qFusionWall=w; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
