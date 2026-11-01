@@ -348,7 +348,7 @@ EMS_API void qi3_tick(void){
                          * One atom, one photon, done — conservation
                          * does the bounding, not a rate cap. */
                         qPhotonNu[si*QChannels+cc]=nu;
-                        siteUnwind(si,1000000);     /* shed the whole loop */
+                        siteUnwind(si,0);           /* one rung — not full depletion */
                         qEvents[17]++;
                     } else {
                         qPhoton[si*QChannels+cc]+=1; /* can't drop: pass one */
@@ -494,40 +494,26 @@ EMS_API void qi3_tick(void){
         for(int c=0;c<QChannels;c++){
             int v=qPhoton[si*QChannels+c];if(!v)continue;
             int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
-            /* vacuum absorption: photons thermalize into the site's
-             * heat reservoir — but only while the reservoir is BELOW
-             * the global target (the medium pulls energy to reach
-             * equilibrium, then stops — self-limiting). The rate
-             * scales with local STRUCTURE: occupancy obstructs the
-             * flux (the medium's own bound states are the drag —
-             * nothing to trap momentum, no interference). */
-            uint32_t heat=qHeat[si], target=(uint32_t)qTempShift<<4;
-            if(heat<target){
-                uint32_t w2=0;
-                for(int e=0;e<QChannels/2;e++){
-                    uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
-                    w2+=a<b?a:b;
-                }
-                uint32_t decay=(uint32_t)v*(w2>>4)>>4;         /* ~occ/16 */
-                uint32_t cap=target-heat;
-                if(decay>cap)decay=cap;
-                if(decay>(uint32_t)v)decay=v;
-                if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
-                    qEvents[7]+=(uint64_t)decay*nu;}
+            /* vacuum absorption: the medium's STRUCTURE obstructs the
+             * flux — photons thermalize into heat at a rate scaled by
+             * local occupancy (bound states are the drag; empty vacuum
+             * lets photons pass). The obstruction doesn't saturate on
+             * the reservoir — the structure drags regardless of heat. */
+            uint32_t w2=0;
+            for(int e=0;e<QChannels/2;e++){
+                uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+                w2+=a<b?a:b;
             }
+            uint32_t decay=(uint32_t)v*(w2>>4)>>4;             /* ~occ/16 */
+            if(decay>(uint32_t)v)decay=v;
+            if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
+                qEvents[7]+=(uint64_t)decay*nu;}
             if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
             int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c;
-            /* the photon field has a finite capacity: a channel can
-             * hold at most ~255 photons (the region's finite state
-             * space — 't Hooft: finite cells, finite states). Beyond
-             * capacity the excess can't propagate — the field can't
-             * run away past a real physical bound. */
-            int cap=qPhoton_next[ni]+v>255?255-qPhoton_next[ni]:v;
-            if(cap<0)cap=0;
-            qPhoton_next[ni]+=cap;qPhotonNu_next[ni]=nu;
+            qPhoton_next[ni]+=v;qPhotonNu_next[ni]=nu;
             qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
             qPhoton[si*QChannels+c]-=v;
         }
