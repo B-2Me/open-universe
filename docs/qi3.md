@@ -211,3 +211,26 @@ structure, off-resonance free-stream. The medium is self-assembling.
 - **The substrate tells you its physics**: "cold medium" was really
   "frequency-selective medium" — honest spectroscopy we mistook for
   a frozen state
+
+## The two-regime structure — and its map onto nature
+
+The recalibration exposed the substrate's honest working model:
+
+| Substrate regime | Nature analog | Mechanism |
+|---|---|---|
+| **Dilute loop-medium** (`nu <= 128`, resonant) | Atomic/bound-state physics | photons -> winding -> bound circulation; accessible at ordinary energies |
+| **Massive phase** (`nu-pairs >= 256`) | Particle/nuclear physics | fusion -> qMass; our `256` wall is the analog of `1.022 MeV` pair-production |
+
+**The honest consequence**: the "cold medium" IS the correct working
+regime — the loop-medium is where bound-structure physics lives, same
+as ordinary matter lives in the atomic regime, not the pair-production
+regime. `0` massive sites in a resonant bath isn't a failure — it's
+the substrate correctly saying mass-creation happens in the hot sector.
+
+**The amplitude split**: `64`-amplitude (bent `64+64` deposits) is
+the majority bound state over full `128` loops — the substrate's real
+"iron" is the partial loop, not the full one.
+
+**For future probes**: study the loop-medium for bound-state physics
+(the main regime); mass-creation needs a hot-injection sector —
+don't confuse the two.
