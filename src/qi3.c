@@ -47,7 +47,7 @@ static uint32_t *qMassFlight, *qMassFlight_next;
 static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
-static uint32_t *qHeld, *qHeldNu, *qHeldBirth;   /* incipient offers held */
+static uint32_t *qHeld, *qHeldNu, *qHeldBirth, *qHeldPhase;   /* incipients */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
 static uint32_t *qPhotonBirth, *qPhotonBirth_next;/* offer birth tick tag */
 static uint32_t *qAck, *qAck_next;               /* returning confirms */
@@ -56,6 +56,10 @@ static uint32_t *qAckRtt, *qAckRtt_next;         /* round-trip delivered */
 static uint32_t *qBondDist;                      /* measured edge distance */
 static uint32_t *qSiteWind;                      /* per-site totals (scratch) */
 static uint64_t qEvents[32];
+static int qPhaseMode = 0; /* 0 classical | 1 coherence lottery:
+                            incipients carry phase nu*transit,
+                            in-phase candidates boost each other —
+                            interference in the Born weight */
 static int qGapShift = 0;  /* emitted-nu downshift: scale separation
                             (transitions << rest energy, the alpha^2
                             analog — emitted light can't re-fuse) */
@@ -188,6 +192,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
     qHeldBirth      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qHeldPhase      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qPhotonBirth    =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qPhotonBirth_next=calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qAck            =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
@@ -224,10 +229,24 @@ EMS_API void qi3_tick(void){
      * return to the stream — declined transactions continue. */
     for(int si=0;si<QSites;si++){
         uint64_t totW=0;
+        uint32_t coh[QChannels/2];                       /* coherence term */
+        for(int e=0;e<QChannels/2;e++){
+            coh[e]=1;
+            if(!qPhaseMode||!qHeld[si*(QChannels/2)+e])continue;
+            uint32_t pe=qHeldPhase[si*(QChannels/2)+e]&255;
+            int aligned=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                if(e2==e||!qHeld[si*(QChannels/2)+e2])continue;
+                uint32_t p2=qHeldPhase[si*(QChannels/2)+e2]&255;
+                int d=(int)pe-(int)p2; if(d<0)d=-d; if(d>128)d=256-d;
+                if(d<64)aligned++;                      /* in-phase */
+            }
+            coh[e]=1+aligned;                           /* constructive boost */
+        }
         for(int e=0;e<QChannels/2;e++){
             uint32_t h=qHeld[si*(QChannels/2)+e];
             if(h)totW+=(uint64_t)h*qHeldNu[si*(QChannels/2)+e]
-                       *(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
+                       *coh[e]*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
         }
         if(!totW)continue;
         uint64_t pick=(uint64_t)randByte()*randByte();
@@ -237,7 +256,7 @@ EMS_API void qi3_tick(void){
             uint32_t h=qHeld[si*(QChannels/2)+e];
             uint32_t nu=qHeldNu[si*(QChannels/2)+e];
             if(!h)continue;
-            uint64_t wt=(uint64_t)h*nu*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
+            uint64_t wt=(uint64_t)h*nu*coh[e]*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
             if(acc+wt>pick&&wt){
                 int cc=(e<<1)|qHeldDir[si*(QChannels/2)+e];
                 if(qHeldStim[si*(QChannels/2)+e]){
@@ -436,6 +455,9 @@ EMS_API void qi3_tick(void){
                 int ei=si*(QChannels/2)+edge;
                 qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
                 qHeldBirth[ei]=qPhotonBirth_next[si*QChannels+c];
+                /* phase = nu x transit ticks mod 256 — the photon's
+                 * oscillation accumulated along its path */
+                qHeldPhase[ei]=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
                 qPhoton_next[si*QChannels+c]-=offer;
             } else if(stim){
                 /* stim arms an INCIPIENT too — it enters the lottery
@@ -686,6 +708,7 @@ EMS_API int qi3_session_strength(int x,int y,int z,int c){
 }
 EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API void qi3_gap_scale(int s){ qGapShift=s; }
+EMS_API void qi3_phase_mode(int m){ qPhaseMode=m; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
