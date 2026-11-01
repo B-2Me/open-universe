@@ -155,17 +155,26 @@ static inline uint64_t loopWinding(int si){
     return w;
 }
 static inline int siteLevel(int si){
-    /* topology-derived level: a level = ONE complete closed loop
-     * on an edge (matched winding >= the quantum). Level = count
-     * of loop-bearing edges — the 9-edge graph gives the cap for
-     * free, and the quantum is half the fusion threshold: a loop
-     * carries one quantum, a pair needs two. */
+    /* topology-derived level: a level = ONE complete closed loop —
+     * a straight loop on an edge pair (out c, back c^1) OR a BENT
+     * loop: circulation cornering through the node across two
+     * different edges (the path turns, doesn't retrace). Loops
+     * spanning edges are the intra-node exchange we can't resolve —
+     * the corner IS the approximation. */
     int n=1;
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=64)n++;   /* weakened cycles still count until <half */
+        if(m>=64)n++;   /* straight loops first */
     }
+    /* bent loops: winding on e1's out-channel paired with e2's
+     * out-channel — circulation enters one edge and leaves another */
+    for(int e1=0;e1<QChannels/2;e1++)
+        for(int e2=e1+1;e2<QChannels/2;e2++){
+            uint32_t a=qWinding[si*QChannels+2*e1],b=qWinding[si*QChannels+2*e2];
+            uint32_t m=a<b?a:b;
+            if(m>=64)n++;   /* a corner-circulation on edges e1,e2 */
+        }
     if(n>8)n=8;return n;
 }
 static inline void siteUnwind(int si,uint32_t amount){
