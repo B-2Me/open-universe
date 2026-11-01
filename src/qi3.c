@@ -869,6 +869,23 @@ EMS_API void qi3_tick(void){
         qEvents[4]++;qEvents[20]+=line;
     }
 
+    /* Phase 6a — thermal re-emission: the vacuum-heat reservoir
+     * RADIATES. A site holding heat above a quantum sheds a photon —
+     * the medium is SELF-DRIVING: photon -> absorbed -> heat ->
+     * re-emit -> photon. The sinks feed the sources; the cycle
+     * closes internally, no external injector. Local and stochastic —
+     * a site radiates when ITS reservoir is hot, not on a schedule. */
+    for(int si=0;si<QSites;si++){
+        if(qHeat[si]<256)continue;
+        if(randByte()&3)continue;               /* stochastic lifetime */
+        int c=randByte()%QChannels;
+        qPhoton_next[si*QChannels+c]+=1;
+        qPhotonNu_next[si*QChannels+c]=64;
+        qPhotonBirth_next[si*QChannels+c]=(uint32_t)qTick;
+        qHeat[si]-=256;
+        qEvents[4]++;
+    }
+
     /* Phase 6b — annihilation: antipodal winding on an axis (a
      * particle/antiparticle pair wound on facing channels) decays
      * into equal back-to-back photon populations at the site line. */
