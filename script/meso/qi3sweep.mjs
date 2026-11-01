@@ -1,30 +1,36 @@
-// qi3 nu-sweep: absorption response vs offer energy — is the edge
-// gate sharp (matching nu absorbs, others pass) or graded?
+// binding-depth sweep: qUnwindShift 1..4, measure emitted nu
+// (transition energy) vs the loop quantum (rest=128/edge-pair).
+// coupling analog = transition/rest — does a deeper regime
+// give a weaker coupling like nature's alpha?
 import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { createRequire } from 'node:module';
-const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-const DIR = join(here, '../../docs/public/wasm/ember');
+const DIR = join(process.cwd(), 'docs/public/wasm/ember');
 const src = readFileSync(join(DIR, 'qi3.js'), 'utf8');
-
-for (const nu of [4, 8, 10, 20, 40, 60, 80, 120]) {
-  const q = await (() => {
-    const m = { exports: {} };
-    new Function('module','exports','require','__dirname','__filename',src)(m, m.exports, require, DIR, 'qi3.js');
-    return m.exports();
-  })();
-  q._qi3_init(32, 32, 32, 0);
-  q._qi3_mass_set(16, 16, 16, 160);   // line ~ (160+w/4)/4 ≈ 40+
-  // beam of 20 photons on +x at the requested nu
-  for (let i = 2; i < 14; i++) {
-    q._qi3_photon_set(i, 16, 16, 12, 20);
-    q._qi3_photon_nu_set(i, 16, 16, 12, nu);
+const mk = () => (() => {
+  const m = { exports: {} };
+  new Function('module','exports','require','__dirname','__filename',src)(m, m.exports, require, DIR, 'qi3.js');
+  return m.exports();
+})();
+const N = 32;
+console.log('shift  emitted-nu(range)  coupling(transition/rest)  level@t50');
+for (const shift of [1, 2, 3, 4]) {
+  const q = await mk();
+  q._qi3_init(N, N, N, 0); q._qi3_gap_mode(5); q._qi3_unwind_shift(shift);
+  q._qi3_mass_set(16,16,16,160);
+  for (const e of [0,2,4]) { q._qi3_winding_set(16,16,16,2*e,128); q._qi3_winding_set(16,16,16,2*e+1,128); }
+  const hist = {};
+  for (let t = 0; t < 50; t++) {
+    q._qi3_tick();
+    for (let z=0;z<N;z++) for (let y=0;y<N;y++) for (let x=0;x<N;x++)
+      for (let c=0;c<18;c++) {
+        const ph = q._qi3_photon_get(x,y,z,c), nu = q._qi3_photon_nu(x,y,z,c);
+        if (ph && nu > 30 && Math.abs(x-16)+Math.abs(y-16)+Math.abs(z-16) < 8)
+          hist[nu] = (hist[nu]||0)+ph;
+      }
   }
-  for (let t = 0; t < 18; t++) q._qi3_tick();
-  const absorbed = Number(q._qi3_event(3));
-  const charge = q._qi3_charge_get(16, 16, 16);
-  const confirm12 = q._qi3_confirm_get(16, 16, 16, 13); // reverse link c13
-  console.log(`nu=${String(nu).padStart(3)}  absorbed=${String(absorbed).padStart(4)}  charge=${String(charge).padStart(3)}  confirmRev=${confirm12}`);
+  const lines = Object.keys(hist).map(Number).sort((a,b)=>a-b);
+  const mid = lines.length ? lines[Math.floor(lines.length/2)] : 0;
+  console.log(`${shift}     ${lines.slice(0,5).join(',')}        ${mid}/256=${(mid/256).toFixed(3)}        ${q._qi3_level_get(16,16,16)}`);
 }
