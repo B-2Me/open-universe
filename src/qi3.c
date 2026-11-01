@@ -51,6 +51,9 @@ static uint32_t *qHeld, *qHeldNu, *qHeldBirth, *qHeldPhase;   /* incipients */
 static uint32_t *qHeldInt;                                     /* internal incipients — offers
                  * answered INTRA-node (a saturated edge's offer routed
                  * to the node's own free edges) — the internal exchange */
+static uint32_t *qLoopPhase;                                   /* per-edge loop phase —
+                 * the circulation's POSITION in its cycle (0-255), not
+                 * just amplitude. The oscillator's internal state. */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
 static uint32_t *qPhotonBirth, *qPhotonBirth_next;/* offer birth tick tag */
 static uint32_t *qAck, *qAck_next;               /* returning confirms */
@@ -256,6 +259,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldInt        =calloc((size_t)QSites,sizeof(uint32_t));
     qHeat           =calloc((size_t)QSites,sizeof(uint32_t));
+    qLoopPhase      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
@@ -599,23 +603,29 @@ EMS_API void qi3_tick(void){
                 match=(nu%line==0&&nu>=line);
             }
             if(qGapMode==6){
-                /* TOPOLOGICAL selection: no nu-table. The offer is a
-                 * packet of circulation; it can only complete a
-                 * transaction if depositing it lands the edge's loop
-                 * on an ALLOWED RUNG — the packet must exactly fill
-                 * a gap to the next legal state. The ladder IS the
-                 * selector: offers that can't close a legal state
-                 * are declined. */
+                /* TOPOLOGICAL + PHASE-LOCK selection: no nu-table. The
+                 * offer is a packet of circulation; it completes only if
+                 * depositing lands the loop on an allowed rung AND the
+                 * offer's phase aligns with the loop's cycle position —
+                 * the transaction is a RESONANCE, not a lookup. */
                 match=0;
                 int edge6=(c>>1);
                 uint32_t a=qWinding[si*QChannels+2*edge6],
                          b=qWinding[si*QChannels+2*edge6+1];
                 uint32_t m=a<b?a:b;
-                uint32_t step=1u<<qUnwindShift;         /* rung spacing */
-                for(uint32_t r=32;r<=128;r+=step){       /* allowed rungs */
+                uint32_t step=1u<<qUnwindShift;
+                for(uint32_t r=32;r<=128;r+=step){
                     if((uint32_t)(m+nu)>=r&&(uint32_t)(m+nu)<r+step&&m<r){
-                        match=1;break;                   /* lands on a rung */
+                        match=1;break;
                     }
+                }
+                if(match&&m>=32){
+                    /* the loop exists — the offer's phase must land in
+                     * its receptive window (within a rung of the cycle) */
+                    uint32_t lp=qLoopPhase[si*(QChannels/2)+edge6]&255;
+                    uint32_t op=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
+                    int d=(int)lp-(int)op;if(d<0)d=-d;if(d>128)d=256-d;
+                    if(d>64)match=0;                     /* out of phase: decline */
                 }
             }
             if(match){
@@ -721,6 +731,21 @@ EMS_API void qi3_tick(void){
      * — the macro node's internal clock is slower than the photon's
      * transit rate (c at this scale is simulated, not assumed). */
     int internal = (qTick % (1<<qCycleShift))==0;
+
+    /* loop phases advance on the internal clock — the oscillator's
+     * circulation turns at its own frequency: each loop's phase
+     * steps by its edge-reach (a tighter loop cycles faster, the
+     * position in the cycle IS the internal state — the 720° upgrade). */
+    if(internal)for(int si=0;si<QSites;si++){
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+            uint32_t m=a<b?a:b;
+            if(m<32)continue;                    /* only real loops cycle */
+            uint64_t L2=edgeLen2(2*e);
+            qLoopPhase[si*(QChannels/2)+e]=
+                (qLoopPhase[si*(QChannels/2)+e]+(128/L2+1))&255;
+        }
+    }
 
     /* Phase 4c — winding conduction: circulation flows down its
      * own gradient along edges — a wound site sheds a quantum
