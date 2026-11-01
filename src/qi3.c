@@ -330,15 +330,18 @@ EMS_API void qi3_tick(void){
                        *coh[e]*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
         }
         if(!totW)continue;
-        uint64_t pick=(uint64_t)randByte()*randByte();
-        pick=(pick*totW)>>16;
-        uint64_t acc=0;
+        /* unlocked edges: each armed edge is an INDEPENDENT port to
+         * a different neighbor — they resolve in parallel, not a
+         * single-winner lottery. The reach-density coupling: a dense
+         * node has many armed edges transacting at once (confined,
+         * short-range exchange); a sparse node's few armed ports
+         * leave photons free-streaming (long-range). */
         for(int e=0;e<QChannels/2;e++){
             uint32_t h=qHeld[si*(QChannels/2)+e];
             uint32_t nu=qHeldNu[si*(QChannels/2)+e];
             if(!h)continue;
             uint64_t wt=(uint64_t)h*nu*coh[e]*(1+(qSessionStrength[si*(QChannels/2)+e]>>3));
-            if(acc+wt>pick&&wt){
+            if(wt){
                 int cc=(e<<1)|qHeldDir[si*(QChannels/2)+e];
                 if(qHeldStim[si*(QChannels/2)+e]){
                     /* stimulated winner: ONE clone per trigger — the
@@ -361,7 +364,7 @@ EMS_API void qi3_tick(void){
                         qPhotonNu[si*QChannels+cc]=nu;
                     }
                     qHeldStim[si*(QChannels/2)+e]=0;
-                    acc+=wt;qHeld[si*(QChannels/2)+e]=0;continue;
+                    qHeld[si*(QChannels/2)+e]=0;continue;
                 }
                 /* WINNER actualizes — the CONSERVED-QUANTUM transfer:
                  * each photon carries exactly one band quantum; the
@@ -435,7 +438,6 @@ EMS_API void qi3_tick(void){
                 qPhoton[si*QChannels+c]+=h;
                 qPhotonNu[si*QChannels+c]=nu;
             }
-            acc+=wt;
             qHeld[si*(QChannels/2)+e]=0;
         }
         /* INTERNAL incipients actualize — RARE: the network ontology
