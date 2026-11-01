@@ -59,6 +59,11 @@ static uint64_t qEvents[32];
 static int qUnwindShift = 2; /* fractional unwind: shed 1>>shift of the
                               weakest loop per emission. 2=quarter,
                               3=eighth, 1=half — the binding-depth knob. */
+static int qCycleShift  = 0; /* internal-cycle rate: the node's structure
+                              cycles every 2^shift ticks — the sub-tick
+                              clock at the macro scale. The photon hops
+                              1/tick (c at transit scale) while internal
+                              dynamics run slower — like a real atom. */
 static int qPhaseMode = 0; /* 0 classical | 1 coherence lottery:
                             incipients carry phase nu*transit,
                             in-phase candidates boost each other —
@@ -180,7 +185,9 @@ static inline int siteLevel(int si){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        vol+=m;                            /* bound circulation per edge */
+        if(m>=32)vol+=m;                     /* COMMITTED circulation only
+         * — the threshold is what separates bound structure from
+         * traffic. The volume counts committed exchange, not flux. */
     }
     n+=vol>>7;                             /* 128 = one quantum of volume */
     if(n>8)n=8;return n;
@@ -611,17 +618,23 @@ EMS_API void qi3_tick(void){
         }
     }
 
+    /* internal-cycle gate: structure only evolves every 2^shift ticks
+     * — the macro node's internal clock is slower than the photon's
+     * transit rate (c at this scale is simulated, not assumed). */
+    int internal = (qTick % (1<<qCycleShift))==0;
+
     /* Phase 4c — winding conduction: circulation flows down its
      * own gradient along edges — a wound site sheds a quantum
      * into a low-winding neighbor, so the hole relocates TOWARD
      * the donor. Loop-preserving: both channels of the edge
-     * move together. Fick's-law diffusion on the loop field. */
-    for(int si=0;si<QSites;si++){
+     * move together. Fick's-law diffusion on the loop field.
+     * Runs at the INTERNAL cycle rate — structure cycles slowly. */
+    if(internal)for(int si=0;si<QSites;si++){
         uint32_t w=0;
         for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
         qSiteWind[si]=w;
     }
-    for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+    if(internal)for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
         int si=siteIndex(x,y,z);
         for(int e=0;e<QChannels/2;e++){
             int c=e<<1;
@@ -665,8 +678,9 @@ EMS_API void qi3_tick(void){
      * line nu (gap-mode aware: mode 1 emits at the level gap the
      * site's charge implies — level derived, not stored). A lump
      * out of charge burns its own mass — mass is a persistence
-     * ledger with an evaporation channel, not a ratchet. */
-    for(int si=0;si<QSites;si++){
+     * ledger with an evaporation channel, not a ratchet. Emission
+     * runs at the INTERNAL cycle rate too. */
+    if(internal)for(int si=0;si<QSites;si++){
         int mass=qMass[si],e=qCharge[si];
         if(mass&&e<32){                          /* evaporate */
             int burn=mass>>4;if(burn<1)burn=1;
@@ -848,6 +862,7 @@ EMS_API void qi3_gap_mode(int m){ qGapMode=m; }
 EMS_API void qi3_gap_scale(int s){ qGapShift=s; }
 EMS_API void qi3_phase_mode(int m){ qPhaseMode=m; }
 EMS_API void qi3_unwind_shift(int s){ qUnwindShift=s; }
+EMS_API void qi3_cycle_shift(int s){ qCycleShift=s; }
 EMS_API int qi3_confirm_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qConfirm[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
