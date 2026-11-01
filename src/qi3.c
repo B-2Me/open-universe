@@ -310,7 +310,11 @@ EMS_API void qi3_tick(void){
                  * can't take another — quanta seek free loops). */
                 for(uint32_t ph=0;ph<h;ph++){
                     int fe=-1;
-                    for(int e2=0;e2<QChannels/2;e2++){
+                    /* rotate the search start — else every deposit
+                     * lands on edge 0 (search-order bias, not physics) */
+                    int start=randByte()%(QChannels/2);
+                    for(int j=0;j<QChannels/2;j++){
+                        int e2=(start+j)%(QChannels/2);
                         uint32_t a2=qWinding[si*QChannels+2*e2],
                                  b2=qWinding[si*QChannels+2*e2+1];
                         uint32_t m2=a2<b2?a2:b2;
@@ -614,7 +618,9 @@ EMS_API void qi3_tick(void){
          * not the charge pool. */
         if(e>288){
             int fe=-1;
-            for(int e2=0;e2<QChannels/2;e2++){
+            int start=randByte()%(QChannels/2);
+            for(int j=0;j<QChannels/2;j++){
+                int e2=(start+j)%(QChannels/2);
                 uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
                 uint32_t m=a<b?a:b;if(m<128){fe=e2;break;}
             }
