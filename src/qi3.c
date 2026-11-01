@@ -259,14 +259,15 @@ EMS_API void qi3_tick(void){
                     qHeldStim[si*(QChannels/2)+e]=0;
                     acc+=wt;qHeld[si*(QChannels/2)+e]=0;continue;
                 }
-                /* WINNER actualizes: deposit + bond + confirm pulse —
-                 * recoil winds a CLOSED loop (split across the edge
-                 * pair so the deposit circulates — a loop object,
-                 * not a scalar bank) */
-                qCharge[si]+=h*nu;
+                /* WINNER actualizes — the CONSERVED-QUANTUM transfer:
+                 * each photon carries exactly one band quantum; the
+                 * emitter shed it at emission, the absorber gains it
+                 * as winding on this edge pair (not charge->slow
+                 * thermalize). The hole relocates: emitter -1 band,
+                 * absorber +1 band — structure conserved end-to-end. */
+                qWinding[si*QChannels+cc]+=h*128;
+                qWinding[si*QChannels+(cc^1)]+=h*128;
                 qEvents[18]+=(uint64_t)h*nu;
-                qWinding[si*QChannels+cc]+=(h*nu)>>4;
-                qWinding[si*QChannels+(cc^1)]+=(h*nu)>>4;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
                 qSessionStrength[si*(QChannels/2)+e]+=h;
                 if(qSessionState[si*(QChannels/2)+e]<2)
@@ -464,18 +465,10 @@ EMS_API void qi3_tick(void){
                 qBondDist[ei]=qAckRtt[si*QChannels+c];
                 qSessionStrength[ei]+=n;
                 if(qSessionState[ei]<2){qSessionState[ei]++;qEvents[14]++;}
-                /* the transaction relocates STRUCTURE: the emitter's
-                 * loop sheds a quantum that traveled to the absorber —
-                 * conserved-quantity delivery, TI-style. The hole
-                 * hops: emitter drains -> becomes the void. */
-                {
-                    int e2=(c>>1)<<1;              /* edge's channels */
-                    uint32_t deb=n<<5;
-                    uint32_t a=qWinding[si*QChannels+e2],
-                             b=qWinding[si*QChannels+e2+1];
-                    if(a>deb)qWinding[si*QChannels+e2]=a-deb;
-                    else if(b>deb)qWinding[si*QChannels+e2+1]=b-deb;
-                }
+                /* structure transfer lives in the transaction itself
+                 * (the emitter shed its band at emission; the absorber
+                 * gained it at actualization) — the ACK just confirms
+                 * dual-end completion. */
                 qAck[si*QChannels+c]=0;
                 continue;
             }
