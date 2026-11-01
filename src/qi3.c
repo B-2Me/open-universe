@@ -191,13 +191,17 @@ static inline void siteUnwind(int si,uint32_t amount){
         if(m>=128&&(be<0||m<bm)){bm=m;be=e;}   /* weakest complete loop */
     }
     if(be<0)return;
-    /* FRACTIONAL unwind: the loop sheds a QUARTER of its amplitude
-     * (one sub-level) but persists as a weaker cycle — transitions
-     * cost part of a quantum, excited states persist ~4x longer.
-     * Deep binding: the level structure is metastable, not a bank. */
+    /* RUNG-QUANTIZED unwind: the loop drops to the next allowed
+     * rung (128->96->64->32->0), emitting the rung difference —
+     * bound states are DISCRETE amplitudes, not a continuum.
+     * The 't Hooft allowed-periods made mechanical: only certain
+     * loop strengths are real states, so the spectrum sharpens. */
     uint32_t a=qWinding[si*QChannels+be*2],b=qWinding[si*QChannels+be*2+1];
     uint32_t m=a<b?a:b;
-    uint32_t shed=m>>qUnwindShift;if(shed<1)shed=1;
+    uint32_t rung=(m-1)>>qUnwindShift;          /* rungs: quantum / 2^shift apart */
+    uint32_t next=rung<<qUnwindShift;           /* snap to the rung below */
+    if(next>=m)next=(rung-1)<<qUnwindShift;     /* ensure it drops */
+    uint32_t shed=m-next;if(shed<1)shed=1;
     uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
     qWinding[si*QChannels+be*2]-=da;
     qWinding[si*QChannels+be*2+1]-=db;
