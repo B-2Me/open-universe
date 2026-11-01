@@ -82,3 +82,56 @@ mechanics are measured, its conservation is audited, its claims
 are ratios and shapes — never retrofits. The `E_n` table's
 functional form and the `256`-winding band quantum remain
 parameterized constants awaiting deeper derivation.
+
+## Authored boundaries ledger (as of the thermal-equilibrium arc)
+
+**Every constant we wrote in — vs what the substrate derives.** The
+falsification discipline: authored is chosen, derived is measured.
+
+### AUTHORED (hardcoded constants — physical guesses, not derived)
+
+| Constant | Value | What it represents |
+|---|---|---|
+| Loop quantum | `128` winding | one complete cycle's amplitude |
+| Fusion wall | `256` | `2×` quantum — pair-production threshold |
+| Thermalization floor | `288` | survival `32` + one quantum `256` |
+| Drain floor | `32` | metastable partial-loop threshold |
+| Level threshold | `64` | weakened cycles still count as structure |
+| `qUnwindShift` | `2` | rung spacing — `1/4` loop per emission |
+| `qCycleShift` | `0` (test `2`) | internal-cycle rate vs transit `c` |
+| `qTempShift` | `6` | global vacuum-heat target `~96` (rest temperature) |
+| Photon channel cap | `255` | field finite state space (`'t Hooft` bound) |
+| External held cap | `9` edges | node receptive capacity (the boundary) |
+| Internal held cap | `vol/128` quanta | intra-node capacity from bound volume |
+| Emission lifetime | `randByte()&3` | stochastic `~1/4` gate — the radiative lifetime |
+| Bent-deposit odds | `50/50` | straight vs corner-loop split (needs density-emergence) |
+| Channels/edges | `18/9` | the lattice's interface geometry |
+| Photon transit | `1` hop/tick | `c` at transit scale |
+
+### DERIVED (emergent — measured, not written)
+
+- **Level** = occupancy volume (bound circulation / quantum)
+- **The `256` band** — emerged from the drain's shedding, not authored
+- **Level histogram** — thermal distribution `n=4-7` under bent loops
+- **Attractor winding** `~1464` median (`~5.7` loops/site)
+- **Line ratios** — edge-geometry `L²` classes (`64/85/128`)
+- **Selection rules** — topological mode `6`: the ladder filters offers
+- **Void fraction** `~0.1-0.4%`, occupancy uniform across edges
+- **Absorb/stim counts** — real transaction volume post-transaction-units
+
+### TUNABLES (knobs for sweeps)
+
+`qGapMode` (0-6), `qGapScale`, `qPhaseMode`, `qUnwindShift`, `qCycleShift`, `qTempShift`
+
+### THE RUNAWAY ARC (what the flood taught)
+
+The photon-field flood was a stacked-mechanics issue, fixed in layers:
+1. `qHeld+=offer` counted population as one incipient → transaction units (`+=1`)
+2. `qPhoton[cc]+=h+1` stim clone multiplication → `+=1`
+3. uncapped stim-arm path → receptive-capacity bound
+4. emission running at transit rate → `qCycleShift` internal clock
+5. unbounded photon population → channel cap `255` + vacuum-heat sink
+
+**Remaining unbound**: emission source rate vs all sinks — production
+still wins at high injection. The field equilibrium is contended
+(dips + recovers) but not closed.
