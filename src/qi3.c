@@ -517,10 +517,19 @@ EMS_API void qi3_tick(void){
                 qEvents[7]+=nu;
                 continue;
             }
-            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
-            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
-            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
-            int ni=siteIndex(nx,ny,nz)*QChannels+c;
+            /* stochastic propagation: the photon isn't a laminar flux —
+             * it's a quantum that JITTERS. It may continue forward
+             * (mostly) or scatter to a random channel — the medium
+             * agitates it, no preferred flow. The field drives global
+             * frustration: photons arrive from random directions,
+             * agitating every site, keeping the medium far from
+             * equilibrium without imposing a net current. */
+            int c2=c;
+            if((randByte()&7)==0)c2=randByte()%QChannels;   /* ~1/8 scatter */
+            int nx=wrapCoord(x+QChannelVec[c2][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c2][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c2][2],QDepth);
+            int ni=siteIndex(nx,ny,nz)*QChannels+c2;
             /* one photon per channel — PRESENCE, not population. On
              * collision the higher-nu photon wins (the stronger offer
              * survives; the channel holds one signal, not a queue). */
