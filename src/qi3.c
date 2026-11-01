@@ -62,6 +62,12 @@ static uint64_t qEvents[32];
 static int qUnwindShift = 2; /* fractional unwind: shed 1>>shift of the
                               weakest loop per emission. 2=quarter,
                               3=eighth, 1=half — the binding-depth knob. */
+static uint32_t *qHeat;      /* vacuum heat reservoir per site — the
+                              medium's local temperature. Seeks a global
+                              target via photon absorption; obstructs
+                              the flux by structure. */
+static int qTempShift = 6;   /* global target: vacuum heat ~ 1<<shift
+                              per site — the authored cosmic background */
 static int qCycleShift  = 0; /* internal-cycle rate: the node's structure
                               cycles every 2^shift ticks — the sub-tick
                               clock at the macro scale. The photon hops
@@ -245,6 +251,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qWinEdge        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldInt        =calloc((size_t)QSites,sizeof(uint32_t));
+    qHeat           =calloc((size_t)QSites,sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
@@ -474,14 +481,27 @@ EMS_API void qi3_tick(void){
         for(int c=0;c<QChannels;c++){
             int v=qPhoton[si*QChannels+c];if(!v)continue;
             int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
-            /* vacuum absorption: the medium is an absorber too — a
-             * fraction of the channel's photons thermalize into the
-             * vacuum each tick (exponential lifetime, the species-
-             * inverse bound: the field population can't run away).
-             * The energy sinks into the vacuum's heat capacity. */
-            uint32_t decay=(uint32_t)v>>4;if(decay<1&&v>4)decay=1; /* ~1/16 */
-            v-=decay;
-            qEvents[7]+=(uint64_t)decay*nu;
+            /* vacuum absorption: photons thermalize into the site's
+             * heat reservoir — but only while the reservoir is BELOW
+             * the global target (the medium pulls energy to reach
+             * equilibrium, then stops — self-limiting). The rate
+             * scales with local STRUCTURE: occupancy obstructs the
+             * flux (the medium's own bound states are the drag —
+             * nothing to trap momentum, no interference). */
+            uint32_t heat=qHeat[si], target=(uint32_t)qTempShift<<4;
+            if(heat<target){
+                uint32_t w2=0;
+                for(int e=0;e<QChannels/2;e++){
+                    uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+                    w2+=a<b?a:b;
+                }
+                uint32_t decay=(uint32_t)v*(w2>>4)>>4;         /* ~occ/16 */
+                uint32_t cap=target-heat;
+                if(decay>cap)decay=cap;
+                if(decay>(uint32_t)v)decay=v;
+                if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
+                    qEvents[7]+=(uint64_t)decay*nu;}
+            }
             if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
             int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
@@ -775,6 +795,23 @@ EMS_API void qi3_tick(void){
                 qWinding[si*QChannels+2*fe]+=128;
                 qWinding[si*QChannels+2*fe+1]+=128;
                 qCharge[si]=e-256;
+            }
+        }
+        /* the heat reservoir drains the same way — absorbed photon
+         * energy thermalizes into structure, not just sits. The
+         * vacuum-heat is a channel, not a bucket: photon->heat->
+         * loop is the species cycle closing. */
+        if(qHeat[si]>288){
+            int fe=-1,start=randByte()%(QChannels/2);
+            for(int j=0;j<QChannels/2;j++){
+                int e2=(start+j)%(QChannels/2);
+                uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
+                uint32_t m=a<b?a:b;if(m<128){fe=e2;break;}
+            }
+            if(fe>=0){
+                qWinding[si*QChannels+2*fe]+=128;
+                qWinding[si*QChannels+2*fe+1]+=128;
+                qHeat[si]-=256;
             }
         }
         /* ONE quantum per transition: a site at level n>=2 falls
