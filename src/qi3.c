@@ -54,6 +54,11 @@ static uint32_t *qHeldInt;                                     /* internal incip
 static uint32_t *qLoopPhase;                                   /* per-edge loop phase —
                  * the circulation's POSITION in its cycle (0-255), not
                  * just amplitude. The oscillator's internal state. */
+static uint32_t *qLocalDensity;                                /* neighbor-sampled
+                 * density — the node's estimate of its local structure:
+                 * what the node can actually MEASURE (its causal
+                 * neighborhood), tracked over time (a local memory).
+                 * The node's opacity = its place in the gradient. */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
 static uint32_t *qPhotonBirth, *qPhotonBirth_next;/* offer birth tick tag */
 static uint32_t *qAck, *qAck_next;               /* returning confirms */
@@ -263,6 +268,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeldInt        =calloc((size_t)QSites,sizeof(uint32_t));
     qHeat           =calloc((size_t)QSites,sizeof(uint32_t));
     qLoopPhase      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qLocalDensity   =calloc((size_t)QSites,sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
@@ -494,17 +500,14 @@ EMS_API void qi3_tick(void){
         for(int c=0;c<QChannels;c++){
             int v=qPhoton[si*QChannels+c];if(!v)continue;
             int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
-            /* vacuum absorption: the medium's STRUCTURE obstructs the
-             * flux — photons thermalize into heat at a rate scaled by
-             * local occupancy (bound states are the drag; empty vacuum
-             * lets photons pass). The obstruction doesn't saturate on
-             * the reservoir — the structure drags regardless of heat. */
-            uint32_t w2=0;
-            for(int e=0;e<QChannels/2;e++){
-                uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
-                w2+=a<b?a:b;
-            }
-            uint32_t decay=(uint32_t)v*(w2>>4)>>4;             /* ~occ/16 */
+            /* vacuum absorption: the node's LOCAL DENSITY is its
+             * opacity — the decay rate scales with the neighbor-
+             * sampled density (what the node measures of its
+             * neighborhood, its place in the gradient). Dense
+             * regions thermalize photons; sparse vacuum lets them
+             * pass — the medium's own structure is the drag. */
+            uint32_t density=qLocalDensity[si]+1;
+            uint32_t decay=(uint32_t)v*(density>>2)>>4;        /* ~density/64 */
             if(decay>(uint32_t)v)decay=v;
             if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
                 qEvents[7]+=(uint64_t)decay*nu;}
@@ -720,6 +723,30 @@ EMS_API void qi3_tick(void){
      * — the macro node's internal clock is slower than the photon's
      * transit rate (c at this scale is simulated, not assumed). */
     int internal = (qTick % (1<<qCycleShift))==0;
+
+    /* neighbor-sampled local density: each node queries its edge-
+     * neighbors' structure — the node's opacity is what it can
+     * actually MEASURE (its causal neighborhood), tracked over time
+     * via an EMA (a local memory of the gradient). */
+    if(internal)for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)for(int x=0;x<QWidth;x++){
+        int si=siteIndex(x,y,z);
+        uint32_t nsum=0;
+        for(int c=0;c<QChannels;c+=2){           /* duplex: 9 neighbors */
+            int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
+            int ni=siteIndex(nx,ny,nz);
+            uint32_t w2=0;
+            for(int e=0;e<QChannels/2;e++){
+                uint32_t a=qWinding[ni*QChannels+2*e],b=qWinding[ni*QChannels+2*e+1];
+                uint32_t m=a<b?a:b;if(m>=32)w2++;
+            }
+            nsum+=w2;                            /* neighbor's loop count */
+        }
+        /* EMA over time: density = 1/4 new + 3/4 old — the node
+         * remembers its neighborhood across ticks */
+        qLocalDensity[si]=(qLocalDensity[si]*3+nsum)>>2;
+    }
 
     /* loop phases advance on the internal clock — the oscillator's
      * circulation turns at its own frequency: each loop's phase
