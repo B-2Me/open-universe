@@ -366,52 +366,41 @@ EMS_API void qi3_tick(void){
                     qHeldStim[si*(QChannels/2)+e]=0;
                     qHeld[si*(QChannels/2)+e]=0;continue;
                 }
-                /* WINNER actualizes — the CONSERVED-QUANTUM transfer:
-                 * each photon carries exactly one band quantum; the
-                 * emitter shed it at emission, the absorber gains it
-                 * as winding on a loop edge (Pauli-like: filled edges
-                 * can't take another — quanta seek free loops). */
+                /* WINNER actualizes — the offer deposits its PACKET
+                 * (nu), not a fixed quantum: onto the ARRIVAL edge
+                 * first (the transaction completes where the offer
+                 * landed — the selector approved this state), else
+                 * routed INTERNALLY to the freest edge (the corner —
+                 * structural, not a coin flip). Crowded nodes split
+                 * because the free-edge geometry forces it. */
                 for(uint32_t ph=0;ph<h;ph++){
-                    int fe=-1;
-                    /* rotate the search start — else every deposit
-                     * lands on edge 0 (search-order bias, not physics) */
+                    int arr=(cc>>1);                    /* arrival edge */
+                    uint32_t aA=qWinding[si*QChannels+2*arr],
+                             bA=qWinding[si*QChannels+2*arr+1];
+                    uint32_t mA=aA<bA?aA:bA;
+                    if(mA+nu<=160){                      /* arrival edge takes it
+                         * (cap a bit over the quantum — the snapLoop
+                         * canonizes the overflow) */
+                        qWinding[si*QChannels+2*arr]+=nu;
+                        qWinding[si*QChannels+2*arr+1]+=nu;
+                        qDepositEdge[si*(QChannels/2)+arr]+=1;
+                        continue;
+                    }
+                    /* arrival edge full: route internally to the
+                     * freest edge — the intra-node corner */
+                    int fe=-1;uint32_t fm=999;
                     int start=randByte()%(QChannels/2);
                     for(int j=0;j<QChannels/2;j++){
                         int e2=(start+j)%(QChannels/2);
                         uint32_t a2=qWinding[si*QChannels+2*e2],
                                  b2=qWinding[si*QChannels+2*e2+1];
                         uint32_t m2=a2<b2?a2:b2;
-                        if(m2<128){fe=e2;break;}       /* free edge */
+                        if(m2<128&&m2<fm){fm=m2;fe=e2;} /* FREEST edge */
                     }
                     if(fe<0){qCharge[si]+=nu;continue;} /* all full: stays fuel */
-                    /* the quantum lands STRAIGHT (128+128 on one edge)
-                     * or BENT (64+64 on two edges — the internal
-                     * transaction's corner-loop: offer on e1 answered
-                     * by e2 on the same node, circulation turns
-                     * through it). Both are real 3D structures. */
-                    int fe2=-1;
-                    if(randByte()&1){          /* ~half land internally */
-                        for(int j=0;j<QChannels/2;j++){
-                            int e2=(start+j)%(QChannels/2);
-                            if(e2==fe)continue;
-                            uint32_t a2=qWinding[si*QChannels+2*e2],
-                                     b2=qWinding[si*QChannels+2*e2+1];
-                            uint32_t m2=a2<b2?a2:b2;
-                            if(m2<128){fe2=e2;break;}
-                        }
-                    }
-                    if(fe2>=0){
-                        qWinding[si*QChannels+2*fe]+=64;
-                        qWinding[si*QChannels+2*fe+1]+=64;
-                        qWinding[si*QChannels+2*fe2]+=64;
-                        qWinding[si*QChannels+2*fe2+1]+=64;
-                        qDepositEdge[si*(QChannels/2)+fe]+=1;
-                        qDepositEdge[si*(QChannels/2)+fe2]+=1;
-                    } else {
-                        qWinding[si*QChannels+2*fe]+=128;
-                        qWinding[si*QChannels+2*fe+1]+=128;
-                        qDepositEdge[si*(QChannels/2)+fe]+=1;
-                    }
+                    qWinding[si*QChannels+2*fe]+=nu;
+                    qWinding[si*QChannels+2*fe+1]+=nu;
+                    qDepositEdge[si*(QChannels/2)+fe]+=1;
                 }
                 qEvents[18]+=(uint64_t)h*nu;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
