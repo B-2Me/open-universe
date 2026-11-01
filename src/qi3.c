@@ -45,7 +45,7 @@ static int8_t QChannelVec[18][3] = {
 static uint32_t *qMass, *qWinding, *qLevel, *qCharge;
 static uint32_t *qMassFlight, *qMassFlight_next;
 static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
-static uint32_t *qConfirm, *qSessionStrength;   /* per-EDGE (9/site) */
+static uint32_t *qConfirm, *qSessionStrength, *qDepositEdge, *qWinEdge;
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
 static uint32_t *qHeld, *qHeldNu, *qHeldBirth, *qHeldPhase;   /* incipients */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
@@ -198,6 +198,8 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qPhotonNu       =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qPhotonNu_next  =calloc((size_t)QSites*QChannels,sizeof(uint32_t));
     qConfirm        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qDepositEdge    =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qWinEdge        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
@@ -305,6 +307,7 @@ EMS_API void qi3_tick(void){
                     if(fe<0){qCharge[si]+=nu;continue;} /* all full: stays fuel */
                     qWinding[si*QChannels+2*fe]+=128;
                     qWinding[si*QChannels+2*fe+1]+=128;
+                    qDepositEdge[si*(QChannels/2)+fe]+=1;  /* where it landed */
                 }
                 qEvents[18]+=(uint64_t)h*nu;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
@@ -313,6 +316,7 @@ EMS_API void qi3_tick(void){
                     qSessionState[si*(QChannels/2)+e]++;
                 qEvents[qSessionState[si*(QChannels/2)+e]==1?10:11]++;
                 qConfirm[si*(QChannels/2)+e]+=h;
+                qWinEdge[si*(QChannels/2)+e]+=h;   /* wins by arrival edge */
                 /* the ACK returns home: tau = offer's transit time,
                  * ack walks back ttl=tau hops carrying RTT=2*tau —
                  * the emitter's edge receives a measured distance. */
@@ -771,5 +775,13 @@ EMS_API int qi3_ack_get(int x,int y,int z,int c){
     return qAck[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
 }
 EMS_API uint64_t qi3_event(int i){ return qEvents[i & 31]; }
+EMS_API int qi3_win_edge(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qWinEdge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
+EMS_API int qi3_deposit_edge(int x,int y,int z,int c){
+    if(c>=QChannels)return 0;
+    return qDepositEdge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*(QChannels/2)+(c>>1)];
+}
 EMS_API uint64_t qi3_photon_count(void){ uint64_t m=0;
     for(int si=0;si<QSites;si++)for(int c=0;c<QChannels;c++)m+=qPhoton[si*QChannels+c];return m; }
