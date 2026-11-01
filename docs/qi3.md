@@ -266,3 +266,40 @@ beat tuning downstream (rates on events that never fire).
 - Edge-class `L2=2` bias = `1.31` (diagonal wells preferred)
 - Bootstrap: `1/16` bare-vacuum catch rate
 - The cycle: `photon -> absorb -> loop -> emit -> photon` — closed
+
+## The presence-model over-correction — bosons restored
+
+The deepest methodology lesson of the flood arc: a surgical fix that
+solves the wrong problem.
+
+**What happened**: the photon flood (counts -> billions) was chased
+through ~8 mechanism layers. The "surgical" fix was presence-model
+photons (1/channel, presence not population) — which did bound the
+field structurally, but **starved the medium** (a single-signal
+channel has a hard flux ceiling — the medium couldn't transact
+enough to build structure).
+
+**The honest re-diagnosis**: photons are **bosons** — they don't
+exclude (that's what makes lasers work). The flood was never
+population-vs-presence; it was:
+1. transaction-layer bugs (`qHeld+=offer` counted populations as
+   one incipient — fixed properly with transaction units)
+2. stim clone `h+1` multiplication (fixed: `+=1`)
+3. **absurd seed density** (the harness seeded `20-50` photons/
+   channel — a `~500K` photon bomb, invisible under presence-model
+   because it clamped to `1`)
+
+**The measurement that proved it**: bosonic counts at sane seed
+(1-10/channel) are **bounded and richer** — `3097` loops at seed
+`10` vs `379` under presence, absorbs scale with flux (`352->3153`).
+The medium NEEDS real throughput — presence-starved it.
+
+**The physics restored**: photon counts are bosonic (pile up
+freely), absorption scales with flux, off-resonance photons form
+a non-interacting background. Correct statistics, richer structure.
+
+**Process note**: we made the presence-model the "surgical fix"
+before diagnosing the actual runaway mechanisms — a cap that
+masked the bug rather than fixing it. The correct order: fix
+the mechanism (transactions), then measure whether the cap is
+still needed (it wasn't).
