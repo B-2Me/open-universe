@@ -859,7 +859,11 @@ EMS_API void qi3_tick(void){
             if(!qMass[si])continue;
             mass=qMass[si];
         }
-        if(!mass)continue;
+        /* emission derives from STRUCTURE (loops), not mass — same
+         * fix as the absorb gate: mass is a consequence of bound
+         * circulation, not a prerequisite. A loop-only site emits
+         * at its level-gap line. */
+        if(!mass&&!siteLevel(si))continue;
         /* bound energy thermalizes into circulation: a whole quantum
          * organizes at once — charge >= 256 converts into a complete
          * loop (128+128) on a free edge. Structure forms in quanta,
