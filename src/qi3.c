@@ -583,15 +583,23 @@ EMS_API void qi3_tick(void){
             mass=qMass[si];
         }
         if(!mass)continue;
-        /* bound energy thermalizes into circulation: charge organizes
-         * into winding on a loop pair — the absorbed-energy pool feeds
-         * the internal structure. */
-        if(e>=32){
-            int ch=randByte()%QChannels, conv=e>>4;
-            if(conv){
-                qWinding[si*QChannels+ch]+=(uint32_t)conv>>1;
-                qWinding[si*QChannels+(ch^1)]+=(uint32_t)conv>>1;
-                qCharge[si]=e-conv;
+        /* bound energy thermalizes into circulation: a whole quantum
+         * organizes at once — charge >= 256 converts into a complete
+         * loop (128+128) on a free edge. Structure forms in quanta,
+         * not a trickle that the drain sheds before it can close. */
+        /* thermalize only above a fuel reserve — the site keeps a
+         * charge pool to emit from, else every quantum becomes a
+         * loop that radiates away and the lump burns out. */
+        if(e>512){
+            int fe=-1;
+            for(int e2=0;e2<QChannels/2;e2++){
+                uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
+                uint32_t m=a<b?a:b;if(m<128){fe=e2;break;}
+            }
+            if(fe>=0){
+                qWinding[si*QChannels+2*fe]+=128;
+                qWinding[si*QChannels+2*fe+1]+=128;
+                qCharge[si]=e-256;
             }
         }
         /* ONE quantum per transition: a site at level n>=2 falls
