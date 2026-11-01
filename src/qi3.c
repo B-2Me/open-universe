@@ -585,7 +585,15 @@ EMS_API void qi3_tick(void){
         }
         for(int c=0;c<QChannels;c++){
             int offer=qPhoton_next[si*QChannels+c];
-            if(!offer||!mass)continue;
+            /* bare sites CAN arm incipients — mass is a CONSEQUENCE
+             * of bound structure (the deposit creates winding -> the
+             * mass-equivalent), not a prerequisite. But bare-vacuum
+             * catch is RARE: an unstructured site is a weak absorber,
+             * not a strong one — ~1/16 of arriving photons can arm
+             * (density grows the rate later via the neighbor density
+             * field, but the base bootstrap rate is low). */
+            if(!offer)continue;
+            if(!mass&&(randByte()&15))continue;   /* 15/16 pass through */
             int nu=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
             /* edge-local line: the channel's own winding + site mass
              * set what this edge can absorb — different edges of the
