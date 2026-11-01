@@ -48,6 +48,9 @@ static uint32_t *qPhoton, *qPhoton_next, *qPhotonNu, *qPhotonNu_next;
 static uint32_t *qConfirm, *qSessionStrength, *qDepositEdge, *qWinEdge;
 static uint8_t  *qSessionState;                  /* per-EDGE (9/site) */
 static uint32_t *qHeld, *qHeldNu, *qHeldBirth, *qHeldPhase;   /* incipients */
+static uint32_t *qHeldInt;                                     /* internal incipients — offers
+                 * answered INTRA-node (a saturated edge's offer routed
+                 * to the node's own free edges) — the internal exchange */
 static uint8_t  *qHeldDir, *qHeldStim;           /* dir + stim candidates */
 static uint32_t *qPhotonBirth, *qPhotonBirth_next;/* offer birth tick tag */
 static uint32_t *qAck, *qAck_next;               /* returning confirms */
@@ -241,6 +244,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qDepositEdge    =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qWinEdge        =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeld           =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qHeldInt        =calloc((size_t)QSites,sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
     qHeldStim       =calloc((size_t)QSites*(QChannels/2),1);
@@ -320,12 +324,14 @@ EMS_API void qi3_tick(void){
                      * transition, one quantum — no multiplicative
                      * runaway. */
                     if(siteLevel(si)>1){
-                        qPhoton[si*QChannels+cc]+=h+1;
+                        qPhoton[si*QChannels+cc]+=1;  /* ONE clone — not h+1;
+                         * the comment said it, the code didn't. The
+                         * multiplicative runaway was this line. */
                         qPhotonNu[si*QChannels+cc]=nu;
                         siteUnwind(si,nu);          /* fell one band */
                         qEvents[17]++;
                     } else {
-                        qPhoton[si*QChannels+cc]+=h; /* can't drop: pass */
+                        qPhoton[si*QChannels+cc]+=1; /* can't drop: pass one */
                         qPhotonNu[si*QChannels+cc]=nu;
                     }
                     qHeldStim[si*(QChannels/2)+e]=0;
@@ -405,6 +411,26 @@ EMS_API void qi3_tick(void){
             }
             acc+=wt;
             qHeld[si*(QChannels/2)+e]=0;
+        }
+        /* INTERNAL incipients actualize — RARE: the network ontology
+         * prefers large infrequent changes. One internal transaction
+         * per site per tick at most — the dense-regime exception,
+         * not equilibrium flow. The offer deposits a full quantum
+         * to a free internal edge. */
+        if(qHeldInt[si]>=128){
+            int fe=-1,start=randByte()%(QChannels/2);
+            for(int j=0;j<QChannels/2;j++){
+                int e2=(start+j)%(QChannels/2);
+                uint32_t a=qWinding[si*QChannels+2*e2],
+                         b=qWinding[si*QChannels+2*e2+1];
+                uint32_t m=a<b?a:b;
+                if(m<128){fe=e2;break;}
+            }
+            if(fe>=0){
+                qWinding[si*QChannels+2*fe]+=128;
+                qWinding[si*QChannels+2*fe+1]+=128;
+                qHeldInt[si]-=128;qEvents[3]++;
+            }
         }
     }
 
@@ -560,12 +586,45 @@ EMS_API void qi3_tick(void){
                 }
             }
             if(match){
-                /* arm an INCIPIENT transaction: the offer is held on
-                 * the edge until the resolution pass actualizes (or
-                 * declines) it next tick — the heartbeat takes two
-                 * beats: edge reacts first, node resolves after. */
+                /* arm an INCIPIENT transaction — BUT the node has a
+                 * receptive capacity: its edge-space is its whole
+                 * boundary to the world, so it can hold at most
+                 * ~9 incipient transactions (one per edge). At
+                 * capacity new offers are DECLINED — a bound node
+                 * can't receive more than its interface can hold.
+                 * The Planck fix for the incipient runaway: finite
+                 * regions have finite receptive capacity. */
                 int edge=(c>>1);
                 int ei=si*(QChannels/2)+edge;
+                uint32_t heldTot=0;
+                for(int e3=0;e3<QChannels/2;e3++)
+                    heldTot+=qHeld[si*(QChannels/2)+e3];
+                if(heldTot>=QChannels/2){
+                    /* external saturated — but the node can answer
+                     * INTERNALLY: the offer routes to the intra-node
+                     * ledger, bounded by the bound volume (each quantum
+                     * of structure hosts one internal negotiation). */
+                    uint32_t vol=0;
+                    for(int e3=0;e3<QChannels/2;e3++){
+                        uint32_t a=qWinding[si*QChannels+2*e3],
+                                 b=qWinding[si*QChannels+2*e3+1];
+                        uint32_t m=a<b?a:b;
+                        if(m>=32)vol+=m;
+                    }
+                    if(qHeldInt[si]<(vol>>7)*128){
+                        qHeldInt[si]+=offer;
+                        qPhoton_next[si*QChannels+c]-=offer;
+                        continue;
+                    }
+                    /* both saturated: DECLINE — the transaction can't
+                     * complete, but the offer's energy isn't lost: it
+                     * sinks into the site's charge (fuel for the medium,
+                     * the thermalization path — a declined photon is
+                     * absorbed as potential, not left accumulating). */
+                    qCharge[si]+=nu;
+                    qPhoton_next[si*QChannels+c]-=offer;
+                    continue;
+                }
                 qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
                 qHeldBirth[ei]=qPhotonBirth_next[si*QChannels+c];
                 /* phase = nu x transit ticks mod 256 — the photon's
@@ -573,12 +632,17 @@ EMS_API void qi3_tick(void){
                 qHeldPhase[ei]=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
                 qPhoton_next[si*QChannels+c]-=offer;
             } else if(stim){
-                /* stim arms an INCIPIENT too — it enters the lottery
-                 * like absorption; flagged so a win clones instead
-                 * of absorbing (stimulation competes, it's not a
-                 * deterministic trigger). */
+                /* stim arms an INCIPIENT too — but it needs the same
+                 * receptive capacity as absorb: the node's edges can
+                 * only hold so many negotiations. Uncapped stim arms
+                 * were the absorb runaway — held accumulating without
+                 * bound, resolving as huge h. */
                 int edge=(c>>1);
                 int ei=si*(QChannels/2)+edge;
+                uint32_t heldTot=0;
+                for(int e3=0;e3<QChannels/2;e3++)
+                    heldTot+=qHeld[si*(QChannels/2)+e3];
+                if(heldTot>=QChannels/2)continue;
                 qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
                 qHeldStim[ei]=1;
                 qPhoton_next[si*QChannels+c]-=offer;
