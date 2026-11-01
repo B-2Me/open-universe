@@ -470,8 +470,8 @@ EMS_API void qi3_tick(void){
         if(hit>0){
             qMassFlight[si*QChannels+c]-=hit;qMassFlight[si*QChannels+oc]-=hit;
             int nu=qMass[si]>4?(int)(qMass[si]>>2):64;
-            qPhoton_next[si*QChannels+c]+=hit;
-            qPhoton_next[si*QChannels+oc]+=hit;
+            qPhoton_next[si*QChannels+c]=1;   /* one photon per channel */
+            qPhoton_next[si*QChannels+oc]=1;
             qPhotonNu_next[si*QChannels+c]=nu;
             qPhotonNu_next[si*QChannels+oc]=nu;
             qCharge[si]+=hit;                      /* binding residue */
@@ -506,19 +506,29 @@ EMS_API void qi3_tick(void){
              * neighborhood, its place in the gradient). Dense
              * regions thermalize photons; sparse vacuum lets them
              * pass — the medium's own structure is the drag. */
+            /* vacuum absorption: the node's LOCAL DENSITY is its
+             * opacity — a single photon decays with probability scaled
+             * by the neighbor-sampled density (what the node measures
+             * of its neighborhood — its place in the gradient). */
             uint32_t density=qLocalDensity[si]+1;
-            uint32_t decay=(uint32_t)v*(density>>2)>>4;        /* ~density/64 */
-            if(decay>(uint32_t)v)decay=v;
-            if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
-                qEvents[7]+=(uint64_t)decay*nu;}
-            if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
+            if((randByte()&255)<(int)((density>>2)&255)){
+                qPhoton[si*QChannels+c]=0;
+                qHeat[si]+=nu;
+                qEvents[7]+=nu;
+                continue;
+            }
             int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c;
-            qPhoton_next[ni]+=v;qPhotonNu_next[ni]=nu;
-            qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
-            qPhoton[si*QChannels+c]-=v;
+            /* one photon per channel — PRESENCE, not population. On
+             * collision the higher-nu photon wins (the stronger offer
+             * survives; the channel holds one signal, not a queue). */
+            if(!qPhoton_next[ni]||nu>qPhotonNu_next[ni]){
+                qPhoton_next[ni]=1;qPhotonNu_next[ni]=nu;
+                qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
+            }
+            qPhoton[si*QChannels+c]=0;
         }
     }
 
@@ -933,8 +943,8 @@ EMS_API void qi3_tick(void){
             int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
             qWinding[si*QChannels+c]-=burst;
             qWinding[si*QChannels+oc]-=burst;
-            qPhoton_next[si*QChannels+c]+=burst;
-            qPhoton_next[si*QChannels+oc]+=burst;
+            qPhoton_next[si*QChannels+c]=1;   /* one photon per channel */
+            qPhoton_next[si*QChannels+oc]=1;
             qPhotonNu_next[si*QChannels+c]=nu;
             qPhotonNu_next[si*QChannels+oc]=nu;
             qEvents[5]+=burst;                          /* annihilation */
