@@ -543,6 +543,9 @@ EMS_API void qi3_tick(void){
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz);
+            if(!qMass[ni])continue;   /* conduction is a medium property —
+                vacuum can't hold circulation; a transaction's quantum
+                must BIND at a massive absorber, not smear into void. */
             int d=(int)qSiteWind[si]-(int)qSiteWind[ni];
             if(d<8)continue;
             uint32_t k=(uint32_t)(d>>5);if(k>16)k=16;if(!k)k=1;
