@@ -234,3 +234,35 @@ the majority bound state over full `128` loops — the substrate's real
 **For future probes**: study the loop-medium for bound-state physics
 (the main regime); mass-creation needs a hot-injection sector —
 don't confuse the two.
+
+## The mass-as-consequence fixes — completing the cycle
+
+The substrate's ontology was right; two gates contradicted it. Both
+treated `qMass` as a *prerequisite* when the occupancy model already
+said mass is a *consequence* of bound circulation:
+
+1. **Absorption gate** (`if(!offer||!mass)continue`): bare sites
+   couldn't hold incipients — no first structure could ever form.
+   Fix: rare bare-vacuum catch (`1/16`) — mass derives from the
+   deposit's winding, not the other way around. Medium ignites:
+   `1687` loops from cold start.
+
+2. **Emission gate** (`if(!mass)continue`): level-2 loop-sites with
+   `mass=0` couldn't emit — the recirculation was blocked, the
+   medium crystallized. Fix: `siteLevel(si)` derives the emission
+   condition (winding -> level -> can radiate). Emits climb
+   `204->1491`, the structure->emit->photon cycle closes.
+
+**The methodology lesson**: when a "cold medium" resists every rate
+fix, look for a *gate* not a *rate* — the substrate's ontology was
+self-consistent (mass derives from structure); the `!mass` checks
+contradicted it. Diagnosing upstream (what blocks the FIRST event)
+beat tuning downstream (rates on events that never fire).
+
+**The substrate's measured identity** (post-unblock):
+- Absorption band: `nu=32..128` (rung ladder = resonance window)
+- Emission line: `nu=32` (monochromatic ground transition)
+- Amp ratio `64:128` = `1.79` (bent half-loops dominate)
+- Edge-class `L2=2` bias = `1.31` (diagonal wells preferred)
+- Bootstrap: `1/16` bare-vacuum catch rate
+- The cycle: `photon -> absorb -> loop -> emit -> photon` — closed
