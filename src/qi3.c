@@ -587,10 +587,11 @@ EMS_API void qi3_tick(void){
          * organizes at once — charge >= 256 converts into a complete
          * loop (128+128) on a free edge. Structure forms in quanta,
          * not a trickle that the drain sheds before it can close. */
-        /* thermalize only above a fuel reserve — the site keeps a
-         * charge pool to emit from, else every quantum becomes a
-         * loop that radiates away and the lump burns out. */
-        if(e>512){
+        /* thermalize above a SURVIVAL floor (mass burn needs e>32
+         * + one more quantum's worth) — charge is fuel for staying
+         * alive and forming structure; the LOOPS are the reservoir,
+         * not the charge pool. */
+        if(e>288){
             int fe=-1;
             for(int e2=0;e2<QChannels/2;e2++){
                 uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
@@ -608,6 +609,10 @@ EMS_API void qi3_tick(void){
          * not a bank dump. */
         int n=siteLevel(si);
         if(n<2)continue;
+        /* excited states have a LIFETIME: emission is stochastic,
+         * not per-tick — else every loop unwinds the tick it forms
+         * and structure can never outpace the radiative drain. */
+        if(randByte()&3)continue;
         int line;
         if(qGapMode==5)line=qi3geoGap(si,1);
         else if(qGapMode>=1&&qGapMode<=4)line=qi3gapE(n,n-1);
@@ -727,7 +732,7 @@ EMS_API void qi3_level_set(int x,int y,int z,int v){
     qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=(uint32_t)v;
 }
 EMS_API int qi3_level_get(int x,int y,int z){
-    return qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
+    return siteLevel(siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth)));
 }
 EMS_API void qi3_winding_set(int x,int y,int z,int c,int v){
     if(c<QChannels)
