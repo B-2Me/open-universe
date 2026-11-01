@@ -129,7 +129,10 @@ static int qi3geoGap(int si,int bands){
     if(be<0)return 0;
     uint32_t reach=qBondDist[si*(QChannels/2)+be];
     uint64_t L2=reach?(uint64_t)reach*reach:edgeLen2(2*be);
-    int nu=(int)((uint64_t)bm*2/L2);   /* m matched winding / L^2 */
+    /* fractional transition: the shed is a QUARTER of the weakest
+     * loop — the emitted nu is that fraction's geometric energy,
+     * not the whole loop's. Deeper binding, smaller transitions. */
+    int nu=(int)((uint64_t)(bm>>2)*2/L2);
     if(nu<1)nu=1;if(nu>255)nu=255;return nu;
 }
 static uint64_t qTick, qPhotonLedger;
@@ -158,7 +161,7 @@ static inline int siteLevel(int si){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=128)n++;
+        if(m>=64)n++;   /* weakened cycles still count until <half */
     }
     if(n>8)n=8;return n;
 }
@@ -176,10 +179,16 @@ static inline void siteUnwind(int si,uint32_t amount){
         if(m>=128&&(be<0||m<bm)){bm=m;be=e;}   /* weakest complete loop */
     }
     if(be<0)return;
+    /* FRACTIONAL unwind: the loop sheds a QUARTER of its amplitude
+     * (one sub-level) but persists as a weaker cycle — transitions
+     * cost part of a quantum, excited states persist ~4x longer.
+     * Deep binding: the level structure is metastable, not a bank. */
     uint32_t a=qWinding[si*QChannels+be*2],b=qWinding[si*QChannels+be*2+1];
-    uint32_t k=a<b?a:b;
-    qWinding[si*QChannels+be*2]-=k;
-    qWinding[si*QChannels+be*2+1]-=k;
+    uint32_t m=a<b?a:b;
+    uint32_t shed=m>>2;if(shed<1)shed=1;
+    uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
+    qWinding[si*QChannels+be*2]-=da;
+    qWinding[si*QChannels+be*2+1]-=db;
 }
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
     return (uint8_t)((qRngSeed*0x2545F4914F6CDD1DULL)>>56); }
@@ -682,7 +691,7 @@ EMS_API void qi3_tick(void){
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
             uint32_t m=a<b?a:b;
-            if(m>0&&m<128){                        /* incomplete loop: shed it */
+            if(m>0&&m<32){                         /* sub-metastable: shed */
                 qWinding[si*QChannels+2*e]-=a<128?a:128;
                 qWinding[si*QChannels+2*e+1]-=b<128?b:128;
                 qPhoton_next[si*QChannels+2*e]+=1;
