@@ -537,6 +537,26 @@ EMS_API void qi3_tick(void){
             } else {
                 match=(nu%line==0&&nu>=line);
             }
+            if(qGapMode==6){
+                /* TOPOLOGICAL selection: no nu-table. The offer is a
+                 * packet of circulation; it can only complete a
+                 * transaction if depositing it lands the edge's loop
+                 * on an ALLOWED RUNG — the packet must exactly fill
+                 * a gap to the next legal state. The ladder IS the
+                 * selector: offers that can't close a legal state
+                 * are declined. */
+                match=0;
+                int edge6=(c>>1);
+                uint32_t a=qWinding[si*QChannels+2*edge6],
+                         b=qWinding[si*QChannels+2*edge6+1];
+                uint32_t m=a<b?a:b;
+                uint32_t step=1u<<qUnwindShift;         /* rung spacing */
+                for(uint32_t r=32;r<=128;r+=step){       /* allowed rungs */
+                    if((uint32_t)(m+nu)>=r&&(uint32_t)(m+nu)<r+step&&m<r){
+                        match=1;break;                   /* lands on a rung */
+                    }
+                }
+            }
             if(match){
                 /* arm an INCIPIENT transaction: the offer is held on
                  * the edge until the resolution pass actualizes (or
