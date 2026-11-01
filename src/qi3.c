@@ -625,12 +625,14 @@ EMS_API void qi3_tick(void){
                     qPhoton_next[si*QChannels+c]-=offer;
                     continue;
                 }
-                qHeld[ei]+=offer;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
+                /* an incipient is a TRANSACTION UNIT — one photon arms
+                 * one incipient, consumes one photon. The rest stay in
+                 * the channel for their own transactions later — the
+                 * flood was h=population-count actualizing at once. */
+                qHeld[ei]+=1;qHeldNu[ei]=nu;qHeldDir[ei]=c&1;
                 qHeldBirth[ei]=qPhotonBirth_next[si*QChannels+c];
-                /* phase = nu x transit ticks mod 256 — the photon's
-                 * oscillation accumulated along its path */
                 qHeldPhase[ei]=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
-                qPhoton_next[si*QChannels+c]-=offer;
+                qPhoton_next[si*QChannels+c]-=1;
             } else if(stim){
                 /* stim arms an INCIPIENT too — but it needs the same
                  * receptive capacity as absorb: the node's edges can
