@@ -474,15 +474,15 @@ EMS_API void qi3_tick(void){
         for(int c=0;c<QChannels;c++){
             int v=qPhoton[si*QChannels+c];if(!v)continue;
             int nu=qPhotonNu[si*QChannels+c]?qPhotonNu[si*QChannels+c]:1;
-            if((qTick%nu)==0){                       /* nu-gated transit
-                 * loss: one photon is absorbed by the medium — its
-                 * energy deposits into site charge (the sink), the
-                 * population loses one quantum. Range ~1/nu intact. */
-                if(qMass[si])qCharge[si]+=nu;
-                qEvents[7]+=nu;
-                v--;
-                if(!v){qPhoton[si*QChannels+c]=0;continue;}
-            }
+            /* vacuum absorption: the medium is an absorber too — a
+             * fraction of the channel's photons thermalize into the
+             * vacuum each tick (exponential lifetime, the species-
+             * inverse bound: the field population can't run away).
+             * The energy sinks into the vacuum's heat capacity. */
+            uint32_t decay=(uint32_t)v>>4;if(decay<1&&v>4)decay=1; /* ~1/16 */
+            v-=decay;
+            qEvents[7]+=(uint64_t)decay*nu;
+            if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
             int nx=wrapCoord(x+QChannelVec[c][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
