@@ -147,28 +147,37 @@ static inline uint64_t loopWinding(int si){
     return w;
 }
 static inline int siteLevel(int si){
-    uint64_t w=loopWinding(si);
-    int n=1+(int)(w>>8);if(n>8)n=8;return n;   /* loop-banded level */
+    /* topology-derived level: a level = ONE complete closed loop
+     * on an edge (matched winding >= the quantum). Level = count
+     * of loop-bearing edges — the 9-edge graph gives the cap for
+     * free, and the quantum is half the fusion threshold: a loop
+     * carries one quantum, a pair needs two. */
+    int n=1;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m>=128)n++;
+    }
+    if(n>8)n=8;return n;
 }
 static inline void siteUnwind(int si,uint32_t amount){
     (void)amount;
-    /* quantized unwind: a level drop removes exactly ONE band's
-     * worth of circulation (parked structure, not a fuel tank —
-     * the meso3i/link3 lesson: wound mass is structure, it stays
-     * until a transition drops it a band). Drain evenly per
-     * channel until total winding sits in the next band down. */
-    uint64_t w=0;
-    for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
-    int n=1+(int)(w>>8);if(n>8)n=8;
-    if(n<=1)return;                              /* ground: nothing to shed */
-    uint64_t target=(uint64_t)(n-2)<<8;          /* top of the n-1 band */
-    if(w<=target)return;
-    uint64_t shed=w-target;
-    for(int c=0;c<QChannels;c++){
-        uint32_t d=(uint32_t)(qWinding[si*QChannels+c]*shed/w);
-        if(d>qWinding[si*QChannels+c])d=qWinding[si*QChannels+c];
-        qWinding[si*QChannels+c]-=d;
+    /* quantized unwind: drop exactly ONE loop — the weakest
+     * complete circulation collapses (its winding releases as
+     * the transition's energy). Structure is loop-discrete, not
+     * band-smooth — a transition is a loop unwinding, not a
+     * bank balance draining. */
+    int be=-1;uint32_t bm=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m>=128&&(be<0||m<bm)){bm=m;be=e;}   /* weakest complete loop */
     }
+    if(be<0)return;
+    uint32_t a=qWinding[si*QChannels+be*2],b=qWinding[si*QChannels+be*2+1];
+    uint32_t k=a<b?a:b;
+    qWinding[si*QChannels+be*2]-=k;
+    qWinding[si*QChannels+be*2+1]-=k;
 }
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
     return (uint8_t)((qRngSeed*0x2545F4914F6CDD1DULL)>>56); }
@@ -281,11 +290,20 @@ EMS_API void qi3_tick(void){
                 /* WINNER actualizes — the CONSERVED-QUANTUM transfer:
                  * each photon carries exactly one band quantum; the
                  * emitter shed it at emission, the absorber gains it
-                 * as winding on this edge pair (not charge->slow
-                 * thermalize). The hole relocates: emitter -1 band,
-                 * absorber +1 band — structure conserved end-to-end. */
-                qWinding[si*QChannels+cc]+=h*128;
-                qWinding[si*QChannels+(cc^1)]+=h*128;
+                 * as winding on a loop edge (Pauli-like: filled edges
+                 * can't take another — quanta seek free loops). */
+                for(uint32_t ph=0;ph<h;ph++){
+                    int fe=-1;
+                    for(int e2=0;e2<QChannels/2;e2++){
+                        uint32_t a2=qWinding[si*QChannels+2*e2],
+                                 b2=qWinding[si*QChannels+2*e2+1];
+                        uint32_t m2=a2<b2?a2:b2;
+                        if(m2<128){fe=e2;break;}       /* free edge */
+                    }
+                    if(fe<0){qCharge[si]+=nu;continue;} /* all full: stays fuel */
+                    qWinding[si*QChannels+2*fe]+=128;
+                    qWinding[si*QChannels+2*fe+1]+=128;
+                }
                 qEvents[18]+=(uint64_t)h*nu;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
                 qSessionStrength[si*(QChannels/2)+e]+=h;
@@ -609,8 +627,13 @@ EMS_API void qi3_tick(void){
             uint32_t a=qWinding[si*QChannels+c];
             uint32_t b=qWinding[si*QChannels+oc];
             uint32_t pair=a<b?a:b;
-            if(pair<16)continue;                       /* stability floor */
-            uint32_t burst=pair>>3;if(burst<1)burst=1;
+            /* bound circulation is protected: annihilate only the
+             * antipodal winding ABOVE the loop quantum — free
+             * particle/antiparticle excess decays, the closed loop
+             * (the level structure itself) persists. */
+            uint32_t free=pair>128?pair-128:0;
+            if(free<16)continue;                       /* stability floor */
+            uint32_t burst=free>>3;if(burst<1)burst=1;
             int n=siteLevel(si);if(n<2)n=2;
             int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
             qWinding[si*QChannels+c]-=burst;
@@ -630,17 +653,25 @@ EMS_API void qi3_tick(void){
      * but now only real stable states persist to be read. */
     for(int si=0;si<QSites;si++){
         if(!qMass[si])continue;
-        uint64_t w=0;
-        for(int c=0;c<QChannels;c++)w+=qWinding[si*QChannels+c];
-        if(w<256)continue;                      /* forming: keep sub-quantum */
-        uint64_t rem=w&255;                     /* below the band edge */
-        if(!rem)continue;
-        uint64_t shed=w>rem?rem:w;              /* shed to the floor */
-        for(int c=0;c<QChannels;c++){
-            uint32_t d=(uint32_t)(qWinding[si*QChannels+c]*shed/(w?w:1));
-            if(d>qWinding[si*QChannels+c])d=qWinding[si*QChannels+c];
-            qWinding[si*QChannels+c]-=d;
-            if(d){qPhoton_next[si*QChannels+c]+=1;qPhotonNu_next[si*QChannels+c]=(uint32_t)rem;}
+        /* per-edge quantization: an edge's loop is either complete
+         * (matched >= 128) or it evaporates — incomplete circulations
+         * shed as photons. Quantization enforced per loop, not per
+         * total — the discrete structure is a count of closed paths. */
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
+            uint32_t m=a<b?a:b;
+            if(m>0&&m<128){                        /* incomplete loop: shed it */
+                qWinding[si*QChannels+2*e]-=a<128?a:128;
+                qWinding[si*QChannels+2*e+1]-=b<128?b:128;
+                qPhoton_next[si*QChannels+2*e]+=1;
+                qPhotonNu_next[si*QChannels+2*e]=m;
+            } else if(m>128){                      /* saturated loop: cap at
+                 * the quantum — one loop per edge (exclusion), the
+                 * excess is free winding that evaporates */
+                uint32_t ex=m-128;
+                qWinding[si*QChannels+2*e]-=ex;
+                qWinding[si*QChannels+2*e+1]-=ex;
+            }
         }
     }
 
