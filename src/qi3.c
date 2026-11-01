@@ -154,6 +154,19 @@ static inline uint64_t loopWinding(int si){
               ?qWinding[si*QChannels+2*e]:qWinding[si*QChannels+2*e+1]);
     return w;
 }
+static inline void snapLoop(int si,int e){
+    /* rung-quantize a loop's matched amplitude on arrival — the
+     * bound state snaps to the allowed ladder, excess stays free */
+    int c0=si*QChannels+2*e, c1=c0+1;
+    uint32_t a=qWinding[c0],b=qWinding[c1];
+    uint32_t m=a<b?a:b;
+    if(m<1||m>128)return;
+    uint32_t rung=m>>qUnwindShift<<qUnwindShift;  /* nearest rung <= m */
+    if(rung<32)rung=32;                          /* don't snap below floor */
+    uint32_t dm=m-rung;
+    if(a>b){qWinding[c0]-=dm;}else if(b>a){qWinding[c1]-=dm;}
+    else{qWinding[c0]-=dm/2;qWinding[c1]-=dm/2;}
+}
 static inline int siteLevel(int si){
     /* topology-derived level: a level = ONE complete closed loop —
      * a straight loop on an edge pair (out c, back c^1) OR a BENT
@@ -334,9 +347,34 @@ EMS_API void qi3_tick(void){
                         if(m2<128){fe=e2;break;}       /* free edge */
                     }
                     if(fe<0){qCharge[si]+=nu;continue;} /* all full: stays fuel */
-                    qWinding[si*QChannels+2*fe]+=128;
-                    qWinding[si*QChannels+2*fe+1]+=128;
-                    qDepositEdge[si*(QChannels/2)+fe]+=1;  /* where it landed */
+                    /* the quantum lands STRAIGHT (128+128 on one edge)
+                     * or BENT (64+64 on two edges — the internal
+                     * transaction's corner-loop: offer on e1 answered
+                     * by e2 on the same node, circulation turns
+                     * through it). Both are real 3D structures. */
+                    int fe2=-1;
+                    if(randByte()&1){          /* ~half land internally */
+                        for(int j=0;j<QChannels/2;j++){
+                            int e2=(start+j)%(QChannels/2);
+                            if(e2==fe)continue;
+                            uint32_t a2=qWinding[si*QChannels+2*e2],
+                                     b2=qWinding[si*QChannels+2*e2+1];
+                            uint32_t m2=a2<b2?a2:b2;
+                            if(m2<128){fe2=e2;break;}
+                        }
+                    }
+                    if(fe2>=0){
+                        qWinding[si*QChannels+2*fe]+=64;
+                        qWinding[si*QChannels+2*fe+1]+=64;
+                        qWinding[si*QChannels+2*fe2]+=64;
+                        qWinding[si*QChannels+2*fe2+1]+=64;
+                        qDepositEdge[si*(QChannels/2)+fe]+=1;
+                        qDepositEdge[si*(QChannels/2)+fe2]+=1;
+                    } else {
+                        qWinding[si*QChannels+2*fe]+=128;
+                        qWinding[si*QChannels+2*fe+1]+=128;
+                        qDepositEdge[si*(QChannels/2)+fe]+=1;
+                    }
                 }
                 qEvents[18]+=(uint64_t)h*nu;
                 qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
@@ -588,6 +626,7 @@ EMS_API void qi3_tick(void){
             qWinding[si*QChannels+e*2+1]-=k;
             qWinding[ni*QChannels+e*2]+=k;
             qWinding[ni*QChannels+e*2+1]+=k;
+            snapLoop(ni,e);   /* quantize the received circulation */
             qEvents[24]+=k;
         }
     }
