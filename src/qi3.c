@@ -115,20 +115,22 @@ static int qi3gapE(int a,int b){
    different nu (the spectrum IS the structure). */
 static int qi3geoGap(int si,int bands){
     if(bands<1)return 0;
-    /* find the energy price of the tightest band-worth of loops:
-       walk edges, charge the cheapest-shed first (loose loops go). */
-    uint64_t need=(uint64_t)bands<<8;
-    uint64_t E=0;
+    /* topology-aware: a transition drops the WEAKEST complete loop
+     * (what siteUnwind sheds) — the emitted nu is that loop's energy,
+     * E ~ 128 * 4 / L^2: the quantum over the edge's reach (a tight
+     * loop is more energetic, like a particle in a smaller box).
+     * Use the measured bond distance when the handshake knows it. */
+    int be=-1;uint32_t bm=0;
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        uint64_t take=m*2; if(take>need)take=need;
-        uint32_t reach=qBondDist[si*(QChannels/2)+e];
-        uint64_t L2=reach?(uint64_t)reach*reach:edgeLen2(2*e);
-        E+=(uint64_t)take*4/L2;
-        need-=take; if(!need)break;
+        if(m>=128&&(be<0||m<bm)){bm=m;be=e;}
     }
-    int nu=(int)(E>>4);if(nu<1)nu=1;if(nu>255)nu=255;return nu;
+    if(be<0)return 0;
+    uint32_t reach=qBondDist[si*(QChannels/2)+be];
+    uint64_t L2=reach?(uint64_t)reach*reach:edgeLen2(2*be);
+    int nu=(int)((uint64_t)bm*2/L2);   /* m matched winding / L^2 */
+    if(nu<1)nu=1;if(nu>255)nu=255;return nu;
 }
 static uint64_t qTick, qPhotonLedger;
 static uint64_t qRngSeed = 88172645463325252ULL;
