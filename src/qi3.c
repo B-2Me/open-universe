@@ -202,7 +202,7 @@ static inline int siteLevel(int si){
     if(n>8)n=8;return n;
 }
 static inline void siteUnwind(int si,uint32_t amount){
-    (void)amount;
+    int full=(amount>500000);   /* full depletion: consume the whole loop */
     /* quantized unwind: drop exactly ONE loop — the weakest
      * complete circulation collapses (its winding releases as
      * the transition's energy). Structure is loop-discrete, not
@@ -222,10 +222,14 @@ static inline void siteUnwind(int si,uint32_t amount){
      * loop strengths are real states, so the spectrum sharpens. */
     uint32_t a=qWinding[si*QChannels+be*2],b=qWinding[si*QChannels+be*2+1];
     uint32_t m=a<b?a:b;
-    uint32_t rung=(m-1)>>qUnwindShift;          /* rungs: quantum / 2^shift apart */
-    uint32_t next=rung<<qUnwindShift;           /* snap to the rung below */
-    if(next>=m)next=(rung-1)<<qUnwindShift;     /* ensure it drops */
-    uint32_t shed=m-next;if(shed<1)shed=1;
+    uint32_t shed;
+    if(full){shed=m;}                           /* consume the whole loop */
+    else{
+        uint32_t rung=(m-1)>>qUnwindShift;
+        uint32_t next=rung<<qUnwindShift;
+        if(next>=m)next=(rung-1)<<qUnwindShift;
+        shed=m-next;if(shed<1)shed=1;
+    }
     uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
     qWinding[si*QChannels+be*2]-=da;
     qWinding[si*QChannels+be*2+1]-=db;
@@ -331,11 +335,13 @@ EMS_API void qi3_tick(void){
                      * transition, one quantum — no multiplicative
                      * runaway. */
                     if(siteLevel(si)>1){
-                        qPhoton[si*QChannels+cc]+=1;  /* ONE clone — not h+1;
-                         * the comment said it, the code didn't. The
-                         * multiplicative runaway was this line. */
+                        qPhoton[si*QChannels+cc]+=1;  /* ONE clone per
+                         * trigger — and the excitation is FULLY SPENT:
+                         * the whole weakest loop unwinds, not a rung.
+                         * One atom, one photon, done — conservation
+                         * does the bounding, not a rate cap. */
                         qPhotonNu[si*QChannels+cc]=nu;
-                        siteUnwind(si,nu);          /* fell one band */
+                        siteUnwind(si,1000000);     /* shed the whole loop */
                         qEvents[17]++;
                     } else {
                         qPhoton[si*QChannels+cc]+=1; /* can't drop: pass one */
@@ -507,7 +513,14 @@ EMS_API void qi3_tick(void){
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz)*QChannels+c;
-            qPhoton_next[ni]+=v;qPhotonNu_next[ni]=nu;
+            /* the photon field has a finite capacity: a channel can
+             * hold at most ~255 photons (the region's finite state
+             * space — 't Hooft: finite cells, finite states). Beyond
+             * capacity the excess can't propagate — the field can't
+             * run away past a real physical bound. */
+            int cap=qPhoton_next[ni]+v>255?255-qPhoton_next[ni]:v;
+            if(cap<0)cap=0;
+            qPhoton_next[ni]+=cap;qPhotonNu_next[ni]=nu;
             qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
             qPhoton[si*QChannels+c]-=v;
         }
