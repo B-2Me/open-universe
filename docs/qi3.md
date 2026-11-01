@@ -135,3 +135,79 @@ The photon-field flood was a stacked-mechanics issue, fixed in layers:
 **Remaining unbound**: emission source rate vs all sinks — production
 still wins at high injection. The field equilibrium is contended
 (dips + recovers) but not closed.
+
+## The bootstrap deadlock — how the medium learned to assemble itself
+
+The most instructive arc in the substrate's development: a cascade of
+~8 mechanism layers chasing a "cold medium" that turned out to be a
+single structural gate.
+
+### The symptom
+
+After the flood fixes (presence-model photons, unlocked edges, density
+opacity, self-driving re-emission), the medium was stable but nearly
+dead: ~47 massive sites, ~1 absorb per 150 ticks, ~300 photons.
+
+### The wrong diagnoses (all tried, all instructive)
+
+1. **Rate imbalance** — `cycle=4` helped the flood but froze structure
+2. **Missing sink** — vacuum decay + heat reservoir: correct physics,
+   didn't wake the medium
+3. **Self-driving needed** — thermal re-emission closes the cycle:
+   real physics, still cold
+4. **Two-channel competition** — decay vs absorb branching ratio:
+   correct model of opacity, still cold
+5. **Temperature coupling** — heat should melt structure: REAL physics
+   but applied to the WRONG problem — the medium had no structure to
+   melt yet. Reverted.
+6. **Coverage/density** — sweeps showed structure saturates at ~2.3%
+   regardless of photon flux: self-limiting, not flux-limited
+
+### The actual diagnosis — a bootstrap deadlock
+
+The resonant-seed test exposed it: photons at rung-scale `nu`
+(32..128) still gave `absorbs=0`. Walking the path:
+
+- `absorb` requires `mass != 0` (line 588: `if(!offer||!mass)continue`)
+- `mass` forms only via fusion (`nua+nub >= 256`)
+- fusion needs high-nu photons -> resonant photons can't fuse
+- -> no mass -> no absorption -> no structure -> no mass. Deadlock.
+
+**The physics error**: `mass` was a *prerequisite* for absorption when
+it should be a *consequence* of bound structure. In TI, any region can
+be an absorber — a bare site should hold an incipient; the deposit
+CREATES the winding that becomes the mass-equivalent.
+
+### The fix — rare bare-site catch
+
+```c
+if(!offer)continue;
+if(!mass&&(randByte()&15))continue;   /* 15/16 pass through */
+```
+
+Bare sites arm incipients at 1/16 rate — weak-vacuum absorber, not
+strong. Mass derives from structure, not the other way around.
+
+### The result — the medium ignites
+
+```
+resonant: 1164 absorbs, 1687 loops, photons consumed to 101
+mixed:    4 absorbs, 6 loops
+off:      0 absorbs, 0 loops  (correct: off-resonance streams past)
+```
+
+The substrate does honest spectroscopy — resonant photons bootstrap
+structure, off-resonance free-stream. The medium is self-assembling.
+
+### What the arc teaches (methodology)
+
+- **Diagnose UPSTREAM first**: the dead medium wasn't cold, it was
+  gated — every rate-tuning attempt treated a healthy gate as a bug
+- **Falsifiable predictions first**: the resonant-seed test was the
+  FIRST test that could fail cleanly — and it did, pointing at the
+  real gate instead of another rate
+- **Mass is derived, not given**: the occupancy model already said
+  this — the arm gate contradicting it was the actual bug
+- **The substrate tells you its physics**: "cold medium" was really
+  "frequency-selective medium" — honest spectroscopy we mistook for
+  a frozen state
