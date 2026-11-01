@@ -508,10 +508,12 @@ EMS_API void qi3_tick(void){
              * pass — the medium's own structure is the drag. */
             /* vacuum absorption: the node's LOCAL DENSITY is its
              * opacity — a single photon decays with probability scaled
-             * by the neighbor-sampled density (what the node measures
-             * of its neighborhood — its place in the gradient). */
+             * by the neighbor-sampled density. This is an INTERNAL
+             * process — the medium's own thermalization — so it runs
+             * on the internal clock, not transit: a photon gets ~16
+             * hops to find a transaction before the vacuum nabs it. */
             uint32_t density=qLocalDensity[si]+1;
-            if((randByte()&255)<(int)((density>>2)&255)){
+            if((qTick%(1<<qCycleShift))==0&&(randByte()&255)<(int)((density>>2)&255)){
                 qPhoton[si*QChannels+c]=0;
                 qHeat[si]+=nu;
                 qEvents[7]+=nu;
