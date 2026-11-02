@@ -645,3 +645,12 @@ entirely. Binary stable/unstable, not a continuum.
 - Spin: none — +x/-x asymmetry equilibrates instantly, no
   persistent directional circulation (scalar bound states).
 - Regge: no M~J relation — mass production flat vs depth.
+
+## The bound state under bombardment — confinement robustness
+
+Post-confinement the lump holds 1152 under ALL photon energies
+(nu=16-192) — bound structure can't be eroded by bombardment
+anymore. But it interacts selectively: nu=128 photons FUSE on
+it (producing mass=10), nu=64 leaves residual flux. The bound
+state is a fusion target for resonant photons, transparent
+else — a selective interaction cross-section.
