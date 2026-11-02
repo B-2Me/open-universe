@@ -401,25 +401,24 @@ EMS_API void qi3_tick(void){
                              bA=qWinding[si*QChannels+2*arr+1];
                     uint32_t mA=aA<bA?aA:bA;
                     if(mA+nu<=160){
-                        /* DIRECTIONAL-FACE deposit — the offer's
-                         * absorbed energy distributes across the
-                         * arrival node's face: each NEIGHBOR gets a
-                         * share weighted by how aligned its direction
-                         * is with the bound state's directedness.
-                         * An extreme directedness concentrates the
-                         * deposit toward the directed side (the
-                         * vortex feeding on aligned momentum);
-                         * balanced states spread it evenly. */
-                        qWinding[si*QChannels+cc]+=nu>>1; /* the direct share */
-                        uint32_t spread=nu>>2;             /* the face share */
+                        /* matched deposit first — bound structure
+                         * needs both channels (the circulation is
+                         * balanced occupancy). If the bound state
+                         * ALREADY has directedness (a vortex), a
+                         * share also feeds the directed edge — the
+                         * spin responds to momentum without
+                         * unbalancing structure formation. */
+                        qWinding[si*QChannels+2*arr]+=nu;
+                        qWinding[si*QChannels+2*arr+1]+=nu;
                         int de=-1;int32_t dd=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             int32_t d2=(int)qWinding[si*QChannels+2*e2]
                                      -(int)qWinding[si*QChannels+2*e2+1];
                             if(d2>dd){dd=d2;de=e2;}
                         }
-                        if(de>=0)qWinding[si*QChannels+2*de]+=spread; /* toward spin */
-                        else qWinding[si*QChannels+(cc&~1)]+=spread;  /* else spread */
+                        if(de>=0){                            /* feed spin */
+                            qWinding[si*QChannels+2*de]+=nu>>2;
+                        }
                         qDepositEdge[si*(QChannels/2)+arr]+=1;
                         continue;
                     }
