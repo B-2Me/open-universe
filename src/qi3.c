@@ -992,6 +992,20 @@ EMS_API void qi3_tick(void){
                      b=qWinding[si*QChannels+2*e+1];
             uint32_t m=a<b?a:b;
             if(m<128)continue;                    /* needs a full quantum */
+            /* a stretched channel is a LINEAR flux tube — the field
+             * concentrated on ONE direction between separated charges.
+             * A bound LUMP has all its edges saturated; a dense MEDIUM
+             * saturates uniformly — neither is a stretched tube. The
+             * interior of a real tube has only the channel edge wound:
+             * the site is a tension point, not a lump. */
+            int sat=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                uint32_t a2=qWinding[si*QChannels+2*e2],
+                         b2=qWinding[si*QChannels+2*e2+1];
+                uint32_t m2=a2<b2?a2:b2;
+                if(m2>=128)sat++;
+            }
+            if(sat>2)continue;                    /* a lump, not a channel */
             int c=e<<1;
             int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
             int nx=wrapCoord(xx+QChannelVec[c][0],QWidth);
@@ -1092,8 +1106,12 @@ EMS_API void qi3_tick(void){
          * mass ledger — the internal exchange channel. The bound
          * circulation condenses to persistence rather than radiating
          * — the closed cycle where structure and mass hold each
-         * other. A bare (massless) site still radiates a photon. */
-        if(mass>0){
+         * other. A bare (massless) site still radiates a photon.
+         * BOUNDED: the composite's mass can't exceed a share of its
+         * bound volume — a bound state has a CHARACTERISTIC mass,
+         * not unbounded accretion. Once mass-full, the shed goes to
+         * radiation — the species equilibrate at a fixed ratio. */
+        if(mass>0&&(uint64_t)mass*8<loopWinding(si)){
             qMass[si]+=line;                       /* structure -> mass */
             siteUnwind(si,(uint32_t)line);          /* shed pays it */
             qEvents[29]++;
