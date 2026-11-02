@@ -830,6 +830,22 @@ EMS_API void qi3_tick(void){
             uint64_t L2=edgeLen2(2*e);
             qLoopPhase[si*(QChannels/2)+e]=
                 (qLoopPhase[si*(QChannels/2)+e]+(128/L2+1))&255;
+            /* LOCAL PHASE-COUPLING — nature's phase is a local field
+             * DOF coupled to neighbors (the wave equation propagates
+             * it). Each edge's phase drifts toward its spatial
+             * neighbor's phase on the same channel — a local
+             * mean-field pull, coherence emerging from coupling,
+             * not a global field. */
+            int c=e<<1;
+            int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
+            int ni=siteIndex(wrapCoord(xx+QChannelVec[c][0],QWidth),
+                             wrapCoord(yy+QChannelVec[c][1],QHeight),
+                             wrapCoord(zz+QChannelVec[c][2],QDepth));
+            int dp=(int)qLoopPhase[ni*(QChannels/2)+e]
+                  -(int)qLoopPhase[si*(QChannels/2)+e];
+            if(dp>127)dp-=255;if(dp<-127)dp+=255;
+            qLoopPhase[si*(QChannels/2)+e]=
+                (uint32_t)((int)qLoopPhase[si*(QChannels/2)+e]+(dp>>2))&255;
         }
     }
 
@@ -899,6 +915,22 @@ EMS_API void qi3_tick(void){
             qWinding[ni*QChannels+e*2]+=k;
             qWinding[ni*QChannels+e*2+1]+=k;
             snapLoop(ni,e);   /* quantize the received circulation */
+            /* PHASE-EXCHANGE — the circulation transfer couples the
+             * edges' phases: the donor's phase pulls the recipient's
+             * toward it (a phase-locking exchange, like the
+             * circulation carrying its cycle-position). Coherent
+             * bound states emerge when the phases lock — a single
+             * phase-field across the bound configuration instead
+             * of independent per-edge clocks. */
+            {
+                int dp=(int)qLoopPhase[si*(QChannels/2)+e]
+                      -(int)qLoopPhase[ni*(QChannels/2)+e];
+                /* shortest wrap around the 255-cycle */
+                if(dp>127)dp-=255;if(dp<-127)dp+=255;
+                int pull=dp>>4;                       /* ~1/16 toward */
+                qLoopPhase[ni*(QChannels/2)+e]=
+                    (uint32_t)((int)qLoopPhase[ni*(QChannels/2)+e]+pull)&255;
+            }
             qEvents[24]+=k;
         }
     }
