@@ -742,3 +742,15 @@ circulation); anti-aligned torque (-x) doesn't reverse it —
 the spin holds ~30 like a gyroscope resisting flip. A real
 angular-momentum analog — a bound state whose internal
 circulation responds to momentum direction.
+
+## Parallel & antiparallel spins coexist — independent orientations
+
+Two adjacent bound states hold independent spins: parallel
+(+30,+30) AND antiparallel (+30,-30) both persist — no forced
+alignment or annihilation. Like nature's magnetic domains or
+paired electrons — neighboring bound states can have any
+relative orientation, each stable.
+
+The spin analog is functionally complete: directedness on a
+confined volume persists, responds to torque (aligned feeds,
+anti-aligned resists), and holds independent orientations.
