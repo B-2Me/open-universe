@@ -405,3 +405,42 @@ was a guess, the measured temperature is a substrate constant.
 ask whether it's actually an equilibrium — the substrate was
 telling us its temperature the whole time; we kept reading a
 measured constant as a runaway.
+
+## The phase diagram and mobile mass — the substrate's dense end
+
+After the temperature calibration, the substrate revealed a full
+two-phase phase diagram — measured, not designed.
+
+**The phases** (nu-sweep):
+- nu=32-96: pure loop-medium (0 massive, ~50K loops) — the dilute
+  resonant phase
+- nu=128: transitional (~55% massive, 56K loops) — the boundary
+- nu>=144: condensed (~8000 massive, ~10-15K loops) — the massive
+  phase
+
+**The boundary IS the fusion threshold**: nu=128 is where 2*nu=256
+=qFusionWall — two photons meeting on facing channels can fuse.
+Below it, photons can't pair-produce (only loops); above it, fusion
+fires and the medium condenses. The substrate's pair-production
+energy, like nature's gamma->e+e- at 1.022 MeV.
+
+**Hysteresis — local-first all the way**: the condensed phase is
+stable after the drive stops (massive grew to 8000/8000 even
+without input, loops deepened 9K->40K). The phase is LOCAL MEMORY —
+each site's qMass ledger is its own persistence, no global phase
+variable. First-order-ish: the phase depends on whether the medium
+ever crossed nu=128, not on current input — like an undercooled
+liquid that stays liquid until nucleated.
+
+**Mobile mass — the rare win**: fusion doesn't just create mass, it
+LAUNCHES it (qMassFlight launches fused pairs apart on the two
+channels — momentum conserved at creation). The mass diffuses
+uniformly from a localized pocket to fill the grid — real mobile
+matter, not pinned structure. Mobility emerged because creation,
+propagation, and a dense medium all exist at once — not because a
+special mechanism was built for it.
+
+**Three mobile species**: photons (fast, c=1), winding (conduction,
+slow), mass (MassFlight, mobile matter) — all propagating through
+the same lattice at different rates. A genuine multi-species
+transport medium.
