@@ -236,3 +236,25 @@ closes on the "other side" like a real twisted loop. The
 circulation's orientation inverts as it wraps — the first
 spinor-like structure: a twisted circulation needing two
 turns to fully close.
+
+## DESIGN NOTE — per-edge quantum occupancy as spin-0/spin+/spin-
+
+Current: the substrate treats per-edge directedness as a summed
+occupancy (+/-/+-/none modes) — bound states are occupancy-sums,
+not distinguishable entities.
+
+CONSIDERED: separating per-edge quanta into:
+- spin-0 (no directedness — just bound volume, no mode occupancy)
+- spin+ (occupying the + mode — one circulation-quantum +)
+- spin- (occupying the - mode — one circulation-quantum -)
+- +- (both modes occupied — a paired state)
+
+And whether we need to TRACK spin+ and spin- quanta separately
+(per-bound-state identity — which quanta belong to which bound
+state) and bookkeep when they FLIP (a + becoming a -, the
+sheet transitioning — a real 360 rotation's sign-flip).
+
+For now: the summed occupancy produces the right emergent
+physics (exclusion, quantized counts, winding). The
+per-bound-state identity + spin-flip bookkeeping is the
+deeper structure needed for true separateness/eigenstates.
