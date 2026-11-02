@@ -230,7 +230,22 @@ static inline void siteUnwind(int si,uint32_t amount){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=32&&(be<0||m<bm)){bm=m;be=e;}    /* weakest bound edge */
+        if(m<32)continue;
+        /* skip edges whose directedness is part of a CLOSED
+         * circulation — a bound vortex's edges aren't weak, they're
+         * topologically protected. Don't shed the circulation. */
+        int32_t dd=(int)a-(int)b;if(dd<0)dd=-dd;
+        if(dd>=32){
+            int big=a>b?2*e:2*e+1;
+            int xx=si%QWidth,yy=(si/QWidth)%QHeight,zz=si/(QWidth*QHeight);
+            int ni=siteIndex(wrapCoord(xx+QChannelVec[big][0],QWidth),
+                             wrapCoord(yy+QChannelVec[big][1],QHeight),
+                             wrapCoord(zz+QChannelVec[big][2],QDepth));
+            int rc=(big&1)?big-1:big+1;
+            uint32_t ra=qWinding[ni*QChannels+rc],rb=qWinding[ni*QChannels+big];
+            if(ra>rb&&ra-rb>=32)continue;      /* reciprocal: closed */
+        }
+        if(be<0||m<bm){bm=m;be=e;}             /* weakest bound edge */
     }
     if(be<0)return;
     /* RUNG-QUANTIZED unwind: the loop drops to the next allowed
@@ -928,6 +943,24 @@ EMS_API void qi3_tick(void){
              * bound lump holds (every edge committed); partial
              * structure still spreads — selective confinement. */
             if(m>=128)continue;
+            /* VORTEX protection — an edge whose directedness is part
+             * of a CLOSED circulation is bound, not free to conduct.
+             * Don't drain its matched part — the circulation's
+             * closure is what holds it. */
+            {
+                int32_t dd=(int)a-(int)b;if(dd<0)dd=-dd;
+                if(dd>=32){
+                    int big=a>b?e*2:e*2+1;
+                    int rx=wrapCoord(x+QChannelVec[big][0],QWidth);
+                    int ry=wrapCoord(y+QChannelVec[big][1],QHeight);
+                    int rz=wrapCoord(z+QChannelVec[big][2],QDepth);
+                    int rns=siteIndex(rx,ry,rz);
+                    int rc=(big&1)?big-1:big+1;
+                    uint32_t ra=qWinding[rns*QChannels+rc],
+                             rb=qWinding[rns*QChannels+big];
+                    if(ra>rb&&ra-rb>=32)continue;  /* reciprocal: closed */
+                }
+            }
             uint32_t avail=m;
             if(k>avail)k=avail;if(!k)continue;
             /* CAPACITY BOUND — the deep question: a recipient accepts
