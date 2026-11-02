@@ -93,3 +93,10 @@ spin=0, both at the 512 ground state — the charge/spin being
 a real distinguishable conserved quantum that persists
 through bombardment. Real stable particles with quantum
 numbers.
+
+## Eternal particles carry charge but no charge-force yet
+
+Two charged eternal particles coexist (sep=4.0) without
+attracting/repelling — the net flux is a conserved quantum
+but doesn't produce a Coulomb-like force between particles.
+The charge needs a field-gradient coupling for interaction.
