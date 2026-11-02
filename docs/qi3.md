@@ -615,3 +615,17 @@ state harvests the environment's energy into persistence —
 funded, conserved (the bath drains into the mass ledger), but
 UNBOUNDED — the inverse runs without a countervailing drain.
 Real composites saturate; ours needs a balance mechanism.
+
+## Bound states cascade through metastable levels
+
+The deep lump's decay is STEPWISE, not smooth: it sheds the
+m>128 excess instantly, then holds at 1152 (9x128, all edges
+complete) ~60t before dropping through 1024 -> 968 -> 896
+plateaus — each a metastable configuration where a subset of
+edges are complete quanta. A decay cascade through discrete
+intermediate states with their own lifetimes — like nuclear
+isomer cascades, not continuous evaporation.
+
+Stability threshold: bound states need COMPLETE quanta
+(m>=128/edge) to persist — partial volumes (32, 64) evaporate
+entirely. Binary stable/unstable, not a continuum.
