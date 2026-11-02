@@ -513,11 +513,15 @@ EMS_API void qi3_tick(void){
              * the medium's own blackbody-law balance. */
             uint32_t density=qLocalDensity[si]+1;
             if((qTick%(1<<qCycleShift))==0){
-                uint32_t photonLoad=0;
-                for(int c2=0;c2<QChannels;c2++)photonLoad+=qPhoton[si*QChannels+c2];
-                uint32_t opac=density+(photonLoad>>2);   /* structure
-                     * + photon pressure — thermalization scales with
-                     * how much field the site actually holds */
+                /* opacity = STRUCTURE density only. Earlier versions
+                 * added photonLoad — photons suppressing photon decay —
+                 * which made the sink superlinear: the field could only
+                 * drain after extreme pileup, giving a limit cycle
+                 * (flood/collapse/rebuild). Matter absorbs photons,
+                 * photons don't absorb photons — a linear hazard means
+                 * the field settles at production/lambda, a real
+                 * equilibrium point instead of an oscillation. */
+                uint32_t opac=density;
                 uint32_t decay=((uint32_t)v*(opac>>2))>>8;
                 if(decay<1&&(randByte()&7)==0)decay=1;    /* floor: ~1/8 */
                 if(decay>(uint32_t)v)decay=v;
@@ -559,7 +563,13 @@ EMS_API void qi3_tick(void){
                 qPhotonNu_next[ni]=nu;
                 qPhotonBirth_next[ni]=qPhotonBirth[si*QChannels+c];
             }
-            qPhoton[si*QChannels+c]-=v;
+            /* CONSERVATION FIX: the whole channel is accounted —
+             * decay -> heat, scat -> rni, v -> ni. The old -=v left
+             * decay+scat ON the source: decayed photons stayed in
+             * flight AND became heat (double-counted), and scattered
+             * photons duplicated. ~1/8 minted per channel per tick —
+             * the field explosion was bookkeeping, not physics. */
+            qPhoton[si*QChannels+c]=0;
         }
     }
 
