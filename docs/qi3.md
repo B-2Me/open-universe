@@ -863,3 +863,11 @@ A wound lump's directedness holds ~94% (30/32) while the
 volume drains 1152->1020 — the circulation persists
 proportionally through the bound-state's decay, like a
 decaying nucleus keeping its spin. A real stable quantum.
+
+## The winding is bound-state-local — doesn't transfer
+
+A wound lump keeps its circulation (30) while an adjacent
+unwound lump stays unwound (0) — the winding doesn't spread
+to neighbors via proximity. A per-bound-state conserved
+quantum — each bound state's circulation is its own, like a
+real spin being intrinsic to the bound state, not shared.
