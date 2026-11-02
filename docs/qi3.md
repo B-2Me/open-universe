@@ -668,3 +668,21 @@ spectral selectivity mechanism.
 Edge-phases are synchronized (deterministic cycling per edge
 type, no spatial winding) — the phase is a local oscillator
 per edge, not a coherent field across the bound state.
+
+## Vortex-closure protection — the first bound circulation
+
+Directedness forming a CLOSED directed path is protected from
+draining — a bound vortex, topologically stable. Trace the
+directedness chain forward; if it closes back to the start
+within 8 hops it's a bound circulation (the flow returns to
+itself, drains nowhere).
+
+Measured: a seeded ring holds net circulation ~12 (vs 0 before
+protection); a turbulent field holds ~24% of its directedness
+(closed loops survive, the rest drains). Partial but real —
+the first topological-spin signature.
+
+Honest gaps: the closure trace follows the strongest directedness
+and doesn't catch every closed path (a simple 2-cycle drains).
+The mechanism protects SOME closed circulation — a real but
+fragile bound-vortex state.
