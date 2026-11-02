@@ -761,3 +761,38 @@ The confined vortex's directedness holds ~30 in vacuum, a
 radiation bath, AND a dense medium — the bound state's
 internal circulation survives regardless of surroundings,
 like real angular momentum independent of the environment.
+
+## FULL 0.8fm/NODE CHARACTERIZATION — the measured profile
+
+Medium: 12.3K loops condensing (48K absorbs vs 816 emits),
+amp-32 dominant, L2 edge bias, bounded photon field.
+
+Bound states: occupancy-volume lumps (matched winding).
+Persistent (1152->896 over 400t in vacuum), context-dependent
+stability (vacuum decays, dense media stable at 1152), binary
+stability threshold (complete quanta m>=128 persist, partial
+evaporates). Stepwise decay cascades through metastable
+plateaus; isomers (128-level ~5x longer-lived).
+
+Spectrum: nu=32-128 emission band; fusion threshold
+~nu=112-128 (2nu>=224-256, pair production); branching via
+dominant modes.
+
+String: linear tension V~sigma*r, breaking on real stretched
+channels (not saturated media) into new pairs.
+
+SPIN (the angular-momentum analog): directedness on a
+CONFINED bound volume (m>=128 anchored) persists ~94% as the
+volume drains. Responds to torque — aligned momentum feeds
+the circulation, anti-aligned resists. Independent
+orientations — parallel and antiparallel spins coexist.
+Environment-robust (vacuum/bath/dense all preserve ~30).
+
+Charge: broad clusters (~32, 256) — a fuel ledger, not
+quantized. Mass: unbounded ledger (capped at vol/8 for the
+inverse). Collision produces mass, not bound-state showers.
+
+The substrate's bound states are scalar in winding magnitude
+but carry a real directional circulation (the spin) — a
+persistent orientation on a bound volume, responsive to
+momentum direction.
