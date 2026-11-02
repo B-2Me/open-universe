@@ -58,3 +58,19 @@ The "quantum" structure isn't magic — it's what local
 causal processes produce when the substrate's mechanics
 are right. The postulates (charge, spin, Pauli) are
 topological/count structures, not axioms.
+
+## The core frame — conservation vs optimization
+
+The substrate's two motivations:
+- CONSERVATION — a hard NECESSITY: the ledger is exact
+  (energy, winding, momentum, circulation always conserved).
+  Non-negotiable — no minting or destroying.
+- OPTIMIZATION — a STATEFUL BEST-EFFORT: the bound state
+  settling into stable circulation-configurations, locally,
+  not a guaranteed global minimum. Nature doesn't "enforce"
+  stable states — it OPTIMIZES toward them.
+
+The mode-occupancy (+/-/+-/idle) is the optimization's
+outcome — the bound state's current stable circulation-
+configuration, best-effort. A flip is re-optimization under
+torque — conserved but rearranged.
