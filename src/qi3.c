@@ -871,7 +871,16 @@ EMS_API void qi3_tick(void){
             if(d<8)continue;
             uint32_t k=(uint32_t)(d>>5);if(k>16)k=16;if(!k)k=1;
             uint32_t a=qWinding[si*QChannels+e*2],b=qWinding[si*QChannels+e*2+1];
-            uint32_t m=a<b?a:b;if(k>m)k=m;if(!k)continue;
+            uint32_t m=a<b?a:b;
+            /* CONFINEMENT — only COMPLETE bound quanta are
+             * site-locked: an edge at m>=128 is a committed bound
+             * state, it doesn't conduct. Partial volumes (m<128)
+             * are still dynamic — they conduct normally. A fully-
+             * bound lump holds (every edge committed); partial
+             * structure still spreads — selective confinement. */
+            if(m>=128)continue;
+            uint32_t avail=m;
+            if(k>avail)k=avail;if(!k)continue;
             /* CAPACITY BOUND — the deep question: a recipient accepts
              * winding only into edges that can hold it, and the
              * transfer is capped by its remaining room (m_room =
