@@ -77,3 +77,11 @@ indefinitely in vacuum (1152->512->512...) — a real stable
 bound state, like a stable particle settling to its minimum
 configuration. The bound momentum can't drain below the
 floor — an eternal state.
+
+## ETERNAL PARTICLE — ground state carries a conserved quantum
+
+A bound state decays to the ground-state floor (512) AND holds
+its circulation-quantum (spin=30) indefinitely — a real eternal
+particle with a conserved charge/spin, like a proton keeping
+its quantum numbers forever. The substrate's ground state is
+a real stable particle with a conserved quantum.
