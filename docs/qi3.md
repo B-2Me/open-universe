@@ -754,3 +754,10 @@ relative orientation, each stable.
 The spin analog is functionally complete: directedness on a
 confined volume persists, responds to torque (aligned feeds,
 anti-aligned resists), and holds independent orientations.
+
+## The spin is environment-robust — persists everywhere
+
+The confined vortex's directedness holds ~30 in vacuum, a
+radiation bath, AND a dense medium — the bound state's
+internal circulation survives regardless of surroundings,
+like real angular momentum independent of the environment.
