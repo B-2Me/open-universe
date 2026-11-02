@@ -702,6 +702,25 @@ EMS_API void qi3_tick(void){
                     uint32_t op=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
                     int d=(int)lp-(int)op;if(d<0)d=-d;if(d>128)d=256-d;
                     if(d>64)match=0;                     /* out of phase: decline */
+                    /* ORIENTATION-SELECTIVE — the bound state has a
+                     * directedness (its circulation's orientation —
+                     * the "spinor" alignment). It prefers offers
+                     * arriving on the channel ALIGNED with its
+                     * dominant directedness — the absorber selecting
+                     * for orientation, not just energy+phase. An
+                     * offer on the circulation's axis is favored;
+                     * off-axis offers are declined more often. */
+                    if(match){
+                        int de=-1;int32_t dd=0;
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            int32_t d2=(int)qWinding[si*QChannels+2*e2]
+                                     -(int)qWinding[si*QChannels+2*e2+1];
+                            if(d2>dd){dd=d2;de=e2;}
+                        }
+                        if(de>=0&&de!=edge6){            /* off-axis offer */
+                            if(randByte()&1)match=0;     /* ~50% declined */
+                        }
+                    }
                 }
             }
             if(match){
@@ -1237,9 +1256,24 @@ EMS_API void qi3_tick(void){
              * directedness (no closure) drains normally. */
             int big=a>b?c:oc;
             int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
-            /* trace the directedness chain: does it close? */
+            /* does the directedness close? two checks:
+             * 1. RECIPROCAL — the neighbor's directedness on the SAME
+             *    channel points back (a 2-cycle, the simplest loop)
+             * 2. FORWARD-TRACE — follow the directedness chain up to
+             *    8 hops; if it returns to the start it's a vortex. */
             int closed=0,cs=si,cc=big;
-            for(int hop=0;hop<8;hop++){
+            /* reciprocal check: does the far side point back? */
+            int rnx=wrapCoord(xx+QChannelVec[big][0],QWidth);
+            int rny=wrapCoord(yy+QChannelVec[big][1],QHeight);
+            int rnz=wrapCoord(zz+QChannelVec[big][2],QDepth);
+            int rns=siteIndex(rnx,rny,rnz);
+            {
+                int rc2=(big&1)?big-1:big+1;      /* opposite channel */
+                uint32_t ra=qWinding[rns*QChannels+rc2],
+                         rb=qWinding[rns*QChannels+big];
+                if(ra-rb>=32)closed=1;            /* points back */
+            }
+            if(!closed)for(int hop=0;hop<8;hop++){
                 int nx=wrapCoord(xx+QChannelVec[cc][0],QWidth);
                 int ny=wrapCoord(yy+QChannelVec[cc][1],QHeight);
                 int nz=wrapCoord(zz+QChannelVec[cc][2],QDepth);
