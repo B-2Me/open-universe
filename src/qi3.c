@@ -208,6 +208,18 @@ static inline void snapLoop(int si,int e){
     uint32_t dm=m-rung;
     if(a>b){qWinding[c0]-=dm;}else if(b>a){qWinding[c1]-=dm;}
     else{qWinding[c0]-=dm/2;qWinding[c1]-=dm/2;}
+    /* the DIRECTEDNESS also rung-quantizes — the substrate only
+     * generates circulation in loop-quanta, so the unmatched
+     * excess snaps to the same ladder: a bound state's circulation
+     * is a multiple of the loop-quantum, not a continuous magnitude.
+     * The spin is discrete because circulation comes in rungs. */
+    {
+        int32_t d=(int)qWinding[c0]-(int)qWinding[c1];
+        int32_t dr=(d>>qUnwindShift)<<qUnwindShift;
+        if(dr<0)dr=0;
+        int32_t dd=d-dr;
+        if(dd>0)qWinding[c0]-=(uint32_t)dd;
+    }
 }
 static inline int siteLevel(int si){
     /* occupancy-volume level: the bound state is a DISTRIBUTION of
