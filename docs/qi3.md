@@ -916,3 +916,10 @@ shifts the emission toward ch2 (22 vs unwound's 14 on ch0).
 The quantum number biases the decay channels — a selection-
 rule-like consequence: the circulation direction influencing
 which transitions proceed.
+
+## A vortex lattice — multiple topological quanta coexist
+
+A 2x2 array of vortices holds all windings (120,120,122,120)
+— stable independent topological quanta organized in a
+lattice, like a superfluid's quantized vortex array. Each
+vortex is a conserved circulation quantum.
