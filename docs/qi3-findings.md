@@ -198,3 +198,13 @@ Our substrate's circulations are integer (closed flux loops)
 — a half-integer winding needs a two-valued orientation
 structure the per-edge directedness doesn't produce. The
 spinor is a deeper topological gap.
+
+## The 720 frontier — phase doesn't cycle, deeper structure needed
+
+The bound state's shared qPhase isn't advancing (stuck at
+224) — no cycle to measure the 360/720 structure. Even if it
+cycled, a doubled 0-511 period would be relabeling unless the
+orientation is genuinely a DOUBLE-COVER — a two-valued
+spinor-object where 360 gives -1, not just a 4pi counter.
+The spinor needs a real two-valued orientation, deeper than
+the phase's period.
