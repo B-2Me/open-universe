@@ -848,3 +848,11 @@ Seeded vortices hold their net flux (the winding): 84, 121,
 conserved topological number — the directedness organized
 into a closed loop holding its net flux. Not strictly
 discrete but bounded — a real winding quantum.
+
+## Vortex-antivortex coexist — the winding is a stable quantum
+
+Opposite windings coexist independently: +120 and -120 both
+persist — no annihilation. Like superfluid vortex-antivortex
+pairs, each bound state's circulation is its own conserved
+topological quantum — the net flux around the bound
+configuration, stable and orientation-independent.
