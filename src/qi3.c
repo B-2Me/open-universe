@@ -544,8 +544,22 @@ EMS_API void qi3_tick(void){
             if(scat<1&&v>1&&(randByte()&7)==0)scat=1;  /* small flux: chance */
             if(scat>(uint32_t)v)scat=v;
             if(scat>0){
-                /* scatter the fraction to a random channel */
+                /* VORTEX CURVING — the photon deflects toward the
+                 * local net directedness, not randomly. The site's
+                 * unmatched winding (excess on a channel) IS the
+                 * local circulation — passing flow curves toward it
+                 * (like a charged particle in a field: motion deflects
+                 * by the local current). The curved flow feeds the
+                 * vortex — a closed rotational path can form. */
                 int rc=randByte()%QChannels;
+                /* bias toward the channel with local net directedness */
+                int bv=-1;int32_t bd=0;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    int32_t d=(int)qWinding[si*QChannels+2*e2]
+                             -(int)qWinding[si*QChannels+2*e2+1];
+                    if(d>bd){bd=d;bv=e2;}             /* strongest +flow */
+                }
+                if(bv>=0&&(randByte()&3)<2)rc=bv<<1;  /* ~50% curve toward */
                 int rnx=wrapCoord(x+QChannelVec[rc][0],QWidth);
                 int rny=wrapCoord(y+QChannelVec[rc][1],QHeight);
                 int rnz=wrapCoord(z+QChannelVec[rc][2],QDepth);
@@ -1214,15 +1228,22 @@ EMS_API void qi3_tick(void){
                  * free directedness, not the loop (min is protected) */
             if(free<32)continue;                /* small imbalance is
                  * just fluctuation — only real asymmetry dissipates */
-            if(randByte()&3)continue;           /* stochastic EVENT */
-            uint32_t burst=free>>3;if(burst<1)burst=1;
-            int n=siteLevel(si);if(n<2)n=2;
-            int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
+            /* DIRECTEDNESS IS A CURRENT — the excess isn't just an
+             * asymmetry, it's directed momentum that FLOWS forward
+             * along its channel. A ring of directed edges sustains
+             * a circulating current — a vortex — because the flow
+             * returns to itself (the closed path is what protects
+             * it). Propagate the excess forward to the neighbor's
+             * channel — the directedness moves, doesn't drain. */
             int big=a>b?c:oc;                   /* the excess side */
-            qWinding[si*QChannels+big]-=burst;
-            qPhoton_next[si*QChannels+big]+=burst;
-            qPhotonNu_next[si*QChannels+big]=nu;
-            qEvents[5]+=burst;                  /* free-momentum decay */
+            uint32_t cur=free>>4;if(cur<1)cur=1;
+            int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
+            int ni=siteIndex(wrapCoord(xx+QChannelVec[big][0],QWidth),
+                             wrapCoord(yy+QChannelVec[big][1],QHeight),
+                             wrapCoord(zz+QChannelVec[big][2],QDepth));
+            qWinding[si*QChannels+big]-=cur;
+            qWinding[ni*QChannels+big]+=cur;    /* flows forward */
+            qEvents[5]+=cur;
         }
     }
 
