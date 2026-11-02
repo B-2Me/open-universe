@@ -497,15 +497,21 @@ EMS_API void qi3_tick(void){
              * neighborhood, its place in the gradient). Dense
              * regions thermalize photons; sparse vacuum lets them
              * pass — the medium's own structure is the drag. */
-            /* vacuum absorption: the node's LOCAL DENSITY is its
-             * opacity — each photon in the channel decays with
-             * probability scaled by the neighbor-sampled density
-             * (bosons: a count decays by a fraction, not per-photon
-             * all-or-nothing). Runs on the internal clock — the
-             * medium's own thermalization, not transit. */
+            /* vacuum absorption: thermalization scales with the LOCAL
+             * PHOTON PRESSURE — a crowded field thermalizes faster
+             * (the medium is hotter where more photons compete), not
+             * just where more structure sits. The node's opacity =
+             * its structure density PLUS its photon load: a lit
+             * region radiates into heat faster than a quiet one —
+             * the medium's own blackbody-law balance. */
             uint32_t density=qLocalDensity[si]+1;
             if((qTick%(1<<qCycleShift))==0){
-                uint32_t decay=((uint32_t)v*(density>>2))>>8;
+                uint32_t photonLoad=0;
+                for(int c2=0;c2<QChannels;c2++)photonLoad+=qPhoton[si*QChannels+c2];
+                uint32_t opac=density+(photonLoad>>2);   /* structure
+                     * + photon pressure — thermalization scales with
+                     * how much field the site actually holds */
+                uint32_t decay=((uint32_t)v*(opac>>2))>>8;
                 if(decay<1&&(randByte()&7)==0)decay=1;    /* floor: ~1/8 */
                 if(decay>(uint32_t)v)decay=v;
                 if(decay){v-=decay;qHeat[si]+=(uint64_t)decay*nu;
@@ -586,7 +592,14 @@ EMS_API void qi3_tick(void){
              * (density grows the rate later via the neighbor density
              * field, but the base bootstrap rate is low). */
             if(!offer)continue;
-            if(!mass&&(randByte()&15))continue;   /* 15/16 pass through */
+            /* the FIFTH !mass gate: qMass=0 doesn't mean bare —
+             * a loop-site is a STRONG absorber (receptive internal
+             * states). The catch rate scales with siteLevel: bare
+             * vacuum catches ~1/16 of arrivals, deeper structure
+             * catches proportionally more — arm reads the local
+             * configuration, not the mass ledger. */
+            int lvl=siteLevel(si);if(lvl<1)lvl=1;   /* bare: base 1/16 */
+            if((randByte()&15)>=lvl)continue;
             int nu=qPhotonNu_next[si*QChannels+c]?qPhotonNu_next[si*QChannels+c]:1;
             /* edge-local line: the channel's own winding + site mass
              * set what this edge can absorb — different edges of the
