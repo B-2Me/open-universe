@@ -524,3 +524,19 @@ mints mobile mass at a sharp nu=128 threshold, and nothing
 collects, coheres, or stabilizes. The lattice spans ~16fm
 (20 x 0.8fm) — a nucleus-sized region of independent sub-fm
 causal units.
+
+## Confined persistent bound states — the stable sector
+
+Under selective confinement + species inverses + density pressure:
+- Bound lumps persist: 1152->804 over 400t (~30% loss vs ~95%
+  before) — confined structure that slowly radiates, not
+  evaporates. Complete quanta are site-locked.
+- Composites ACCRETE in vacuum (mass 200->315: the structure->
+  mass inverse outpaces decay) but preserve structure in
+  dense media (wind 968 vs 800 — pressure refuses emission).
+  The environment selects the composite's character.
+- Background temperature confirmed as the long-running
+  destination: photons drain 31K->190 while qHeat accumulates
+  to ~2.1M — the medium's warmth is the terminal reservoir.
+- Phase boundary softened (nu=128: 0.31 partial) — confinement
+  changes the condensed phase's structure.
