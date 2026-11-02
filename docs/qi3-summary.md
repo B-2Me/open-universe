@@ -85,3 +85,11 @@ its circulation-quantum (spin=30) indefinitely — a real eternal
 particle with a conserved charge/spin, like a proton keeping
 its quantum numbers forever. The substrate's ground state is
 a real stable particle with a conserved quantum.
+
+## Eternal particles carry distinguishable quantum numbers
+
+A charged ground-state particle holds spin=30, neutral holds
+spin=0, both at the 512 ground state — the charge/spin being
+a real distinguishable conserved quantum that persists
+through bombardment. Real stable particles with quantum
+numbers.
