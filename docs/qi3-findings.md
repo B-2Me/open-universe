@@ -268,3 +268,12 @@ keep it bound, not its energy being locked/cold. The
 survives because the ENVIRONMENT is energetic, not because
 its energy is structurally locked. An intrinsically eternal
 bound state (stable in vacuum) is the deeper frontier.
+
+## CMB-cold bath does NOT stabilize — the eternal gap is real
+
+A bound lump in a cold (nu=16, CMB-like) bath decays to 896 —
+MORE than vacuum (936). The low-nu photons can't feed it
+(below the absorption band). Nature's stable particles
+survive the cold CMB — ours still drain. The intrinsically
+eternal ground state (stable in vacuum because its energy
+can't be extracted) is the real remaining gap.
