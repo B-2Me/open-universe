@@ -569,3 +569,37 @@ environment's energy into rest mass. The substrate's
 environment-selects-lifetime matches nature's measured
 context-dependence (bound neutron stable, free decays; muon
 lifetime 10x shorter in matter; hadrons melt in QGP).
+
+## The substrate mechanics — current inventory (post-volume-migration)
+
+Conservation-first mechanics, all local, all honest:
+- PHOTONS: bosonic counts on channels, bulk-flux (7/8 straight
+  + 1/8 scatter), nu carried per photon, birth ticks for phase.
+- ABSORB: transactional offers -> incipients -> confirms ->
+  deposits. Deposit = nu on arrival or freest edge (VOLUME —
+  partial occupancy, not loop-lines).
+- Winding = bound occupancy. siteLevel = vol>>7. Complete 128
+  quanta are site-locked (selective confinement); partial
+  volumes conduct.
+- EMISSION: n->n-1 rung shed at gap nu. GATED BY:
+  (a) stochastic 1/4 lifetime, (b) qLocalDensity graded refusal
+      (pressure — dense media stall decay), (c) channel occupancy
+      refusal (saturated mode can't take the product — the
+      Pauli-blocked channel), (d) species inverse (composite's
+      shed -> mass, not photon).
+- SPECIES INVERSES: mass decay -> winding (persistence -> bound
+  circulation); winding shed -> mass (structure -> persistence).
+  The composite's internal exchange cycle.
+- CONFINEMENT: complete quanta (m>=128) don't conduct — bound
+  occupancy is site-locked. Partial volumes flow.
+- STRING BREAKING: a saturated channel link on both ends converts
+  a quantum into a bound pair (mass+charge) — the Schwinger
+  process, multi-node ~1.2fm.
+- HEAT: terminal reservoir (decay->heat->rare structure). The
+  background temperature — the field drains into it.
+- CHARGE: fuel ledger — feeds mass burn, thermalizes to winding.
+
+Measured 0.8fm behaviors: exponential decays, nu=128 fusion
+threshold, branching fractions, linear tension, string breaking,
+context-dependent stability (vacuum->degenerate), species
+transformation, mass accretion in dense media.
