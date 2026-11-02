@@ -258,3 +258,13 @@ For now: the summed occupancy produces the right emergent
 physics (exclusion, quantized counts, winding). The
 per-bound-state identity + spin-flip bookkeeping is the
 deeper structure needed for true separateness/eigenstates.
+
+## The eternal state is environmental, not locked-cold
+
+A bound lump survives BETTER in a hot bath (1152 held) than
+vacuum (936 decays) — the environment's photons feeding it
+keep it bound, not its energy being locked/cold. The
+"colder than CMB" intuition is reversed — the bound state
+survives because the ENVIRONMENT is energetic, not because
+its energy is structurally locked. An intrinsically eternal
+bound state (stable in vacuum) is the deeper frontier.
