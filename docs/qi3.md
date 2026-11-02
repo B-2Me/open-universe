@@ -686,3 +686,15 @@ Honest gaps: the closure trace follows the strongest directedness
 and doesn't catch every closed path (a simple 2-cycle drains).
 The mechanism protects SOME closed circulation — a real but
 fragile bound-vortex state.
+
+## 3D-axis circulation — the substrate supports real spin structure
+
+A 2D-plane circulation around a 3D axis (xy-plane flow around z)
+persists at the same residual as a 1D chain — the channels span
+3D and can carry an oriented vortex, not just per-edge
+directedness. The closure protection holds ~12 net circulation
+(partial — the seeded plane-circulation drains to a remnant).
+
+The 3D structure is supported; the persistence is the frontier —
+the closure trace needs to catch the full plane-circulation,
+not just the strongest-directedness chain.
