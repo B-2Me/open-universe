@@ -603,3 +603,15 @@ Measured 0.8fm behaviors: exponential decays, nu=128 fusion
 threshold, branching fractions, linear tension, string breaking,
 context-dependent stability (vacuum->degenerate), species
 transformation, mass accretion in dense media.
+
+## The degenerate-bath composite is a mass-conversion engine
+
+In a saturated radiation bath (all channels occupied), the
+composite's winding pins at the bound quantum (can't decay,
+can't grow past 128/edge) while mass grows LINEARLY (+~1150/
+200t): the bath's photon deposits refill the structure and the
+species inverse converts each shed to rest mass. The bound
+state harvests the environment's energy into persistence —
+funded, conserved (the bath drains into the mass ledger), but
+UNBOUNDED — the inverse runs without a countervailing drain.
+Real composites saturate; ours needs a balance mechanism.
