@@ -552,3 +552,20 @@ Under selective confinement + species inverses + density pressure:
   decay laws; the composite TRANSFORMS — converts circulation to
   rest mass over time (wind 1152->564, mass 400->1721 over 800t).
   A bound state settling into its most persistent species.
+
+## Environment matrix — nature's context-dependent lifetimes
+
+Measured lump stability across natural 0.8fm environments:
+- vacuum: unstable resonance (1152->896, ~22% decay)
+- hot-bath: equilibrium (emission = reabsorption)
+- nuc-matter: stabilized (~11% decay — medium holds it)
+- degenerate: STABLE (all channels occupied, decay forbidden)
+- qgp-like: stable + mass accretion (100->2083)
+
+In dense media the composite ACCRETES mass (100->2494 in the
+degenerate bath) — the structure->mass inverse runs unchecked
+when decay is forbidden: the bound state converts its
+environment's energy into rest mass. The substrate's
+environment-selects-lifetime matches nature's measured
+context-dependence (bound neutron stable, free decays; muon
+lifetime 10x shorter in matter; hadrons melt in QGP).
