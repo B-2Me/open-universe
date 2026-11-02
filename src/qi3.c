@@ -143,16 +143,16 @@ static int qi3gapE(int a,int b){
    different nu (the spectrum IS the structure). */
 static int qi3geoGap(int si,int bands){
     if(bands<1)return 0;
-    /* topology-aware: a transition drops the WEAKEST complete loop
-     * (what siteUnwind sheds) — the emitted nu is that loop's energy,
-     * E ~ 128 * 4 / L^2: the quantum over the edge's reach (a tight
-     * loop is more energetic, like a particle in a smaller box).
-     * Use the measured bond distance when the handshake knows it. */
+    /* topology-aware: a transition drops the weakest BOUND edge —
+     * VOLUME migration: what siteUnwind sheds is the least-bound
+     * committed component (m>=32), not only a complete 128 loop.
+     * The emitted nu is that fraction's geometric energy — a
+     * partially occupied edge transitions too. */
     int be=-1;uint32_t bm=0;
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=128&&(be<0||m<bm)){bm=m;be=e;}
+        if(m>=32&&(be<0||m<bm)){bm=m;be=e;}
     }
     if(be<0)return 0;
     uint32_t reach=qBondDist[si*(QChannels/2)+be];
@@ -169,10 +169,10 @@ static uint64_t qRngSeed = 88172645463325252ULL;
 static inline int siteIndex(int x,int y,int z){ return (z*QHeight+y)*QWidth+x; }
 static inline int wrapCoord(int v,int m){ v%=m; if(v<0)v+=m; return v; }
 static inline uint64_t loopWinding(int si){
-    /* the CLOSED-circulation content: winding balanced across each
-     * edge pair forms a loop through the edge and back — the internal
-     * structure is closed circulations, and the level derives from
-     * their total, not scattered deposits. */
+    /* the bound VOLUME: matched winding across each edge pair is
+     * committed circulation (bound occupancy) — the level derives
+     * from its total. "loop" is a historical name; the measured
+     * quantity is the volume of bound exchange. */
     uint64_t w=0;
     for(int e=0;e<QChannels/2;e++)
         w+=2*(qWinding[si*QChannels+2*e]<qWinding[si*QChannels+2*e+1]
@@ -221,16 +221,16 @@ static inline int siteLevel(int si){
 }
 static inline void siteUnwind(int si,uint32_t amount){
     int full=(amount>500000);   /* full depletion: consume the whole loop */
-    /* quantized unwind: drop exactly ONE loop — the weakest
-     * complete circulation collapses (its winding releases as
-     * the transition's energy). Structure is loop-discrete, not
-     * band-smooth — a transition is a loop unwinding, not a
-     * bank balance draining. */
+    /* quantized unwind: the least-bound component sheds a rung —
+     * VOLUME migration: any committed edge (m>=32) is bound
+     * occupancy, not only complete 128-quanta. The weakest bound
+     * part transitions first (like the outermost electron), and a
+     * partially-wound site can emit too — volume, not loop-lines. */
     int be=-1;uint32_t bm=0;
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=128&&(be<0||m<bm)){bm=m;be=e;}   /* weakest complete loop */
+        if(m>=32&&(be<0||m<bm)){bm=m;be=e;}    /* weakest bound edge */
     }
     if(be<0)return;
     /* RUNG-QUANTIZED unwind: the loop drops to the next allowed
@@ -439,21 +439,25 @@ EMS_API void qi3_tick(void){
         /* INTERNAL incipients actualize — RARE: the network ontology
          * prefers large infrequent changes. One internal transaction
          * per site per tick at most — the dense-regime exception,
-         * not equilibrium flow. The offer deposits a full quantum
-         * to a free internal edge. */
+         * not equilibrium flow. VOLUME migration: the ledger accretes
+         * into the edge with the most room — partial occupancy grows
+         * by what fits, not a whole quantum on a free edge. */
         if(qHeldInt[si]>=128){
-            int fe=-1,start=randByte()%(QChannels/2);
+            int fe=-1,start=randByte()%(QChannels/2);uint32_t room=0;
             for(int j=0;j<QChannels/2;j++){
                 int e2=(start+j)%(QChannels/2);
                 uint32_t a=qWinding[si*QChannels+2*e2],
                          b=qWinding[si*QChannels+2*e2+1];
                 uint32_t m=a<b?a:b;
-                if(m<128){fe=e2;break;}
+                uint32_t r=m<160?160-m:0;
+                if(r>room){room=r;fe=e2;}
             }
-            if(fe>=0){
-                qWinding[si*QChannels+2*fe]+=128;
-                qWinding[si*QChannels+2*fe+1]+=128;
-                qHeldInt[si]-=128;qEvents[3]++;
+            uint32_t k=qHeldInt[si]>128?128:qHeldInt[si];
+            if(k>room)k=room;
+            if(k>=8&&fe>=0){
+                qWinding[si*QChannels+2*fe]+=k;
+                qWinding[si*QChannels+2*fe+1]+=k;
+                qHeldInt[si]-=k;qEvents[3]++;
             }
         }
     }
@@ -924,43 +928,50 @@ EMS_API void qi3_tick(void){
          * circulation, not a prerequisite. A loop-only site emits
          * at its level-gap line. */
         if(!mass&&!siteLevel(si))continue;
-        /* bound energy thermalizes into circulation: a whole quantum
-         * organizes at once — charge >= 256 converts into a complete
-         * loop (128+128) on a free edge. Structure forms in quanta,
-         * not a trickle that the drain sheds before it can close. */
-        /* thermalize above a SURVIVAL floor (mass burn needs e>32
-         * + one more quantum's worth) — charge is fuel for staying
-         * alive and forming structure; the LOOPS are the reservoir,
-         * not the charge pool. */
+        /* bound energy thermalizes into VOLUME — the loops->volumes
+         * migration. The old loop ontology needed a free edge and
+         * dropped a whole 128 quantum; a saturated node (all edges
+         * partially wound) couldn't accept heat at all. In the volume
+         * picture the reservoir accretes into the edge with the MOST
+         * ROOM, by the amount it can afford — partial occupancy
+         * grows incrementally. The 2:1 charge:winding rate is kept
+         * (256 charge bought a 128 quantum; now any k buys k). */
         if(e>288){
-            int fe=-1;
+            int fe=-1;uint32_t room=0;
             int start=randByte()%(QChannels/2);
             for(int j=0;j<QChannels/2;j++){
                 int e2=(start+j)%(QChannels/2);
                 uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
-                uint32_t m=a<b?a:b;if(m<128){fe=e2;break;}
+                uint32_t m=a<b?a:b;uint32_t r=m<160?160-m:0;
+                if(r>room){room=r;fe=e2;}
             }
-            if(fe>=0){
-                qWinding[si*QChannels+2*fe]+=128;
-                qWinding[si*QChannels+2*fe+1]+=128;
-                qCharge[si]=e-256;qEvents[25]++;
+            uint32_t k=(uint32_t)(e-256)>>1;             /* can afford */
+            if(k>room)k=room;                            /* fits in edge */
+            if(k>=8&&fe>=0){
+                qWinding[si*QChannels+2*fe]+=k;
+                qWinding[si*QChannels+2*fe+1]+=k;
+                qCharge[si]=e-2*(int)k;qEvents[25]++;
             }
         }
-        /* the heat reservoir drains the same way — absorbed photon
-         * energy thermalizes into structure, not just sits. The
-         * vacuum-heat is a channel, not a bucket: photon->heat->
-         * loop is the species cycle closing. */
+        /* the heat reservoir accretes into VOLUME too — same
+         * migration: absorbed photon energy becomes bound occupancy
+         * wherever there's room, not a whole quantum on a free edge.
+         * A saturated site can still warm its partial edges — the
+         * cold leg works at any occupancy. */
         if(qHeat[si]>288){
-            int fe=-1,start=randByte()%(QChannels/2);
+            int fe=-1,start=randByte()%(QChannels/2);uint32_t room=0;
             for(int j=0;j<QChannels/2;j++){
                 int e2=(start+j)%(QChannels/2);
                 uint32_t a=qWinding[si*QChannels+2*e2],b=qWinding[si*QChannels+2*e2+1];
-                uint32_t m=a<b?a:b;if(m<128){fe=e2;break;}
+                uint32_t m=a<b?a:b;uint32_t r=m<160?160-m:0;
+                if(r>room){room=r;fe=e2;}
             }
-            if(fe>=0){
-                qWinding[si*QChannels+2*fe]+=128;
-                qWinding[si*QChannels+2*fe+1]+=128;
-                qHeat[si]-=256;qEvents[26]++;
+            uint32_t k=(qHeat[si]-256)>>1;
+            if(k>room)k=room;
+            if(k>=8&&fe>=0){
+                qWinding[si*QChannels+2*fe]+=k;
+                qWinding[si*QChannels+2*fe+1]+=k;
+                qHeat[si]-=2*k;qEvents[26]++;
             }
         }
         /* ONE quantum per transition: a site at level n>=2 falls
