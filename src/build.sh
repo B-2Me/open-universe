@@ -294,6 +294,7 @@ if emcc qi3.c   -DGIT_REV=\"$GIT_REV\"   -O3   -s WASM=1   -s MODULARIZE=1   -s 
     '_qi3_mass_get',
     '_qi3_charge_set',
     '_qi3_charge_get',
+    '_qi3_heat_get',
     '_qi3_level_set',
     '_qi3_level_get',
     '_qi3_winding_set',

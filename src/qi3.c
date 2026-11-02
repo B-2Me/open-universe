@@ -1199,6 +1199,9 @@ EMS_API void qi3_charge_set(int x,int y,int z,int v){
 EMS_API int qi3_charge_get(int x,int y,int z){
     return qCharge[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
 }
+EMS_API int qi3_heat_get(int x,int y,int z){
+    return qHeat[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))];
+}
 EMS_API void qi3_level_set(int x,int y,int z,int v){
     qLevel[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))]=(uint32_t)v;
 }
