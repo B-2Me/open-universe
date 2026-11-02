@@ -518,15 +518,27 @@ EMS_API void qi3_tick(void){
                     qEvents[7]+=(uint64_t)decay*nu;}
             }
             if(v<=0){qPhoton[si*QChannels+c]=0;continue;}
-            /* stochastic propagation: the photon isn't a laminar flux —
-             * it's a quantum that JITTERS. It may continue forward
-             * (mostly) or scatter to a random channel — the medium
-             * agitates it, no preferred flow. The field drives global
-             * frustration: photons arrive from random directions,
-             * agitating every site, keeping the medium far from
-             * equilibrium without imposing a net current. */
+            /* bulk flux propagation: photons are COUNTS, not single
+             * quanta — the bulk continues straight (ballistic flux)
+             * while a few quanta scatter off per hop (per-quantum
+             * stochasticity — ~1/8 of the count jitters to a random
+             * channel, the rest goes forward. The field's agitation
+             * is fractional, not all-or-nothing). */
             int c2=c;
-            if((randByte()&7)==0)c2=randByte()%QChannels;   /* ~1/8 scatter */
+            uint32_t scat=(v>>3);             /* ~1/8 of the count */
+            if(scat<1&&v>1&&(randByte()&7)==0)scat=1;  /* small flux: chance */
+            if(scat>(uint32_t)v)scat=v;
+            if(scat>0){
+                /* scatter the fraction to a random channel */
+                int rc=randByte()%QChannels;
+                int rnx=wrapCoord(x+QChannelVec[rc][0],QWidth);
+                int rny=wrapCoord(y+QChannelVec[rc][1],QHeight);
+                int rnz=wrapCoord(z+QChannelVec[rc][2],QDepth);
+                int rni=siteIndex(rnx,rny,rnz)*QChannels+rc;
+                qPhoton_next[rni]+=scat;
+                if(!qPhotonNu_next[rni]||nu>qPhotonNu_next[rni])qPhotonNu_next[rni]=nu;
+                v-=scat;                            /* the rest goes straight */
+            }
             int nx=wrapCoord(x+QChannelVec[c2][0],QWidth);
             int ny=wrapCoord(y+QChannelVec[c2][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c2][2],QDepth);
