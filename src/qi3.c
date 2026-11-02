@@ -994,6 +994,24 @@ EMS_API void qi3_tick(void){
             if(qSessionState[si*(QChannels/2)+ed]){nout++;edlive=ed;}
         if(nout==1)c=(edlive<<1)|(randByte()&1);   /* emit on the bond */
         else c=randByte()%QChannels;                /* else random dir */
+        /* EMISSION IS TRANSACTIONAL — the photon only exists if the
+         * local environment can take it. The node's measured
+         * structure-density IS the pressure: a site in a dense
+         * medium has high qLocalDensity — its neighbors are
+         * occupied absorbers that refuse or reabsorb the emitted
+         * offer, so the decay product can't be placed and the
+         * energy stays bound. GRADED: the refusal probability
+         * scales with local density — sparse vacuum lets emission
+         * escape, dense media stall it — stable vs unstable by
+         * context, no global switch. */
+        {
+            uint32_t dens=qLocalDensity[si];
+            if(dens>64)dens=64;
+            if(dens&&(randByte()&63)<(int)dens){  /* P(refuse)~dens/64 */
+                qEvents[28]++;
+                continue;
+            }
+        }
         qPhoton_next[si*QChannels+c]+=1;
         qPhotonNu_next[si*QChannels+c]=line>>qGapShift;
         if(!qPhotonNu_next[si*QChannels+c])qPhotonNu_next[si*QChannels+c]=1;
