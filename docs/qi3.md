@@ -937,3 +937,11 @@ A wound lump under bombardment holds its spin (30) AND loses
 slightly more volume (1128 vs unwound 1152) — the quantum
 structure affecting the interaction. A measurable consequence:
 wound bound states scatter differently.
+
+## Single-lump Magnus ambiguous — directional deflection unclear
+
+Unwound lump: y+=559/y-=643 (asymmetric, likely artifact).
+Wound lump: 565/573 (near-symmetric). The ring-scale Magnus
+was clearer; single-edge directedness doesn't give strong
+directional deflection — the vortex's circulation is the
+real directional structure.
