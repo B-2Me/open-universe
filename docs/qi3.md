@@ -540,3 +540,15 @@ Under selective confinement + species inverses + density pressure:
   to ~2.1M — the medium's warmth is the terminal reservoir.
 - Phase boundary softened (nu=128: 0.31 partial) — confinement
   changes the condensed phase's structure.
+
+## 0.8fm creative battery — the emergent processes
+
+- String tube: linear V~sigma*r tension AND breaking (stretched
+  channels materialize bound pairs — the Schwinger process).
+- Fission: over-deep lumps shed to normal, don't fragment.
+- Scattering: lumps transparent to mass-flight (weak ~15 capture).
+- Clustering: none — lumps coexist as independent confined states.
+- Species: lump (structure) and mass (persistence) have distinct
+  decay laws; the composite TRANSFORMS — converts circulation to
+  rest mass over time (wind 1152->564, mass 400->1721 over 800t).
+  A bound state settling into its most persistent species.
