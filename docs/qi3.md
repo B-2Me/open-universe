@@ -856,3 +856,10 @@ persist — no annihilation. Like superfluid vortex-antivortex
 pairs, each bound state's circulation is its own conserved
 topological quantum — the net flux around the bound
 configuration, stable and orientation-independent.
+
+## The winding survives bound-state decay — persistent quantum
+
+A wound lump's directedness holds ~94% (30/32) while the
+volume drains 1152->1020 — the circulation persists
+proportionally through the bound-state's decay, like a
+decaying nucleus keeping its spin. A real stable quantum.
