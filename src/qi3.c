@@ -1052,6 +1052,23 @@ EMS_API void qi3_tick(void){
             if(qSessionState[si*(QChannels/2)+ed]){nout++;edlive=ed;}
         if(nout==1)c=(edlive<<1)|(randByte()&1);   /* emit on the bond */
         else c=randByte()%QChannels;                /* else random dir */
+        /* CHANNEL OCCUPANCY — the Pauli analog: the emitted photon
+         * needs a MODE with room. A channel's photon count IS its
+         * occupancy — a saturated channel can't take the emitted
+         * quantum, so the offer is refused (the product's state is
+         * occupied, like the bound neutron's decay channel blocked
+         * by the filled electron levels). Try a few channels; if
+         * ALL are saturated, the site can't shed — the bound state
+         * is STABLE, not just longer-lived (the infinite ratio). */
+        {
+            int room=-1;
+            for(int try_=0;try_<4;try_++){
+                int tc=(try_==0)?c:randByte()%QChannels;
+                if(qPhoton[si*QChannels+tc]<128){room=tc;break;}   /* mode has room */
+            }
+            if(room<0){qEvents[31]++;continue;}     /* all saturated — stable */
+            c=room;
+        }
         /* EMISSION IS TRANSACTIONAL — the photon only exists if the
          * local environment can take it. The node's measured
          * structure-density IS the pressure: a site in a dense
