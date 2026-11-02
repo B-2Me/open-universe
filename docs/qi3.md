@@ -511,3 +511,16 @@ Post-conservation-fix measured profile:
   peak (mid-band photons couple to the structure's transitions).
 - Collisions: accretion — flying mass deposits onto a static lump.
 - Photon trapping: marginal — a lump doesn't cluster the field.
+
+## The bound states are independent lumps — no cohesion
+
+More 0.8fm measurements: adjacent wound lumps evaporate
+independently (no coalescence, no surface tension), separated
+lumps share no flux tube (no confinement), and mass+winding
+don't bind into composites. The substrate's matter is a gas
+of INDEPENDENT UNSTABLE LUMPS — each bound state is a
+point-local entity on its own exponential lifetime, fusion
+mints mobile mass at a sharp nu=128 threshold, and nothing
+collects, coheres, or stabilizes. The lattice spans ~16fm
+(20 x 0.8fm) — a nucleus-sized region of independent sub-fm
+causal units.
