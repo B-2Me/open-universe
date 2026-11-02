@@ -723,3 +723,13 @@ bounded to ~a-128 — a small quantized modulation on the bound
 volume, like nature's discrete angular momentum on a bound
 state. Bare directedness (low matched) drains; circulation on
 a confined volume persists.
+
+## The vortex persists but doesn't yet interact directionally
+
+The confined vortex's spin is stable (~94% held) but interacts
+SYMMETRICALLY — +x and -x offers leave the same net-dir=30.
+The directional circulation isn't yet responsive to aligned
+momentum — a real spinning bound state would feed on aligned
+offers preferentially. The absorption deposits on the arrival
+edge first; the directed-edge correction only fires when the
+arrival edge is full.
