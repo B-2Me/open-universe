@@ -155,3 +155,13 @@ persists — the eternal-state mechanism: a conserved
 topological quantum protects the bound state from decaying.
 Not fully eternal but quantum-protected, like nature's
 stable bound states.
+
+## Discrete spin — the directedness is continuous, not binary
+
+The bound state's directedness is CONTINUOUS (11,21,31 for
+seeds 135-165) — not discrete +-orientations. A real +-ℏ/2
+needs the circulation to snap to binary orientation-states,
+which doesn't happen naturally — the directedness is a
+magnitude, not a quantized orientation. The discrete-spin
+gap remains: charge quantizes (vortex count) but spin's
+binary orientation doesn't emerge yet.
