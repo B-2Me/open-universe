@@ -945,3 +945,10 @@ Wound lump: 565/573 (near-symmetric). The ring-scale Magnus
 was clearer; single-edge directedness doesn't give strong
 directional deflection — the vortex's circulation is the
 real directional structure.
+
+## The spin is quantized AND bounded — a real quantum magnitude
+
+Under sustained torque the spin fluctuates 30->32->30 then
+holds ~30 — bounded at ~1 circulation-quantum, not growing
+continuously. The spin has a FIXED magnitude like a real
+quantum — the circulation-count is quantized and capped.
