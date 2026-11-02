@@ -654,3 +654,17 @@ anymore. But it interacts selectively: nu=128 photons FUSE on
 it (producing mass=10), nu=64 leaves residual flux. The bound
 state is a fusion target for resonant photons, transparent
 else — a selective interaction cross-section.
+
+## The loop phase is the bound state's receptive window
+
+qLoopPhase is the internal oscillator (cycles at 128/L^2+1
+per internal tick — tighter edges cycle faster). It's the
+resonance check for absorption: an incoming offer's phase
+(nu * transit-time) must land within a rung of the loop's
+cycle position or the deposit is declined. The bound state
+is phase-selective — only resonant offers deposit, the
+spectral selectivity mechanism.
+
+Edge-phases are synchronized (deterministic cycling per edge
+type, no spatial winding) — the phase is a local oscillator
+per edge, not a coherent field across the bound state.
