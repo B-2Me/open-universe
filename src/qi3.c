@@ -1228,31 +1228,39 @@ EMS_API void qi3_tick(void){
                  * free directedness, not the loop (min is protected) */
             if(free<32)continue;                /* small imbalance is
                  * just fluctuation — only real asymmetry dissipates */
-            /* DIRECTEDNESS-CURVING — the excess isn't just an
-             * asymmetry, it's directed momentum that FLOWS — and a
-             * vortex needs it to CURVE into a closed path, not go
-             * straight. The excess propagates to the neighbor and
-             * TURNS toward the neighbor's local circulation
-             * direction — each edge's directedness feeding the next
-             * edge in the ring, the flow bending around the vortex.
-             * A closed path of directed edges then sustains the
-             * circulation topologically. */
-            int big=a>b?c:oc;                   /* the excess side */
-            uint32_t cur=free>>4;if(cur<1)cur=1;
+            /* CLOSED-CIRCULATION is a bound vortex — the excess is
+             * directed momentum, and if it forms a CLOSED directed
+             * path (following the directedness leads back to the
+             * start) it's a topologically-protected circulation —
+             * a vortex. Protected like the matched loop: the flow
+             * returns to itself, so it drains nowhere. Free
+             * directedness (no closure) drains normally. */
+            int big=a>b?c:oc;
             int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
-            int ni=siteIndex(wrapCoord(xx+QChannelVec[big][0],QWidth),
-                             wrapCoord(yy+QChannelVec[big][1],QHeight),
-                             wrapCoord(zz+QChannelVec[big][2],QDepth));
-            /* turn toward the neighbor's strongest directedness —
-             * the flow bends into the local circulation */
-            int tc=big;int32_t bd=0;
-            for(int e2=0;e2<QChannels/2;e2++){
-                int32_t d=(int)qWinding[ni*QChannels+2*e2]
-                         -(int)qWinding[ni*QChannels+2*e2+1];
-                if(d>bd){bd=d;tc=2*e2;}
+            /* trace the directedness chain: does it close? */
+            int closed=0,cs=si,cc=big;
+            for(int hop=0;hop<8;hop++){
+                int nx=wrapCoord(xx+QChannelVec[cc][0],QWidth);
+                int ny=wrapCoord(yy+QChannelVec[cc][1],QHeight);
+                int nz=wrapCoord(zz+QChannelVec[cc][2],QDepth);
+                int ns=siteIndex(nx,ny,nz);
+                if(ns==si){closed=1;break;}
+                /* continue along the neighbor's directedness */
+                int nc=-1;int32_t nd=0;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    int32_t d=(int)qWinding[ns*QChannels+2*e2]
+                             -(int)qWinding[ns*QChannels+2*e2+1];
+                    if(d>nd){nd=d;nc=2*e2;}
+                }
+                if(nc<0||nd<32)break;             /* chain ends */
+                cs=ns;cc=nc;
+                xx=nx;yy=ny;zz=nz;
             }
+            if(closed)continue;                   /* a bound vortex */
+            /* free directedness: drain stochastically */
+            if(randByte()&3)continue;
+            uint32_t cur=free>>4;if(cur<1)cur=1;
             qWinding[si*QChannels+big]-=cur;
-            qWinding[ni*QChannels+tc]+=cur;     /* flows + turns */
             qEvents[5]+=cur;
         }
     }
