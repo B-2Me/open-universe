@@ -69,3 +69,11 @@ The bound state's charge IS the total directedness (net flux
 a-b summed over edges) — conserved at ~30 over 400t. The
 unpaired circulation that can't cancel — a real conserved
 charge like nature's +-e. The charge IS the net flux.
+
+## ETERNAL GROUND STATE — bound state survives vacuum
+
+A bound lump decays to the ground-state floor (512) and HOLDS
+indefinitely in vacuum (1152->512->512...) — a real stable
+bound state, like a stable particle settling to its minimum
+configuration. The bound momentum can't drain below the
+floor — an eternal state.
