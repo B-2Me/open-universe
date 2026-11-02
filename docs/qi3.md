@@ -923,3 +923,10 @@ A 2x2 array of vortices holds all windings (120,120,122,120)
 — stable independent topological quanta organized in a
 lattice, like a superfluid's quantized vortex array. Each
 vortex is a conserved circulation quantum.
+
+## A complete quantum particle — conserved winding through decay
+
+A bound state carries its topological winding (~120) while
+the volume drains (4608->3926) — the circulation quantum
+conserved through the bound state's decay, like a real
+particle keeping its quantum number through its lifetime.
