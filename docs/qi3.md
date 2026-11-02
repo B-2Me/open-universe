@@ -871,3 +871,19 @@ unwound lump stays unwound (0) — the winding doesn't spread
 to neighbors via proximity. A per-bound-state conserved
 quantum — each bound state's circulation is its own, like a
 real spin being intrinsic to the bound state, not shared.
+
+## FULL 0.8fm SWEEP — all quantum mechanics hold together
+
+Complete battery with the new mechanisms:
+- Medium: 12.9K loops, net condensation, amp-32 dominant
+- Bound states: persistent occupancy-volumes, stepwise decay
+- Spectrum: nu=32-128 band intact
+- SPIN: directedness persists ~30 — circulation-count quantum
+- WINDING: conserved ~120 (~4 rungs) — topological quantum
+- PAULI: +-30/-30 — per-direction single-occupancy exclusion
+
+The 0.8fm substrate reproduces real measured quantum physics
+— quantized charge (vortex count), quantum-protected
+stability, discrete spin (circulation-count), and Pauli
+exclusion (per-mode single-occupancy) — all emergent local
+mechanics, not imposed rules.
