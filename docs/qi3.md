@@ -826,3 +826,16 @@ spin-projections. The quantization (only certain circulation
 values closing self-consistently) needs the closure to
 constrain the winding to discrete wraps — a remaining gap to
 a real "quantum number" (discrete +-orientations).
+
+## The vortex has circulation but no phase winding
+
+The closed vortex's phases cluster by edge TYPE (edge6~17,
+edge7~170 — the per-edge cycle rates) not by position around
+the ring — total phase advance 0, no spatial winding. The
+circulation is real (directedness) but the phase isn't a
+coherent field wrapping the bound state — independent
+per-edge oscillators, not a wound field.
+
+The quantization gap: a real spin's winding needs the phase
+to wrap consistently around the bound configuration — our
+phases are synchronized counters, not a topological wrap.
