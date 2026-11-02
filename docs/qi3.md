@@ -303,3 +303,44 @@ before diagnosing the actual runaway mechanisms — a cap that
 masked the bug rather than fixing it. The correct order: fix
 the mechanism (transactions), then measure whether the cap is
 still needed (it wasn't).
+
+## The conduction arc — the deepest diagnostic of the session
+
+The substrate's hardest problem wasn't a rate or a gate — it was a
+stacked bug class that masqueraded as four different problems.
+
+**The arc**: enabling winding conduction (Fick's-law diffusion on
+the loop field) flooded the medium — photons to billions, winding
+to overflow. The first diagnoses were ALL wrong:
+
+1. "Percolation" — structure spreading re-ignites the cycle.
+   Wrong: conduction is conservative (moves winding, doesn't emit).
+2. "LTE" — emitters can't see the lit field. Real physics but not
+   the bug: the LTE gate didn't stop the flood.
+3. "Transport loss needed" — real conduction has resistance.
+   Also real but not the bug.
+
+**The instrumented diagnosis** (watch the event counters tick-by-
+tick instead of guessing): `qEvents[5]` (annihilation) exploded at
+t~20 — the "particle/antiparticle" path was the flood source, not
+emission at all.
+
+**The bug**: `6b` computed `pair=min(a,b)` on the same edge — but
+min(a,b) IS the loop's matched amplitude. Bound structure past 128
+was burned as "particle/antiparticle excess" — conduction pushed
+loops deep, `6b` burned the overshoot into a photon flood.
+
+**Variant A**: dissipation targets UNMATCHED momentum |a-b| — free
+directedness that found no transaction. The loop (a~b) is protected.
+That fixed the PHOTON flood.
+
+**The long-run winding flood remained**: structure accumulated with
+no ceiling — because the attractor drain (the 128-loop cap, the
+medium's actual ceiling) was gated by `!qMass` — the FOURTH !mass
+gate (same bug class as absorb/emit/conduction: mass-as-prerequisite
+where structure should govern). `siteLevel` gates it now.
+
+**The lesson**: 't Hooft-style — when a mechanism resists every
+rate fix, look for a GATE or a wrong register, not a knob. The
+!mass-as-prerequisite bug class hid in four places; the correct
+ontology is "structure governs, mass is its consequence."
