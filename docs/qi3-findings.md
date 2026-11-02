@@ -188,3 +188,13 @@ is a distinct state — two + bound states would conflict on
 the mode, + and - are complementary. The mechanism needs
 mode-occupancy refusal — the same directed-quantum can't
 double-occupy a filled mode.
+
+## The 720/spinor frontier — integer windings only
+
+A single directed edge holds ~30 (a one-edge circulation,
+not a half-integer structure). Nature's spinors are n=1/2
+windings — a DOUBLE-COVER orientation needing two turns.
+Our substrate's circulations are integer (closed flux loops)
+— a half-integer winding needs a two-valued orientation
+structure the per-edge directedness doesn't produce. The
+spinor is a deeper topological gap.
