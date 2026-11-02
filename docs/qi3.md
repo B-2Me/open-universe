@@ -796,3 +796,15 @@ The substrate's bound states are scalar in winding magnitude
 but carry a real directional circulation (the spin) — a
 persistent orientation on a bound volume, responsive to
 momentum direction.
+
+## The closed vortex persists — a real circulation
+
+A ring of bound sites, each with directedness tangential to the
+ring (feeding the next site around the loop) on a confined
+substrate (m>=128 each): the circulation holds ~94% (128->120)
+over 400t — a self-consistent closed path that drains nowhere.
+
+The vortex mechanics: directedness ON a bound volume, organized
+tangentially so each edge's flow feeds the next around a closed
+ring. The closure is the protection — the flow returns to
+itself. A real topological circulation, not bare asymmetry.
