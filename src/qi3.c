@@ -1106,6 +1106,9 @@ EMS_API void qi3_winding_set(int x,int y,int z,int c,int v){
     if(c<QChannels)
         qWinding[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c]=(uint32_t)(v<0?0:v);
 }
+EMS_API int qi3_loopphase_get(int x,int y,int z,int e){
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
+    return qLoopPhase[siteIndex(x,y,z)*(QChannels/2)+(e&8)]; }
 EMS_API int qi3_winding_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qWinding[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];

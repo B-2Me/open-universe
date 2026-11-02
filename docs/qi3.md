@@ -463,3 +463,13 @@ the strongest evidence the measured constants (nu=128 boundary,
 nu=32 line, amp ratios, edge biases) are real substrate physics,
 not artifacts of the 128-quantum scale we picked. A model whose
 constants survive resolution changes is what renormalization MEANS.
+
+## Loop phase — the internal oscillation is real and coherent
+
+qLoopPhase advances by (128/L2+1) per internal tick — the loop's
+cycle position, the 720-degree internal state. Measured directly
+via the new qi3_loopphase_get export: phases advance coherently
+and wrap through 255 at the internal clock rate. The phase-lock
+gate's <=64 receptive window is now a measured quantity — the
+internal oscillation is load-bearing for phase-sensitive
+transactions, not a decorative register.
