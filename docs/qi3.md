@@ -698,3 +698,13 @@ directedness. The closure protection holds ~12 net circulation
 The 3D structure is supported; the persistence is the frontier —
 the closure trace needs to catch the full plane-circulation,
 not just the strongest-directedness chain.
+
+## The vortex needs a bound substrate — directedness on volume
+
+Directed edges drain when their matched min is small: (128,32)
+and (96,32) unwind entirely, but (160,96) persists (~62 net
+circulation). The directedness needs a substantial matched
+volume to ride on — a vortex is directedness ON a bound state,
+not a bare asymmetry. The circulation is a modulation on the
+bound volume — the matched winding anchors it, the directed
+excess is the spin.
