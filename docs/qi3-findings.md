@@ -175,3 +175,16 @@ quantum). The spin is quantized — the bound state holds an
 integer count of circulation-quanta, not a continuous
 magnitude. Direction continuous, count discrete — like
 nature's n-hbar angular momentum.
+
+## PAULI — needs quantum-aware occupancy refusal
+
+Naive same/opposite-spin test: both drain to ~+-30 net, no
+distinction. The substrate's occupancy-refusal is about
+channel CAPACITY, not quantum identity — same-directedness
+doesn't exclude, opposite doesn't preferentially coexist.
+
+For real Pauli: a directed mode (+circulation on a channel)
+is a distinct state — two + bound states would conflict on
+the mode, + and - are complementary. The mechanism needs
+mode-occupancy refusal — the same directed-quantum can't
+double-occupy a filled mode.
