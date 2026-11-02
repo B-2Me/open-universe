@@ -53,3 +53,12 @@ A high-energy collision produces a real shower: 4002 bound-
 sites from an energy burst — the excess crystallizing into
 thousands of bound quanta (each a 128-winding volume). Not
 just mass — a real particle spray like a high-energy jet.
+
+## CHARGE — the vortex-count is a quantum number, not a field-response
+
+Measured: vortex-carrying and unwound bound states deflect
+identically (9.3) — the winding is a conserved topological
+count but doesn't COUPLE to a field. A real charge would
+respond to field-gradients — the circulation coupling to
+the field. The vortex-count is a quantum number, not a
+measurable charge yet.
