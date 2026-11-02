@@ -1408,6 +1408,19 @@ EMS_API void qi3_tick(void){
             qWinding[si*QChannels+big]-=cur;
             qEvents[5]+=cur;
         }
+        /* PAULI — the node's per-DIRECTION capacity is quantum-bounded:
+         * each mode (+ or -) holds at most ONE circulation-quantum.
+         * Two same-direction bound states would need 2x the +mode —
+         * it saturates at one quantum so the second coincides (can't
+         * be "more +"), while opposite uses the complementary - mode.
+         * The exclusion is the directed-mode being single-occupancy. */
+        for(int e=0;e<QChannels/2;e++){
+            int32_t d=(int)qWinding[si*QChannels+2*e]
+                    -(int)qWinding[si*QChannels+2*e+1];
+            int32_t lim=32;
+            if(d>lim)qWinding[si*QChannels+2*e]-=(uint32_t)(d-lim);
+            else if(d<-lim)qWinding[si*QChannels+2*e+1]-=(uint32_t)(-d-lim);
+        }
     }
 
     /* Attractor drain: only complete winding bands are stable — the
