@@ -208,3 +208,12 @@ orientation is genuinely a DOUBLE-COVER — a two-valued
 spinor-object where 360 gives -1, not just a 4pi counter.
 The spinor needs a real two-valued orientation, deeper than
 the phase's period.
+
+## The spinor gap — no chirality, no frame, no double-cover
+
+CW vs CCW rings both hold ~120 — the directedness is an
+unsigned circulation magnitude, not a signed orientation.
+A real spinor needs the bound state's orientation to be a
+FRAME (axis + handed twist) flipping under 360 — our
+directedness has no chirality or double-cover structure.
+The 720 spinor is a deeper topological object.
