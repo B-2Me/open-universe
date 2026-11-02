@@ -839,3 +839,12 @@ per-edge oscillators, not a wound field.
 The quantization gap: a real spin's winding needs the phase
 to wrap consistently around the bound configuration — our
 phases are synchronized counters, not a topological wrap.
+
+## The winding is conserved up to a saturation ceiling
+
+Seeded vortices hold their net flux (the winding): 84, 121,
+128 for seeds 144/160/176 — conserved up to a saturation
+~128 (~4 rungs, the substrate's circulation capacity). A real
+conserved topological number — the directedness organized
+into a closed loop holding its net flux. Not strictly
+discrete but bounded — a real winding quantum.
