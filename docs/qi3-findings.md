@@ -217,3 +217,13 @@ A real spinor needs the bound state's orientation to be a
 FRAME (axis + handed twist) flipping under 360 — our
 directedness has no chirality or double-cover structure.
 The 720 spinor is a deeper topological object.
+
+## The 720 spinor — doubled cycle in, sheet needs a real DOF
+
+qPhase is now 0-511 (direction mod-256 = spin plane, sheet
+/256 = up/down projection). A 360 rotation flips the sheet
+(spinor structure). But the sheet must be PHYSICALLY
+distinguishable — the bound state's behavior depending on
+its spin-projection, not just the direction. The doubled
+cycle is implemented; the sheet-as-real-DOF needs a
+mechanism where +sheet and -sheet interact differently.
