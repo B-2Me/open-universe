@@ -906,19 +906,22 @@ EMS_API void qi3_tick(void){
             uint64_t L2=edgeLen2(2*e);
             qLoopPhase[si*(QChannels/2)+e]=
                 (qLoopPhase[si*(QChannels/2)+e]+(128/L2+1))&255;
-            /* LOCAL PHASE-COUPLING — nature's phase is a local field
-             * DOF coupled to neighbors (the wave equation propagates
-             * it). Each edge's phase drifts toward its spatial
-             * neighbor's phase on the same channel — a local
-             * mean-field pull, coherence emerging from coupling,
-             * not a global field. */
+            /* LOCAL PHASE-CONSISTENCY — the edges' phases should
+             * form a consistent PROGRESSION, not synchronize: each
+             * edge expects to be a fixed OFFSET ahead of its
+             * neighbor's phase (the circulation's cycle-position
+             * stepping consistently around the bound state — a
+             * winding). If the neighbor's phase isn't at the
+             * expected offset the edge realigns — enforcing the
+             * consistent progression locally, not a global field. */
             int c=e<<1;
             int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
             int ni=siteIndex(wrapCoord(xx+QChannelVec[c][0],QWidth),
                              wrapCoord(yy+QChannelVec[c][1],QHeight),
                              wrapCoord(zz+QChannelVec[c][2],QDepth));
-            int dp=(int)qLoopPhase[ni*(QChannels/2)+e]
-                  -(int)qLoopPhase[si*(QChannels/2)+e];
+            int expect=32;                      /* the progression step */
+            int want=(int)qLoopPhase[ni*(QChannels/2)+e]+expect;
+            int dp=want-(int)qLoopPhase[si*(QChannels/2)+e];
             if(dp>127)dp-=255;if(dp<-127)dp+=255;
             qLoopPhase[si*(QChannels/2)+e]=
                 (uint32_t)((int)qLoopPhase[si*(QChannels/2)+e]+(dp>>2))&255;
