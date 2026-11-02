@@ -629,3 +629,19 @@ isomer cascades, not continuous evaporation.
 Stability threshold: bound states need COMPLETE quanta
 (m>=128/edge) to persist — partial volumes (32, 64) evaporate
 entirely. Binary stable/unstable, not a continuum.
+
+## 0.8fm creative battery — the detailed profile
+
+- Stability threshold: complete quanta (m>=128) persist; partial
+  volumes evaporate entirely. Binary stable/unstable.
+- Decay cascade: stepwise through metastable level plateaus
+  (1152, 968, 896 — subsets of complete quanta).
+- Isomers: the 128-level is ~5x longer-lived than partial
+  volumes — distinct metastable lifetimes.
+- Charge: broad clusters (~32, 256) — a fuel ledger, not
+  quantized like nature's +-e.
+- Collision: produces mass + partial structure, not bound
+  showers — fusion is the production channel.
+- Spin: none — +x/-x asymmetry equilibrates instantly, no
+  persistent directional circulation (scalar bound states).
+- Regge: no M~J relation — mass production flat vs depth.
