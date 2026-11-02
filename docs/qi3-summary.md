@@ -46,3 +46,10 @@ The divergences are where nature has DEEPER structure:
 
 The core claim demonstrated: local causal mechanics CAN produce
 the quantum observables — not just approximate them.
+
+## UPDATE — collision showers DO fragment
+
+A high-energy collision produces a real shower: 4002 bound-
+sites from an energy burst — the excess crystallizing into
+thousands of bound quanta (each a 128-winding volume). Not
+just mass — a real particle spray like a high-energy jet.
