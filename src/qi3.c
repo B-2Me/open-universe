@@ -270,6 +270,20 @@ static inline void siteUnwind(int si,uint32_t amount){
         if(be<0||m<bm){bm=m;be=e;}             /* weakest bound edge */
     }
     if(be<0)return;
+    /* GROUND-STATE protection: the bound state can't unwind below
+     * its minimum bound volume — the ground state being the lowest
+     * stable configuration. In nature a stable particle can't
+     * decay below its ground state (nothing lighter to carry its
+     * quantum). The threshold is context-sensitive — the bound
+     * state can't drop below a minimum volume, protecting the
+     * ground state from spontaneous unwinding. */
+    uint32_t tv=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t m2=qWinding[si*QChannels+2*e]<qWinding[si*QChannels+2*e+1]
+                   ?qWinding[si*QChannels+2*e]:qWinding[si*QChannels+2*e+1];
+        if(m2>=32)tv+=m2;
+    }
+    if(tv<=512)return;          /* ground-state floor — can't unwind below */
     /* RUNG-QUANTIZED unwind: the loop drops to the next allowed
      * rung (128->96->64->32->0), emitting the rung difference —
      * bound states are DISCRETE amplitudes, not a continuum.
@@ -1073,6 +1087,20 @@ EMS_API void qi3_tick(void){
             uint32_t room=mn<128?128-mn:0;
             if(room<8)continue;              /* recipient is saturated:
                  * refuse — the configuration space is full here */
+            /* GROUND-STATE: the donor can't conduct away its bound
+             * volume below the ground-state floor — a bound state
+             * at its minimum can't shed its ground-state winding
+             * (like a stable particle not draining its rest-mass). */
+            {
+                uint32_t dv=0;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t m2=qWinding[si*QChannels+2*e2]<qWinding[si*QChannels+2*e2+1]
+                               ?qWinding[si*QChannels+2*e2]:qWinding[si*QChannels+2*e2+1];
+                    if(m2>=32)dv+=m2;
+                }
+                if(dv-k<512)k=dv>512?dv-512:0;   /* can't drop below floor */
+                if(k<8)continue;
+            }
             if(k>room)k=room;
             qWinding[si*QChannels+e*2]-=k;
             qWinding[si*QChannels+e*2+1]-=k;
