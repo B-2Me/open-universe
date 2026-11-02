@@ -344,3 +344,35 @@ where structure should govern). `siteLevel` gates it now.
 rate fix, look for a GATE or a wrong register, not a knob. The
 !mass-as-prerequisite bug class hid in four places; the correct
 ontology is "structure governs, mass is its consequence."
+
+## The arm-rate asymmetry — the fifth !mass gate and the warm state
+
+After the conduction arc, the medium reached a stable dense state
+(124K saturated loops, bounded structure) but the photon field kept
+WARMING — emits (266K) outpaced absorbs (68K) at t=1200.
+
+**The analysis** (instrument, don't guess): the saturation census
+showed edges mostly half-wound, all 13824 sites structured — so
+absorption wasn't capacity-blocked. The arm path's gate was:
+
+    if(!mass&&(randByte()&15))continue;   /* 15/16 pass through */
+
+qMass=0 for ALL loop-sites — the whole medium got the 1/16
+bare-vacuum catch. The FIFTH !mass gate (same bug class: mass as
+proxy for structure where siteLevel is the real measure).
+
+**The fix**: catch rate scales with siteLevel — bare=1/16, deep
+structure catches proportionally more. Absorption doubled
+(68K->111K).
+
+**The remaining bound is honest**: incipient capacity ~9/site — a
+node's interface can only hold so many simultaneous transactions
+('t Hooft: finite state space = finite throughput). The residual
+drift (emits>absorbs at saturation) may be a REAL warm state —
+a hot medium radiates more than it absorbs until it cools toward
+LTE. The field seeking its temperature, not a defect.
+
+**The !mass bug-class ledger** (five gates, one ontology):
+absorption arm, emission, conduction, attractor drain, arm catch —
+all treated mass as prerequisite/proxy where structure (siteLevel)
+is the real measure. Mass is a CONSEQUENCE of bound circulation.
