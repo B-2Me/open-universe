@@ -311,10 +311,11 @@ static inline uint32_t edgeOffset(int e,int axis){
     for(int i=0;i<8;i++)if(ring[ax][i]==2*e)return (uint32_t)(i*32)&255;
     return 0;
 }
-/* effectivePhase — the bound state's SHARED oscillator (qPhase)
- * plus the edge's angular offset around the circulation axis —
- * the edge's phase is the shared cycle position + its spatial
- * angle in the bound state's rotation. */
+/* effectivePhase — the edge's receptive-window phase: the bound
+ * state's SHARED orientation (qPhase, a 0-511 doubled cycle —
+ * direction is mod-256, sheet is /256) plus the edge's angular
+ * offset. The window uses the DIRECTION part (mod-256) — the
+ * sheet is the bound state's spinor-cover, not a window. */
 static inline uint32_t effPhase(int si,int e){
     int ax=-1;int32_t dd=0;
     for(int e2=0;e2<QChannels/2;e2++){
@@ -322,7 +323,7 @@ static inline uint32_t effPhase(int si,int e){
                  -(int)qWinding[si*QChannels+2*e2+1];
         if(d2>dd){dd=d2;ax=e2;}
     }
-    return (qPhase[si]+edgeOffset(e,ax))&255; }
+    return ((qPhase[si]&255)+edgeOffset(e,ax))&255; }
 
 EMS_API int qi3_init(int width,int height,int depth,int mov){
     QWidth=width;QHeight=height;QDepth=depth;QSites=QWidth*QHeight*QDepth;
@@ -967,14 +968,21 @@ EMS_API void qi3_tick(void){
             uint32_t m=a<b?a:b;if(m>=32)wound++;
         }
         if(!wound)continue;                     /* only bound sites cycle */
-        qPhase[si]=(qPhase[si]+64)&255;         /* common rate */
-        /* pull the bound-state phase toward neighbors — coherence */
+        /* the bound state's orientation is a 0-511 DOUBLED cycle —
+         * the spinor structure: the direction is phase%256, the
+         * SHEET (which cover) is phase/256 — a 720-degree object
+         * where a 360 rotation flips the sheet (-1). The bound
+         * state's orientation needs TWO wraps to return — the real
+         * spinor double-cover, not a relabeled 360. */
+        qPhase[si]=(qPhase[si]+64)&511;         /* doubled cycle */
+        /* pull toward neighbors — coherent orientation including
+         * the sheet (the bound state's spinor-frame) */
         int xx=si%QWidth,yy=(si/QWidth)%QHeight,zz=si/(QWidth*QHeight);
         int px=wrapCoord(xx+1,QWidth);
         int ni=siteIndex(px,yy,zz);
         int dp=(int)qPhase[ni]-(int)qPhase[si];
-        if(dp>127)dp-=255;if(dp<-127)dp+=255;
-        qPhase[si]=(uint32_t)((int)qPhase[si]+(dp>>3))&255;
+        if(dp>255)dp-=511;if(dp<-255)dp+=511;
+        qPhase[si]=(uint32_t)((int)qPhase[si]+(dp>>3))&511;
     }
 
     /* Phase 4c — winding conduction: circulation flows down its
@@ -1070,10 +1078,11 @@ EMS_API void qi3_tick(void){
              * of independent per-edge clocks. */
             {
                 int dp=(int)qPhase[si]-(int)qPhase[ni];
-                /* shortest wrap around the 255-cycle */
-                if(dp>127)dp-=255;if(dp<-127)dp+=255;
+                /* shortest wrap around the 511-cycle (doubled — the
+                 * spinor's 720 orientation incl the sheet) */
+                if(dp>255)dp-=511;if(dp<-255)dp+=511;
                 int pull=dp>>4;                       /* ~1/16 toward */
-                qPhase[ni]=(uint32_t)((int)qPhase[ni]+pull)&255;
+                qPhase[ni]=(uint32_t)((int)qPhase[ni]+pull)&511;
             }
             qEvents[24]+=k;
         }
