@@ -887,3 +887,11 @@ The 0.8fm substrate reproduces real measured quantum physics
 stability, discrete spin (circulation-count), and Pauli
 exclusion (per-mode single-occupancy) — all emergent local
 mechanics, not imposed rules.
+
+## Pauli exclusion measured — same-spin can't double-occupy
+
+Adding +40 to a + mode (2nd same-spin bound state) drained
+back to ~30 — the + mode saturates at one quantum, the
+excess directedness can't stick. Adding to - mode held
+independently (-8). Real measurable Pauli exclusion —
+same-spin can't double-occupy a mode, opposite can.
