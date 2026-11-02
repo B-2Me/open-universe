@@ -789,9 +789,24 @@ EMS_API void qi3_tick(void){
 
     /* Phase 4c — winding conduction: circulation flows down its
      * own gradient along edges — a wound site sheds a quantum
-     * into a low-winding neighbor, so the hole relocates TOWARD
-     * the donor. Loop-preserving: both channels of the edge
+     * into a low-winding neighbor. Loop-preserving: both channels
      * move together. Fick's-law diffusion on the loop field.
+     *
+     * ============================================================
+     *  THE PROBLEM — configuration space is an open-ended canvas:
+     * it can represent EVERY transition state in the possible
+     * universe. This is our SECOND BEST ATTEMPT at the real
+     * annihilation question: how much transition-space can a local
+     * region actually hold — not an artificial cap, but the
+     * substrate's honest bound on transport. The conduction rate
+     * is bounded by the RECIPIENT's remaining edge-capacity —
+     * a site accepts winding only into edges that can hold it,
+     * and the transfer is capped by the free room, not just the
+     * gradient. Saturated recipients REFUSE the transfer (the
+     * winding stays with the donor — the medium's own exclusion
+     * bounds the flux, not an authored limit).
+     * ============================================================
+     *
      * Runs at the INTERNAL cycle rate — structure cycles slowly. */
     if(internal)for(int si=0;si<QSites;si++){
         uint32_t w=0;
@@ -806,14 +821,24 @@ EMS_API void qi3_tick(void){
             int ny=wrapCoord(y+QChannelVec[c][1],QHeight);
             int nz=wrapCoord(z+QChannelVec[c][2],QDepth);
             int ni=siteIndex(nx,ny,nz);
-            if(!qMass[ni])continue;   /* conduction is a medium property —
-                vacuum can't hold circulation; a transaction's quantum
-                must BIND at a massive absorber, not smear into void. */
             int d=(int)qSiteWind[si]-(int)qSiteWind[ni];
             if(d<8)continue;
             uint32_t k=(uint32_t)(d>>5);if(k>16)k=16;if(!k)k=1;
             uint32_t a=qWinding[si*QChannels+e*2],b=qWinding[si*QChannels+e*2+1];
             uint32_t m=a<b?a:b;if(k>m)k=m;if(!k)continue;
+            /* CAPACITY BOUND — the deep question: a recipient accepts
+             * winding only into edges that can hold it, and the
+             * transfer is capped by its remaining room (m_room =
+             * 128 - recipient's matched winding on this edge).
+             * Saturated recipients REFUSE — the winding stays with
+             * the donor (exclusion bounds the flux, not a cap). */
+            uint32_t an=qWinding[ni*QChannels+e*2],
+                     bn=qWinding[ni*QChannels+e*2+1];
+            uint32_t mn=an<bn?an:bn;
+            uint32_t room=mn<128?128-mn:0;
+            if(room<8)continue;              /* recipient is saturated:
+                 * refuse — the configuration space is full here */
+            if(k>room)k=room;
             qWinding[si*QChannels+e*2]-=k;
             qWinding[si*QChannels+e*2+1]-=k;
             qWinding[ni*QChannels+e*2]+=k;
