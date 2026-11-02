@@ -816,3 +816,13 @@ y+=298 vs y-=345 (vs ~symmetric 262/271 without). The
 circulation curves passing flow, asymmetric by its rotational
 sense — like the Magnus effect. The vortex interacts with the
 field directionally, not just persists.
+
+## The vortex circulation is continuous, not quantized
+
+Seeded rings hold whatever directedness they have (68, 104,
+120, 120 for seeds 140-170, saturating ~120) — a persistent
+circulation but a CONTINUOUS magnitude, not discrete
+spin-projections. The quantization (only certain circulation
+values closing self-consistently) needs the closure to
+constrain the winding to discrete wraps — a remaining gap to
+a real "quantum number" (discrete +-orientations).
