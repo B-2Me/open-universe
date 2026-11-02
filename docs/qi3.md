@@ -808,3 +808,11 @@ The vortex mechanics: directedness ON a bound volume, organized
 tangentially so each edge's flow feeds the next around a closed
 ring. The closure is the protection — the flow returns to
 itself. A real topological circulation, not bare asymmetry.
+
+## The vortex deflects passing flow — Magnus-effect analog
+
+A photon stream through a vortex deflects ASYMMETRICALLY:
+y+=298 vs y-=345 (vs ~symmetric 262/271 without). The
+circulation curves passing flow, asymmetric by its rotational
+sense — like the Magnus effect. The vortex interacts with the
+field directionally, not just persists.
