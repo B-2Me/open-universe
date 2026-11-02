@@ -117,3 +117,19 @@ Measured: the vortex's net circulation around a closed path =
 121 — the topological winding. The separate "phase" we sought
 was redundant — the circulation IS the winding. The quantum
 number = the net flux around the closed path.
+
+## WINDING PHYSICS — the quantum's full profile
+
+The winding (net circulation around a bound state) is a real
+topological quantum:
+- DISTINGUISHING: wound=120 vs unwound=0 — a real observable
+- TRANSITIONS: 128->120 under off-axis torque — the winding
+  changes with applied circulation (angular-momentum transfer)
+- INDEPENDENT: adjacent windings hold separately (120/120,
+  no forced alignment) — no exchange coupling
+- CONTINUOUS: smaller seeds hold less (140->64) — not strictly
+  discrete but conserved up to saturation (~128)
+
+The flux-gradient IS the winding: directedness organized into
+a closed path = the phase wrapping = a conserved topological
+quantum. Real angular-momentum analog.
