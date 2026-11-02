@@ -62,3 +62,10 @@ count but doesn't COUPLE to a field. A real charge would
 respond to field-gradients — the circulation coupling to
 the field. The vortex-count is a quantum number, not a
 measurable charge yet.
+
+## CHARGE = net flux — a conserved quantum (Gauss)
+
+The bound state's charge IS the total directedness (net flux
+a-b summed over edges) — conserved at ~30 over 400t. The
+unpaired circulation that can't cancel — a real conserved
+charge like nature's +-e. The charge IS the net flux.
