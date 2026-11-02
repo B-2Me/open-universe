@@ -145,3 +145,13 @@ Unlike the continuous directedness, the vortex COUNT is
 discrete (1,2,3...) and conserved — a real topological charge
 like nature's quantized +e. Charge = the count of conserved
 circulation units.
+
+## The conserved quantum protects the bound state — slower decay
+
+A vortex-carrying lump retains MORE volume than unwound
+(4136 vs 3806 @400t) — the circulation's conservation slows
+the decay. The quantum can't vanish, so the bound state
+persists — the eternal-state mechanism: a conserved
+topological quantum protects the bound state from decaying.
+Not fully eternal but quantum-protected, like nature's
+stable bound states.
