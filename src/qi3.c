@@ -1228,21 +1228,31 @@ EMS_API void qi3_tick(void){
                  * free directedness, not the loop (min is protected) */
             if(free<32)continue;                /* small imbalance is
                  * just fluctuation — only real asymmetry dissipates */
-            /* DIRECTEDNESS IS A CURRENT — the excess isn't just an
-             * asymmetry, it's directed momentum that FLOWS forward
-             * along its channel. A ring of directed edges sustains
-             * a circulating current — a vortex — because the flow
-             * returns to itself (the closed path is what protects
-             * it). Propagate the excess forward to the neighbor's
-             * channel — the directedness moves, doesn't drain. */
+            /* DIRECTEDNESS-CURVING — the excess isn't just an
+             * asymmetry, it's directed momentum that FLOWS — and a
+             * vortex needs it to CURVE into a closed path, not go
+             * straight. The excess propagates to the neighbor and
+             * TURNS toward the neighbor's local circulation
+             * direction — each edge's directedness feeding the next
+             * edge in the ring, the flow bending around the vortex.
+             * A closed path of directed edges then sustains the
+             * circulation topologically. */
             int big=a>b?c:oc;                   /* the excess side */
             uint32_t cur=free>>4;if(cur<1)cur=1;
             int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
             int ni=siteIndex(wrapCoord(xx+QChannelVec[big][0],QWidth),
                              wrapCoord(yy+QChannelVec[big][1],QHeight),
                              wrapCoord(zz+QChannelVec[big][2],QDepth));
+            /* turn toward the neighbor's strongest directedness —
+             * the flow bends into the local circulation */
+            int tc=big;int32_t bd=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                int32_t d=(int)qWinding[ni*QChannels+2*e2]
+                         -(int)qWinding[ni*QChannels+2*e2+1];
+                if(d>bd){bd=d;tc=2*e2;}
+            }
             qWinding[si*QChannels+big]-=cur;
-            qWinding[ni*QChannels+big]+=cur;    /* flows forward */
+            qWinding[ni*QChannels+tc]+=cur;     /* flows + turns */
             qEvents[5]+=cur;
         }
     }
