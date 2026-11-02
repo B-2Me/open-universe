@@ -408,11 +408,25 @@ EMS_API void qi3_tick(void){
                         qDepositEdge[si*(QChannels/2)+arr]+=1;
                         continue;
                     }
-                    /* arrival edge full: route internally to the
-                     * freest edge — the intra-node corner */
+                    /* arrival edge full: route internally — prefer
+                     * the bound state's DOMINANT DIRECTEDNESS (the
+                     * circulation axis — the vortex "corrects" the
+                     * absorbed energy into its rotation direction,
+                     * conserving circulation like a real spinning
+                     * bound state feeding absorbed momentum into
+                     * its spin), else the freest edge (the corner). */
                     int fe=-1;uint32_t fm=999;
                     int start=randByte()%(QChannels/2);
-                    for(int j=0;j<QChannels/2;j++){
+                    /* directed edge first — the circulation's axis */
+                    int32_t dd=0;
+                    for(int e2=0;e2<QChannels/2;e2++){
+                        int32_t d2=(int)qWinding[si*QChannels+2*e2]
+                                 -(int)qWinding[si*QChannels+2*e2+1];
+                        uint32_t m2=qWinding[si*QChannels+2*e2]<qWinding[si*QChannels+2*e2+1]
+                                  ?qWinding[si*QChannels+2*e2]:qWinding[si*QChannels+2*e2+1];
+                        if(d2>dd&&m2<128){dd=d2;fe=e2;}
+                    }
+                    for(int j=0;j<QChannels/2&&fe<0;j++){
                         int e2=(start+j)%(QChannels/2);
                         uint32_t a2=qWinding[si*QChannels+2*e2],
                                  b2=qWinding[si*QChannels+2*e2+1];
