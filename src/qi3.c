@@ -185,7 +185,14 @@ static inline void snapLoop(int si,int e){
     int c0=si*QChannels+2*e, c1=c0+1;
     uint32_t a=qWinding[c0],b=qWinding[c1];
     uint32_t m=a<b?a:b;
-    if(m<1||m>128)return;
+    if(m<32||m>128)return;   /* sub-rung edges aren't loops — the
+         * attractor drain owns that domain. CRITICAL: quantizing a
+         * sub-32 edge makes dm=m-rung NEGATIVE -> uint32 wrap to
+         * ~4 billion -> the m>128 drain clamps it back to exactly
+         * 128, minting a full quantum from nothing. That wrap+clamp
+         * pair was the "conduction flood": every transfer to a
+         * fresh edge manufactured a 128. Never quantize downward
+         * across the floor. */
     uint32_t rung=m>>qUnwindShift<<qUnwindShift;  /* nearest rung <= m */
     if(rung<32)rung=32;                          /* don't snap below floor */
     uint32_t dm=m-rung;
@@ -926,7 +933,7 @@ EMS_API void qi3_tick(void){
             if(fe>=0){
                 qWinding[si*QChannels+2*fe]+=128;
                 qWinding[si*QChannels+2*fe+1]+=128;
-                qCharge[si]=e-256;
+                qCharge[si]=e-256;qEvents[25]++;
             }
         }
         /* the heat reservoir drains the same way — absorbed photon
@@ -943,7 +950,7 @@ EMS_API void qi3_tick(void){
             if(fe>=0){
                 qWinding[si*QChannels+2*fe]+=128;
                 qWinding[si*QChannels+2*fe+1]+=128;
-                qHeat[si]-=256;
+                qHeat[si]-=256;qEvents[26]++;
             }
         }
         /* ONE quantum per transition: a site at level n>=2 falls
