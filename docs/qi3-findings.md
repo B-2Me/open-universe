@@ -103,3 +103,17 @@ mechanism with honest conservation. The divergences (quantized
 charge, eternal ground states, quantized spin projections) are
 real but mapped: they need topological quantization of the
 field's orientation, not more local mechanisms.
+
+## THE FLUX-GRADIENT REFRAME — the phase IS the flux
+
+The resolution to the winding quest: physicists' "complex
+amplitude phase" and our "flux" are the SAME THING — p=hbar*
+grad(phi), the momentum IS the phase's spatial derivative. So
+our directedness (a-b, the net flow on a channel) IS the
+phase-gradient, and a closed directedness ring IS a phase
+winding.
+
+Measured: the vortex's net circulation around a closed path =
+121 — the topological winding. The separate "phase" we sought
+was redundant — the circulation IS the winding. The quantum
+number = the net flux around the closed path.
