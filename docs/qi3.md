@@ -473,3 +473,21 @@ and wrap through 255 at the internal clock rate. The phase-lock
 gate's <=64 receptive window is now a measured quantity — the
 internal oscillation is load-bearing for phase-sensitive
 transactions, not a decorative register.
+
+## The heat reservoir is terminal — and the field is a limit cycle
+
+Phase 6a (heat -> nu=64 photon re-emission) disabled: a body that
+absorbs light gets WARMER, it doesn't mint fresh photons per
+reservoir quantum. Re-radiation belongs to the structure's own
+transition lines (rung emission), not a second reservoir channel.
+qHeat is now the medium's temperature ledger — energy enters via
+photon decay and leaves only via the rare heat->structure leg.
+
+Post-disable measurement: the photon field does NOT diverge — it
+relaxation-oscillates (~40M peak, ~400-tick period): photons pile
+up, the density-coupled decay (decay ~ density + photonLoad) goes
+superlinear, collapses, rebuilds. The sink exists but its RATE
+CURVE is wrong: decay only bites hard at extreme pileup, so the
+field overshoots, collapses, undershoots — a limit cycle instead
+of a stable point. Event [27] instrumented: the attractor drain
+(+1 photon per sub-32 edge/tick) is a major field producer.

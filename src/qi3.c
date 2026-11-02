@@ -981,15 +981,24 @@ EMS_API void qi3_tick(void){
         qEvents[4]++;qEvents[20]+=line;
     }
 
-    /* Phase 6a — thermal re-emission: the vacuum-heat reservoir
-     * RADIATES. A site holding heat above a quantum sheds a photon —
-     * the medium is SELF-DRIVING: photon -> absorbed -> heat ->
-     * re-emit -> photon. The sinks feed the sources; the cycle
-     * closes internally, no external injector. Local and stochastic —
-     * a site radiates when ITS reservoir is hot, not on a schedule. */
-    for(int si=0;si<QSites;si++){
+    /* Phase 6a — thermal re-emission: DISABLED (the recycler bug).
+     *
+     * We built heat -> photon re-emission as the "self-driving"
+     * cycle, but it's not how matter thermalizes at this scale:
+     * a body that absorbs light gets WARMER — its internal energy
+     * rises — it does not mint a fresh photon per reservoir quantum.
+     * Re-radiation in nature happens through the structure's OWN
+     * transition lines (which we already have — the rung emission),
+     * not a second channel double-dipping the reservoir. The 6a
+     * path recycled every decayed photon back into the band at
+     * nu=64 — the field could never drain. qHeat is now a terminal
+     * reservoir (the medium's temperature), drained only by the
+     * rare heat->structure leg. Prediction: the photon field
+     * drains into the lattice's internal energy and equilibrates
+     * at a thin residual while qHeat measures the warmth. */
+    if(0)for(int si=0;si<QSites;si++){
         if(qHeat[si]<256)continue;
-        if(randByte()&3)continue;               /* stochastic lifetime */
+        if(randByte()&3)continue;
         int c=randByte()%QChannels;
         qPhoton_next[si*QChannels+c]+=1;
         qPhotonNu_next[si*QChannels+c]=64;
@@ -1065,6 +1074,7 @@ EMS_API void qi3_tick(void){
                 qWinding[si*QChannels+2*e+1]-=b<128?b:128;
                 qPhoton_next[si*QChannels+2*e]+=1;
                 qPhotonNu_next[si*QChannels+2*e]=m;
+                qEvents[27]++;
             } else if(m>128){                      /* saturated loop: cap at
                  * the quantum — one loop per edge (exclusion), the
                  * excess is free winding that evaporates */
