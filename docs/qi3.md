@@ -930,3 +930,10 @@ A bound state carries its topological winding (~120) while
 the volume drains (4608->3926) — the circulation quantum
 conserved through the bound state's decay, like a real
 particle keeping its quantum number through its lifetime.
+
+## Winding affects collision — wound lump interacts differently
+
+A wound lump under bombardment holds its spin (30) AND loses
+slightly more volume (1128 vs unwound 1152) — the quantum
+structure affecting the interaction. A measurable consequence:
+wound bound states scatter differently.
