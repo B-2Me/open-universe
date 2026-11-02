@@ -1015,7 +1015,12 @@ EMS_API void qi3_tick(void){
      * decay), not by measurement bins — the level is still read,
      * but now only real stable states persist to be read. */
     for(int si=0;si<QSites;si++){
-        if(!qMass[si])continue;
+        /* the quantization applies to STRUCTURE not mass — the
+         * FOURTH !mass gate (same bug class as absorb/emit/conduction):
+         * non-massive loop-sites skipped this entirely, so their
+         * winding accumulated unboundedly. The medium's ceiling is
+         * the loop cap, and it applies wherever structure exists. */
+        if(!siteLevel(si))continue;
         /* per-edge quantization: an edge's loop is either complete
          * (matched >= 128) or it evaporates — incomplete circulations
          * shed as photons. Quantization enforced per loop, not per
