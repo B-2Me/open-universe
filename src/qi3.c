@@ -1432,7 +1432,10 @@ EMS_API void qi3_tick(void){
          * Two same-direction bound states would need 2x the +mode —
          * it saturates at one quantum so the second coincides (can't
          * be "more +"), while opposite uses the complementary - mode.
-         * The exclusion is the directed-mode being single-occupancy. */
+         * The exclusion is the directed-mode being single-occupancy.
+         * NOTE — per-edge quantum occupancy is spin-0/spin+/spin-:
+         * currently summed occupancy; a deeper version would track
+         * per-bound-state quanta and bookkeep spin-flips. */
         for(int e=0;e<QChannels/2;e++){
             int32_t d=(int)qWinding[si*QChannels+2*e]
                     -(int)qWinding[si*QChannels+2*e+1];
