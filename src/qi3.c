@@ -472,8 +472,18 @@ EMS_API void qi3_tick(void){
                                      -(int)qWinding[si*QChannels+2*e2+1];
                             if(d2>dd){dd=d2;de=e2;}
                         }
-                        if(de>=0){                            /* feed spin */
-                            qWinding[si*QChannels+2*de]+=nu>>2;
+                        if(de>=0){
+                            /* the spin's SHEET matters: a bound state
+                             * on the +sheet (qPhase<256) absorbs aligned
+                             * torque into its circulation; on the
+                             * -sheet (qPhase>=256) the same torque
+                             * flips it — the spin-projection being a
+                             * real DOF, not just a label. */
+                            int sheet=(qPhase[si]>=256)?-1:1;
+                            int32_t feed=(int32_t)(nu>>2)*sheet;
+                            int32_t newD=(int)qWinding[si*QChannels+2*de]
+                                       +feed-(int)qWinding[si*QChannels+2*de+1];
+                            if(newD>0)qWinding[si*QChannels+2*de]+=(uint32_t)feed;
                         }
                         qDepositEdge[si*(QChannels/2)+arr]+=1;
                         continue;
