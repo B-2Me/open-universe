@@ -277,3 +277,12 @@ MORE than vacuum (936). The low-nu photons can't feed it
 survive the cold CMB — ours still drain. The intrinsically
 eternal ground state (stable in vacuum because its energy
 can't be extracted) is the real remaining gap.
+
+## The bound momentum drains by transformation, not emission
+
+A bound lump loses ~216 winding but it does NOT go to
+neighbors (0) or photons (6) — the bound momentum converts
+to mass/unmatched-flux spontaneously. For a real eternal
+bound state the momentum needs CONSERVATION — it can't
+transform to other ledgers without environmental energy.
+The conversion isn't energy-gated — that's why it decays.
