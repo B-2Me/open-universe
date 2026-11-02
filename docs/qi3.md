@@ -491,3 +491,23 @@ CURVE is wrong: decay only bites hard at extreme pileup, so the
 field overshoots, collapses, undershoots — a limit cycle instead
 of a stable point. Event [27] instrumented: the attractor drain
 (+1 photon per sub-32 edge/tick) is a major field producer.
+
+## 0.8fm characterization — what the substrate's bound states actually are
+
+Post-conservation-fix measured profile:
+- Fusion threshold: nu=128 each, razor-sharp (2nu=256=wall).
+  Population can't substitute for quantum energy — pair-production.
+- Fusion products: mass + charge + mass-flight + winding residual.
+- Mass flight: launches ~2 sites out, deposits, STOPS — a
+  stopping-range, not ballistic drift.
+- Bound states: point-local, NO confinement — separated lumps
+  evaporate independently, no flux tube bridges the gap.
+- Structure is STATIONARY: winding lumps decay in place, never
+  walk. Only mass travels (MassFlight). Two matter kinds:
+  site-locked bound structure vs mobile fusion-mass.
+- Bound-state lifetime: 1152->64 over 400t — finite evaporation,
+  metastable tail. Decay spectrum nu~16 (sub-threshold shedding).
+- Binding response: nu=96 erodes most — a resonant fragmentation
+  peak (mid-band photons couple to the structure's transitions).
+- Collisions: accretion — flying mass deposits onto a static lump.
+- Photon trapping: marginal — a lump doesn't cluster the field.
