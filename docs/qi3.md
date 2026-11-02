@@ -708,3 +708,18 @@ volume to ride on — a vortex is directedness ON a bound state,
 not a bare asymmetry. The circulation is a modulation on the
 bound volume — the matched winding anchors it, the directed
 excess is the spin.
+
+## The vortex works — confined substrate holds a persistent spin
+
+A bound lump with directedness on a CONFINED edge (m>=128)
+persists: net-directedness holds ~94% (30/32) as the volume
+slowly drains (1152->876). The circulation is a stable
+modulation anchored on the bound state — the first real
+persistent spin/vortex analog.
+
+The mechanism: directedness ON a confined bound volume. The
+edge needs m>=128 to be confinement-locked, so the spin is
+bounded to ~a-128 — a small quantized modulation on the bound
+volume, like nature's discrete angular momentum on a bound
+state. Bare directedness (low matched) drains; circulation on
+a confined volume persists.
