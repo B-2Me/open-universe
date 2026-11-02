@@ -227,3 +227,12 @@ distinguishable — the bound state's behavior depending on
 its spin-projection, not just the direction. The doubled
 cycle is implemented; the sheet-as-real-DOF needs a
 mechanism where +sheet and -sheet interact differently.
+
+## A Mobius circulation persists — the twisted loop
+
+A ring with directedness INVERTING halfway around (a
+Mobius-like twisted circulation) holds ~110 — the flow
+closes on the "other side" like a real twisted loop. The
+circulation's orientation inverts as it wraps — the first
+spinor-like structure: a twisted circulation needing two
+turns to fully close.
