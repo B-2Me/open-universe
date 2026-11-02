@@ -977,6 +977,40 @@ EMS_API void qi3_tick(void){
                 qCharge[si]=e-2*(int)k;qEvents[25]++;
             }
         }
+        /* STRING BREAKING — the Schwinger analog, MULTI-NODE: the
+         * flux tube is a chain of wound edges spanning ~1.2fm = 2+
+         * nodes. A link is STRETCHED when BOTH ends hold a saturated
+         * channel on the same direction — the field is dense across
+         * the node boundary, not a lump's internal edge. When the
+         * stretched link's field exceeds the pair cost, a node
+         * materializes a new bound pair — the stored field energy
+         * becomes the pair's mass+charge, the new charges terminate
+         * the field — the channel splits. Conservation exact:
+         * winding -= 128 -> mass+charge (funded, not minted). */
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t a=qWinding[si*QChannels+2*e],
+                     b=qWinding[si*QChannels+2*e+1];
+            uint32_t m=a<b?a:b;
+            if(m<128)continue;                    /* needs a full quantum */
+            int c=e<<1;
+            int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
+            int nx=wrapCoord(xx+QChannelVec[c][0],QWidth);
+            int ny=wrapCoord(yy+QChannelVec[c][1],QHeight);
+            int nz=wrapCoord(zz+QChannelVec[c][2],QDepth);
+            int ni=siteIndex(nx,ny,nz);
+            uint32_t na=qWinding[ni*QChannels+2*e],
+                     nb=qWinding[ni*QChannels+2*e+1];
+            uint32_t nm=na<nb?na:nb;
+            if(nm<128)continue;                   /* not stretched across */
+            /* the link is a saturated channel — the field converts a
+             * quantum into a new bound pair at the tension node */
+            qWinding[si*QChannels+2*e]-=128;
+            qWinding[si*QChannels+2*e+1]-=128;
+            qMass[si]+=96;                        /* the pair's rest */
+            qCharge[si]+=256;                     /* + binding fuel */
+            qEvents[30]++;
+            break;                                 /* one break per tick */
+        }
         /* the heat reservoir accretes into VOLUME too — same
          * migration: absorbed photon energy becomes bound occupancy
          * wherever there's room, not a whole quantum on a free edge.
