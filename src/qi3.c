@@ -52,8 +52,18 @@ static uint32_t *qHeldInt;                                     /* internal incip
                  * answered INTRA-node (a saturated edge's offer routed
                  * to the node's own free edges) — the internal exchange */
 static uint32_t *qLoopPhase;                                   /* per-edge loop phase —
-                 * the circulation's POSITION in its cycle (0-255), not
-                 * just amplitude. The oscillator's internal state. */
+     * DEPRECATED for the coherent-phase redesign: the bound state is
+     * ONE oscillator — a SHARED per-site phase (qPhase) with edges at
+     * fixed angular offsets in the bound state's rotational space.
+     * The winding is the offset-progression around the bound state —
+     * the phase wrapping consistently, not per-edge clocks.
+     * (was: the circulation's POSITION in its cycle 0-255.) */
+static uint32_t *qPhase;                                       /* per-site bound-state phase —
+     * ONE oscillator for the whole bound state. The edge's effective
+     * phase = qPhase + edgeOffset(e) — a shared cycle position plus
+     * each edge's angular position in the bound state's rotational
+     * structure. The winding is the spatial phase-progression —
+     * the bound state as a coherent spinner, not 9 synced clocks. */
 static uint32_t *qLocalDensity;                                /* neighbor-sampled
                  * density — the node's estimate of its local structure:
                  * what the node can actually MEASURE (its causal
@@ -269,6 +279,16 @@ static inline void siteUnwind(int si,uint32_t amount){
 }
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
     return (uint8_t)((qRngSeed*0x2545F4914F6CDD1DULL)>>56); }
+/* edgeOffset — the edge's angular position in the bound state's
+ * rotational space: 9 edges spread over the 255-cycle (~28 each),
+ * so the effective phases form a spatial progression — the bound
+ * state spinning, its edges at different cycle-angles. */
+static inline uint32_t edgeOffset(int e){ return (uint32_t)(e*28)&255; }
+/* effectivePhase — the bound state's SHARED oscillator (qPhase)
+ * plus the edge's angular offset — the edge's phase is the shared
+ * cycle position + its position in the bound state's rotation. */
+static inline uint32_t effPhase(int si,int e){
+    return (qPhase[si]+edgeOffset(e))&255; }
 
 EMS_API int qi3_init(int width,int height,int depth,int mov){
     QWidth=width;QHeight=height;QDepth=depth;QSites=QWidth*QHeight*QDepth;
@@ -290,6 +310,7 @@ EMS_API int qi3_init(int width,int height,int depth,int mov){
     qHeldInt        =calloc((size_t)QSites,sizeof(uint32_t));
     qHeat           =calloc((size_t)QSites,sizeof(uint32_t));
     qLoopPhase      =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
+    qPhase          =calloc((size_t)QSites,sizeof(uint32_t));
     qLocalDensity   =calloc((size_t)QSites,sizeof(uint32_t));
     qHeldNu         =calloc((size_t)QSites*(QChannels/2),sizeof(uint32_t));
     qHeldDir        =calloc((size_t)QSites*(QChannels/2),1);
@@ -741,7 +762,7 @@ EMS_API void qi3_tick(void){
                 if(match&&m>=32){
                     /* the loop exists — the offer's phase must land in
                      * its receptive window (within a rung of the cycle) */
-                    uint32_t lp=qLoopPhase[si*(QChannels/2)+edge6]&255;
+                    uint32_t lp=effPhase(si,edge6);
                     uint32_t op=(nu*(uint32_t)(qTick-qPhotonBirth_next[si*QChannels+c]))&255;
                     int d=(int)lp-(int)op;if(d<0)d=-d;if(d>128)d=256-d;
                     if(d>64)match=0;                     /* out of phase: decline */
@@ -898,34 +919,28 @@ EMS_API void qi3_tick(void){
      * circulation turns at its own frequency: each loop's phase
      * steps by its edge-reach (a tighter loop cycles faster, the
      * position in the cycle IS the internal state — the 720° upgrade). */
+    /* the bound-state phase: ONE oscillator per site — the shared
+     * cycle position. qPhase advances at a common rate for the whole
+     * bound state (the site is one oscillator), edges' effective
+     * phases are the shared phase + their angular offset. The winding
+     * is the spatial offset-progression — the bound state spinning
+     * coherently. COUPLING: the site's qPhase pulls toward its
+     * neighbors' — a coherent bound-state phase-field. */
     if(internal)for(int si=0;si<QSites;si++){
+        int wound=0;
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
-            uint32_t m=a<b?a:b;
-            if(m<32)continue;                    /* only real loops cycle */
-            uint64_t L2=edgeLen2(2*e);
-            qLoopPhase[si*(QChannels/2)+e]=
-                (qLoopPhase[si*(QChannels/2)+e]+(128/L2+1))&255;
-            /* LOCAL PHASE-CONSISTENCY — the edges' phases should
-             * form a consistent PROGRESSION, not synchronize: each
-             * edge expects to be a fixed OFFSET ahead of its
-             * neighbor's phase (the circulation's cycle-position
-             * stepping consistently around the bound state — a
-             * winding). If the neighbor's phase isn't at the
-             * expected offset the edge realigns — enforcing the
-             * consistent progression locally, not a global field. */
-            int c=e<<1;
-            int xx=si%QWidth, yy=(si/QWidth)%QHeight, zz=si/(QWidth*QHeight);
-            int ni=siteIndex(wrapCoord(xx+QChannelVec[c][0],QWidth),
-                             wrapCoord(yy+QChannelVec[c][1],QHeight),
-                             wrapCoord(zz+QChannelVec[c][2],QDepth));
-            int expect=32;                      /* the progression step */
-            int want=(int)qLoopPhase[ni*(QChannels/2)+e]+expect;
-            int dp=want-(int)qLoopPhase[si*(QChannels/2)+e];
-            if(dp>127)dp-=255;if(dp<-127)dp+=255;
-            qLoopPhase[si*(QChannels/2)+e]=
-                (uint32_t)((int)qLoopPhase[si*(QChannels/2)+e]+(dp>>2))&255;
+            uint32_t m=a<b?a:b;if(m>=32)wound++;
         }
+        if(!wound)continue;                     /* only bound sites cycle */
+        qPhase[si]=(qPhase[si]+64)&255;         /* common rate */
+        /* pull the bound-state phase toward neighbors — coherence */
+        int xx=si%QWidth,yy=(si/QWidth)%QHeight,zz=si/(QWidth*QHeight);
+        int px=wrapCoord(xx+1,QWidth);
+        int ni=siteIndex(px,yy,zz);
+        int dp=(int)qPhase[ni]-(int)qPhase[si];
+        if(dp>127)dp-=255;if(dp<-127)dp+=255;
+        qPhase[si]=(uint32_t)((int)qPhase[si]+(dp>>3))&255;
     }
 
     /* Phase 4c — winding conduction: circulation flows down its
@@ -1020,13 +1035,11 @@ EMS_API void qi3_tick(void){
              * phase-field across the bound configuration instead
              * of independent per-edge clocks. */
             {
-                int dp=(int)qLoopPhase[si*(QChannels/2)+e]
-                      -(int)qLoopPhase[ni*(QChannels/2)+e];
+                int dp=(int)qPhase[si]-(int)qPhase[ni];
                 /* shortest wrap around the 255-cycle */
                 if(dp>127)dp-=255;if(dp<-127)dp+=255;
                 int pull=dp>>4;                       /* ~1/16 toward */
-                qLoopPhase[ni*(QChannels/2)+e]=
-                    (uint32_t)((int)qLoopPhase[ni*(QChannels/2)+e]+pull)&255;
+                qPhase[ni]=(uint32_t)((int)qPhase[ni]+pull)&255;
             }
             qEvents[24]+=k;
         }
@@ -1453,7 +1466,7 @@ EMS_API void qi3_winding_set(int x,int y,int z,int c,int v){
 }
 EMS_API int qi3_loopphase_get(int x,int y,int z,int e){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
-    return qLoopPhase[siteIndex(x,y,z)*(QChannels/2)+(e&8)]; }
+    return effPhase(siteIndex(x,y,z),(e&8)); }
 EMS_API int qi3_winding_get(int x,int y,int z,int c){
     if(c>=QChannels)return 0;
     return qWinding[siteIndex(wrapCoord(x,QWidth),wrapCoord(y,QHeight),wrapCoord(z,QDepth))*QChannels+c];
