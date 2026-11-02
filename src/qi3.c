@@ -966,31 +966,46 @@ EMS_API void qi3_tick(void){
         qEvents[4]++;
     }
 
-    /* Phase 6b — annihilation: antipodal winding on an axis (a
-     * particle/antiparticle pair wound on facing channels) decays
-     * into equal back-to-back photon populations at the site line. */
+    /* Phase 6b — dissipation of free momentum ("the annihilation
+     * question, second best attempt").
+     *
+     * ============================================================
+     *  DIAGNOSIS LOG — the conduction flood (t≈20):
+     *  Old trigger: pair=min(a,b) on the same edge — but min(a,b)
+     *  IS the loop's matched amplitude. Bound structure past 128
+     *  got burned as "particle/antiparticle excess" — conduction
+     *  and deposits push loops deep, this path floods photons.
+     *  Verdict: same-edge min is LOOP amplitude, not decay fuel.
+     *
+     *  VARIANT A (this version): the decay candidate is the
+     *  UNMATCHED part |a-b| — net directedness that isn't closed
+     *  circulation. A loop (a≈b) is a bound state, protected; an
+     *  imbalance is free momentum — directedness that found no
+     *  transaction. Whether ANY explicit dissipation belongs at
+     *  this scale is itself a question: real "annihilation" is
+     *  presumably an EMERGENT transaction, not a rule. This is a
+     *  stochastic drain on free directedness — minimal honest
+     *  version. Sheds only the excess side; the matched loop is
+     *  untouched.
+     * ============================================================ */
     for(int si=0;si<QSites;si++){
-        for(int c=0;c<QChannels;c++){
-            int oc=c^1;
+        for(int e=0;e<QChannels/2;e++){
+            int c=2*e,oc=c+1;
             uint32_t a=qWinding[si*QChannels+c];
             uint32_t b=qWinding[si*QChannels+oc];
-            uint32_t pair=a<b?a:b;
-            /* bound circulation is protected: annihilate only the
-             * antipodal winding ABOVE the loop quantum — free
-             * particle/antiparticle excess decays, the closed loop
-             * (the level structure itself) persists. */
-            uint32_t free=pair>128?pair-128:0;
-            if(free<16)continue;                       /* stability floor */
+            uint32_t free=a>b?a-b:b-a;         /* UNMATCHED excess —
+                 * free directedness, not the loop (min is protected) */
+            if(free<32)continue;                /* small imbalance is
+                 * just fluctuation — only real asymmetry dissipates */
+            if(randByte()&3)continue;           /* stochastic EVENT */
             uint32_t burst=free>>3;if(burst<1)burst=1;
             int n=siteLevel(si);if(n<2)n=2;
             int nu=(qGapMode>=1&&qGapMode<=4)?qi3gapE(n,1):(qMass[si]>4?qMass[si]>>2:1);
-            qWinding[si*QChannels+c]-=burst;
-            qWinding[si*QChannels+oc]-=burst;
-            qPhoton_next[si*QChannels+c]+=burst;
-            qPhoton_next[si*QChannels+oc]+=burst;
-            qPhotonNu_next[si*QChannels+c]=nu;
-            qPhotonNu_next[si*QChannels+oc]=nu;
-            qEvents[5]+=burst;                          /* annihilation */
+            int big=a>b?c:oc;                   /* the excess side */
+            qWinding[si*QChannels+big]-=burst;
+            qPhoton_next[si*QChannels+big]+=burst;
+            qPhotonNu_next[si*QChannels+big]=nu;
+            qEvents[5]+=burst;                  /* free-momentum decay */
         }
     }
 
