@@ -14,7 +14,7 @@ for(const[tag,wa,wb]of[['12^13 facing',12,13],['14^14 same-y',14,14],['14^15 opp
   w._link3_init(64,20,20,1);
   const NMOV=w._link3_nch()-1,REST=NMOV;
   w._link3_friction(32);w._link3_emit(4);w._link3_phot(5);w._link3_drain_edge(2);
-  w._link3_ieburst(160);w._link3_egate(16);w._link3_phspread(96);
+  w._link3_ieburst(160);w._link3_egate(16);w._link3_phspread(96);w._link3_dwell(4);
   for(let z=6;z<13;z++)for(let y=6;y<13;y++){
     for(let x=26;x<30;x++)if(!((x+y+z)&1)){w._link3_set(x,y,z,REST,64);w._link3_eset(x,y,z,160);w._link3_rset(x,y,z,wa,96);}
     for(let x=34;x<38;x++)if(!((x+y+z)&1)){w._link3_set(x,y,z,REST,64);w._link3_eset(x,y,z,160);w._link3_rset(x,y,z,wb,96);}

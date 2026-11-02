@@ -14,7 +14,7 @@ w._meso3i_init(W,H,D,1);
 const NMOV=w._meso3i_nch()-1,REST=NMOV;
 w._meso3i_collmode(0);w._meso3i_friction(8);w._meso3i_fricmode(4);
 w._meso3i_fricp(128);w._meso3i_drest(1);w._meso3i_reflect(0);
-w._meso3i_phot(9); w._meso3i_scatter(128); w._meso3i_seed(7);
+w._meso3i_phot(9); w._meso3i_scatter(128); w._meso3i_seed(7); if(w._meso3i_photdecay)w._meso3i_photdecay(32);
 // uniform mass drizzle + photon bath — no structure seeded
 for(let z=4;z<D-4;z++)for(let y=4;y<H-4;y++)for(let x=4;x<W-4;x++)
   if(!((x+y+z)&1)){ const r=((x*7+y*11+z*13)%9); w._meso3i_set(x,y,z,REST,r*8); w._meso3i_phset(x,y,z,12,8); w._meso3i_phset(x,y,z,13,8); }

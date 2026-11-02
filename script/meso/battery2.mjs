@@ -29,3 +29,12 @@ for(let t=0;t<400;t++){
   if(t%50===0){w._meso3i_rg_refresh();out.push(`t${t}:iE=${ie()} mov=${w._meso3i_mov_mass()} rest=${w._meso3i_rest_mass()}`);}
 }
 console.log(`battery2 iecost=${EC}: ${out.join(' | ')}`);
+// E58b: remnant composition — scalar rest vs directional rest (winding)
+let dr=0, sc=0;
+for(let z=8;z<16;z++)for(let y=8;y<16;y++)for(let x=16;x<32;x++){
+  if((x+y+z)&1)continue;
+  for(let c=0;c<NMOV;c++) dr+=w._meso3i_get_drest?0:0;
+  sc+=w._meso3i_get(x,y,z,REST);
+}
+// drest isn't directly readable — use ev ledger + rest estimate instead
+console.log(`remnant: scalar rest=${sc} (total rest=${w._meso3i_rest_mass()})`);

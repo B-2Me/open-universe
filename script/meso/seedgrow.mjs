@@ -16,7 +16,7 @@ w._meso3i_collmode(0);w._meso3i_friction(8);w._meso3i_fricmode(4);
 w._meso3i_fricp(128);w._meso3i_drest(1);w._meso3i_reflect(0);
 w._meso3i_phot(9); w._meso3i_scatter(128);
 if(w._meso3i_photdecay) w._meso3i_photdecay(32);
-if(w._meso3i_egate) w._meso3i_egate(8);
+if(w._meso3i_egate) w._meso3i_egate(8); if(w._meso3i_iget)w._meso3i_iget(48);
 for(let z=4;z<D-4;z++)for(let y=4;y<H-4;y++)for(let x=4;x<W-4;x++)
   if(!((x+y+z)&1)){ w._meso3i_phset(x,y,z,12,32); w._meso3i_phset(x,y,z,13,32); }
 const out=[];
