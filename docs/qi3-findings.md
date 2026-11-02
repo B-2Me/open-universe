@@ -133,3 +133,15 @@ topological quantum:
 The flux-gradient IS the winding: directedness organized into
 a closed path = the phase wrapping = a conserved topological
 quantum. Real angular-momentum analog.
+
+## CHARGE AS VORTEX COUNT — a real discrete quantum
+
+A bound state's "charge" can be its VORTEX COUNT — the number
+of closed circulation quanta it carries. Measured: two
+distinct vortices coexist on one lump (120 and 126, both
+persist) — the count stays 2, a real integer quantum.
+
+Unlike the continuous directedness, the vortex COUNT is
+discrete (1,2,3...) and conserved — a real topological charge
+like nature's quantized +e. Charge = the count of conserved
+circulation units.
