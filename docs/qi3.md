@@ -908,3 +908,11 @@ All older tests pass with the quantum mechanisms in:
 The 0.8fm substrate now has a complete quantum
 phenomenology — the measured process-shapes AND the
 quantized observables, all emergent local mechanics.
+
+## Spin affects decay — a selection-rule signature
+
+A wound bound state emits differently than unwound: spin=32
+shifts the emission toward ch2 (22 vs unwound's 14 on ch0).
+The quantum number biases the decay channels — a selection-
+rule-like consequence: the circulation direction influencing
+which transitions proceed.
