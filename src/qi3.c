@@ -279,16 +279,38 @@ static inline void siteUnwind(int si,uint32_t amount){
 }
 static inline uint8_t randByte(void){ qRngSeed^=qRngSeed>>12;qRngSeed^=qRngSeed<<25;qRngSeed^=qRngSeed>>27;
     return (uint8_t)((qRngSeed*0x2545F4914F6CDD1DULL)>>56); }
-/* edgeOffset — the edge's angular position in the bound state's
- * rotational space: 9 edges spread over the 255-cycle (~28 each),
- * so the effective phases form a spatial progression — the bound
- * state spinning, its edges at different cycle-angles. */
-static inline uint32_t edgeOffset(int e){ return (uint32_t)(e*28)&255; }
+/* edgeOffset — the edge's angular position around the bound state's
+ * circulation axis: the angle of the edge's direction projected
+ * onto the plane perpendicular to the bound state's dominant
+ * directedness. The offsets form a SPATIAL progression — the phase
+ * winding around the circulation axis, not fixed by edge type. */
+static inline uint32_t edgeOffset(int e,int axis){
+    /* the rotation plane is perpendicular to the axis edge — the
+     * edge's offset is its angle around the axis, quantized to the
+     * 255-cycle. Simple version: the edge's position in the ring
+     * ordered by direction around the axis. */
+    static const int ring[3][8]={
+        {2,4,10,8, 6,12,14,0},   /* around +x (yz-plane edges) */
+        {0,2,6,14,12,10,4,0},    /* around +y (xz-plane edges) */
+        {0,4,6,10,2,0,0,0},      /* around +z (xy-plane edges) */
+    };
+    if(axis<0||axis>8)axis=0;
+    int ax=axis>5?axis-6:0;
+    for(int i=0;i<8;i++)if(ring[ax][i]==2*e)return (uint32_t)(i*32)&255;
+    return 0;
+}
 /* effectivePhase — the bound state's SHARED oscillator (qPhase)
- * plus the edge's angular offset — the edge's phase is the shared
- * cycle position + its position in the bound state's rotation. */
+ * plus the edge's angular offset around the circulation axis —
+ * the edge's phase is the shared cycle position + its spatial
+ * angle in the bound state's rotation. */
 static inline uint32_t effPhase(int si,int e){
-    return (qPhase[si]+edgeOffset(e))&255; }
+    int ax=-1;int32_t dd=0;
+    for(int e2=0;e2<QChannels/2;e2++){
+        int32_t d2=(int)qWinding[si*QChannels+2*e2]
+                 -(int)qWinding[si*QChannels+2*e2+1];
+        if(d2>dd){dd=d2;ax=e2;}
+    }
+    return (qPhase[si]+edgeOffset(e,ax))&255; }
 
 EMS_API int qi3_init(int width,int height,int depth,int mov){
     QWidth=width;QHeight=height;QDepth=depth;QSites=QWidth*QHeight*QDepth;
