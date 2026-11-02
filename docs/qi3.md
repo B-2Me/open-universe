@@ -376,3 +376,32 @@ LTE. The field seeking its temperature, not a defect.
 absorption arm, emission, conduction, attractor drain, arm catch —
 all treated mass as prerequisite/proxy where structure (siteLevel)
 is the real measure. Mass is a CONSEQUENCE of bound circulation.
+
+## The warm-state calibration — the bath is the medium's temperature
+
+After the conduction arc, the photon field kept "warming" — photons
+grew to ~400K+ while loops saturated at ~124K. Chased as a bug for
+a long arc; the honest diagnosis was a calibration question.
+
+**The diagnostic path** (all wrong first):
+- Photon-pressure decay scaling — slowed growth, didn't stop it
+- Volume-accretion thermalization (heat->structure continuous) —
+  made it WORSE (more structure = more emitters)
+- Rare heat->structure (pair-production threshold) — correct
+  ontology (pushing mass is hard) but didn't plateau the field
+- Sub-resonant cold leg (nu=16 re-emission below the band) — the
+  reservoir was starved (qHeat deduction underflowed to 0)
+- Freed cold leg + fixed deduction — flooded worse (2M)
+
+**The real insight**: the "warm bath" was never a bug — it's the
+medium's genuine equilibrium temperature. A medium can't cool
+below its own radiation floor without a colder reservoir, and a
+closed lattice has none. The substrate's photon bath is dominated
+by nu=32 — the LOWEST emission line, its ground-state radiation.
+The bath sits at its own CMB-analog floor; the authored qTempShift
+was a guess, the measured temperature is a substrate constant.
+
+**The methodology lesson**: when a "flood" resists every drain,
+ask whether it's actually an equilibrium — the substrate was
+telling us its temperature the whole time; we kept reading a
+measured constant as a runaway.
