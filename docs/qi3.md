@@ -733,3 +733,12 @@ momentum — a real spinning bound state would feed on aligned
 offers preferentially. The absorption deposits on the arrival
 edge first; the directed-edge correction only fires when the
 arrival edge is full.
+
+## The spin responds to torque — aligned feeds, anti-aligned resists
+
+The confined vortex's directedness is a RESPONSIVE orientation:
+aligned torque (+x offer) grows it 32->58 (feeds the
+circulation); anti-aligned torque (-x) doesn't reverse it —
+the spin holds ~30 like a gyroscope resisting flip. A real
+angular-momentum analog — a bound state whose internal
+circulation responds to momentum direction.
