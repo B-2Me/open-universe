@@ -920,6 +920,21 @@ EMS_API void qi3_tick(void){
         if(mass&&e<32){                          /* evaporate */
             int burn=mass>>4;if(burn<1)burn=1;
             e+=burn*8;qMass[si]=mass-burn;
+            /* SPECIES INVERSE: mass decay feeds structure — the
+             * persistence ledger's loss becomes bound circulation,
+             * not just charge. A composite's mass converts to
+             * winding internally (the conjugate channel — the
+             * closed cycle where each species' decay feeds the
+             * other instead of leaking to radiation). */
+            int be=-1;uint32_t bm=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                uint32_t a=qWinding[si*QChannels+2*e2],
+                         b=qWinding[si*QChannels+2*e2+1];
+                uint32_t m=a<b?a:b;
+                if(m>bm&&m<160){bm=m;be=e2;}         /* deepest open edge */
+            }
+            if(be>=0){qWinding[si*QChannels+2*be]+=burn;
+                      qWinding[si*QChannels+2*be+1]+=burn;}
             if(!qMass[si])continue;
             mass=qMass[si];
         }
@@ -1011,6 +1026,17 @@ EMS_API void qi3_tick(void){
                 qEvents[28]++;
                 continue;
             }
+        }
+        /* SPECIES INVERSE: a composite's structure shed feeds the
+         * mass ledger — the internal exchange channel. The bound
+         * circulation condenses to persistence rather than radiating
+         * — the closed cycle where structure and mass hold each
+         * other. A bare (massless) site still radiates a photon. */
+        if(mass>0){
+            qMass[si]+=line;                       /* structure -> mass */
+            siteUnwind(si,(uint32_t)line);          /* shed pays it */
+            qEvents[29]++;
+            continue;
         }
         qPhoton_next[si*QChannels+c]+=1;
         qPhotonNu_next[si*QChannels+c]=line>>qGapShift;
