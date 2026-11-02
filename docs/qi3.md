@@ -444,3 +444,22 @@ special mechanism was built for it.
 slow), mass (MassFlight, mobile matter) — all propagating through
 the same lattice at different rates. A genuine multi-species
 transport medium.
+
+## Scale-invariance — the constants are physics, not resolution
+
+The renormalization test: rescale the rung ladder via qUnwindShift
+(2,3,4 = step 4,8,16) and measure whether the dimensionless
+constants survive.
+
+Result — nearly invariant across all three:
+- loops:        56461 / 56140 / 55602
+- amp ratio:    0.12 / 0.11 / 0.11   (deep-medium regime)
+- edge-class:   1.24 / 1.23 / 1.23   (diagonal L2 preference)
+- level dists:  nearly identical
+
+The substrate's derived constants do NOT depend on the quantum's
+rung spacing — the physics is scale-invariant internally. That's
+the strongest evidence the measured constants (nu=128 boundary,
+nu=32 line, amp ratios, edge biases) are real substrate physics,
+not artifacts of the 128-quantum scale we picked. A model whose
+constants survive resolution changes is what renormalization MEANS.
