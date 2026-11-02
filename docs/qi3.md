@@ -895,3 +895,16 @@ back to ~30 — the + mode saturates at one quantum, the
 excess directedness can't stick. Adding to - mode held
 independently (-8). Real measurable Pauli exclusion —
 same-spin can't double-occupy a mode, opposite can.
+
+## FULL REGRESSION — old + new mechanics coexist
+
+All older tests pass with the quantum mechanisms in:
+- Environment matrix: context-stability intact
+- Fusion threshold ~nu=112-128, string breaking, isomers
+- Occupancy-refusal cliff, decay cascades
+- NEW: charge (vortex count), spin (circulation count),
+  Pauli (per-mode occupancy), winding (topological flux)
+
+The 0.8fm substrate now has a complete quantum
+phenomenology — the measured process-shapes AND the
+quantized observables, all emergent local mechanics.
