@@ -340,3 +340,24 @@ separation needs work, but the V~sigma*r mechanism is there.
 COULOMB: nature's is q1*q2-dependent + 1/r^2 — like repel,
 opposite attract, inverse-square. Our charge-response is
 charge-dependent but not the sign-product inverse-square.
+
+## Physics-vs-model — the actual measurements
+
+STERN-GERLACH: a beam splits into 2 DISCRETE spots (spin-
+projection space-quantized). Our spin is a circulation-count
+(a quantum) but no discrete +-deflection measured yet.
+
+CHARGE QUANTIZATION: integer multiples of e (or e/3 quarks).
+Our net flux is conserved but not shown as discrete
+e-multiples.
+
+CONFINEMENT: V~sigma*r -> quarks can't separate. We have the
+linear tension but no pair-production on separation.
+
+COULOMB: q1*q2/r^2 like-repel opposite-attract. Our charge-
+response is charge-dependent but not the inverse-square law.
+
+VERDICT: the observables are real local mechanics (net flux,
+circulation-count, occupancy) but matching the MEASURED
+structure (discrete deflection, e-multiples, inverse-square)
+is the calibration-work, not built yet.
