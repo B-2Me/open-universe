@@ -295,3 +295,10 @@ the charge-force could be flux-driven photon exchange: a
 charged bound state emitting directed photons toward
 another charge -> the other absorbs on the lit face ->
 drifts toward the source. The offer/answer IS the field.
+
+## The +/- directedness is static, not oscillating — build the flip
+
+The bound state's directedness holds ~30 steady — no natural
++/- alternation. For the EM-wave mechanic (oscillating charge
+radiating a field), the +/- modes need to FLIP periodically —
+the charge oscillating to emit photons. Build the +/- flip.
