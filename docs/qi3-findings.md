@@ -320,3 +320,10 @@ Charged bound states drift more toward a photon-source
 response. But + and - both attract the same way — the
 charge amplifying the response but not differentiating
 +/-. For real EM like charges repel, opposite attract.
+
+## Calibration "break" was a missing seed — condensation works
+
+The winding=0 was the test not seeding photons — seeded
+calibration gives 3.6M winding (the medium condenses fine).
+The charge-force mechanics didn't break the condensation —
+the medium needs seed-photons to condense from.
