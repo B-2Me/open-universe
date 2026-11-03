@@ -487,19 +487,21 @@ EMS_API void qi3_tick(void){
                             if(d2>dd){dd=d2;de=e2;}
                         }
                         if(de>=0){
-                            /* CHARGE-RESPONSE: the edge's +/- state
-                             * determines how the absorbed photon pushes
-                             * the directedness — a + edge PUSHED (the
-                             * momentum adding to +), a - edge PUSHED
-                             * opposite (adding to -). Like charges repel
-                             * (same-sign momentum pushes away), opposite
-                             * attract — the charge-state being the
-                             * response-rule for incoming photons. */
+                            /* CHARGE-RESPONSE: the absorbed photon's
+                             * force is MAGNITUDE-DEPENDENT — the push
+                             * scales with the edge's flux (the charge)
+                             * and the field — a high-flux edge responds
+                             * more strongly. The + or - sign determines
+                             * the direction — like charges repel (same-
+                             * sign momentum pushes away), opposite
+                             * attract. */
                             int32_t d=(int)qWinding[si*QChannels+2*de]
                                     -(int)qWinding[si*QChannels+2*de+1];
-                            int32_t feed=nu>>2;
-                            if(d>0)qWinding[si*QChannels+2*de]+=(uint32_t)feed;   /* + pushed */
-                            else if(d<0)qWinding[si*QChannels+2*de+1]+=(uint32_t)feed; /* - pushed */
+                            int32_t mag=d>0?d:-d;         /* the flux magnitude = the charge */
+                            int32_t feed=(mag*nu)>>9;      /* push scales with charge x field */
+                            if(feed<0)feed=0;
+                            if(d>0)qWinding[si*QChannels+2*de]+=(uint32_t)feed;
+                            else if(d<0)qWinding[si*QChannels+2*de+1]+=(uint32_t)feed;
                         }
                         qDepositEdge[si*(QChannels/2)+arr]+=1;
                         continue;
