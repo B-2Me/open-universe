@@ -286,3 +286,12 @@ to mass/unmatched-flux spontaneously. For a real eternal
 bound state the momentum needs CONSERVATION — it can't
 transform to other ledgers without environmental energy.
 The conversion isn't energy-gated — that's why it decays.
+
+## Photon-mediated attraction is real — the bound state drifts toward the emitter
+
+A bound lump drifts toward a photon emitter (x=10->9.29)
+— the lit-face accretion pulling it toward the source. So
+the charge-force could be flux-driven photon exchange: a
+charged bound state emitting directed photons toward
+another charge -> the other absorbs on the lit face ->
+drifts toward the source. The offer/answer IS the field.
