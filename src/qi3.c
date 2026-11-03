@@ -487,17 +487,19 @@ EMS_API void qi3_tick(void){
                             if(d2>dd){dd=d2;de=e2;}
                         }
                         if(de>=0){
-                            /* the spin's SHEET matters: a bound state
-                             * on the +sheet (qPhase<256) absorbs aligned
-                             * torque into its circulation; on the
-                             * -sheet (qPhase>=256) the same torque
-                             * flips it — the spin-projection being a
-                             * real DOF, not just a label. */
-                            int sheet=(qPhase[si]>=256)?-1:1;
-                            int32_t feed=(int32_t)(nu>>2)*sheet;
-                            int32_t newD=(int)qWinding[si*QChannels+2*de]
-                                       +feed-(int)qWinding[si*QChannels+2*de+1];
-                            if(newD>0)qWinding[si*QChannels+2*de]+=(uint32_t)feed;
+                            /* CHARGE-RESPONSE: the edge's +/- state
+                             * determines how the absorbed photon pushes
+                             * the directedness — a + edge PUSHED (the
+                             * momentum adding to +), a - edge PUSHED
+                             * opposite (adding to -). Like charges repel
+                             * (same-sign momentum pushes away), opposite
+                             * attract — the charge-state being the
+                             * response-rule for incoming photons. */
+                            int32_t d=(int)qWinding[si*QChannels+2*de]
+                                    -(int)qWinding[si*QChannels+2*de+1];
+                            int32_t feed=nu>>2;
+                            if(d>0)qWinding[si*QChannels+2*de]+=(uint32_t)feed;   /* + pushed */
+                            else if(d<0)qWinding[si*QChannels+2*de+1]+=(uint32_t)feed; /* - pushed */
                         }
                         qDepositEdge[si*(QChannels/2)+arr]+=1;
                         continue;
@@ -1001,23 +1003,19 @@ EMS_API void qi3_tick(void){
         /* CHARGE RADIATION — a charged bound state emits photons
          * CONTINUOUSLY, proportional to its net flux — the field
          * reaching out as a stream of representative photons.
-         * CONSERVATION: the radiation is funded by the charge's
-         * flux — the photon's energy coming from the bound state's
-         * circulation (a real emission, not minted free). The +/-
-         * inversion conserves the species — the charge sign flips,
-         * not drains. */
+         * The charge STAYS + (conserved) — the radiation is the
+         * field's excitation reaching out, funded by the flux,
+         * not the charge flipping. A static + stays + and radiates
+         * its field; the radiation is the flux's photons, not the
+         * charge oscillating. */
         qPhase[si]=(qPhase[si]+64)&511;
         {
             for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)qWinding[si*QChannels+2*e]
                         -(int)qWinding[si*QChannels+2*e+1];
-                if(d>16){   /* a charged mode — radiate, funded by flux */
-                    uint32_t k=d>8?8:d;
-                    qPhoton_next[si*QChannels+2*e]+=k;
+                if(d>16){   /* a + charge — radiates its field (stays +) */
+                    qPhoton_next[si*QChannels+2*e]+=d>8?8:d;
                     qPhotonNu[si*QChannels+2*e]=64;
-                    /* conserve: the photon comes from the flux — the
-                     * directedness funding the radiation (the charge
-                     * emitting its circulation as field-quanta) */
                 }
             }
         }
