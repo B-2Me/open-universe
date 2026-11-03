@@ -312,3 +312,11 @@ Net drift toward density from random walk + differential
 sticking. For the charge-force: a charged bound state could
 JITTER randomly but the absorbed photons BIAS which direction
 it sticks — the charge-state determining the drift-direction.
+
+## Charge affects the response — charged drifts MORE, but +/- don't differ
+
+Charged bound states drift more toward a photon-source
+(9.28) than neutral (9.49) — a real charge-dependent
+response. But + and - both attract the same way — the
+charge amplifying the response but not differentiating
++/-. For real EM like charges repel, opposite attract.
