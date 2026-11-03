@@ -137,3 +137,10 @@ A single "colored" bound state is as stable (512) as a
 3-color combination — nature's colored quarks are CONFINED
 (can't exist free, hadronize into color-neutral states).
 Our single colors are free — confinement doesn't emerge.
+
+## ~0.1fm — the bound state's field is naturally short-range
+
+The bound state's photon-field falls to 0 by dx=3, weakly
+reaches dx=4 — a localized field like the weak force's
+short range. The substrate produces a naturally short-range
+interaction — the field's influence is very local.
