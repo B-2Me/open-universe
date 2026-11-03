@@ -130,3 +130,10 @@ A bound state holds 3 distinct directedness states (30/30/30
 on three edges) — a 3-valued quantum label like the quark's
 SU(3) color. The substrate's edges carry distinguishable
 quantum states — a real color-analog at 0.1fm scale.
+
+## ~0.1fm divergence — no color-confinement
+
+A single "colored" bound state is as stable (512) as a
+3-color combination — nature's colored quarks are CONFINED
+(can't exist free, hadronize into color-neutral states).
+Our single colors are free — confinement doesn't emerge.
