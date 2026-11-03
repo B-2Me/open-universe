@@ -369,3 +369,20 @@ of spin — no discrete +-split. For real Stern-Gerlach the
 beam splits into 2 discrete spots by spin-projection. Our
 spin is a circulation-quantum but doesn't produce a
 discrete +-deflection in a field-gradient.
+
+## Deeper physics measurements — g~2 and singlet-triplet
+
+ELECTRON g~2: the electron's magnetic moment is ~2x classical
+(g=2.0023) — a real quantum property (the spin's gyromagnetic
+ratio being 2, not 1). Our circulation's magnetic moment
+untested — no g analog yet.
+
+PAULI SINGLET-TRIPLET: the exchange interaction splits the
+spin-states — triplet (S=1, symmetric) lower energy than
+singlet (S=0, antisymmetric). A measurable energy difference
+from the Pauli antisymmetry — our +/- bound states' energies
+by spin untested.
+
+So the observables are real mechanics but the measured
+structure (g~2, singlet-triplet, discrete deflection,
+inverse-square) needs calibration — the tuning-work.
