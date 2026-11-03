@@ -361,3 +361,11 @@ VERDICT: the observables are real local mechanics (net flux,
 circulation-count, occupancy) but matching the MEASURED
 structure (discrete deflection, e-multiples, inverse-square)
 is the calibration-work, not built yet.
+
+## Stern-Gerlach — no discrete +- deflection
+
+All bound states drift to y=9.5 (toward the field) regardless
+of spin — no discrete +-split. For real Stern-Gerlach the
+beam splits into 2 discrete spots by spin-projection. Our
+spin is a circulation-quantum but doesn't produce a
+discrete +-deflection in a field-gradient.
