@@ -1423,6 +1423,23 @@ EMS_API void qi3_tick(void){
             int c=2*e,oc=c+1;
             uint32_t a=qWinding[si*QChannels+c];
             uint32_t b=qWinding[si*QChannels+oc];
+            /* ANTIMATTER-ANNIHILATION — a "matter" bound state (a-side
+             * winding) meeting an "antimatter" bound state (b-side
+             * winding) CANCELS — the opposite windings annihilating
+             * into photons, like real matter+antimatter destroying
+             * each other and radiating the energy. The a and b
+             * windings subtract; the canceled part emits as photons. */
+            if(a>=32&&b>=32&&(a<128&&b<128)){
+                uint32_t ann=a<b?a:b;
+                if(ann>=32){
+                    qWinding[si*QChannels+c]-=ann;
+                    qWinding[si*QChannels+oc]-=ann;
+                    qPhoton_next[si*QChannels+c]+=ann>16?16:ann;
+                    qPhoton_next[si*QChannels+oc]+=ann>16?16:ann;
+                    qPhotonNu[si*QChannels+c]=128;qPhotonNu[si*QChannels+oc]=128;
+                    qEvents[5]+=ann;
+                }
+            }
             uint32_t free=a>b?a-b:b-a;         /* UNMATCHED excess —
                  * free directedness, not the loop (min is protected) */
             if(free<32)continue;                /* small imbalance is
