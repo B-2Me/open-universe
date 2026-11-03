@@ -302,3 +302,13 @@ The bound state's directedness holds ~30 steady — no natural
 +/- alternation. For the EM-wave mechanic (oscillating charge
 radiating a field), the +/- modes need to FLIP periodically —
 the charge oscillating to emit photons. Build the +/- flip.
+
+## The mobility mechanic — differential sticking (link3's "honest gravity")
+
+link3's mobility: mass jitters RANDOMLY but gets PARKED at
+dense junctions — "jittered mass that lands at a dense
+junction gets parked; mass that jitters away keeps moving."
+Net drift toward density from random walk + differential
+sticking. For the charge-force: a charged bound state could
+JITTER randomly but the absorbed photons BIAS which direction
+it sticks — the charge-state determining the drift-direction.
