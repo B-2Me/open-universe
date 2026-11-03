@@ -123,3 +123,10 @@ real divergence (nature's annihilates to photons). A point
 bound state holds (892) — a "point" particle works. The
 missing mechanic: real antimatter-annihilation — opposite-
 winding bound states destroying each other on contact.
+
+## 3-color structure — a bound state holds 3 distinct quanta
+
+A bound state holds 3 distinct directedness states (30/30/30
+on three edges) — a 3-valued quantum label like the quark's
+SU(3) color. The substrate's edges carry distinguishable
+quantum states — a real color-analog at 0.1fm scale.
