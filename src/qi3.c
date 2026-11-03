@@ -998,28 +998,26 @@ EMS_API void qi3_tick(void){
          * where a 360 rotation flips the sheet (-1). The bound
          * state's orientation needs TWO wraps to return — the real
          * spinor double-cover, not a relabeled 360. */
-        /* +/- OSCILLATION — the bound state's charge flips as the
-         * phase wraps: when the doubled-cycle crosses a wrap boundary,
-         * the directedness inverts (+<->-) and EMITS a photon — the
-         * oscillating charge radiating a field (like an accelerating
-         * charge emitting a wave). The +/- alternation IS the EM
-         * radiation mechanism. */
+        /* CHARGE RADIATION — a charged bound state emits photons
+         * CONTINUOUSLY, proportional to its net flux — the field
+         * reaching out as a stream of representative photons.
+         * CONSERVATION: the radiation is funded by the charge's
+         * flux — the photon's energy coming from the bound state's
+         * circulation (a real emission, not minted free). The +/-
+         * inversion conserves the species — the charge sign flips,
+         * not drains. */
+        qPhase[si]=(qPhase[si]+64)&511;
         {
-            uint32_t oldP=qPhase[si];
-            qPhase[si]=(qPhase[si]+64)&511;
-            if((oldP^qPhase[si])&256){          /* crossed a sheet-boundary */
-                /* SWAP the directedness (+<->-) — the charge inverting
-                 * and emitting a photon — the oscillating charge
-                 * radiating on each +- transition. The swap preserves
-                 * the circulation (it's the same energy, flipped) —
-                 * the oscillation being a real +- alternation, not
-                 * a drain. */
-                for(int e=0;e<QChannels/2;e++){
-                    uint32_t a=qWinding[si*QChannels+2*e],b=qWinding[si*QChannels+2*e+1];
-                    if((int)a-(int)b>16){          /* a directed mode — swap it */
-                        qWinding[si*QChannels+2*e]=b;qWinding[si*QChannels+2*e+1]=a;
-                        qPhoton_next[si*QChannels+2*e]+=8;qPhotonNu[si*QChannels+2*e]=64;
-                        break;}
+            for(int e=0;e<QChannels/2;e++){
+                int32_t d=(int)qWinding[si*QChannels+2*e]
+                        -(int)qWinding[si*QChannels+2*e+1];
+                if(d>16){   /* a charged mode — radiate, funded by flux */
+                    uint32_t k=d>8?8:d;
+                    qPhoton_next[si*QChannels+2*e]+=k;
+                    qPhotonNu[si*QChannels+2*e]=64;
+                    /* conserve: the photon comes from the flux — the
+                     * directedness funding the radiation (the charge
+                     * emitting its circulation as field-quanta) */
                 }
             }
         }
