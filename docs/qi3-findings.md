@@ -327,3 +327,16 @@ The winding=0 was the test not seeding photons — seeded
 calibration gives 3.6M winding (the medium condenses fine).
 The charge-force mechanics didn't break the condensation —
 the medium needs seed-photons to condense from.
+
+## Physics-vs-model re-assessment — the real measurements
+
+COLOR-CONFINEMENT: nature's mechanism is V~sigma*r — quarks
+can't separate because the tension grows, they PAIR-PRODUCE
+(string-break into new quark-antiquark pairs). We have the
+linear tension but the separation produced 2 bound states
+(persisted), not a string-break — the pair-production-on-
+separation needs work, but the V~sigma*r mechanism is there.
+
+COULOMB: nature's is q1*q2-dependent + 1/r^2 — like repel,
+opposite attract, inverse-square. Our charge-response is
+charge-dependent but not the sign-product inverse-square.
