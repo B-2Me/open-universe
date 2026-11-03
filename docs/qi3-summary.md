@@ -115,3 +115,11 @@ The +/- oscillation works (directedness inverts, radiating
 photons) but charged bound states don't interact (sep=6.0
 regardless). The radiation isn't coupling to the other
 charge — the photon-exchange isn't carrying the force yet.
+
+## ~0.1fm divergences — antimatter doesn't annihilate
+
+Matter+antimatter COEXIST (860,844) — no annihilation, a
+real divergence (nature's annihilates to photons). A point
+bound state holds (892) — a "point" particle works. The
+missing mechanic: real antimatter-annihilation — opposite-
+winding bound states destroying each other on contact.
