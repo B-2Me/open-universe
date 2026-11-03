@@ -108,3 +108,10 @@ offer/answer model isn't producing a charge-mediated force.
 The net flux is a conserved quantum but doesn't radiate a
 field — for a real charge-force the bound state needs to
 exchange field-quanta (virtual photons) with other charges.
+
+## Charge-force — oscillating charge radiates but no interaction
+
+The +/- oscillation works (directedness inverts, radiating
+photons) but charged bound states don't interact (sep=6.0
+regardless). The radiation isn't coupling to the other
+charge — the photon-exchange isn't carrying the force yet.
