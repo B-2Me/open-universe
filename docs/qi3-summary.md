@@ -100,3 +100,11 @@ Two charged eternal particles coexist (sep=4.0) without
 attracting/repelling — the net flux is a conserved quantum
 but doesn't produce a Coulomb-like force between particles.
 The charge needs a field-gradient coupling for interaction.
+
+## Charge-force — no field-exchange between charged bound states
+
+Charged bound states emit 0 field-photons between them — the
+offer/answer model isn't producing a charge-mediated force.
+The net flux is a conserved quantum but doesn't radiate a
+field — for a real charge-force the bound state needs to
+exchange field-quanta (virtual photons) with other charges.
