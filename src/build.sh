@@ -353,6 +353,7 @@ if emcc moore26.c \
     '_moore26_heat_get',
     '_moore26_phase_get',
     '_moore26_phase_set',
+    '_moore26_charge_get',
     '_moore26_events',
     '_moore26_state_pointer',
     '_moore26_node_size',

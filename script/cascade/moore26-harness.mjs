@@ -125,12 +125,15 @@ console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, scen=${SCEN}` +
   (SCEN === 'string' ? `, string x=${x0}..${x1} (${STR + 1} nodes @ winding=${TUBE_W})` : ''));
 
 const totals = () => {
-  let mass = 0, wind = 0, phot = 0, fly = 0, pol = 0, polx = 0;
+  let mass = 0, wind = 0, phot = 0, fly = 0, pol = 0, polx = 0, chpol = 0;
   let massL = 0, massR = 0, cxL = 0, cxR = 0, fx = 0;
   for (let z = 0; z < W; z++) for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
     const m = M._moore26_mass_get(x, y, z);
     mass += m;
     if (x < c0) { massL += m; cxL += x * m; } else { massR += m; cxR += x * m; }
+    /* the flexoelectric observable: the CHARGE dipole — probe flux
+     * displacing signed charge along the bend. */
+    chpol += (x - c0) * M._moore26_charge_get(x, y, z);
     for (let c = 0; c < 26; c++) {
       wind += M._moore26_winding_get(x, y, z, c);
       phot += M._moore26_photon_get(x, y, z, c);
@@ -146,7 +149,7 @@ const totals = () => {
     const dx = M._moore26_winding_get(x, y, z, 0) - M._moore26_winding_get(x, y, z, 1);
     polx += (x - c0) * dx;
   }
-  return { mass, wind, phot, fly, massL, massR, pol, polx,
+  return { mass, wind, phot, fly, massL, massR, pol, polx, chpol,
            cxL: massL ? cxL / massL : 0, cxR: massR ? cxR / massR : 0,
            cxf: fly ? fx / fly : 0 };
 };
@@ -172,7 +175,7 @@ for (let t = 1; t <= TICKS; t++) {
   M._moore26_tick();
   if (t % 20 === 0) {
     const s = totals();
-    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} pol=${s.pol} polx=${s.polx} wind=${s.wind} phot=${s.phot} ` +
+    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} pol=${s.pol} polx=${s.polx} chpol=${s.chpol} wind=${s.wind} phot=${s.phot} ` +
       `emit=${M._moore26_events(4)} fuse=${M._moore26_events(23)} break=${M._moore26_events(6)} annih=${M._moore26_events(9)}`);
   }
 }

@@ -76,13 +76,17 @@ typedef struct {
     uint8_t  ackTtl[26];       /* hops remaining back to the emitter */
     uint8_t  ackRtt[26];       /* the round-trip the ACK delivers */
     uint8_t  bondDist[13];     /* measured edge reach (hops) — feeds L2 */
+    int8_t   chargeFlight[26]; /* charge quanta riding the mass flight */
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
-    uint16_t charge;           /* bound charge (the completed-transaction deposits) */
+    int16_t  charge;           /* SIGNED bound charge (+q/-q pair-able) */
     uint16_t heat;             /* vacuum heat reservoir (the local temp) */
     uint16_t localDensity;     /* neighbor-sampled density (the gradient) */
 } NodeState;
 static NodeState *grid_current, *grid_next;
+/* Jacobi scratch planes — deterministic phase-sync (read-old/
+ * write-new each pass; the in-place version raced under OpenMP) */
+static uint32_t *phaseA, *phaseB;
 
 /* vacuum-skip ledgers — 8x8x8 macro-chunks */
 #define CHUNK 8
@@ -265,6 +269,8 @@ void moore26_init(int w,int h,int d){
     nChunks=CW*CH*CD;
     grid_current=calloc(QSites,sizeof(NodeState));
     grid_next   =calloc(QSites,sizeof(NodeState));
+    phaseA      =malloc(QSites*sizeof(uint32_t));
+    phaseB      =malloc(QSites*sizeof(uint32_t));
     chunkLive   =calloc(nChunks,1);
     chunkProc   =calloc(nChunks,1);
     procList    =malloc(nChunks*sizeof(int));
@@ -364,11 +370,13 @@ void moore26_tick(void){
      * back-to-back photons + charge residue); survivors PARK into
      * the node's mass — the knot's anchor shifting forward. */
     PROC_NODES
-        uint32_t in[26];
+        uint32_t in[26];int8_t cin[26];
         for(int c=0;c<QChannels;c++){
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             in[c]=grid_current[up].massFlight[c];
+            cin[c]=grid_current[up].chargeFlight[c];
             grid_next[si].massFlight[c]=0;
+            grid_next[si].chargeFlight[c]=0;
         }
         /* catch rule: in-flight mass only parks at STRUCTURE (a mass
          * node or a committed-winding edge) — bare vacuum lets the
@@ -394,8 +402,10 @@ void moore26_tick(void){
                 grid_next[si].photonNu[2*e+1]=nu;
                 grid_next[si].photonBorn[2*e]=(uint8_t)qTick;
                 grid_next[si].photonBorn[2*e+1]=(uint8_t)qTick;
-                uint32_t ch=grid_next[si].charge+hit;
-                grid_next[si].charge=(uint16_t)(ch>65535?65535:ch);
+                /* charge residue is the SIGNED sum of what arrived —
+                 * e+ + e- leaves nothing; like signs accumulate. */
+                int32_t ch=(int32_t)grid_next[si].charge+(int)cin[2*e]+(int)cin[2*e+1];
+                grid_next[si].charge=(int16_t)(ch>32767?32767:ch<-32767?-32767:ch);
                 qEvents[0]+=hit*2;qEvents[9]+=hit;
             }
             if(catch_){
@@ -403,11 +413,16 @@ void moore26_tick(void){
                 if(pk){
                     uint32_t m=grid_next[si].mass+pk;
                     grid_next[si].mass=(uint16_t)(m>65535?65535:m);
+                    /* the parked mass lands with its carried charge */
+                    int32_t ch=(int32_t)grid_next[si].charge+(int)cin[2*e]+(int)cin[2*e+1];
+                    grid_next[si].charge=(int16_t)(ch>32767?32767:ch<-32767?-32767:ch);
                 }
             } else {
                 /* not caught — stays in-flight for next tick's pull */
                 grid_next[si].massFlight[2*e]=in[2*e];
                 grid_next[si].massFlight[2*e+1]=in[2*e+1];
+                grid_next[si].chargeFlight[2*e]=cin[2*e];
+                grid_next[si].chargeFlight[2*e+1]=cin[2*e+1];
             }
         }
     PROC_NODES_END
@@ -434,6 +449,11 @@ void moore26_tick(void){
             grid_next[si].mass-=k;
             uint32_t f=grid_next[si].massFlight[2*de]+k;
             grid_next[si].massFlight[2*de]=(uint16_t)(f>65535?65535:f);
+            /* the launched mass carries a proportional charge share */
+            int32_t qc=(int32_t)o->charge>>4;
+            grid_next[si].charge-=qc;
+            int32_t cf=(int32_t)grid_next[si].chargeFlight[2*de]+qc;
+            grid_next[si].chargeFlight[2*de]=(int8_t)(cf>127?127:cf<-127?-127:cf);
         PROC_NODES_END
     }
 
@@ -467,8 +487,13 @@ void moore26_tick(void){
                 uint64_t dep=(uint64_t)pair*(nua+nub);
                 uint32_t m=n->mass+(uint32_t)(dep>>5);
                 n->mass=(uint16_t)(m>65535?65535:m);
-                uint32_t ch=n->charge+(uint32_t)(dep>>3);
-                n->charge=(uint16_t)(ch>65535?65535:ch);
+                /* SIGNED pair: the separating fragments carry +q/-q
+                 * (net zero minted — gamma+gamma -> e+ + e-). */
+                int32_t qc=(int32_t)(dep>>4);
+                int32_t cf0=(int32_t)n->chargeFlight[c]+qc;
+                int32_t cf1=(int32_t)n->chargeFlight[oc]-qc;
+                n->chargeFlight[c]=(int8_t)(cf0>127?127:cf0);
+                n->chargeFlight[oc]=(int8_t)(cf1<-127?-127:cf1);
                 uint32_t f0=n->massFlight[c]+pair,f1=n->massFlight[oc]+pair;
                 n->massFlight[c]=(uint16_t)(f0>65535?65535:f0);
                 n->massFlight[oc]=(uint16_t)(f1>65535?65535:f1);
@@ -487,7 +512,13 @@ void moore26_tick(void){
             if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue; /* off-band: flies on */
             int armed=0;
             for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
-            if(armed>=13){
+            /* electrostatic screening as occupancy economics: an
+             * accumulated charge lowers the negotiation capacity —
+             * charged nodes decline earlier, shedding flux they
+             * can't accommodate. */
+            int cap=13-((n->charge<0?-n->charge:n->charge)>>3);
+            if(cap<4)cap=4;
+            if(armed>=cap){
                 /* DECLINED — deflect to the freest channel: the photon
                  * bounces off the dense field to find another target
                  * rather than stacking inside it. */
@@ -587,7 +618,11 @@ void moore26_tick(void){
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
                         if(m2<128&&m2<fm){fm=m2;fe=e2;}
                     }
-                    if(fe<0){n->charge+=(uint16_t)(nu>65535?65535:nu);continue;}
+                    if(fe<0){
+                        int32_t ch=(int32_t)n->charge+(int32_t)nu;
+                        n->charge=(int16_t)(ch>32767?32767:ch);
+                        continue;
+                    }
                     n->winding[2*fe]+=nu;n->winding[2*fe+1]+=nu;
                 }
             }
@@ -649,6 +684,13 @@ void moore26_tick(void){
                     grid_next[ni3].winding[2*fo]+=k;
                     #pragma omp atomic
                     grid_next[ni3].winding[2*fo+1]+=k;
+                    /* charge rides the transfer — routed winding
+                     * displaces the node's charge share (the induced-
+                     * dipole path: asymmetric routing polarizes). */
+                    int32_t cq=(int32_t)grid_next[si].charge>>4;
+                    grid_next[si].charge-=cq;
+                    #pragma omp atomic
+                    grid_next[ni3].charge+=cq;
                 }
             } else {
                 uint32_t room=128-mn;if(k>room)k=room;
@@ -658,6 +700,11 @@ void moore26_tick(void){
                     grid_next[ni].winding[2*e]+=k;
                     #pragma omp atomic
                     grid_next[ni].winding[2*e+1]+=k;
+                    /* charge rides the winding transfer */
+                    int32_t cq=(int32_t)grid_next[si].charge>>4;
+                    grid_next[si].charge-=cq;
+                    #pragma omp atomic
+                    grid_next[ni].charge+=cq;
                 }
             }
         }
@@ -668,22 +715,29 @@ void moore26_tick(void){
      * across a ~10-node bound state before the next mechanical tick.
      * Pull-model: each node averages its neighbors' pull (unique
      * writer — no atomics). Reads next (post-carry), writes next. */
+    PROC_NODES
+        phaseA[si]=grid_next[si].phase;
+    PROC_NODES_END
     for(int iter=0;iter<10;iter++){
         PROC_NODES
             if(node_live(&grid_next[si])){
                 int32_t pull=0;
-                uint32_t ph=grid_next[si].phase;
+                uint32_t ph=phaseA[si];
                 for(int c=0;c<QChannels;c++){
                     int ni=nbr(x,y,z,QChannelVec[c][0],QChannelVec[c][1],QChannelVec[c][2]);
-                    int dp=(int)grid_next[ni].phase-(int)ph;
+                    int dp=(int)phaseA[ni]-(int)ph;
                     if(dp>255)dp-=511;
                     if(dp<-255)dp+=511;
                     pull+=dp>>4;
                 }
-                grid_next[si].phase=(uint32_t)((int)ph+pull)&511;
-            }
+                phaseB[si]=(uint32_t)((int)ph+pull)&511;
+            } else phaseB[si]=phaseA[si];
         PROC_NODES_END
+        uint32_t *t=phaseA;phaseA=phaseB;phaseB=t;
     }
+    PROC_NODES
+        grid_next[si].phase=phaseA[si];
+    PROC_NODES_END
 
     /* Phase 6: emission — the bound state radiates. A site at level
      * n>=2 stochastically sheds one rung of its weakest committed
@@ -804,6 +858,12 @@ void moore26_tick(void){
                     grid_next[si].massFlight[2*e+1]+=64;   /* head recoils back */
                     #pragma omp atomic
                     grid_next[p2].massFlight[2*e]+=64;     /* tail recoils forward */
+                    /* and the broken pair carries opposite charge —
+                     * the tube's meson -> q + qbar signature. */
+                    #pragma omp atomic
+                    grid_next[si].chargeFlight[2*e+1]+=8;
+                    #pragma omp atomic
+                    grid_next[p2].chargeFlight[2*e]-=8;
                     qEvents[6]++;
                 }
             }
@@ -859,6 +919,9 @@ void moore26_phase_set(int x,int y,int z,uint32_t v){
 }
 uint32_t moore26_phase_get(int x,int y,int z){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].phase;
+}
+int32_t moore26_charge_get(int x,int y,int z){
+    return (int32_t)grid_current[z*QWidth*QHeight+y*QWidth+x].charge;
 }
 /* bulk-read support for wasm harnesses: the flat NodeState array —
  * JS strides it by moore26_node_size() to render the grid state. */
