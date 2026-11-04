@@ -70,6 +70,8 @@ onUnmounted(() => {
         <button data-reset title="Clear the lattice"  aria-label="Reset">⟲</button>
         <button data-lump  title="Lump tool — arm, then click the lattice to drop a wound knot"
                 aria-label="Wound lump placement tool" aria-pressed="false">⌖</button>
+        <button data-tube  title="Tube tool — arm, then click to paint a saturated flux string (watch it fracture)"
+                aria-label="Flux tube paint tool" aria-pressed="false">—</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
         <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>

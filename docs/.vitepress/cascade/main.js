@@ -204,6 +204,24 @@ export async function initCascadeSimulator(root, opts = {}) {
     return n;
   };
 
+  // ——: paint a stretched flux tube at the picked point — two mass
+  // anchors joined by a saturated winding run on the +/-X pair. The
+  // signature demo: >=12 saturated nodes triggers macroscopic string-
+  // breaking — the tube fractures into charged recoil fragments.
+  const seedTube = (lx, ly, lz) => {
+    const half = 8;
+    const x0 = Math.max(1, lx - half), x1 = Math.min(W3 - 2, lx + half);
+    let n = 0;
+    wasm._moore26_mass_set(x0, ly, lz, 512);
+    wasm._moore26_mass_set(x1, ly, lz, 512);
+    for (let x = x0; x <= x1; x++) {
+      wasm._moore26_winding_set(x, ly, lz, 0, 128);
+      wasm._moore26_winding_set(x, ly, lz, 1, 128);
+      n++;
+    }
+    return n;
+  };
+
   // Camera ray -> lattice cell on the slice plane
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
@@ -293,11 +311,16 @@ export async function initCascadeSimulator(root, opts = {}) {
   let dragging = false, lx = 0, ly = 0;
   canvas.addEventListener('pointerdown', e => {
     poke();
-    if (ui.lumpArm) {
+    if (ui.lumpArm || ui.tubeArm) {
       const cell = pickCell(e.clientX, e.clientY);
       if (cell) {
-        const n = seedLump(cell.lx, cell.ly, cell.lz);
-        say(n ? `wound lump dropped — ${n} sites bound` : 'off-lattice', 2500);
+        if (ui.tubeArm) {
+          const n = seedTube(cell.lx, cell.ly, cell.lz);
+          say(n ? `flux tube painted — ${n} saturated nodes; watch it fracture` : 'off-lattice', 3500);
+        } else {
+          const n = seedLump(cell.lx, cell.ly, cell.lz);
+          say(n ? `wound lump dropped — ${n} sites bound` : 'off-lattice', 2500);
+        }
       } else say('edge-on view — pick while the slice plane is facing you', 4500);
       return;
     }
@@ -332,7 +355,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
     qmin: 1, size: 0.55, colorMode: 4, tps: 10, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
-    drive: true, beam: false, lumpArm: false,
+    drive: true, beam: false, lumpArm: false, tubeArm: false,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -376,13 +399,21 @@ export async function initCascadeSimulator(root, opts = {}) {
     '+x photon beam on — the probe stream',
     'beam off');
   const lumpBtn = root.querySelector('[data-lump]');
+  const tubeBtn = root.querySelector('[data-tube]');
   const setLumpArm = (on) => {
     ui.lumpArm = on;
     canvas.style.cursor = on ? 'crosshair' : '';
     if (lumpBtn) { lumpBtn.classList.toggle('armed', on); lumpBtn.setAttribute('aria-pressed', String(on)); }
     say(on ? 'lump tool armed — tap the slice plane to drop a wound knot · ⌖ to cancel' : '', 0);
   };
-  bind('[data-lump]', 'click', () => setLumpArm(!ui.lumpArm));
+  const setTubeArm = (on) => {
+    ui.tubeArm = on;
+    canvas.style.cursor = on ? 'crosshair' : '';
+    if (tubeBtn) { tubeBtn.classList.toggle('armed', on); tubeBtn.setAttribute('aria-pressed', String(on)); }
+    say(on ? 'tube tool armed — tap to paint a saturated flux string · — to cancel' : '', 0);
+  };
+  bind('[data-lump]', 'click', () => { setTubeArm(false); setLumpArm(!ui.lumpArm); });
+  bind('[data-tube]', 'click', () => { setLumpArm(false); setTubeArm(!ui.tubeArm); });
   bind('[data-snap]', 'click', () => { wasm._moore26_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; say('snapshot saved', 2500); });
   bind('[data-unsnap]', 'click', () => { if (wasm._moore26_restore() === 0) { upload(); dirty = true; } });
   bind('[data-spin]', 'click', e => {
