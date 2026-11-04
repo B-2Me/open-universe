@@ -69,7 +69,13 @@ typedef struct {
     uint8_t  photon[26];       /* packet counts (the offers) */
     uint8_t  photonNu[26];     /* packet nu tags (the energy) */
     uint8_t  incip[26];        /* armed incipients per channel (negotiations) */
-    uint8_t  incipNu[26];      /* each incipient's nu (the offered energy) */
+    uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag) */
+    uint8_t  incipBorn[26];    /* each incipient's offer birth tick (tau) */
+    uint8_t  photonBorn[26];   /* packet birth tick — propagates with nu */
+    uint8_t  ack[26];          /* returning confirms (the ACK counts) */
+    uint8_t  ackTtl[26];       /* hops remaining back to the emitter */
+    uint8_t  ackRtt[26];       /* the round-trip the ACK delivers */
+    uint8_t  bondDist[13];     /* measured edge reach (hops) — feeds L2 */
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
     uint16_t charge;           /* bound charge (the completed-transaction deposits) */
@@ -192,7 +198,11 @@ static int geo_gap(const NodeState *o){
         if(m>=32&&(be<0||m<bm)){bm=m;be=e;}
     }
     if(be<0)return 0;
-    uint64_t L2=edgeLen2(2*be);
+    /* the loop's measured reach: an ACK-delivered bond distance wins
+     * over the lattice edge length — the spectrum encodes the real
+     * macroscopic extent, not the grid spacing. */
+    uint64_t L2=o->bondDist[be]?(uint64_t)o->bondDist[be]*o->bondDist[be]
+                              :(uint64_t)edgeLen2(2*be);
     int nu=(int)((uint64_t)(bm>>2)*2/L2);
     if(nu<1)nu=1;
     if(nu>255)nu=255;
@@ -287,11 +297,12 @@ void moore26_tick(void){
         NodeState *o=&grid_current[si];
         /* gather upstream arrivals first — only nodes receiving flux
          * pay the 26-neighbor opacity scan (halo vacuum skips it). */
-        uint32_t v[26],nu[26];int anyp=0;
+        uint32_t v[26],nu[26];uint8_t born[26];int anyp=0;
         for(int c=0;c<QChannels;c++){
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             v[c]=grid_current[up].photon[c];
             nu[c]=grid_current[up].photonNu[c];
+            born[c]=grid_current[up].photonBorn[c];
             if(v[c])anyp=1;
         }
         int live=0;
@@ -319,6 +330,7 @@ void moore26_tick(void){
             uint32_t r=v[c]-decay;
             grid_next[si].photon[c]=(uint8_t)(r>255?255:r);
             grid_next[si].photonNu[c]=(uint8_t)nuv;
+            grid_next[si].photonBorn[c]=born[c];
         }
         /* local heat drain — the reservoir cools into the sub-grid
          * depth (per-node state, NOT a global bath): each node's
@@ -361,6 +373,8 @@ void moore26_tick(void){
                 grid_next[si].photon[2*e+1]+=hit<r1?hit:r1;
                 grid_next[si].photonNu[2*e]=nu;
                 grid_next[si].photonNu[2*e+1]=nu;
+                grid_next[si].photonBorn[2*e]=(uint8_t)qTick;
+                grid_next[si].photonBorn[2*e+1]=(uint8_t)qTick;
                 uint32_t ch=grid_next[si].charge+hit;
                 grid_next[si].charge=(uint16_t)(ch>65535?65535:ch);
                 qEvents[0]+=hit*2;qEvents[9]+=hit;
@@ -469,7 +483,11 @@ void moore26_tick(void){
                 qEvents[30]++;
                 continue;
             }
-            n->incip[c]++;n->incipNu[c]=(uint8_t)(nu>255?255:nu);
+            n->incip[c]++;
+            /* stim flag in bit7: an offer at the node's own loop gap
+             * stimulates a downward transition instead of depositing */
+            n->incipNu[c]=(uint8_t)((nu>127?127:nu)|(nu==geo_gap(o)?0x80:0));
+            n->incipBorn[c]=n->photonBorn[c];
             n->photon[c]--;
             qEvents[5]++;
         }
@@ -483,11 +501,40 @@ void moore26_tick(void){
      * edge; all-full sinks to charge (the thermalization path). */
     PROC_NODES
         NodeState *n=&grid_next[si],*o=&grid_current[si];
+        /* ACK transit — returning confirms pull home like photons;
+         * expiry delivers the measured reach to the emitter's edge
+         * (the bond channel — its distance feeds emitted spectra). */
+        for(int c=0;c<QChannels;c++){
+            int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
+            uint8_t a=grid_current[up].ack[c];
+            if(!a){n->ack[c]=0;continue;}
+            uint8_t ttl=grid_current[up].ackTtl[c],rtt=grid_current[up].ackRtt[c];
+            if(ttl<=1){n->bondDist[c>>1]=rtt>1?(uint8_t)(rtt>>1):1;qEvents[14]++;}
+            else{n->ack[c]=a;n->ackTtl[c]=ttl-1;n->ackRtt[c]=rtt;}
+        }
         for(int c=0;c<QChannels;c++){
             uint32_t h=o->incip[c];
             if(!h)continue;
             n->incip[c]-=h;          /* consumed — new arms this tick survive */
-            uint32_t nu=o->incipNu[c]?o->incipNu[c]:1;
+            uint8_t iv=o->incipNu[c];
+            uint32_t nu=(iv&0x7f)?(iv&0x7f):1;
+            if(iv&0x80){
+                /* STIMULATED emission — the resonant offer triggers a
+                 * downward transition: ONE clone + a rung shed (the
+                 * laser analog — not a deposit). */
+                uint32_t shed=site_unwind(x,y,z,si);
+                if(shed>=2){
+                    n->photon[c]++;
+                    n->photonNu[c]=(uint8_t)(shed>>1);
+                    n->photonBorn[c]=(uint8_t)qTick;
+                    qEvents[17]++;
+                } else {
+                    n->photon[c]++;              /* can't drop: pass one */
+                    n->photonNu[c]=(uint8_t)nu;
+                    n->photonBorn[c]=(uint8_t)qTick;
+                }
+                continue;
+            }
             int arr=c>>1;
             for(uint32_t p=0;p<h;p++){
                 uint32_t aA=n->winding[2*arr],bA=n->winding[2*arr+1];
@@ -526,6 +573,17 @@ void moore26_tick(void){
                 }
             }
             qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
+            /* the ACK returns home: tau = the offer's transit, the
+             * ack walks back ttl hops carrying rtt — expiry at the
+             * emitter's edge delivers the measured distance. */
+            {
+                int tau=((int)qTick-(int)o->incipBorn[c])&255;
+                if(tau>40)tau=40;
+                if(tau<1)tau=1;
+                int oc=c^1;
+                n->ack[oc]+=1;n->ackTtl[oc]=(uint8_t)tau;
+                n->ackRtt[oc]=(uint8_t)(2*tau);
+            }
         }
     PROC_NODES_END
 
@@ -624,8 +682,15 @@ void moore26_tick(void){
          * up to 4 tries on different modes. A saturated directional
          * mode refuses — the geometric Pauli analog. */
         int c=-1;
+        /* bond preference: if exactly one edge has a measured reach
+         * (an ACK-delivered bond), emit along it — the transaction's
+         * channel is the established bond, not a random direction. */
+        int nb=0,blive=-1;
+        for(int ed=0;ed<QChannels/2;ed++)
+            if(o->bondDist[ed]){nb++;blive=ed;}
         for(int try_=0;try_<4;try_++){
-            int tc=rand_site(si,2+try_)%QChannels;
+            int tc=(try_==0&&nb==1)?(blive<<1)|(rand_site(si,11)&1)
+                                  :rand_site(si,2+try_)%QChannels;
             uint32_t occ=grid_next[si].photon[tc];
             if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
         }
@@ -665,6 +730,7 @@ void moore26_tick(void){
         if(shed<2)continue;
         grid_next[si].photon[c]++;
         grid_next[si].photonNu[c]=(uint8_t)((shed>>1)>255?255:(shed>>1));
+        grid_next[si].photonBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
@@ -738,6 +804,7 @@ uint32_t moore26_photon_get(int x,int y,int z,int c){
 }
 void moore26_photon_set(int x,int y,int z,int c,uint32_t v){
     grid_current[z*QWidth*QHeight+y*QWidth+x].photon[c]=v;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].photonBorn[c]=(uint8_t)qTick;
     mark_chunk(x,y,z);
 }
 void moore26_photon_nu_set(int x,int y,int z,int c,uint32_t v){
