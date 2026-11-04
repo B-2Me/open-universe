@@ -172,16 +172,19 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   // Convergent photon feed: each channel sources photons at a point
   // RAY cells back along its direction — 26 spokes aimed at the core.
-  const RAY = 3, RATE = 4, FEED_NU = 96;
+  // Pressure-regulated: stops pouring once the spoke cell is full, so
+  // the field equilibrates against absorption instead of saturating
+  // to white at 32^3.
+  const RAY = 3, FEED_CAP = 5, FEED_NU = 96;
   const inject = () => {
     for (let c = 0; c < NCH; c++) {
       const [vx, vy, vz] = CV[c];
       const want = ui.drive || (ui.beam && vx > 0 && vy === 0 && vz === 0);
       if (!want) continue;
       const sx = CX - RAY * vx, sy = CY - RAY * vy, sz = CZ - RAY * vz;
-      for (let u = 0; u < RATE; u++) {
-        wasm._moore26_photon_set(sx, sy, sz, c,
-          Math.min(255, wasm._moore26_photon_get(sx, sy, sz, c) + 2));
+      const cur = wasm._moore26_photon_get(sx, sy, sz, c);
+      if (cur < FEED_CAP) {
+        wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
         wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
       }
     }
