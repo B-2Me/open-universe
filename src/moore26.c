@@ -68,6 +68,8 @@ typedef struct {
     uint16_t massFlight[26];   /* in-flight mass per channel */
     uint8_t  photon[26];       /* packet counts (the offers) */
     uint8_t  photonNu[26];     /* packet nu tags (the energy) */
+    uint8_t  incip[26];        /* armed incipients per channel (negotiations) */
+    uint8_t  incipNu[26];      /* each incipient's nu (the offered energy) */
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
     uint16_t charge;           /* bound charge (the completed-transaction deposits) */
@@ -284,31 +286,102 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
-    /* Phase 2: absorption — arrived packets meeting structure deposit
-     * their nu into winding (the bound volume building). Vacuum lets
-     * the packet keep flying; only structured nodes absorb. */
+    /* Phase 2: OFFER — arrived packets arm incipient transactions.
+     * A photon on channel c offers to the node; passing the catch
+     * gate (bare vacuum ~1/16, deeper structure catches more) and
+     * the edge-local match (the channel's own absorption line), it
+     * arms an incipient and leaves the stream. The node can hold at
+     * most 13 concurrent negotiations — a saturated node DECLINES:
+     * the offer scatters to the freest channel (the hard-core
+     * bounce — deflection, not absorption). */
     PROC_NODES
         NodeState *n=&grid_next[si],*o=&grid_current[si];
-        int32_t netd=0;
-        for(int e=0;e<QChannels/2;e++)
-            netd+=(int)o->winding[2*e]-(int)o->winding[2*e+1];
-        if(o->mass||netd){
-            for(int c=0;c<QChannels;c++){
-                if(!n->photon[c])continue;
-                uint32_t nu=n->photonNu[c];
+        int lvl=site_level(o);if(lvl<1)lvl=1;
+        for(int c=0;c<QChannels;c++){
+            if(!n->photon[c])continue;
+            if((rand_site(si,20+c)&15)>=lvl)continue;     /* catch gate */
+            uint32_t nu=n->photonNu[c]?n->photonNu[c]:1;
+            int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
+            if(line<1)line=1;
+            if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue; /* off-band: flies on */
+            int armed=0;
+            for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
+            if(armed>=13){
+                /* DECLINED — deflect to the freest channel: the photon
+                 * bounces off the dense field to find another target
+                 * rather than stacking inside it. */
+                int fc=0;uint32_t fo=255;
+                for(int j=1;j<QChannels;j++){
+                    int c2=(c+j)%QChannels;
+                    if(n->photon[c2]<fo){fo=n->photon[c2];fc=c2;}
+                }
+                n->photon[fc]++;
+                n->photonNu[fc]=(uint8_t)nu;
                 n->photon[c]--;
-                n->winding[2*(c/2)]+=nu>>2;
-                /* charge-response — the net directedness responds to
-                 * the absorbed momentum (the +/- imbalance feeding the
-                 * paired return channel). */
-                int32_t feed=((netd>0?netd:-netd)*nu)>>10;if(feed<0)feed=0;
-                if(netd>0)n->winding[2*(c/2)+1]+=feed;
-                else if(netd<0)n->winding[2*(c/2)]+=feed;
+                qEvents[30]++;
+                continue;
             }
+            n->incip[c]++;n->incipNu[c]=(uint8_t)(nu>255?255:nu);
+            n->photon[c]--;
+            qEvents[5]++;
         }
     PROC_NODES_END
 
-    /* Phase 3: winding conduction — the bound state's circulation
+    /* Phase 3: CONFIRM — incipients armed LAST tick actualize: each
+     * deposits its nu onto the arrival edge (matched, mA+nu<=160)
+     * plus a feed to the dominant circulation axis (geometric
+     * momentum — the vortex corrects absorbed momentum into its
+     * spin). Arrival-full routes internally to the dominant/freest
+     * edge; all-full sinks to charge (the thermalization path). */
+    PROC_NODES
+        NodeState *n=&grid_next[si],*o=&grid_current[si];
+        for(int c=0;c<QChannels;c++){
+            uint32_t h=o->incip[c];
+            if(!h)continue;
+            n->incip[c]-=h;          /* consumed — new arms this tick survive */
+            uint32_t nu=o->incipNu[c]?o->incipNu[c]:1;
+            int arr=c>>1;
+            for(uint32_t p=0;p<h;p++){
+                uint32_t aA=n->winding[2*arr],bA=n->winding[2*arr+1];
+                uint32_t mA=aA<bA?aA:bA;
+                if(mA+nu<=160){
+                    n->winding[2*arr]+=nu;n->winding[2*arr+1]+=nu;
+                    /* charge-response — the dominant directed edge
+                     * feeds from the absorbed momentum (magnitude-
+                     * dependent push). */
+                    int de=-1;int32_t dd=0;
+                    for(int e2=0;e2<QChannels/2;e2++){
+                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                        if(d2>dd){dd=d2;de=e2;}
+                    }
+                    if(de>=0){
+                        int32_t feed=(dd*nu)>>9;if(feed<0)feed=0;
+                        n->winding[2*de]+=(uint32_t)feed;
+                    }
+                } else {
+                    /* arrival edge full — route internally: dominant
+                     * directedness first (circulation axis), else the
+                     * freest edge (the corner). */
+                    int fe=-1;int32_t dd=0;
+                    for(int e2=0;e2<QChannels/2;e2++){
+                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                        uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
+                        if(d2>dd&&m2<128){dd=d2;fe=e2;}
+                    }
+                    uint32_t fm=999;
+                    for(int e2=0;e2<QChannels/2&&fe<0;e2++){
+                        uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
+                        if(m2<128&&m2<fm){fm=m2;fe=e2;}
+                    }
+                    if(fe<0){n->charge+=(uint16_t)(nu>65535?65535:nu);continue;}
+                    n->winding[2*fe]+=nu;n->winding[2*fe+1]+=nu;
+                }
+            }
+            qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;
+        }
+    PROC_NODES_END
+
+    /* Phase 4: winding conduction — the bound state's circulation
      * transferring to neighbors. OVER-PRESSURE ROUTING at 0.1fm:
      * a saturated core shunts excess outward (the interior staying
      * fluid, not crystallizing at 128). Reads current, writes next;
@@ -356,7 +429,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
-    /* Phase 4: phase-sync — DECOUPLED at 0.1fm. A fast-pass
+    /* Phase 5: phase-sync — DECOUPLED at 0.1fm. A fast-pass
      * relaxation (~10 iters) lets the phase field reach equilibrium
      * across a ~10-node bound state before the next mechanical tick.
      * Pull-model: each node averages its neighbors' pull (unique
@@ -378,7 +451,7 @@ void moore26_tick(void){
         PROC_NODES_END
     }
 
-    /* Phase 5: emission — the bound state radiates. A site at level
+    /* Phase 6: emission — the bound state radiates. A site at level
      * n>=2 stochastically sheds one rung of its weakest committed
      * edge into a photon. The photon needs a channel mode with room
      * (graded Pauli — refusal scales with occupancy) and escapes
@@ -427,7 +500,7 @@ void moore26_tick(void){
         qEvents[4]++;qEvents[20]+=line;
     PROC_NODES_END
 
-    /* Phase 6: macroscopic string-breaking — forward-trace the
+    /* Phase 7: macroscopic string-breaking — forward-trace the
      * continuous >128 saturated tube, fracture only when the
      * INTEGRATED tension (the tube's length) exceeds the macro-
      * threshold, then pair-produce at the 2 endpoints. Not a

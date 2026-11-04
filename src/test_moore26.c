@@ -70,10 +70,11 @@ int main(int argc,char**argv){
     for(int t=0;t<ticks;t++){
         moore26_tick();
         if((t+1)%50==0)
-            printf("t=%-4d mass=%llu wind=%llu phot=%llu emit=%llu denseRef=%llu modeRef=%llu condense=%llu\n",t+1,
+            printf("t=%-4d mass=%llu wind=%llu phot=%llu emit=%llu denseRef=%llu arm=%llu decl=%llu conf=%llu\n",t+1,
                 (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
                 (unsigned long long)moore26_events(4),(unsigned long long)moore26_events(28),
-                (unsigned long long)moore26_events(31),(unsigned long long)moore26_events(29));
+                (unsigned long long)moore26_events(5),(unsigned long long)moore26_events(30),
+                (unsigned long long)moore26_events(3));
     }
     clock_gettime(CLOCK_MONOTONIC,&t1);
     double ms=(t1.tv_sec-t0.tv_sec)*1e3+(t1.tv_nsec-t0.tv_nsec)/1e6;
