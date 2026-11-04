@@ -7,6 +7,7 @@ import MillSimulator from '../components/MillSimulator.vue'
 import HopfionViewer from '../components/HopfionViewer.vue'
 import FrictionReplay from '../components/FrictionReplay.vue'
 import EmberSimulator from '../components/EmberSimulator.vue'
+import CascadeSimulator from '../components/CascadeSimulator.vue'
 
 export default {
   extends: DefaultTheme,
@@ -18,5 +19,6 @@ export default {
     app.component('HopfionViewer', HopfionViewer);
     app.component('FrictionReplay', FrictionReplay);
     app.component('EmberSimulator', EmberSimulator);
+    app.component('CascadeSimulator', CascadeSimulator);
   }
 }

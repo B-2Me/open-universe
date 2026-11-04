@@ -84,16 +84,17 @@ if (SCEN === 'hexbuckle') {
   }
   console.log(`hexbuckle: U-tube ${pts.length} nodes, span A=${A}, dip D=${D}, winding=${TUBE_W}`);
 } else if (SCEN === 'flat') {
-  /* symmetric control: a straight horizontal tube at the same
-   * bombardment height — the flat-edge analog that should absorb
-   * the probe uniformly (no lateral polarization). */
-  M._moore26_mass_set(c0 - 16, c0 + 16, c0, 512);
-  M._moore26_mass_set(c0 + 16, c0 + 16, c0, 512);
-  for (let x = c0 - 16; x <= c0 + 16; x++) {
+  /* symmetric control: a straight tube BELOW the 12-node break
+   * threshold (default --str=10) at the same bombardment height —
+   * the flat-edge analog that should absorb the probe uniformly. */
+  const fx0 = c0 - (STR >> 1), fx1 = c0 + (STR >> 1);
+  M._moore26_mass_set(fx0, c0 + 16, c0, 512);
+  M._moore26_mass_set(fx1, c0 + 16, c0, 512);
+  for (let x = fx0; x <= fx1; x++) {
     M._moore26_winding_set(x, c0 + 16, c0, 0, TUBE_W);
     M._moore26_winding_set(x, c0 + 16, c0, 1, TUBE_W);
   }
-  console.log(`flat: straight tube x=${c0-16}..${c0+16} @ y=${c0+16}, winding=${TUBE_W}`);
+  console.log(`flat: straight tube x=${fx0}..${fx1} @ y=${c0+16}, winding=${TUBE_W}`);
 }
 
 // --- octupolar background: 8-fold phase twist around the z-axis

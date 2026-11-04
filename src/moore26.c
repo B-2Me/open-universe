@@ -923,6 +923,76 @@ uint32_t moore26_phase_get(int x,int y,int z){
 int32_t moore26_charge_get(int x,int y,int z){
     return (int32_t)grid_current[z*QWidth*QHeight+y*QWidth+x].charge;
 }
+int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
+
+/* ---- visualizer surface (Cascade) ----
+ * rg_refresh packs the four physics layers into an RGBA8 buffer the
+ * JS side uploads straight to a 3D texture:
+ *   R = structure (dominant winding, boosted at mass sites)
+ *   G = phase (the Jacobi wake, 0-511 -> 0-255)
+ *   B = heat   (the thermal sink)
+ *   A = charge (signed, biased +127 — the polarization layer) */
+static uint8_t *rgBuf=0;
+static NodeState *saveBuf=0;
+uint32_t moore26_rg_pointer(void){return (uint32_t)(uintptr_t)rgBuf;}
+void moore26_rg_refresh(void){
+    const int ns=QWidth*QHeight*QDepth;
+    if(!rgBuf)rgBuf=(uint8_t*)malloc((size_t)ns*4);
+    for(int i=0;i<ns;i++){
+        NodeState *n=&grid_current[i];
+        uint8_t mx=0;
+        for(int c=0;c<QChannels;c++)if(n->winding[c]>mx)mx=n->winding[c];
+        uint8_t r=n->mass?(n->mass>128?255:(uint8_t)(n->mass<<1)):mx;
+        rgBuf[4*i+0]=r;
+        rgBuf[4*i+1]=(uint8_t)(n->phase>>1);
+        rgBuf[4*i+2]=(uint8_t)(n->heat>255?255:n->heat);
+        int32_t ch=((int32_t)n->charge+32767)>>8;
+        rgBuf[4*i+3]=(uint8_t)(ch>255?255:ch<0?0:ch);
+    }
+}
+void moore26_clear(void){
+    memset(grid_current,0,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
+    qTick=0;
+}
+uint32_t moore26_save(void){
+    const size_t sz=(size_t)QWidth*QHeight*QDepth*sizeof(NodeState);
+    if(!saveBuf)saveBuf=(NodeState*)malloc(sz);
+    memcpy(saveBuf,grid_current,sz);
+    return 0;
+}
+uint32_t moore26_restore(void){
+    if(!saveBuf)return 1;
+    memcpy(grid_current,saveBuf,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
+    return 0;
+}
+/* bulk telemetry — a C-side sum is far cheaper than a JS sweep */
+uint64_t moore26_sum(int what){
+    const int ns=QWidth*QHeight*QDepth;
+    uint64_t t=0;
+    for(int i=0;i<ns;i++){
+        NodeState *n=&grid_current[i];
+        switch(what){
+            case 0:t+=n->mass;break;
+            case 1:for(int c=0;c<QChannels;c++)t+=n->winding[c];break;
+            case 2:for(int c=0;c<QChannels;c++)t+=n->photon[c];break;
+            case 3:t+=n->heat;break;
+            case 4:t+=n->charge<0?-(int32_t)n->charge:n->charge;break;
+        }
+    }
+    return t;
+}
+/* center of mass in fixed-point (x<<8) for the HUD core readout */
+uint32_t moore26_cm(int axis){
+    const int ns=QWidth*QHeight*QDepth;
+    uint64_t m=0,s=0;
+    for(int i=0;i<ns;i++){
+        uint32_t mi=grid_current[i].mass;
+        if(!mi)continue;
+        int v=axis==0?i%QWidth:axis==1?(i/QWidth)%QHeight:i/(QWidth*QHeight);
+        m+=mi;s+=(uint64_t)v*mi;
+    }
+    return m?(uint32_t)((s<<8)/m):0;
+}
 /* bulk-read support for wasm harnesses: the flat NodeState array —
  * JS strides it by moore26_node_size() to render the grid state. */
 void *moore26_state_pointer(void){return grid_current;}
