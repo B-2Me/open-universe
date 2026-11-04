@@ -318,6 +318,66 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    /* Phase 1b: mass stream + junction collide — in-flight mass
+     * pulls along its channel (unique writer per slot). Opposing
+     * arrivals annihilate AT the meeting node (matter/antimatter ->
+     * back-to-back photons + charge residue); survivors PARK into
+     * the node's mass — the knot's anchor shifting forward. */
+    PROC_NODES
+        uint32_t in[26];
+        for(int c=0;c<QChannels;c++){
+            int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
+            in[c]=grid_current[up].massFlight[c];
+            grid_next[si].massFlight[c]=0;
+        }
+        for(int e=0;e<QChannels/2;e++){
+            uint32_t a=in[2*e],b=in[2*e+1];
+            uint32_t hit=a<b?a:b;
+            if(hit){
+                in[2*e]-=hit;in[2*e+1]-=hit;
+                uint32_t nu=grid_current[si].mass>4?grid_current[si].mass>>2:64;
+                uint32_t r0=255-grid_next[si].photon[2*e],r1=255-grid_next[si].photon[2*e+1];
+                grid_next[si].photon[2*e]  +=hit<r0?hit:r0;
+                grid_next[si].photon[2*e+1]+=hit<r1?hit:r1;
+                grid_next[si].photonNu[2*e]=nu;
+                grid_next[si].photonNu[2*e+1]=nu;
+                uint32_t ch=grid_next[si].charge+hit;
+                grid_next[si].charge=(uint16_t)(ch>65535?65535:ch);
+                qEvents[0]+=hit*2;qEvents[9]+=hit;
+            }
+            uint32_t pk=in[2*e]+in[2*e+1];
+            if(pk){
+                uint32_t m=grid_next[si].mass+pk;
+                grid_next[si].mass=(uint16_t)(m>65535?65535:m);
+            }
+        }
+    PROC_NODES_END
+
+    /* Phase 1c: mass launch — a knot with a dominant directed edge
+     * bleeds a fraction of its mass onto the flight channel along
+     * the circulation axis every 8th tick (slower than c — the
+     * internal clock). The stream parks it one node on: the knot
+     * crawls along its own directedness. */
+    if((qTick&7)==0){
+        PROC_NODES
+            NodeState *o=&grid_current[si];
+            if(o->mass<32)continue;
+            int de=-1;int32_t dd=0;
+            for(int e=0;e<QChannels/2;e++){
+                int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
+                if(d>dd){dd=d;de=e;}
+            }
+            if(de<0||dd<32)continue;
+            uint32_t k=o->mass>>4;
+            uint32_t k2=(uint32_t)dd>>2;
+            if(k>k2)k=k2;
+            if(!k)continue;
+            grid_next[si].mass-=k;
+            uint32_t f=grid_next[si].massFlight[2*de]+k;
+            grid_next[si].massFlight[2*de]=(uint16_t)(f>65535?65535:f);
+        PROC_NODES_END
+    }
+
     /* Phase 2: OFFER — arrived packets arm incipient transactions.
      * A photon on channel c offers to the node; passing the catch
      * gate (bare vacuum ~1/16, deeper structure catches more) and
@@ -606,5 +666,12 @@ uint32_t moore26_mass_get(int x,int y,int z){
 }
 uint16_t moore26_heat_get(int x,int y,int z){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].heat;
+}
+void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
+    grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c]=v;
+    mark_chunk(x,y,z);
+}
+uint32_t moore26_massflight_get(int x,int y,int z,int c){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return qEvents[i&31];}

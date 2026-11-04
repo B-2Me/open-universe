@@ -41,6 +41,14 @@ static uint64_t tot_phot(int d){
     return s;
 }
 uint16_t moore26_heat_get(int x,int y,int z);
+static double centroid_x(int d){
+    double num=0,den=0;
+    for(int z=0;z<d;z++)for(int y=0;y<W;y++)for(int x=0;x<W;x++){
+        uint32_t m=moore26_mass_get(x,y,z);
+        num+=x*m;den+=m;
+    }
+    return den>0?num/den:-1;
+}
 static uint64_t tot_heat(int d){
     uint64_t s=0;
     for(int z=0;z<d;z++)for(int y=0;y<W;y++)for(int x=0;x<W;x++)
@@ -65,6 +73,10 @@ int main(int argc,char**argv){
         }
     }
     moore26_mass_set(c0,c0,c0,256);
+    /* give the core a directed edge (dd=64) — the knot should crawl
+     * +x along its dominant circulation axis via mass launch. */
+    moore26_winding_set(c0,c0,c0,0,96);
+    moore26_winding_set(c0,c0,c0,1,32);
     /* a seed photon stream aimed at the lump */
     for(int i=0;i<20;i++)
         {moore26_photon_set(c0-10-i, c0, c0, 0, 1);
@@ -77,12 +89,14 @@ int main(int argc,char**argv){
     for(int t=0;t<ticks;t++){
         moore26_tick();
         if((t+1)%50==0)
-            printf("t=%-4d mass=%llu wind=%llu phot=%llu heat=%llu emit=%llu denseRef=%llu arm=%llu decl=%llu conf=%llu decayedE=%llu\n",t+1,
-                (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
+            printf("t=%-4d mass=%llu cx=%.1f wind=%llu phot=%llu heat=%llu emit=%llu arm=%llu conf=%llu annih=%llu decayedE=%llu\n",t+1,
+                (unsigned long long)tot_mass(W),centroid_x(W),
+                (unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
                 (unsigned long long)tot_heat(W),
-                (unsigned long long)moore26_events(4),(unsigned long long)moore26_events(28),
-                (unsigned long long)moore26_events(5),(unsigned long long)moore26_events(30),
-                (unsigned long long)moore26_events(3),(unsigned long long)moore26_events(7));
+                (unsigned long long)moore26_events(4),
+                (unsigned long long)moore26_events(5),
+                (unsigned long long)moore26_events(3),(unsigned long long)moore26_events(9),
+                (unsigned long long)moore26_events(7));
     }
     clock_gettime(CLOCK_MONOTONIC,&t1);
     double ms=(t1.tv_sec-t0.tv_sec)*1e3+(t1.tv_nsec-t0.tv_nsec)/1e6;
