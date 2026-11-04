@@ -23,7 +23,7 @@ import { createRequire } from 'node:module';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 
-const ROOT = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '..');
+const ROOT = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../..');
 const arg = (k, d) => {
   const m = process.argv.find(a => a.startsWith(`--${k}=`));
   return m ? m.split('=')[1] : d;

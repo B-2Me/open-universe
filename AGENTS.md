@@ -201,7 +201,29 @@ alignment scheme changes again.
   masks). After a run worth keeping, move its small JSON/log output
   into `results/` and any new harness into `script/meso/`.
 
-## Docs build
+## moore26 (0.1fm cascade engine)
+
+- `src/moore26.c` — the 0.1fm/node engine (26-neighbor Moore
+  stencil, AoS `NodeState`, vacuum-skip 8³ chunk ledger, OpenMP
+  phases). Wasm output goes to `docs/public/wasm/cascade/`
+  (`createMoore26` factory) — NOT `ember/` (that's the meso3i/qi3/
+  link3 family). OpenMP pragmas are inert under emscripten; the
+  chunk ledger carries the perf there.
+- `script/cascade/*.mjs` — moore26 experiment harnesses (the
+  cascade project's scripts — do NOT add them to `script/meso/`,
+  which is the meso3i family's home). `moore26-harness.mjs` seeds a
+  two-core saturated flux tube and logs winding/mass/split
+  centroids + event counters; it resolves the repo root as `../..`
+  (one level deeper than top-level scripts). Native smoke:
+  `src/test_moore26.c` (gcc -O3 -fopenmp moore26.c test_moore26.c).
+- Grid-size constraint: `NodeState` ≈220B × sites × 2 buffers, so
+  256³ (~7.4GB) exceeds wasm32 — use ≤128³ in wasm, or a MEMORY64
+  build for bigger. Power-of-2 dims ≥8 required (bitmask wrap +
+  chunk ledger).
+- Known behavior: string-break fires on ≥12-node saturated tubes
+  (tube heads only — one fracture, +128 mass per endpoint);
+  emission is conserving (nu = shed/2, recapture restores da+db);
+  heat is per-node with a −1/128/tick local drain.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or
