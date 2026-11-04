@@ -336,7 +336,26 @@ void moore26_tick(void){
          * depth (per-node state, NOT a global bath): each node's
          * stored energy bleeds ~1/128 per tick into the coarse-
          * grained internals below the node scale. */
-        if(grid_next[si].heat)grid_next[si].heat-=grid_next[si].heat>>7;
+        uint16_t h=grid_next[si].heat;
+        if(h)grid_next[si].heat=h-(h>>7);
+        /* thermal re-emission — the hot sub-grid fluctuates and
+         * boils a fraction of its stored energy back into a photon
+         * (the CMB-like floor: opaque structure grinds photons to
+         * heat, hot vacuum stochastically re-radiates). CONSERVED:
+         * heat is debited exactly the minted nu. */
+        if(h>128&&(rand_site(si,50)&63)==0){
+            int c=rand_site(si,51)%QChannels;
+            if(grid_next[si].photon[c]<255){
+                uint32_t nu=(uint32_t)(h>>3)>255?255:(uint32_t)(h>>3);
+                if(nu){
+                    grid_next[si].heat-=(uint16_t)nu;
+                    grid_next[si].photon[c]++;
+                    grid_next[si].photonNu[c]=(uint8_t)nu;
+                    grid_next[si].photonBorn[c]=(uint8_t)qTick;
+                    qEvents[10]++;
+                }
+            }
+        }
     PROC_NODES_END
 
     /* Phase 1b: mass stream + junction collide — in-flight mass
