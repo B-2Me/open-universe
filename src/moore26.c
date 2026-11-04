@@ -238,7 +238,8 @@ static uint32_t site_unwind(int x,int y,int z,int si){
     uint32_t shed=m-next;if(shed<1)shed=1;
     uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
     n->winding[2*be]-=da;n->winding[2*be+1]-=db;
-    return shed;
+    return da+db;   /* the TOTAL shed — the conserved token (photon
+                     * nu and mass condensation both account it) */
 }
 
 void moore26_init(int w,int h,int d){
@@ -319,6 +320,11 @@ void moore26_tick(void){
             grid_next[si].photon[c]=(uint8_t)(r>255?255:r);
             grid_next[si].photonNu[c]=(uint8_t)nuv;
         }
+        /* local heat drain — the reservoir cools into the sub-grid
+         * depth (per-node state, NOT a global bath): each node's
+         * stored energy bleeds ~1/128 per tick into the coarse-
+         * grained internals below the node scale. */
+        if(grid_next[si].heat)grid_next[si].heat-=grid_next[si].heat>>7;
     PROC_NODES_END
 
     /* Phase 1b: mass stream + junction collide — in-flight mass
@@ -586,9 +592,8 @@ void moore26_tick(void){
         NodeState *o=&grid_current[si];
         if(site_level(o)<2)continue;
         if(rand_site(si,1)&3)continue;         /* excited-state lifetime */
-        int line=geo_gap(&grid_next[si]);
+        int line=geo_gap(&grid_next[si]);     /* the gap gates emission */
         if(line<1)continue;
-        (void)line;   /* the gap sets the band; nu below = the shed */
         /* channel occupancy — graded refusal: P(accept)=1-occ/128,
          * up to 4 tries on different modes. A saturated directional
          * mode refuses — the geometric Pauli analog. */
@@ -614,20 +619,26 @@ void moore26_tick(void){
          * instead of radiating, until the mass:bond ratio equilibrates
          * — the closed cycle where structure and mass hold each
          * other. A bare (massless) site still radiates a photon. */
+        /* SPECIES-INVERSE, conserved: the shed winding condenses to
+         * mass — mass += da+db exactly what the edges lost (the
+         * mass:bond ratio equilibrating, no minted energy). A bare
+         * (massless) site still radiates a photon instead. */
         if(o->mass>0&&(uint64_t)o->mass*8<loop_winding(o)){
-            grid_next[si].mass+=line;
-            site_unwind(x,y,z,si);
+            uint32_t shed=site_unwind(x,y,z,si);
+            if(!shed)continue;
+            uint32_t m=grid_next[si].mass+shed;
+            grid_next[si].mass=(uint16_t)(m>65535?65535:m);
             qEvents[29]++;
             continue;
         }
-        /* CONSERVING emission: the photon's nu IS the shed winding
-         * (per-side rung amount). Recapture deposits nu per channel —
-         * restoring exactly what was shed (net zero), while escape or
+        /* CONSERVING emission: the photon's nu IS half the shed
+         * (per-side) — recapture deposits nu per channel, restoring
+         * exactly da+db total (net zero), while escape or
          * thermalization makes the emission real radiation. */
         uint32_t shed=site_unwind(x,y,z,si);
-        if(!shed)continue;
+        if(shed<2)continue;
         grid_next[si].photon[c]++;
-        grid_next[si].photonNu[c]=(uint8_t)(shed>255?255:shed);
+        grid_next[si].photonNu[c]=(uint8_t)((shed>>1)>255?255:(shed>>1));
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
