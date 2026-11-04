@@ -41,10 +41,49 @@ const M = await mod.exports();
 const W = parseInt(arg('w', '128')), TICKS = parseInt(arg('ticks', '1000'));
 const STR = parseInt(arg('str', '16'));          // string length in nodes
 const TUBE_W = parseInt(arg('winding', '128'));  // saturated tube winding
+const SCEN = arg('scen', 'string');              // string | hexbuckle
 M._moore26_init(W, W, W);
 
 const c0 = W >> 1;
 const x0 = c0 - (STR >> 1), x1 = c0 + (STR >> 1);   // core positions
+
+/* channel nearest a direction (dx,dy,dz) — for painting tubes along
+ * a curve: pick the vec whose direction best matches the tangent. */
+const pickChan = (dx, dy, dz) => {
+  let best = 0, bs = -1;
+  for (let c = 0; c < 26; c++) {
+    const v = M._moore26_channel_count() >= 26 ?
+      [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1],
+       [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],
+       [0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1],[1,1,1],[-1,-1,-1],[1,1,-1],[-1,-1,1],
+       [1,-1,1],[-1,1,-1],[1,-1,-1],[-1,1,1]][c] : [0,0,0];
+    const s = v[0]*dx + v[1]*dy + v[2]*dz;
+    if (s > bs) { bs = s; best = c; }
+  }
+  return best;
+};
+
+if (SCEN === 'hexbuckle') {
+  /* flexoelectricity analog: a U-shaped buckled tube between two
+   * anchored cores. Curvature is the strain; the measurement is
+   * whether the bend polarizes the winding (net directedness along
+   * the bend axis — the substrate's induced dipole). */
+  const A = W / 8, D = W / 4;              // half-width, dip depth
+  const pts = [];
+  for (let t = 0; t <= 1.0001; t += 0.02) {
+    pts.push([Math.round(c0 + A * (2 * t - 1)),
+              Math.round(c0 - D / 2 + D * (4 * t * (1 - t))), c0]);
+  }
+  M._moore26_mass_set(pts[0][0], pts[0][1], c0, 512);
+  M._moore26_mass_set(pts[pts.length-1][0], pts[pts.length-1][1], c0, 512);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x, y, z] = pts[i], [nx, ny] = pts[i + 1];
+    const c = pickChan(nx - x, ny - y, 0);
+    M._moore26_winding_set(x, y, z, c, TUBE_W);
+    M._moore26_winding_set(x, y, z, c ^ 1, TUBE_W);
+  }
+  console.log(`hexbuckle: U-tube ${pts.length} nodes, span A=${A}, dip D=${D}, winding=${TUBE_W}`);
+}
 
 // --- octupolar background: 8-fold phase twist around the z-axis
 // over the central region (the rotating magnetic-wake analog) ---
@@ -63,16 +102,19 @@ if (flag('oct')) {
 }
 
 // --- the test subject: two mass cores + a saturated winding tube ---
-M._moore26_mass_set(x0, c0, c0, 512);
-M._moore26_mass_set(x1, c0, c0, 512);
-for (let x = x0; x <= x1; x++) {
-  M._moore26_winding_set(x, c0, c0, 0, TUBE_W);   // +X of edge 0
-  M._moore26_winding_set(x, c0, c0, 1, TUBE_W);   // -X of edge 0
+if (SCEN !== 'hexbuckle') {
+  M._moore26_mass_set(x0, c0, c0, 512);
+  M._moore26_mass_set(x1, c0, c0, 512);
+  for (let x = x0; x <= x1; x++) {
+    M._moore26_winding_set(x, c0, c0, 0, TUBE_W);   // +X of edge 0
+    M._moore26_winding_set(x, c0, c0, 1, TUBE_W);   // -X of edge 0
+  }
 }
-console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, string x=${x0}..${x1} (${STR + 1} nodes @ winding=${TUBE_W})`);
+console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, scen=${SCEN}` +
+  (SCEN === 'string' ? `, string x=${x0}..${x1} (${STR + 1} nodes @ winding=${TUBE_W})` : ''));
 
 const totals = () => {
-  let mass = 0, wind = 0, phot = 0, fly = 0;
+  let mass = 0, wind = 0, phot = 0, fly = 0, pol = 0;
   let massL = 0, massR = 0, cxL = 0, cxR = 0, fx = 0;
   for (let z = 0; z < W; z++) for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
     const m = M._moore26_mass_get(x, y, z);
@@ -84,8 +126,13 @@ const totals = () => {
       const f = M._moore26_massflight_get(x, y, z, c);
       fly += f; fx += x * f;
     }
+    /* polarization: net directedness of the +/-Y edge pair weighted
+     * by distance from the bend axis — a buckled tube's induced
+     * dipole reads as |pol| >> 0. */
+    const dy = M._moore26_winding_get(x, y, z, 2) - M._moore26_winding_get(x, y, z, 3);
+    pol += (y - c0) * dy;
   }
-  return { mass, wind, phot, fly, massL, massR,
+  return { mass, wind, phot, fly, massL, massR, pol,
            cxL: massL ? cxL / massL : 0, cxR: massR ? cxR / massR : 0,
            cxf: fly ? fx / fly : 0 };
 };
@@ -97,7 +144,7 @@ for (let t = 1; t <= TICKS; t++) {
   M._moore26_tick();
   if (t % 20 === 0) {
     const s = totals();
-    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} wind=${s.wind} phot=${s.phot} ` +
+    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} pol=${s.pol} wind=${s.wind} phot=${s.phot} ` +
       `emit=${M._moore26_events(4)} fuse=${M._moore26_events(23)} break=${M._moore26_events(6)} annih=${M._moore26_events(9)}`);
   }
 }

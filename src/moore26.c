@@ -703,9 +703,10 @@ void moore26_tick(void){
             int ni=nbr(x,y,z,QChannelVec[cc][0],QChannelVec[cc][1],QChannelVec[cc][2]);
             if(node_live(&grid_current[ni]))live++;
         }
-        uint32_t dens=live*64/QChannels;
-        grid_next[si].localDensity=(uint16_t)(dens*4);
-        if(dens&&(rand_site(si,10)&63)<(int)dens){qEvents[28]++;continue;}
+        /* unified 0-255 density scale — same field Phase 1 writes */
+        uint32_t dens=live*255/QChannels;
+        grid_next[si].localDensity=(uint16_t)dens;
+        if(dens&&(rand_site(si,10)&255)<(int)dens){qEvents[28]++;continue;}
         /* species-inverse: a composite's shed condenses to mass
          * instead of radiating, until the mass:bond ratio equilibrates
          * — the closed cycle where structure and mass hold each
@@ -758,29 +759,34 @@ void moore26_tick(void){
             if(len>=12){
                 /* macro-tension — the whole tube saturated: fracture,
                  * pair-produce mass at the two endpoints, and RECOIL-
-                 * launch them apart along the tube axis (the stored
-                 * tension becomes the fragments' separation momentum —
-                 * the new pairs fly out, they don't sit). */
+                 * launch them apart along the tube axis. CONSERVED:
+                 * the endpoint mass + recoil flight equals the winding
+                 * actually drained — no minted energy. */
                 int p2=nbr(x,y,z,QChannelVec[2*e][0]*(len-1),QChannelVec[2*e][1]*(len-1),QChannelVec[2*e][2]*(len-1));
-                #pragma omp atomic
-                grid_next[si].mass+=128;
-                #pragma omp atomic
-                grid_next[p2].mass+=128;
-                #pragma omp atomic
-                grid_next[si].massFlight[2*e+1]+=64;   /* head recoils back */
-                #pragma omp atomic
-                grid_next[p2].massFlight[2*e]+=64;     /* tail recoils forward */
+                uint32_t totalDrain=0;
                 for(int s=0;s<len;s++){
                     int tni=nbr(x,y,z,QChannelVec[2*e][0]*s,QChannelVec[2*e][1]*s,QChannelVec[2*e][2]*s);
-                    /* clamp the drain — staged state may be lower */
                     uint32_t d0=grid_next[tni].winding[2*e]<64?grid_next[tni].winding[2*e]:64;
                     uint32_t d1=grid_next[tni].winding[2*e+1]<64?grid_next[tni].winding[2*e+1]:64;
                     #pragma omp atomic
                     grid_next[tni].winding[2*e]-=d0;
                     #pragma omp atomic
                     grid_next[tni].winding[2*e+1]-=d1;
+                    totalDrain+=d0+d1;
                 }
-                qEvents[6]++;
+                if(totalDrain>128){
+                    uint32_t endMass=(totalDrain-128)/2;
+                    uint32_t m0=grid_next[si].mass+endMass,m1=grid_next[p2].mass+endMass;
+                    #pragma omp atomic write
+                    grid_next[si].mass=(uint16_t)(m0>65535?65535:m0);
+                    #pragma omp atomic write
+                    grid_next[p2].mass=(uint16_t)(m1>65535?65535:m1);
+                    #pragma omp atomic
+                    grid_next[si].massFlight[2*e+1]+=64;   /* head recoils back */
+                    #pragma omp atomic
+                    grid_next[p2].massFlight[2*e]+=64;     /* tail recoils forward */
+                    qEvents[6]++;
+                }
             }
         }
     PROC_NODES_END
