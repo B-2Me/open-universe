@@ -111,7 +111,7 @@ void main() {
   } else {
     rgb = strcRamp * (0.35 + 0.85 * strc / 255.0);
   }
-  rgb = rgb * 1.8 + vec3(0.028);
+  rgb = rgb * 1.3 + vec3(0.02);   // additive saturates — lower gain keeps color
   v_color = vec4(rgb, alpha);
 }`;
 
@@ -307,6 +307,9 @@ export async function initCascadeSimulator(root, opts = {}) {
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
   gl.enable(gl.DEPTH_TEST);
+  gl.depthMask(false);          // additive glow must not write depth —
+                                // a near dim quad would occlude a far
+                                // bright one (the black-disc artifact)
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);   // additive — transparent glow, overlaps brighten
 
