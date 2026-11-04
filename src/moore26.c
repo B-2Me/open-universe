@@ -87,6 +87,9 @@ static NodeState *grid_current, *grid_next;
 /* Jacobi scratch planes — deterministic phase-sync (read-old/
  * write-new each pass; the in-place version raced under OpenMP) */
 static uint32_t *phaseA, *phaseB;
+/* visualizer + snapshot buffers (see the Cascade export section) */
+static uint8_t *rgBuf=0;
+static NodeState *saveBuf=0;
 
 /* vacuum-skip ledgers — 8x8x8 macro-chunks */
 #define CHUNK 8
@@ -259,6 +262,18 @@ static uint32_t site_unwind(int x,int y,int z,int si){
 void moore26_init(int w,int h,int d){
     /* power-of-2 dims required for the bitwise-mask wrap; each dim
      * must be >= 8 so the chunk grid is also power-of-2. */
+    /* free any prior grid — re-init leaks ~2GB/call at 128^3 and the
+     * eventual calloc failure reads garbage state (a wasm
+     * "divide by zero" trap surfaced as a field reading 0). */
+    if(grid_current){free(grid_current);grid_current=0;}
+    if(grid_next){free(grid_next);grid_next=0;}
+    if(phaseA){free(phaseA);phaseA=0;}
+    if(phaseB){free(phaseB);phaseB=0;}
+    if(chunkLive){free(chunkLive);chunkLive=0;}
+    if(chunkProc){free(chunkProc);chunkProc=0;}
+    if(procList){free(procList);procList=0;}
+    if(rgBuf){free(rgBuf);rgBuf=0;}
+    if(saveBuf){free(saveBuf);saveBuf=0;}
     QWidth=w;QHeight=h;QDepth=d;QSites=w*h*d;
     QMaskX=w-1;QMaskY=h-1;QMaskZ=d-1;
     CW=w/CHUNK;CH=h/CHUNK;CD=d/CHUNK;
@@ -274,6 +289,14 @@ void moore26_init(int w,int h,int d){
     chunkLive   =calloc(nChunks,1);
     chunkProc   =calloc(nChunks,1);
     procList    =malloc(nChunks*sizeof(int));
+    /* allocation failure leaves a dead-but-safe engine: every tick
+     * path short-circuits on nProc=0 instead of dereferencing NULL. */
+    if(!grid_current||!grid_next||!phaseA||!phaseB||!procList){
+        nChunks=0;nProc=0;
+        if(grid_current){free(grid_current);grid_current=0;}
+        if(grid_next){free(grid_next);grid_next=0;}
+        return;
+    }
     memset(qEvents,0,sizeof(qEvents));
 }
 
@@ -932,8 +955,6 @@ int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
  *   G = phase (the Jacobi wake, 0-511 -> 0-255)
  *   B = heat   (the thermal sink)
  *   A = charge (signed, biased +127 — the polarization layer) */
-static uint8_t *rgBuf=0;
-static NodeState *saveBuf=0;
 uint32_t moore26_rg_pointer(void){return (uint32_t)(uintptr_t)rgBuf;}
 void moore26_rg_refresh(void){
     const int ns=QWidth*QHeight*QDepth;
