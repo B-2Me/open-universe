@@ -81,6 +81,12 @@ int main(int argc,char**argv){
     for(int i=0;i<20;i++)
         {moore26_photon_set(c0-10-i, c0, c0, 0, 1);
          moore26_photon_nu_set(c0-10-i, c0, c0, 0, 200);}
+    /* a COUNTER-propagating stream (channel 1, -x): head-on photons
+     * with nua+nub=400 > fusion wall 256 -> pair production in the
+     * vacuum between the streams. */
+    for(int i=0;i<20;i++)
+        {moore26_photon_set(c0+10+i, c0, c0, 1, 1);
+         moore26_photon_nu_set(c0+10+i, c0, c0, 1, 200);}
 
     printf("moore26 smoke: %d^3, %d ticks\n",W,ticks);
     printf("t=0   mass=%llu wind=%llu phot=%llu\n",
@@ -89,14 +95,14 @@ int main(int argc,char**argv){
     for(int t=0;t<ticks;t++){
         moore26_tick();
         if((t+1)%50==0)
-            printf("t=%-4d mass=%llu cx=%.1f wind=%llu phot=%llu heat=%llu emit=%llu arm=%llu conf=%llu annih=%llu decayedE=%llu\n",t+1,
+            printf("t=%-4d mass=%llu cx=%.1f wind=%llu phot=%llu heat=%llu emit=%llu arm=%llu conf=%llu fuse=%llu annih=%llu decayedE=%llu\n",t+1,
                 (unsigned long long)tot_mass(W),centroid_x(W),
                 (unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
                 (unsigned long long)tot_heat(W),
                 (unsigned long long)moore26_events(4),
                 (unsigned long long)moore26_events(5),
-                (unsigned long long)moore26_events(3),(unsigned long long)moore26_events(9),
-                (unsigned long long)moore26_events(7));
+                (unsigned long long)moore26_events(3),(unsigned long long)moore26_events(23),
+                (unsigned long long)moore26_events(9),(unsigned long long)moore26_events(7));
     }
     clock_gettime(CLOCK_MONOTONIC,&t1);
     double ms=(t1.tv_sec-t0.tv_sec)*1e3+(t1.tv_nsec-t0.tv_nsec)/1e6;

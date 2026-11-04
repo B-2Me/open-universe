@@ -86,6 +86,9 @@ static int *procList, nProc;
 
 static uint64_t qEvents[32];
 static uint64_t qTick;
+static int qFusionWall=256;   /* pair-production energy threshold —
+     * nua+nub must clear it (each photon above ~mc2, not a crowd
+     * of weak ones) */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -388,6 +391,36 @@ void moore26_tick(void){
      * bounce — deflection, not absorption). */
     PROC_NODES
         NodeState *n=&grid_next[si],*o=&grid_current[si];
+        /* PAIR PRODUCTION (photon+photon -> mass): bare nodes only —
+         * opposing arrivals on the same axis fuse when their combined
+         * nu clears the fusion wall. The residue crystallizes as
+         * mass+charge and LAUNCHES apart on the arrival channels
+         * (momentum conservation — gamma+gamma -> e+e- flies, not a
+         * static pile). Radiation recombining into knots: the
+         * universe regenerates, not only degrades. */
+        if(!n->mass){
+            for(int c=0;c<QChannels;c++){
+                int oc=c^1;
+                uint32_t a=n->photon[c],b=n->photon[oc];
+                if(!a||!b)continue;
+                uint32_t nua=n->photonNu[c]?n->photonNu[c]:1;
+                uint32_t nub=n->photonNu[oc]?n->photonNu[oc]:1;
+                if(nua+nub<(uint32_t)qFusionWall)continue;
+                uint32_t pair=a<b?a:b;
+                n->photon[c]-=pair;n->photon[oc]-=pair;
+                uint64_t dep=(uint64_t)pair*(nua+nub);
+                uint32_t m=n->mass+(uint32_t)(dep>>5);
+                n->mass=(uint16_t)(m>65535?65535:m);
+                uint32_t ch=n->charge+(uint32_t)(dep>>3);
+                n->charge=(uint16_t)(ch>65535?65535:ch);
+                uint32_t f0=n->massFlight[c]+pair,f1=n->massFlight[oc]+pair;
+                n->massFlight[c]=(uint16_t)(f0>65535?65535:f0);
+                n->massFlight[oc]=(uint16_t)(f1>65535?65535:f1);
+                n->winding[c]+=pair>>2;          /* residual wound */
+                n->winding[oc]+=pair>>2;
+                qEvents[23]+=pair;
+            }
+        }
         int lvl=site_level(o);if(lvl<1)lvl=1;
         for(int c=0;c<QChannels;c++){
             if(!n->photon[c])continue;
