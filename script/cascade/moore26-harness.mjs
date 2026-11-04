@@ -68,7 +68,7 @@ if (SCEN === 'hexbuckle') {
    * anchored cores. Curvature is the strain; the measurement is
    * whether the bend polarizes the winding (net directedness along
    * the bend axis — the substrate's induced dipole). */
-  const A = W / 8, D = W / 4;              // half-width, dip depth
+  const A = W / 8, D = parseInt(arg('dip', String(W / 4)));  // half-width, dip depth
   const pts = [];
   for (let t = 0; t <= 1.0001; t += 0.02) {
     pts.push([Math.round(c0 + A * (2 * t - 1)),
