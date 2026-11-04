@@ -273,16 +273,48 @@ void moore26_tick(void){
     PROC_NODES_END
 
     /* Phase 1: packet flight — photons hop 1 node/tick along their
-     * channel direction (c at transit scale). Each (ni,c) slot has a
-     * unique writer (its upstream neighbor), so no atomics. */
+     * channel direction (c at transit scale). PULL-MODEL: each node
+     * reads its upstream neighbor's channel (unique writer per slot —
+     * no send/receive race). Arriving flux DECAYS into heat at the
+     * destination's density: opaque media thermalize photons, sparse
+     * vacuum passes them — the field's thermalization sink (qi3's
+     * vacuum-absorption opacity). */
     PROC_NODES
         NodeState *o=&grid_current[si];
+        /* gather upstream arrivals first — only nodes receiving flux
+         * pay the 26-neighbor opacity scan (halo vacuum skips it). */
+        uint32_t v[26],nu[26];int anyp=0;
         for(int c=0;c<QChannels;c++){
-            if(!o->photon[c])continue;
-            int ni=nbr(x,y,z,QChannelVec[c][0],QChannelVec[c][1],QChannelVec[c][2]);
-            grid_next[si].photon[c]=0;
-            grid_next[ni].photon[c]=o->photon[c];
-            grid_next[ni].photonNu[c]=o->photonNu[c];
+            int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
+            v[c]=grid_current[up].photon[c];
+            nu[c]=grid_current[up].photonNu[c];
+            if(v[c])anyp=1;
+        }
+        int live=0;
+        if(anyp||o->mass){
+            for(int cc=0;cc<QChannels;cc++){
+                int ni=nbr(x,y,z,QChannelVec[cc][0],QChannelVec[cc][1],QChannelVec[cc][2]);
+                if(node_live(&grid_current[ni]))live++;
+            }
+            grid_next[si].localDensity=(uint16_t)(live*255/QChannels);
+        }
+        for(int c=0;c<QChannels;c++){
+            if(!v[c]){grid_next[si].photon[c]=0;continue;}
+            uint32_t nuv=nu[c]?nu[c]:1;
+            /* decay -> heat: the arriving packet's energy becomes the
+             * node's local temperature (not lost — the thermal sink
+             * the emit/reabsorb loop needs for equilibrium). */
+            uint32_t decay=(v[c]*(uint32_t)live)>>8;
+            if(decay<1&&(rand_site(si,40+c)&7)==0)decay=1;
+            if(decay>v[c])decay=v[c];
+            if(decay){
+                uint32_t h=grid_next[si].heat+decay*nuv;
+                grid_next[si].heat=(uint16_t)(h>65535?65535:h);
+                qEvents[7]+=(uint64_t)decay*nuv;
+            }
+            uint32_t r=v[c]-decay;
+            grid_next[si].photon[c]=(uint8_t)(r>255?255:r);
+            grid_next[si].photonNu[c]=(uint8_t)nuv;
         }
     PROC_NODES_END
 
@@ -463,6 +495,7 @@ void moore26_tick(void){
         if(rand_site(si,1)&3)continue;         /* excited-state lifetime */
         int line=geo_gap(&grid_next[si]);
         if(line<1)continue;
+        (void)line;   /* the gap sets the band; nu below = the shed */
         /* channel occupancy — graded refusal: P(accept)=1-occ/128,
          * up to 4 tries on different modes. A saturated directional
          * mode refuses — the geometric Pauli analog. */
@@ -494,10 +527,15 @@ void moore26_tick(void){
             qEvents[29]++;
             continue;
         }
+        /* CONSERVING emission: the photon's nu IS the shed winding
+         * (per-side rung amount). Recapture deposits nu per channel —
+         * restoring exactly what was shed (net zero), while escape or
+         * thermalization makes the emission real radiation. */
+        uint32_t shed=site_unwind(x,y,z,si);
+        if(!shed)continue;
         grid_next[si].photon[c]++;
-        grid_next[si].photonNu[c]=(uint8_t)(line>255?255:line);
-        site_unwind(x,y,z,si);
-        qEvents[4]++;qEvents[20]+=line;
+        grid_next[si].photonNu[c]=(uint8_t)(shed>255?255:shed);
+        qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
     /* Phase 7: macroscopic string-breaking — forward-trace the
@@ -565,5 +603,8 @@ void moore26_mass_set(int x,int y,int z,uint32_t v){
 }
 uint32_t moore26_mass_get(int x,int y,int z){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].mass;
+}
+uint16_t moore26_heat_get(int x,int y,int z){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].heat;
 }
 uint64_t moore26_events(int i){return qEvents[i&31];}

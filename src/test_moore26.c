@@ -40,6 +40,13 @@ static uint64_t tot_phot(int d){
         for(int c=0;c<26;c++)s+=moore26_photon_get(x,y,z,c);
     return s;
 }
+uint16_t moore26_heat_get(int x,int y,int z);
+static uint64_t tot_heat(int d){
+    uint64_t s=0;
+    for(int z=0;z<d;z++)for(int y=0;y<W;y++)for(int x=0;x<W;x++)
+        s+=moore26_heat_get(x,y,z);
+    return s;
+}
 
 int main(int argc,char**argv){
     int ticks=argc>1?atoi(argv[1]):200;
@@ -70,11 +77,12 @@ int main(int argc,char**argv){
     for(int t=0;t<ticks;t++){
         moore26_tick();
         if((t+1)%50==0)
-            printf("t=%-4d mass=%llu wind=%llu phot=%llu emit=%llu denseRef=%llu arm=%llu decl=%llu conf=%llu\n",t+1,
+            printf("t=%-4d mass=%llu wind=%llu phot=%llu heat=%llu emit=%llu denseRef=%llu arm=%llu decl=%llu conf=%llu decayedE=%llu\n",t+1,
                 (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
+                (unsigned long long)tot_heat(W),
                 (unsigned long long)moore26_events(4),(unsigned long long)moore26_events(28),
                 (unsigned long long)moore26_events(5),(unsigned long long)moore26_events(30),
-                (unsigned long long)moore26_events(3));
+                (unsigned long long)moore26_events(3),(unsigned long long)moore26_events(7));
     }
     clock_gettime(CLOCK_MONOTONIC,&t1);
     double ms=(t1.tv_sec-t0.tv_sec)*1e3+(t1.tv_nsec-t0.tv_nsec)/1e6;
