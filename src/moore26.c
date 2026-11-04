@@ -126,7 +126,7 @@ static inline int nbr(int x,int y,int z,int dx,int dy,int dz){
 static int node_live(const NodeState *n){
     if(n->mass)return 1;
     for(int c=0;c<QChannels;c++)
-        if(n->winding[c]||n->photon[c])return 1;
+        if(n->winding[c]||n->photon[c]||n->massFlight[c]||n->incip[c])return 1;
     return 0;
 }
 
@@ -339,6 +339,17 @@ void moore26_tick(void){
             in[c]=grid_current[up].massFlight[c];
             grid_next[si].massFlight[c]=0;
         }
+        /* catch rule: in-flight mass only parks at STRUCTURE (a mass
+         * node or a committed-winding edge) — bare vacuum lets the
+         * quantum keep flying (fragments separate until caught). */
+        int catch_=grid_current[si].mass>0;
+        if(!catch_){
+            for(int e=0;e<QChannels/2;e++){
+                uint32_t m2=grid_current[si].winding[2*e]<grid_current[si].winding[2*e+1]
+                           ?grid_current[si].winding[2*e]:grid_current[si].winding[2*e+1];
+                if(m2>=32){catch_=1;break;}
+            }
+        }
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=in[2*e],b=in[2*e+1];
             uint32_t hit=a<b?a:b;
@@ -354,10 +365,16 @@ void moore26_tick(void){
                 grid_next[si].charge=(uint16_t)(ch>65535?65535:ch);
                 qEvents[0]+=hit*2;qEvents[9]+=hit;
             }
-            uint32_t pk=in[2*e]+in[2*e+1];
-            if(pk){
-                uint32_t m=grid_next[si].mass+pk;
-                grid_next[si].mass=(uint16_t)(m>65535?65535:m);
+            if(catch_){
+                uint32_t pk=in[2*e]+in[2*e+1];
+                if(pk){
+                    uint32_t m=grid_next[si].mass+pk;
+                    grid_next[si].mass=(uint16_t)(m>65535?65535:m);
+                }
+            } else {
+                /* not caught — stays in-flight for next tick's pull */
+                grid_next[si].massFlight[2*e]=in[2*e];
+                grid_next[si].massFlight[2*e+1]=in[2*e+1];
             }
         }
     PROC_NODES_END
@@ -674,12 +691,19 @@ void moore26_tick(void){
             }
             if(len>=12){
                 /* macro-tension — the whole tube saturated: fracture,
-                 * pair-produce mass at the two endpoints. */
+                 * pair-produce mass at the two endpoints, and RECOIL-
+                 * launch them apart along the tube axis (the stored
+                 * tension becomes the fragments' separation momentum —
+                 * the new pairs fly out, they don't sit). */
                 int p2=nbr(x,y,z,QChannelVec[2*e][0]*(len-1),QChannelVec[2*e][1]*(len-1),QChannelVec[2*e][2]*(len-1));
                 #pragma omp atomic
                 grid_next[si].mass+=128;
                 #pragma omp atomic
                 grid_next[p2].mass+=128;
+                #pragma omp atomic
+                grid_next[si].massFlight[2*e+1]+=64;   /* head recoils back */
+                #pragma omp atomic
+                grid_next[p2].massFlight[2*e]+=64;     /* tail recoils forward */
                 for(int s=0;s<len;s++){
                     int tni=nbr(x,y,z,QChannelVec[2*e][0]*s,QChannelVec[2*e][1]*s,QChannelVec[2*e][2]*s);
                     /* clamp the drain — staged state may be lower */

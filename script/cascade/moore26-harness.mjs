@@ -72,7 +72,8 @@ for (let x = x0; x <= x1; x++) {
 console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, string x=${x0}..${x1} (${STR + 1} nodes @ winding=${TUBE_W})`);
 
 const totals = () => {
-  let mass = 0, wind = 0, phot = 0, massL = 0, massR = 0, cxL = 0, cxR = 0;
+  let mass = 0, wind = 0, phot = 0, fly = 0;
+  let massL = 0, massR = 0, cxL = 0, cxR = 0, fx = 0;
   for (let z = 0; z < W; z++) for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
     const m = M._moore26_mass_get(x, y, z);
     mass += m;
@@ -80,10 +81,13 @@ const totals = () => {
     for (let c = 0; c < 26; c++) {
       wind += M._moore26_winding_get(x, y, z, c);
       phot += M._moore26_photon_get(x, y, z, c);
+      const f = M._moore26_massflight_get(x, y, z, c);
+      fly += f; fx += x * f;
     }
   }
-  return { mass, wind, phot, massL, massR,
-           cxL: massL ? cxL / massL : 0, cxR: massR ? cxR / massR : 0 };
+  return { mass, wind, phot, fly, massL, massR,
+           cxL: massL ? cxL / massL : 0, cxR: massR ? cxR / massR : 0,
+           cxf: fly ? fx / fly : 0 };
 };
 
 const t0 = totals();
@@ -91,9 +95,9 @@ console.log(`t=0    mass=${t0.mass} (L:${t0.cxL.toFixed(1)} R:${t0.cxR.toFixed(1
 const tStart = Date.now();
 for (let t = 1; t <= TICKS; t++) {
   M._moore26_tick();
-  if (t % 50 === 0 || M._moore26_events(6) !== (t === 1 ? 0 : undefined)) {
+  if (t % 20 === 0) {
     const s = totals();
-    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) wind=${s.wind} phot=${s.phot} ` +
+    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} wind=${s.wind} phot=${s.phot} ` +
       `emit=${M._moore26_events(4)} fuse=${M._moore26_events(23)} break=${M._moore26_events(6)} annih=${M._moore26_events(9)}`);
   }
 }
