@@ -327,6 +327,45 @@ else
   exit 1
 fi
 
+# --- moore26: 0.1fm/node engine (26-neighbor Moore stencil, AoS) ---
+# The qi3 physics cycle migrated to a macroscopic knot scale. OpenMP
+# pragmas are inert under emscripten (-Wno-unknown-pragmas) — wasm runs
+# single-threaded; the vacuum-skip ledger carries the perf win there.
+if emcc moore26.c \
+  -DGIT_REV=\"$GIT_REV\" \
+  -O3 -Wno-unknown-pragmas \
+  -s WASM=1 \
+  -s MODULARIZE=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -s EXPORT_NAME="'createMoore26'" \
+  -s EXPORTED_FUNCTIONS="[
+    '_moore26_init',
+    '_moore26_tick',
+    '_moore26_winding_get',
+    '_moore26_winding_set',
+    '_moore26_photon_get',
+    '_moore26_photon_set',
+    '_moore26_photon_nu_set',
+    '_moore26_mass_get',
+    '_moore26_mass_set',
+    '_moore26_massflight_get',
+    '_moore26_massflight_set',
+    '_moore26_heat_get',
+    '_moore26_events',
+    '_moore26_state_pointer',
+    '_moore26_node_size',
+    '_moore26_channel_count',
+    '_malloc',
+    '_free'
+  ]" \
+  -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
+  -o ../docs/public/wasm/ember/moore26.js; then
+  echo "✅ moore26 (ember) compiled successfully."
+else
+  echo "❌ Error: moore26 compilation failed!"
+  exit 1
+fi
+
 # --- link3: network-ontology engine (links, sessions, nu spectrum) ---
 if emcc link3.c \
   -DGIT_REV=\"$GIT_REV\" \

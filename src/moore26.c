@@ -708,3 +708,8 @@ uint32_t moore26_massflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return qEvents[i&31];}
+/* bulk-read support for wasm harnesses: the flat NodeState array —
+ * JS strides it by moore26_node_size() to render the grid state. */
+void *moore26_state_pointer(void){return grid_current;}
+int moore26_node_size(void){return (int)sizeof(NodeState);}
+int moore26_channel_count(void){return QChannels;}
