@@ -83,7 +83,18 @@ static uint8_t *chunkLive, *chunkProc;
 static int *procList, nProc;
 
 static uint64_t qEvents[32];
+static uint64_t qTick;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
+
+/* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
+ * state to race on under OpenMP. Same site+tick -> same stream. */
+static inline uint8_t rand_site(int si,int salt){
+    uint64_t s=(uint64_t)si*0x9E3779B97F4A7C15ULL
+             +(uint64_t)salt*0x2545F4914F6CDD1DULL
+             +qTick*0xD1B54A32D192ED03ULL;
+    s^=s>>30;s*=0xBF58476D1CE4E5B9ULL;s^=s>>27;s*=0x94D049BB133111EBULL;s^=s>>31;
+    return (uint8_t)(s>>56);
+}
 
 /* bitwise-wrap neighbor: the power-of-2 dims make wrapping a mask,
  * not a modulo — v&m instead of v%m + the v<0 branch. */
@@ -148,6 +159,83 @@ static void mark_chunk(int x,int y,int z){
     if(ci>=0&&ci<nChunks)chunkLive[ci]=1;
 }
 
+/* occupancy-volume level: the bound state is a DISTRIBUTION of
+ * circulation over the node's edge-space — committed exchange
+ * (m>=32) counts, traffic doesn't. n ~ quanta of bound volume. */
+static int site_level(const NodeState *o){
+    int n=1;uint32_t vol=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m>=32)vol+=m;
+    }
+    n+=vol>>7;if(n>8)n=8;return n;
+}
+static uint64_t loop_winding(const NodeState *o){
+    uint64_t w=0;
+    for(int e=0;e<QChannels/2;e++)
+        w+=2*(o->winding[2*e]<o->winding[2*e+1]?o->winding[2*e]:o->winding[2*e+1]);
+    return w;
+}
+/* geometric gap: the emitted nu is the weakest committed edge's
+ * rung energy — the spectrum IS the structure (1/r2 weighted). */
+static int geo_gap(const NodeState *o){
+    int be=-1;uint32_t bm=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m>=32&&(be<0||m<bm)){bm=m;be=e;}
+    }
+    if(be<0)return 0;
+    uint64_t L2=edgeLen2(2*be);
+    int nu=(int)((uint64_t)(bm>>2)*2/L2);
+    if(nu<1)nu=1;
+    if(nu>255)nu=255;
+    return nu;
+}
+/* rung-quantized unwind — shed one rung from the weakest committed
+ * edge in grid_next. Two protections ported from qi3:
+ *   - circulation protection: a directed edge inside a CLOSED
+ *     vortex (reciprocal neighbor carries the return flux) is
+ *     topologically protected — macroscopic tube bounds, not
+ *     single-node conditions.
+ *   - ground-state floor: total committed volume <=512 can't
+ *     unwind — nothing lighter to carry the quantum. */
+static uint32_t site_unwind(int x,int y,int z,int si){
+    NodeState *n=&grid_next[si];
+    int be=-1;uint32_t bm=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t a=n->winding[2*e],b=n->winding[2*e+1];
+        uint32_t m=a<b?a:b;
+        if(m<32)continue;
+        int32_t dd=(int32_t)a-(int32_t)b;if(dd<0)dd=-dd;
+        if(dd>=32){
+            int big=a>b?2*e:2*e+1;
+            int ni=nbr(x,y,z,QChannelVec[big][0],QChannelVec[big][1],QChannelVec[big][2]);
+            int rc=(big&1)?big-1:big+1;
+            uint32_t ra=grid_current[ni].winding[rc],rb=grid_current[ni].winding[big];
+            if(ra>rb&&ra-rb>=32)continue;      /* reciprocal: closed */
+        }
+        if(be<0||m<bm){bm=m;be=e;}
+    }
+    if(be<0)return 0;
+    uint32_t tv=0;
+    for(int e=0;e<QChannels/2;e++){
+        uint32_t m2=n->winding[2*e]<n->winding[2*e+1]?n->winding[2*e]:n->winding[2*e+1];
+        if(m2>=32)tv+=m2;
+    }
+    if(tv<=512)return 0;                       /* ground-state floor */
+    uint32_t a=n->winding[2*be],b=n->winding[2*be+1];
+    uint32_t m=a<b?a:b;
+    uint32_t rung=(m-1)>>2;
+    uint32_t next=rung<<2;
+    if(next>=m)next=(rung-1)<<2;
+    uint32_t shed=m-next;if(shed<1)shed=1;
+    uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
+    n->winding[2*be]-=da;n->winding[2*be+1]-=db;
+    return shed;
+}
+
 void moore26_init(int w,int h,int d){
     /* power-of-2 dims required for the bitwise-mask wrap; each dim
      * must be >= 8 so the chunk grid is also power-of-2. */
@@ -172,6 +260,7 @@ void moore26_init(int w,int h,int d){
  * grid_next (intra-tick visibility where a phase reads next-state
  * fields it just staged). */
 void moore26_tick(void){
+    qTick++;
     build_proc();
 
     /* Phase 0: carry — every processed node copies current→next so
@@ -289,7 +378,56 @@ void moore26_tick(void){
         PROC_NODES_END
     }
 
-    /* Phase 5: macroscopic string-breaking — forward-trace the
+    /* Phase 5: emission — the bound state radiates. A site at level
+     * n>=2 stochastically sheds one rung of its weakest committed
+     * edge into a photon. The photon needs a channel mode with room
+     * (graded Pauli — refusal scales with occupancy) and escapes
+     * only if the local density lets it (dense media stall the decay
+     * product — the measured neighborhood IS the pressure). */
+    PROC_NODES
+        NodeState *o=&grid_current[si];
+        if(site_level(o)<2)continue;
+        if(rand_site(si,1)&3)continue;         /* excited-state lifetime */
+        int line=geo_gap(&grid_next[si]);
+        if(line<1)continue;
+        /* channel occupancy — graded refusal: P(accept)=1-occ/128,
+         * up to 4 tries on different modes. A saturated directional
+         * mode refuses — the geometric Pauli analog. */
+        int c=-1;
+        for(int try_=0;try_<4;try_++){
+            int tc=rand_site(si,2+try_)%QChannels;
+            uint32_t occ=grid_next[si].photon[tc];
+            if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
+        }
+        if(c<0){qEvents[31]++;continue;}       /* modes refuse — stable */
+        /* density refusal — the measured neighborhood structure is
+         * the pressure: sparse vacuum lets emission escape, dense
+         * media stall it. Context-stable, no global switch. */
+        int live=0;
+        for(int cc=0;cc<QChannels;cc++){
+            int ni=nbr(x,y,z,QChannelVec[cc][0],QChannelVec[cc][1],QChannelVec[cc][2]);
+            if(node_live(&grid_current[ni]))live++;
+        }
+        uint32_t dens=live*64/QChannels;
+        grid_next[si].localDensity=(uint16_t)(dens*4);
+        if(dens&&(rand_site(si,10)&63)<(int)dens){qEvents[28]++;continue;}
+        /* species-inverse: a composite's shed condenses to mass
+         * instead of radiating, until the mass:bond ratio equilibrates
+         * — the closed cycle where structure and mass hold each
+         * other. A bare (massless) site still radiates a photon. */
+        if(o->mass>0&&(uint64_t)o->mass*8<loop_winding(o)){
+            grid_next[si].mass+=line;
+            site_unwind(x,y,z,si);
+            qEvents[29]++;
+            continue;
+        }
+        grid_next[si].photon[c]++;
+        grid_next[si].photonNu[c]=(uint8_t)(line>255?255:line);
+        site_unwind(x,y,z,si);
+        qEvents[4]++;qEvents[20]+=line;
+    PROC_NODES_END
+
+    /* Phase 6: macroscopic string-breaking — forward-trace the
      * continuous >128 saturated tube, fracture only when the
      * INTEGRATED tension (the tube's length) exceeds the macro-
      * threshold, then pair-produce at the 2 endpoints. Not a

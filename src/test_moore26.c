@@ -18,6 +18,8 @@ void moore26_mass_set(int x,int y,int z,uint32_t v);
 uint32_t moore26_mass_get(int x,int y,int z);
 void moore26_photon_set(int x,int y,int z,int c,uint32_t v);
 void moore26_photon_nu_set(int x,int y,int z,int c,uint32_t v);
+uint32_t moore26_photon_get(int x,int y,int z,int c);
+uint64_t moore26_events(int i);
 
 static int W=64,H_=64,D_=64;
 static uint64_t tot_mass(int d){
@@ -32,18 +34,25 @@ static uint64_t tot_wind(int d){
         for(int c=0;c<26;c++)s+=moore26_winding_get(x,y,z,c);
     return s;
 }
+static uint64_t tot_phot(int d){
+    uint64_t s=0;
+    for(int z=0;z<d;z++)for(int y=0;y<W;y++)for(int x=0;x<W;x++)
+        for(int c=0;c<26;c++)s+=moore26_photon_get(x,y,z,c);
+    return s;
+}
 
 int main(int argc,char**argv){
     int ticks=argc>1?atoi(argv[1]):200;
     if(argc>2)W=H_=D_=atoi(argv[2]);
     moore26_init(W,H_,D_);
     int c0=W/2;
-    /* wound lump: a 5-node-radius ball of balanced +/- winding on the
-     * face channels (a circulating knot) with a mass core. */
+    /* wound lump: a 5-node-radius ball of balanced +/- winding on
+     * all 13 edge pairs — committed volume 832/site > the 512
+     * ground-state floor, so emission can actually fire. */
     for(int dz=-5;dz<=5;dz++)for(int dy=-5;dy<=5;dy++)for(int dx=-5;dx<=5;dx++){
         if(dx*dx+dy*dy+dz*dz>25)continue;
         int x=c0+dx,y=c0+dy,z=c0+dz;
-        for(int e=0;e<6;e++){       /* 3 face-edge pairs, +/- balanced */
+        for(int e=0;e<13;e++){      /* all 13 edge pairs, +/- balanced */
             moore26_winding_set(x,y,z,2*e,64);
             moore26_winding_set(x,y,z,2*e+1,64);
         }
@@ -55,14 +64,16 @@ int main(int argc,char**argv){
          moore26_photon_nu_set(c0-10-i, c0, c0, 0, 200);}
 
     printf("moore26 smoke: %d^3, %d ticks\n",W,ticks);
-    printf("t=0   mass=%llu wind=%llu\n",
-        (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W));
+    printf("t=0   mass=%llu wind=%llu phot=%llu\n",
+        (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W));
     struct timespec t0,t1;clock_gettime(CLOCK_MONOTONIC,&t0);
     for(int t=0;t<ticks;t++){
         moore26_tick();
         if((t+1)%50==0)
-            printf("t=%-4d mass=%llu wind=%llu\n",t+1,
-                (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W));
+            printf("t=%-4d mass=%llu wind=%llu phot=%llu emit=%llu denseRef=%llu modeRef=%llu condense=%llu\n",t+1,
+                (unsigned long long)tot_mass(W),(unsigned long long)tot_wind(W),(unsigned long long)tot_phot(W),
+                (unsigned long long)moore26_events(4),(unsigned long long)moore26_events(28),
+                (unsigned long long)moore26_events(31),(unsigned long long)moore26_events(29));
     }
     clock_gettime(CLOCK_MONOTONIC,&t1);
     double ms=(t1.tv_sec-t0.tv_sec)*1e3+(t1.tv_nsec-t0.tv_nsec)/1e6;
