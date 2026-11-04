@@ -123,8 +123,8 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;
-  float a = exp(-r2 * 9.0);
-  frag = vec4(v_color.rgb * v_color.a * a, 1.0);
+  float a = exp(-r2 * 5.0);              // softer halo — transparent glow
+  frag = vec4(v_color.rgb * a, v_color.a * a * 0.85);
 }`;
 
 export async function initCascadeSimulator(root, opts = {}) {
@@ -301,10 +301,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   gl.bindVertexArray(vao);
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE);   // additive glow — the ember composite
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // premultiplied — real transparency
 
   // ---------- camera ----------
-  const cam = { yaw: 0.7, pitch: 0.45, dist: 90, cx: cenX, cy: cenY, cz: cenZ };
+  const cam = { yaw: 0.7, pitch: 0.45, dist: 70, cx: cenX, cy: cenY, cz: cenZ };
   const tgt = { ...cam };
   let lastInteract = 0, dirty = true;
   const poke = () => { lastInteract = performance.now(); };
@@ -351,9 +351,9 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   // ---------- state / UI ----------
   const ui = {
-    playing: true, tickMs: 0, budget: 200, tick: 0,
+    playing: true, tickMs: 0, budget: 400, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
-    qmin: 1, size: 0.55, colorMode: 4, tps: 10, tickDebt: 0,
+    qmin: 1, size: 0.9, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false, tubeArm: false,
   };
@@ -414,8 +414,6 @@ export async function initCascadeSimulator(root, opts = {}) {
   };
   bind('[data-lump]', 'click', () => { setTubeArm(false); setLumpArm(!ui.lumpArm); });
   bind('[data-tube]', 'click', () => { setLumpArm(false); setTubeArm(!ui.tubeArm); });
-  bind('[data-snap]', 'click', () => { wasm._moore26_save(); const b = root.querySelector('[data-unsnap]'); if (b) b.disabled = false; say('snapshot saved', 2500); });
-  bind('[data-unsnap]', 'click', () => { if (wasm._moore26_restore() === 0) { upload(); dirty = true; } });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;
     e.currentTarget.setAttribute('aria-pressed', String(ui.turntable));
@@ -486,11 +484,11 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
 
   const PRESETS = {
-    full:    { yaw: 0.7,  pitch: 0.45, dist: 110, zCenter: D3 >> 1, zThick: D3 },
-    core:    { yaw: 0.9,  pitch: 0.6,  dist: 60,  zCenter: D3 >> 1, zThick: D3 },
-    slab:    { yaw: 0.7,  pitch: 0.15, dist: 140, zCenter: D3 >> 1, zThick: 4 },
-    side:    { yaw: 0.35, pitch: 0.10, dist: 160, zCenter: D3 >> 1, zThick: D3 },
-    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 140, zCenter: D3 >> 1, zThick: 1 },
+    full:    { yaw: 0.7,  pitch: 0.45, dist: 80,  zCenter: D3 >> 1, zThick: D3 },
+    core:    { yaw: 0.9,  pitch: 0.6,  dist: 45,  zCenter: D3 >> 1, zThick: D3 },
+    slab:    { yaw: 0.7,  pitch: 0.15, dist: 110, zCenter: D3 >> 1, zThick: 4 },
+    side:    { yaw: 0.35, pitch: 0.10, dist: 120, zCenter: D3 >> 1, zThick: D3 },
+    lattice: { yaw: 0.7,  pitch: 0.6,  dist: 110, zCenter: D3 >> 1, zThick: 1 },
   };
   const setRange = (sel, v) => {
     const el = root.querySelector(sel);
@@ -604,7 +602,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       const phot = wasm._moore26_sum(2), chg = wasm._moore26_sum(4);
       const cx = wasm._moore26_cm(0) / 256, cyy = wasm._moore26_cm(1) / 256, cz = wasm._moore26_cm(2) / 256;
       const cm = mass > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no knot';
-      hud.textContent = `t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · phot=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
+      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · phot=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
     }
   };
   raf = requestAnimationFrame(frame);

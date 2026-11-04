@@ -74,8 +74,6 @@ onUnmounted(() => {
                 aria-label="Flux tube paint tool" aria-pressed="false">—</button>
         <button data-spin class="on" aria-pressed="true"
                 title="Auto-rotate"                   aria-label="Toggle auto-rotate">⟳</button>
-        <button data-snap  title="Snapshot state"     aria-label="Save snapshot">⧉</button>
-        <button data-unsnap title="Restore snapshot"  aria-label="Restore snapshot" disabled>⤺</button>
         <!-- orientation gizmo — rotates with the camera, double-click/tap resets -->
         <canvas class="cascade-gizmo" data-gizmo width="96" height="96"
                 title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
