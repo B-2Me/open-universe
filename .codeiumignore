@@ -11,6 +11,7 @@ logs/
 knot_dictionary.json
 docs/public/audio/
 docs/public/wasm/
+*.wasm
 docs/public/data/
 docs/public/hopfion/
 docs/public/library/

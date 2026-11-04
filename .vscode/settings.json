@@ -7,7 +7,8 @@
     "**/docs/.vitepress/dist/**": true,
     "**/docs/.vitepress/cache/**": true,
     "**/docs/public/audio/**": true,
-    "**/docs/public/wasm/**": true
+    "**/docs/public/wasm/**": true,
+    "**/*.wasm": true
   },
   "search.exclude": {
     "**/seeds/**": true,
@@ -15,6 +16,7 @@
     "**/logs/**": true,
     "**/docs/public/audio/**": true,
     "**/docs/public/wasm/**": true,
+    "**/*.wasm": true,
     "**/docs/.vitepress/dist/**": true
   }
 }
