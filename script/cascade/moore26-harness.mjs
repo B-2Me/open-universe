@@ -83,6 +83,17 @@ if (SCEN === 'hexbuckle') {
     M._moore26_winding_set(x, y, z, c ^ 1, TUBE_W);
   }
   console.log(`hexbuckle: U-tube ${pts.length} nodes, span A=${A}, dip D=${D}, winding=${TUBE_W}`);
+} else if (SCEN === 'flat') {
+  /* symmetric control: a straight horizontal tube at the same
+   * bombardment height — the flat-edge analog that should absorb
+   * the probe uniformly (no lateral polarization). */
+  M._moore26_mass_set(c0 - 16, c0 + 16, c0, 512);
+  M._moore26_mass_set(c0 + 16, c0 + 16, c0, 512);
+  for (let x = c0 - 16; x <= c0 + 16; x++) {
+    M._moore26_winding_set(x, c0 + 16, c0, 0, TUBE_W);
+    M._moore26_winding_set(x, c0 + 16, c0, 1, TUBE_W);
+  }
+  console.log(`flat: straight tube x=${c0-16}..${c0+16} @ y=${c0+16}, winding=${TUBE_W}`);
 }
 
 // --- octupolar background: 8-fold phase twist around the z-axis
@@ -114,7 +125,7 @@ console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, scen=${SCEN}` +
   (SCEN === 'string' ? `, string x=${x0}..${x1} (${STR + 1} nodes @ winding=${TUBE_W})` : ''));
 
 const totals = () => {
-  let mass = 0, wind = 0, phot = 0, fly = 0, pol = 0;
+  let mass = 0, wind = 0, phot = 0, fly = 0, pol = 0, polx = 0;
   let massL = 0, massR = 0, cxL = 0, cxR = 0, fx = 0;
   for (let z = 0; z < W; z++) for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
     const m = M._moore26_mass_get(x, y, z);
@@ -126,25 +137,42 @@ const totals = () => {
       const f = M._moore26_massflight_get(x, y, z, c);
       fly += f; fx += x * f;
     }
-    /* polarization: net directedness of the +/-Y edge pair weighted
-     * by distance from the bend axis — a buckled tube's induced
-     * dipole reads as |pol| >> 0. */
+    /* polarization: net directedness weighted by distance from the
+     * center — pol = axial (±Y) dipole, polx = LATERAL (±X) dipole.
+     * The flexoelectric signal is polx: the bend shunting +Y probe
+     * pressure sideways into asymmetric ±X winding. */
     const dy = M._moore26_winding_get(x, y, z, 2) - M._moore26_winding_get(x, y, z, 3);
     pol += (y - c0) * dy;
+    const dx = M._moore26_winding_get(x, y, z, 0) - M._moore26_winding_get(x, y, z, 1);
+    polx += (x - c0) * dx;
   }
-  return { mass, wind, phot, fly, massL, massR, pol,
+  return { mass, wind, phot, fly, massL, massR, pol, polx,
            cxL: massL ? cxL / massL : 0, cxR: massR ? cxR / massR : 0,
            cxf: fly ? fx / fly : 0 };
 };
 
 const t0 = totals();
 console.log(`t=0    mass=${t0.mass} (L:${t0.cxL.toFixed(1)} R:${t0.cxR.toFixed(1)}) wind=${t0.wind} phot=${t0.phot}`);
+
+/* driven probe: continuous -Y photon stream aimed at the apex
+ * (hexbuckle) or flat midpoint (flat) — nu=128 < 256 fusion wall
+ * so pressure without pair production. --probe=N bounds the
+ * bombardment ticks (default: the whole run). */
+const PROBE = parseInt(arg('probe', TICKS.toString()));
+const SRC_Y = c0 + 36, SRC_HALF = 3;      // source row & half-width
+const PROBE_NU = 128;
+
 const tStart = Date.now();
 for (let t = 1; t <= TICKS; t++) {
+  if ((SCEN === 'hexbuckle' || SCEN === 'flat') && t <= PROBE)
+    for (let x = c0 - SRC_HALF; x <= c0 + SRC_HALF; x++) {
+      M._moore26_photon_set(x, SRC_Y, c0, 3, 8);
+      M._moore26_photon_nu_set(x, SRC_Y, c0, 3, PROBE_NU);
+    }
   M._moore26_tick();
   if (t % 20 === 0) {
     const s = totals();
-    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} pol=${s.pol} wind=${s.wind} phot=${s.phot} ` +
+    console.log(`t=${String(t).padEnd(4)} mass=${s.mass} (L:${s.cxL.toFixed(1)} R:${s.cxR.toFixed(1)}) fly=${s.fly}@${s.cxf.toFixed(1)} pol=${s.pol} polx=${s.polx} wind=${s.wind} phot=${s.phot} ` +
       `emit=${M._moore26_events(4)} fuse=${M._moore26_events(23)} break=${M._moore26_events(6)} annih=${M._moore26_events(9)}`);
   }
 }
