@@ -1,4 +1,7 @@
 /* meso_perf.c — active-site-optimized kernel. Identical physics to
+ *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
  * meso_core/meso3i but iterates only occupied sites. Bitwise-parity
  * is preserved: empty cells consume zero RNG in all engines, so
  * skipping them changes speed, never the random stream. */

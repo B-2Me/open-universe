@@ -1,5 +1,8 @@
 /* link3.c — the link-centric engine.
  *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
+ *
  * OPERATOR LAYER (network ontology): sites are pure junctions; the
  * state that matters lives ON THE WIRE. Every directed link carries
  * per-direction occupancy (up = si->ni traffic) — the duplex split

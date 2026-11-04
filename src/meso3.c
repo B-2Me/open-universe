@@ -1,5 +1,8 @@
 /* meso3.c — M19: Boolean multi-channel lattice gas on the True-FCC sublattice.
  *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
+ *
  * Sites: cubic grid points with (x+y+z) even — the FCC nearest-neighbor shell.
  * Channels per site:
  *   bits 0..11 : directional quanta on the 12 face-diagonal ports (±1,±1,0)-type

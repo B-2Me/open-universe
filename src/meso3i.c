@@ -1,5 +1,8 @@
 /* meso3i.c — M19b: integer-occupancy multi-channel lattice gas (True-FCC).
  *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
+ *
  * Same even-parity FCC sublattice and channel set as meso3.c, but each
  * channel holds a uint8 population (multi-quantum, Maxwell-Boltzmann-
  * class statistics) instead of a Boolean bit.

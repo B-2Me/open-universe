@@ -1,4 +1,8 @@
 /* qi3 — transactional substrate ("QI realized").
+ *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
+ *
  * The next engine after link3: CDT lattice + 't Hooft deterministic
  * rules + Kastner TI transactions (offer + confirmation completes
  * the exchange — absorption is the absorber's response, not just

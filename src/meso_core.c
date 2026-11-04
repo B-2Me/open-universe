@@ -1,4 +1,7 @@
 /* meso_core.c — parity port of meso3i's canonical collide semantics.
+ *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
  * 64-byte aligned PlanckNode, double-buffered. meso3i stays reference. */
 #include <stdint.h>
 #include <stdlib.h>

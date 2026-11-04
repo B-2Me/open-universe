@@ -1,4 +1,7 @@
 /*
+ *
+ * The Planck Field Engine (Langevin's Wake)
+ * Copyright (c) 2026 Nathan / btwo.me
  * planck3.c — True FCC (A-B-C) 12-port 3D substrate for the Planck engine.
  * RFC-049: chunk-and-halo memory architecture with a flat-array control.
  *
