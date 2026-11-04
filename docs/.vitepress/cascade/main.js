@@ -123,8 +123,10 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;
-  float a = exp(-r2 * 5.0);              // softer halo — transparent glow
-  frag = vec4(v_color.rgb * a, v_color.a * a * 0.85);
+  float a = exp(-r2 * 6.0);
+  /* additive output — overlapping glows brighten, nothing occludes:
+   * this is what makes the billboards read as transparent light. */
+  frag = vec4(v_color.rgb * v_color.a * a, 1.0);
 }`;
 
 export async function initCascadeSimulator(root, opts = {}) {
@@ -306,7 +308,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   gl.bindVertexArray(vao);
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // premultiplied — real transparency
+  gl.blendFunc(gl.ONE, gl.ONE);   // additive — transparent glow, overlaps brighten
 
   // ---------- camera ----------
   const cam = { yaw: 0.7, pitch: 0.45, dist: 70, cx: cenX, cy: cenY, cz: cenZ };
@@ -358,7 +360,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 400, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
-    qmin: 1, size: 0.9, colorMode: 4, tps: 4, tickDebt: 0,
+    qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false, tubeArm: false,
   };
