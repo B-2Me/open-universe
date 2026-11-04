@@ -524,6 +524,15 @@ void moore26_tick(void){
             uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
             if(a<32||a!=b)continue;
             uint32_t k=a>>3;
+            /* UNDERFLOW GUARD: deductions write grid_next but reads
+             * saw grid_current — when several edges drain one node in
+             * a tick, next can already be lower than current. Clamp
+             * the deduction to what's actually staged (a uint16 wrap
+             * to ~65k minted the conduction flood). */
+            uint32_t avail=grid_next[si].winding[2*e]<grid_next[si].winding[2*e+1]
+                          ?grid_next[si].winding[2*e]:grid_next[si].winding[2*e+1];
+            if(k>avail)k=avail;
+            if(!k)continue;
             int ni=nbr(x,y,z,QChannelVec[2*e][0],QChannelVec[2*e][1],QChannelVec[2*e][2]);
             int nx=(x+QChannelVec[2*e][0])&QMaskX,ny=(y+QChannelVec[2*e][1])&QMaskY,nz=(z+QChannelVec[2*e][2])&QMaskZ;
             uint32_t mn=grid_current[ni].winding[2*e]<grid_current[ni].winding[2*e+1]
@@ -651,9 +660,15 @@ void moore26_tick(void){
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=grid_current[si].winding[2*e],b=grid_current[si].winding[2*e+1];
             if(a<128||a!=b)continue;
-            int len=0,nx=x,ny=y,nz=z;
+            /* only the tube HEAD fires — the upstream neighbor must be
+             * unsaturated (else every node of the same tube fractures
+             * simultaneously, minting endpoint mass per node). */
+            int un=nbr(x,y,z,-QChannelVec[2*e][0],-QChannelVec[2*e][1],-QChannelVec[2*e][2]);
+            uint32_t ua=grid_current[un].winding[2*e],ub=grid_current[un].winding[2*e+1];
+            if(ua>=128&&ua==ub)continue;
+            int len=0;
             for(int step=0;step<16;step++){
-                int tni=nbr(nx,ny,nz,QChannelVec[2*e][0]*step,QChannelVec[2*e][1]*step,QChannelVec[2*e][2]*step);
+                int tni=nbr(x,y,z,QChannelVec[2*e][0]*step,QChannelVec[2*e][1]*step,QChannelVec[2*e][2]*step);
                 uint32_t na=grid_current[tni].winding[2*e],nb=grid_current[tni].winding[2*e+1];
                 if(na>=128&&na==nb)len++;else break;
             }
@@ -667,10 +682,13 @@ void moore26_tick(void){
                 grid_next[p2].mass+=128;
                 for(int s=0;s<len;s++){
                     int tni=nbr(x,y,z,QChannelVec[2*e][0]*s,QChannelVec[2*e][1]*s,QChannelVec[2*e][2]*s);
+                    /* clamp the drain — staged state may be lower */
+                    uint32_t d0=grid_next[tni].winding[2*e]<64?grid_next[tni].winding[2*e]:64;
+                    uint32_t d1=grid_next[tni].winding[2*e+1]<64?grid_next[tni].winding[2*e+1]:64;
                     #pragma omp atomic
-                    grid_next[tni].winding[2*e]-=64;
+                    grid_next[tni].winding[2*e]-=d0;
                     #pragma omp atomic
-                    grid_next[tni].winding[2*e+1]-=64;
+                    grid_next[tni].winding[2*e+1]-=d1;
                 }
                 qEvents[6]++;
             }
@@ -719,6 +737,13 @@ uint32_t moore26_massflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return qEvents[i&31];}
+void moore26_phase_set(int x,int y,int z,uint32_t v){
+    grid_current[z*QWidth*QHeight+y*QWidth+x].phase=v&511;
+    mark_chunk(x,y,z);
+}
+uint32_t moore26_phase_get(int x,int y,int z){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].phase;
+}
 /* bulk-read support for wasm harnesses: the flat NodeState array —
  * JS strides it by moore26_node_size() to render the grid state. */
 void *moore26_state_pointer(void){return grid_current;}

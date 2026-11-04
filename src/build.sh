@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p ../docs/public/wasm/wake/ ../docs/public/wasm/loom/ ../docs/public/wasm/ember/
+mkdir -p ../docs/public/wasm/wake/ ../docs/public/wasm/loom/ ../docs/public/wasm/ember/ ../docs/public/wasm/cascade/
 
 # Stamp engines with the revision that last touched planck.c — the
 # physics provenance. Stamping the deploy HEAD would churn the displayed
@@ -351,6 +351,8 @@ if emcc moore26.c \
     '_moore26_massflight_get',
     '_moore26_massflight_set',
     '_moore26_heat_get',
+    '_moore26_phase_get',
+    '_moore26_phase_set',
     '_moore26_events',
     '_moore26_state_pointer',
     '_moore26_node_size',
@@ -359,7 +361,7 @@ if emcc moore26.c \
     '_free'
   ]" \
   -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
-  -o ../docs/public/wasm/ember/moore26.js; then
+  -o ../docs/public/wasm/cascade/moore26.js; then
   echo "✅ moore26 (ember) compiled successfully."
 else
   echo "❌ Error: moore26 compilation failed!"
