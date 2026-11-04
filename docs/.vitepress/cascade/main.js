@@ -154,7 +154,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     });
   say('instantiating wasm…');
   const wasm = await createMoore26();
-  const [W3, H3, D3] = opts.dims || [64, 64, 64];   // power-of-2 required
+  const [W3, H3, D3] = opts.dims || [32, 32, 32];   // power-of-2 required;
+                            // 64^3 runs ~550ms/tick single-threaded wasm —
+                            // 32^3 keeps the sim interactive (~70ms/tick)
   wasm._moore26_init(W3, H3, D3);
   const N3 = W3 * H3 * D3;
   const CX = W3 >> 1, CY = H3 >> 1, CZ = D3 >> 1;
@@ -294,6 +296,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     say('GPU context lost — restarting…', 5000);
   });
   canvas.addEventListener('webglcontextrestored', () => {
+    /* context restore re-inits the WHOLE sim — the wasm module and
+     * its grid state are lost with it (the sim restarts fresh).
+     * This is the 'state draining' that shows under GPU pressure. */
     root.dispatchEvent(new CustomEvent('cascade:reinit'));
   });
 
@@ -538,7 +543,9 @@ export async function initCascadeSimulator(root, opts = {}) {
       } else highT = null;
     }
 
-    if (ui.turntable && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
+    /* pause freezes everything — ticks AND camera drift (a paused
+     * sim that still rotates reads as 'still running' to the eye) */
+    if (ui.turntable && ui.playing && now - lastInteract > 4000) { tgt.yaw += 0.0014; dirty = true; }
 
     if (cam.yaw !== tgt.yaw || cam.pitch !== tgt.pitch || cam.dist !== tgt.dist
         || cam.cx !== tgt.cx || cam.cy !== tgt.cy || cam.cz !== tgt.cz) {
