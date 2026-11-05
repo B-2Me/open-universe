@@ -291,7 +291,14 @@ export async function initCascadeSimulator(root, opts = {}) {
           Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th)),
           Math.round(CZ + FEED_R * Math.cos(ph)));
         if (sx < 1 || sy < 1 || sz < 1 || sx >= W3 - 1 || sy >= H3 - 1 || sz >= D3 - 1) continue;
-        const dx = CX - sx, dy = CY - sy, dz = CZ - sz;
+        /* aim at a random point in a central ball (R/3 ≈ one channel
+         * cone's width at the core) — the 12-ray bundling smears into
+         * a blob while the shell still converges. The statistical
+         * transition: micro-faceted -> macro-smooth. */
+        const br = FEED_R / 3;
+        const dx = CX + br * (Math.random() * 2 - 1) - sx;
+        const dy = CY + br * (Math.random() * 2 - 1) - sy;
+        const dz = CZ + br * (Math.random() * 2 - 1) - sz;
         let bc = 6, bs = -1;
         for (let c = 6; c < 18; c++) {
           const s = CV[c][0] * dx + CV[c][1] * dy + CV[c][2] * dz;
