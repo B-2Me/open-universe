@@ -425,6 +425,8 @@ export async function initCascadeSimulator(root, opts = {}) {
   let lastInteract = 0, dirty = true;
   const poke = () => { lastInteract = performance.now(); };
   let dragging = false, lx = 0, ly = 0;
+  /* suppress the browser context menu — right-drag is camera control */
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('pointerdown', e => {
     poke();
     if (ui.lumpArm || ui.tubeArm) {
