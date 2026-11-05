@@ -534,6 +534,37 @@ export async function initCascadeSimulator(root, opts = {}) {
     const open = dock?.classList.toggle('tune-open');
     e.currentTarget.setAttribute('aria-expanded', String(!!open));
   });
+  // zoom lens — radial-drag dial floating on the canvas (Mill pattern):
+  // drag up = zoom in, down = zoom out; double-click resets.
+  const zlens = root.querySelector('[data-zoomlens]');
+  const zctx = zlens?.getContext('2d');
+  if (zlens && zctx) {
+    let zy = null;
+    zlens.addEventListener('pointerdown', e => {
+      zy = e.clientY; zlens.setPointerCapture(e.pointerId);
+    });
+    zlens.addEventListener('pointermove', e => {
+      if (zy === null) return;
+      tgt.dist = Math.max(8, Math.min(400, tgt.dist + (e.clientY - zy) * 0.5));
+      zy = e.clientY; dirty = true;
+    });
+    zlens.addEventListener('pointerup', () => { zy = null; syncZoom(); });
+    zlens.addEventListener('dblclick', e => { e.preventDefault(); tgt.dist = 80; dirty = true; });
+  }
+  const drawLens = () => {
+    if (!zctx) return;
+    const S = zlens.width, c = S / 2, R = S * 0.42;
+    zctx.clearRect(0, 0, S, S);
+    zctx.strokeStyle = 'rgba(160, 200, 255, 0.22)';
+    zctx.lineWidth = S * 0.016;
+    zctx.beginPath(); zctx.arc(c, c, R, 0, 7); zctx.stroke();
+    const zoom = 80 / tgt.dist;
+    zctx.fillStyle = 'rgba(127, 255, 238, 0.95)';
+    zctx.font = `600 ${S * 0.21}px monospace`;
+    zctx.textAlign = 'center'; zctx.textBaseline = 'middle';
+    zctx.fillText(zoom.toFixed(1) + 'x', c, c);
+  };
+
   const zoomEl = root.querySelector('[data-zoom]');
   const syncZoom = () => {
     if (!zoomEl) return;
@@ -693,7 +724,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       gl.uniform1i(U.u_nxy, si.nxy); gl.uniform1i(U.u_step, rStep);
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, si.count);
       syncZoom();
-      drawGizmo();
+      drawGizmo(); drawLens();
       dirty = false;
     }
 

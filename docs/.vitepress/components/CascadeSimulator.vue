@@ -79,6 +79,10 @@ onUnmounted(() => {
         <canvas class="cascade-gizmo" data-gizmo width="96" height="96"
                 title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
       </div>
+      <!-- zoom lens — radial-drag dial floating on the canvas edge -->
+      <canvas class="cascade-zoomlens" data-zoomlens width="112" height="112"
+              title="Zoom — drag up to zoom in, down to zoom out; double-click resets" aria-label="Zoom lens, drag radially to zoom, double-click to reset"></canvas>
+      </div>
 
       <div class="cascade-well cascade-switches" role="group" aria-label="Flux switches">
         <button data-drive class="on" aria-pressed="true"
@@ -209,6 +213,22 @@ onUnmounted(() => {
 }
 .cascade-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .cascade-simulator.dock-hidden .cascade-dock { display: none; }
+
+/* zoom lens — radial-drag dial floating at the canvas edge (the
+   Mill zoom widget — faint reticle, numeric zoom readout) */
+.cascade-zoomlens {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(8, 10, 20, 0.6);
+  cursor: ns-resize;
+  opacity: 0.9;
+  touch-action: none;
+  z-index: 4;
+}
 
 .cascade-gizmo {
   width: 40px;
