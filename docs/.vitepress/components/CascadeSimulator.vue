@@ -469,10 +469,10 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
   gap: 5px 12px;
-  /* bounded width so auto-fill makes multi-column rows inside the
-     shrink-wrapped dock — not a single column, not an overflow */
+  /* capped near the transport row's width — the accordion can't
+     balloon the dock wider than row 1 */
   width: 100%;
-  max-width: 720px;
+  max-width: 560px;
 }
 .cascade-sliders label { justify-self: start; }
 
@@ -652,9 +652,9 @@ onUnmounted(() => {
 }
 /* dropdowns never balloon to their longest option — the collapsed
    text truncates, the open menu still shows full names */
-.cascade-field select[data-scene]  { width: 118px; }
-.cascade-field select[data-preset] { width: 92px; }
-.cascade-field select[data-colormode] { width: 72px; }
+.cascade-field select[data-preset]   { width: 116px; }  /* "Full lattice" fits */
+.cascade-field select[data-colormode] { width: 86px; }  /* "composite" fits */
+.cascade-field select[data-scenario]  { width: 100px; } /* "wound lump" fits */
 
 /* ? help chips — small neon-green button seated beside each control */
 .cascade-help {
@@ -814,9 +814,9 @@ onUnmounted(() => {
      font-size is under 16px — selects must read 16 on touch, and the
      fixed widths grow to keep the bigger text from truncating */
   .cascade-dock select { font-size: 16px; }
-  .cascade-field select[data-scene]     { width: 132px; }
-  .cascade-field select[data-preset]    { width: 124px; }
-  .cascade-field select[data-colormode] { width: 90px; }
+  .cascade-field select[data-preset]   { width: 140px; }
+  .cascade-field select[data-colormode] { width: 100px; }
+  .cascade-field select[data-scenario]  { width: 118px; }
   .cascade-sliders input[type='range'] { width: 90px; height: 40px; }
   .cascade-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
 }
