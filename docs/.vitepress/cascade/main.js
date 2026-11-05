@@ -258,12 +258,14 @@ export async function initCascadeSimulator(root, opts = {}) {
        * line — a real collimated stream. */
       const isBeam = ui.beam && c === 6;
       if (isBeam) {
-        /* the beam is a probe stream — source a +x column near the left
-         * face spanning a small cross-section so it visibly traverses
-         * the field (RAY=3 from center was a 3-cell stub at 32^3). */
+        /* the beam is a probe stream on {1,1,0} — it drifts +y as it
+         * advances, so a CY-centered source misses the core entirely.
+         * Offset the source down by the travel distance: y = CY - (CX-2)
+         * climbs +y through the center, then exits the far corner. */
         for (let dy = -2; dy <= 2; dy++)
           for (let dz = -1; dz <= 1; dz++) {
-            const sy = CY + dy, sz = CZ + dz, sx = 2;
+            const sy = CY - (CX - 2) + dy, sz = CZ + dz, sx = 2;
+            if (sy < 1 || sy >= H3 - 1) continue;
             const cur = wasm._moore26_photon_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
               wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
