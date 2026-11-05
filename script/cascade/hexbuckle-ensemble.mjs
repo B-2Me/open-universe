@@ -34,8 +34,9 @@ const DIPS = arg('dips', '8,16,24,32,40,48').split(',').map(Number);
 const c0 = W >> 1;
 
 const pickChan = (dx, dy) => {
-  let best = 0, bs = -1;
-  for (let c = 0; c < 26; c++) {
+  /* edges only — faces/corners are dead registers under FCC */
+  let best = 6, bs = -1;
+  for (let c = 6; c < 18; c++) {
     const vx = M._moore26_cvc(c, 0), vy = M._moore26_cvc(c, 1);
     const s = vx * dx + vy * dy;
     if (s > bs) { bs = s; best = c; }
@@ -44,13 +45,15 @@ const pickChan = (dx, dy) => {
 };
 
 const seedFlat = () => {
-  const fx0 = c0 - 5, fx1 = c0 + 5;             // 11 nodes < 12 threshold
-  M._moore26_mass_set(fx0, c0 + 16, c0, 512);
-  M._moore26_mass_set(fx1, c0 + 16, c0, 512);
-  for (let x = fx0; x <= fx1; x++) {
-    M._moore26_winding_set(x, c0 + 16, c0, 0, 128);
-    M._moore26_winding_set(x, c0 + 16, c0, 1, 128);
+  /* FCC fix: channels 0/1 are the ±x FACE pair — a dead register
+   * skeleton under the transport gate. The flat string runs the
+   * {1,1,0} diagonal on edge pair 6/7 instead. */
+  for (let i = -5; i <= 5; i++) {             // 11 nodes < 12 threshold
+    M._moore26_winding_set(c0 + i, c0 + 16 + i, c0, 6, 128);
+    M._moore26_winding_set(c0 + i, c0 + 16 + i, c0, 7, 128);
   }
+  M._moore26_mass_set(c0 - 5, c0 + 11, c0, 512);
+  M._moore26_mass_set(c0 + 5, c0 + 21, c0, 512);
 };
 
 const seedU = (D) => {

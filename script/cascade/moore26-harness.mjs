@@ -50,8 +50,9 @@ const x0 = c0 - (STR >> 1), x1 = c0 + (STR >> 1);   // core positions
 /* channel nearest a direction (dx,dy,dz) — for painting tubes along
  * a curve: pick the vec whose direction best matches the tangent. */
 const pickChan = (dx, dy, dz) => {
-  let best = 0, bs = -1;
-  for (let c = 0; c < 26; c++) {
+  /* edges only — faces/corners are dead registers under FCC */
+  let best = 6, bs = -1;
+  for (let c = 6; c < 18; c++) {
     const v = M._moore26_channel_count() >= 26 ?
       [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1],
        [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],
@@ -87,14 +88,14 @@ if (SCEN === 'hexbuckle') {
   /* symmetric control: a straight tube BELOW the 12-node break
    * threshold (default --str=10) at the same bombardment height —
    * the flat-edge analog that should absorb the probe uniformly. */
-  const fx0 = c0 - (STR >> 1), fx1 = c0 + (STR >> 1);
-  M._moore26_mass_set(fx0, c0 + 16, c0, 512);
-  M._moore26_mass_set(fx1, c0 + 16, c0, 512);
-  for (let x = fx0; x <= fx1; x++) {
-    M._moore26_winding_set(x, c0 + 16, c0, 0, TUBE_W);
-    M._moore26_winding_set(x, c0 + 16, c0, 1, TUBE_W);
+  const fh = STR >> 1;
+  M._moore26_mass_set(c0 - fh, c0 + 16 - fh, c0, 512);
+  M._moore26_mass_set(c0 + fh, c0 + 16 + fh, c0, 512);
+  for (let i = -fh; i <= fh; i++) {
+    M._moore26_winding_set(c0 + i, c0 + 16 + i, c0, 6, TUBE_W);   // {1,1,0} edge pair
+    M._moore26_winding_set(c0 + i, c0 + 16 + i, c0, 7, TUBE_W);   // — faces dead under FCC
   }
-  console.log(`flat: straight tube x=${fx0}..${fx1} @ y=${c0+16}, winding=${TUBE_W}`);
+  console.log(`flat: {1,1,0} tube diag c0±${fh} @ y=${c0+16}, winding=${TUBE_W}`);
 }
 
 // --- octupolar background: 8-fold phase twist around the z-axis
@@ -114,12 +115,16 @@ if (flag('oct')) {
 }
 
 // --- the test subject: two mass cores + a saturated winding tube ---
+/* FCC fix: channels 0/1 are the ±x FACE pair — dead registers under
+ * the transport gate. The tube runs the {1,1,0} diagonal on edge
+ * pair 6/7 so its axis is a live transport direction. */
 if (SCEN !== 'hexbuckle') {
-  M._moore26_mass_set(x0, c0, c0, 512);
-  M._moore26_mass_set(x1, c0, c0, 512);
-  for (let x = x0; x <= x1; x++) {
-    M._moore26_winding_set(x, c0, c0, 0, TUBE_W);   // +X of edge 0
-    M._moore26_winding_set(x, c0, c0, 1, TUBE_W);   // -X of edge 0
+  const h = STR >> 1;
+  M._moore26_mass_set(c0 - h, c0 - h, c0, 512);
+  M._moore26_mass_set(c0 + h, c0 + h, c0, 512);
+  for (let i = -h; i <= h; i++) {
+    M._moore26_winding_set(c0 + i, c0 + i, c0, 6, TUBE_W);   // +{1,1,0} edge
+    M._moore26_winding_set(c0 + i, c0 + i, c0, 7, TUBE_W);   // -{1,1,0} edge
   }
 }
 console.log(`moore26 harness: ${W}^3, ${TICKS} ticks, scen=${SCEN}` +
@@ -142,12 +147,14 @@ const totals = () => {
       fly += f; fx += x * f;
     }
     /* polarization: net directedness weighted by distance from the
-     * center — pol = axial (±Y) dipole, polx = LATERAL (±X) dipole.
-     * The flexoelectric signal is polx: the bend shunting +Y probe
-     * pressure sideways into asymmetric ±X winding. */
-    const dy = M._moore26_winding_get(x, y, z, 2) - M._moore26_winding_get(x, y, z, 3);
+     * center — under FCC the directed channels are EDGES, not faces.
+     * pol = axial dipole on the string axis {1,1,0} (6/7); polx =
+     * LATERAL dipole on the transverse {1,-1,0} axis (8/9). The
+     * flexoelectric signal is polx: the bend shunting probe pressure
+     * sideways. */
+    const dy = M._moore26_winding_get(x, y, z, 6) - M._moore26_winding_get(x, y, z, 7);
     pol += (y - c0) * dy;
-    const dx = M._moore26_winding_get(x, y, z, 0) - M._moore26_winding_get(x, y, z, 1);
+    const dx = M._moore26_winding_get(x, y, z, 8) - M._moore26_winding_get(x, y, z, 9);
     polx += (x - c0) * dx;
   }
   return { mass, wind, phot, fly, massL, massR, pol, polx, chpol,
@@ -168,11 +175,14 @@ const PROBE_NU = 128;
 
 const tStart = Date.now();
 for (let t = 1; t <= TICKS; t++) {
+  /* probe under the FCC gate: -y is a dead face register — the probe
+   * rides the four -y edge channels {7,8,15,17}, a zigzag corridor. */
   if ((SCEN === 'hexbuckle' || SCEN === 'flat') && t <= PROBE)
-    for (let x = c0 - SRC_HALF; x <= c0 + SRC_HALF; x++) {
-      M._moore26_photon_set(x, SRC_Y, c0, 3, 8);
-      M._moore26_photon_nu_set(x, SRC_Y, c0, 3, PROBE_NU);
-    }
+    for (let x = c0 - SRC_HALF; x <= c0 + SRC_HALF; x++)
+      for (const c of [7, 8, 15, 17]) {
+        M._moore26_photon_set(x, SRC_Y, c0, c, 8);
+        M._moore26_photon_nu_set(x, SRC_Y, c0, c, PROBE_NU);
+      }
   M._moore26_tick();
   if (t % 20 === 0) {
     const s = totals();
