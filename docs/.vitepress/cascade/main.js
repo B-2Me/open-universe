@@ -186,11 +186,11 @@ export async function initCascadeSimulator(root, opts = {}) {
        * race it so a bad mt boot falls back to single-threaded instead
        * of sticking on 'booting'. */
       wasm = await Promise.race([
-        /* no mainScriptUrlOrBlob — it's not in INCOMING_MODULE_JS_API
-         * for this build and aborts the factory AFTER the workers
-         * spawn, leaving zombie workers that fire 'sent an error'.
-         * _scriptName resolves correctly via document.currentScript. */
-        globalThis[mtFactory](),
+        /* mainScriptUrlOrBlob is now in INCOMING_MODULE_JS_API for the
+         * mt build — it tells the pthread worker where the glue lives
+         * (document.currentScript is null for async-loaded scripts, so
+         * _scriptName alone can resolve wrong in the worker). */
+        globalThis[mtFactory]({ mainScriptUrlOrBlob: mtSrc }),
         new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
       ]);
       say(useDebug ? 'moore26-mtd — debug 8-thread OpenMP' : 'moore26-mt — 8-thread OpenMP', 4000);
