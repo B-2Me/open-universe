@@ -83,6 +83,7 @@ onUnmounted(() => {
           <div class="cascade-grp-row">
             <em>ops <button class="cascade-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
             <button data-spin class="tog on" aria-pressed="true" title="Auto-rotate" aria-label="Toggle auto-rotate"><span class="g">🪐</span><span class="l">orbit</span></button>
+            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders"><span class="g">▤</span><span class="l">tuning</span></button>
           </div>
         </div>
         <div class="cascade-grp-line">
@@ -121,7 +122,6 @@ onUnmounted(() => {
               <option value="lump">wound lump</option>
               <option value="buckle">hexbuckle</option>
             </select></label>
-            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
           </div>
         </div>
       </div>
@@ -570,11 +570,11 @@ onUnmounted(() => {
 .cascade-dock:not(.sel-open) .cascade-selects { display: none; }
 .cascade-dock:not(.tune-open) .cascade-sliders { display: none; }
 .cascade-accbtn {
-  min-width: 34px;
-  min-height: 30px;
-  padding: 0 10px;
-  font: 11px monospace;
-  letter-spacing: 0.08em;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 1px 8px;
+  font: 13px monospace;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--cascade-muted);
   background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
