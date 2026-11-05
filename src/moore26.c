@@ -50,6 +50,15 @@ static int QWidth, QHeight, QDepth, QSites;
  * opposite direction of 2e+1 (edge e spans both). */
 static int QChannels = 26;
 static int8_t QChannelVec[26][3] = {
+/* FCC transport gate — only the 12 edge channels ({±1,±1,0} family,
+ * indices 6..17) carry flight. Every edge hop is equidistant at
+ * sqrt(2), so c is one local hop per tick with TRUE isotropy — the
+ * starburst anisotropy of the full Moore-26 stencil is structural
+ * grid bias, not physics. Face (0-5) + corner (18-25) channels stay
+ * live as structural registers (winding/charge/over-pressure) — they
+ * just don't transport. */
+#define IS_EDGE(c) ((c)>=6&&(c)<=17)
+
     {1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},        /* faces */
     {1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},                      /* xy edges */
     {1,0,1},{-1,0,-1},{1,0,-1},{-1,0,1},                      /* xz edges */
@@ -346,6 +355,9 @@ void moore26_tick(void){
             grid_next[si].localDensity=(uint16_t)(live*255/QChannels);
         }
         for(int c=0;c<QChannels;c++){
+            /* non-edge channels don't transport — the register keeps
+             * whatever was parked there (structural reservoir). */
+            if(!IS_EDGE(c))continue;
             if(!v[c]){grid_next[si].photon[c]=0;continue;}
             uint32_t nuv=nu[c]?nu[c]:1;
             /* decay -> heat: the arriving packet's energy becomes the
@@ -376,7 +388,9 @@ void moore26_tick(void){
          * heat, hot vacuum stochastically re-radiates). CONSERVED:
          * heat is debited exactly the minted nu. */
         if(h>128&&(rand_site(si,50)&63)==0){
-            int c=rand_site(si,51)%QChannels;
+            /* re-emit only onto transporting edge channels — a photon
+             * minted on a face/corner register would freeze there. */
+            int c=6+rand_site(si,51)%12;
             if(grid_next[si].photon[c]<255){
                 uint32_t nu=(uint32_t)(h>>3)>255?255:(uint32_t)(h>>3);
                 if(nu){
@@ -398,6 +412,7 @@ void moore26_tick(void){
     PROC_NODES
         uint32_t in[26];int8_t cin[26];
         for(int c=0;c<QChannels;c++){
+            if(!IS_EDGE(c)){in[c]=0;cin[c]=0;grid_next[si].massFlight[c]=0;grid_next[si].chargeFlight[c]=0;continue;}
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             in[c]=grid_current[up].massFlight[c];
             cin[c]=grid_current[up].chargeFlight[c];
@@ -468,18 +483,28 @@ void moore26_tick(void){
                 if(d>dd){dd=d;de=e;}
             }
             if(de<0||dd<32)continue;
+            /* remap the launch onto the edge channel nearest the
+             * dominant winding axis — face/corner axes don't fly
+             * under the FCC gate. */
+            int fc=2*de;
+            if(!IS_EDGE(fc)){
+                int bs=-1;for(int c=6;c<18;c++){
+                    int s=QChannelVec[c][0]*QChannelVec[fc][0]+QChannelVec[c][1]*QChannelVec[fc][1]+QChannelVec[c][2]*QChannelVec[fc][2];
+                    if(s>bs){bs=s;fc=c;}
+                }
+            }
             uint32_t k=o->mass>>4;
             uint32_t k2=(uint32_t)dd>>2;
             if(k>k2)k=k2;
             if(!k)continue;
             grid_next[si].mass-=k;
-            uint32_t f=grid_next[si].massFlight[2*de]+k;
-            grid_next[si].massFlight[2*de]=(uint16_t)(f>65535?65535:f);
+            uint32_t f=grid_next[si].massFlight[fc]+k;
+            grid_next[si].massFlight[fc]=(uint16_t)(f>65535?65535:f);
             /* the launched mass carries a proportional charge share */
             int32_t qc=(int32_t)o->charge>>4;
             grid_next[si].charge-=qc;
-            int32_t cf=(int32_t)grid_next[si].chargeFlight[2*de]+qc;
-            grid_next[si].chargeFlight[2*de]=(int8_t)(cf>127?127:cf<-127?-127:cf);
+            int32_t cf=(int32_t)grid_next[si].chargeFlight[fc]+qc;
+            grid_next[si].chargeFlight[fc]=(int8_t)(cf>127?127:cf<-127?-127:cf);
         PROC_NODES_END
     }
 
@@ -502,6 +527,9 @@ void moore26_tick(void){
          * universe regenerates, not only degrades. */
         if(!n->mass){
             for(int c=0;c<QChannels;c++){
+                /* pair production only fires on transporting edges —
+                 * face/corner registers don't fuse or launch. */
+                if(!IS_EDGE(c))continue;
                 int oc=c^1;
                 uint32_t a=n->photon[c],b=n->photon[oc];
                 if(!a||!b)continue;
@@ -548,9 +576,11 @@ void moore26_tick(void){
                 /* DECLINED — deflect to the freest channel: the photon
                  * bounces off the dense field to find another target
                  * rather than stacking inside it. */
-                int fc=0;uint32_t fo=255;
-                for(int j=1;j<QChannels;j++){
-                    int c2=(c+j)%QChannels;
+                int fc=6;uint32_t fo=255;
+                /* deflection target must be a transporting edge —
+                 * scattering onto a face/corner register freezes the
+                 * photon in a dead channel under the FCC gate. */
+                for(int c2=6;c2<18;c2++){
                     if(n->photon[c2]<fo){fo=n->photon[c2];fc=c2;}
                 }
                 n->photon[fc]++;

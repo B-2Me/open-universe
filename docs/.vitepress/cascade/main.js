@@ -245,9 +245,12 @@ export async function initCascadeSimulator(root, opts = {}) {
   // to white at 32^3.
   const RAY = 3, FEED_CAP = 2, FEED_NU = 96, BEAM_CAP = 10;
   const inject = () => {
-    for (let c = 0; c < NCH; c++) {
+    for (let c = 6; c < 18; c++) {          /* FCC transport: edge channels only */
       const [vx, vy, vz] = CV[c];
-      const isBeam = ui.beam && vx > 0 && vy === 0 && vz === 0;
+      /* +x is a FACE channel — dead under the FCC gate. The beam rides
+       * the four edge diagonals carrying +x ({1,±1,0},{1,0,±1}): they
+       * zigzag a corridor downfield, the measured +x probe. */
+      const isBeam = ui.beam && vx > 0;
       if (isBeam) {
         /* the beam is a probe stream — source a +x column near the left
          * face spanning a small cross-section so it visibly traverses

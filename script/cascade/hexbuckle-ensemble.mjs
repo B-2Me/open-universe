@@ -92,12 +92,19 @@ const run = (seedFn) => {
     if (t <= PROBE) {
       const cnt = 6 + (Math.random() * 4 | 0);
       if (AXES === '1') {
-        for (let x = c0 - 3 + jit; x <= c0 + 3 + jit; x++) {
-          M._moore26_photon_set(x, c0 + 36, c0, 3, cnt);
-          M._moore26_photon_nu_set(x, c0 + 36, c0, 3, 128);
+        /* single-direction probe under the FCC gate: −y is a face
+         * channel (dead register) — ride the four edge diagonals
+         * carrying −y instead ({±1,−1,0},{0,−1,±1}). */
+        for (let c = 6; c < 18; c++) {
+          if (M._moore26_cvc(c, 1) >= 0) continue;
+          for (let x = c0 - 3 + jit; x <= c0 + 3 + jit; x++) {
+            M._moore26_photon_set(x, c0 + 36, c0, c, cnt);
+            M._moore26_photon_nu_set(x, c0 + 36, c0, c, 128);
+          }
         }
       } else {
-        for (let c = 0; c < 26; c++) {
+        for (let c = 6; c < 18; c++) {        /* edge channels only */
+          if (c >= 18) break;
           const vx = M._moore26_cvc(c, 0), vy = M._moore26_cvc(c, 1), vz = M._moore26_cvc(c, 2);
           const sx = c0 - 36 * vx + jit, sy = c0 - 36 * vy + jit, sz = c0 - 36 * vz;
           M._moore26_photon_set(sx, sy, sz, c, cnt);
