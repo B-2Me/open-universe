@@ -476,7 +476,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     b.setAttribute('aria-pressed', String(ui[key]));
     say(ui[key] ? onSay : offSay);
   });
-  bind('[data-play]', 'click', e => { ui.playing = !ui.playing; e.currentTarget.textContent = ui.playing ? '⏸' : '▶'; });
+  bind('[data-play]', 'click', e => { ui.playing = !ui.playing; const g = e.currentTarget.querySelector('.g'); if (g) g.textContent = ui.playing ? '⏸' : '▶'; else e.currentTarget.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => {
     if (ui.drive || ui.beam) inject();
     wasm._moore26_tick();
@@ -529,6 +529,35 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
+  /* ? help cards — one delegated listener covers every chip. The card
+   * floats in the overlay stack until dismissed. */
+  const HELP = {
+    'grp-time': ['time controls', '⏸ play/pause the tick loop · ⏭ step exactly one tick · ⟲ reset — re-initializes the quiet field scenario.'],
+    'grp-ops': ['session ops', '⟳ orbit — turntable camera; double-click the gizmo to reset the view.'],
+    'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
+    focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
+    view: ['View', 'render channel — composite: mass+winding+photons+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
+    slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
+    slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
+    size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
+    speed: ['Speed', 'tick governor in ticks/sec — c here is 1 cell/tick, so uncapped the lattice outruns the eye.'],
+    qmin: ['Q≥', 'density floor — a cell is clipped unless its brightest channel reads at least this. Raise it to strip haze and expose skeletons.'],
+    zoom: ['Zoom', 'camera distance — same as scroll/pinch or the lens dial at the canvas edge.'],
+  };
+  const card = root.querySelector('[data-card]');
+  const cardTitle = root.querySelector('[data-card-title]');
+  const cardBody = root.querySelector('[data-card-body]');
+  const showCard = (key) => {
+    const h = HELP[key]; if (!h || !card) return;
+    cardTitle.textContent = h[0]; cardBody.textContent = h[1];
+    card.hidden = false;
+  };
+  root.addEventListener('click', e => {
+    const hb = e.target.closest('[data-help]');
+    if (hb) { e.preventDefault(); showCard(hb.dataset.help); }
+    else if (e.target.closest('[data-card-x]')) { card.hidden = true; }
+  });
+
   bind('[data-tune]', 'click', e => {
     const dock = root.querySelector('.cascade-dock');
     const open = dock?.classList.toggle('tune-open');
