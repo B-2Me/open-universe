@@ -154,7 +154,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   const canMT = typeof SharedArrayBuffer !== 'undefined' &&
                 (typeof crossOriginIsolated === 'undefined' || crossOriginIsolated);
   const mtUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mt.js');
-  const wantMT = canMT && !opts.noMT;
+  /* mt is opt-in (?mt or opts.useMT): the 8-thread build works (verified
+   * ~4.4x in Node) but the browser worker bootstrap errors before the
+   * fallback kicks in — noisy default. Enable with ?mt to try it. */
+  const wantMT = canMT && (opts.useMT || new URLSearchParams(location.search).has('mt'));
   const loadScript = (src) => new Promise((res, rej) => {
     const sc = document.createElement('script');
     sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('load failed: ' + src));
