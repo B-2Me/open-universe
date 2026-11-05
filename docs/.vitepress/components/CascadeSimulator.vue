@@ -149,7 +149,9 @@ onUnmounted(() => {
      slide below the fold when chrome collapses. */
   height: calc(100vh - var(--tool-top, 76px) - 8px);
   height: calc(100svh - var(--tool-top, 76px) - 8px);
-  min-height: 520px;
+  /* 520px pushed the two-row dock below the fold on short windows —
+     380px still gives the canvas room without forcing the dock off */
+  min-height: 380px;
   max-width: 1200px;
   margin: 0 auto;                     /* HUD/⚙ align to the canvas
                                          edges, not the window edges */
