@@ -28,7 +28,10 @@ if (typeof window === 'undefined') {
           if (response.status === 0) return response;
 
           const newHeaders = new Headers(response.headers);
-          newHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
+          /* 'credentialless' COEP — still yields crossOriginIsolated
+           * (SharedArrayBuffer) but doesn't block cross-origin no-cors
+           * subresources the way 'require-corp' does. */
+          newHeaders.set('Cross-Origin-Embedder-Policy', 'credentialless');
           newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
 
           return new Response(response.body, {

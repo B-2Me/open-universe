@@ -118,15 +118,18 @@ export default defineConfig({
     },
     // COOP/COEP -> crossOriginIsolated -> SharedArrayBuffer -> the
     // threaded moore26-mt wasm (8-thread OpenMP) can load in dev.
-    // server.headers doesn't reach vitepress's dev middleware, so this
-    // plugin injects them on every response. On the static host the
-    // same headers come from coi-serviceworker.js.
+    // Scoped to cascade-demo only: a site-wide require-corp blocks
+    // every cross-origin subresource (umami etc). 'credentialless' is
+    // the gentler COEP — still yields crossOriginIsolated but lets
+    // no-cors resources through. Static host uses coi-serviceworker.js.
     plugins: [{
       name: 'coop-coep',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-          res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+          if ((req.url || '').startsWith('/cascade-demo')) {
+            res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+            res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+          }
           next();
         });
       }
