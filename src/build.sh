@@ -383,6 +383,12 @@ fi
 # REQUIRES emsdk >= 4.x (native wasm libomp; 3.1.61 lacks the __kmpc_*
 # runtime). Needs SharedArrayBuffer at runtime -> COOP+COEP headers
 # (vite dev sends them; static hosts get them via coi-serviceworker.js).
+# FIXED INITIAL_MEMORY=2GB — ALLOW_MEMORY_GROWTH breaks pthreads:
+# each growth detaches the SharedArrayBuffer view on every worker and
+# the pool errors silently (the 'worker sent an error' spam). Fixed
+# memory keeps the buffer stable. INCOMING_MODULE_JS_API whitelists
+# mainScriptUrlOrBlob so the loader can hand workers the real script
+# URL (document.currentScript is null for async-loaded glue).
 # Skipped cleanly on older emsdk so build.sh stays usable everywhere.
 if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
   if emcc moore26.c \
@@ -390,8 +396,9 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     -O3 -fopenmp -msimd128 -mbulk-memory -pthread -Wno-unknown-pragmas \
     -s WASM=1 \
     -s MODULARIZE=1 \
-    -s ALLOW_MEMORY_GROWTH=1 \
+    -s INITIAL_MEMORY=2147483648 \
     -s PTHREAD_POOL_SIZE=8 \
+    -s INCOMING_MODULE_JS_API="'[\"mainScriptUrlOrBlob\",\"locateFile\",\"onRuntimeInitialized\"]'" \
     -s EXPORT_NAME="'createMoore26MT'" \
     -s EXPORTED_FUNCTIONS="[
       '_moore26_init',
