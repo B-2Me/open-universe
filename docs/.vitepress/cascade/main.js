@@ -172,8 +172,19 @@ export async function initCascadeSimulator(root, opts = {}) {
   }
   if (wantMT && typeof createMoore26MT !== 'undefined') {
     say('instantiating threaded wasm…');
-    try { wasm = await createMoore26MT(); say('moore26-mt — 8-thread OpenMP', 4000); }
-    catch (_) { wasm = null; }
+    try {
+      /* the worker bootstrap can hang (not reject) on a failed spawn —
+       * race it so a bad mt boot falls back to single-threaded instead
+       * of sticking on 'booting'. */
+      wasm = await Promise.race([
+        /* mainScriptUrlOrBlob tells emscripten where the glue lives so
+         * the spawned worker (new Worker(pthreadMainJs)) resolves —
+         * document.currentScript is null for async-loaded scripts. */
+        createMoore26MT({ mainScriptUrlOrBlob: mtUrl }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
+      ]);
+      say('moore26-mt — 8-thread OpenMP', 4000);
+    } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
   }
   if (!wasm) {
     if (typeof createMoore26 === 'undefined') await loadScript(wasmUrl);
