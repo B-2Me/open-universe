@@ -292,8 +292,11 @@ onUnmounted(() => {
    gizmo: faint reticle rings, one bright ring rides in/out with zoom */
 .cascade-zoomlens {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
+  /* hover just above the dock, aligned to its right end — the dock is
+     centered + shrink-wrapped, so the widgets track it, not the
+     canvas's far edge */
+  right: max(14px, calc(50% - 520px));
+  bottom: 12px;
   width: 56px;
   height: 56px;
   flex: none;
@@ -307,8 +310,9 @@ onUnmounted(() => {
    canvas, bottom-right corner */
 .cascade-gizmo {
   position: absolute;
-  right: 76px;
-  bottom: 10px;
+  /* rides left of the lens, both tracking the dock's right end */
+  right: max(82px, calc(50% - 450px));
+  bottom: 12px;
   width: 64px;
   height: 64px;
   flex: none;
@@ -423,7 +427,7 @@ onUnmounted(() => {
    across it instead of floating centered with voids on each side */
 .cascade-grp-line { display: flex; justify-content: center; }
 .grp-inject .cascade-grp-row { justify-content: center; }
-.grp-presets { justify-content: flex-start; }
+.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
 .grp-presets .cascade-grp-row { justify-content: center; }
 
 /* accordion wells always claim a full dock line — a partial row
