@@ -79,6 +79,11 @@ const chpol = () => {
 /* per-run jittered probe — source column shifted +-2, count 6..10.
  * Returns {chpol, brk} — brk counts string-breaks so the analysis can
  * split induced-polarization runs (brk==0) from fragment transport. */
+/* axes=all: convergent 26-spoke bombardment — each channel sources at
+ * radius R back along its own vector, so all 26 Moore axes stream at
+ * the target isotropically. axes=1: the legacy single-channel (−y)
+ * beam — keeps continuity with the flat/dip8/dip16 rows. */
+const AXES = arg('axes', 'all');
 const run = (seedFn) => {
   M._moore26_init(W, W, W);
   seedFn();
@@ -86,9 +91,18 @@ const run = (seedFn) => {
   for (let t = 1; t <= TICKS; t++) {
     if (t <= PROBE) {
       const cnt = 6 + (Math.random() * 4 | 0);
-      for (let x = c0 - 3 + jit; x <= c0 + 3 + jit; x++) {
-        M._moore26_photon_set(x, c0 + 36, c0, 3, cnt);
-        M._moore26_photon_nu_set(x, c0 + 36, c0, 3, 128);
+      if (AXES === '1') {
+        for (let x = c0 - 3 + jit; x <= c0 + 3 + jit; x++) {
+          M._moore26_photon_set(x, c0 + 36, c0, 3, cnt);
+          M._moore26_photon_nu_set(x, c0 + 36, c0, 3, 128);
+        }
+      } else {
+        for (let c = 0; c < 26; c++) {
+          const vx = M._moore26_cvc(c, 0), vy = M._moore26_cvc(c, 1), vz = M._moore26_cvc(c, 2);
+          const sx = c0 - 36 * vx + jit, sy = c0 - 36 * vy + jit, sz = c0 - 36 * vz;
+          M._moore26_photon_set(sx, sy, sz, c, cnt);
+          M._moore26_photon_nu_set(sx, sy, sz, c, 128);
+        }
       }
     }
     M._moore26_tick();
@@ -107,7 +121,7 @@ const sweep = [
   { label: 'flat', fn: seedFlat },
   ...DIPS.map(d => ({ label: `dip${d}`, d, fn: () => seedU(d) })),
 ];
-console.log(`hexbuckle ensemble: ${W}^3, t=${TICKS}, N=${N}/scen, probe=80 jit`);
+console.log(`hexbuckle ensemble: ${W}^3, t=${TICKS}, N=${N}/scen, probe=80 jit, axes=${AXES}`);
 for (const sc of sweep) {
   const runs = [];
   const t0 = Date.now();
@@ -127,5 +141,5 @@ for (const sc of sweep) {
               (broke.length ? `  brk(n=${broke.length})` : ''));
 }
 const out = arg('out', resolve(ROOT, `results/cascade/hexbuckle-ensemble.json`));
-try { writeFileSync(out, JSON.stringify({ W, TICKS, N, results }, null, 2)); console.log(`wrote ${out}`); }
+try { writeFileSync(out, JSON.stringify({ W, TICKS, N, axes: AXES, results }, null, 2)); console.log(`wrote ${out}`); }
 catch (e) { console.log(`(no results dir — stats above)`) }
