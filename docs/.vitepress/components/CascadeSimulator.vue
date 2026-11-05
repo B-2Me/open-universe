@@ -52,64 +52,45 @@ onUnmounted(() => {
 
 <template>
   <div ref="host" class="cascade-simulator">
-    <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
-
-    <!-- top-left overlay stack — HUD, status and help card share one
-         column so a wrapping line can never overlap a sibling -->
-    <div class="cascade-overlay-tl">
-      <div class="cascade-hud" data-hud title="t = physics ticks · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
-      <!-- transient status line under the telemetry chip — empty = hidden -->
-      <div class="cascade-status" data-status></div>
-      <!-- ? help card — floats over the canvas until dismissed -->
-      <div class="cascade-card" data-card hidden>
-        <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
-        <div class="cascade-card-title" data-card-title></div>
-        <div class="cascade-card-body" data-card-body></div>
+    <div class="cascade-stage">
+      <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
+      <div class="cascade-overlay-tl">
+        <div class="cascade-hud" data-hud title="t = physics ticks · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
+        <div class="cascade-status" data-status></div>
+        <div class="cascade-card" data-card hidden>
+          <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
+          <div class="cascade-card-title" data-card-title></div>
+          <div class="cascade-card-body" data-card-body></div>
+        </div>
       </div>
+      <button class="cascade-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
+      <canvas class="cascade-zoomlens" data-zoomlens width="128" height="128" title="Zoom lens — drag up/down to zoom; double-click resets" aria-label="Zoom lens"></canvas>
+      <canvas class="cascade-gizmo" data-gizmo width="128" height="128" title="Orientation — double-click to reset view" aria-label="Orientation gizmo"></canvas>
     </div>
-
-    <!-- always-visible collapse toggle -->
-    <button class="cascade-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
-
-    <!-- zoom lens + orientation gizmo — floating viewport overlays -->
-    <canvas class="cascade-zoomlens" data-zoomlens width="128" height="128"
-            title="Zoom lens — drag up/down to zoom; double-click resets"
-            aria-label="Zoom lens — drag to zoom, double-click to reset"></canvas>
-    <canvas class="cascade-gizmo" data-gizmo width="128" height="128"
-            title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
-
-    <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="cascade-dock">
       <div class="cascade-well cascade-transport" role="group" aria-label="Controls">
         <div class="cascade-grp grp-time">
           <div class="cascade-grp-row">
             <em>time <button class="cascade-help" data-help="grp-time" aria-label="About the time controls">?</button></em>
-            <button data-play  class="tog on" title="Play / pause"      aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
-            <button data-step  title="Step one tick"      aria-label="Step one tick"><span class="g">⏭</span><span class="l">step</span></button>
-            <button data-reset title="Reset the scenario"  aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
+            <button data-play class="tog on" title="Play / pause" aria-label="Play or pause"><span class="g">⏸</span><span class="l">play</span></button>
+            <button data-step title="Step one tick" aria-label="Step one tick"><span class="g">⏭</span><span class="l">step</span></button>
+            <button data-reset title="Reset the scenario" aria-label="Reset"><span class="g">⟲</span><span class="l">reset</span></button>
           </div>
         </div>
         <div class="cascade-grp grp-ops">
           <div class="cascade-grp-row">
             <em>ops <button class="cascade-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
-            <button data-spin class="tog on" aria-pressed="true"
-                    title="Auto-rotate"                   aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
+            <button data-spin class="tog on" aria-pressed="true" title="Auto-rotate" aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
           </div>
         </div>
         <div class="cascade-grp-line">
         <div class="cascade-grp grp-inject">
           <div class="cascade-grp-row">
             <em>inject <button class="cascade-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
-            <button data-drive class="tog on" aria-pressed="true"
-                    title="Convergent feed — 26 quantum spokes pour at the core"
-                    aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
-            <button data-beam  class="tog" aria-pressed="false"
-                    title="Quantum beam — +x stream; the probe bombardment"
-                    aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
-            <button data-lump  title="Lump tool — arm, then click the lattice to drop a wound knot"
-                    aria-label="Wound lump placement tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
-            <button data-tube  title="Tube tool — arm, then click to paint a saturated flux string (watch it fracture)"
-                    aria-label="Flux tube paint tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
+            <button data-drive class="tog on" aria-pressed="true" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
+            <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
+            <button data-lump title="Lump tool — arm, then click the lattice to drop a wound knot" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
+            <button data-tube title="Tube tool — arm, then click to paint a saturated flux string" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
           </div>
         </div>
         </div>
@@ -117,7 +98,7 @@ onUnmounted(() => {
           <div class="cascade-grp-row">
             <em>presets</em>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="focus" aria-label="About Focus" title="About Focus"><i>◎</i><i>Focus</i></button><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
-              <option value="full"    selected>Full lattice</option>
+              <option value="full" selected>Full lattice</option>
               <option value="core">Core close-up</option>
               <option value="slab">Mid-plane slab</option>
               <option value="side">Side profile</option>
@@ -134,14 +115,13 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-
       <div class="cascade-well cascade-sliders">
-        <label title="Cut position along the slice axis — Shift+scroll scrubs it"><button class="cascade-shelp" type="button" data-help="slice" aria-label="About Slice" title="About Slice">Slice</button><input type="range" data-zcenter min="0" max="43" step="1" value="22"><output>22</output></label>
-        <label title="Slab thickness in cells — at max the whole volume shows"><button class="cascade-shelp" type="button" data-help="slab" aria-label="About Slab" title="About Slab">Width</button><input type="range" data-zthick  min="1" max="44" step="1" value="44"><output>44</output></label>
-        <label><button class="cascade-shelp" type="button" data-help="size" aria-label="About Size" title="About Size">Size</button><input type="range" data-size    min="20" max="150" step="1" value="55"><output>55</output></label>
-        <label><button class="cascade-shelp" type="button" data-help="speed" aria-label="About Speed" title="About Speed">Speed</button><input type="range" data-speed   min="1" max="120" step="1" value="20"><output>20</output></label>
-        <label><button class="cascade-shelp" type="button" data-help="qmin" aria-label="About Q≥" title="About Q≥">Q≥</button><input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
-        <label><button class="cascade-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom    min="8" max="200" step="1" value="25"><output>25</output></label>
+        <label title="Cut position along the slice axis"><button class="cascade-shelp" type="button" data-help="slice" aria-label="About Slice" title="About Slice">Slice</button><input type="range" data-zcenter min="0" max="43" step="1" value="22"><output>22</output></label>
+        <label title="Slab thickness in cells"><button class="cascade-shelp" type="button" data-help="slab" aria-label="About Slab" title="About Slab">Width</button><input type="range" data-zthick min="1" max="44" step="1" value="44"><output>44</output></label>
+        <label><button class="cascade-shelp" type="button" data-help="size" aria-label="About Size" title="About Size">Size</button><input type="range" data-size min="20" max="150" step="1" value="55"><output>55</output></label>
+        <label><button class="cascade-shelp" type="button" data-help="speed" aria-label="About Speed" title="About Speed">Speed</button><input type="range" data-speed min="1" max="120" step="1" value="20"><output>20</output></label>
+        <label><button class="cascade-shelp" type="button" data-help="qmin" aria-label="About Q≥" title="About Q≥">Q≥</button><input type="range" data-qmin min="1" max="120" step="1" value="1"><output>1</output></label>
+        <label><button class="cascade-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom min="8" max="200" step="1" value="25"><output>25</output></label>
       </div>
     </div>
   </div>
@@ -149,8 +129,8 @@ onUnmounted(() => {
 
 
 <style scoped>
-/* Wake/Mill-style soft-UI skin: raised beveled controls seated in
-   inset wells on a deep drop-shadowed panel — the Mill dock pass. */
+/* Wake-style soft-UI skin: raised beveled controls seated in inset
+   wells on a deep drop-shadowed panel — background recedes, controls pop. */
 .cascade-simulator {
   color-scheme: dark;
   --cascade-panel: linear-gradient(180deg, #141c30, #0a101d);
@@ -159,174 +139,758 @@ onUnmounted(() => {
   --cascade-btn-bot: #131c30;
   --cascade-bevel-light: rgba(160, 200, 255, 0.16);
   --cascade-bevel-dark: rgba(0, 0, 0, 0.65);
-  --cascade-accent: #fda;
+  --cascade-accent: #7fe;
   --cascade-muted: #9ef;
   position: relative;
   display: flex;
   flex-direction: column;
+  /* --tool-top is the element's measured document offset (set on mount);
+     svh always reserves the browser URL-bar strip, so the dock can't
+     slide below the fold when chrome collapses. */
   height: calc(100vh - var(--tool-top, 76px) - 8px);
   height: calc(100svh - var(--tool-top, 76px) - 8px);
   min-height: 520px;
-  background: #04060c;
-  border-radius: 12px;
+  max-width: 1200px;
+  margin: 0 auto;                     /* HUD/⚙ align to the canvas
+                                         edges, not the window edges */
+  background: #05050d;
+  border-radius: 10px;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
-.cascade-canvas { flex: 1 1 auto; min-height: 0; width: 100%; display: block; touch-action: none; }
+/* stage — relative box that owns the canvas and every overlay; on
+   desktop it gets an explicit height so the dock grows the page */
+.cascade-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.cascade-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: block;
+  touch-action: none;
+}
 
-/* top-left overlay stack — HUD, status, help card share one column */
+/* top-left overlay column — owns the HUD chip, the status line, and
+   the help card as a vertical stack; nothing inside it can overlap */
 .cascade-overlay-tl {
-  position: absolute; top: 10px; left: 10px; z-index: 4;
-  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 64px;                      /* clears the ⚙ toggle corner */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   pointer-events: none;
+  z-index: 3;
 }
-.cascade-overlay-tl > * { pointer-events: auto; }
+
+/* telemetry chip — small, translucent */
 .cascade-hud {
-  font: 11px/1.45 ui-monospace, monospace;
-  color: var(--cascade-muted);
+  max-width: 100%;
+  padding: 4px 10px;
+  font: 11px/1.5 monospace;
+  color: var(--cascade-accent);
   background: rgba(8, 10, 20, 0.6);
-  border: 1px solid var(--cascade-bevel-dark);
-  border-radius: 8px; padding: 4px 8px; white-space: nowrap;
+  border: 1px solid var(--cascade-bevel-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
+  pointer-events: none;
+  text-shadow: 0 0 4px #000;
+  overflow-wrap: anywhere;
 }
+
+/* transient status line — sits under the telemetry chip, never competes
+   with it. :empty hides it, so clearing text is the whole off-switch. */
 .cascade-status {
-  font: 11px/1.4 ui-monospace, monospace; color: var(--cascade-accent);
-  background: rgba(8, 10, 20, 0.6); border-radius: 8px; padding: 3px 8px;
+  max-width: 100%;
+  padding: 3px 9px;
+  font: 10px/1.4 monospace;
+  color: var(--cascade-muted);
+  background: rgba(8, 10, 20, 0.45);
+  border: 1px solid rgba(160, 200, 255, 0.12);
+  border-radius: 7px;
+  pointer-events: none;
+  text-shadow: 0 0 4px #000;
 }
 .cascade-status:empty { display: none; }
 
-/* help card — floats over the canvas until dismissed */
-.cascade-card {
-  position: relative; max-width: 300px;
-  font: 12px/1.5 system-ui, sans-serif; color: #cfe0ff;
-  background: rgba(10, 14, 26, 0.92); border: 1px solid var(--cascade-bevel-light);
-  border-radius: 10px; padding: 10px 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+/* split view — center hairline + per-pane captions, only when split-on */
+.cascade-divider {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(160, 200, 255, 0.45), transparent);
+  pointer-events: none;
+  z-index: 3;
 }
-.cascade-card-x {
-  position: absolute; top: 4px; right: 6px; width: 20px; height: 20px;
-  font: 14px/18px monospace; color: var(--cascade-muted);
-  background: none; border: none; cursor: pointer;
+.cascade-simulator.split-on .cascade-divider { display: block; }
+.cascade-panetags {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 3;
 }
-.cascade-card-title { font-weight: 700; color: var(--cascade-accent); margin-bottom: 4px; }
+.cascade-simulator.split-on .cascade-panetags { display: flex; }
+.cascade-panetags span {
+  flex: 1;
+  text-align: center;
+  font: 10px monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cascade-muted);
+  opacity: 0.65;
+  text-shadow: 0 0 4px #000;
+}
 
-/* floating viewport overlays — lens + gizmo bottom-right */
-.cascade-zoomlens, .cascade-gizmo {
-  position: absolute; bottom: 10px; flex: none; border-radius: 50%;
-  background: rgba(8, 10, 20, 0.6); touch-action: none; z-index: 4;
-}
-.cascade-zoomlens { right: 10px; width: 56px; height: 56px; cursor: ns-resize; opacity: 0.9; }
-.cascade-gizmo {
-  right: 76px; width: 64px; height: 64px;
+/* mass-partition sparkline — top-right, under the ⚙ toggle; two strips,
+   rest over flux, each auto-scaled so neither flattens the other */
+.cascade-graph {
+  position: absolute;
+  top: 50px;
+  right: 8px;
+  width: 156px;
+  height: 56px;
+  background: rgba(8, 10, 20, 0.55);
   border: 1px solid var(--cascade-bevel-light);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 var(--cascade-bevel-light);
-  cursor: pointer; z-index: 3;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
+  pointer-events: none;
+  z-index: 3;
 }
+
+/* collapse toggle — small, always visible */
 .cascade-uitoggle {
-  position: absolute; top: 10px; right: 10px; width: 34px; height: 34px;
-  font: 14px monospace; color: var(--cascade-muted);
-  background: var(--cascade-panel); border: 1px solid var(--cascade-bevel-dark);
-  border-radius: 8px; cursor: pointer; z-index: 3;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  font: 14px monospace;
+  color: var(--cascade-muted);
+  background: var(--cascade-panel);
+  border: 1px solid var(--cascade-bevel-dark);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--cascade-bevel-light);
+  cursor: pointer;
+  z-index: 3;
 }
+.cascade-uitoggle:active { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); transform: scale(0.96); }
 .cascade-simulator.dock-hidden .cascade-dock { display: none; }
 
-/* dock — wells seated on a deep panel */
+/* zoom lens — circular dial at the canvas edge, sibling chrome to the
+   gizmo: faint reticle rings, one bright ring rides in/out with zoom */
+.cascade-zoomlens {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(8, 10, 20, 0.6);
+  cursor: ns-resize;
+  opacity: 0.9;
+  touch-action: none;
+}
+/* orientation gizmo — Blender-style axes chip floating on the
+   canvas, bottom-right corner */
+.cascade-gizmo {
+  position: absolute;
+  right: 76px;
+  bottom: 10px;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid var(--cascade-bevel-light);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
+  cursor: pointer;
+  touch-action: none;
+  z-index: 3;
+}
+
+/* control dock — in-flow below the canvas; wells carve control groups */
 .cascade-dock {
-  flex: none; align-self: center; margin: 6px auto; max-width: calc(100% - 16px);
-  padding: 7px 10px; display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 6px 10px; align-items: center;
-  background: var(--cascade-panel); border: 1px solid var(--cascade-bevel-dark);
+  flex: none;
+  align-self: center;
+  margin: 6px auto;
+  max-width: calc(100% - 16px);
+  padding: 4px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 6px;
+  align-items: center;
+  background: var(--cascade-panel);
+  border: 1px solid var(--cascade-bevel-dark);
   border-radius: 14px;
-  box-shadow: 0 14px 34px rgba(0,0,0,0.6), inset 0 1px 0 var(--cascade-bevel-light);
-  backdrop-filter: blur(8px); z-index: 3;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 var(--cascade-bevel-light);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 3;
 }
+
+/* inset wells — sunken channels that group the raised controls */
 .cascade-well {
-  display: flex; align-items: center; gap: 6px; padding: 3px 8px;
-  background: var(--cascade-well); border: 1px solid var(--cascade-bevel-dark);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  background: var(--cascade-well);
+  border: 1px solid var(--cascade-bevel-dark);
   border-radius: 10px;
-  box-shadow: inset 0 2px 7px rgba(0,0,0,0.65), 0 1px 0 rgba(160,200,255,0.07);
+  box-shadow:
+    inset 0 2px 7px rgba(0, 0, 0, 0.65),
+    0 1px 0 rgba(160, 200, 255, 0.07);
 }
+/* row-gap is exactly the legend's overhang — captions float into the
+   gap between rows instead of costing vertical space */
+.cascade-transport { gap: 9px 3px; flex-wrap: wrap; justify-content: center; }
 
-/* grp structure — labeled control groups with ? help chips */
-.cascade-grp { display: flex; align-items: center; }
-.cascade-grp-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.cascade-grp-line { display: contents; }
-.cascade-grp em {
-  font: 600 9px/1 ui-monospace, monospace; font-style: normal; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--cascade-muted); margin-right: 2px;
-  display: inline-flex; align-items: center; gap: 3px;
+/* control groups — named clusters with micro-captions, DAW-style.
+   Caption rides inline on the group's left edge so a group costs
+   exactly one row of height; the ? chip opens a card explaining
+   each tool in it. */
+.cascade-grp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px 3px;
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid rgba(160, 200, 255, 0.09);
+  border-radius: 9px;
 }
-.cascade-help {
-  width: 14px; height: 14px; font: 700 9px/14px monospace; text-align: center;
-  color: var(--cascade-muted); background: var(--cascade-btn-top);
-  border: 1px solid var(--cascade-bevel-dark); border-radius: 50%; cursor: pointer;
-  padding: 0; vertical-align: middle;
+/* caption = fieldset legend — straddles the group's top border in
+   the dead space above the buttons instead of costing a row slot.
+   Fixed 14px height so its ? chip lives fully inside the legend
+   and can't clip across the border. */
+.cascade-grp-row > em {
+  position: absolute;
+  top: -8px;
+  left: 7px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+  padding: 0 4px;
+  font: 7.5px monospace;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  white-space: nowrap;
+  background: var(--cascade-well);
+  border-radius: 4px;
+  z-index: 1;
 }
+.cascade-grp-row > em .cascade-help {
+  width: 12px;
+  height: 12px;
+  font-size: 7.5px;
+  line-height: 12px;
+}
+.cascade-grp-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.grp-time > .cascade-grp-row > em    { color: var(--cascade-accent); }
+.grp-inject > .cascade-grp-row > em  { color: #ffb35c; }
+.grp-ops > .cascade-grp-row > em     { color: #b48cff; }
+.grp-presets > .cascade-grp-row > em { color: var(--cascade-muted); }
+/* group borders echo their legend colors — a whisper of function
+   color-coding, not a rainbow */
+.grp-time    { border-color: rgba(127, 255, 238, 0.22); }
+.grp-inject  { border-color: rgba(255, 179, 92, 0.26); }
+.grp-ops     { border-color: rgba(180, 140, 255, 0.26); }
+.grp-presets { border-color: rgba(160, 200, 255, 0.15); }
+/* presets claims its own full line — the three fields spread evenly
+   across it instead of floating centered with voids on each side */
+.cascade-grp-line { flex: 1 1 100%; display: flex; justify-content: center; }
+.grp-inject .cascade-grp-row { justify-content: center; }
+.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
+.grp-presets .cascade-grp-row { flex: 1; justify-content: space-evenly; }
 
-/* tog pills — glyph + label, .on fills the accent */
-.cascade-transport button, .cascade-dock select, .cascade-flab, .cascade-shelp {
-  user-select: none; -webkit-user-select: none;
+/* accordion wells always claim a full dock line — a partial row
+   beside the transport was what squeezed Tuning into a tall strip */
+.cascade-selects,
+.cascade-sliders { flex: 1 1 100%; }
+.cascade-sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 5px 12px;
 }
-.cascade-transport button {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;
-  font: 11px/1 ui-monospace, monospace; color: #cfe0ff;
-  background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
-  border: 1px solid var(--cascade-bevel-dark); border-radius: 8px; cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 var(--cascade-bevel-light);
-}
-.cascade-transport button .g { font-size: 12px; }
-.cascade-transport button .l { font-size: 10px; }
-.cascade-transport button.tog.on {
-  background: linear-gradient(180deg, #4a3410, #2a1e08); color: var(--cascade-accent);
-  border-color: rgba(255, 200, 100, 0.3);
-}
-.cascade-transport button:active { transform: scale(0.96); }
+.cascade-sliders label { justify-self: start; }
 
-/* field = flab button + select */
-.cascade-field { display: inline-flex; align-items: center; gap: 4px; }
-.cascade-flab, .cascade-shelp {
-  display: inline-flex; align-items: center; gap: 3px; padding: 4px 7px;
-  font: 10px/1 ui-monospace, monospace; color: var(--cascade-muted);
-  background: var(--cascade-btn-top); border: 1px solid var(--cascade-bevel-dark);
-  border-radius: 8px; cursor: pointer;
-}
-.cascade-flab i { font-style: normal; }
-.cascade-flab i:first-child { color: var(--cascade-accent); }
+/* raised controls — gradient face, dark rim, top highlight, drop shadow */
+.cascade-grp-row > button,
 .cascade-dock select {
-  font: 10px/1.4 ui-monospace, monospace; color: #cfe0ff;
-  background: var(--cascade-btn-top); border: 1px solid var(--cascade-bevel-dark);
-  border-radius: 8px; padding: 4px 6px;
+  position: relative;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+  font: 13px monospace;
+  color: var(--cascade-muted);
+  background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
+  border: 1px solid var(--cascade-bevel-dark);
+  border-radius: 7px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--cascade-bevel-light);
+  cursor: pointer;
 }
-.cascade-dock select option { background: #0a101d; }
-
-/* accbtn — accordion chips */
-.cascade-accbtn {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;
-  font: 10px/1 ui-monospace, monospace; color: var(--cascade-muted);
-  background: var(--cascade-btn-top); border: 1px solid var(--cascade-bevel-dark);
-  border-radius: 8px; cursor: pointer;
+/* transport buttons: icon row over label — the on-dot shares the
+   icon row (a ::before inside .g), the word sits beneath */
+.cascade-grp-row > button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 1px 4px;
+  line-height: 1;
+  position: relative;
 }
-.cascade-dock.tune-open .cascade-accbtn { color: var(--cascade-accent); border-color: rgba(255,200,100,0.3); }
+.cascade-grp-row > button .g {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 21px;
+  line-height: 1.1;
+}
+/* toggle icons get the room the slimmed pill freed — slightly larger,
+   nudged right so the glyph visually shares the pill's corner space */
+.cascade-grp-row > button.tog .g { font-size: 22px; margin-left: 11px; }
+/* per-glyph weight tuning — some glyphs run small/large at equal pt:
+   rock's filled disc is heavy, binary's knot is faint, load is thin */
+.cascade-grp-row > button[data-rock] .g   { font-size: 17px; }
+.cascade-grp-row > button[data-binary] .g { font-size: 24px; }
+.cascade-grp-row > button[data-unsnap] .g { font-size: 23px; }
+.cascade-grp-row > button[data-ring] .g   { font-size: 23px; }
+.cascade-grp-row > button[data-beam] .g   { font-size: 19px; }
+/* status pill — rendered only on toggles (.tog) as an unlit slot so
+   the button's width never changes on toggle; .on lights it */
+.cascade-grp-row > button.tog .g::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 5px;
+  width: 10px;
+  height: 5px;
+  border-radius: 3px;
+  background: #9a94b8;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(200, 195, 235, 0.35);
+  pointer-events: none;
+}
+.cascade-grp-row > button .l {
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.cascade-grp-row > button:active {
+  transform: scale(0.94);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.cascade-grp-row > button.on {
+  color: var(--cascade-accent);
+}
+/* on state = the pill slot lights */
+.cascade-grp-row > button.on .g::before {
+  background: #ffb35c;
+  box-shadow: 0 0 8px rgba(255, 179, 92, 0.95), 0 0 3px rgba(255, 179, 92, 0.85);
+}
+/* armed tool = filled accent — unmistakably different from a passive toggle */
+.cascade-grp-row > button.armed {
+  color: #04141c;
+  background: var(--cascade-accent);
+  border-color: rgba(119, 255, 238, 0.8);
+  box-shadow: 0 0 14px rgba(119, 255, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.cascade-grp-row > button:disabled { opacity: 0.35; cursor: default; }
 
-/* sliders — shelp labels are ? buttons */
-.cascade-sliders { flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
-.cascade-sliders label { display: inline-flex; align-items: center; gap: 5px; font: 10px/1 ui-monospace, monospace; }
-.cascade-sliders input[type=range] { width: 90px; accent-color: var(--cascade-accent); }
-.cascade-sliders output { color: var(--cascade-muted); min-width: 2ch; }
+/* tuning accordions — selects + sliders stay collapsed until asked for;
+   on load the dock is just the transport row */
+.cascade-dock:not(.sel-open) .cascade-selects { display: none; }
 .cascade-dock:not(.tune-open) .cascade-sliders { display: none; }
+.cascade-accbtn {
+  min-width: 34px;
+  min-height: 30px;
+  padding: 0 10px;
+  font: 11px monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cascade-muted);
+  background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
+  border: 1px solid var(--cascade-bevel-dark);
+  border-radius: 7px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 var(--cascade-bevel-light);
+  cursor: pointer;
+}
+.cascade-accbtn:active { transform: scale(0.94); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6); }
+/* expanded accordion chip = filled accent — unmistakably "click to
+   close", scoped per-button so each only lights for its own group */
+.cascade-dock.sel-open [data-flags],
+.cascade-dock.tune-open [data-tune] {
+  color: #04141c;
+  background: var(--cascade-accent);
+  border-color: rgba(119, 255, 238, 0.8);
+  box-shadow: 0 0 14px rgba(119, 255, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
 
-@media (max-width: 700px) {
-  .cascade-transport button .l { display: none; }
-  .cascade-sliders input[type=range] { width: 64px; }
+/* selects share one row — a well containing two labeled dropdowns */
+.cascade-selects { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.cascade-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 11px monospace;
+  color: var(--cascade-muted);
+  white-space: nowrap;
+}
+/* stacked field labels — icon over word, and the whole label IS the
+   ? button: bordered like the old chip, green hover glow, click scale */
+.cascade-flab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 2px 6px;
+  font-family: monospace;
+  color: var(--cascade-muted);
+  background: none;                    /* info helper, not a button */
+  border: 1px solid rgba(143, 255, 158, 0.22);
+  border-radius: 7px;
+  cursor: help;
+}
+.cascade-flab:hover {
+  border-color: rgba(143, 255, 158, 0.65);
+  color: #8fff9e;
+  box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
+}
+.cascade-flab:active { transform: scale(0.93); }
+/* slider labels get the same transparent ?-button treatment */
+.cascade-shelp {
+  font: 10px monospace;
+  color: var(--cascade-muted);
+  background: none;
+  border: 1px solid rgba(143, 255, 158, 0.22);
+  border-radius: 6px;
+  padding: 1px 5px;
+  cursor: help;
+}
+.cascade-shelp:hover {
+  border-color: rgba(143, 255, 158, 0.65);
+  color: #8fff9e;
+  box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
+}
+.cascade-shelp:active { transform: scale(0.93); }
+.cascade-flab i { font-style: normal; }
+.cascade-flab i:first-child { font-size: 12px; line-height: 1.15; }
+.cascade-flab i:last-child {
+  font-size: 6.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+/* dropdowns never balloon to their longest option — the collapsed
+   text truncates, the open menu still shows full names */
+.cascade-field select[data-scene]  { width: 118px; }
+.cascade-field select[data-preset] { width: 92px; }
+.cascade-field select[data-colormode] { width: 72px; }
+
+/* ? help chips — small neon-green button seated beside each control */
+.cascade-help {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font: bold 9px/15px monospace;
+  text-align: center;
+  color: #8fff9e;
+  background: linear-gradient(180deg, #1e4a2c, #0d2416);
+  border: 1px solid rgba(143, 255, 158, 0.4);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(143, 255, 158, 0.25);
+  cursor: pointer;
+  opacity: 0.85;
+}
+.cascade-help:hover {
+  opacity: 1;
+  box-shadow: 0 0 9px rgba(143, 255, 158, 0.55), inset 0 1px 0 rgba(143, 255, 158, 0.3);
+}
+.cascade-help:active { transform: scale(0.9); }
+
+/* help card — third item in the overlay stack, under the status line */
+.cascade-card {
+  max-width: min(320px, 100%);
+  padding: 10px 14px 11px;
+  pointer-events: auto;
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--cascade-bevel-light);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--cascade-bevel-light);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 4;
+}
+.cascade-card[hidden] { display: none; }
+.cascade-card-title {
+  font: 11px monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cascade-accent);
+  margin-bottom: 5px;
+  padding-right: 18px;
+}
+.cascade-card-body { font: 11px/1.55 monospace; color: var(--cascade-muted); }
+.cascade-card-x {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font: 12px/16px monospace;
+  color: var(--cascade-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.cascade-card-x:hover { opacity: 1; color: var(--cascade-accent); }
+.cascade-dock select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 18px;
+  font-size: 11px;
+  min-height: 26px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6'%3E%3Cpath d='M0 0l4 6 4-6z' fill='%239eefff'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
+  background-repeat: no-repeat;
+  background-position: right 8px center, 0 0;
+}
+.cascade-dock select option {
+  background: #131c30;
+  color: var(--cascade-muted);
+}
+
+/* slider wells — recessed groove track + raised beveled thumb */
+.cascade-sliders label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 11px monospace;
+  color: var(--cascade-muted);
+  white-space: nowrap;
+}
+.cascade-sliders input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.cascade-sliders input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #04070d, #0d1524);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 0 var(--cascade-bevel-light);
+}
+.cascade-sliders input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
+  border: 1px solid var(--cascade-bevel-dark);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--cascade-bevel-light);
+}
+.cascade-sliders input[type='range']:active::-webkit-slider-thumb {
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(119, 255, 238, 0.35);
+  border-color: rgba(119, 255, 238, 0.45);
+}
+.cascade-sliders input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #04070d, #0d1524);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.cascade-sliders input[type='range']::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
+  border: 1px solid var(--cascade-bevel-dark);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 1px 0 var(--cascade-bevel-light);
+}
+.cascade-sliders output {
+  min-width: 2ch;
+  color: var(--cascade-accent);
+  opacity: 0.9;
+}
+
+/* desktop: let the dock breathe — fixed viewport height was clipping an
+   expanded Tuning/Flags and forcing inner scrollbars. Here the stage
+   keeps a viewport-anchored height while the page itself scrolls when
+   the dock grows; touch/narrow keeps the svh fit + contained scroll. */
+@media (min-width: 821px) and (pointer: fine) {
+  .cascade-simulator { height: auto; min-height: 0; }
+  .cascade-stage {
+    flex: none;
+    height: calc(100svh - var(--tool-top, 76px) - 96px);
+    min-height: 320px;
+  }
+}
+
+/* real 44px targets only where fingers live */
+@media (pointer: coarse) {
+  .cascade-grp-row > button, .cascade-dock select, .cascade-uitoggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* iOS Safari force-zooms the page when a focused form control's
+     font-size is under 16px — selects must read 16 on touch, and the
+     fixed widths grow to keep the bigger text from truncating */
+  .cascade-dock select { font-size: 16px; }
+  .cascade-field select[data-scene]     { width: 132px; }
+  .cascade-field select[data-preset]    { width: 124px; }
+  .cascade-field select[data-colormode] { width: 90px; }
+  .cascade-sliders input[type='range'] { width: 90px; height: 40px; }
+  .cascade-sliders input[type='range']::-webkit-slider-thumb { margin-top: -5px; }
+}
+
+/* mobile + narrow windows: the canvas IS the app — edge to edge. The
+   measured --tool-top height already pins the dock inside the viewport;
+   the 8px remainder clears the home indicator. */
+@media (pointer: coarse), (max-width: 820px) {
+  .cascade-simulator {
+    min-height: 0;
+    max-width: none;
+    border-radius: 0;
+  }
+  .cascade-dock {
+    margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 8px);
+    /* a fully-expanded dock can't be allowed to squeeze the canvas to
+       zero — cap it and let it scroll internally */
+    max-height: 52vh;
+    max-height: 52svh;
+    overflow-y: auto;
+    overflow-x: hidden;            /* a wrapping group must never
+                                      scroll the dock sideways */
+    overscroll-behavior: contain;
+    touch-action: manipulation;    /* rapid button taps must not
+                                      trigger double-tap zoom */
+  }
+  /* both control wells must wrap — seven labeled selects and twelve
+     transport buttons never fit one narrow row */
+  .cascade-transport,
+  .cascade-selects {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  /* inject's six buttons exceed a phone dock — wrap inside the group
+     instead of overflowing sideways */
+  .cascade-grp-row { flex-wrap: wrap; justify-content: center; gap: 5px; }
+  /* bigger touch targets — the stacked layout already shares the
+     on-dot with the icon row globally */
+  .cascade-grp-row > button {
+    min-height: 44px;
+    padding: 4px 9px;
+  }
+  .cascade-grp-row > button .g { font-size: 17px; }
+  .cascade-grp-row > button .l { font-size: 8px; letter-spacing: 0.05em; }
+  /* accordion chips inside the presets row stay horizontal chips —
+     the row's stacked-button rules would otherwise inflate them */
+  .cascade-grp-row > button.cascade-accbtn {
+    flex-direction: row;
+    font: 10px monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    min-width: 0;
+    min-height: 30px;
+    padding: 2px 9px;
+    gap: 4px;
+  }
+  /* status text clamped on phones — a 5-line say() shouldn't cover
+     a third of the canvas */
+  .cascade-status {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cascade-field { gap: 4px; }
+  .cascade-field > span { font-size: 9px; }
+  .cascade-dock select { padding: 0 20px 0 8px; }
+}
+
+/* phones: shrink the secondary chrome so the HUD keeps the corner */
+@media (max-width: 560px) {
+  .cascade-graph {
+    top: 46px;
+    right: 6px;
+    width: 110px;
+    height: 40px;
+  }
+  /* the gizmo stays an overlay chip on phones — smaller, tucked into
+     the corner, dimmed so it reads as chrome not a control row */
+  .cascade-gizmo {
+    width: 42px;
+    height: 42px;
+    right: 52px;
+    bottom: 6px;
+    opacity: 0.65;
+  }
+  .cascade-zoomlens {
+    width: 42px;
+    height: 42px;
+    right: 6px;
+    bottom: 6px;
+  }
+}
+
+/* short viewports of any kind (wide but landscape-short, split-screen):
+   same fit — min-height yields instead of pushing the dock off-screen */
+@media (max-height: 640px) {
+  .cascade-simulator { min-height: 0; }
 }
 </style>
 
-
 <style>
-/* Suppress VitePress chrome that overlays or displaces the simulator. */
+/* Suppress VitePress chrome that overlays or displaces the simulator —
+   .VPLocalNav is the strip carrying the outline dropdown and the
+   "Return to top" button; it sits above the canvas and consumes ~48px
+   of the viewport the svh calculation assumed it owned. */
 .cascade-page .VPDocFooter,
 .cascade-page .VPBackToTop,
 .cascade-page .VPLocalNav,
 .cascade-page .aside-top {
   display: none !important;
 }
+/* Orbiting/pinch on mobile must not bounce or pull-to-refresh the page. */
 html:has(.cascade-simulator) {
   overscroll-behavior: none;
 }
@@ -334,6 +898,9 @@ html:has(.cascade-simulator) {
    padding-top: var(--vp-nav-height) — meant to clear a fixed nav —
    is a dead band below the navbar. Reclaim it at all widths. */
 .cascade-page .VPContent { padding-top: 0 !important; }
+/* Page prose: doc typography + article width, same as the rest of the site.
+   (layout: page renders raw Content with no .vp-doc wrapper — we add the
+   class in cascade-demo.md and constrain it here.) */
 .cascade-page .cascade-doc {
   max-width: 768px;
   margin: 0 auto;
