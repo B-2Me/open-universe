@@ -79,10 +79,6 @@ onUnmounted(() => {
         <canvas class="cascade-gizmo" data-gizmo width="96" height="96"
                 title="Orientation — double-click to reset view" aria-label="Orientation gizmo, double-click to reset view"></canvas>
       </div>
-      <!-- zoom lens — radial-drag dial floating on the canvas edge -->
-      <canvas class="cascade-zoomlens" data-zoomlens width="112" height="112"
-              title="Zoom — drag up to zoom in, down to zoom out; double-click resets" aria-label="Zoom lens, drag radially to zoom, double-click to reset"></canvas>
-      </div>
 
       <div class="cascade-well cascade-switches" role="group" aria-label="Flux switches">
         <button data-drive class="on" aria-pressed="true"
@@ -124,6 +120,10 @@ onUnmounted(() => {
       </div>
       </div>
     </div>
+
+    <!-- zoom lens — radial-drag dial floating on the canvas edge -->
+    <canvas class="cascade-zoomlens" data-zoomlens width="112" height="112"
+            title="Zoom — drag up to zoom in, down to zoom out; double-click resets" aria-label="Zoom lens, drag radially to zoom, double-click to reset"></canvas>
   </div>
 </template>
 
