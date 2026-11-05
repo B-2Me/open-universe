@@ -184,14 +184,19 @@ export async function initCascadeSimulator(root, opts = {}) {
    * Non-modular glue auto-initializes inside the worker — the model
    * pthread workers are actually designed around. */
   if (useNM) {
-    try { await loadScript(mtnmUrl); } catch (_) { }
+    /* non-modular glue auto-runs but has no Module.ready promise —
+     * gate on onRuntimeInitialized (fires only after the pthread pool
+     * is up). ?mtnm loads the release build, ?mtnmd the PTHREADS_DEBUG
+     * variant for real worker errors. */
+    const nmSrc = qs.has('mtnmd') ? mtnmUrl.replace('moore26-mtnm.js', 'moore26-mtnmd.js') : mtnmUrl;
+    try { await loadScript(nmSrc); } catch (_) { }
     if (typeof Module !== 'undefined') {
       try {
         wasm = await Promise.race([
-          Module.ready ? Module.ready.then(() => Module) : Promise.resolve(Module),
+          new Promise(res => { Module.onRuntimeInitialized = () => res(Module); }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mtnm boot timeout')), 8000)),
         ]);
-        say('moore26-mtnm — non-modular 4-thread OpenMP', 4000);
+        say('moore26-mtnm — non-modular OpenMP', 4000);
       } catch (e) { wasm = null; say('mtnm unavailable — falling back', 4000); }
     }
   } else {
