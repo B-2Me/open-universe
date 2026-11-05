@@ -64,10 +64,11 @@ onUnmounted(() => {
 
     <!-- control dock — sits below the canvas, never overlaps it -->
     <div class="cascade-dock">
+      <div class="cascade-row">
       <div class="cascade-well cascade-transport" role="group" aria-label="Transport">
         <button data-play  title="Play / pause"      aria-label="Play or pause">⏸</button>
         <button data-step  title="Step one tick"      aria-label="Step one tick">⏭</button>
-        <button data-reset title="Clear the lattice"  aria-label="Reset">⟲</button>
+        <button data-reset title="Reset the scenario"  aria-label="Reset">⟲</button>
         <button data-lump  title="Lump tool — arm, then click the lattice to drop a wound knot"
                 aria-label="Wound lump placement tool" aria-pressed="false">⌖</button>
         <button data-tube  title="Tube tool — arm, then click to paint a saturated flux string (watch it fracture)"
@@ -104,7 +105,9 @@ onUnmounted(() => {
           <option value="3">pol</option>
         </select></label>
       </div>
+      </div>
 
+      <div class="cascade-row">
       <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="cascade-well cascade-sliders">
@@ -114,6 +117,7 @@ onUnmounted(() => {
         <label>Speed <input type="range" data-speed   min="1" max="120" step="1" value="20"><output>20</output></label>
         <label>Q≥    <input type="range" data-qmin    min="1" max="120" step="1" value="1"><output>1</output></label>
         <label>Zoom  <input type="range" data-zoom    min="8" max="200" step="1" value="25"><output>25</output></label>
+      </div>
       </div>
     </div>
   </div>
@@ -252,12 +256,16 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
+.cascade-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; align-items: center; }
 .cascade-transport, .cascade-switches { gap: 4px; }
 .cascade-sliders { flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
 
 .cascade-transport button,
 .cascade-switches button,
+.cascade-accbtn,
 .cascade-dock select {
+  user-select: none;
+  -webkit-user-select: none;
   min-width: 34px;
   min-height: 34px;
   padding: 0 10px;

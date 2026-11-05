@@ -161,7 +161,9 @@ export async function initCascadeSimulator(root, opts = {}) {
    * default. ?mtd loads the PTHREADS_DEBUG+ASSERTIONS build for the
    * real worker error instead of 'undefined:undefined'. */
   const qs = new URLSearchParams(location.search);
-  const wantMT = canMT && (opts.useMT || qs.has('mt') || qs.has('mtd') || qs.has('mtnm'));
+  /* mt is the DEFAULT when SharedArrayBuffer + crossOriginIsolated are
+     available (verified ~5x). ?st / opts.noMT forces single-threaded. */
+  const wantMT = canMT && !(opts.noMT || qs.has('st'));
   const useDebug = qs.has('mtd');
   const useNM = qs.has('mtnm');
   const loadScript = (src) => new Promise((res, rej) => {
@@ -481,7 +483,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     ui.tick++; upload(); dirty = true;
   });
   bind('[data-reset]', 'click', () => {
-    wasm._moore26_clear(); ui.tick = 0;
+    /* re-init = full scenario reset, not just clear — restores the
+     * initial quiet field the feed/beam/lump tools build on. */
+    wasm._moore26_init(W3, H3, D3); ui.tick = 0;
     rStep = 1; lowT = highT = null;
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
