@@ -55,7 +55,7 @@ onUnmounted(() => {
     <div class="cascade-stage">
       <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
       <div class="cascade-overlay-tl">
-        <div class="cascade-hud" data-hud title="t = physics ticks · T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div><button class="cascade-copy" data-copy title="Copy telemetry" aria-label="Copy telemetry">⧉</button>
+        <div class="cascade-hud" data-hud title="T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div><button class="cascade-copy" data-copy title="Copy telemetry" aria-label="Copy telemetry">⧉</button>
         <div class="cascade-status" data-status></div>
         <div class="cascade-card" data-card hidden>
           <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
@@ -235,7 +235,9 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 .cascade-copy:hover { opacity: 1; }
-.cascade-hud + .cascade-copy { position: absolute; right: -26px; top: 4px; }
+/* copy chip hangs off the LEFT of the hud — the right side collides
+   with the ⛶ fullscreen corner button */
+.cascade-hud + .cascade-copy { position: absolute; left: -26px; top: 4px; }
 
 /* transient status line — sits under the telemetry chip, never competes
    with it. :empty hides it, so clearing text is the whole off-switch. */
