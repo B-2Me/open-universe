@@ -9,8 +9,8 @@ hero:
   tagline: "We built a tiny universe with simple rules and measured what it can do. This is the record."
   actions:
     - theme: brand
-      text: "Turn the Mill: Live Physics"
-      link: /mill-demo
+      text: "Cartan's Cascade: Live Physics"
+      link: /cascade-demo
     - theme: alt
       text: The Measured Record
       link: /interference/meso-monograph
@@ -63,7 +63,7 @@ And the honest boundaries: no sustained gravitational attraction, no structured 
 ## Exploring the Program
 
 *   **[The Friction Substrate](/interference/meso-monograph)**: the canonical empirical record: M19–M51, every mechanism verified or falsified headless.
-*   **[Joule's Mill](/mill-demo)**: the flagship instrument: the full engine live in your browser, with the milestone regimes one click away.
+*   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument: the `moore26` 0.1fm substrate live in your browser — knots, photons, heat, and signed charge on the 26-channel Moore lattice, eight-thread OpenMP.
 *   **[The Predictive Roadmap](/interference/roadmap)**: what the engine can still reach, and which bridges it honestly can't.
 *   **[The Planck Field](/field)**: the theoretical program: why a process-ontology substrate, and what the vanguard lineage already established.
 
@@ -71,6 +71,7 @@ And the honest boundaries: no sustained gravitational attraction, no structured 
 
 *The earlier engines and campaigns are preserved as the provenance of the current model: the missteps are part of the record, not hidden beneath it.*
 
+*   **[Joule's Mill](/mill-demo)**: the meso3i instrument: the full friction substrate with directional rest, photon coupling, pair rules, and milestone scenes.
 *   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: drive, beam, and the walking comet at 44³.
 *   **[Hopf's Loom](/loom-demo)**: the single-spin prototype engine: a woven 19-loop Hopfion you can slice and perturb.
 *   **[The Hopfion Zoo](/hopfion-zoo)**: thirty-seven stable knot geometries from the prototype's parameter sweeps.

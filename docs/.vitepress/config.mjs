@@ -23,7 +23,7 @@ const readingOrder = [
   { text: 'Interference', link: '/interference' },
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: "Joule's Mill", link: '/mill-demo' },
+  { text: "Cartan's Cascade", link: '/cascade-demo' },
 
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'Build & Validate', link: '/interference/reproduce' },
@@ -68,7 +68,8 @@ const interferenceItems = [
 
 // The active instrument first; milestone builds preserved underneath.
 const instrumentItems = [
-  { text: "Joule's Mill · Flagship", link: '/mill-demo' },
+  { text: "Cartan's Cascade · Flagship", link: '/cascade-demo' },
+  { text: "Joule's Mill · Milestone", link: '/mill-demo' },
   { text: "Yarkovsky's Ember · Milestone", link: '/ember-demo' },
   { text: "Hopf's Loom · Milestone", link: '/loom-demo' },
   { text: 'Hopfion Zoo · Milestone', link: '/hopfion-zoo' },
