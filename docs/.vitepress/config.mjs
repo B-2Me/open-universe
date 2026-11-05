@@ -116,15 +116,21 @@ export default defineConfig({
       // build timestamp.
       __WAKE_BUILD__: JSON.stringify(process.env.GITHUB_SHA || String(Date.now()))
     },
-    // COOP/COEP → crossOriginIsolated → SharedArrayBuffer → the
+    // COOP/COEP -> crossOriginIsolated -> SharedArrayBuffer -> the
     // threaded moore26-mt wasm (8-thread OpenMP) can load in dev.
-    // On the static host the same headers come from coi-serviceworker.js.
-    server: {
-      headers: {
-        'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Embedder-Policy': 'require-corp'
+    // server.headers doesn't reach vitepress's dev middleware, so this
+    // plugin injects them on every response. On the static host the
+    // same headers come from coi-serviceworker.js.
+    plugins: [{
+      name: 'coop-coep',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+          res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+          next();
+        });
       }
-    }
+    }]
   },
   
   // Enable LaTeX Math Rendering
