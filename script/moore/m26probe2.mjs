@@ -1,11 +1,11 @@
 import { loadM26, each3 } from '../lib/m26.mjs';
 const q = await loadM26();
-const N = 40;
+const N = 32;
 q._moore26_init(N, N, N);
 // same geometry, dense + hot like the fuse seeds
 for (let i = 0; i < 4; i++)
-  q._moore26_packet_set(12 + i, 12 + i, 20, 6, 100),
-  q._moore26_packet_nu_set(12 + i, 12 + i, 20, 6, 200);
+  q._moore26_packet_set(12 + i, 12 + i, 16, 6, 100),
+  q._moore26_packet_nu_set(12 + i, 12 + i, 16, 6, 200);
 for (let t = 0; t <= 4; t++) {
   const pos = [];
   each3(N, (x, y, z) => {

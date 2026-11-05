@@ -291,6 +291,14 @@ void moore26_init(int w,int h,int d){
     if(procList){free(procList);procList=0;}
     if(rgBuf){free(rgBuf);rgBuf=0;}
     if(saveBuf){free(saveBuf);saveBuf=0;}
+    /* enforce it: floor each dim to the nearest pow2 >= 8 — a masked
+     * wrap on a non-pow2 grid silently corrupts neighbor indices
+     * (N=40 -> CW=5 -> dead chunks, packets pinned at their seeds). */
+    int pw=8,ph=8,pd=8;
+    while(pw*2<=w)pw*=2;
+    while(ph*2<=h)ph*=2;
+    while(pd*2<=d)pd*=2;
+    w=pw;h=ph;d=pd;
     QWidth=w;QHeight=h;QDepth=d;QSites=w*h*d;
     QMaskX=w-1;QMaskY=h-1;QMaskZ=d-1;
     CW=w/CHUNK;CH=h/CHUNK;CD=d/CHUNK;
