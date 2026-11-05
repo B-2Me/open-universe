@@ -88,7 +88,9 @@ onUnmounted(() => {
                 title="Quantum beam — +x stream; the probe bombardment"
                 aria-label="Toggle quantum beam">➤ beam</button>
       </div>
+      </div>
 
+      <div class="cascade-row">
       <div class="cascade-well cascade-selects">
         <label class="cascade-field"><span>Focus</span><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
           <option value="full"    selected>Full lattice</option>
@@ -105,9 +107,7 @@ onUnmounted(() => {
           <option value="3">pol</option>
         </select></label>
       </div>
-      </div>
 
-      <div class="cascade-row">
       <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders">Tuning ▾</button>
 
       <div class="cascade-well cascade-sliders">
