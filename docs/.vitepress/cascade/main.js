@@ -172,6 +172,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     document.head.appendChild(sc);
   });
   let wasm = null;
+  let mtLive = 0;   // nonzero when a threaded engine actually booted
   /* Not isolated and no header path (static host)? Arm the COI service
    * worker — it reloads once with COOP+COEP so SharedArrayBuffer turns
    * on. The dev server sends the headers itself, so this no-ops here. */
@@ -196,6 +197,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           new Promise(res => { Module.onRuntimeInitialized = () => res(Module); }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mtnm boot timeout')), 8000)),
         ]);
+        mtLive = 8;
         say('moore26-mtnm — non-modular OpenMP', 4000);
       } catch (e) { wasm = null; say('mtnm unavailable — falling back', 4000); }
     }
@@ -220,6 +222,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
         ]);
+        mtLive = 8;
         say(useDebug ? 'moore26-mtd — debug OpenMP' : 'moore26-mt — OpenMP', 4000);
       } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
     }
@@ -942,7 +945,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       /* relative clock: 1 tick = light crossing 1 node = 0.1fm/c
        * (~3.3e-25 s) — same convention as the size scale. */
       const age = Math.round(ui.tick * 0.1);
-      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}T=${age}fm/c · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
+      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}T=${age}fm/c · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t${mtLive ? `·mt${mtLive}` : ''}`;
     }
   };
   raf = requestAnimationFrame(frame);
