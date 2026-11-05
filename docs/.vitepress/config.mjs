@@ -128,8 +128,12 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           if ((req.url || '').startsWith('/cascade-demo')) {
+            /* require-corp (not credentialless): dedicated workers only
+             * get SharedArrayBuffer under full cross-origin isolation —
+             * credentialless leaves workers un-isolated -> the mt
+             * wasm's threads error silently on shared memory. */
             res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-            res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+            res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
           }
           next();
         });
