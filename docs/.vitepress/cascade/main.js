@@ -432,7 +432,9 @@ export async function initCascadeSimulator(root, opts = {}) {
   canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('pointerdown', e => {
     poke();
-    if (ui.lumpArm || ui.tubeArm) {
+    /* left button paints when a tool is armed — right/middle drag is
+     * always camera orbit, tool or not */
+    if (e.button === 0 && (ui.lumpArm || ui.tubeArm)) {
       const cell = pickCell(e.clientX, e.clientY);
       if (cell) {
         if (ui.tubeArm) {
@@ -615,6 +617,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const zctx = zlens?.getContext('2d');
   if (zlens && zctx) {
     let zy = null;
+    zlens.addEventListener('contextmenu', e => e.preventDefault());
     zlens.addEventListener('pointerdown', e => {
       zy = e.clientY; zlens.setPointerCapture(e.pointerId);
     });
@@ -678,11 +681,33 @@ export async function initCascadeSimulator(root, opts = {}) {
     let lastTap = 0;
     const resetView = () => applyPreset('full');
     gizmo.addEventListener('dblclick', e => { e.preventDefault(); resetView(); });
+    gizmo.addEventListener('contextmenu', e => e.preventDefault());
+    /* drag on the gizmo orbits the camera (either button); a plain
+     * tap keeps the double-tap-reset behavior */
+    let gDown = null, gDrag = false;
     gizmo.addEventListener('pointerdown', e => {
       e.preventDefault(); e.stopPropagation();
-      const t = performance.now();
-      if (t - lastTap < 330) resetView();
-      lastTap = t;
+      gDown = [e.clientX, e.clientY]; gDrag = false;
+      gizmo.setPointerCapture(e.pointerId);
+    });
+    gizmo.addEventListener('pointermove', e => {
+      if (!gDown) return;
+      const dx = e.clientX - gDown[0], dy = e.clientY - gDown[1];
+      if (Math.abs(dx) + Math.abs(dy) > 3) gDrag = true;
+      if (gDrag) {
+        tgt.yaw += dx * 0.008;
+        tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + dy * 0.008));
+        gDown = [e.clientX, e.clientY];
+        dirty = true;
+      }
+    });
+    gizmo.addEventListener('pointerup', () => {
+      if (gDown && !gDrag) {
+        const t = performance.now();
+        if (t - lastTap < 330) resetView();
+        lastTap = t;
+      }
+      gDown = null;
     });
   }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
