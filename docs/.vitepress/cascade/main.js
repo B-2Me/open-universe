@@ -244,13 +244,18 @@ export async function initCascadeSimulator(root, opts = {}) {
   // the field equilibrates against absorption instead of saturating
   // to white at 32^3.
   const RAY = 3, FEED_CAP = 2, FEED_NU = 96, BEAM_CAP = 10;
+  /* shared photon pool — feed AND beam pour into the same budget:
+   * stop injecting when the vacuum holds ~FEED_BUDGET packets, let
+   * absorption/re-emission settle the total. Both on = one pool. */
+  const FEED_BUDGET = 4096;
   const inject = () => {
+    const room = Number(wasm._moore26_sum(2)) < FEED_BUDGET;
     for (let c = 6; c < 18; c++) {          /* FCC transport: edge channels only */
       const [vx, vy, vz] = CV[c];
       /* a beam on FCC: no pure +x exists, and the 4-edge family fans
        * into a cone. One edge channel (6 = {1,1,0}) is a straight
        * line — a real collimated stream. */
-      const isBeam = ui.beam && c === 6;
+      const isBeam = ui.beam && room && c === 6;
       if (isBeam) {
         /* the beam is a probe stream — source a +x column near the left
          * face spanning a small cross-section so it visibly traverses
@@ -266,12 +271,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           }
       }
     }
-    /* global photon budget — the shell's random sources bypass the
-     * old per-spoke cap, so regulate the TOTAL in-flight count
-     * instead: feed until the vacuum holds ~FEED_BUDGET packets,
-     * then let absorption/re-emission balance. THAT is equilibrium. */
-    const FEED_BUDGET = 4096;
-    if (ui.drive && Number(wasm._moore26_sum(2)) < FEED_BUDGET) {
+    if (ui.drive && room) {
       /* spherical feed — sources scattered on a shell at FEED_R,
        * each firing the edge channel aimed at the core. Isotropic
        * rain instead of 12 axis rays — no spoke skeleton. Runs ONCE
