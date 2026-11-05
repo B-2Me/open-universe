@@ -463,6 +463,10 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
   gap: 5px 12px;
+  /* the fit-content dock left this grid's width indefinite — auto-fill
+     collapsed to one column. Spanning the dock's row fixes it. */
+  width: 100%;
+  flex: 0 0 100%;
 }
 .cascade-sliders label { justify-self: start; }
 
