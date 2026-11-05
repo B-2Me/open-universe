@@ -200,6 +200,12 @@ onUnmounted(() => {
   font: 11px/1.5 monospace;
   color: var(--cascade-accent);
   background: rgba(8, 10, 20, 0.6);
+  border: 1px solid var(--cascade-bevel-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
+  pointer-events: none;
+  text-shadow: 0 0 4px #000;
+  overflow-wrap: anywhere;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -217,13 +223,6 @@ onUnmounted(() => {
 }
 .cascade-copy:hover { opacity: 1; }
 .cascade-hud + .cascade-copy { position: absolute; right: -26px; top: 4px; }
-  border: 1px solid var(--cascade-bevel-light);
-  border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
-  pointer-events: none;
-  text-shadow: 0 0 4px #000;
-  overflow-wrap: anywhere;
-}
 
 /* transient status line — sits under the telemetry chip, never competes
    with it. :empty hides it, so clearing text is the whole off-switch. */
