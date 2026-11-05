@@ -275,15 +275,23 @@ export async function initCascadeSimulator(root, opts = {}) {
       }
     }
     if (ui.drive && room) {
-      /* ambient bath — random cell + random edge channel each tick.
-       * A convergent shell piles mass at the core by construction
-       * (the axis saturation); a volumetric bath fills uniformly —
-       * no skeleton, no central convergence. */
+      /* spherical feed — sources scattered on a shell at FEED_R,
+       * each firing the edge channel aimed at the core. Isotropic
+       * rain instead of 12 axis rays — the visible sphere. The
+       * FEED_BUDGET cap keeps convergence from saturating. */
+      const FEED_R = Math.round(Math.min(W3, H3, D3) * 0.4);
       for (let k = 0; k < 16; k++) {
-        const sx = 1 + Math.random() * (W3 - 2) | 0;
-        const sy = 1 + Math.random() * (H3 - 2) | 0;
-        const sz = 1 + Math.random() * (D3 - 2) | 0;
-        const bc = 6 + Math.random() * 12 | 0;
+        const th = Math.random() * 2 * Math.PI;
+        const ph = Math.acos(2 * Math.random() - 1);
+        const sx = Math.round(CX + FEED_R * Math.sin(ph) * Math.cos(th));
+        const sy = Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th));
+        const sz = Math.round(CZ + FEED_R * Math.cos(ph));
+        const dx = CX - sx, dy = CY - sy, dz = CZ - sz;
+        let bc = 6, bs = -1;
+        for (let c = 6; c < 18; c++) {
+          const s = CV[c][0] * dx + CV[c][1] * dy + CV[c][2] * dz;
+          if (s > bs) { bs = s; bc = c; }
+        }
         const cur = wasm._moore26_photon_get(sx, sy, sz, bc);
         if (cur < FEED_CAP) {
           wasm._moore26_photon_set(sx, sy, sz, bc, cur + 1);
