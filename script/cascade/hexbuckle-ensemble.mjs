@@ -76,7 +76,9 @@ const chpol = () => {
   return p;
 };
 
-/* per-run jittered probe — source column shifted +-2, count 6..10 */
+/* per-run jittered probe — source column shifted +-2, count 6..10.
+ * Returns {chpol, brk} — brk counts string-breaks so the analysis can
+ * split induced-polarization runs (brk==0) from fragment transport. */
 const run = (seedFn) => {
   M._moore26_init(W, W, W);
   seedFn();
@@ -91,7 +93,7 @@ const run = (seedFn) => {
     }
     M._moore26_tick();
   }
-  return chpol();
+  return { chpol: chpol(), brk: M._moore26_events(6) };
 };
 
 const stats = (a) => {
@@ -107,15 +109,22 @@ const sweep = [
 ];
 console.log(`hexbuckle ensemble: ${W}^3, t=${TICKS}, N=${N}/scen, probe=80 jit`);
 for (const sc of sweep) {
-  const vals = [];
+  const runs = [];
   const t0 = Date.now();
   for (let r = 0; r < N; r++) {
-    vals.push(run(sc.fn));
-    if (r % 5 === 4) process.stdout.write(`  ${sc.label} ${r + 1}/${N} (${((Date.now() - t0) / 1000).toFixed(0)}s)\n`);
+    runs.push(run(sc.fn));
+    if (r % 10 === 9) process.stdout.write(`  ${sc.label} ${r + 1}/${N} (${((Date.now() - t0) / 1000).toFixed(0)}s)\n`);
   }
-  const s = stats(vals);
-  results.push({ scen: sc.label, dip: sc.d ?? 0, ...s, vals });
-  console.log(`${sc.label.padEnd(6)} chpol = ${s.mean} ± ${s.sd}  (n=${N})`);
+  const vals = runs.map(r => r.chpol);
+  const clean = runs.filter(r => r.brk === 0).map(r => r.chpol);
+  const broke = runs.filter(r => r.brk > 0).map(r => r.chpol);
+  const all = stats(vals);
+  const c = clean.length ? stats(clean) : { mean: 0, sd: 0, n: 0 };
+  results.push({ scen: sc.label, dip: sc.d ?? 0, ...all, cleanN: clean.length,
+                 cleanMean: c.mean, cleanSd: c.sd, vals, brks: runs.map(r => r.brk) });
+  console.log(`${sc.label.padEnd(6)} all=${all.mean}±${all.sd}  ` +
+              `brk==0(n=${clean.length}): ${c.mean}±${c.sd}` +
+              (broke.length ? `  brk(n=${broke.length})` : ''));
 }
 const out = arg('out', resolve(ROOT, `results/cascade/hexbuckle-ensemble.json`));
 try { writeFileSync(out, JSON.stringify({ W, TICKS, N, results }, null, 2)); console.log(`wrote ${out}`); }
