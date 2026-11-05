@@ -364,11 +364,11 @@ onUnmounted(() => {
   max-width: calc(100% - 16px);
   user-select: none;
   -webkit-user-select: none;
-  padding: 4px 8px;
+  padding: 3px 6px;
   display: flex;
   flex-direction: column;           /* one well per row, centered */
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: var(--cascade-panel);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 14px;
@@ -384,8 +384,8 @@ onUnmounted(() => {
 .cascade-well {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 5px;
+  gap: 2px;
+  padding: 1px 4px;
   background: var(--cascade-well);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 10px;
@@ -395,7 +395,7 @@ onUnmounted(() => {
 }
 /* row-gap is exactly the legend's overhang — captions float into the
    gap between rows instead of costing vertical space */
-.cascade-transport { gap: 9px 3px; flex-wrap: wrap; justify-content: center; }
+.cascade-transport { gap: 7px 2px; flex-wrap: wrap; justify-content: center; }
 
 /* control groups — named clusters with micro-captions, DAW-style.
    Caption rides inline on the group's left edge so a group costs
@@ -443,7 +443,7 @@ onUnmounted(() => {
 .cascade-grp-row {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 .grp-time > .cascade-grp-row > em    { color: var(--cascade-accent); }
 .grp-inject > .cascade-grp-row > em  { color: #ffb35c; }
@@ -515,7 +515,7 @@ onUnmounted(() => {
 }
 /* toggle icons get the room the slimmed pill freed — slightly larger,
    nudged right so the glyph visually shares the pill's corner space */
-.cascade-grp-row > button.tog .g { font-size: 22px; margin-left: 6px; }
+.cascade-grp-row > button.tog .g { font-size: 22px; }
 /* per-glyph weight tuning — some glyphs run small/large at equal pt:
    rock's filled disc is heavy, binary's knot is faint, load is thin */
 .cascade-grp-row > button[data-rock] .g   { font-size: 17px; }
@@ -599,7 +599,7 @@ onUnmounted(() => {
 .cascade-field {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font: 11px monospace;
   color: var(--cascade-muted);
   white-space: nowrap;
@@ -613,7 +613,7 @@ onUnmounted(() => {
   gap: 0;
   line-height: 1;
   white-space: nowrap;
-  padding: 2px 6px;
+  padding: 2px 4px;
   font-family: monospace;
   color: var(--cascade-muted);
   background: none;                    /* info helper, not a button */
