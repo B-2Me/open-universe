@@ -163,7 +163,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   const qs = new URLSearchParams(location.search);
   /* mt is the DEFAULT when SharedArrayBuffer + crossOriginIsolated are
      available (verified ~5x). ?st / opts.noMT forces single-threaded. */
-  const wantMT = canMT && !(opts.noMT || qs.has('st'));
+  /* mt is opt-in (?mt / ?mtnm / ?mtnmd / ?mtd) — a wasm OpenMP tick
+   * trades CPU for latency; st is the default so the page doesn't
+   * pin extra cores unless asked */
+  const wantMT = canMT && (qs.has('mt') || qs.has('mtnm') || qs.has('mtnmd') || qs.has('mtd'));
   const useDebug = qs.has('mtd');
   const useNM = qs.has('mtnm') || qs.has('mtnmd');
   const loadScript = (src) => new Promise((res, rej) => {
