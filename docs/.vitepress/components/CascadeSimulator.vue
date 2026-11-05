@@ -421,15 +421,15 @@ onUnmounted(() => {
 .grp-presets { border-color: rgba(160, 200, 255, 0.15); }
 /* presets claims its own full line — the three fields spread evenly
    across it instead of floating centered with voids on each side */
-.cascade-grp-line { flex: 1 1 100%; display: flex; justify-content: center; }
+.cascade-grp-line { display: flex; justify-content: center; }
 .grp-inject .cascade-grp-row { justify-content: center; }
-.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
-.grp-presets .cascade-grp-row { flex: 1; justify-content: space-evenly; }
+.grp-presets { justify-content: flex-start; }
+.grp-presets .cascade-grp-row { justify-content: center; }
 
 /* accordion wells always claim a full dock line — a partial row
    beside the transport was what squeezed Tuning into a tall strip */
 .cascade-selects,
-.cascade-sliders { flex: 1 1 100%; }
+.cascade-sliders { flex-wrap: wrap; justify-content: center; }
 .cascade-sliders {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
