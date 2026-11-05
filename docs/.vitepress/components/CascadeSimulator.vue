@@ -373,7 +373,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;           /* one well per row, centered */
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   background: var(--cascade-panel);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 14px;
@@ -658,10 +658,10 @@ onUnmounted(() => {
 }
 /* dropdowns never balloon to their longest option — the collapsed
    text truncates, the open menu still shows full names */
-/* second-row elements match the 40px button frames — uniform height
-   so flab labels and selects don't stagger */
-.cascade-field select, .cascade-flab, .cascade-accbtn {
-  height: 40px;
+/* second-row elements: compact height, same 13px text — a dropdown
+   only needs to be as tall as its text, not a full button frame */
+.cascade-field select, .cascade-flab {
+  height: 28px;
   font-size: 13px;
 }
 .cascade-field select[data-preset]   { width: 116px; }  /* "Full lattice" fits */

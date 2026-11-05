@@ -248,7 +248,7 @@ export async function initCascadeSimulator(root, opts = {}) {
    * budget), the beam is a rate-limited probe stream (per-cell cap
    * keeps its sources topped up). A shared pool would let the feed
    * starve the beam to nothing. */
-  const FEED_BUDGET = 2048;
+  const FEED_BUDGET = 512;
   const inject = () => {
     const room = Number(wasm._moore26_sum(2)) < FEED_BUDGET;
     for (let c = 6; c < 18; c++) {          /* FCC transport: edge channels only */
