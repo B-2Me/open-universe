@@ -96,6 +96,8 @@ onUnmounted(() => {
           </div>
         </div>
         </div>
+      </div>
+      <div class="cascade-well cascade-presets" role="group" aria-label="Presets">
         <div class="cascade-grp grp-presets">
           <div class="cascade-grp-row">
             <em>presets</em>
@@ -363,10 +365,9 @@ onUnmounted(() => {
   -webkit-user-select: none;
   padding: 4px 8px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3px 6px;
+  flex-direction: column;           /* one well per row, centered */
   align-items: center;
+  gap: 4px;
   background: var(--cascade-panel);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 14px;
@@ -457,7 +458,7 @@ onUnmounted(() => {
    across it instead of floating centered with voids on each side */
 .cascade-grp-line { display: flex; justify-content: center; }
 .grp-inject .cascade-grp-row { justify-content: center; }
-.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
+.grp-presets { justify-content: flex-start; }
 .grp-presets .cascade-grp-row { justify-content: center; }
 
 /* accordion wells always claim a full dock line — a partial row
@@ -468,10 +469,10 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
   gap: 5px 12px;
-  /* the fit-content dock left this grid's width indefinite — auto-fill
-     collapsed to one column. Spanning the dock's row fixes it. */
+  /* bounded width so auto-fill makes multi-column rows inside the
+     shrink-wrapped dock — not a single column, not an overflow */
   width: 100%;
-  flex: 0 0 100%;
+  max-width: 720px;
 }
 .cascade-sliders label { justify-self: start; }
 
