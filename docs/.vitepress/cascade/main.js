@@ -165,7 +165,7 @@ export async function initCascadeSimulator(root, opts = {}) {
      available (verified ~5x). ?st / opts.noMT forces single-threaded. */
   const wantMT = canMT && !(opts.noMT || qs.has('st'));
   const useDebug = qs.has('mtd');
-  const useNM = qs.has('mtnm');
+  const useNM = qs.has('mtnm') || qs.has('mtnmd');
   const loadScript = (src) => new Promise((res, rej) => {
     const sc = document.createElement('script');
     sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('load failed: ' + src));
