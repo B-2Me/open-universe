@@ -315,7 +315,7 @@ onUnmounted(() => {
   position: absolute;
   /* dock child — fixed offset above its top-right corner */
   right: 6px;
-  top: -64px;
+  top: -74px;
   z-index: 4;
   width: 56px;
   height: 56px;
@@ -332,7 +332,7 @@ onUnmounted(() => {
   position: absolute;
   /* rides left of the lens above the dock's right edge */
   right: 74px;
-  top: -64px;
+  top: -74px;
   width: 64px;
   height: 64px;
   flex: none;
