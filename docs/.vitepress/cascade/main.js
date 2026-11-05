@@ -197,7 +197,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           new Promise(res => { Module.onRuntimeInitialized = () => res(Module); }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mtnm boot timeout')), 8000)),
         ]);
-        mtLive = Math.max(2, (navigator.hardwareConcurrency || 4) - 2);
+        mtLive = 4;
         say(`moore26-mtnm — non-modular OpenMP ×${mtLive}`, 4000);
       } catch (e) { wasm = null; say('mtnm unavailable — falling back', 4000); }
     }
@@ -222,7 +222,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
         ]);
-        mtLive = Math.max(2, (navigator.hardwareConcurrency || 4) - 2);
+        mtLive = 4;
         say(useDebug ? `moore26-mtd — debug OpenMP ×${mtLive}` : `moore26-mt — OpenMP ×${mtLive}`, 4000);
       } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
     }
