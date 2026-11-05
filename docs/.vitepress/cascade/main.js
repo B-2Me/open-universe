@@ -201,8 +201,16 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (wantMT && typeof globalThis[mtFactory] !== 'undefined') {
       say('instantiating threaded wasm…');
       try {
+        /* locateFile + absolute mainScriptUrlOrBlob: workers resolve
+         * relative paths differently than the main thread — the wasm
+         * fetch inside the worker silently 404s/fails without the
+         * absolute URL (the 'undefined:undefined' silent error). */
+        const abs = (p) => new URL(p, location.href).href;
         wasm = await Promise.race([
-          globalThis[mtFactory]({ mainScriptUrlOrBlob: mtSrc }),
+          globalThis[mtFactory]({
+            mainScriptUrlOrBlob: abs(mtSrc),
+            locateFile: (path) => path.endsWith('.wasm') ? abs('/wasm/cascade/' + path) : path,
+          }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
         ]);
         say(useDebug ? 'moore26-mtd — debug OpenMP' : 'moore26-mt — OpenMP', 4000);
