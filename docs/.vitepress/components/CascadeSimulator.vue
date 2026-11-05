@@ -368,7 +368,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;           /* one well per row, centered */
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: var(--cascade-panel);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 14px;
@@ -600,7 +600,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 2px;
-  font: 11px monospace;
+  font: 13px monospace;
   color: var(--cascade-muted);
   white-space: nowrap;
 }
@@ -653,6 +653,12 @@ onUnmounted(() => {
 }
 /* dropdowns never balloon to their longest option — the collapsed
    text truncates, the open menu still shows full names */
+/* second-row elements match the 40px button frames — same visual
+   weight, no skinny row under the transport controls */
+.cascade-field select, .cascade-flab {
+  min-height: 38px;
+  font-size: 13px;
+}
 .cascade-field select[data-preset]   { width: 116px; }  /* "Full lattice" fits */
 .cascade-field select[data-colormode] { width: 86px; }  /* "composite" fits */
 .cascade-field select[data-scenario]  { width: 100px; } /* "wound lump" fits */
