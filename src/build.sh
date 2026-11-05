@@ -398,7 +398,7 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     -s MODULARIZE=1 \
     -s INITIAL_MEMORY=2147483648 \
     -s PTHREAD_POOL_SIZE=8 \
-    -s INCOMING_MODULE_JS_API="'[\"mainScriptUrlOrBlob\",\"locateFile\",\"onRuntimeInitialized\"]'" \
+    -sINCOMING_MODULE_JS_API=mainScriptUrlOrBlob,locateFile,onRuntimeInitialized \
     -s EXPORT_NAME="'createMoore26MT'" \
     -s EXPORTED_FUNCTIONS="[
       '_moore26_init',
