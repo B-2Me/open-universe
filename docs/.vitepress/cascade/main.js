@@ -522,6 +522,9 @@ export async function initCascadeSimulator(root, opts = {}) {
       return;
     }
     dragging = true; lx = e.clientX; ly = e.clientY;
+    /* accumulate from the RENDERED orientation — cam lags tgt during
+     * a drag, so adding to stale tgt makes the view jump */
+    tgt.yaw = cam.yaw; tgt.pitch = cam.pitch;
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', e => {
@@ -790,6 +793,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     gizmo.addEventListener('pointerdown', e => {
       e.preventDefault(); e.stopPropagation();
       gDown = [e.clientX, e.clientY]; gDrag = false;
+      tgt.yaw = cam.yaw; tgt.pitch = cam.pitch;
       gizmo.setPointerCapture(e.pointerId);
     });
     gizmo.addEventListener('pointermove', e => {
