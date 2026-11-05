@@ -266,7 +266,12 @@ export async function initCascadeSimulator(root, opts = {}) {
           }
       }
     }
-    if (ui.drive) {
+    /* global photon budget — the shell's random sources bypass the
+     * old per-spoke cap, so regulate the TOTAL in-flight count
+     * instead: feed until the vacuum holds ~FEED_BUDGET packets,
+     * then let absorption/re-emission balance. THAT is equilibrium. */
+    const FEED_BUDGET = 4096;
+    if (ui.drive && Number(wasm._moore26_sum(2)) < FEED_BUDGET) {
       /* spherical feed — sources scattered on a shell at FEED_R,
        * each firing the edge channel aimed at the core. Isotropic
        * rain instead of 12 axis rays — no spoke skeleton. Runs ONCE

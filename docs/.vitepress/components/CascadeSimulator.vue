@@ -538,8 +538,8 @@ onUnmounted(() => {
   pointer-events: none;
 }
 .cascade-grp-row > button .l {
-  font-size: 10.5px;
-  letter-spacing: 0.03em;
+  font-size: 13px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   opacity: 0.7;
   white-space: nowrap;
