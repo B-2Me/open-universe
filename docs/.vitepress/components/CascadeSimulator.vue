@@ -82,17 +82,17 @@ onUnmounted(() => {
         <div class="cascade-grp grp-ops">
           <div class="cascade-grp-row">
             <em>ops <button class="cascade-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
-            <button data-spin class="tog on" aria-pressed="true" title="Auto-rotate" aria-label="Toggle auto-rotate"><span class="g">⟳</span><span class="l">orbit</span></button>
+            <button data-spin class="tog on" aria-pressed="true" title="Auto-rotate" aria-label="Toggle auto-rotate"><span class="g">🪐</span><span class="l">orbit</span></button>
           </div>
         </div>
         <div class="cascade-grp-line">
         <div class="cascade-grp grp-inject">
           <div class="cascade-grp-row">
             <em>inject <button class="cascade-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
-            <button data-drive class="tog on" aria-pressed="true" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
-            <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
             <button data-lump title="Lump tool — arm, then click the lattice to drop a wound knot" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
             <button data-tube title="Tube tool — arm, then click to paint a saturated flux string" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
+            <button data-drive class="tog on" aria-pressed="true" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
+            <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
           </div>
         </div>
         </div>
@@ -384,8 +384,8 @@ onUnmounted(() => {
 .cascade-well {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
+  gap: 3px;
+  padding: 2px 5px;
   background: var(--cascade-well);
   border: 1px solid var(--cascade-bevel-dark);
   border-radius: 10px;
@@ -443,7 +443,7 @@ onUnmounted(() => {
 .cascade-grp-row {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 .grp-time > .cascade-grp-row > em    { color: var(--cascade-accent); }
 .grp-inject > .cascade-grp-row > em  { color: #ffb35c; }
@@ -481,9 +481,9 @@ onUnmounted(() => {
 .cascade-grp-row > button,
 .cascade-dock select {
   position: relative;
-  min-width: 44px;
-  min-height: 42px;
-  padding: 0 12px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 8px;
   font: 14px monospace;
   color: var(--cascade-muted);
   background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
@@ -515,7 +515,7 @@ onUnmounted(() => {
 }
 /* toggle icons get the room the slimmed pill freed — slightly larger,
    nudged right so the glyph visually shares the pill's corner space */
-.cascade-grp-row > button.tog .g { font-size: 22px; margin-left: 11px; }
+.cascade-grp-row > button.tog .g { font-size: 22px; margin-left: 6px; }
 /* per-glyph weight tuning — some glyphs run small/large at equal pt:
    rock's filled disc is heavy, binary's knot is faint, load is thin */
 .cascade-grp-row > button[data-rock] .g   { font-size: 17px; }

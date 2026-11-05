@@ -561,6 +561,12 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-scenario]', 'change', e => {
     wasm._moore26_init(W3, H3, D3); ui.tick = 0;
     rStep = 1; lowT = highT = null;
+    /* a scenario REPLACES the scene: clear + restore default toggles
+     * (feed on, beam/tools off) so the seed isn't drowned by whatever
+     * was running — reset alone keeps toggles untouched. */
+    ui.drive = true; ui.beam = false; ui.lumpArm = false; ui.tubeArm = false;
+    const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
+    tSync('[data-drive]', true); tSync('[data-beam]', false);
     const s = e.target.value;
     if (s === 'tube') seedTube(CX, CY, CZ);
     else if (s === 'lump') seedLump(CX, CY, CZ);
