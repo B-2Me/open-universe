@@ -255,19 +255,19 @@ export async function initCascadeSimulator(root, opts = {}) {
         for (let dy = -2; dy <= 2; dy++)
           for (let dz = -1; dz <= 1; dz++) {
             const sy = CY + dy, sz = CZ + dz, sx = 2;
-            const cur = wasm._moore26_quantum_get(sx, sy, sz, c);
+            const cur = wasm._moore26_photon_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
-              wasm._moore26_quantum_set(sx, sy, sz, c, cur + 2);
-              wasm._moore26_quantum_nu_set(sx, sy, sz, c, FEED_NU);
+              wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
+              wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
             }
           }
       }
       if (ui.drive) {
         const sx = CX - RAY * vx, sy = CY - RAY * vy, sz = CZ - RAY * vz;
-        const cur = wasm._moore26_quantum_get(sx, sy, sz, c);
+        const cur = wasm._moore26_photon_get(sx, sy, sz, c);
         if (cur < FEED_CAP) {
-          wasm._moore26_quantum_set(sx, sy, sz, c, cur + 1);
-          wasm._moore26_quantum_nu_set(sx, sy, sz, c, FEED_NU);
+          wasm._moore26_photon_set(sx, sy, sz, c, cur + 1);
+          wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
         }
       }
     }
