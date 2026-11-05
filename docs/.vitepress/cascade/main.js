@@ -772,7 +772,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       const phot = Number(wasm._moore26_sum(2)), chg = Number(wasm._moore26_sum(4));
       const cx = Number(wasm._moore26_cm(0)) / 256, cyy = Number(wasm._moore26_cm(1)) / 256, cz = Number(wasm._moore26_cm(2)) / 256;
       const cm = mass > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no knot';
-      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
+      /* relative clock: 1 tick = light crossing 1 node = 0.1fm/c
+       * (~3.3e-25 s) — same convention as the size scale. */
+      const age = (ui.tick * 0.1).toFixed(1);
+      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · T=${age}fm/c · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
     }
   };
   raf = requestAnimationFrame(frame);

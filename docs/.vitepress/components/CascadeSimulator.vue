@@ -55,7 +55,7 @@ onUnmounted(() => {
     <div class="cascade-stage">
       <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
       <div class="cascade-overlay-tl">
-        <div class="cascade-hud" data-hud title="t = physics ticks · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
+        <div class="cascade-hud" data-hud title="t = physics ticks · T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
         <div class="cascade-status" data-status></div>
         <div class="cascade-card" data-card hidden>
           <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
