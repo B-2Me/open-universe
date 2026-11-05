@@ -305,7 +305,8 @@ export async function initCascadeSimulator(root, opts = {}) {
       const x = lx + dx, y = ly + dy, z = lz + dz;
       if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
       wasm._moore26_mass_set(x, y, z, LUMP_M);
-      for (let e = 0; e < 3; e++) {         // face-edge wound pairs
+      for (let e = 3; e < 6; e++) {         // edge wound pairs (xy+xz) —
+                                            // face pairs are dead under FCC
         wasm._moore26_winding_set(x, y, z, 2 * e, LUMP_W);
         wasm._moore26_winding_set(x, y, z, 2 * e + 1, LUMP_W);
       }
@@ -315,18 +316,20 @@ export async function initCascadeSimulator(root, opts = {}) {
   };
 
   // ——: paint a stretched flux tube at the picked point — two mass
-  // anchors joined by a saturated winding run on the +/-X pair. The
-  // signature demo: >=12 saturated nodes triggers macroscopic string-
-  // breaking — the tube fractures into charged recoil fragments.
+  // anchors joined by a saturated winding run on the {1,1,0} EDGE pair
+  // (channels 6/7 — the +/-x face pair is a dead register under the
+  // FCC gate). The tube runs the lattice diagonal so its axis is a
+  // real transport direction. The signature demo: >=12 saturated
+  // nodes triggers macroscopic string-breaking — charged fragments.
   const seedTube = (lx, ly, lz) => {
     const half = 8;
-    const x0 = Math.max(1, lx - half), x1 = Math.min(W3 - 2, lx + half);
     let n = 0;
-    wasm._moore26_mass_set(x0, ly, lz, 512);
-    wasm._moore26_mass_set(x1, ly, lz, 512);
-    for (let x = x0; x <= x1; x++) {
-      wasm._moore26_winding_set(x, ly, lz, 0, 128);
-      wasm._moore26_winding_set(x, ly, lz, 1, 128);
+    for (let i = -half; i <= half; i++) {
+      const x = lx + i, y = ly + i, z = lz;
+      if (x < 1 || x >= W3 - 1 || y < 1 || y >= H3 - 1) continue;
+      if (i === -half || i === half) wasm._moore26_mass_set(x, y, z, 512);
+      wasm._moore26_winding_set(x, y, z, 6, 128);
+      wasm._moore26_winding_set(x, y, z, 7, 128);
       n++;
     }
     return n;
