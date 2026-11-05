@@ -115,6 +115,15 @@ export default defineConfig({
       // public/. CI provides GITHUB_SHA; local builds fall back to the
       // build timestamp.
       __WAKE_BUILD__: JSON.stringify(process.env.GITHUB_SHA || String(Date.now()))
+    },
+    // COOP/COEP → crossOriginIsolated → SharedArrayBuffer → the
+    // threaded moore26-mt wasm (8-thread OpenMP) can load in dev.
+    // On the static host the same headers come from coi-serviceworker.js.
+    server: {
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cross-Origin-Embedder-Policy': 'require-corp'
+      }
     }
   },
   

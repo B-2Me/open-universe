@@ -146,16 +146,40 @@ export async function initCascadeSimulator(root, opts = {}) {
   };
 
   // ---------- wasm ----------
+  // Threaded build (moore26-mt, emsdk 6.0.13 + OpenMP) gives ~4-5x
+  // the tick rate — but needs SharedArrayBuffer, which requires a
+  // crossOriginIsolated page (COOP+COEP). Feature-detect and fall
+  // back to the single-threaded build transparently.
   say('loading engine…');
-  if (typeof createMoore26 === 'undefined')
-    await new Promise((res, rej) => {
-      const sc = document.createElement('script');
-      sc.src = wasmUrl; sc.onload = res;
-      sc.onerror = () => rej(new Error('moore26.js load failed: ' + wasmUrl));
-      document.head.appendChild(sc);
-    });
-  say('instantiating wasm…');
-  const wasm = await createMoore26();
+  const canMT = typeof SharedArrayBuffer !== 'undefined' &&
+                (typeof crossOriginIsolated === 'undefined' || crossOriginIsolated);
+  const mtUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mt.js');
+  const wantMT = canMT && !opts.noMT;
+  const loadScript = (src) => new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('load failed: ' + src));
+    document.head.appendChild(sc);
+  });
+  let wasm = null;
+  /* Not isolated and no header path (static host)? Arm the COI service
+   * worker — it reloads once with COOP+COEP so SharedArrayBuffer turns
+   * on. The dev server sends the headers itself, so this no-ops here. */
+  if (!canMT) {
+    try { await loadScript('/coi-serviceworker.js'); } catch (_) {}
+  }
+  if (wantMT && typeof createMoore26MT === 'undefined') {
+    try { await loadScript(mtUrl); } catch (_) { /* fall through to st */ }
+  }
+  if (wantMT && typeof createMoore26MT !== 'undefined') {
+    say('instantiating threaded wasm…');
+    try { wasm = await createMoore26MT(); say('moore26-mt — 8-thread OpenMP', 4000); }
+    catch (_) { wasm = null; }
+  }
+  if (!wasm) {
+    if (typeof createMoore26 === 'undefined') await loadScript(wasmUrl);
+    say('instantiating wasm…');
+    wasm = await createMoore26();
+  }
   const [W3, H3, D3] = opts.dims || [32, 32, 32];   // power-of-2 required;
                             // 64^3 runs ~550ms/tick single-threaded wasm —
                             // 32^3 keeps the sim interactive (~70ms/tick)

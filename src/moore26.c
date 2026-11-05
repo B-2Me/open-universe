@@ -34,7 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _OPENMP
-#include <omp.h>
+#ifndef __EMSCRIPTEN__
+#include <omp.h>      /* native OpenMP — emscripten's sysroot ships no
+                        * omp.h but still honors -fopenmp pragmas */
+#endif
 #endif
 
 static int QWidth, QHeight, QDepth, QSites;

@@ -377,6 +377,63 @@ else
   exit 1
 fi
 
+# --- moore26-mt: the same engine, multithreaded ---
+# The _Pragma("omp parallel for") on PROC_NODES are inert single-threaded;
+# here they actually link libomp -> ~4-5x tick speedup on 8-thread pool.
+# REQUIRES emsdk >= 4.x (native wasm libomp; 3.1.61 lacks the __kmpc_*
+# runtime). Needs SharedArrayBuffer at runtime -> COOP+COEP headers
+# (vite dev sends them; static hosts get them via coi-serviceworker.js).
+# Skipped cleanly on older emsdk so build.sh stays usable everywhere.
+if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
+  if emcc moore26.c \
+    -DGIT_REV=\"$GIT_REV\" \
+    -O3 -fopenmp -msimd128 -mbulk-memory -pthread -Wno-unknown-pragmas \
+    -s WASM=1 \
+    -s MODULARIZE=1 \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -s PTHREAD_POOL_SIZE=8 \
+    -s EXPORT_NAME="'createMoore26MT'" \
+    -s EXPORTED_FUNCTIONS="[
+      '_moore26_init',
+      '_moore26_tick',
+      '_moore26_winding_get',
+      '_moore26_winding_set',
+      '_moore26_photon_get',
+      '_moore26_photon_set',
+      '_moore26_photon_nu_set',
+      '_moore26_mass_get',
+      '_moore26_mass_set',
+      '_moore26_massflight_get',
+      '_moore26_massflight_set',
+      '_moore26_heat_get',
+      '_moore26_phase_get',
+      '_moore26_phase_set',
+      '_moore26_charge_get',
+      '_moore26_cvc',
+      '_moore26_rg_pointer',
+      '_moore26_rg_refresh',
+      '_moore26_clear',
+      '_moore26_save',
+      '_moore26_restore',
+      '_moore26_sum',
+      '_moore26_cm',
+      '_moore26_events',
+      '_moore26_state_pointer',
+      '_moore26_node_size',
+      '_moore26_channel_count',
+      '_malloc',
+      '_free'
+    ]" \
+    -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'HEAPU8', 'wasmMemory']" \
+    -o ../docs/public/wasm/cascade/moore26-mt.js; then
+    echo "✅ moore26-mt (8-thread OpenMP) compiled successfully."
+  else
+    echo "⚠️ moore26-mt skipped (compile failed) — single-threaded build still available."
+  fi
+else
+  echo "⚠️ moore26-mt skipped (emsdk < 4.x lacks wasm libomp)."
+fi
+
 # --- link3: network-ontology engine (links, sessions, nu spectrum) ---
 if emcc link3.c \
   -DGIT_REV=\"$GIT_REV\" \
