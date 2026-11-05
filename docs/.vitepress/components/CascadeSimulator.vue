@@ -119,6 +119,7 @@ onUnmounted(() => {
               <option value="vacuum" selected>vacuum</option>
               <option value="tube">flux tube</option>
               <option value="lump">wound lump</option>
+              <option value="buckle">hexbuckle</option>
             </select></label>
             <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
           </div>

@@ -335,6 +335,41 @@ export async function initCascadeSimulator(root, opts = {}) {
     return n;
   };
 
+  /* best edge channel for a direction — every string segment picks
+   * its own channel pair so bends stay on live transport axes */
+  const pickChan = (dx, dy, dz = 0) => {
+    let best = 6, bs = -1;
+    for (let c = 6; c < 18; c++) {
+      const s = CV[c][0] * dx + CV[c][1] * dy + CV[c][2] * dz;
+      if (s > bs) { bs = s; best = c; }
+    }
+    return best;
+  };
+
+  /* hexbuckle — the ensemble's bent flux string: a parabolic U-bend
+   * (dip depth D) with mass anchors at the ends. The curvature is
+   * the flexoelectric subject — bombard it and watch the charge
+   * dipole. */
+  const seedBuckle = (D = 16) => {
+    const A = W3 >> 3;
+    const pts = [];
+    for (let t = 0; t <= 1.0001; t += 0.05)
+      pts.push([Math.round(CX + A * (2 * t - 1)),
+                Math.round(CY - D / 2 + D * (4 * t * (1 - t))), CZ]);
+    wasm._moore26_mass_set(pts[0][0], pts[0][1], CZ, 512);
+    const [ex, ey] = pts[pts.length - 1];
+    wasm._moore26_mass_set(ex, ey, CZ, 512);
+    let n = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x, y] = pts[i], [nx, ny] = pts[i + 1];
+      const c = pickChan(nx - x, ny - y);
+      wasm._moore26_winding_set(x, y, CZ, c, 128);
+      wasm._moore26_winding_set(x, y, CZ, c ^ 1, 128);
+      n++;
+    }
+    return n;
+  };
+
   // Camera ray -> lattice cell on the slice plane
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
@@ -524,6 +559,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     const s = e.target.value;
     if (s === 'tube') seedTube(CX, CY, CZ);
     else if (s === 'lump') seedLump(CX, CY, CZ);
+    else if (s === 'buckle') seedBuckle(16);
     upload(); dirty = true;
     say(s === 'vacuum' ? 'cold vacuum' : `seeded ${s}`);
   });
@@ -574,7 +610,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: mass+winding+photons+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a saturated winding string between two mass anchors (watch it fracture) · wound lump: a bound knot at the core.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a straight saturated string on the {1,1,0} diagonal · wound lump: a bound knot at the core · hexbuckle: a parabolic U-bent string — the flexoelectric subject; fire the beam at the bend and watch the charge dipole.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
