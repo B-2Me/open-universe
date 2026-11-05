@@ -629,6 +629,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     cardTitle.textContent = h[0]; cardBody.textContent = h[1];
     card.hidden = false; cardKey = key;
   };
+  /* one suppression for every element in the sim — canvas, widgets,
+   * dock, overlays. Right-drag stays camera/tool control. */
+  root.addEventListener('contextmenu', e => e.preventDefault());
   root.addEventListener('click', e => {
     const hb = e.target.closest('[data-help]');
     if (hb) { e.preventDefault(); showCard(hb.dataset.help); }
