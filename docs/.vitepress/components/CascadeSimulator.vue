@@ -765,7 +765,8 @@ onUnmounted(() => {
   .cascade-simulator { height: auto; min-height: 0; }
   .cascade-stage {
     flex: none;
-    height: calc(100svh - var(--tool-top, 76px) - 96px);
+    /* reserve for the TWO-row dock — 96px was tuned for one row */
+    height: calc(100svh - var(--tool-top, 76px) - 150px);
     min-height: 320px;
   }
 }
