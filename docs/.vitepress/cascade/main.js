@@ -244,9 +244,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   // the field equilibrates against absorption instead of saturating
   // to white at 32^3.
   const RAY = 3, FEED_CAP = 2, FEED_NU = 96, BEAM_CAP = 10;
-  /* shared photon pool — feed AND beam pour into the same budget:
-   * stop injecting when the vacuum holds ~FEED_BUDGET packets, let
-   * absorption/re-emission settle the total. Both on = one pool. */
+  /* two separate equilibria — the feed is a bulk bath (global packet
+   * budget), the beam is a rate-limited probe stream (per-cell cap
+   * keeps its sources topped up). A shared pool would let the feed
+   * starve the beam to nothing. */
   const FEED_BUDGET = 4096;
   const inject = () => {
     const room = Number(wasm._moore26_sum(2)) < FEED_BUDGET;
@@ -255,7 +256,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       /* a beam on FCC: no pure +x exists, and the 4-edge family fans
        * into a cone. One edge channel (6 = {1,1,0}) is a straight
        * line — a real collimated stream. */
-      const isBeam = ui.beam && room && c === 6;
+      const isBeam = ui.beam && c === 6;
       if (isBeam) {
         /* the beam is a probe stream — source a +x column near the left
          * face spanning a small cross-section so it visibly traverses
