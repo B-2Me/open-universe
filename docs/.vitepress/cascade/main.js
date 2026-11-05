@@ -580,17 +580,25 @@ export async function initCascadeSimulator(root, opts = {}) {
   toggle('[data-beam]', 'beam',
     '+x quantum beam on — the probe stream',
     'beam off');
+  /* armed-tool cursor — white crosshair edged in black: reads on the
+   * dark canvas AND any bright field underneath (a fixed cursor can't
+   * sample the pixel under it, so carry both colors). */
+  const TOOL_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">' +
+    '<path d="M12 3v18M3 12h18" stroke="black" stroke-width="4.5" stroke-linecap="round"/>' +
+    '<path d="M12 3v18M3 12h18" stroke="white" stroke-width="2" stroke-linecap="round"/>' +
+    '</svg>')}") 12 12, crosshair`;
   const lumpBtn = root.querySelector('[data-lump]');
   const tubeBtn = root.querySelector('[data-tube]');
   const setLumpArm = (on) => {
     ui.lumpArm = on;
-    canvas.style.cursor = on ? 'crosshair' : '';
+    canvas.style.cursor = on ? TOOL_CURSOR : '';
     if (lumpBtn) { lumpBtn.classList.toggle('armed', on); lumpBtn.setAttribute('aria-pressed', String(on)); }
     say(on ? 'lump tool armed — tap the slice plane to drop a wound knot · ⌖ to cancel' : '', 0);
   };
   const setTubeArm = (on) => {
     ui.tubeArm = on;
-    canvas.style.cursor = on ? 'crosshair' : '';
+    canvas.style.cursor = on ? TOOL_CURSOR : '';
     if (tubeBtn) { tubeBtn.classList.toggle('armed', on); tubeBtn.setAttribute('aria-pressed', String(on)); }
     say(on ? 'tube tool armed — tap to paint a saturated flux string · — to cancel' : '', 0);
   };
