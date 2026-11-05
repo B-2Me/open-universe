@@ -154,10 +154,14 @@ export async function initCascadeSimulator(root, opts = {}) {
   const canMT = typeof SharedArrayBuffer !== 'undefined' &&
                 (typeof crossOriginIsolated === 'undefined' || crossOriginIsolated);
   const mtUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mt.js');
+  const mtdUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mtd.js');
   /* mt is opt-in (?mt or opts.useMT): the 8-thread build works (verified
-   * ~4.4x in Node) but the browser worker bootstrap errors before the
-   * fallback kicks in — noisy default. Enable with ?mt to try it. */
-  const wantMT = canMT && (opts.useMT || new URLSearchParams(location.search).has('mt'));
+   * ~4.4x in Node) but the browser worker bootstrap errors — noisy
+   * default. ?mtd loads the PTHREADS_DEBUG+ASSERTIONS build for the
+   * real worker error instead of 'undefined:undefined'. */
+  const qs = new URLSearchParams(location.search);
+  const wantMT = canMT && (opts.useMT || qs.has('mt') || qs.has('mtd'));
+  const useDebug = qs.has('mtd');
   const loadScript = (src) => new Promise((res, rej) => {
     const sc = document.createElement('script');
     sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('load failed: ' + src));
@@ -170,23 +174,26 @@ export async function initCascadeSimulator(root, opts = {}) {
   if (!canMT) {
     try { await loadScript('/coi-serviceworker.js'); } catch (_) {}
   }
-  if (wantMT && typeof createMoore26MT === 'undefined') {
-    try { await loadScript(mtUrl); } catch (_) { /* fall through to st */ }
+  const mtFactory = useDebug ? 'createMoore26MTD' : 'createMoore26MT';
+  const mtSrc = useDebug ? mtdUrl : mtUrl;
+  if (wantMT && typeof globalThis[mtFactory] === 'undefined') {
+    try { await loadScript(mtSrc); } catch (_) { /* fall through to st */ }
   }
-  if (wantMT && typeof createMoore26MT !== 'undefined') {
+  if (wantMT && typeof globalThis[mtFactory] !== 'undefined') {
     say('instantiating threaded wasm…');
     try {
       /* the worker bootstrap can hang (not reject) on a failed spawn —
        * race it so a bad mt boot falls back to single-threaded instead
        * of sticking on 'booting'. */
       wasm = await Promise.race([
-        /* mainScriptUrlOrBlob tells emscripten where the glue lives so
-         * the spawned worker (new Worker(pthreadMainJs)) resolves —
-         * document.currentScript is null for async-loaded scripts. */
-        createMoore26MT({ mainScriptUrlOrBlob: mtUrl }),
+        /* no mainScriptUrlOrBlob — it's not in INCOMING_MODULE_JS_API
+         * for this build and aborts the factory AFTER the workers
+         * spawn, leaving zombie workers that fire 'sent an error'.
+         * _scriptName resolves correctly via document.currentScript. */
+        globalThis[mtFactory](),
         new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
       ]);
-      say('moore26-mt — 8-thread OpenMP', 4000);
+      say(useDebug ? 'moore26-mtd — debug 8-thread OpenMP' : 'moore26-mt — 8-thread OpenMP', 4000);
     } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
   }
   if (!wasm) {
