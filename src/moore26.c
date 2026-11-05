@@ -483,6 +483,8 @@ void moore26_tick(void){
         PROC_NODES
             NodeState *o=&grid_current[si];
             if(o->mass<32)continue;
+            if(!IS_EVEN(x,y,z))continue;  /* mass on odd cells can't
+             * launch — interstitial structure stays pinned */
             int de=-1;int32_t dd=0;
             for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
@@ -925,6 +927,10 @@ void moore26_tick(void){
                     grid_next[si].mass=(uint16_t)(m0>65535?65535:m0);
                     #pragma omp atomic write
                     grid_next[p2].mass=(uint16_t)(m1>65535?65535:m1);
+                    /* flight quanta only on the even sublattice —
+                     * edge hops preserve parity so p2 shares si's
+                     * parity; odd endpoints park mass without recoil */
+                    if(IS_EVEN(x,y,z)){
                     #pragma omp atomic
                     grid_next[si].massFlight[2*e+1]+=64;   /* head recoils back */
                     #pragma omp atomic
@@ -935,6 +941,7 @@ void moore26_tick(void){
                     grid_next[si].chargeFlight[2*e+1]+=8;
                     #pragma omp atomic
                     grid_next[p2].chargeFlight[2*e]-=8;
+                    }
                     qEvents[6]++;
                 }
             }
@@ -959,11 +966,14 @@ uint32_t moore26_photon_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].photon[c];
 }
 void moore26_photon_set(int x,int y,int z,int c,uint32_t v){
+    if(!IS_EVEN(x,y,z))return;   /* odd sublattice is not for use —
+     * quanta setters silently refuse interstitial cells */
     grid_current[z*QWidth*QHeight+y*QWidth+x].photon[c]=v;
     grid_current[z*QWidth*QHeight+y*QWidth+x].photonBorn[c]=(uint8_t)qTick;
     mark_chunk(x,y,z);
 }
 void moore26_photon_nu_set(int x,int y,int z,int c,uint32_t v){
+    if(!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].photonNu[c]=v;
 }
 void moore26_mass_set(int x,int y,int z,uint32_t v){
@@ -977,6 +987,7 @@ uint16_t moore26_heat_get(int x,int y,int z){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].heat;
 }
 void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
+    if(!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c]=v;
     mark_chunk(x,y,z);
 }
