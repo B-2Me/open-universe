@@ -229,7 +229,8 @@ export async function initCascadeSimulator(root, opts = {}) {
     say('instantiating wasm…');
     wasm = await createMoore26();
   }
-  const [W3, H3, D3] = opts.dims || [32, 32, 32];   // power-of-2 required;
+  const dw = parseInt(qs.get('w') || '0');
+  const [W3, H3, D3] = opts.dims || (dw >= 16 ? [dw, dw, dw] : [32, 32, 32]);   // power-of-2 required;
                             // 64^3 runs ~550ms/tick single-threaded wasm —
                             // 32^3 keeps the sim interactive (~70ms/tick)
   wasm._moore26_init(W3, H3, D3);
