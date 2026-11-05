@@ -63,11 +63,13 @@ onUnmounted(() => {
           <div class="cascade-card-body" data-card-body></div>
         </div>
       </div>
-      <button class="cascade-uitoggle" data-uitoggle title="Toggle controls" aria-label="Toggle controls">⚙</button>
-      <canvas class="cascade-zoomlens" data-zoomlens width="128" height="128" title="Zoom lens — drag up/down to zoom; double-click resets" aria-label="Zoom lens"></canvas>
-      <canvas class="cascade-gizmo" data-gizmo width="128" height="128" title="Orientation — double-click to reset view" aria-label="Orientation gizmo"></canvas>
+      <button class="cascade-uitoggle" data-fs title="Fullscreen" aria-label="Toggle fullscreen">⛶</button>
     </div>
     <div class="cascade-dock">
+      <!-- widgets anchor to the dock's right edge — they track the
+           shrink-wrapped dock, not the canvas's far edge -->
+      <canvas class="cascade-zoomlens" data-zoomlens width="128" height="128" title="Zoom lens — drag up/down to zoom; double-click resets" aria-label="Zoom lens"></canvas>
+      <canvas class="cascade-gizmo" data-gizmo width="128" height="128" title="Orientation — double-click to reset view" aria-label="Orientation gizmo"></canvas>
       <div class="cascade-well cascade-transport" role="group" aria-label="Controls">
         <div class="cascade-grp grp-time">
           <div class="cascade-grp-row">
@@ -276,9 +278,9 @@ onUnmounted(() => {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 34px;
-  height: 34px;
-  font: 14px monospace;
+  width: 44px;
+  height: 44px;
+  font: 22px/1 monospace;
   color: var(--cascade-muted);
   background: var(--cascade-panel);
   border: 1px solid var(--cascade-bevel-dark);
@@ -294,11 +296,10 @@ onUnmounted(() => {
    gizmo: faint reticle rings, one bright ring rides in/out with zoom */
 .cascade-zoomlens {
   position: absolute;
-  /* hover just above the dock, aligned to its right end — the dock is
-     centered + shrink-wrapped, so the widgets track it, not the
-     canvas's far edge */
-  right: max(14px, calc(50% - 520px));
-  bottom: 12px;
+  /* children of the dock — hover just above its right edge, tracking
+     the shrink-wrapped dock rather than the canvas's far edge */
+  right: 6px;
+  bottom: calc(100% + 8px);
   width: 56px;
   height: 56px;
   flex: none;
@@ -312,9 +313,9 @@ onUnmounted(() => {
    canvas, bottom-right corner */
 .cascade-gizmo {
   position: absolute;
-  /* rides left of the lens, both tracking the dock's right end */
-  right: max(82px, calc(50% - 450px));
-  bottom: 12px;
+  /* rides left of the lens above the dock's right edge */
+  right: 74px;
+  bottom: calc(100% + 8px);
   width: 64px;
   height: 64px;
   flex: none;
@@ -329,6 +330,7 @@ onUnmounted(() => {
 
 /* control dock — in-flow below the canvas; wells carve control groups */
 .cascade-dock {
+  position: relative;
   flex: none;
   align-self: center;
   margin: 6px auto;
@@ -429,7 +431,7 @@ onUnmounted(() => {
    across it instead of floating centered with voids on each side */
 .cascade-grp-line { display: flex; justify-content: center; }
 .grp-inject .cascade-grp-row { justify-content: center; }
-.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
+.grp-presets { justify-content: flex-start; }
 .grp-presets .cascade-grp-row { justify-content: center; }
 
 /* accordion wells always claim a full dock line — a partial row

@@ -640,6 +640,11 @@ export async function initCascadeSimulator(root, opts = {}) {
     });
   }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
+  bind('[data-fs]', 'click', () => {
+    const el = root;
+    if (document.fullscreenElement) document.exitFullscreen();
+    else el.requestFullscreen?.();
+  });
 
   const PRESETS = {
     full:    { yaw: 0.7,  pitch: 0.45, dist: 80,  zCenter: D3 >> 1, zThick: D3 },
