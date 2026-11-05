@@ -666,9 +666,11 @@ export async function initCascadeSimulator(root, opts = {}) {
     }
 
     if (hud && (ui.tick < 10 || ui.tick % 10 === 0 || !ui.playing)) {
-      const mass = wasm._moore26_sum(0), wind = wasm._moore26_sum(1);
-      const phot = wasm._moore26_sum(2), chg = wasm._moore26_sum(4);
-      const cx = wasm._moore26_cm(0) / 256, cyy = wasm._moore26_cm(1) / 256, cz = wasm._moore26_cm(2) / 256;
+      /* i64 exports marshal as BigInt in the threaded (emsdk 6.x)
+       * build — coerce to Number so arithmetic doesn't throw. */
+      const mass = Number(wasm._moore26_sum(0)), wind = Number(wasm._moore26_sum(1));
+      const phot = Number(wasm._moore26_sum(2)), chg = Number(wasm._moore26_sum(4));
+      const cx = Number(wasm._moore26_cm(0)) / 256, cyy = Number(wasm._moore26_cm(1)) / 256, cz = Number(wasm._moore26_cm(2)) / 256;
       const cm = mass > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no knot';
       hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · phot=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
     }
