@@ -55,7 +55,7 @@ onUnmounted(() => {
     <div class="cascade-stage">
       <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
       <div class="cascade-overlay-tl">
-        <div class="cascade-hud" data-hud title="t = physics ticks · T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
+        <div class="cascade-hud" data-hud title="t = physics ticks · T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div><button class="cascade-copy" data-copy title="Copy telemetry" aria-label="Copy telemetry">⧉</button>
         <div class="cascade-status" data-status></div>
         <div class="cascade-card" data-card hidden>
           <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
@@ -193,13 +193,30 @@ onUnmounted(() => {
   z-index: 3;
 }
 
-/* telemetry chip — small, translucent */
+/* telemetry chip — small, translucent; ⧉ copies it */
 .cascade-hud {
   max-width: 100%;
   padding: 4px 10px;
   font: 11px/1.5 monospace;
   color: var(--cascade-accent);
   background: rgba(8, 10, 20, 0.6);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cascade-copy {
+  pointer-events: auto;
+  margin-top: 0;
+  width: 22px; height: 22px;
+  font: 12px/1 monospace;
+  color: var(--cascade-muted);
+  background: rgba(8, 10, 20, 0.6);
+  border: 1px solid var(--cascade-bevel-light);
+  border-radius: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.cascade-copy:hover { opacity: 1; }
+.cascade-hud + .cascade-copy { position: absolute; right: -26px; top: 4px; }
   border: 1px solid var(--cascade-bevel-light);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 var(--cascade-bevel-light);
@@ -296,10 +313,10 @@ onUnmounted(() => {
    gizmo: faint reticle rings, one bright ring rides in/out with zoom */
 .cascade-zoomlens {
   position: absolute;
-  /* children of the dock — hover just above its right edge, tracking
-     the shrink-wrapped dock rather than the canvas's far edge */
+  /* dock child — fixed offset above its top-right corner */
   right: 6px;
-  bottom: calc(100% + 8px);
+  top: -64px;
+  z-index: 4;
   width: 56px;
   height: 56px;
   flex: none;
@@ -315,7 +332,7 @@ onUnmounted(() => {
   position: absolute;
   /* rides left of the lens above the dock's right edge */
   right: 74px;
-  bottom: calc(100% + 8px);
+  top: -64px;
   width: 64px;
   height: 64px;
   flex: none;
@@ -333,8 +350,13 @@ onUnmounted(() => {
   position: relative;
   flex: none;
   align-self: center;
+  width: fit-content;               /* snap: shrink-wrap to content —
+                                         never stretch to the window */
+  overflow: visible;                /* widgets hang above the box */
   margin: 6px auto;
   max-width: calc(100% - 16px);
+  user-select: none;
+  -webkit-user-select: none;
   padding: 4px 8px;
   display: flex;
   flex-wrap: wrap;

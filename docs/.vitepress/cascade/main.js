@@ -550,15 +550,25 @@ export async function initCascadeSimulator(root, opts = {}) {
   const card = root.querySelector('[data-card]');
   const cardTitle = root.querySelector('[data-card-title]');
   const cardBody = root.querySelector('[data-card-body]');
+  let cardKey = null;
   const showCard = (key) => {
     const h = HELP[key]; if (!h || !card) return;
+    /* same chip a second time = toggle closed */
+    if (!card.hidden && cardKey === key) { card.hidden = true; cardKey = null; return; }
     cardTitle.textContent = h[0]; cardBody.textContent = h[1];
-    card.hidden = false;
+    card.hidden = false; cardKey = key;
   };
   root.addEventListener('click', e => {
     const hb = e.target.closest('[data-help]');
     if (hb) { e.preventDefault(); showCard(hb.dataset.help); }
-    else if (e.target.closest('[data-card-x]')) { card.hidden = true; }
+    else if (e.target.closest('[data-card-x]')) { card.hidden = true; cardKey = null; }
+    else if (e.target.closest('[data-copy]')) {
+      const txt = hud?.textContent || '';
+      navigator.clipboard?.writeText(txt).then(() => {
+        const b = e.target.closest('[data-copy]');
+        if (b) { b.textContent = '✓'; setTimeout(() => b.textContent = '⧉', 900); }
+      });
+    }
   });
 
   bind('[data-tune]', 'click', e => {
