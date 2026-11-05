@@ -16,9 +16,9 @@ uint32_t moore26_winding_get(int x,int y,int z,int c);
 void moore26_winding_set(int x,int y,int z,int c,uint32_t v);
 void moore26_mass_set(int x,int y,int z,uint32_t v);
 uint32_t moore26_mass_get(int x,int y,int z);
-void moore26_photon_set(int x,int y,int z,int c,uint32_t v);
-void moore26_photon_nu_set(int x,int y,int z,int c,uint32_t v);
-uint32_t moore26_photon_get(int x,int y,int z,int c);
+void moore26_packet_set(int x,int y,int z,int c,uint32_t v);
+void moore26_packet_nu_set(int x,int y,int z,int c,uint32_t v);
+uint32_t moore26_packet_get(int x,int y,int z,int c);
 uint64_t moore26_events(int i);
 
 static int W=64,H_=64,D_=64;
@@ -37,7 +37,7 @@ static uint64_t tot_wind(int d){
 static uint64_t tot_phot(int d){
     uint64_t s=0;
     for(int z=0;z<d;z++)for(int y=0;y<W;y++)for(int x=0;x<W;x++)
-        for(int c=0;c<26;c++)s+=moore26_photon_get(x,y,z,c);
+        for(int c=0;c<26;c++)s+=moore26_packet_get(x,y,z,c);
     return s;
 }
 uint16_t moore26_heat_get(int x,int y,int z);
@@ -77,16 +77,16 @@ int main(int argc,char**argv){
      * +x along its dominant circulation axis via mass launch. */
     moore26_winding_set(c0,c0,c0,0,96);
     moore26_winding_set(c0,c0,c0,1,32);
-    /* a seed photon stream aimed at the lump */
+    /* a seed packet stream aimed at the lump */
     for(int i=0;i<20;i++)
-        {moore26_photon_set(c0-10-i, c0, c0, 0, 1);
-         moore26_photon_nu_set(c0-10-i, c0, c0, 0, 200);}
-    /* a COUNTER-propagating stream (channel 1, -x): head-on photons
+        {moore26_packet_set(c0-10-i, c0, c0, 0, 1);
+         moore26_packet_nu_set(c0-10-i, c0, c0, 0, 200);}
+    /* a COUNTER-propagating stream (channel 1, -x): head-on packets
      * with nua+nub=400 > fusion wall 256 -> pair production in the
      * vacuum between the streams. */
     for(int i=0;i<20;i++)
-        {moore26_photon_set(c0+10+i, c0, c0, 1, 1);
-         moore26_photon_nu_set(c0+10+i, c0, c0, 1, 200);}
+        {moore26_packet_set(c0+10+i, c0, c0, 1, 1);
+         moore26_packet_nu_set(c0+10+i, c0, c0, 1, 200);}
 
     printf("moore26 smoke: %d^3, %d ticks\n",W,ticks);
     printf("t=0   mass=%llu wind=%llu phot=%llu\n",

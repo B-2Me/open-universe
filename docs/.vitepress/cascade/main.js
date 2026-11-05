@@ -256,7 +256,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   // the field equilibrates against absorption instead of saturating
   // to white at 32^3.
   const RAY = 3, FEED_CAP = 2, FEED_NU = 96, BEAM_CAP = 10;
-  /* photons live only on the even sublattice — snap a source cell so
+  /* packets live only on the even sublattice — snap a source cell so
    * x+y+z is even (nudge z) or the packet freezes on an interstitial */
   const evenSnap = (x, y, z) => ((x + y + z) & 1) ? [x, y, z + 1] : [x, y, z];
   /* precomputed feed table — a fixed set of shell sources + aimed
@@ -311,10 +311,10 @@ export async function initCascadeSimulator(root, opts = {}) {
           for (let dz = -1; dz <= 1; dz++) {
             let [sx, sy, sz] = evenSnap(2, CY - (CX - 2) + dy, CZ + dz);
             if (sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
-            const cur = wasm._moore26_photon_get(sx, sy, sz, c);
+            const cur = wasm._moore26_packet_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
-              wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
-              wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
+              wasm._moore26_packet_set(sx, sy, sz, c, cur + 2);
+              wasm._moore26_packet_nu_set(sx, sy, sz, c, FEED_NU);
             }
           }
       }
@@ -326,10 +326,10 @@ export async function initCascadeSimulator(root, opts = {}) {
        * FEED_BUDGET cap keeps convergence from saturating. */
       for (let k = 0; k < 16; k++) {
         const [sx, sy, sz, bc] = FEED_TBL[feedIdx = (feedIdx + 1) & 1023];
-        const cur = wasm._moore26_photon_get(sx, sy, sz, bc);
+        const cur = wasm._moore26_packet_get(sx, sy, sz, bc);
         if (cur < FEED_CAP) {
-          wasm._moore26_photon_set(sx, sy, sz, bc, cur + 1);
-          wasm._moore26_photon_nu_set(sx, sy, sz, bc, FEED_NU);
+          wasm._moore26_packet_set(sx, sy, sz, bc, cur + 1);
+          wasm._moore26_packet_nu_set(sx, sy, sz, bc, FEED_NU);
         }
       }
     }
@@ -678,7 +678,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-ops': ['session ops', '⟳ orbit — turntable camera; double-click the gizmo to reset the view.'],
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
-    view: ['View', 'render channel — composite: mass+winding+photons+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
+    view: ['View', 'render channel — composite: mass+winding+packets+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
     scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a straight saturated string on the {1,1,0} diagonal · wound lump: a bound knot at the core · hexbuckle: a parabolic U-bent string — the flexoelectric subject; fire the beam at the bend and watch the charge dipole.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],

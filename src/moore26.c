@@ -23,7 +23,7 @@
  * single saturated link).
  *
  * Vacuum-skip: ~99% of a 0.1fm grid is empty. An 8x8x8 macro-chunk
- * ledger marks chunks holding any mass/winding/photons; each tick
+ * ledger marks chunks holding any mass/winding/packets; each tick
  * processes live chunks plus a 1-chunk halo (catching inbound flux)
  * and re-scans the write buffer to compute next-tick liveness.
  * Invariant: content only ever exists inside processed chunks, so
@@ -61,7 +61,7 @@ static int8_t QChannelVec[26][3] = {
 /* even sublattice of the ABC hex grid — only parity-even cells carry
  * the transport graph. Edge hops preserve x+y+z parity, so the gate
  * closes under transport; odd cells are pure structure (winding,
- * mass, charge, heat — never photon or flight registers). */
+ * mass, charge, heat — never packet or flight registers). */
 #define IS_EVEN(x,y,z) ((((x)+(y)+(z))&1)==0)
 
     {1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},        /* faces */
@@ -83,12 +83,12 @@ static inline int edgeLen2(int c){
 typedef struct {
     uint16_t winding[26];      /* channel populations — the directedness */
     uint16_t massFlight[26];   /* in-flight mass per channel */
-    uint8_t  photon[26];       /* packet counts (the offers) */
-    uint8_t  photonNu[26];     /* packet nu tags (the energy) */
+    uint8_t  packet[26];       /* packet counts (the offers) */
+    uint8_t  packetNu[26];     /* packet nu tags (the energy) */
     uint8_t  incip[26];        /* armed incipients per channel (negotiations) */
     uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag) */
     uint8_t  incipBorn[26];    /* each incipient's offer birth tick (tau) */
-    uint8_t  photonBorn[26];   /* packet birth tick — propagates with nu */
+    uint8_t  packetBorn[26];   /* packet birth tick — propagates with nu */
     uint8_t  ack[26];          /* returning confirms (the ACK counts) */
     uint8_t  ackTtl[26];       /* hops remaining back to the emitter */
     uint8_t  ackRtt[26];       /* the round-trip the ACK delivers */
@@ -117,7 +117,7 @@ static int *procList, nProc;
 static uint64_t qEvents[32];
 static uint64_t qTick;
 static int qFusionWall=256;   /* pair-production energy threshold —
-     * nua+nub must clear it (each photon above ~mc2, not a crowd
+     * nua+nub must clear it (each packet above ~mc2, not a crowd
      * of weak ones) */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
@@ -156,7 +156,7 @@ static inline int nbr(int x,int y,int z,int dx,int dy,int dz){
 static int node_live(const NodeState *n){
     if(n->mass)return 1;
     for(int c=0;c<QChannels;c++)
-        if(n->winding[c]||n->photon[c]||n->massFlight[c]||n->incip[c])return 1;
+        if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
     return 0;
 }
 
@@ -272,7 +272,7 @@ static uint32_t site_unwind(int x,int y,int z,int si){
     uint32_t shed=m-next;if(shed<1)shed=1;
     uint32_t da=a>shed?shed:a, db=b>shed?shed:b;
     n->winding[2*be]-=da;n->winding[2*be+1]-=db;
-    return da+db;   /* the TOTAL shed — the conserved token (photon
+    return da+db;   /* the TOTAL shed — the conserved token (packet
                      * nu and mass condensation both account it) */
 }
 
@@ -332,11 +332,11 @@ void moore26_tick(void){
         grid_next[si]=grid_current[si];
     PROC_NODES_END
 
-    /* Phase 1: packet flight — photons hop 1 node/tick along their
+    /* Phase 1: packet flight — packets hop 1 node/tick along their
      * channel direction (c at transit scale). PULL-MODEL: each node
      * reads its upstream neighbor's channel (unique writer per slot —
      * no send/receive race). Arriving flux DECAYS into heat at the
-     * destination's density: opaque media thermalize photons, sparse
+     * destination's density: opaque media thermalize packets, sparse
      * vacuum passes them — the field's thermalization sink (qi3's
      * vacuum-absorption opacity). */
     PROC_NODES
@@ -347,9 +347,9 @@ void moore26_tick(void){
         uint32_t v[26],nu[26];uint8_t born[26];int anyp=0;
         for(int c=0;c<QChannels;c++){
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
-            v[c]=grid_current[up].photon[c];
-            nu[c]=grid_current[up].photonNu[c];
-            born[c]=grid_current[up].photonBorn[c];
+            v[c]=grid_current[up].packet[c];
+            nu[c]=grid_current[up].packetNu[c];
+            born[c]=grid_current[up].packetBorn[c];
             if(v[c])anyp=1;
         }
         int live=0;
@@ -364,7 +364,7 @@ void moore26_tick(void){
             /* non-edge channels don't transport — the register keeps
              * whatever was parked there (structural reservoir). */
             if(!IS_EDGE(c))continue;
-            if(!v[c]){grid_next[si].photon[c]=0;continue;}
+            if(!v[c]){grid_next[si].packet[c]=0;continue;}
             uint32_t nuv=nu[c]?nu[c]:1;
             /* decay -> heat: the arriving packet's energy becomes the
              * node's local temperature (not lost — the thermal sink
@@ -378,9 +378,9 @@ void moore26_tick(void){
                 qEvents[7]+=(uint64_t)decay*nuv;
             }
             uint32_t r=v[c]-decay;
-            grid_next[si].photon[c]=(uint8_t)(r>255?255:r);
-            grid_next[si].photonNu[c]=(uint8_t)nuv;
-            grid_next[si].photonBorn[c]=born[c];
+            grid_next[si].packet[c]=(uint8_t)(r>255?255:r);
+            grid_next[si].packetNu[c]=(uint8_t)nuv;
+            grid_next[si].packetBorn[c]=born[c];
         }
         /* local heat drain — the reservoir cools into the sub-grid
          * depth (per-node state, NOT a global bath): each node's
@@ -389,21 +389,21 @@ void moore26_tick(void){
         uint16_t h=grid_next[si].heat;
         if(h)grid_next[si].heat=h-(h>>7);
         /* thermal re-emission — the hot sub-grid fluctuates and
-         * boils a fraction of its stored energy back into a photon
-         * (the CMB-like floor: opaque structure grinds photons to
+         * boils a fraction of its stored energy back into a packet
+         * (the CMB-like floor: opaque structure grinds packets to
          * heat, hot vacuum stochastically re-radiates). CONSERVED:
          * heat is debited exactly the minted nu. */
         if(h>128&&(rand_site(si,50)&63)==0){
-            /* re-emit only onto transporting edge channels — a photon
+            /* re-emit only onto transporting edge channels — a packet
              * minted on a face/corner register would freeze there. */
             int c=6+rand_site(si,51)%12;
-            if(grid_next[si].photon[c]<255){
+            if(grid_next[si].packet[c]<255){
                 uint32_t nu=(uint32_t)(h>>3)>255?255:(uint32_t)(h>>3);
                 if(nu){
                     grid_next[si].heat-=(uint16_t)nu;
-                    grid_next[si].photon[c]++;
-                    grid_next[si].photonNu[c]=(uint8_t)nu;
-                    grid_next[si].photonBorn[c]=(uint8_t)qTick;
+                    grid_next[si].packet[c]++;
+                    grid_next[si].packetNu[c]=(uint8_t)nu;
+                    grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
                 }
             }
@@ -413,7 +413,7 @@ void moore26_tick(void){
     /* Phase 1b: mass stream + junction collide — in-flight mass
      * pulls along its channel (unique writer per slot). Opposing
      * arrivals annihilate AT the meeting node (matter/antimatter ->
-     * back-to-back photons + charge residue); survivors PARK into
+     * back-to-back packets + charge residue); survivors PARK into
      * the node's mass — the knot's anchor shifting forward. */
     PROC_NODES
         uint32_t in[26];int8_t cin[26];
@@ -442,13 +442,13 @@ void moore26_tick(void){
             if(hit){
                 in[2*e]-=hit;in[2*e+1]-=hit;
                 uint32_t nu=grid_current[si].mass>4?grid_current[si].mass>>2:64;
-                uint32_t r0=255-grid_next[si].photon[2*e],r1=255-grid_next[si].photon[2*e+1];
-                grid_next[si].photon[2*e]  +=hit<r0?hit:r0;
-                grid_next[si].photon[2*e+1]+=hit<r1?hit:r1;
-                grid_next[si].photonNu[2*e]=nu;
-                grid_next[si].photonNu[2*e+1]=nu;
-                grid_next[si].photonBorn[2*e]=(uint8_t)qTick;
-                grid_next[si].photonBorn[2*e+1]=(uint8_t)qTick;
+                uint32_t r0=255-grid_next[si].packet[2*e],r1=255-grid_next[si].packet[2*e+1];
+                grid_next[si].packet[2*e]  +=hit<r0?hit:r0;
+                grid_next[si].packet[2*e+1]+=hit<r1?hit:r1;
+                grid_next[si].packetNu[2*e]=nu;
+                grid_next[si].packetNu[2*e+1]=nu;
+                grid_next[si].packetBorn[2*e]=(uint8_t)qTick;
+                grid_next[si].packetBorn[2*e+1]=(uint8_t)qTick;
                 /* charge residue is the SIGNED sum of what arrived —
                  * e+ + e- leaves nothing; like signs accumulate. */
                 int32_t ch=(int32_t)grid_next[si].charge+(int)cin[2*e]+(int)cin[2*e+1];
@@ -517,7 +517,7 @@ void moore26_tick(void){
     }
 
     /* Phase 2: OFFER — arrived packets arm incipient transactions.
-     * A photon on channel c offers to the node; passing the catch
+     * A packet on channel c offers to the node; passing the catch
      * gate (bare vacuum ~1/16, deeper structure catches more) and
      * the edge-local match (the channel's own absorption line), it
      * arms an incipient and leaves the stream. The node can hold at
@@ -526,7 +526,7 @@ void moore26_tick(void){
      * bounce — deflection, not absorption). */
     PROC_NODES
         NodeState *n=&grid_next[si],*o=&grid_current[si];
-        /* PAIR PRODUCTION (photon+photon -> mass): bare nodes only —
+        /* PAIR PRODUCTION (packet+packet -> mass): bare nodes only —
          * opposing arrivals on the same axis fuse when their combined
          * nu clears the fusion wall. The residue crystallizes as
          * mass+charge and LAUNCHES apart on the arrival channels
@@ -539,13 +539,13 @@ void moore26_tick(void){
                  * face/corner registers don't fuse or launch. */
                 if(!IS_EDGE(c))continue;
                 int oc=c^1;
-                uint32_t a=n->photon[c],b=n->photon[oc];
+                uint32_t a=n->packet[c],b=n->packet[oc];
                 if(!a||!b)continue;
-                uint32_t nua=n->photonNu[c]?n->photonNu[c]:1;
-                uint32_t nub=n->photonNu[oc]?n->photonNu[oc]:1;
+                uint32_t nua=n->packetNu[c]?n->packetNu[c]:1;
+                uint32_t nub=n->packetNu[oc]?n->packetNu[oc]:1;
                 if(nua+nub<(uint32_t)qFusionWall)continue;
                 uint32_t pair=a<b?a:b;
-                n->photon[c]-=pair;n->photon[oc]-=pair;
+                n->packet[c]-=pair;n->packet[oc]-=pair;
                 uint64_t dep=(uint64_t)pair*(nua+nub);
                 uint32_t m=n->mass+(uint32_t)(dep>>5);
                 n->mass=(uint16_t)(m>65535?65535:m);
@@ -565,11 +565,11 @@ void moore26_tick(void){
             }
         }
         int lvl=site_level(o);if(lvl<1)lvl=1;
-        if(!IS_EVEN(x,y,z))continue;   /* photons never arm on odd cells */
+        if(!IS_EVEN(x,y,z))continue;   /* packets never arm on odd cells */
         for(int c=0;c<QChannels;c++){
-            if(!n->photon[c])continue;
+            if(!n->packet[c])continue;
             if((rand_site(si,20+c)&15)>=lvl)continue;     /* catch gate */
-            uint32_t nu=n->photonNu[c]?n->photonNu[c]:1;
+            uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
             int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
             if(line<1)line=1;
             if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue; /* off-band: flies on */
@@ -582,19 +582,19 @@ void moore26_tick(void){
             int cap=13-((n->charge<0?-n->charge:n->charge)>>3);
             if(cap<4)cap=4;
             if(armed>=cap){
-                /* DECLINED — deflect to the freest channel: the photon
+                /* DECLINED — deflect to the freest channel: the packet
                  * bounces off the dense field to find another target
                  * rather than stacking inside it. */
                 int fc=6;uint32_t fo=255;
                 /* deflection target must be a transporting edge —
                  * scattering onto a face/corner register freezes the
-                 * photon in a dead channel under the FCC gate. */
+                 * packet in a dead channel under the FCC gate. */
                 for(int c2=6;c2<18;c2++){
-                    if(n->photon[c2]<fo){fo=n->photon[c2];fc=c2;}
+                    if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
                 }
-                n->photon[fc]++;
-                n->photonNu[fc]=(uint8_t)nu;
-                n->photon[c]--;
+                n->packet[fc]++;
+                n->packetNu[fc]=(uint8_t)nu;
+                n->packet[c]--;
                 qEvents[30]++;
                 continue;
             }
@@ -602,8 +602,8 @@ void moore26_tick(void){
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
             n->incipNu[c]=(uint8_t)((nu>127?127:nu)|(nu==geo_gap(o)?0x80:0));
-            n->incipBorn[c]=n->photonBorn[c];
-            n->photon[c]--;
+            n->incipBorn[c]=n->packetBorn[c];
+            n->packet[c]--;
             qEvents[5]++;
         }
     PROC_NODES_END
@@ -616,12 +616,12 @@ void moore26_tick(void){
      * edge; all-full sinks to charge (the thermalization path). */
     PROC_NODES
         NodeState *n=&grid_next[si],*o=&grid_current[si];
-        /* ACK transit — returning confirms pull home like photons;
+        /* ACK transit — returning confirms pull home like packets;
          * expiry delivers the measured reach to the emitter's edge
          * (the bond channel — its distance feeds emitted spectra). */
         for(int c=0;c<QChannels;c++){
             if(!IS_EVEN(x,y,z)){n->ack[c]=0;continue;}  /* ack rides the
-             * even-sublattice transport graph like photons do */
+             * even-sublattice transport graph like packets do */
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             uint8_t a=grid_current[up].ack[c];
             if(!a){n->ack[c]=0;continue;}
@@ -641,14 +641,14 @@ void moore26_tick(void){
                  * laser analog — not a deposit). */
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(shed>=2){
-                    n->photon[c]++;
-                    n->photonNu[c]=(uint8_t)(shed>>1);
-                    n->photonBorn[c]=(uint8_t)qTick;
+                    n->packet[c]++;
+                    n->packetNu[c]=(uint8_t)(shed>>1);
+                    n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
                 } else {
-                    n->photon[c]++;              /* can't drop: pass one */
-                    n->photonNu[c]=(uint8_t)nu;
-                    n->photonBorn[c]=(uint8_t)qTick;
+                    n->packet[c]++;              /* can't drop: pass one */
+                    n->packetNu[c]=(uint8_t)nu;
+                    n->packetBorn[c]=(uint8_t)qTick;
                 }
                 continue;
             }
@@ -808,7 +808,7 @@ void moore26_tick(void){
 
     /* Phase 6: emission — the bound state radiates. A site at level
      * n>=2 stochastically sheds one rung of its weakest committed
-     * edge into a photon. The photon needs a channel mode with room
+     * edge into a packet. The packet needs a channel mode with room
      * (graded Pauli — refusal scales with occupancy) and escapes
      * only if the local density lets it (dense media stall the decay
      * product — the measured neighborhood IS the pressure). */
@@ -827,12 +827,12 @@ void moore26_tick(void){
          * channel is the established bond, not a random direction. */
         int nb=0,blive=-1;
         for(int ed=3;ed<=8;ed++)     /* edge pairs only — a face/corner
-         * bond emission would freeze the photon in a dead channel */
+         * bond emission would freeze the packet in a dead channel */
             if(o->bondDist[ed]){nb++;blive=ed;}
         for(int try_=0;try_<4;try_++){
             int tc=(try_==0&&nb==1)?(blive<<1)|(rand_site(si,11)&1)
                                   :6+rand_site(si,2+try_)%12;   /* edge channels only */
-            uint32_t occ=grid_next[si].photon[tc];
+            uint32_t occ=grid_next[si].packet[tc];
             if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
         }
         if(c<0){qEvents[31]++;continue;}       /* modes refuse — stable */
@@ -851,11 +851,11 @@ void moore26_tick(void){
         /* species-inverse: a composite's shed condenses to mass
          * instead of radiating, until the mass:bond ratio equilibrates
          * — the closed cycle where structure and mass hold each
-         * other. A bare (massless) site still radiates a photon. */
+         * other. A bare (massless) site still radiates a packet. */
         /* SPECIES-INVERSE, conserved: the shed winding condenses to
          * mass — mass += da+db exactly what the edges lost (the
          * mass:bond ratio equilibrating, no minted energy). A bare
-         * (massless) site still radiates a photon instead. */
+         * (massless) site still radiates a packet instead. */
         if(o->mass>0&&(uint64_t)o->mass*8<loop_winding(o)){
             uint32_t shed=site_unwind(x,y,z,si);
             if(!shed)continue;
@@ -864,18 +864,18 @@ void moore26_tick(void){
             qEvents[29]++;
             continue;
         }
-        if(!IS_EVEN(x,y,z))continue;   /* photons are born only on the
+        if(!IS_EVEN(x,y,z))continue;   /* packets are born only on the
          * transport graph — odd cells hold structure; their unwound
          * energy stays wound (conserved, not minted). */
-        /* CONSERVING emission: the photon's nu IS half the shed
+        /* CONSERVING emission: the packet's nu IS half the shed
          * (per-side) — recapture deposits nu per channel, restoring
          * exactly da+db total (net zero), while escape or
          * thermalization makes the emission real radiation. */
         uint32_t shed=site_unwind(x,y,z,si);
         if(shed<2)continue;
-        grid_next[si].photon[c]++;
-        grid_next[si].photonNu[c]=(uint8_t)((shed>>1)>255?255:(shed>>1));
-        grid_next[si].photonBorn[c]=(uint8_t)qTick;
+        grid_next[si].packet[c]++;
+        grid_next[si].packetNu[c]=(uint8_t)((shed>>1)>255?255:(shed>>1));
+        grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
@@ -962,19 +962,19 @@ void moore26_winding_set(int x,int y,int z,int c,uint32_t v){
     grid_next[z*QWidth*QHeight+y*QWidth+x].winding[c]=v;
     mark_chunk(x,y,z);
 }
-uint32_t moore26_photon_get(int x,int y,int z,int c){
-    return grid_current[z*QWidth*QHeight+y*QWidth+x].photon[c];
+uint32_t moore26_packet_get(int x,int y,int z,int c){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c];
 }
-void moore26_photon_set(int x,int y,int z,int c,uint32_t v){
+void moore26_packet_set(int x,int y,int z,int c,uint32_t v){
     if(!IS_EVEN(x,y,z))return;   /* odd sublattice is not for use —
      * quanta setters silently refuse interstitial cells */
-    grid_current[z*QWidth*QHeight+y*QWidth+x].photon[c]=v;
-    grid_current[z*QWidth*QHeight+y*QWidth+x].photonBorn[c]=(uint8_t)qTick;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c]=v;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].packetBorn[c]=(uint8_t)qTick;
     mark_chunk(x,y,z);
 }
-void moore26_photon_nu_set(int x,int y,int z,int c,uint32_t v){
+void moore26_packet_nu_set(int x,int y,int z,int c,uint32_t v){
     if(!IS_EVEN(x,y,z))return;
-    grid_current[z*QWidth*QHeight+y*QWidth+x].photonNu[c]=v;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c]=v;
 }
 void moore26_mass_set(int x,int y,int z,uint32_t v){
     grid_current[z*QWidth*QHeight+y*QWidth+x].mass=v;
@@ -1054,7 +1054,7 @@ uint64_t moore26_sum(int what){
         switch(what){
             case 0:t+=n->mass;break;
             case 1:for(int c=0;c<QChannels;c++)t+=n->winding[c];break;
-            case 2:for(int c=0;c<QChannels;c++)t+=n->photon[c];break;
+            case 2:for(int c=0;c<QChannels;c++)t+=n->packet[c];break;
             case 3:t+=n->heat;break;
             case 4:t+=n->charge<0?-(int32_t)n->charge:n->charge;break;
         }
