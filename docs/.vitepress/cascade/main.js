@@ -14,8 +14,8 @@
  *   pol       — signed charge:           deep blue (-q) -> magenta (+q)
  *
  * Controls mirror the cascade test rig:
- *   ☀ drive — convergent photon feed (26 spokes aimed at the core)
- *   ➤ beam  — +x photon stream (the hexbuckle probe)
+ *   ☀ drive — convergent quantum feed (26 spokes aimed at the core)
+ *   ➤ beam  — +x quantum stream (the hexbuckle probe)
  *   ⌖ lump  — drop a wound rest-mass lump onto the slice plane
  */
 
@@ -238,7 +238,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   for (let c = 0; c < NCH; c++)
     CV.push([wasm._moore26_cvc(c, 0), wasm._moore26_cvc(c, 1), wasm._moore26_cvc(c, 2)]);
 
-  // Convergent photon feed: each channel sources photons at a point
+  // Convergent quantum feed: each channel sources quantums at a point
   // RAY cells back along its direction — 26 spokes aimed at the core.
   // Pressure-regulated: stops pouring once the spoke cell is full, so
   // the field equilibrates against absorption instead of saturating
@@ -255,19 +255,19 @@ export async function initCascadeSimulator(root, opts = {}) {
         for (let dy = -2; dy <= 2; dy++)
           for (let dz = -1; dz <= 1; dz++) {
             const sy = CY + dy, sz = CZ + dz, sx = 2;
-            const cur = wasm._moore26_photon_get(sx, sy, sz, c);
+            const cur = wasm._moore26_quantum_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
-              wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
-              wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
+              wasm._moore26_quantum_set(sx, sy, sz, c, cur + 2);
+              wasm._moore26_quantum_nu_set(sx, sy, sz, c, FEED_NU);
             }
           }
       }
       if (ui.drive) {
         const sx = CX - RAY * vx, sy = CY - RAY * vy, sz = CZ - RAY * vz;
-        const cur = wasm._moore26_photon_get(sx, sy, sz, c);
+        const cur = wasm._moore26_quantum_get(sx, sy, sz, c);
         if (cur < FEED_CAP) {
-          wasm._moore26_photon_set(sx, sy, sz, c, cur + 1);
-          wasm._moore26_photon_nu_set(sx, sy, sz, c, FEED_NU);
+          wasm._moore26_quantum_set(sx, sy, sz, c, cur + 1);
+          wasm._moore26_quantum_nu_set(sx, sy, sz, c, FEED_NU);
         }
       }
     }
@@ -491,10 +491,10 @@ export async function initCascadeSimulator(root, opts = {}) {
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
   });
   toggle('[data-drive]', 'drive',
-    'convergent feed on — 26 photon spokes pouring at the core',
+    'convergent feed on — 26 quantum spokes pouring at the core',
     'feed cut — the core starves');
   toggle('[data-beam]', 'beam',
-    '+x photon beam on — the probe stream',
+    '+x quantum beam on — the probe stream',
     'beam off');
   const lumpBtn = root.querySelector('[data-lump]');
   const tubeBtn = root.querySelector('[data-tube]');
@@ -704,7 +704,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       const phot = Number(wasm._moore26_sum(2)), chg = Number(wasm._moore26_sum(4));
       const cx = Number(wasm._moore26_cm(0)) / 256, cyy = Number(wasm._moore26_cm(1)) / 256, cz = Number(wasm._moore26_cm(2)) / 256;
       const cm = mass > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no knot';
-      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · phot=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
+      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}t${ui.tick} · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t`;
     }
   };
   raf = requestAnimationFrame(frame);

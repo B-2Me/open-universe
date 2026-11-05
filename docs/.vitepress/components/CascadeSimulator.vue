@@ -55,7 +55,7 @@ onUnmounted(() => {
     <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
 
     <!-- telemetry chip -->
-    <div class="cascade-hud" data-hud title="t = physics ticks · mass = parked quanta · wind = bound circulation · phot = free photons · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
+    <div class="cascade-hud" data-hud title="t = physics ticks · mass = parked quanta · wind = bound circulation · phot = free quantums · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div>
     <!-- transient status line under the telemetry chip — empty = hidden -->
     <div class="cascade-status" data-status></div>
 
@@ -82,11 +82,11 @@ onUnmounted(() => {
 
       <div class="cascade-well cascade-switches" role="group" aria-label="Flux switches">
         <button data-drive class="on" aria-pressed="true"
-                title="Convergent feed — 26 photon spokes pour at the core"
+                title="Convergent feed — 26 quantum spokes pour at the core"
                 aria-label="Toggle convergent drive">☀ feed</button>
         <button data-beam aria-pressed="false"
-                title="Photon beam — +x stream; the probe bombardment"
-                aria-label="Toggle photon beam">➤ beam</button>
+                title="Quantum beam — +x stream; the probe bombardment"
+                aria-label="Toggle quantum beam">➤ beam</button>
       </div>
 
       <div class="cascade-well cascade-selects">
@@ -256,7 +256,7 @@ onUnmounted(() => {
     inset 0 2px 7px rgba(0, 0, 0, 0.65),
     0 1px 0 rgba(160, 200, 255, 0.07);
 }
-.cascade-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; align-items: center; }
+.cascade-row { display: flex; flex-basis: 100%; flex-wrap: wrap; justify-content: center; gap: 6px 10px; align-items: center; }
 .cascade-transport, .cascade-switches { gap: 4px; }
 .cascade-sliders { flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
 
