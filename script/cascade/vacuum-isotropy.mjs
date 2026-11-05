@@ -21,9 +21,10 @@ const c0 = W >> 1;
 M._moore26_init(W, W, W);
 
 /* point source: one tick of photons on every edge channel at center */
+const sc = (3 * c0 & 1) ? c0 + 1 : c0;    /* even-sublattice source */
 for (let c = 6; c < 18; c++) {
-  M._moore26_photon_set(c0, c0, c0, c, 200);
-  M._moore26_photon_nu_set(c0, c0, c0, c, 96);
+  M._moore26_photon_set(c0, c0, sc, c, 200);
+  M._moore26_photon_nu_set(c0, c0, sc, c, 96);
 }
 /* then propagate — no re-injection, just the front */
 for (let t = 0; t < T; t++) M._moore26_tick();

@@ -58,6 +58,11 @@ static int8_t QChannelVec[26][3] = {
  * live as structural registers (winding/charge/over-pressure) — they
  * just don't transport. */
 #define IS_EDGE(c) ((c)>=6&&(c)<=17)
+/* even sublattice of the ABC hex grid — only parity-even cells carry
+ * the transport graph. Edge hops preserve x+y+z parity, so the gate
+ * closes under transport; odd cells are pure structure (winding,
+ * mass, charge, heat — never photon or flight registers). */
+#define IS_EVEN(x,y,z) ((((x)+(y)+(z))&1)==0)
 
     {1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},        /* faces */
     {1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},                      /* xy edges */
@@ -335,6 +340,7 @@ void moore26_tick(void){
      * vacuum passes them — the field's thermalization sink (qi3's
      * vacuum-absorption opacity). */
     PROC_NODES
+        if(!IS_EVEN(x,y,z))continue;   /* transport lives on the even sublattice */
         NodeState *o=&grid_current[si];
         /* gather upstream arrivals first — only nodes receiving flux
          * pay the 26-neighbor opacity scan (halo vacuum skips it). */
@@ -557,6 +563,7 @@ void moore26_tick(void){
             }
         }
         int lvl=site_level(o);if(lvl<1)lvl=1;
+        if(!IS_EVEN(x,y,z))continue;   /* photons never arm on odd cells */
         for(int c=0;c<QChannels;c++){
             if(!n->photon[c])continue;
             if((rand_site(si,20+c)&15)>=lvl)continue;     /* catch gate */
@@ -611,6 +618,8 @@ void moore26_tick(void){
          * expiry delivers the measured reach to the emitter's edge
          * (the bond channel — its distance feeds emitted spectra). */
         for(int c=0;c<QChannels;c++){
+            if(!IS_EVEN(x,y,z)){n->ack[c]=0;continue;}  /* ack rides the
+             * even-sublattice transport graph like photons do */
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             uint8_t a=grid_current[up].ack[c];
             if(!a){n->ack[c]=0;continue;}
@@ -815,11 +824,12 @@ void moore26_tick(void){
          * (an ACK-delivered bond), emit along it — the transaction's
          * channel is the established bond, not a random direction. */
         int nb=0,blive=-1;
-        for(int ed=0;ed<QChannels/2;ed++)
+        for(int ed=3;ed<=8;ed++)     /* edge pairs only — a face/corner
+         * bond emission would freeze the photon in a dead channel */
             if(o->bondDist[ed]){nb++;blive=ed;}
         for(int try_=0;try_<4;try_++){
             int tc=(try_==0&&nb==1)?(blive<<1)|(rand_site(si,11)&1)
-                                  :rand_site(si,2+try_)%QChannels;
+                                  :6+rand_site(si,2+try_)%12;   /* edge channels only */
             uint32_t occ=grid_next[si].photon[tc];
             if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
         }
@@ -852,6 +862,9 @@ void moore26_tick(void){
             qEvents[29]++;
             continue;
         }
+        if(!IS_EVEN(x,y,z))continue;   /* photons are born only on the
+         * transport graph — odd cells hold structure; their unwound
+         * energy stays wound (conserved, not minted). */
         /* CONSERVING emission: the photon's nu IS half the shed
          * (per-side) — recapture deposits nu per channel, restoring
          * exactly da+db total (net zero), while escape or
@@ -870,7 +883,9 @@ void moore26_tick(void){
      * threshold, then pair-produce at the 2 endpoints. Not a
      * single-link saturation — the whole tube's tension. */
     PROC_NODES
-        for(int e=0;e<QChannels/2;e++){
+        for(int e=3;e<=8;e++){   /* edge pairs only — faces/corners
+         * are dead registers under FCC; pair production on them
+         * would freeze the recoiling mass. */
             uint32_t a=grid_current[si].winding[2*e],b=grid_current[si].winding[2*e+1];
             if(a<128||a!=b)continue;
             /* only the tube HEAD fires — the upstream neighbor must be

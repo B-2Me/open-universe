@@ -244,6 +244,9 @@ export async function initCascadeSimulator(root, opts = {}) {
   // the field equilibrates against absorption instead of saturating
   // to white at 32^3.
   const RAY = 3, FEED_CAP = 2, FEED_NU = 96, BEAM_CAP = 10;
+  /* photons live only on the even sublattice — snap a source cell so
+   * x+y+z is even (nudge z) or the packet freezes on an interstitial */
+  const evenSnap = (x, y, z) => ((x + y + z) & 1) ? [x, y, z + 1] : [x, y, z];
   /* two separate equilibria — the feed is a bulk bath (global packet
    * budget), the beam is a rate-limited probe stream (per-cell cap
    * keeps its sources topped up). A shared pool would let the feed
@@ -264,8 +267,8 @@ export async function initCascadeSimulator(root, opts = {}) {
          * climbs +y through the center, then exits the far corner. */
         for (let dy = -2; dy <= 2; dy++)
           for (let dz = -1; dz <= 1; dz++) {
-            const sy = CY - (CX - 2) + dy, sz = CZ + dz, sx = 2;
-            if (sy < 1 || sy >= H3 - 1) continue;
+            let [sx, sy, sz] = evenSnap(2, CY - (CX - 2) + dy, CZ + dz);
+            if (sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
             const cur = wasm._moore26_photon_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
               wasm._moore26_photon_set(sx, sy, sz, c, cur + 2);
@@ -283,9 +286,11 @@ export async function initCascadeSimulator(root, opts = {}) {
       for (let k = 0; k < 16; k++) {
         const th = Math.random() * 2 * Math.PI;
         const ph = Math.acos(2 * Math.random() - 1);
-        const sx = Math.round(CX + FEED_R * Math.sin(ph) * Math.cos(th));
-        const sy = Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th));
-        const sz = Math.round(CZ + FEED_R * Math.cos(ph));
+        let [sx, sy, sz] = evenSnap(
+          Math.round(CX + FEED_R * Math.sin(ph) * Math.cos(th)),
+          Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th)),
+          Math.round(CZ + FEED_R * Math.cos(ph)));
+        if (sx < 1 || sy < 1 || sz < 1 || sx >= W3 - 1 || sy >= H3 - 1 || sz >= D3 - 1) continue;
         const dx = CX - sx, dy = CY - sy, dz = CZ - sz;
         let bc = 6, bs = -1;
         for (let c = 6; c < 18; c++) {

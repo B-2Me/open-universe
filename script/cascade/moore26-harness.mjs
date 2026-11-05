@@ -178,11 +178,13 @@ for (let t = 1; t <= TICKS; t++) {
   /* probe under the FCC gate: -y is a dead face register — the probe
    * rides the four -y edge channels {7,8,15,17}, a zigzag corridor. */
   if ((SCEN === 'hexbuckle' || SCEN === 'flat') && t <= PROBE)
-    for (let x = c0 - SRC_HALF; x <= c0 + SRC_HALF; x++)
+    for (let x = c0 - SRC_HALF; x <= c0 + SRC_HALF; x++) {
+      const sz = ((x + SRC_Y + c0) & 1) ? c0 + 1 : c0;  /* even-sublattice snap */
       for (const c of [7, 8, 15, 17]) {
-        M._moore26_photon_set(x, SRC_Y, c0, c, 8);
-        M._moore26_photon_nu_set(x, SRC_Y, c0, c, PROBE_NU);
+        M._moore26_photon_set(x, SRC_Y, sz, c, 8);
+        M._moore26_photon_nu_set(x, SRC_Y, sz, c, PROBE_NU);
       }
+    }
   M._moore26_tick();
   if (t % 20 === 0) {
     const s = totals();
