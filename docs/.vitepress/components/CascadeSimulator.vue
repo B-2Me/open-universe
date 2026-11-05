@@ -113,6 +113,11 @@ onUnmounted(() => {
               <option value="2">thermal</option>
               <option value="3">pol</option>
             </select></label>
+            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i><i>Scen</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
+              <option value="vacuum" selected>vacuum</option>
+              <option value="tube">flux tube</option>
+              <option value="lump">wound lump</option>
+            </select></label>
             <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders">▤ Tuning ▾</button>
           </div>
         </div>
@@ -452,7 +457,7 @@ onUnmounted(() => {
    across it instead of floating centered with voids on each side */
 .cascade-grp-line { display: flex; justify-content: center; }
 .grp-inject .cascade-grp-row { justify-content: center; }
-.grp-presets { justify-content: flex-start; }
+.grp-presets { flex: 1 1 100%; justify-content: flex-start; }
 .grp-presets .cascade-grp-row { justify-content: center; }
 
 /* accordion wells always claim a full dock line — a partial row
@@ -474,10 +479,10 @@ onUnmounted(() => {
 .cascade-grp-row > button,
 .cascade-dock select {
   position: relative;
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 10px;
-  font: 13px monospace;
+  min-width: 44px;
+  min-height: 42px;
+  padding: 0 12px;
+  font: 14px monospace;
   color: var(--cascade-muted);
   background: linear-gradient(180deg, var(--cascade-btn-top), var(--cascade-btn-bot));
   border: 1px solid var(--cascade-bevel-dark);

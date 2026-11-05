@@ -493,6 +493,16 @@ export async function initCascadeSimulator(root, opts = {}) {
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
   });
+
+  bind('[data-scenario]', 'change', e => {
+    wasm._moore26_init(W3, H3, D3); ui.tick = 0;
+    rStep = 1; lowT = highT = null;
+    const s = e.target.value;
+    if (s === 'tube') seedTube(CX, CY, CZ);
+    else if (s === 'lump') seedLump(CX, CY, CZ);
+    upload(); dirty = true;
+    say(s === 'vacuum' ? 'cold vacuum' : `seeded ${s}`);
+  });
   toggle('[data-drive]', 'drive',
     'convergent feed on — 26 quantum spokes pouring at the core',
     'feed cut — the core starves');
@@ -540,6 +550,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: mass+winding+photons+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a saturated winding string between two mass anchors (watch it fracture) · wound lump: a bound knot at the core.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
