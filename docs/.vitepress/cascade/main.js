@@ -557,6 +557,12 @@ export async function initCascadeSimulator(root, opts = {}) {
      * initial quiet field the feed/beam/lump tools build on. */
     wasm._moore26_init(W3, H3, D3); ui.tick = 0;
     rStep = 1; lowT = highT = null;
+    /* reset restores the CURRENT scenario (re-seed, keep toggles) —
+     * without this, reset always dropped to cold vacuum */
+    const s = ui.scenario;
+    if (s === 'tube') seedTube(CX, CY, CZ);
+    else if (s === 'lump') seedLump(CX, CY, CZ);
+    else if (s === 'buckle') seedBuckle(16);
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
   });
@@ -567,10 +573,14 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* a scenario REPLACES the scene: clear + restore default toggles
      * (feed on, beam/tools off) so the seed isn't drowned by whatever
      * was running — reset alone keeps toggles untouched. */
-    ui.drive = true; ui.beam = false; ui.lumpArm = false; ui.tubeArm = false;
+    /* the feed floods the flexoelectric signal — buckle gets a clean
+     * field (beam is the probe); other scenarios default feed on */
+    ui.scenario = e.target.value;
+    ui.drive = ui.scenario !== 'buckle';
+    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false;
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
-    tSync('[data-drive]', true); tSync('[data-beam]', false);
-    const s = e.target.value;
+    tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
+    const s = ui.scenario;
     if (s === 'tube') seedTube(CX, CY, CZ);
     else if (s === 'lump') seedLump(CX, CY, CZ);
     else if (s === 'buckle') seedBuckle(16);
