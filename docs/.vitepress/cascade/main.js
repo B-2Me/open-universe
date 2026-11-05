@@ -255,10 +255,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   const FEED_TBL = [];
   {
     const FEED_R = Math.round(Math.min(W3, H3, D3) * 0.4);
-    const br = FEED_R / 3;
+    const br = FEED_R / 2;
     let seed = 0x9e3779b9;
     const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 0x100000000;
-    for (let k = 0; k < 256; k++) {
+    for (let k = 0; k < 1024; k++) {
       const th = rnd() * 2 * Math.PI;
       const ph = Math.acos(2 * rnd() - 1);
       let [sx, sy, sz] = evenSnap(
@@ -313,7 +313,7 @@ export async function initCascadeSimulator(root, opts = {}) {
        * rain instead of 12 axis rays — the visible sphere. The
        * FEED_BUDGET cap keeps convergence from saturating. */
       for (let k = 0; k < 16; k++) {
-        const [sx, sy, sz, bc] = FEED_TBL[feedIdx = (feedIdx + 1) & 255];
+        const [sx, sy, sz, bc] = FEED_TBL[feedIdx = (feedIdx + 1) & 1023];
         const cur = wasm._moore26_photon_get(sx, sy, sz, bc);
         if (cur < FEED_CAP) {
           wasm._moore26_photon_set(sx, sy, sz, bc, cur + 1);
