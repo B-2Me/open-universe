@@ -247,6 +247,36 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* photons live only on the even sublattice — snap a source cell so
    * x+y+z is even (nudge z) or the packet freezes on an interstitial */
   const evenSnap = (x, y, z) => ((x + y + z) & 1) ? [x, y, z + 1] : [x, y, z];
+  /* precomputed feed table — a fixed set of shell sources + aimed
+   * channels, cycled through per tick. The substrate is 0.1fm cells:
+   * runtime Math.random per packet buys nothing over a deterministic
+   * seeded table, and 256 sources is plenty of variation. Same field
+   * every boot — runs are reproducible. */
+  const FEED_TBL = [];
+  {
+    const FEED_R = Math.round(Math.min(W3, H3, D3) * 0.4);
+    const br = FEED_R / 3;
+    let seed = 0x9e3779b9;
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 0x100000000;
+    for (let k = 0; k < 256; k++) {
+      const th = rnd() * 2 * Math.PI;
+      const ph = Math.acos(2 * rnd() - 1);
+      let [sx, sy, sz] = evenSnap(
+        Math.round(CX + FEED_R * Math.sin(ph) * Math.cos(th)),
+        Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th)),
+        Math.round(CZ + FEED_R * Math.cos(ph)));
+      const dx = CX + br * (rnd() * 2 - 1) - sx;
+      const dy = CY + br * (rnd() * 2 - 1) - sy;
+      const dz = CZ + br * (rnd() * 2 - 1) - sz;
+      let bc = 6, bs = -1;
+      for (let c = 6; c < 18; c++) {
+        const sc = CV[c][0] * dx + CV[c][1] * dy + CV[c][2] * dz;
+        if (sc > bs) { bs = sc; bc = c; }
+      }
+      FEED_TBL.push([sx, sy, sz, bc]);
+    }
+  }
+  let feedIdx = 0;
   /* two separate equilibria — the feed is a bulk bath (global packet
    * budget), the beam is a rate-limited probe stream (per-cell cap
    * keeps its sources topped up). A shared pool would let the feed
@@ -282,28 +312,8 @@ export async function initCascadeSimulator(root, opts = {}) {
        * each firing the edge channel aimed at the core. Isotropic
        * rain instead of 12 axis rays — the visible sphere. The
        * FEED_BUDGET cap keeps convergence from saturating. */
-      const FEED_R = Math.round(Math.min(W3, H3, D3) * 0.4);
       for (let k = 0; k < 16; k++) {
-        const th = Math.random() * 2 * Math.PI;
-        const ph = Math.acos(2 * Math.random() - 1);
-        let [sx, sy, sz] = evenSnap(
-          Math.round(CX + FEED_R * Math.sin(ph) * Math.cos(th)),
-          Math.round(CY + FEED_R * Math.sin(ph) * Math.sin(th)),
-          Math.round(CZ + FEED_R * Math.cos(ph)));
-        if (sx < 1 || sy < 1 || sz < 1 || sx >= W3 - 1 || sy >= H3 - 1 || sz >= D3 - 1) continue;
-        /* aim at a random point in a central ball (R/3 ≈ one channel
-         * cone's width at the core) — the 12-ray bundling smears into
-         * a blob while the shell still converges. The statistical
-         * transition: micro-faceted -> macro-smooth. */
-        const br = FEED_R / 3;
-        const dx = CX + br * (Math.random() * 2 - 1) - sx;
-        const dy = CY + br * (Math.random() * 2 - 1) - sy;
-        const dz = CZ + br * (Math.random() * 2 - 1) - sz;
-        let bc = 6, bs = -1;
-        for (let c = 6; c < 18; c++) {
-          const s = CV[c][0] * dx + CV[c][1] * dy + CV[c][2] * dz;
-          if (s > bs) { bs = s; bc = c; }
-        }
+        const [sx, sy, sz, bc] = FEED_TBL[feedIdx = (feedIdx + 1) & 255];
         const cur = wasm._moore26_photon_get(sx, sy, sz, bc);
         if (cur < FEED_CAP) {
           wasm._moore26_photon_set(sx, sy, sz, bc, cur + 1);
