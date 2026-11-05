@@ -155,13 +155,15 @@ export async function initCascadeSimulator(root, opts = {}) {
                 (typeof crossOriginIsolated === 'undefined' || crossOriginIsolated);
   const mtUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mt.js');
   const mtdUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mtd.js');
+  const mtnmUrl = wasmUrl.replace(/moore26\.js$/, 'moore26-mtnm.js');
   /* mt is opt-in (?mt or opts.useMT): the 8-thread build works (verified
    * ~4.4x in Node) but the browser worker bootstrap errors — noisy
    * default. ?mtd loads the PTHREADS_DEBUG+ASSERTIONS build for the
    * real worker error instead of 'undefined:undefined'. */
   const qs = new URLSearchParams(location.search);
-  const wantMT = canMT && (opts.useMT || qs.has('mt') || qs.has('mtd'));
+  const wantMT = canMT && (opts.useMT || qs.has('mt') || qs.has('mtd') || qs.has('mtnm'));
   const useDebug = qs.has('mtd');
+  const useNM = qs.has('mtnm');
   const loadScript = (src) => new Promise((res, rej) => {
     const sc = document.createElement('script');
     sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('load failed: ' + src));
@@ -174,27 +176,38 @@ export async function initCascadeSimulator(root, opts = {}) {
   if (!canMT) {
     try { await loadScript('/coi-serviceworker.js'); } catch (_) {}
   }
-  const mtFactory = useDebug ? 'createMoore26MTD' : 'createMoore26MT';
-  const mtSrc = useDebug ? mtdUrl : mtUrl;
-  if (wantMT && typeof globalThis[mtFactory] === 'undefined') {
-    try { await loadScript(mtSrc); } catch (_) { /* fall through to st */ }
-  }
-  if (wantMT && typeof globalThis[mtFactory] !== 'undefined') {
-    say('instantiating threaded wasm…');
-    try {
-      /* the worker bootstrap can hang (not reject) on a failed spawn —
-       * race it so a bad mt boot falls back to single-threaded instead
-       * of sticking on 'booting'. */
-      wasm = await Promise.race([
-        /* mainScriptUrlOrBlob is now in INCOMING_MODULE_JS_API for the
-         * mt build — it tells the pthread worker where the glue lives
-         * (document.currentScript is null for async-loaded scripts, so
-         * _scriptName alone can resolve wrong in the worker). */
-        globalThis[mtFactory]({ mainScriptUrlOrBlob: mtSrc }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
-      ]);
-      say(useDebug ? 'moore26-mtd — debug 8-thread OpenMP' : 'moore26-mt — 8-thread OpenMP', 4000);
-    } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
+  /* ?mtnm loads the NON-modular build — MODULARIZE glue defines the
+   * factory but doesn't auto-run inside spawned workers (they eval it,
+   * define the export, and sit silent -> 'loading-workers' hangs).
+   * Non-modular glue auto-initializes inside the worker — the model
+   * pthread workers are actually designed around. */
+  if (useNM) {
+    try { await loadScript(mtnmUrl); } catch (_) { }
+    if (typeof Module !== 'undefined') {
+      try {
+        wasm = await Promise.race([
+          Module.ready ? Module.ready.then(() => Module) : Promise.resolve(Module),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('mtnm boot timeout')), 8000)),
+        ]);
+        say('moore26-mtnm — non-modular 4-thread OpenMP', 4000);
+      } catch (e) { wasm = null; say('mtnm unavailable — falling back', 4000); }
+    }
+  } else {
+    const mtFactory = useDebug ? 'createMoore26MTD' : 'createMoore26MT';
+    const mtSrc = useDebug ? mtdUrl : mtUrl;
+    if (wantMT && typeof globalThis[mtFactory] === 'undefined') {
+      try { await loadScript(mtSrc); } catch (_) { /* fall through to st */ }
+    }
+    if (wantMT && typeof globalThis[mtFactory] !== 'undefined') {
+      say('instantiating threaded wasm…');
+      try {
+        wasm = await Promise.race([
+          globalThis[mtFactory]({ mainScriptUrlOrBlob: mtSrc }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('mt boot timeout')), 6000)),
+        ]);
+        say(useDebug ? 'moore26-mtd — debug OpenMP' : 'moore26-mt — OpenMP', 4000);
+      } catch (e) { wasm = null; say('mt unavailable — falling back to single-threaded', 4000); }
+    }
   }
   if (!wasm) {
     if (typeof createMoore26 === 'undefined') await loadScript(wasmUrl);
