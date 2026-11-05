@@ -127,7 +127,11 @@ export default defineConfig({
       name: 'coop-coep',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          if ((req.url || '').startsWith('/cascade-demo')) {
+          const url = req.url || '';
+          /* Worker scripts need their own require-corp to get an
+           * isolated global (SharedArrayBuffer) — page-level COEP does
+           * NOT propagate into dedicated workers. */
+          if (url.startsWith('/cascade-demo') || url.startsWith('/wasm/')) {
             /* require-corp (not credentialless): dedicated workers only
              * get SharedArrayBuffer under full cross-origin isolation —
              * credentialless leaves workers un-isolated -> the mt

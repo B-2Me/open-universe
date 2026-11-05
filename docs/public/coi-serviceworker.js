@@ -28,10 +28,14 @@ if (typeof window === 'undefined') {
           if (response.status === 0) return response;
 
           const newHeaders = new Headers(response.headers);
-          /* 'credentialless' COEP — still yields crossOriginIsolated
-           * (SharedArrayBuffer) but doesn't block cross-origin no-cors
-           * subresources the way 'require-corp' does. */
-          newHeaders.set('Cross-Origin-Embedder-Policy', 'credentialless');
+          /* 'credentialless' COEP for the document + subresources —
+           * still yields crossOriginIsolated but doesn't block
+           * cross-origin no-cors. EXCEPTION: wasm worker scripts get
+           * 'require-corp' — dedicated workers only become isolated
+           * (SharedArrayBuffer) when their own response carries it;
+           * credentialless leaves them un-isolated. */
+          newHeaders.set('Cross-Origin-Embedder-Policy',
+            r.url.includes('/wasm/') ? 'require-corp' : 'credentialless');
           newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
 
           return new Response(response.body, {
