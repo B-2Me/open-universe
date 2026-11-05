@@ -83,7 +83,6 @@ onUnmounted(() => {
           <div class="cascade-grp-row">
             <em>ops <button class="cascade-help" data-help="grp-ops" aria-label="About the session ops">?</button></em>
             <button data-spin class="tog on" aria-pressed="true" title="Auto-rotate" aria-label="Toggle auto-rotate"><span class="g">🪐</span><span class="l">orbit</span></button>
-            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders"><span class="g">▤</span><span class="l">tuning</span></button>
           </div>
         </div>
         <div class="cascade-grp-line">
@@ -96,6 +95,12 @@ onUnmounted(() => {
             <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
           </div>
         </div>
+        </div>
+        <div class="cascade-grp grp-util">
+          <div class="cascade-grp-row">
+            <em>util</em>
+            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders"><span class="g">▤</span><span class="l">tuning</span></button>
+          </div>
         </div>
       </div>
       <div class="cascade-well cascade-presets" role="group" aria-label="Presets">
@@ -653,10 +658,10 @@ onUnmounted(() => {
 }
 /* dropdowns never balloon to their longest option — the collapsed
    text truncates, the open menu still shows full names */
-/* second-row elements match the 40px button frames — same visual
-   weight, no skinny row under the transport controls */
-.cascade-field select, .cascade-flab {
-  min-height: 38px;
+/* second-row elements match the 40px button frames — uniform height
+   so flab labels and selects don't stagger */
+.cascade-field select, .cascade-flab, .cascade-accbtn {
+  height: 40px;
   font-size: 13px;
 }
 .cascade-field select[data-preset]   { width: 116px; }  /* "Full lattice" fits */
@@ -802,13 +807,11 @@ onUnmounted(() => {
    keeps a viewport-anchored height while the page itself scrolls when
    the dock grows; touch/narrow keeps the svh fit + contained scroll. */
 @media (min-width: 821px) and (pointer: fine) {
-  .cascade-simulator { height: auto; min-height: 0; }
-  .cascade-stage {
-    flex: none;
-    /* reserve for the TWO-row dock — 96px was tuned for one row */
-    height: calc(100svh - var(--tool-top, 76px) - 150px);
-    min-height: 320px;
-  }
+  /* fixed sim height + flex stage: the dock takes whatever it needs
+     (Tuning open included) and the stage shrinks — a fixed stage
+     height was clipping the open accordion off the bottom. */
+  .cascade-simulator { height: calc(100svh - var(--tool-top, 76px) - 8px); }
+  .cascade-stage { flex: 1; min-height: 200px; }
 }
 
 /* real 44px targets only where fingers live */
