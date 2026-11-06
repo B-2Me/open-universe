@@ -1191,3 +1191,6 @@ void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_dd_shift_set(int v){qDdShift=v;}
 void moore26_bend_shift_set(int v){qBendShift=v;}
 void moore26_rad_shift_set(int v){qRadShift=v;}
+int32_t moore26_chargeflight_get(int x,int y,int z,int c){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c];
+}
