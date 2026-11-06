@@ -38,11 +38,22 @@ and structure.
 
 ## The geometry
 
+![Rhombic dodecahedron — the FCC Voronoi cell: 6 axis vertices (order 4) = face channels, 8 corner vertices (order 3) = corner channels, 12 rhombic faces = transport edges](/images/rhombic-dodecahedron.png)
+
 - **Voronoi cell**: the FCC lattice's Wigner-Seitz cell is the
   **rhombic dodecahedron** — 12 rhombic faces, each facing one
   nearest neighbor = one transport channel. Face-transitive:
   every channel is symmetry-equivalent (which is *why* transport
   is isotropic — the fairness is geometric, not a rule).
+- **The register map IS the polyhedron**: `12 faces + 6 axis
+  vertices + 8 corner vertices = 26` channels. The `6` order-4
+  vertices (axis positions `(±2,0,0)`) are the face channels
+  `ch0–5`; the `8` order-3 vertices (cube corners `(±1,±1,±1)`)
+  are the corner channels `ch18–25`; the `12` rhombic faces are
+  the transport edges `ch6–17`. Vertex order explains the
+  asymmetry: `4` transport faces meet at each axis vertex vs
+  `3` at each corner — `⟨100⟩` axes are structurally more
+  congested than `⟨111⟩`.
 - **Neighbor shell**: the 12 nearest neighbors sit at the
   vertices of a **cuboctahedron** (the rhombic dodecahedron's
   dual — an Archimedean solid).
@@ -55,6 +66,8 @@ and structure.
   Pauli pair) and a third is refused.
 - **Hexagon hop sequence**: `ch8,12,16,9,13,15` — the six
   edges `⊥(1,1,1)`, each a `60°` turn.
+
+![Hexagonal cycles on the octahedral group — the {111} ring topology that hosts the two-slipstream Pauli pair](/images/octahedral-cycle-graph.png)
 
 ## Why not cubes?
 
