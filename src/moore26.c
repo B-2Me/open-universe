@@ -848,13 +848,16 @@ void moore26_tick(void){
                      * directedness first (circulation axis), else the
                      * freest edge (the corner). */
                     int fe=-1;int32_t dd=0;
-                    for(int e2=0;e2<QChannels/2;e2++){
+                    int rot2=(x+y+z+si)%13;
+                    for(int k_=0;k_<QChannels/2;k_++){
+                        int e2=(k_+rot2)%13;
                         int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
                         if(d2>dd&&m2<128){dd=d2;fe=e2;}
                     }
                     uint32_t fm=999;
-                    for(int e2=0;e2<QChannels/2&&fe<0;e2++){
+                    for(int k_=0;k_<QChannels/2&&fe<0;k_++){
+                        int e2=(k_+rot2)%13;
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
                         if(m2<128&&m2<fm){fm=m2;fe=e2;}
                     }
@@ -889,6 +892,10 @@ void moore26_tick(void){
      * atomic-free upgrade). */
     PROC_NODES
         NodeState *o=&grid_current[si];
+        uint32_t sent[26]={0};   /* per-node outgoing tally — clamps
+         * read grid_current−sent, NOT grid_next: incoming pushes from
+         * earlier-swept neighbors must not count as sendable, else
+         * conduction cascades in sweep order (the +x wind bug). */
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
             /* direction transport (qDdShift): an imbalanced edge's
@@ -908,12 +915,13 @@ void moore26_tick(void){
                 if(!qDdShift||rm<128){
                     if(qDdShift>=1){
                         uint32_t dk=ex>>qDdShift;
-                        uint32_t dav=grid_next[si].winding[big];
+                        uint32_t dav=o->winding[big]-sent[big];
                         if(dk>dav)dk=dav;
                         if(dk){
                             #pragma omp atomic
                             grid_next[ni].winding[big]+=dk;
                             grid_next[si].winding[big]-=dk;
+                            sent[big]+=dk;
                         }
                     }
                     continue;
@@ -931,19 +939,21 @@ void moore26_tick(void){
                         int t=d0>d1?2*e2:2*e2+1,w=d0>d1?d0:d1;
                         if(w<=0)continue;
                         uint32_t s=(ex*(uint32_t)w)>>qBendShift;
-                        uint32_t sav=grid_next[si].winding[big];
+                        uint32_t sav=o->winding[big]-sent[big];
                         if(s>sav)s=sav;
                         if(!s)continue;
                         grid_next[si].winding[t]+=s;
                         grid_next[si].winding[big]-=s;
+                        sent[big]+=s;
                     }
                 }
                 if(qRadShift>=1){
                     uint32_t rad=ex>>qRadShift;
-                    uint32_t rav=grid_next[si].winding[big];
+                    uint32_t rav=o->winding[big]-sent[big];
                     if(rad>rav)rad=rav;
                     if(rad){
                         grid_next[si].winding[big]-=rad;
+                        sent[big]+=rad;
                         int np=grid_next[si].packet[big]+1;
                         grid_next[si].packet[big]=(uint8_t)(np>255?255:np);
                         int rnu=(int)(rad>255?255:rad);
@@ -961,20 +971,39 @@ void moore26_tick(void){
              * a tick, next can already be lower than current. Clamp
              * the deduction to what's actually staged (a uint16 wrap
              * to ~65k minted the conduction flood). */
-            uint32_t avail=grid_next[si].winding[2*e]<grid_next[si].winding[2*e+1]
-                          ?grid_next[si].winding[2*e]:grid_next[si].winding[2*e+1];
+            uint32_t av0=o->winding[2*e]-sent[2*e],av1=o->winding[2*e+1]-sent[2*e+1];
+            uint32_t avail=av0<av1?av0:av1;
             if(k>avail)k=avail;
             if(!k)continue;
-            int ni=nbr(x,y,z,QChannelVec[2*e][0],QChannelVec[2*e][1],QChannelVec[2*e][2]);
-            int nx=(x+QChannelVec[2*e][0])&QMaskX,ny=(y+QChannelVec[2*e][1])&QMaskY,nz=(z+QChannelVec[2*e][2])&QMaskZ;
-            uint32_t mn=grid_current[ni].winding[2*e]<grid_current[ni].winding[2*e+1]
-                       ?grid_current[ni].winding[2*e]:grid_current[ni].winding[2*e+1];
+            sent[2*e]+=k;sent[2*e+1]+=k;
+            /* gradient descent: probe BOTH neighbors on the pair's
+             * axis and push toward the freer side — the old rule
+             * always pushed the + member's direction, a systematic
+             * +x/+y/+z flux (the lattice wind). Tie breaks by node
+             * hash so equal-freedom axes don't favor +. */
+            int niP=nbr(x,y,z,QChannelVec[2*e][0],QChannelVec[2*e][1],QChannelVec[2*e][2]);
+            int niM=nbr(x,y,z,QChannelVec[2*e+1][0],QChannelVec[2*e+1][1],QChannelVec[2*e+1][2]);
+            uint32_t mP=grid_current[niP].winding[2*e]<grid_current[niP].winding[2*e+1]
+                       ?grid_current[niP].winding[2*e]:grid_current[niP].winding[2*e+1];
+            uint32_t mM=grid_current[niM].winding[2*e]<grid_current[niM].winding[2*e+1]
+                       ?grid_current[niM].winding[2*e]:grid_current[niM].winding[2*e+1];
+            int ni=(mP<mM)?niP:(mP>mM)?niM:(((x+y+z+si)&1)?niP:niM);
+            int nx=(x+QChannelVec[ni==niP?2*e:2*e+1][0])&QMaskX,
+                ny=(y+QChannelVec[ni==niP?2*e:2*e+1][1])&QMaskY,
+                nz=(z+QChannelVec[ni==niP?2*e:2*e+1][2])&QMaskZ;
+            uint32_t mn=mP<mM?mP:mM;
             if(mn>=128){
                 /* over-pressure shunt — the saturated recipient routes
                  * the excess to its own freest neighbor (the core not
                  * crystallizing, the knot's perimeter draining). */
                 int fo=-1;uint32_t fr=128;
-                for(int e2=0;e2<QChannels/2;e2++){
+                /* rotated scan order — a first-tie-wins loop on a
+                 * symmetric knot always picks channel 0 (+x), the
+                 * lattice wind. Rotate by node hash so ties break
+                 * isotropically across the ensemble. */
+                int rot=(x+y+z+si)%13;
+                for(int k_=0;k_<QChannels/2;k_++){
+                    int e2=(k_+rot)%13;
                     int ni2=nbr(nx,ny,nz,QChannelVec[2*e2][0],QChannelVec[2*e2][1],QChannelVec[2*e2][2]);
                     uint32_t m2=grid_current[ni2].winding[2*e2]<grid_current[ni2].winding[2*e2+1]
                                ?grid_current[ni2].winding[2*e2]:grid_current[ni2].winding[2*e2+1];
