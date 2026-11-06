@@ -106,6 +106,17 @@ typedef struct {
     uint16_t heat;             /* vacuum heat reservoir (the local temp) */
     uint16_t localDensity;     /* neighbor-sampled density (the gradient) */
 } NodeState;
+/* eff_dd: effective directional imbalance — committed winding plus
+ * parity-weighted HELD offers. The standing-offer cloud steers every
+ * pick the node makes (influence without answer — the virtual layer);
+ * confirmed energy still settles through winding only. */
+static inline int32_t eff_dd(const NodeState *n,int e){
+    /* held offers weight by ENERGY (incipNu) × parity — a strong
+     * field's standing cloud steers proportionally, not per-count */
+    return (int)n->winding[2*e]-(int)n->winding[2*e+1]
+          +(int)n->incip[2*e]*(n->incipNu[2*e]&127)*n->incipPar[2*e]
+          -(int)n->incip[2*e+1]*(n->incipNu[2*e+1]&127)*n->incipPar[2*e+1];
+}
 static NodeState *grid_current, *grid_next;
 /* Jacobi scratch planes — deterministic phase-sync (read-old/
  * write-new each pass; the in-place version raced under OpenMP) */
@@ -139,6 +150,9 @@ static int qPhaseSync=1;
 static int qVolShare=0;
 static int qChainShare=0;
 static int qResEmit=0;
+static int qParFlip=0;   /* parity-flip probability per hop (0-255)
+     * — the neutrino-mass analog: a quantum can invert helicity
+     * in flight, enabling reabsorption it couldn't otherwise do */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -608,9 +622,11 @@ void moore26_tick(void){
             if(!n->packet[c])continue;
             if((rand_site(si,20+c)%qCatchGate)>=lvl)continue;     /* catch gate */
             uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
-            int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
-            if(line<1)line=1;
-            if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue; /* off-band: flies on */
+            /* OFF-SHELL arming: the nu%line resonance check moved to
+             * CONFIRM. A virtual offer doesn't need the absorber's
+             * gap to exert influence — only to settle (real energy
+             * deposit still requires a real level). The standing
+             * cloud is the field. */
             /* phase gate (qPhaseGate, qi3 effPhase port): the offer's
              * phase nu*age mod 256 must land within the site's
              * receptive window — else the transaction declines.
@@ -697,13 +713,33 @@ void moore26_tick(void){
         for(int c=0;c<QChannels;c++){
             uint32_t h=o->incip[c];
             if(!h)continue;
-            n->incip[c]-=h;          /* consumed — new arms this tick survive */
+            /* standing offers persist: an incipient is consumed only
+             * when it CONFIRMS (decremented in the confirm branches
+             * below). Unconfirmed offers stand for ~6 ticks — the
+             * virtual layer has a lifetime, then expires. */
+            /* helicity flip in the negotiation (qParFlip): a standing
+             * offer can invert its parity — mass IS transaction
+             * density, the flip rate scales with how deeply the offer
+             * is embedded in the web. A flying packet never flips;
+             * the transaction realm is where helicity can invert. */
+            if(qParFlip&&n->incipPar[c]
+               &&(rand_site(si,60+c)&255)<qParFlip)
+                n->incipPar[c]=(int8_t)-n->incipPar[c];
+            uint8_t iage=(uint8_t)(qTick-o->incipBorn[c]);
+            if(iage>6){
+                n->incip[c]-=h;
+                /* Landauer dust: erasing an unconfirmed offer costs
+                 * heat — the vacuum's negotiation friction. */
+                n->heat=(uint16_t)((n->heat+h)>65535?65535:(n->heat+h));
+                continue;
+            }
             uint8_t iv=o->incipNu[c];
             uint32_t nu=(iv&0x7f)?(iv&0x7f):1;
             if(iv&0x80){
                 /* STIMULATED emission — the resonant offer triggers a
                  * downward transition: ONE clone + a rung shed (the
                  * laser analog — not a deposit). */
+                n->incip[c]--;             /* confirmed — consume the offer */
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(shed>=2){
                     uint32_t sn=shed>>1;
@@ -738,7 +774,14 @@ void moore26_tick(void){
             for(uint32_t p=0;p<h;p++){
                 uint32_t aA=n->winding[2*arr],bA=n->winding[2*arr+1];
                 uint32_t mA=aA<bA?aA:bA;
+                /* on-shell gate at CONFIRM: settling requires the
+                 * offer's nu to match a real level — off-shell offers
+                 * keep standing (influence, no deposit). */
+                int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
+                if(line<1)line=1;
+                if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue;
                 if(mA+nu<=qConfirmCap){
+                    n->incip[c]--;         /* confirmed — consume the offer */
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -808,12 +851,7 @@ void moore26_tick(void){
                     if(cnu){
                         int dch=-1;int32_t dm=0;
                         for(int e2=0;e2<QChannels/2;e2++){
-                            int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
-                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
-                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
-                            /* held offers weight their member by
-                             * parity — an unanswered offer steers
-                             * routing (influence without answer). */
+                            int32_t d2=eff_dd(n,e2);
                             if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
                         }
                         if(dch>=0){
@@ -852,12 +890,7 @@ void moore26_tick(void){
                      * dependent push). */
                     int de=-1;int32_t dd=0;
                     for(int e2=0;e2<QChannels/2;e2++){
-                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
-                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
-                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
-                            /* held offers weight their member by
-                             * parity — an unanswered offer steers
-                             * routing (influence without answer). */
+                        int32_t d2=eff_dd(n,e2);
                         if(d2>dd){dd=d2;de=e2;}
                     }
                     if(de>=0){
@@ -879,12 +912,7 @@ void moore26_tick(void){
                     int rot2=(x+y+z+si)%13;
                     for(int k_=0;k_<QChannels/2;k_++){
                         int e2=(k_+rot2)%13;
-                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
-                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
-                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
-                            /* held offers weight their member by
-                             * parity — an unanswered offer steers
-                             * routing (influence without answer). */
+                        int32_t d2=eff_dd(n,e2);
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
                         if(d2>dd&&m2<128){dd=d2;fe=e2;}
                     }
@@ -936,8 +964,14 @@ void moore26_tick(void){
              * direction-aware deposit wrote rides forward.
              * 0 = off (balanced pairs only, the original rule). */
             if(a!=b){
-                int big=a>b?2*e:2*e+1;
-                uint32_t ex=a>b?a-b:b-a;
+                /* effective imbalance: committed winding + held-offer
+                 * parity weight — a standing offer steers conduction
+                 * as if it were committed imbalance. Influence writes
+                 * circulation through the node's own redistribution;
+                 * the transfer is still clamped to real winding. */
+                int32_t ed=eff_dd(o,e);
+                int big=ed>0?2*e:2*e+1;
+                uint32_t ex=ed>0?(uint32_t)ed:(uint32_t)-ed;
                 /* impedance gate: probe the forward neighbor's committed
                  * pair — a bend exists only where straight conduction
                  * meets saturation. No macro-awareness, just refusal. */
@@ -1134,7 +1168,7 @@ void moore26_tick(void){
          * then random. */
         int dch=-1;{int32_t dm=0;
             for(int e2=0;e2<QChannels/2;e2++){
-                int32_t d2=(int)o->winding[2*e2]-(int)o->winding[2*e2+1];
+                int32_t d2=eff_dd(o,e2);
                 if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
             }}
         for(int try_=0;try_<4;try_++){
@@ -1202,6 +1236,15 @@ void moore26_tick(void){
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
         } else grid_next[si].packetNu[c]=(uint8_t)pn;
         PAR_MERGE(&grid_next[si],c,PAR_SIGN(&grid_next[si],c));
+        /* spin-flip debit: the parity quantum costs 1 unit of the
+         * emitting pair's circulation — the emitter's dd drops by
+         * the handedness it sheds (conserved across the exchange,
+         * counted via packet·par in the L ledger). */
+        {
+            int8_t p_=grid_next[si].packetPar[c];
+            int bm=p_>0?(c&~1):(c|1);
+            if(grid_next[si].winding[bm])grid_next[si].winding[bm]--;
+        }
         grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
@@ -1390,6 +1433,8 @@ uint64_t moore26_sum(int what){
             case 4:t+=n->charge<0?-(int32_t)n->charge:n->charge;break;
             case 5:for(int c=0;c<QChannels;c++)t+=n->incip[c]*(n->incipNu[c]&127);break;
             case 6:for(int c=0;c<QChannels;c++)t+=n->massFlight[c];break;
+            case 9:for(int c=0;c<QChannels;c++)t+=(int64_t)n->packet[c]*n->packetPar[c];break;
+            /* signed in-flight parity — the L ledger's flight term */
             case 7:for(int c=0;c<QChannels;c++)t+=n->chargeFlight[c]<0?-(int32_t)n->chargeFlight[c]:n->chargeFlight[c];break;
             case 8:for(int c=0;c<QChannels;c++)t+=n->packet[c]*n->packetNu[c];break;
         }
@@ -1431,3 +1476,4 @@ void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
+void moore26_par_flip_set(int v){qParFlip=v&255;}
