@@ -130,6 +130,7 @@ static int qBendShift=0;
 static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
+static int qVolShare=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -706,11 +707,52 @@ void moore26_tick(void){
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
                      * converts linear momentum into circulation.
-                     * qDirBias=0 = symmetric (momentum shredder). */
-                    uint32_t bias=((uint32_t)nu*qDirBias)>>8,half=nu>>1;
+                     * qDirBias=0 = symmetric (momentum shredder).
+                     * qVolShare (0-256): a fraction of the deposit is
+                     * answered by the node's whole flow — distributed
+                     * to the two most-committed edges (the node's
+                     * active axes) rather than the arrival pair. The
+                     * bound structure absorbs volumetrically: energy
+                     * follows the node's own routing, not just the
+                     * arrival channel. */
+                    uint32_t share=((uint32_t)nu*qVolShare)>>8;
+                    uint32_t dep=nu-share;
+                    /* signed qDirBias: >0 biases toward the travel
+                     * direction (c, momentum forward); <0 biases
+                     * toward the OFFERER (c^1, the response riding
+                     * back upstream — like the ack). */
+                    int32_t b=(int32_t)dep*qDirBias;
+                    uint32_t bias=(uint32_t)(b<0?-b:b)>>8,half=dep>>1;
                     if(bias>half)bias=half;
-                    n->winding[c]+=nu-half+bias;
-                    n->winding[c^1]+=half-bias;
+                    int fwd=qDirBias>=0;
+                    n->winding[fwd?c:c^1]+=dep-half+bias;
+                    n->winding[fwd?c^1:c]+=half-bias;
+                    if(share){
+                        int t1=-1,t2=-1;uint32_t m1=0,m2=0;
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            if(e2==arr)continue;
+                            uint32_t m2_=n->winding[2*e2]<n->winding[2*e2+1]
+                                       ?n->winding[2*e2]:n->winding[2*e2+1];
+                            if(m2_>m1){m2=m1;t2=t1;m1=m2_;t1=e2;}
+                            else if(m2_>m2){m2=m2_;t2=e2;}
+                        }
+                        if(t1>=0){
+                            /* direction-following: the share deposits
+                             * onto each target edge's DOMINANT member —
+                             * it reinforces the local circulation's
+                             * sign rather than shredding it. The
+                             * volumetric share carries direction,
+                             * not just volume. */
+                            uint32_t s1=(t2>=0&&m1+m2>0)?(share*m1)/(m1+m2):share;
+                            int m_=n->winding[2*t1]>n->winding[2*t1+1]?0:1;
+                            n->winding[2*t1+m_]+=s1;
+                            if(t2>=0){
+                                uint32_t s2=share-s1;
+                                int m2_=n->winding[2*t2]>n->winding[2*t2+1]?0:1;
+                                n->winding[2*t2+m2_]+=s2;
+                            }
+                        }
+                    }
                     /* charge-response — the dominant directed edge
                      * feeds from the absorbed momentum (magnitude-
                      * dependent push). */
@@ -1209,3 +1251,4 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
 }
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
+void moore26_vol_share_set(int v){qVolShare=v;}
