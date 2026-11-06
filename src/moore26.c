@@ -58,6 +58,7 @@ static int8_t QChannelVec[26][3] = {
  * live as structural registers (winding/charge/over-pressure) — they
  * just don't transport. */
 #define PAR_SIGN(n_,c_) ((n_)->winding[c_]>(n_)->winding[(c_)^1]?1:(n_)->winding[c_]<(n_)->winding[(c_)^1]?-1:0)
+#define PAR_MERGE(n_,c_,p_) do{int32_t acc_=(n_)->packetPar[c_]*(n_)->packet[c_]+(p_);(n_)->packetPar[c_]=(int8_t)(acc_>0?1:acc_<0?-1:0);}while(0)
 #define IS_EDGE(c) ((c)>=6&&(c)<=17)
 /* even sublattice of the ABC hex grid — only parity-even cells carry
  * the transport graph. Edge hops preserve x+y+z parity, so the gate
@@ -438,7 +439,7 @@ void moore26_tick(void){
                         uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
                         grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
                     } else grid_next[si].packetNu[c]=(uint8_t)nu;
-                    grid_next[si].packetPar[c]=PAR_SIGN(o,c);
+                    PAR_MERGE(&grid_next[si],c,PAR_SIGN(o,c));
                     grid_next[si].packet[c]++;
                     grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
@@ -716,7 +717,7 @@ void moore26_tick(void){
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)sn;
-                    n->packetPar[c]=PAR_SIGN(n,c);
+                    PAR_MERGE(n,c,PAR_SIGN(n,c));
                     n->packet[c]++;
                     n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
@@ -727,7 +728,7 @@ void moore26_tick(void){
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)nu;
-                    n->packetPar[c]=PAR_SIGN(n,c);
+                    PAR_MERGE(n,c,PAR_SIGN(n,c));
                     n->packet[c]++;
                     n->packetBorn[c]=(uint8_t)qTick;
                 }
@@ -807,7 +808,12 @@ void moore26_tick(void){
                     if(cnu){
                         int dch=-1;int32_t dm=0;
                         for(int e2=0;e2<QChannels/2;e2++){
-                            int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                            int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
+                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
+                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
+                            /* held offers weight their member by
+                             * parity — an unanswered offer steers
+                             * routing (influence without answer). */
                             if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
                         }
                         if(dch>=0){
@@ -835,7 +841,7 @@ void moore26_tick(void){
                                     uint32_t rem=tot-(uint32_t)n->packetNu[dch]*(n->packet[dch]+1);
                                     n->heat=(uint16_t)((n->heat+rem)>65535?65535:(n->heat+rem));
                                 } else n->packetNu[dch]=(uint8_t)tn;
-                                n->packetPar[dch]=(dch&1)?-1:1;
+                                PAR_MERGE(n,dch,(dch&1)?-1:1);
                                 n->packet[dch]++;
                                 n->packetBorn[dch]=(uint8_t)qTick;
                             }
@@ -846,7 +852,12 @@ void moore26_tick(void){
                      * dependent push). */
                     int de=-1;int32_t dd=0;
                     for(int e2=0;e2<QChannels/2;e2++){
-                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
+                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
+                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
+                            /* held offers weight their member by
+                             * parity — an unanswered offer steers
+                             * routing (influence without answer). */
                         if(d2>dd){dd=d2;de=e2;}
                     }
                     if(de>=0){
@@ -868,7 +879,12 @@ void moore26_tick(void){
                     int rot2=(x+y+z+si)%13;
                     for(int k_=0;k_<QChannels/2;k_++){
                         int e2=(k_+rot2)%13;
-                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                        int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1]
+                                +(int)n->incip[2*e2]*n->incipPar[2*e2]
+                                -(int)n->incip[2*e2+1]*n->incipPar[2*e2+1];
+                            /* held offers weight their member by
+                             * parity — an unanswered offer steers
+                             * routing (influence without answer). */
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
                         if(d2>dd&&m2<128){dd=d2;fe=e2;}
                     }
@@ -976,7 +992,7 @@ void moore26_tick(void){
                         int rnu=(int)(rad>255?255:rad);
                         if(rnu>grid_next[si].packetNu[big])
                             grid_next[si].packetNu[big]=(uint8_t)rnu;
-                        grid_next[si].packetPar[big]=PAR_SIGN(o,big);
+                        PAR_MERGE(&grid_next[si],big,PAR_SIGN(o,big));
                         qEvents[33]+=rad;
                     }
                 }
@@ -1185,7 +1201,7 @@ void moore26_tick(void){
             uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
         } else grid_next[si].packetNu[c]=(uint8_t)pn;
-        grid_next[si].packetPar[c]=PAR_SIGN(&grid_next[si],c);
+        PAR_MERGE(&grid_next[si],c,PAR_SIGN(&grid_next[si],c));
         grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
