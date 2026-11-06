@@ -116,7 +116,10 @@ static int *procList, nProc;
 
 static uint64_t qEvents[32];
 static uint64_t qTick;
-static int qFusionWall=256;   /* pair-production energy threshold —
+static int qFusionWall=256;
+static int qCommitMin=32;
+static int qGroundFloor=512;
+static int qConfirmCap=160;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
      * of weak ones) */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
@@ -202,7 +205,7 @@ static int site_level(const NodeState *o){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=32)vol+=m;
+        if(m>=qCommitMin)vol+=m;
     }
     n+=vol>>7;if(n>8)n=8;return n;
 }
@@ -219,7 +222,7 @@ static int geo_gap(const NodeState *o){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
         uint32_t m=a<b?a:b;
-        if(m>=32&&(be<0||m<bm)){bm=m;be=e;}
+        if(m>=qCommitMin&&(be<0||m<bm)){bm=m;be=e;}
     }
     if(be<0)return 0;
     /* the loop's measured reach: an ACK-delivered bond distance wins
@@ -246,14 +249,14 @@ static uint32_t site_unwind(int x,int y,int z,int si){
     for(int e=0;e<QChannels/2;e++){
         uint32_t a=n->winding[2*e],b=n->winding[2*e+1];
         uint32_t m=a<b?a:b;
-        if(m<32)continue;
+        if(m<qCommitMin)continue;
         int32_t dd=(int32_t)a-(int32_t)b;if(dd<0)dd=-dd;
-        if(dd>=32){
+        if(dd>=qCommitMin){
             int big=a>b?2*e:2*e+1;
             int ni=nbr(x,y,z,QChannelVec[big][0],QChannelVec[big][1],QChannelVec[big][2]);
             int rc=(big&1)?big-1:big+1;
             uint32_t ra=grid_current[ni].winding[rc],rb=grid_current[ni].winding[big];
-            if(ra>rb&&ra-rb>=32)continue;      /* reciprocal: closed */
+            if(ra>rb&&ra-rb>=qCommitMin)continue;      /* reciprocal: closed */
         }
         if(be<0||m<bm){bm=m;be=e;}
     }
@@ -261,9 +264,9 @@ static uint32_t site_unwind(int x,int y,int z,int si){
     uint32_t tv=0;
     for(int e=0;e<QChannels/2;e++){
         uint32_t m2=n->winding[2*e]<n->winding[2*e+1]?n->winding[2*e]:n->winding[2*e+1];
-        if(m2>=32)tv+=m2;
+        if(m2>=qCommitMin)tv+=m2;
     }
-    if(tv<=512)return 0;                       /* ground-state floor */
+    if(tv<=qGroundFloor)return 0;                       /* ground-state floor */
     uint32_t a=n->winding[2*be],b=n->winding[2*be+1];
     uint32_t m=a<b?a:b;
     uint32_t rung=(m-1)>>2;
@@ -441,7 +444,7 @@ void moore26_tick(void){
             for(int e=0;e<QChannels/2;e++){
                 uint32_t m2=grid_current[si].winding[2*e]<grid_current[si].winding[2*e+1]
                            ?grid_current[si].winding[2*e]:grid_current[si].winding[2*e+1];
-                if(m2>=32){catch_=1;break;}
+                if(m2>=qCommitMin){catch_=1;break;}
             }
         }
         for(int e=0;e<QChannels/2;e++){
@@ -664,7 +667,7 @@ void moore26_tick(void){
             for(uint32_t p=0;p<h;p++){
                 uint32_t aA=n->winding[2*arr],bA=n->winding[2*arr+1];
                 uint32_t mA=aA<bA?aA:bA;
-                if(mA+nu<=160){
+                if(mA+nu<=qConfirmCap){
                     n->winding[2*arr]+=nu;n->winding[2*arr+1]+=nu;
                     /* charge-response — the dominant directed edge
                      * feeds from the absorbed momentum (magnitude-
@@ -1086,3 +1089,7 @@ uint32_t moore26_cm(int axis){
 void *moore26_state_pointer(void){return grid_current;}
 int moore26_node_size(void){return (int)sizeof(NodeState);}
 int moore26_channel_count(void){return QChannels;}
+void moore26_fusion_wall_set(int v){qFusionWall=v;}
+void moore26_commit_min_set(int v){qCommitMin=v;}
+void moore26_ground_floor_set(int v){qGroundFloor=v;}
+void moore26_confirm_cap_set(int v){qConfirmCap=v;}
