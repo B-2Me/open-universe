@@ -123,6 +123,7 @@ static int qCommitMin=32;
 static int qGroundFloor=512;
 static int qConfirmCap=160;
 static int qCatchGate=16;
+static int qDirBias=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -669,7 +670,15 @@ void moore26_tick(void){
                 uint32_t aA=n->winding[2*arr],bA=n->winding[2*arr+1];
                 uint32_t mA=aA<bA?aA:bA;
                 if(mA+nu<=qConfirmCap){
-                    n->winding[2*arr]+=nu;n->winding[2*arr+1]+=nu;
+                    /* direction-aware deposit: qDirBias (0-256) biases
+                     * the pair toward the packet's arrival channel —
+                     * the offer carries a direction bit; transducing it
+                     * converts linear momentum into circulation.
+                     * qDirBias=0 = symmetric (momentum shredder). */
+                    uint32_t bias=((uint32_t)nu*qDirBias)>>8,half=nu>>1;
+                    if(bias>half)bias=half;
+                    n->winding[c]+=nu-half+bias;
+                    n->winding[c^1]+=half-bias;
                     /* charge-response — the dominant directed edge
                      * feeds from the absorbed momentum (magnitude-
                      * dependent push). */
@@ -1095,3 +1104,4 @@ void moore26_commit_min_set(int v){qCommitMin=v;}
 void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
+void moore26_dir_bias_set(int v){qDirBias=v;}
