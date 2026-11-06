@@ -132,6 +132,7 @@ static int qPhaseGate=0;
 static int qPhaseSync=1;
 static int qVolShare=0;
 static int qChainShare=0;
+static int qResEmit=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -718,7 +719,8 @@ void moore26_tick(void){
                      * arrival channel. */
                     uint32_t share=((uint32_t)nu*qVolShare)>>8;
                     uint32_t cnu=qChainShare?((uint32_t)nu*qChainShare)>>8:0;
-                    uint32_t dep=nu-share-cnu;
+                    uint32_t dep=nu-share;   /* cnu is funded by the
+                     * rail toll (winding), not carved from dep */
                     /* signed qDirBias: >0 biases toward the travel
                      * direction (c, momentum forward); <0 biases
                      * toward the OFFERER (c^1, the response riding
@@ -768,9 +770,23 @@ void moore26_tick(void){
                             if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
                         }
                         if(dch>=0){
-                            n->packet[dch]++;
-                            n->packetNu[dch]=(uint8_t)(cnu>127?127:cnu);
-                            n->packetBorn[dch]=(uint8_t)qTick;
+                            /* rail toll: the chained re-offer draws
+                             * only the SURPLUS above the pair's
+                             * committed floor — the structural bond
+                             * (min(a,b)) is protected, the imbalance
+                             * margin pays for the re-offer. Riding
+                             * the rail costs traffic, not topology. */
+                            uint32_t floor_=n->winding[dch]<n->winding[dch^1]
+                                          ?n->winding[dch]:n->winding[dch^1];
+                            uint32_t surplus=n->winding[dch]>floor_
+                                           ?n->winding[dch]-floor_:0;
+                            uint32_t toll=(uint32_t)cnu>surplus?surplus:(uint32_t)cnu;
+                            if(toll>0){
+                                n->winding[dch]-=toll;
+                                n->packet[dch]++;
+                                n->packetNu[dch]=(uint8_t)(toll>127?127:toll);
+                                n->packetBorn[dch]=(uint8_t)qTick;
+                            }
                         }
                     }
                     /* charge-response — the dominant directed edge
@@ -783,7 +799,14 @@ void moore26_tick(void){
                     }
                     if(de>=0){
                         int32_t feed=(dd*nu)>>9;if(feed<0)feed=0;
-                        n->winding[2*de]+=(uint32_t)feed;
+                        /* conserving: the feed REDIRECTS deposited
+                         * energy — taken from the biased arrival
+                         * member (src), added to the dominant edge.
+                         * The old minted feed was the dimer leak. */
+                        int src=fwd?c:c^1;
+                        uint32_t f2=(uint32_t)feed>n->winding[src]?n->winding[src]:(uint32_t)feed;
+                        n->winding[src]-=f2;
+                        n->winding[2*de]+=f2;
                     }
                 } else {
                     /* arrival edge full — route internally: dominant
@@ -1007,9 +1030,19 @@ void moore26_tick(void){
         for(int ed=3;ed<=8;ed++)     /* edge pairs only — a face/corner
          * bond emission would freeze the packet in a dead channel */
             if(o->bondDist[ed]){nb++;blive=ed;}
+        /* chiral emission: prefer the dominant-dd channel — the
+         * packet leaves along the lump's circulation (dipole
+         * emission, meso3i's drbest_). Falls back through bond,
+         * then random. */
+        int dch=-1;{int32_t dm=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                int32_t d2=(int)o->winding[2*e2]-(int)o->winding[2*e2+1];
+                if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
+            }}
         for(int try_=0;try_<4;try_++){
             int tc=(try_==0&&nb==1)?(blive<<1)|(rand_site(si,11)&1)
-                                  :6+rand_site(si,2+try_)%12;   /* edge channels only */
+                 :(try_==0&&dch>=0)?dch
+                 :6+rand_site(si,2+try_)%12;   /* edge channels only */
             uint32_t occ=grid_next[si].packet[tc];
             if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
         }
@@ -1051,8 +1084,13 @@ void moore26_tick(void){
          * thermalization makes the emission real radiation. */
         uint32_t shed=site_unwind(x,y,z,si);
         if(shed<2)continue;
+        /* resonant emission (qResEmit): the packet carries the
+         * site's own line frequency — emitted at the structure's
+         * characteristic nu so recycled quanta are always in-band
+         * for reabsorption (the spectral-line closure). */
         grid_next[si].packet[c]++;
-        grid_next[si].packetNu[c]=(uint8_t)((shed>>1)>255?255:(shed>>1));
+        uint32_t enu=qResEmit?(uint32_t)line:(shed>>1);
+        grid_next[si].packetNu[c]=(uint8_t)(enu>255?255:enu<1?1:enu);
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
@@ -1273,3 +1311,4 @@ void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
+void moore26_res_emit_set(int v){qResEmit=v;}
