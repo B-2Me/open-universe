@@ -176,6 +176,27 @@ gradient-descent conduction, per-node `sent[]` clamps against
 `grid_current`, and rotated scan order — vacuum now measured
 still at all separations.
 
+## Virtual layer & rails (post-ledger mechanics)
+
+- **Standing offers**: `nu%line` moved to confirm — off-shell
+  arming, ~6-tick lifetimes, Landauer dust to `heat` on expiry.
+  Armed-but-unconfirmed offers steer every dominance pick via
+  `eff_dd` (committed `dd` + parity-weighted incipients) —
+  influence without answer.
+- **Parity currency**: `packetPar`/`incipPar` carry ±1 helicity
+  through transport (majority-merge). Deposit direction reads
+  carried parity; emission debits the emitter's `dd` by 1 —
+  spin-flip ledger. Sign-rule verified: receiver flips with
+  source (+54/−6 perpendicular).
+- **Rails** (`rail_gate`): saturated dominant member = waveguide —
+  packets skip arm AND decay, re-channeled onto the rail (turns
+  with it). Confirmed transactions pave rails: ack return lays 1
+  committed unit on the return pair (conserved transfer).
+- **Persistent current**: `12` packets on a closed `{111}` rail,
+  `2000`t, zero arms/decay — live circulating current on a
+  static coil. (Seed caveat: use ENGINE channel vectors — a
+  mislabeled vec[] paints an open arc.)
+
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
