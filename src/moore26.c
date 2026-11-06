@@ -129,6 +129,7 @@ static int qDdShift=0;
 static int qBendShift=0;
 static int qRadShift=0;
 static int qPhaseGate=0;
+static int qPhaseSync=1;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -898,9 +899,9 @@ void moore26_tick(void){
      * Pull-model: each node averages its neighbors' pull (unique
      * writer — no atomics). Reads next (post-carry), writes next. */
     PROC_NODES
-        phaseA[si]=grid_next[si].phase;
+        if(qPhaseSync)phaseA[si]=grid_next[si].phase;
     PROC_NODES_END
-    for(int iter=0;iter<10;iter++){
+    for(int iter=0;iter<10&&qPhaseSync;iter++){
         PROC_NODES
             if(node_live(&grid_next[si])){
                 int32_t pull=0;
@@ -918,7 +919,7 @@ void moore26_tick(void){
         uint32_t *t=phaseA;phaseA=phaseB;phaseB=t;
     }
     PROC_NODES
-        grid_next[si].phase=phaseA[si];
+        if(qPhaseSync)grid_next[si].phase=phaseA[si];
     PROC_NODES_END
 
     /* Phase 6: emission — the bound state radiates. A site at level
@@ -1207,3 +1208,4 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c];
 }
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
+void moore26_phase_sync_set(int v){qPhaseSync=v;}
