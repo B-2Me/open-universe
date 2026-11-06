@@ -370,6 +370,7 @@ if emcc moore26.c \
     '_moore26_commit_min_set',
     '_moore26_ground_floor_set',
     '_moore26_confirm_cap_set',
+    '_moore26_catch_gate_set',
     '_malloc',
     '_free'
   ]" \
@@ -436,6 +437,7 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     '_moore26_commit_min_set',
     '_moore26_ground_floor_set',
     '_moore26_confirm_cap_set',
+    '_moore26_catch_gate_set',
       '_malloc',
       '_free'
     ]" \

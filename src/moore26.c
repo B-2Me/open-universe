@@ -116,12 +116,13 @@ static int *procList, nProc;
 
 static uint64_t qEvents[32];
 static uint64_t qTick;
-static int qFusionWall=256;
-static int qCommitMin=32;
-static int qGroundFloor=512;
-static int qConfirmCap=160;   /* pair-production energy threshold —
+static int qFusionWall=256;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
      * of weak ones) */
+static int qCommitMin=32;
+static int qGroundFloor=512;
+static int qConfirmCap=160;
+static int qCatchGate=16;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -579,7 +580,7 @@ void moore26_tick(void){
         if(!IS_EVEN(x,y,z))continue;   /* packets never arm on odd cells */
         for(int c=0;c<QChannels;c++){
             if(!n->packet[c])continue;
-            if((rand_site(si,20+c)&15)>=lvl)continue;     /* catch gate */
+            if((rand_site(si,20+c)%qCatchGate)>=lvl)continue;     /* catch gate */
             uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
             int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
             if(line<1)line=1;
@@ -1093,3 +1094,4 @@ void moore26_fusion_wall_set(int v){qFusionWall=v;}
 void moore26_commit_min_set(int v){qCommitMin=v;}
 void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
+void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
