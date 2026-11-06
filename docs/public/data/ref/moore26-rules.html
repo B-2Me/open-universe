@@ -177,7 +177,38 @@ Bound structure (<code>winding</code>) lives on all 26 channels as <em>directed 
   drain (−1/128/tick) close the tick.</p>
 </div></div>
 
-<h2>4. Runtime Knobs</h2>
+<h2>4. Virtual Layer, Parity &amp; Rails</h2>
+<div class="card">
+  <h3>Standing offers (the virtual layer)</h3>
+  <p><strong>Off-shell arming:</strong> the <code>nu%line</code> resonance gate moved from
+  arm to confirm — a packet arms an incipient without needing the receiver's gap;
+  settling still requires a real level. Armed-but-unconfirmed offers persist ~6 ticks
+  (<code>incipBorn</code> expiry), then pay <strong>Landauer dust</strong> to <code>heat</code>
+  on erasure. The standing-offer cloud is the substrate's field.</p>
+  <h3><code>eff_dd</code> — held-offer steering</h3>
+  <p>Every dominance pick (emission channel, conduction imbalance, chain re-offer,
+  internal routing, charge feed) reads <strong>effective dd</strong> = committed
+  <code>winding</code> imbalance + parity-weighted held offers
+  (<code>incip × incipNu × incipPar</code>). An unanswered offer steers routing —
+  influence without answer.</p>
+  <h3>Parity currency (<code>packetPar</code>, <code>incipPar</code>)</h3>
+  <p>Emitted quanta carry ±1 parity = the sign of their channel's <code>dd</code>
+  (<code>PAR_SIGN</code>), merged by majority vote (<code>PAR_MERGE</code>). The deposit's
+  circulation direction reads the carried parity (dir_bias magnitude still sets the
+  split). Emission <strong>debits the emitter's dd by 1</strong> per parity quantum —
+  the spin-flip ledger; flight-parity is censused by <code>moore26_sum(9)</code>.
+  <code>qParFlip</code> lets a standing offer invert parity in the negotiation realm
+  (mass ↔ transaction density).</p>
+  <h3>Rails (<code>rail_gate</code>)</h3>
+  <p>A node with a dominant member ≥ <code>qRailGate</code> is a rail: arriving packets
+  skip arming AND density decay (incl. the floor drip), and are re-channeled onto the
+  dominant member — the rail can turn; the stream rides the curve. On confirm, the
+  returning <strong>ack paves the rail</strong>: 1 committed winding unit redistributed
+  from the node's freest channel onto the return pair (conserved transfer).
+  Verified: 12 packets circulate a closed {111} rail loss-free for 2000t.</p>
+</div>
+
+<h2>5. Runtime Knobs</h2>
 <table>
   <tr><th>Knob</th><th>Default</th><th>Measured effect (300t knot, dd)</th></tr>
   <tr><td><code>dir_bias</code></td><td>−256</td><td><strong>master switch</strong> — dd=12 at 0 vs ~245 at ±256</td></tr>
@@ -194,9 +225,11 @@ Bound structure (<code>winding</code>) lives on all 26 channels as <em>directed 
   <tr><td><code>res_emit</code></td><td>0</td><td>resonant emission nu=line (spectral closure)</td></tr>
   <tr><td><code>ground_floor</code></td><td>512</td><td>ground-state floor</td></tr>
   <tr><td><code>deflect_align</code></td><td>128</td><td>deflection alignment weight</td></tr>
+  <tr><td><code>rail_gate</code></td><td>0</td><td>waveguide threshold; 64 circulates a {111} stream</td></tr>
+  <tr><td><code>par_flip</code></td><td>0</td><td>incipient helicity-inversion rate (0-255)</td></tr>
 </table>
 
-<h2>5. Locked Constants</h2>
+<h2>6. Locked Constants</h2>
 <table>
   <tr><th>Constant</th><th>Value</th><th>Status</th></tr>
   <tr><td>v/c</td><td>1.00 hop/tick</td><td>confirmed under locked rules</td></tr>
