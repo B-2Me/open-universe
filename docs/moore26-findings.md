@@ -47,8 +47,11 @@ substrate mechanics, not claims about nature.
 - String-break under TENSION only: `≥12`-node saturated tube
   fractures → `768+768` endpoint mass + `±8` charged recoil,
   exact ledger (`2×768 + 128 = 1664` drained)
-- Species-inverse balance: `mass ≈ committed/6` equilibrium;
-  massless sites radiate only (nucleation seed required)
+- Species-inverse balance: `mass ≈ committed/3.4` equilibrium
+  (`0.292`, flat 1000→5000t under locked rules; the rule's 1:8
+  floor is a nucleation trigger, not the setpoint — competing
+  radiation/condensation rates settle it higher). Massless
+  sites radiate only (nucleation seed required)
 
 ## Directional memory (the `dd` stack)
 
@@ -64,6 +67,9 @@ angular momentum, thermodynamically irreversible:
   forward packets (`ev33`) — discrete synchrotron
 - Retention: `125%` over `800t` beam at `dir_bias=0` (grows!);
   `+12,000%` spin-up at `dir_bias=256` — beam is a `dd` pump
+  *(pre-toll measurement — the surplus toll now bounds this:
+  `chain_share` re-offers pay from the uncommitted margin,
+  killing the runaway while preserving the `dd=519` dimer bond)*
 - Accretion physics: sustained flux → `mass`+`dd` growth at
   plateaued `heat ~7.4M` — driven `E→m` + `E→L` conversion
 
@@ -91,6 +97,15 @@ the boundary, not the volume) appears here as a measured
 property of a cellular substrate — "inside a knot" is the same
 kind of question as "inside a black hole." The interior is
 bookkeeping, not dynamics.
+
+*Update — `chain_share` volumetric routing:* with chained offers
+enabled, the interior isn't dead space — confirmed transactions
+re-offer on the dominant `dd` rail, hopping signal node-to-node
+through dense structure (far-side packets `9→173`, `dd`
+`−4.8k→+76.7k` across a knot wall; U-tube `dd` reaches `leg4=2145`
+through three bends). "Surfaces all the way down" becomes
+"relays all the way through" — the interior conducts via
+transaction forwarding, not packet flight or scalar residue.
 
 Density probe: `8` packed knots retain `1.028×` isolated volume —
 no density penalty; mutual emission recapture slightly favors
