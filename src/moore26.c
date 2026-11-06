@@ -57,6 +57,7 @@ static int8_t QChannelVec[26][3] = {
  * grid bias, not physics. Face (0-5) + corner (18-25) channels stay
  * live as structural registers (winding/charge/over-pressure) — they
  * just don't transport. */
+#define PAR_SIGN(n_,c_) ((n_)->winding[c_]>(n_)->winding[(c_)^1]?1:(n_)->winding[c_]<(n_)->winding[(c_)^1]?-1:0)
 #define IS_EDGE(c) ((c)>=6&&(c)<=17)
 /* even sublattice of the ABC hex grid — only parity-even cells carry
  * the transport graph. Edge hops preserve x+y+z parity, so the gate
@@ -89,6 +90,10 @@ typedef struct {
     uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag) */
     uint8_t  incipBorn[26];    /* each incipient's offer birth tick (tau) */
     uint8_t  packetBorn[26];   /* packet birth tick — propagates with nu */
+    int8_t   packetPar[26];    /* packet parity: emitter circulation sign
+                                 * riding the quantum — ±1, the conserved
+                                 * angular-momentum currency */
+    int8_t   incipPar[26];     /* incipient's carried parity */
     uint8_t  ack[26];          /* returning confirms (the ACK counts) */
     uint8_t  ackTtl[26];       /* hops remaining back to the emitter */
     uint8_t  ackRtt[26];       /* the round-trip the ACK delivers */
@@ -366,12 +371,13 @@ void moore26_tick(void){
         NodeState *o=&grid_current[si];
         /* gather upstream arrivals first — only nodes receiving flux
          * pay the 26-neighbor opacity scan (halo vacuum skips it). */
-        uint32_t v[26],nu[26];uint8_t born[26];int anyp=0;
+        uint32_t v[26],nu[26];uint8_t born[26];int8_t par[26];int anyp=0;
         for(int c=0;c<QChannels;c++){
             int up=nbr(x,y,z,-QChannelVec[c][0],-QChannelVec[c][1],-QChannelVec[c][2]);
             v[c]=grid_current[up].packet[c];
             nu[c]=grid_current[up].packetNu[c];
             born[c]=grid_current[up].packetBorn[c];
+            par[c]=grid_current[up].packetPar[c];
             if(v[c])anyp=1;
         }
         int live=0;
@@ -403,6 +409,7 @@ void moore26_tick(void){
             grid_next[si].packet[c]=(uint8_t)(r>255?255:r);
             grid_next[si].packetNu[c]=(uint8_t)nuv;
             grid_next[si].packetBorn[c]=born[c];
+            grid_next[si].packetPar[c]=par[c];
         }
         /* local heat drain — the reservoir cools into the sub-grid
          * depth (per-node state, NOT a global bath): each node's
@@ -431,6 +438,7 @@ void moore26_tick(void){
                         uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
                         grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
                     } else grid_next[si].packetNu[c]=(uint8_t)nu;
+                    grid_next[si].packetPar[c]=PAR_SIGN(o,c);
                     grid_next[si].packet[c]++;
                     grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
@@ -658,6 +666,7 @@ void moore26_tick(void){
              * stimulates a downward transition instead of depositing */
             n->incipNu[c]=(uint8_t)((nu>127?127:nu)|(nu==geo_gap(o)?0x80:0));
             n->incipBorn[c]=n->packetBorn[c];
+            n->incipPar[c]=n->packetPar[c];
             n->packet[c]--;
             qEvents[5]++;
         }
@@ -707,6 +716,7 @@ void moore26_tick(void){
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)sn;
+                    n->packetPar[c]=PAR_SIGN(n,c);
                     n->packet[c]++;
                     n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
@@ -717,6 +727,7 @@ void moore26_tick(void){
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)nu;
+                    n->packetPar[c]=PAR_SIGN(n,c);
                     n->packet[c]++;
                     n->packetBorn[c]=(uint8_t)qTick;
                 }
@@ -753,7 +764,12 @@ void moore26_tick(void){
                      * split already writes dep total either way;
                      * the excess is phantom fraction, NOT lost
                      * energy (booking it to heat minted +0.03%). */
-                    int fwd=qDirBias>=0;
+                    /* carried parity sets the deposit's circulation
+                     * direction — the emitter's handedness arrives
+                     * with the quantum (dipole encoding). Falls back
+                     * to dir_bias sign when parity is unset. */
+                    int ipar=o->incipPar[c];
+                    int fwd=ipar>0?1:ipar<0?0:(qDirBias>=0);
                     n->winding[fwd?c:c^1]+=dep-half+bias;
                     n->winding[fwd?c^1:c]+=half-bias;
                     if(share){
@@ -819,6 +835,7 @@ void moore26_tick(void){
                                     uint32_t rem=tot-(uint32_t)n->packetNu[dch]*(n->packet[dch]+1);
                                     n->heat=(uint16_t)((n->heat+rem)>65535?65535:(n->heat+rem));
                                 } else n->packetNu[dch]=(uint8_t)tn;
+                                n->packetPar[dch]=(dch&1)?-1:1;
                                 n->packet[dch]++;
                                 n->packetBorn[dch]=(uint8_t)qTick;
                             }
@@ -959,6 +976,7 @@ void moore26_tick(void){
                         int rnu=(int)(rad>255?255:rad);
                         if(rnu>grid_next[si].packetNu[big])
                             grid_next[si].packetNu[big]=(uint8_t)rnu;
+                        grid_next[si].packetPar[big]=PAR_SIGN(o,big);
                         qEvents[33]+=rad;
                     }
                 }
@@ -1167,6 +1185,7 @@ void moore26_tick(void){
             uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
         } else grid_next[si].packetNu[c]=(uint8_t)pn;
+        grid_next[si].packetPar[c]=PAR_SIGN(&grid_next[si],c);
         grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
