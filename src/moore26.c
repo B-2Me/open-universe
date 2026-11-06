@@ -727,7 +727,14 @@ void moore26_tick(void){
                      * back upstream — like the ack). */
                     int32_t b=(int32_t)dep*qDirBias;
                     uint32_t bias=(uint32_t)(b<0?-b:b)>>8,half=dep>>1;
-                    if(bias>half)bias=half;
+                    if(bias>half){
+                        /* book the capped excess as entropy — the
+                         * bias fraction beyond half can't fit the
+                         * split, so it dissipates into heat rather
+                         * than vanishing (integer-dust conservation). */
+                        n->heat+=(uint16_t)((bias-half)>65535?65535:(bias-half));
+                        bias=half;
+                    }
                     int fwd=qDirBias>=0;
                     n->winding[fwd?c:c^1]+=dep-half+bias;
                     n->winding[fwd?c^1:c]+=half-bias;
@@ -783,8 +790,15 @@ void moore26_tick(void){
                             uint32_t toll=(uint32_t)cnu>surplus?surplus:(uint32_t)cnu;
                             if(toll>0){
                                 n->winding[dch]-=toll;
+                                /* conserve the shared nu register:
+                                 * mixing a new packet into occupied
+                                 * traffic average-weights nu instead
+                                 * of overwriting (count*nu ≈ preserved). */
+                                uint32_t tn=toll>127?127:toll;
+                                if(n->packet[dch])
+                                    n->packetNu[dch]=(uint8_t)(((uint32_t)n->packetNu[dch]*n->packet[dch]+tn)/(n->packet[dch]+1));
+                                else n->packetNu[dch]=(uint8_t)tn;
                                 n->packet[dch]++;
-                                n->packetNu[dch]=(uint8_t)(toll>127?127:toll);
                                 n->packetBorn[dch]=(uint8_t)qTick;
                             }
                         }
@@ -1088,9 +1102,19 @@ void moore26_tick(void){
          * site's own line frequency — emitted at the structure's
          * characteristic nu so recycled quanta are always in-band
          * for reabsorption (the spectral-line closure). */
-        grid_next[si].packet[c]++;
         uint32_t enu=qResEmit?(uint32_t)line:(shed>>1);
-        grid_next[si].packetNu[c]=(uint8_t)(enu>255?255:enu<1?1:enu);
+        uint32_t pn=enu>255?255:enu<1?1:enu;
+        /* conserving: the rung sheds 'shed' total — the packet
+         * carries pn, the remainder dissipates as friction heat.
+         * (shed>>1 alone lost half of every emission.) */
+        if(shed>pn){uint32_t r=shed-pn;
+            grid_next[si].heat=(uint16_t)((grid_next[si].heat+r)>65535?65535:(grid_next[si].heat+r));}
+        /* conserve the shared nu register — average-weight instead
+         * of overwriting when the channel already holds packets */
+        if(grid_next[si].packet[c])
+            grid_next[si].packetNu[c]=(uint8_t)(((uint32_t)grid_next[si].packetNu[c]*grid_next[si].packet[c]+pn)/(grid_next[si].packet[c]+1));
+        else grid_next[si].packetNu[c]=(uint8_t)pn;
+        grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
@@ -1191,6 +1215,9 @@ void moore26_packet_set(int x,int y,int z,int c,uint32_t v){
 void moore26_packet_nu_set(int x,int y,int z,int c,uint32_t v){
     if(!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c]=v;
+}
+uint32_t moore26_packet_nu_get(int x,int y,int z,int c){
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c];
 }
 void moore26_mass_set(int x,int y,int z,uint32_t v){
     grid_current[z*QWidth*QHeight+y*QWidth+x].mass=v;
