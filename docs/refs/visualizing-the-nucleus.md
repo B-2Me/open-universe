@@ -1,6 +1,8 @@
 # Visualizing the Nucleus
 
-*MIT Department of Physics — transcript (video URL pending embed)*
+*MIT Department of Physics — transcript of [https://youtu.be/ach9JLGs2Yc](https://youtu.be/ach9JLGs2Yc)*
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ach9JLGs2Yc?si=NrzyQweSXNnZ1dSI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 Humans have long wondered about the structure of matter and what makes up our world. The Greek philosopher Democritus first developed the concept of atomos, an indivisible building block of matter. He believed it came in many shapes depending on what kind of matter it made up. Over two millennia later these shapes were unified into solid spheres. Around 1900 the electron was discovered, which was proposed to exist scattered within the sphere. A few years later the nucleus was discovered and the model evolved to electrons traveling in fixed orbits around the nucleus. Uncertainty principles introduced us to the concept of quantum mechanics and the wave-like electrons became a probability cloud surrounding the nucleus.
 
