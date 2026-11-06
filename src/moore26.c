@@ -423,8 +423,15 @@ void moore26_tick(void){
                 uint32_t nu=(uint32_t)(h>>3)>255?255:(uint32_t)(h>>3);
                 if(nu){
                     grid_next[si].heat-=(uint16_t)nu;
+                    /* merge nu into occupied channel — count*nu preserved,
+                     * truncation remainder books to heat */
+                    if(grid_next[si].packet[c]){
+                        uint32_t tot=(uint32_t)grid_next[si].packetNu[c]*grid_next[si].packet[c]+nu;
+                        grid_next[si].packetNu[c]=(uint8_t)(tot/(grid_next[si].packet[c]+1));
+                        uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
+                        grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
+                    } else grid_next[si].packetNu[c]=(uint8_t)nu;
                     grid_next[si].packet[c]++;
-                    grid_next[si].packetNu[c]=(uint8_t)nu;
                     grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
                 }
@@ -689,13 +696,28 @@ void moore26_tick(void){
                  * laser analog — not a deposit). */
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(shed>=2){
+                    uint32_t sn=shed>>1;
+                    /* shed>>1 drops half the rung — book to heat,
+                     * merge nu into occupied traffic */
+                    uint32_t rem2=shed-sn;
+                    n->heat=(uint16_t)((n->heat+rem2)>65535?65535:(n->heat+rem2));
+                    if(n->packet[c]){
+                        uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+sn;
+                        n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
+                        uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
+                        n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                    } else n->packetNu[c]=(uint8_t)sn;
                     n->packet[c]++;
-                    n->packetNu[c]=(uint8_t)(shed>>1);
                     n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
                 } else {
-                    n->packet[c]++;              /* can't drop: pass one */
-                    n->packetNu[c]=(uint8_t)nu;
+                    if(n->packet[c]){
+                        uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+nu;
+                        n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
+                        uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
+                        n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                    } else n->packetNu[c]=(uint8_t)nu;
+                    n->packet[c]++;
                     n->packetBorn[c]=(uint8_t)qTick;
                 }
                 continue;
@@ -727,14 +749,10 @@ void moore26_tick(void){
                      * back upstream — like the ack). */
                     int32_t b=(int32_t)dep*qDirBias;
                     uint32_t bias=(uint32_t)(b<0?-b:b)>>8,half=dep>>1;
-                    if(bias>half){
-                        /* book the capped excess as entropy — the
-                         * bias fraction beyond half can't fit the
-                         * split, so it dissipates into heat rather
-                         * than vanishing (integer-dust conservation). */
-                        n->heat+=(uint16_t)((bias-half)>65535?65535:(bias-half));
-                        bias=half;
-                    }
+                    if(bias>half)bias=half;   /* clamp only — the
+                     * split already writes dep total either way;
+                     * the excess is phantom fraction, NOT lost
+                     * energy (booking it to heat minted +0.03%). */
                     int fwd=qDirBias>=0;
                     n->winding[fwd?c:c^1]+=dep-half+bias;
                     n->winding[fwd?c^1:c]+=half-bias;
@@ -795,9 +813,12 @@ void moore26_tick(void){
                                  * traffic average-weights nu instead
                                  * of overwriting (count*nu ≈ preserved). */
                                 uint32_t tn=toll>127?127:toll;
-                                if(n->packet[dch])
-                                    n->packetNu[dch]=(uint8_t)(((uint32_t)n->packetNu[dch]*n->packet[dch]+tn)/(n->packet[dch]+1));
-                                else n->packetNu[dch]=(uint8_t)tn;
+                                if(n->packet[dch]){
+                                    uint32_t tot=(uint32_t)n->packetNu[dch]*n->packet[dch]+tn;
+                                    n->packetNu[dch]=(uint8_t)(tot/(n->packet[dch]+1));
+                                    uint32_t rem=tot-(uint32_t)n->packetNu[dch]*(n->packet[dch]+1);
+                                    n->heat=(uint16_t)((n->heat+rem)>65535?65535:(n->heat+rem));
+                                } else n->packetNu[dch]=(uint8_t)tn;
                                 n->packet[dch]++;
                                 n->packetBorn[dch]=(uint8_t)qTick;
                             }
@@ -1111,9 +1132,12 @@ void moore26_tick(void){
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+r)>65535?65535:(grid_next[si].heat+r));}
         /* conserve the shared nu register — average-weight instead
          * of overwriting when the channel already holds packets */
-        if(grid_next[si].packet[c])
-            grid_next[si].packetNu[c]=(uint8_t)(((uint32_t)grid_next[si].packetNu[c]*grid_next[si].packet[c]+pn)/(grid_next[si].packet[c]+1));
-        else grid_next[si].packetNu[c]=(uint8_t)pn;
+        if(grid_next[si].packet[c]){
+            uint32_t tot=(uint32_t)grid_next[si].packetNu[c]*grid_next[si].packet[c]+pn;
+            grid_next[si].packetNu[c]=(uint8_t)(tot/(grid_next[si].packet[c]+1));
+            uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
+            grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
+        } else grid_next[si].packetNu[c]=(uint8_t)pn;
         grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
@@ -1300,6 +1324,10 @@ uint64_t moore26_sum(int what){
             case 2:for(int c=0;c<QChannels;c++)t+=n->packet[c];break;
             case 3:t+=n->heat;break;
             case 4:t+=n->charge<0?-(int32_t)n->charge:n->charge;break;
+            case 5:for(int c=0;c<QChannels;c++)t+=n->incip[c]*(n->incipNu[c]&127);break;
+            case 6:for(int c=0;c<QChannels;c++)t+=n->massFlight[c];break;
+            case 7:for(int c=0;c<QChannels;c++)t+=n->chargeFlight[c]<0?-(int32_t)n->chargeFlight[c]:n->chargeFlight[c];break;
+            case 8:for(int c=0;c<QChannels;c++)t+=n->packet[c]*n->packetNu[c];break;
         }
     }
     return t;
