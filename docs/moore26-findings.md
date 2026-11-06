@@ -7,6 +7,14 @@ channels as structure-only registers. All numbers are empirical
 outputs of `script/moore/*.mjs` headless harnesses — candidate
 substrate mechanics, not claims about nature.
 
+## Scale context
+
+The engine's node spacing is `0.1 fm` — the sub-nucleon regime
+where quark confinement and string-breaking live. This MIT scale
+tour is a good intuition pump for where the lattice sits:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ach9JLGs2Yc?si=UFIMZu2kkgWW1zoC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## Transport
 
 - `v/c = 1.00` on all 12 FCC edge directions — isotropic, one
