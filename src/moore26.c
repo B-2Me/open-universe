@@ -128,6 +128,7 @@ static int qDeflectAlign=0;
 static int qDdShift=0;
 static int qBendShift=0;
 static int qRadShift=0;
+static int qPhaseGate=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -590,6 +591,17 @@ void moore26_tick(void){
             int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
             if(line<1)line=1;
             if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue; /* off-band: flies on */
+            /* phase gate (qPhaseGate, qi3 effPhase port): the offer's
+             * phase nu*age mod 256 must land within the site's
+             * receptive window — else the transaction declines.
+             * The 720 spinor register finally does work. */
+            if(qPhaseGate){
+                uint32_t age=((uint32_t)(qTick&255)-(uint32_t)n->packetBorn[c])&255;
+                uint32_t op=(nu*age)&255;
+                int d=(int)(o->phase&255)-(int)op;
+                if(d<0)d=-d;if(d>128)d=256-d;
+                if(d>qPhaseGate)continue;
+            }
             int armed=0;
             for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
             /* electrostatic screening as occupancy economics: an
@@ -1194,3 +1206,4 @@ void moore26_rad_shift_set(int v){qRadShift=v;}
 int32_t moore26_chargeflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c];
 }
+void moore26_phase_gate_set(int v){qPhaseGate=v;}
