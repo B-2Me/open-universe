@@ -33,10 +33,18 @@ isolation:
 
 ```js
 // 6 edge-channel hops forming a closed {111} hexagon
-const vec = [[1,1,0],[1,0,1],[0,1,1],[-1,-1,0],[-1,0,-1],[0,-1,-1]];
+// ENGINE channel vectors — ch6={1,1,0}, ch12={1,0,-1},
+// ch16={0,1,-1}, ch7={-1,-1,0}, ch13={-1,0,1}, ch17={0,-1,1}
+const vec = [[1,1,0],[1,0,-1],[0,1,-1],[-1,-1,0],[-1,0,1],[0,-1,1]];
 const ch  = [6,12,16,7,13,17];
 // each cell: base ~30 both members on all pairs,
 // forward member boosted +90 (circulation bias)
+// CAUTION: an earlier vec array used {1,0,1} for ch12 — wrong:
+// ch12 in the engine is {1,0,-1}. The mislabeled seed painted an
+// OPEN ARC (persistent winding, no closure) — a packet stream
+// flew straight off it. With true vectors the loop closes AND
+// carries a persistent current (verified: 12 packets, 2000t,
+// zero arms/decay at rail_gate=64).
 ```
 
 - **1-component**: the recipe above at any center
