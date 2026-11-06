@@ -150,6 +150,9 @@ static int qPhaseSync=1;
 static int qVolShare=0;
 static int qChainShare=0;
 static int qResEmit=0;
+static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
+     * channels with committed winding >= this ride THROUGH — the
+     * stream doesn't negotiate on an established rail, it flows */
 static int qParFlip=0;   /* parity-flip probability per hop (0-255)
      * — the neutrino-mass analog: a quantum can invert helicity
      * in flight, enabling reabsorption it couldn't otherwise do */
@@ -413,7 +416,22 @@ void moore26_tick(void){
              * node's local temperature (not lost — the thermal sink
              * the emit/reabsorb loop needs for equilibrium). */
             uint32_t decay=(v[c]*(uint32_t)live)>>8;
-            if(decay<1&&(rand_site(si,40+c)&7)==0)decay=1;
+            int rail=0;
+            if(qRailGate){
+                /* waveguide exemption: a saturated rail rides
+                 * loss-free — the medium doesn't charge for passage
+                 * on an established wire (persistent current, not
+                 * thermalization). */
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t mm=o->winding[2*e2]>o->winding[2*e2+1]
+                             ?o->winding[2*e2]:o->winding[2*e2+1];
+                    if(mm>=(uint32_t)qRailGate){rail=1;break;}
+                }
+                if(rail)decay=0;
+            }
+            /* the floor must respect the rail too — a random 1-unit
+             * drip re-arms decay right after the exemption zeroes it */
+            if(!rail&&decay<1&&(rand_site(si,40+c)&7)==0)decay=1;
             if(decay>v[c])decay=v[c];
             if(decay){
                 uint32_t h=grid_next[si].heat+decay*nuv;
@@ -620,6 +638,26 @@ void moore26_tick(void){
         if(!IS_EVEN(x,y,z))continue;   /* packets never arm on odd cells */
         for(int c=0;c<QChannels;c++){
             if(!n->packet[c])continue;
+            /* rail bypass: if THIS NODE carries a saturated rail,
+             * arriving packets ride it — re-channeled onto the
+             * node's most-committed member, skipping negotiation.
+             * The rail condition is node-level: a stream packet can
+             * arrive on any channel and still find the wire. */
+            if(qRailGate){
+                int rc=-1;uint32_t rm=(uint32_t)qRailGate;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t mm=o->winding[2*e2]>o->winding[2*e2+1]
+                             ?o->winding[2*e2]:o->winding[2*e2+1];
+                    if(mm>rm){rm=mm;
+                        rc=o->winding[2*e2]>o->winding[2*e2+1]?2*e2:2*e2+1;}
+                }
+                if(rc>=0&&rc!=c){n->packet[rc]+=n->packet[c];
+                    n->packetNu[rc]=n->packetNu[c];
+                    n->packetBorn[rc]=n->packetBorn[c];
+                    n->packetPar[rc]=n->packetPar[c];
+                    n->packet[c]=0;}
+                if(rc>=0)continue;
+            }
             if((rand_site(si,20+c)%qCatchGate)>=lvl)continue;     /* catch gate */
             uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
             /* OFF-SHELL arming: the nu%line resonance check moved to
@@ -708,7 +746,19 @@ void moore26_tick(void){
             if(!a){n->ack[c]=0;continue;}
             uint8_t ttl=grid_current[up].ackTtl[c],rtt=grid_current[up].ackRtt[c];
             if(ttl<=1){n->bondDist[c>>1]=rtt>1?(uint8_t)(rtt>>1):1;qEvents[14]++;}
-            else{n->ack[c]=a;n->ackTtl[c]=ttl-1;n->ackRtt[c]=rtt;}
+            else{n->ack[c]=a;n->ackTtl[c]=ttl-1;n->ackRtt[c]=rtt;
+                /* the answer paves the rail: redistribute 1 unit of
+                 * committed winding from the node's freest channel
+                 * onto the ack's return pair — conserved (transfer,
+                 * not minting); each confirmed transaction lays
+                 * track for the next stream. */
+                int lo=-1;uint32_t lm=0xffff;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t mm=o->winding[2*e2]<o->winding[2*e2+1]
+                             ?o->winding[2*e2]:o->winding[2*e2+1];
+                    if(mm<lm){lm=mm;lo=2*e2;}
+                }
+                if(lo>=0&&o->winding[lo]>8){n->winding[lo]--;n->winding[c]++;}}
         }
         for(int c=0;c<QChannels;c++){
             uint32_t h=o->incip[c];
@@ -1477,3 +1527,4 @@ void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
+void moore26_rail_gate_set(int v){qRailGate=v;}
