@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--
+  moore26 Engine: Register Map & Tick Execution Rules
+  Copyright (c) 2026 Nathan / btwo.me
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>moore26 Engine: Register Map & Tick Rules</title>
+<style>
+  :root {
+    --bg: #0b1120; --panel: #131c2e; --edge: #25355a;
+    --ink: #e8eefc; --dim: #8fa2c4; --acc: #5aa7ff;
+    --good: #3ddc97; --warn: #ffb454; --bad: #ff6b6b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); line-height: 1.65;
+         font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         padding: 2.5rem 1rem; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { border-bottom: 1px solid var(--edge); padding-bottom: 1.4rem; margin-bottom: 2rem; }
+  h1 { font-size: 1.9rem; letter-spacing: -.02em; }
+  .sub { color: var(--acc); margin-top: .3rem; font-size: 1.05rem; }
+  .badges { margin-top: .8rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: .8rem; padding: .2rem .7rem;
+           border: 1px solid var(--acc); border-radius: 999px; color: var(--acc); }
+  .badge.g { border-color: var(--good); color: var(--good); }
+  h2 { font-size: 1.35rem; margin: 2.4rem 0 .9rem; padding-left: .7rem;
+       border-left: 4px solid var(--acc); }
+  h3 { font-size: 1.05rem; margin: 1.4rem 0 .5rem; color: var(--ink); }
+  p, li { color: var(--ink); }
+  p { margin-bottom: .9rem; }
+  ul { margin: 0 0 1.1rem 1.4rem; }
+  li { margin-bottom: .4rem; }
+  code { font-family: var(--mono); font-size: .88em; background: #0a0f1c;
+         border: 1px solid var(--edge); border-radius: 4px;
+         padding: .12rem .4rem; color: var(--acc); }
+  pre { font-family: var(--mono); font-size: .85rem; background: #0a0f1c;
+        border: 1px solid var(--edge); border-radius: 8px;
+        padding: 1.1rem 1.3rem; overflow-x: auto; margin-bottom: 1.4rem; color: #dbe6fa; }
+  table { width: 100%; border-collapse: collapse; margin: 1.1rem 0 1.5rem; font-size: .92rem; }
+  th { text-align: left; font-family: var(--mono); font-size: .8rem; color: var(--dim);
+       text-transform: uppercase; letter-spacing: .05em;
+       padding: .5rem .7rem; border-bottom: 2px solid var(--edge); }
+  td { padding: .55rem .7rem; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .panel { background: var(--panel); border: 1px solid var(--edge);
+           border-radius: 10px; padding: 1.2rem 1.4rem; margin-bottom: 1.4rem; }
+  .phase { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .phase .num { flex: 0 0 2.2rem; height: 2.2rem; border-radius: 8px;
+                background: var(--edge); color: var(--acc); font-family: var(--mono);
+                font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .phase .body h3 { margin-top: 0; }
+  .tag { font-family: var(--mono); font-size: .72rem; padding: .1rem .45rem;
+         border-radius: 4px; margin-left: .4rem; vertical-align: middle; }
+  .tag.g { background: rgba(61,220,151,.12); color: var(--good); border: 1px solid var(--good); }
+  .tag.w { background: rgba(255,180,84,.12); color: var(--warn); border: 1px solid var(--warn); }
+  .tag.b { background: rgba(255,107,107,.12); color: var(--bad); border: 1px solid var(--bad); }
+  .dim { color: var(--dim); }
+  footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid var(--edge);
+           color: var(--dim); font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>moore26 Engine</h1>
+  <div class="sub">Register map &amp; tick execution rules — the conserved transaction substrate</div>
+  <div class="badges">
+    <span class="badge">26-channel FCC / Moore stencil</span>
+    <span class="badge">even-parity transport sub-lattice</span>
+    <span class="badge g">strictly conserved</span>
+  </div>
+</header>
+
+<h2>1. Lattice &amp; Channel Layout</h2>
+<p>The grid is a cubic cell lattice carrying the <strong>FCC even-parity sub-lattice</strong>: transactions
+arm only on even-parity cells <code>(x+y+z)&amp;1==0</code>. Each node owns <code>QChannels=26</code>
+directional channels — one per Moore-stencil neighbor — mapped onto the rhombic-dodecahedral FCC
+coordination cell (octahedral symmetry <code>O<sub>h</sub></code>).</p>
+<table>
+  <tr><th>Channels</th><th>Role</th><th>Neighbors</th></tr>
+  <tr><td><code>0–5</code></td><td>face axes (±x ±y ±z)</td><td>6 face neighbors, distance 2</td></tr>
+  <tr><td><code>6–17</code></td><td><strong>transport edges</strong> (packets fly here)</td><td>12 edge neighbors, distance √2</td></tr>
+  <tr><td><code>18–25</code></td><td>corner/structural registers</td><td>8 corner neighbors, distance √3</td></tr>
+</table>
+<p>The 12 edge channels are the only packet-flight channels — each points at an FCC nearest neighbor.
+Bound structure (<code>winding</code>) lives on all 26 channels as <em>directed pairs</em>
+<code>(2e, 2e+1)</code> — a forward/backward ledger per axis.</p>
+
+<h2>2. Node Registers</h2>
+<div class="panel">
+<table>
+  <tr><th>Register</th><th>Type</th><th>Meaning</th></tr>
+  <tr><td><code>winding[26]</code></td><td>u16</td><td>committed traffic per direction — the structural ledger</td></tr>
+  <tr><td><code>dd</code></td><td>derived</td><td>signed imbalance <code>winding[2e]−winding[2e+1]</code> — circulation direction</td></tr>
+  <tr><td><code>packet[26]</code></td><td>u8</td><td>free quanta in flight per channel (count)</td></tr>
+  <tr><td><code>packetNu[26]</code></td><td>u8</td><td>packet frequency — the arm/confirm energy</td></tr>
+  <tr><td><code>packetBorn[26]</code></td><td>u8</td><td>birth tick — age for decay/phase</td></tr>
+  <tr><td><code>incip[26]</code></td><td>u8</td><td>armed incipient transactions (offered, not yet confirmed)</td></tr>
+  <tr><td><code>incipBorn[26]</code></td><td>u8</td><td>incipient age → session maturity</td></tr>
+  <tr><td><code>incipNu[26]</code></td><td>u8</td><td>incipient energy + stim flag (bit7)</td></tr>
+  <tr><td><code>mass</code></td><td>u16</td><td>parked structural mass — condensed binding</td></tr>
+  <tr><td><code>massFlight[26]</code></td><td>u16</td><td>structural mass in transit (slugs)</td></tr>
+  <tr><td><code>charge</code></td><td>i8</td><td>parked signed charge register</td></tr>
+  <tr><td><code>chargeFlight[26]</code></td><td>i8</td><td>signed charge in transit (recoil)</td></tr>
+  <tr><td><code>heat</code></td><td>u16</td><td>thermal residue — the entropy ledger</td></tr>
+  <tr><td><code>phase</code></td><td>u8</td><td>Jacobi-relaxed scalar field (dead register — kept for compat)</td></tr>
+  <tr><td><code>bondDist[8]</code></td><td>u8</td><td>measured reach per edge pair — ACK-delivered bond memory</td></tr>
+</table>
+<p class="dim">≈220&nbsp;B per node × double buffer. Vacuum cells are skipped via an 8³ chunk ledger.</p>
+</div>
+
+<h2>3. Tick Pipeline</h2>
+<p>One tick executes the following local phases in order, single-buffered into <code>grid_next</code>:</p>
+
+<div class="phase"><div class="num">1</div><div class="body">
+  <h3>Transport <span class="tag g">v/c = 1.00</span></h3>
+  <p>Every packet hops exactly one edge channel to its neighbor — the literal speed of light.
+  Free quanta are dispersion-free; the front advances +1 hop per tick.</p>
+</div></div>
+
+<div class="phase"><div class="num">2</div><div class="body">
+  <h3>Arm (offer)</h3>
+  <p>A packet arriving at an even cell arms an incipient transaction if it passes the gates:
+  catch gate, on-band line match (<code>nu % line == 0</code>, <code>line = (mass + winding&gt;&gt;2)&gt;&gt;2</code>),
+  phase gate, and channel occupancy. Off-band packets fly on and eventually decay to heat
+  (<code>ev7</code>).</p>
+</div></div>
+
+<div class="phase"><div class="num">3</div><div class="body">
+  <h3>Confirm &amp; deposit</h3>
+  <p>Held incipients confirm (session maturity via <code>incipBorn</code>). The confirmed
+  <code>nu</code> splits three ways:</p>
+  <ul>
+    <li><code>share = nu·vol_share&gt;&gt;8</code> — volumetric deposit onto the dominant member of
+        the top committed edges (direction-following)</li>
+    <li><code>dep = nu − share</code> — lands on the arrival pair, split by signed
+        <code>dir_bias</code> (<code>&gt;0</code> forward/travel, <code>&lt;0</code> toward the offerer)</li>
+    <li><code>cnu = nu·chain_share&gt;&gt;8</code> — the chained re-offer</li>
+  </ul>
+</div></div>
+
+<div class="phase"><div class="num">4</div><div class="body">
+  <h3>Charge-response feed <span class="tag g">conserving</span></h3>
+  <p>The dominant directed edge absorbs <code>feed = dd·nu&gt;&gt;9</code> <em>redirected from the
+  biased deposit member</em> — momentum feeds circulation without minting winding. (Pre-fix this
+  term was added on top of the deposit — the pump that drove the dimer to 7.7M.)</p>
+</div></div>
+
+<div class="phase"><div class="num">5</div><div class="body">
+  <h3>Chained re-offer + surplus toll <span class="tag g">conserving</span></h3>
+  <p>The confirm re-offers a packet on the dominant-<code>dd</code> channel — the signal hops
+  node-to-node along the structure's own rail. The re-offer is funded by a <strong>surplus toll</strong>:
+  it draws only the margin <em>above</em> the pair's committed floor <code>min(a,b)</code>. The bond is
+  protected; traffic pays for traffic.</p>
+</div></div>
+
+<div class="phase"><div class="num">6</div><div class="body">
+  <h3>Emission (structure → radiation)</h3>
+  <p>Excited sites (level ≥ 2) shed a rung via <code>site_unwind</code>: with
+  <code>res_emit=1</code> the packet carries <code>nu = line</code> (the site's own frequency —
+  resonant emission); else <code>nu = shed&gt;&gt;1</code>. Channel pick prefers bond → dominant-dd
+  (chiral/dipole emission) → random. A mass-bearing site instead condenses winding→mass when
+  <code>mass×8 &lt; Σ committed</code> (the ~1:3.4 accretion equilibrium).</p>
+</div></div>
+
+<div class="phase"><div class="num">7</div><div class="body">
+  <h3>Macroscopic events</h3>
+  <p>String-break: a saturated &gt;128 tube of ≥12 contiguous nodes fractures at the tube head —
+  endpoints pair-produce mass + chargeFlight recoil. Mass-flight transport, charge drift, heat
+  drain (−1/128/tick) close the tick.</p>
+</div></div>
+
+<h2>4. Runtime Knobs</h2>
+<table>
+  <tr><th>Knob</th><th>Default</th><th>Measured effect (300t knot, dd)</th></tr>
+  <tr><td><code>dir_bias</code></td><td>−256</td><td><strong>master switch</strong> — dd=12 at 0 vs ~245 at ±256</td></tr>
+  <tr><td><code>chain_share</code></td><td>0</td><td>volumetric routing share; with toll: mild drag (182→78)</td></tr>
+  <tr><td><code>vol_share</code></td><td>0</td><td>volumetric deposit fraction; dilutes dd (259→25)</td></tr>
+  <tr><td><code>commit_min</code></td><td>32</td><td>commitment floor; 128 kills dd entirely</td></tr>
+  <tr><td><code>catch_gate</code></td><td>8</td><td>arm gate; 32 starves dd (227→86)</td></tr>
+  <tr><td><code>confirm_cap</code></td><td>16</td><td>confirm rate cap; mild optimum at 4</td></tr>
+  <tr><td><code>fusion_wall</code></td><td>256</td><td>pair-production threshold from bare vacuum</td></tr>
+  <tr><td><code>dd_shift</code></td><td>2</td><td>dd accumulation rate (163→240)</td></tr>
+  <tr><td><code>bend_shift</code></td><td>7</td><td>impedance-gated turn cost</td></tr>
+  <tr><td><code>rad_shift</code></td><td>6</td><td>bend radiation split (ev33)</td></tr>
+  <tr><td><code>phase_gate</code></td><td>64</td><td>emission phase window</td></tr>
+  <tr><td><code>res_emit</code></td><td>0</td><td>resonant emission nu=line (spectral closure)</td></tr>
+  <tr><td><code>ground_floor</code></td><td>512</td><td>ground-state floor</td></tr>
+  <tr><td><code>deflect_align</code></td><td>128</td><td>deflection alignment weight</td></tr>
+</table>
+
+<h2>5. Locked Constants</h2>
+<table>
+  <tr><th>Constant</th><th>Value</th><th>Status</th></tr>
+  <tr><td>v/c</td><td>1.00 hop/tick</td><td>confirmed under locked rules</td></tr>
+  <tr><td>dimer binding</td><td>+219 dd → 519 plateau</td><td>conserved (surplus toll)</td></tr>
+  <tr><td>mass:bond</td><td>≈1:3.4 (188/644)</td><td>flat 1000→5000t</td></tr>
+  <tr><td>fusion wall</td><td>256</td><td>pair-production threshold</td></tr>
+  <tr><td>string-break</td><td>≥12-node saturated tube</td><td>2·768+128=1664 exact ledger</td></tr>
+  <tr><td>charge recoil</td><td>±8 (string-break) / ±75 (fusion)</td><td>process-dependent, not a quantum</td></tr>
+</table>
+
+<footer>
+  <p>moore26.c — strictly conserved transaction ledger. See also
+  <a href="./meso3-rules.html" style="color:var(--acc)">meso3-rules.html</a> and
+  <a href="../../transaction-ledger" style="color:var(--acc)">transaction-ledger.md</a>.</p>
+</footer>
+
+</div>
+</body>
+</html>
