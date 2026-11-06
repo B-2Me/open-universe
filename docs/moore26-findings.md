@@ -141,6 +141,41 @@ clusters).
   (the annihilation-shed analog; energy goes mostly to heat)
 - Third stream: refused — the hexagon has exactly 2 routing lanes
 
+## Interactions at range — radiative torque transfer
+
+Two `comm=120` knots at `sep=16` and `sep=12` show **no centroid
+drift** (frozen at seed positions over 1500–3000t — null for
+linear force), but they exchange angular momentum through
+radiation: each knot's emission grazes the other's facing flank
+and `dir_bias` writes bound circulation:
+
+```
+sep=12, chain=128:  ddL: +1 → +11 → +16 → +23   (t=0→2000)
+                    ddR: +5 → −6  → −9  → −15
+```
+
+Opposite signs — each knot sees the other's flux arriving from
+the opposite direction, so the deposition torques them
+counter-rotating, like gears coupled by the medium. This is the
+`meso3i` YORP mechanism (grazing light writes spin via absorbed
+flank deposition) running on the conserved engine: a real
+action-at-a-distance interaction living in the **angular** ledger,
+not the linear one.
+
+The wound `dd` circulation is literally a persistent current loop
+on the transport edges — a candidate magnetic-dipole register.
+Open questions before claiming dipole magnetism: orientation
+sign-rule (does a pre-seeded `dd` preferentially anti-align a
+neighbor?) and distance falloff (dipole-dipole ∝ `1/r³`).
+
+*Substrate artifact fixed en route:* a `+x` lattice wind (+1.13
+node drift/knot over 750t) traced to the conduction `k`-transfer
+always pushing the pair's `+` member direction plus
+first-tie-wins scans defaulting to channel `0`. Fixed via
+gradient-descent conduction, per-node `sent[]` clamps against
+`grid_current`, and rotated scan order — vacuum now measured
+still at all separations.
+
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
