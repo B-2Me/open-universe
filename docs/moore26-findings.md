@@ -74,6 +74,31 @@ angular momentum, thermodynamically irreversible:
 - Overdrive doesn't break the knot — it bloats (`vol +100%`),
   direction washes out, structure survives
 
+## Holographic finding — interiors are bookkeeping
+
+Measured: a `dd` pulse injected on the knot's surface stays pinned
+at the surface (`west=3520, mid=0, east=0` across `300t`) — the
+directional deformation never propagates through the interior.
+The knot is sound-opaque: `dd` conducts along surfaces and
+channels (tubes, legs) but the dense interior doesn't carry it.
+
+Implication: everything the knot *does* happens at its boundary —
+emission, absorption, arm/confirm, leading-edge re-formation
+(the `0.033c` translation mechanism is a surface process, not a
+bulk propagation). The interior is archived state; no clock
+ticks there. The holographic principle (degrees of freedom on
+the boundary, not the volume) appears here as a measured
+property of a cellular substrate — "inside a knot" is the same
+kind of question as "inside a black hole." The interior is
+bookkeeping, not dynamics.
+
+Density probe: `8` packed knots retain `1.028×` isolated volume —
+no density penalty; mutual emission recapture slightly favors
+packing. "Mass is spaced far apart" does not drop out of
+knot-level stability; it lives in transport instead — dense
+regions are stable but *causally dark* (unverified on larger
+clusters).
+
 ## Dead registers / phantoms
 
 - `phase` register + 10-iter Jacobi sync: pure overhead —
