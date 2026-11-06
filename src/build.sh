@@ -374,6 +374,8 @@ if emcc moore26.c \
     '_moore26_dir_bias_set',
     '_moore26_deflect_align_set',
     '_moore26_dd_shift_set',
+    '_moore26_bend_shift_set',
+    '_moore26_rad_shift_set',
     '_malloc',
     '_free'
   ]" \
@@ -444,6 +446,8 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     '_moore26_dir_bias_set',
     '_moore26_deflect_align_set',
     '_moore26_dd_shift_set',
+    '_moore26_bend_shift_set',
+    '_moore26_rad_shift_set',
       '_malloc',
       '_free'
     ]" \

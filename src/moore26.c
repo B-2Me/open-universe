@@ -114,7 +114,7 @@ static int CW,CH,CD,nChunks;
 static uint8_t *chunkLive, *chunkProc;
 static int *procList, nProc;
 
-static uint64_t qEvents[32];
+static uint64_t qEvents[48];
 static uint64_t qTick;
 static int qFusionWall=256;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
@@ -126,6 +126,8 @@ static int qCatchGate=16;
 static int qDirBias=0;
 static int qDeflectAlign=0;
 static int qDdShift=0;
+static int qBendShift=0;
+static int qRadShift=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -761,16 +763,62 @@ void moore26_tick(void){
              * direction-aware deposit wrote rides forward.
              * 0 = off (balanced pairs only, the original rule). */
             if(a!=b){
-                if(qDdShift<1)continue;
                 int big=a>b?2*e:2*e+1;
-                uint32_t dk=(a>b?a-b:b-a)>>qDdShift;
-                uint32_t dav=grid_next[si].winding[big];
-                if(dk>dav)dk=dav;
-                if(!dk)continue;
-                int ni=nbr(x,y,z,QChannelVec[big][0],QChannelVec[big][1],QChannelVec[big][2]);
-                #pragma omp atomic
-                grid_next[ni].winding[big]+=dk;
-                grid_next[si].winding[big]-=dk;
+                uint32_t ex=a>b?a-b:b-a;
+                /* impedance gate: probe the forward neighbor's committed
+                 * pair — a bend exists only where straight conduction
+                 * meets saturation. No macro-awareness, just refusal. */
+                const int8_t *vb=QChannelVec[big];
+                int ni=nbr(x,y,z,vb[0],vb[1],vb[2]);
+                uint32_t rm=grid_current[ni].winding[2*e]<grid_current[ni].winding[2*e+1]
+                          ?grid_current[ni].winding[2*e]:grid_current[ni].winding[2*e+1];
+                if(!qDdShift||rm<128){
+                    if(qDdShift>=1){
+                        uint32_t dk=ex>>qDdShift;
+                        uint32_t dav=grid_next[si].winding[big];
+                        if(dk>dav)dk=dav;
+                        if(dk){
+                            #pragma omp atomic
+                            grid_next[ni].winding[big]+=dk;
+                            grid_next[si].winding[big]-=dk;
+                        }
+                    }
+                    continue;
+                }
+                /* blocked: parallel transport — the projected share
+                 * (dot=1 => cos60) rotates onto aligned edges; the
+                 * remainder sheds as a packet continuing straight —
+                 * curvature costs radiation, the discrete
+                 * synchrotron tax. */
+                if(qBendShift>=1){
+                    for(int e2=0;e2<QChannels/2;e2++){
+                        if(e2==e)continue;
+                        int d0=vb[0]*QChannelVec[2*e2][0]+vb[1]*QChannelVec[2*e2][1]+vb[2]*QChannelVec[2*e2][2];
+                        int d1=vb[0]*QChannelVec[2*e2+1][0]+vb[1]*QChannelVec[2*e2+1][1]+vb[2]*QChannelVec[2*e2+1][2];
+                        int t=d0>d1?2*e2:2*e2+1,w=d0>d1?d0:d1;
+                        if(w<=0)continue;
+                        uint32_t s=(ex*(uint32_t)w)>>qBendShift;
+                        uint32_t sav=grid_next[si].winding[big];
+                        if(s>sav)s=sav;
+                        if(!s)continue;
+                        grid_next[si].winding[t]+=s;
+                        grid_next[si].winding[big]-=s;
+                    }
+                }
+                if(qRadShift>=1){
+                    uint32_t rad=ex>>qRadShift;
+                    uint32_t rav=grid_next[si].winding[big];
+                    if(rad>rav)rad=rav;
+                    if(rad){
+                        grid_next[si].winding[big]-=rad;
+                        int np=grid_next[si].packet[big]+1;
+                        grid_next[si].packet[big]=(uint8_t)(np>255?255:np);
+                        int rnu=(int)(rad>255?255:rad);
+                        if(rnu>grid_next[si].packetNu[big])
+                            grid_next[si].packetNu[big]=(uint8_t)rnu;
+                        qEvents[33]+=rad;
+                    }
+                }
                 continue;
             }
             if(a<32)continue;
@@ -1049,7 +1097,7 @@ void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
 uint32_t moore26_massflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
-uint64_t moore26_events(int i){return qEvents[i&31];}
+uint64_t moore26_events(int i){return (i>=0&&i<48)?qEvents[i]:0;}
 void moore26_phase_set(int x,int y,int z,uint32_t v){
     grid_current[z*QWidth*QHeight+y*QWidth+x].phase=v&511;
     mark_chunk(x,y,z);
@@ -1141,3 +1189,5 @@ void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_dd_shift_set(int v){qDdShift=v;}
+void moore26_bend_shift_set(int v){qBendShift=v;}
+void moore26_rad_shift_set(int v){qRadShift=v;}
