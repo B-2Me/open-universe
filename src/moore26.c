@@ -124,6 +124,8 @@ static int qGroundFloor=512;
 static int qConfirmCap=160;
 static int qCatchGate=16;
 static int qDirBias=0;
+static int qDeflectAlign=0;
+static int qDdShift=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -601,9 +603,24 @@ void moore26_tick(void){
                 int fc=6;uint32_t fo=255;
                 /* deflection target must be a transporting edge —
                  * scattering onto a face/corner register freezes the
-                 * packet in a dead channel under the FCC gate. */
-                for(int c2=6;c2<18;c2++){
-                    if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
+                 * packet in a dead channel under the FCC gate.
+                 * qDeflectAlign: parallel-transport deflection —
+                 * prefer the 60-degree forward neighbors (dot=1),
+                 * so wall declines route along the surface tangent
+                 * instead of back-scattering. Falls back to the
+                 * freest edge when the forward set is saturated. */
+                if(qDeflectAlign){
+                    const int8_t *vc=QChannelVec[c];
+                    for(int c2=6;c2<18;c2++){
+                        const int8_t *v2=QChannelVec[c2];
+                        if(vc[0]*v2[0]+vc[1]*v2[1]+vc[2]*v2[2]!=1)continue;
+                        if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
+                    }
+                }
+                if(fo==255||!qDeflectAlign){
+                    for(int c2=6;c2<18;c2++){
+                        if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
+                    }
                 }
                 n->packet[fc]++;
                 n->packetNu[fc]=(uint8_t)nu;
@@ -739,7 +756,24 @@ void moore26_tick(void){
         NodeState *o=&grid_current[si];
         for(int e=0;e<QChannels/2;e++){
             uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
-            if(a<32||a!=b)continue;
+            /* direction transport (qDdShift): an imbalanced edge's
+             * excess pushes along its own channel — the dd the
+             * direction-aware deposit wrote rides forward.
+             * 0 = off (balanced pairs only, the original rule). */
+            if(a!=b){
+                if(qDdShift<1)continue;
+                int big=a>b?2*e:2*e+1;
+                uint32_t dk=(a>b?a-b:b-a)>>qDdShift;
+                uint32_t dav=grid_next[si].winding[big];
+                if(dk>dav)dk=dav;
+                if(!dk)continue;
+                int ni=nbr(x,y,z,QChannelVec[big][0],QChannelVec[big][1],QChannelVec[big][2]);
+                #pragma omp atomic
+                grid_next[ni].winding[big]+=dk;
+                grid_next[si].winding[big]-=dk;
+                continue;
+            }
+            if(a<32)continue;
             uint32_t k=a>>3;
             /* UNDERFLOW GUARD: deductions write grid_next but reads
              * saw grid_current — when several edges drain one node in
@@ -1105,3 +1139,5 @@ void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
+void moore26_deflect_align_set(int v){qDeflectAlign=v;}
+void moore26_dd_shift_set(int v){qDdShift=v;}
