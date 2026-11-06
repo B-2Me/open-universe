@@ -4,8 +4,8 @@ Process ontology: a knot is not a *thing* — it is a **self-
 sustaining transaction loop**. Flux that closes on itself. Every
 node in the loop is mid-handshake with its neighbors; the
 "structure" is a process that keeps re-establishing itself, not
-a shape. Not surfaces all the way down — **transactions all the
-way down**.
+a shape. Not surfaces all the way down — **transport all the
+way through**.
 
 ## The component inventory
 
