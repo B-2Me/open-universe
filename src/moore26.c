@@ -131,6 +131,7 @@ static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
 static int qVolShare=0;
+static int qChainShare=0;
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -716,7 +717,8 @@ void moore26_tick(void){
                      * follows the node's own routing, not just the
                      * arrival channel. */
                     uint32_t share=((uint32_t)nu*qVolShare)>>8;
-                    uint32_t dep=nu-share;
+                    uint32_t cnu=qChainShare?((uint32_t)nu*qChainShare)>>8:0;
+                    uint32_t dep=nu-share-cnu;
                     /* signed qDirBias: >0 biases toward the travel
                      * direction (c, momentum forward); <0 biases
                      * toward the OFFERER (c^1, the response riding
@@ -751,6 +753,24 @@ void moore26_tick(void){
                                 int m2_=n->winding[2*t2]>n->winding[2*t2+1]?0:1;
                                 n->winding[2*t2+m2_]+=s2;
                             }
+                        }
+                    }
+                    /* offer-chaining (qChainShare): the confirmed
+                     * transaction re-offers a share of nu on the node's
+                     * dominant-dd channel — the signal hops along the
+                     * structure's own rail instead of stopping at the
+                     * node. Moving toward an established offer does
+                     * more work than forging new structure. */
+                    if(cnu){
+                        int dch=-1;int32_t dm=0;
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            int32_t d2=(int)n->winding[2*e2]-(int)n->winding[2*e2+1];
+                            if(d2>dm){dm=d2;dch=2*e2;}else if(-d2>dm){dm=-d2;dch=2*e2+1;}
+                        }
+                        if(dch>=0){
+                            n->packet[dch]++;
+                            n->packetNu[dch]=(uint8_t)(cnu>127?127:cnu);
+                            n->packetBorn[dch]=(uint8_t)qTick;
                         }
                     }
                     /* charge-response — the dominant directed edge
@@ -1252,3 +1272,4 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
+void moore26_chain_share_set(int v){qChainShare=v;}

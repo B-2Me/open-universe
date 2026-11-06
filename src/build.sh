@@ -379,6 +379,7 @@ if emcc moore26.c \
     '_moore26_phase_gate_set',
     '_moore26_phase_sync_set',
     '_moore26_vol_share_set',
+    '_moore26_chain_share_set',
     '_moore26_chargeflight_get',
     '_malloc',
     '_free'
@@ -455,6 +456,7 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     '_moore26_phase_gate_set',
     '_moore26_phase_sync_set',
     '_moore26_vol_share_set',
+    '_moore26_chain_share_set',
     '_moore26_chargeflight_get',
       '_malloc',
       '_free'
