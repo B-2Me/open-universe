@@ -345,6 +345,7 @@ void meso3i_iepush(int k)   { IEPUSH = k; }
 void meso3i_recoil(int k)   { IRECOIL = k; }
 void meso3i_lens(int k)     { ILENS = k; }
 void meso3i_randmode(int k) { IRANDM = k; }
+void meso3i_seed(int k)     { irng = k ? (uint32_t)k : 0xC0FFEEu; }
 void meso3i_nuscat(int k)   { INUSCAT = k; }
 void meso3i_photdecay(int k) { IPHOTDEC = k; }
 void meso3i_nuup(int k)      { INUUP = k; }
