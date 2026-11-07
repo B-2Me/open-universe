@@ -1,5 +1,17 @@
 # Agent Notes
 
+## File edits — watch line endings on Windows
+
+When writing files via Python (`open(path,'w')` etc.) on Windows, the
+runtime emits CRLF — which breaks bash scripts (`$'\r': command not
+found`) and diffs. Force LF for `.sh` and other POSIX files:
+
+```python
+open(path, 'w', newline='\n').write(src)   # or write bytes
+```
+
+Verify with `file`/`od -c` before running the script in Docker.
+
 ## WASM builds — always use `src/build.sh`
 
 Never hand-roll `emcc` invocations for `planck.c`/`planck3.c`. The export
