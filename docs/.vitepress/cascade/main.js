@@ -386,17 +386,19 @@ export async function initCascadeSimulator(root, opts = {}) {
    * recoil fragments — the string-break. half=5 (11 nodes) stays
    * just under the length gate: a STABLE saturated string — the
    * scenario shows structure that holds; the paint tool snaps it. */
-  const seedTube = (lx, ly, lz, half = 8) => {
+  const seedTube = (lx, ly, lz, half = 8, w = 128) => {
     let n = 0;
+    const cells = [];
     for (let i = -half; i <= half; i++) {
       const x = lx + i, y = ly + i, z = lz;
       if (x < 1 || x >= W3 - 1 || y < 1 || y >= H3 - 1) continue;
       if (i === -half || i === half) wasm._moore26_mass_set(x, y, z, 512);
-      wasm._moore26_winding_set(x, y, z, 6, 128);
-      wasm._moore26_winding_set(x, y, z, 7, 128);
+      wasm._moore26_winding_set(x, y, z, 6, w);
+      wasm._moore26_winding_set(x, y, z, 7, w);
+      cells.push([x, y, z]);
       n++;
     }
-    return n;
+    return { n, cells };
   };
 
   /* best edge channel for a direction — every string segment picks
@@ -544,7 +546,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
     /* tube scenario = a STABLE string (11 nodes, one short of the
      * fracture length) — the paint tool's 17-node string snaps */
-    if (s === 'tube') return seedTube(CX, CY, CZ, 5);
+    if (s === 'tube') return seedTube(CX, CY, CZ, 5).n;
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
     if (s === 'ring') return seedRing(CX - 2, CY, CZ);   // even-parity
@@ -688,8 +690,12 @@ export async function initCascadeSimulator(root, opts = {}) {
       const cell = pickCell(e.clientX, e.clientY);
       if (cell) {
         if (ui.tubeArm) {
-          const n = seedTube(cell.lx, cell.ly, cell.lz);
-          say(n ? `flux tube painted — ${n} saturated nodes; watch it fracture` : 'off-lattice', 3500);
+          /* the fuse — paint sub-critical (120) then ramp +1/tick:
+           * the string glows to criticality for ~8 ticks before the
+           * engine's own gate fires the fracture. A watchable snap. */
+          const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 120);
+          if (n) fuse = cells;
+          say(n ? `fuse lit — string saturating…` : 'off-lattice', 3500);
         } else if (ui.ringArm) {
           /* even-parity snap — ring cells must carry packets */
           const px = cell.lx, py = cell.ly, pz = cell.lz;
@@ -749,7 +755,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (el) { el.max = max; el.value = val;
       const o = el.parentElement?.querySelector('output'); if (o) o.value = val; }
   }
-  let rStep = 1, lastEv6 = 0;
+  let rStep = 1, lastEv6 = 0, fuse = null;
   const strideInfo = () => {
     const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
     return { nx, ny, nxy: nx * ny, count: nx * ny * nz };
@@ -776,7 +782,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-reset]', 'click', () => {
     /* re-init = full scenario reset, not just clear — restores the
      * initial quiet field the feed/beam/lump tools build on. */
-    wasm._moore26_init(W3, H3, D3); ui.tick = 0;
+    wasm._moore26_init(W3, H3, D3); ui.tick = 0; fuse = null;
     rStep = 1; lowT = highT = null;
     /* reset restores the CURRENT scenario (re-seed, keep toggles) —
      * without this, reset always dropped to cold vacuum */
@@ -786,7 +792,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   });
 
   bind('[data-scenario]', 'change', e => {
-    wasm._moore26_init(W3, H3, D3); ui.tick = 0;
+    wasm._moore26_init(W3, H3, D3); ui.tick = 0; fuse = null;
     rStep = 1; lowT = highT = null;
     /* a scenario REPLACES the scene: clear + restore default toggles
      * (feed on, beam/tools off) so the seed isn't drowned by whatever
@@ -1092,6 +1098,20 @@ export async function initCascadeSimulator(root, opts = {}) {
       while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
         if (ui.drive || ui.beam) inject();
+        if (fuse) {
+          /* fuse ramp: +1 winding/member/tick until the fracture
+           * gate takes over — the string visibly glows critical */
+          let done = true;
+          for (const [fx, fy, fz] of fuse) {
+            const a = wasm._moore26_winding_get(fx, fy, fz, 6);
+            if (a < 128) {
+              wasm._moore26_winding_set(fx, fy, fz, 6, a + 1);
+              wasm._moore26_winding_set(fx, fy, fz, 7, a + 1);
+              done = false;
+            }
+          }
+          if (done) fuse = null;   /* engine fractures it this tick */
+        }
         wasm._moore26_tick();
         const ms = performance.now() - t0;
         spent += ms;
