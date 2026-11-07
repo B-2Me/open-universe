@@ -530,8 +530,9 @@ onUnmounted(() => {
   font-size: 21px;
   line-height: 1.1;
 }
-/* toggle icons get the room the slimmed pill freed — slightly larger,
-   nudged right so the glyph visually shares the pill's corner space */
+/* toggle buttons reserve a top lane for the status strip — the icon
+   drops 4px so the LED bar never shares the glyph's row */
+.cascade-grp-row > button.tog { padding-top: 6px; }
 .cascade-grp-row > button.tog .g { font-size: 22px; }
 /* per-glyph weight tuning — some glyphs run small/large at equal pt:
    rock's filled disc is heavy, binary's knot is faint, load is thin */
@@ -540,18 +541,20 @@ onUnmounted(() => {
 .cascade-grp-row > button[data-unsnap] .g { font-size: 23px; }
 .cascade-grp-row > button[data-ring] .g   { font-size: 23px; }
 .cascade-grp-row > button[data-beam] .g   { font-size: 19px; }
-/* status pill — rendered only on toggles (.tog) as an unlit slot so
-   the button's width never changes on toggle; .on lights it */
+/* status strip — a full-width LED bar across the button's top edge,
+   rendered only on toggles (.tog) so width never changes; .on lights
+   it. Kept clear of the icon row AND the label so it can't collide
+   with the glyph it used to share a corner with. */
 .cascade-grp-row > button.tog .g::before {
   content: '';
   position: absolute;
-  top: 9px;
-  left: 5px;
-  width: 10px;
-  height: 5px;
-  border-radius: 3px;
-  background: #9a94b8;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(200, 195, 235, 0.35);
+  top: 2px;
+  left: 3px;
+  right: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: #4a4568;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
 .cascade-grp-row > button .l {
@@ -568,7 +571,7 @@ onUnmounted(() => {
 .cascade-grp-row > button.on {
   color: var(--cascade-accent);
 }
-/* on state = the pill slot lights */
+/* on state = the top strip lights edge to edge */
 .cascade-grp-row > button.on .g::before {
   background: #ffb35c;
   box-shadow: 0 0 8px rgba(255, 179, 92, 0.95), 0 0 3px rgba(255, 179, 92, 0.85);
