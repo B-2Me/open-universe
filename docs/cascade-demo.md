@@ -26,6 +26,8 @@ The four layers, as painted by the engine itself:
 - **wake** (`phase`) — translucent green → yellow: the Jacobi-relaxed double-cover field, the magnetic-routing background
 - **thermal** (`heat`) — glowing red → orange: the per-node reservoir where absorbed flux thermalizes — the vacuum's temperature
 - **pol** (`charge`) — deep blue (−q) → magenta (+q): the signed charge ledger — induced dipoles and separating pair-production fragments
+- **current** (`packets`) — white-gold: quanta in flight — watch rail streams ride a waveguide without decay
+- **handed** (`dd` sign) — indigo (−dd) → amber (+dd): the circulation handedness of every site — the substrate's intrinsic chirality
 
 It opens with the **convergent feed on**: `26` photon spokes pouring at the core. Photons arrive, negotiate the offer→incipient→confirm handshake (max `13` concurrent transactions — saturated nodes deflect rather than stack), deposit into winding, thermalize into heat, and — when a saturated tube exceeds `12` nodes — fracture into charged recoil fragments that fly apart. Cut the feed and the core starves: emission keeps shedding rungs until the knot drains to its ground-state floor.
 
@@ -36,7 +38,8 @@ It opens with the **convergent feed on**: `26` photon spokes pouring at the core
 - **➤ beam**: a one-sided `+x` photon stream — the hexbuckle probe. Aim it at a wound lump to watch absorption, deflection, and thermalization.
 - **⌖ (lump tool)**: tap, then tap the lattice to drop a bound wound knot (mass core + `3` face-edge wound pairs). It radiates from its surface only — interior density stalls decay.
 - **⧉ / ⤺**: snapshot the universe, wreck it, rewind.
-- **View menu**: *composite* (default) layers everything; *structure*/*wake*/*thermal*/*pol* isolate each field. **Slice** + **Width** give a tomographic slab — drop Width to `4` and scrub through the knot's mid-plane.
+- **Scenarios**: *flux tube* fractures past `12` saturated nodes (pair-production, charged recoil) · *ring* is a closed `{111}` waveguide carrying a **persistent current** — packets circulate loss-free (view: *current*) · *wound ball* is the spinning condenser species · *chiral pair* seeds one knot of each handedness — the `+dd` one out-accretes `~1.7×` (view: *handed* to see the coils) · *meson* binds two condensers with a heavy flux tube — the strong-force demo.
+- **View menu**: *composite* (default) layers everything; *structure*/*wake*/*thermal*/*pol*/*current*/*handed* isolate each field. **Slice** + **Width** give a tomographic slab — drop Width to `4` and scrub through the knot's mid-plane.
 
 ## What it is (honestly)
 

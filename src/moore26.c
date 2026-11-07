@@ -1462,6 +1462,27 @@ void moore26_rg_refresh(void){
         rgBuf[4*i+3]=(uint8_t)(ch>255?255:ch<0?0:ch);
     }
 }
+/* rg2 — the NEW physics layers the first texture can't carry:
+ * R=packets in flight (moving flux — rail currents), G=signed dd
+ * (channel-pair imbalance — handedness; 128=neutral), B/A spare. */
+static uint8_t *rg2Buf=NULL;
+uint8_t *moore26_rg2_pointer(void){return rg2Buf;}
+void moore26_rg2_refresh(void){
+    const int ns=QWidth*QHeight*QDepth;
+    if(!rg2Buf)rg2Buf=(uint8_t*)malloc((size_t)ns*4);
+    for(int i=0;i<ns;i++){
+        NodeState *n=&grid_current[i];
+        uint32_t ps=0;
+        for(int c=0;c<QChannels;c++)ps+=n->packet[c];
+        int32_t dd=0;
+        for(int e=0;e<QChannels/2;e++)dd+=(int32_t)n->winding[2*e]-(int32_t)n->winding[2*e+1];
+        int32_t ds=dd>2032?127:dd<-2032?-127:dd>>4;
+        rg2Buf[4*i+0]=ps>255?255:(uint8_t)ps;
+        rg2Buf[4*i+1]=(uint8_t)(128+ds);
+        rg2Buf[4*i+2]=0;
+        rg2Buf[4*i+3]=0;
+    }
+}
 void moore26_clear(void){
     memset(grid_current,0,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
     qTick=0;

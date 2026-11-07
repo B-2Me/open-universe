@@ -120,12 +120,18 @@ onUnmounted(() => {
               <option value="1">wake</option>
               <option value="2">thermal</option>
               <option value="3">pol</option>
+              <option value="5">current</option>
+              <option value="6">handed</option>
             </select></label>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i><i>Scen</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
               <option value="vacuum" selected>vacuum</option>
               <option value="tube">flux tube</option>
               <option value="lump">wound lump</option>
               <option value="buckle">hexbuckle</option>
+              <option value="ring">ring</option>
+              <option value="wound">wound ball</option>
+              <option value="pair">chiral pair</option>
+              <option value="meson">meson</option>
             </select></label>
           </div>
         </div>

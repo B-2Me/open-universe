@@ -46,12 +46,13 @@ const vec2 CORNER[6] = vec2[6](
   vec2(-1.0,-1.0), vec2(1.0,-1.0), vec2(1.0,1.0),
   vec2(-1.0,-1.0), vec2(1.0,1.0),  vec2(-1.0,1.0));
 uniform sampler3D u_vol;    // RGBA8: r=structure g=phase b=heat a=charge(+127)
+uniform sampler3D u_vol2;   // RGBA8: r=packets(flux) g=dd handedness(+128)
 uniform mat4 u_mvp;
 uniform float u_size;
 uniform float u_z_center, u_z_thickness;
 uniform float u_ghost_alpha;
 uniform float u_qmin;
-uniform int u_colorMode;    // 0=structure 1=wake 2=thermal 3=pol 4=composite
+uniform int u_colorMode;    // 0=structure 1=wake 2=thermal 3=pol 4=composite 5=current 6=handed
 out vec4 v_color;
 out vec2 v_uv;
 uniform int u_nx, u_ny, u_nxy, u_step;
@@ -62,11 +63,15 @@ void main() {
   int y = ((id / u_nx) % u_ny) * u_step;
   int z = (id / u_nxy) * u_step;
   vec4 rg = texelFetch(u_vol, ivec3(x, y, z), 0);
+  vec4 rg2 = texelFetch(u_vol2, ivec3(x, y, z), 0);
   float strc = rg.r * 255.0;
   float ph   = rg.g * 255.0;
   float ht   = rg.b * 255.0;
   float chg  = rg.a * 255.0;   // biased 127 = neutral
+  float pk   = rg2.r * 255.0;  // packets in flight — rail current
+  float dds  = rg2.g * 255.0;  // signed dd — 128 neutral
   float d = max(strc, max(ph, max(ht, abs(chg - 127.0) * 2.0)));
+  d = max(d, max(pk, abs(dds - 128.0) * 2.0));
   v_uv = a_corner;
   if (d < u_qmin) {
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
@@ -108,6 +113,19 @@ void main() {
     // composite — cyan structure + red thermal halo + charge tint
     rgb = strcRamp * (0.35 + 0.75 * strc / 255.0) + heatRamp * 0.6
         + polRamp * abs(cq) * 0.9;
+  } else if (u_colorMode == 5) {
+    // current — packets in flight: electric white-gold stream
+    float pw = pk / 255.0;
+    rgb = mix(vec3(0.10,0.06,0.00), vec3(1.0,0.85,0.35), pw)
+        * (0.3 + 1.2 * pw);
+  } else if (u_colorMode == 6) {
+    // handedness — dd divergence: cool indigo (-dd coil) vs
+    // warm amber (+dd coil); neutral structure hides
+    float dv = (dds - 128.0) / 127.0;                    // -1..+1
+    rgb = dv < 0.0
+        ? mix(vec3(0.02,0.04,0.25), vec3(0.30,0.60,1.00), -dv)
+        : mix(vec3(0.25,0.08,0.02), vec3(1.00,0.62,0.12), dv);
+    rgb *= 0.25 + 1.1 * abs(dv);
   } else {
     rgb = strcRamp * (0.35 + 0.85 * strc / 255.0);
   }
@@ -412,6 +430,106 @@ export async function initCascadeSimulator(root, opts = {}) {
     return n;
   };
 
+  /* ——— verified-species seeds ————————————————————————————————
+   * these recipes come straight out of the headless census runs —
+   * same channel tables, same parity rules, same windings that
+   * produced persistent currents, wound balls, and ev6 fractures */
+
+  /* ring — a closed {111} waveguide: channels [6,12,16,7,13,17]
+   * with engine vectors {1,1,0},{1,0,-1},{0,1,-1},{-1,-1,0},
+   * {-1,0,1},{0,-1,1} sum to zero — a true closed loop on even
+   * cells. rail_gate makes it a lossless persistent current:
+   * packets ride the dominant member, skip negotiation, and the
+   * decay exemption keeps them alive indefinitely. */
+  const RING_CH = [6, 12, 16, 7, 13, 17];
+  const seedRing = (cx, cy, cz, stream = 3) => {
+    let x = cx, y = cy, z = cz, n = 0;
+    for (let i = 0; i < 6; i++) {
+      const c = RING_CH[i];
+      for (let e = 0; e < 13; e++) {
+        wasm._moore26_winding_set(x, y, z, 2 * e, 20);
+        wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+      }
+      wasm._moore26_winding_set(x, y, z, c, 110);   // dominant member
+      if (stream) {
+        wasm._moore26_packet_set(x, y, z, c, stream);
+        wasm._moore26_packet_nu_set(x, y, z, c, 128);
+      }
+      const v = CV[c];
+      x += v[0]; y += v[1]; z += v[2]; n++;
+    }
+    return n;
+  };
+
+  /* wound ball — the spinning condenser: r≤3 ball, every edge pair
+   * wound 120/180 (bias sign picks the handedness), mass spark 10.
+   * bias>0 → -dd (the sterile churning species); bias<0 → +dd (the
+   * accreting species — ~1.7x the mass: the substrate chirality). */
+  const seedWound = (cx, cy, cz, bias) => {
+    const a = bias > 0 ? 120 : 180, b = bias > 0 ? 180 : 120;
+    let n = 0;
+    for (let dz = -3; dz <= 3; dz++)
+    for (let dy = -3; dy <= 3; dy++)
+    for (let dx = -3; dx <= 3; dx++) {
+      if (dx * dx + dy * dy + dz * dz > 9) continue;
+      const x = cx + dx, y = cy + dy, z = cz + dz;
+      if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
+      for (let e = 0; e < 13; e++) {
+        wasm._moore26_winding_set(x, y, z, 2 * e, a);
+        wasm._moore26_winding_set(x, y, z, 2 * e + 1, b);
+      }
+      wasm._moore26_mass_set(x, y, z, 10);
+      n++;
+    }
+    return n;
+  };
+
+  /* chiral pair — one of each handedness. The -dd ball churns and
+   * stays small; the +dd ball accretes ~1.7x — the parity-violating
+   * asymmetry side by side. Flip the View to 'handed' to see the
+   * coils' opposite sign. */
+  const seedPair = (cx, cy, cz) => {
+    const n = seedWound(cx - 6, cy, cz, 1) + seedWound(cx + 6, cy, cz, -1);
+    return n;
+  };
+
+  /* meson — two -dd condensers joined by a heavy tube (winding 200
+   * dominant member on the ch6/8 zigzag — outranks the knots' own
+   * 180 so the rail pierces their shells). The strong-force demo:
+   * the tube mediates traffic; watch 'current' view. */
+  const seedMeson = (cx, cy, cz) => {
+    let n = seedWound(cx - 6, cy, cz, 1) + seedWound(cx + 6, cy, cz, 1);
+    let x = cx - 4, y = cy, i = 0;
+    while (x <= cx + 4) {
+      for (let e = 0; e < 13; e++) {
+        wasm._moore26_winding_set(x, y, cz, 2 * e, 25);
+        wasm._moore26_winding_set(x, y, cz, 2 * e + 1, 25);
+      }
+      wasm._moore26_winding_set(x, y, cz, i % 2 ? 8 : 6, 200);
+      x += 1; y += i % 2 ? -1 : 1; i++; n++;
+    }
+    return n;
+  };
+
+  /* scenario dispatch — shared by the Scenario select AND reset,
+   * so ⟲ restores the same seed every time. */
+  const seedScenario = (s) => {
+    /* scenario-specific registers: ring needs the rail bypass ON
+     * (persistent current); the rest run negotiation as normal */
+    wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
+    if (s === 'tube') return seedTube(CX, CY, CZ);
+    if (s === 'lump') return seedLump(CX, CY, CZ);
+    if (s === 'buckle') return seedBuckle(16);
+    if (s === 'ring') return seedRing(CX - 2, CY, CZ);   // even-parity
+                                                        // start — odd
+                                                        // cells can't
+                                                        // carry packets
+    if (s === 'wound') return seedWound(CX, CY, CZ, 1);
+    if (s === 'pair') return seedPair(CX, CY, CZ);
+    if (s === 'meson') return seedMeson(CX, CY, CZ);
+    return 0;
+  };
+
   // Camera ray -> lattice cell on the slice plane
   const pickCell = (cx, cy) => {
     const r = canvas.getBoundingClientRect();
@@ -454,7 +572,7 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
-    'u_ghost_alpha', 'u_qmin', 'u_colorMode',
+    'u_ghost_alpha', 'u_qmin', 'u_colorMode', 'u_vol2',
     'u_nx', 'u_ny', 'u_nxy', 'u_step'])
     U[n] = gl.getUniformLocation(prog, n);
 
@@ -471,12 +589,37 @@ export async function initCascadeSimulator(root, opts = {}) {
     gl.texParameteri(gl.TEXTURE_3D, k, v);
   gl.uniform1i(U.u_vol, 0);
   gl.activeTexture(gl.TEXTURE0);
+  const tex2 = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_3D, tex2);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, W3, H3, D3, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST],
+    [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE]])
+    gl.texParameteri(gl.TEXTURE_3D, k, v);
+  gl.uniform1i(U.u_vol2, 1);
+  gl.activeTexture(gl.TEXTURE0);
+  /* stale mt/-nm glue may predate rg2 — upload a zeroed texture so
+   * current/handed views degrade to dark rather than crashing */
+  const hasRg2 = typeof wasm._moore26_rg2_refresh === 'function';
+  const zeroTex = hasRg2 ? null : (() => {
+    const z = new Uint8Array(N3 * 4);
+    for (let i = 1; i < z.length; i += 4) z[i] = 128;  // neutral handedness
+    return z;
+  })();
   const upload = () => {
     wasm._moore26_rg_refresh();
+    if (hasRg2) wasm._moore26_rg2_refresh();
+    /* refresh both buffers BEFORE grabbing the heap view — the rg
+     * mallocs can grow wasm memory and invalidate a stale h8. */
     const rgPtr = wasm._moore26_rg_pointer();
+    const rg2Ptr = hasRg2 ? wasm._moore26_rg2_pointer() : 0;
     const h8 = wasm.HEAPU8 || new Uint8Array(wasm.wasmMemory.buffer);
     gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGBA, gl.UNSIGNED_BYTE,
       h8.subarray(rgPtr, rgPtr + N3 * 4));
+    gl.activeTexture(gl.TEXTURE1);
+    gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, W3, H3, D3, gl.RGBA, gl.UNSIGNED_BYTE,
+      hasRg2 ? h8.subarray(rg2Ptr, rg2Ptr + N3 * 4) : zeroTex);
+    gl.activeTexture(gl.TEXTURE0);
   };
 
   canvas.addEventListener('webglcontextlost', e => {
@@ -596,10 +739,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     rStep = 1; lowT = highT = null;
     /* reset restores the CURRENT scenario (re-seed, keep toggles) —
      * without this, reset always dropped to cold vacuum */
-    const s = ui.scenario;
-    if (s === 'tube') seedTube(CX, CY, CZ);
-    else if (s === 'lump') seedLump(CX, CY, CZ);
-    else if (s === 'buckle') seedBuckle(16);
+    seedScenario(ui.scenario);
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
   });
@@ -610,17 +750,16 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* a scenario REPLACES the scene: clear + restore default toggles
      * (feed on, beam/tools off) so the seed isn't drowned by whatever
      * was running — reset alone keeps toggles untouched. */
-    /* the feed floods the flexoelectric signal — buckle gets a clean
-     * field (beam is the probe); other scenarios default feed on */
+    /* the feed floods the flexoelectric signal (buckle) and drowns
+     * a persistent current (ring) — both get a clean field;
+     * accreting species keep the feed on */
     ui.scenario = e.target.value;
-    ui.drive = ui.scenario !== 'buckle';
+    ui.drive = ui.scenario !== 'buckle' && ui.scenario !== 'ring';
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false;
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
-    if (s === 'tube') seedTube(CX, CY, CZ);
-    else if (s === 'lump') seedLump(CX, CY, CZ);
-    else if (s === 'buckle') seedBuckle(16);
+    seedScenario(s);
     upload(); dirty = true;
     say(s === 'vacuum' ? 'cold vacuum' : `seeded ${s}`);
   });
@@ -678,8 +817,8 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-ops': ['session ops', '⟳ orbit — turntable camera; double-click the gizmo to reset the view.'],
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
-    view: ['View', 'render channel — composite: mass+winding+packets+charge · structure: occupancy · wake: moving flux · thermal: rest mass · pol: net charge.'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a straight saturated string on the {1,1,0} diagonal · wound lump: a bound knot at the core · hexbuckle: a parabolic U-bent string — the flexoelectric subject; fire the beam at the bend and watch the charge dipole.'],
+    view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: saturated string, fractures at 12+ nodes · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (try the current view) · wound: the spinning condenser species · pair: one knot of each handedness — watch the +dd one out-accrete (chirality) · meson: two condensers on a heavy flux tube — the strong-force demo.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
