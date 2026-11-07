@@ -89,8 +89,9 @@ onUnmounted(() => {
         <div class="cascade-grp grp-inject">
           <div class="cascade-grp-row">
             <em>inject <button class="cascade-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
-            <button data-lump title="Lump tool — arm, then click the lattice to drop a wound knot" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
+            <button data-lump title="Lump tool — arm, then click to drop a wound condenser (shift-click: +dd handedness)" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
             <button data-tube title="Tube tool — arm, then click to paint a saturated flux string" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
+            <button data-ringt title="Ring tool — arm, then click to paint a {111} waveguide loop with a live stream" aria-label="Ring tool" aria-pressed="false"><span class="g">◦</span><span class="l">ring</span></button>
             <button data-drive class="tog on" aria-pressed="true" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
             <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
           </div>

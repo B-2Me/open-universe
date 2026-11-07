@@ -681,15 +681,26 @@ export async function initCascadeSimulator(root, opts = {}) {
     poke();
     /* left button paints when a tool is armed — right/middle drag is
      * always camera orbit, tool or not */
-    if (e.button === 0 && (ui.lumpArm || ui.tubeArm)) {
+    if (e.button === 0 && (ui.lumpArm || ui.tubeArm || ui.ringArm)) {
       const cell = pickCell(e.clientX, e.clientY);
       if (cell) {
         if (ui.tubeArm) {
           const n = seedTube(cell.lx, cell.ly, cell.lz);
-          say(n ? `flux tube painted — ${n} saturated nodes; watch it fracture` : 'off-lattice', 3500);
+          say(n ? `flux tube painted — ${n} near-saturated nodes; drive to fracture` : 'off-lattice', 3500);
+        } else if (ui.ringArm) {
+          /* even-parity snap — ring cells must carry packets */
+          const px = cell.lx, py = cell.ly, pz = cell.lz;
+          let [rx, ry, rz] = [px, py, pz];
+          if ((rx + ry + rz) & 1) rz = Math.min(rz + 1, D3 - 1);
+          const n = seedRing(rx, ry, rz, 2);
+          /* painted rails only carry a persistent current when the
+           * waveguide bypass is on — enable it and say so */
+          wasm._moore26_rail_gate_set(64);
+          say(n ? `waveguide loop painted — ${n} cells, stream riding (rail bypass on)` : 'off-lattice', 3500);
         } else {
-          const n = seedLump(cell.lx, cell.ly, cell.lz);
-          say(n ? `wound lump dropped — ${n} sites bound` : 'off-lattice', 2500);
+          /* shift-click flips the handedness — paint chiral pairs */
+          const n = seedWound(cell.lx, cell.ly, cell.lz, e.shiftKey ? -1 : 1);
+          say(n ? `${e.shiftKey ? '+dd' : '-dd'} condenser dropped — ${n} sites bound` : 'off-lattice', 2500);
         }
       } else say('edge-on view — pick while the slice plane is facing you', 4500);
       return;
@@ -728,7 +739,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
-    drive: true, beam: false, lumpArm: false, tubeArm: false,
+    drive: true, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -782,7 +793,7 @@ export async function initCascadeSimulator(root, opts = {}) {
      * the drive: the convergent feed IS the vacuum scenario. */
     ui.scenario = e.target.value;
     ui.drive = ui.scenario === 'vacuum';
-    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false;
+    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
@@ -806,11 +817,12 @@ export async function initCascadeSimulator(root, opts = {}) {
     '</svg>')}") 12 12, crosshair`;
   const lumpBtn = root.querySelector('[data-lump]');
   const tubeBtn = root.querySelector('[data-tube]');
+  const ringBtn = root.querySelector('[data-ringt]');
   const setLumpArm = (on) => {
     ui.lumpArm = on;
     canvas.style.cursor = on ? TOOL_CURSOR : '';
     if (lumpBtn) { lumpBtn.classList.toggle('armed', on); lumpBtn.setAttribute('aria-pressed', String(on)); }
-    say(on ? 'lump tool armed — tap the slice plane to drop a wound knot · ⌖ to cancel' : '', 0);
+    say(on ? 'lump tool armed — tap to drop a -dd condenser · shift-tap = +dd · ⌖ to cancel' : '', 0);
   };
   const setTubeArm = (on) => {
     ui.tubeArm = on;
@@ -818,8 +830,15 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (tubeBtn) { tubeBtn.classList.toggle('armed', on); tubeBtn.setAttribute('aria-pressed', String(on)); }
     say(on ? 'tube tool armed — tap to paint a saturated flux string · — to cancel' : '', 0);
   };
-  bind('[data-lump]', 'click', () => { setTubeArm(false); setLumpArm(!ui.lumpArm); });
-  bind('[data-tube]', 'click', () => { setLumpArm(false); setTubeArm(!ui.tubeArm); });
+  const setRingArm = (on) => {
+    ui.ringArm = on;
+    canvas.style.cursor = on ? TOOL_CURSOR : '';
+    if (ringBtn) { ringBtn.classList.toggle('armed', on); ringBtn.setAttribute('aria-pressed', String(on)); }
+    say(on ? 'ring tool armed — tap to paint a waveguide loop + stream · ◦ to cancel' : '', 0);
+  };
+  bind('[data-lump]', 'click', () => { setTubeArm(false); setRingArm(false); setLumpArm(!ui.lumpArm); });
+  bind('[data-tube]', 'click', () => { setLumpArm(false); setRingArm(false); setTubeArm(!ui.tubeArm); });
+  bind('[data-ringt]', 'click', () => { setLumpArm(false); setTubeArm(false); setRingArm(!ui.ringArm); });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;
     e.currentTarget.setAttribute('aria-pressed', String(ui.turntable));
@@ -842,7 +861,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const HELP = {
     'grp-time': ['time controls', '⏸ play/pause the tick loop · ⏭ step exactly one tick · ⟲ reset — re-initializes the quiet field scenario.'],
     'grp-ops': ['session ops', '⟳ orbit — turntable camera; double-click the gizmo to reset the view.'],
-    'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
+    'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
     scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: near-saturated string; the feed ramps it past the fracture gate live · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
