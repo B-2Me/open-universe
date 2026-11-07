@@ -544,14 +544,16 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
-    /* tube scenario = a STABLE string RIBBON — three parallel
-     * 11-node runs at 220 (each under the 12-node fracture length;
-     * brighter + wider so the structure actually reads at full
-     * lattice zoom). The paint tool's 17-node string snaps. */
+    /* tube scenario = the STRING LIFECYCLE in three ribbons:
+     * top: a 220 string — glows then conducts its winding into the
+     * vacuum (bare tubes dim; the energy spreads, not vanishes)
+     * mid: a 17-node FUSE string at 118 — ramps to criticality over
+     * ~10 ticks and fractures live (the watchable snap)
+     * bot: a 140 string — slowest drain, stays lit longest */
     if (s === 'tube') {
-      seedTube(CX, CY, CZ - 2, 5, 220);
-      seedTube(CX, CY, CZ, 5, 220);
-      return seedTube(CX, CY, CZ + 2, 5, 220).n;
+      seedTube(CX, CY, CZ - 3, 5, 220);
+      fuse = seedTube(CX, CY, CZ, 8, 118).cells;
+      return seedTube(CX, CY, CZ + 3, 5, 140).n;
     }
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
@@ -882,7 +884,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a saturated string held one node under the fracture length — paint a longer one with the tube tool to snap it · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: the string lifecycle — a fuse string saturates and snaps while a bright string bleeds its winding into the vacuum · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
