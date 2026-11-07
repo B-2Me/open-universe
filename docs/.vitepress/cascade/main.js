@@ -388,8 +388,11 @@ export async function initCascadeSimulator(root, opts = {}) {
       const x = lx + i, y = ly + i, z = lz;
       if (x < 1 || x >= W3 - 1 || y < 1 || y >= H3 - 1) continue;
       if (i === -half || i === half) wasm._moore26_mass_set(x, y, z, 512);
-      wasm._moore26_winding_set(x, y, z, 6, 128);
-      wasm._moore26_winding_set(x, y, z, 7, 128);
+      /* 120/120 — JUST below the >=128 fracture gate. The feed ramps
+       * members past saturation live — the tube glows, saturates,
+       * then snaps instead of fracturing invisibly on frame one. */
+      wasm._moore26_winding_set(x, y, z, 6, 120);
+      wasm._moore26_winding_set(x, y, z, 7, 120);
       n++;
     }
     return n;
@@ -511,6 +514,27 @@ export async function initCascadeSimulator(root, opts = {}) {
     return n;
   };
 
+  /* proton candidate — three -dd condensers in a triangle. The
+   * three-quark bound-state attempt: do they bind, repel, or
+   * ignore each other? So far they ignore — the flux tubes
+   * don't self-form. Watch 'handed' view for the coils. */
+  const seedProton = (cx, cy, cz) => {
+    return seedWound(cx, cy - 7, cz, 1)
+         + seedWound(cx - 6, cy + 4, cz, 1)
+         + seedWound(cx + 6, cy + 4, cz, 1);
+  };
+
+  /* zoo — the species census side by side: plain ball (condenser),
+   * ring (rail), wound ball (spinning condenser). Verified:
+   * balls accrete, rings are pure structure, wound balls hold
+   * 9x the mass with locked circulation. */
+  const seedZoo = (cx, cy, cz) => {
+    let n = seedLump(cx - 16, cy, cz);            // plain knot
+    n += seedRing(cx, cy - 1, cz, 0);             // bare ring
+    n += seedWound(cx + 16, cy, cz, 1);           // wound ball
+    return n;
+  };
+
   /* scenario dispatch — shared by the Scenario select AND reset,
    * so ⟲ restores the same seed every time. */
   const seedScenario = (s) => {
@@ -527,6 +551,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (s === 'wound') return seedWound(CX, CY, CZ, 1);
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
+    if (s === 'quark') return seedWound(CX, CY, CZ, 1);
+    if (s === 'proton') return seedProton(CX, CY, CZ);
+    if (s === 'zoo') return seedZoo(CX, CY, CZ);
     return 0;
   };
 
@@ -818,7 +845,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — arm, then click the lattice to drop a wound knot · — tube — arm, then click to paint a saturated flux string and watch it fracture.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: saturated string, fractures at 12+ nodes · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (try the current view) · wound: the spinning condenser species · pair: one knot of each handedness — watch the +dd one out-accrete (chirality) · meson: two condensers on a heavy flux tube — the strong-force demo.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: near-saturated string; the feed ramps it past the fracture gate live · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],

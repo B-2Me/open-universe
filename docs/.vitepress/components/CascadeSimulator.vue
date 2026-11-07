@@ -131,7 +131,10 @@ onUnmounted(() => {
               <option value="ring">ring</option>
               <option value="wound">wound ball</option>
               <option value="pair">chiral pair</option>
+              <option value="quark">quark</option>
               <option value="meson">meson</option>
+              <option value="proton">proton</option>
+              <option value="zoo">zoo</option>
             </select></label>
           </div>
         </div>
