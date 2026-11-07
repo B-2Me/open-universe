@@ -196,6 +196,20 @@ still at all separations.
   `2000`t, zero arms/decay — live circulating current on a
   static coil. (Seed caveat: use ENGINE channel vectors — a
   mislabeled vec[] paints an open arc.)
+- **Census metrics — two axes of handedness**: a *closed*
+  circulation has zero net `dd` by symmetry (loop forward
+  channels alternate +90/−90 across even/odd members → global
+  sum cancels). Species need TWO measures: net `dd` (stick
+  polarization — wound ball reads −100,415) and path `curl`/
+  `ringdd` (closed circulation — live ring holds 540 at 3000t).
+  A loop reading `dd=0` is not relaxed — it's circulating.
+- **Species census (corrected seeds, 3000t)**: ball
+  `mass=3,846 ratio=0.020`; static ring `comm=2,340` (survives,
+  no nucleation); nucleated ring `mass=60` (spark held —
+  rings CAN carry mass); live ring `stream=12, ringdd=540`
+  (current + winding both persistent); **wound ball**
+  `mass=35,618 ratio=0.239 dd=−100,415` — 9× plain-ball mass,
+  polarized winding, the spinning-knot species.
 - **Untested**: `PAR_SIGN`-selective absorption — a coil that
   arms parity-*matched* offers and declines mismatched ones
   self-selects its charging spectrum (positive feedback:
