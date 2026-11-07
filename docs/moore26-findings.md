@@ -224,6 +224,33 @@ still at all separations.
   chiral media); spin-valve GMR (a magnetized contact passes
   same-spin carriers preferentially).
 
+## Strong-force mechanics — the full checklist
+
+- **Tube exists** ✅ — `winding=200` zigzag rail carries a seeded
+  stream loss-free through `6` turns (waveguide exemption +
+  rail bypass). Packets re-channel onto each node's dominant
+  member, riding the curve.
+- **Tube mediates force** ✅ — the stream's confirmed deposits
+  write `massFlight` on the **arrival channel** (`ch6=+x`)
+  while the knot's intrinsic crawl writes its own `dd` axis
+  (`ch7`). Per-channel anisotropy isolates extrinsic force
+  from intrinsic churn — `ch6:1` vs `ch7:839` on the receiver.
+- **Confinement** ✅ — `Phase 7` string-break: a continuous
+  `≥128`-balanced saturated pair `≥12` nodes fractures,
+  pair-produces endpoint mass (`1,792` minted, `ev6=1`),
+  and recoils the fragments apart with opposite `chargeFlight`.
+  The tube's job is to store tension and snap — not to heal.
+  (A manually-severed gap does NOT re-pave: paving requires
+  traffic, and traffic requires the tube — self-consistent stall.)
+- **Motion** ✅ — `massFlight` launch rides the dominant `|dd|`
+  member (fixed a sign-bias that motion-locked `−dd` knots —
+  both handednesses now crawl; `−dd` drifted `+0.46`,
+  `+dd` drifted `−0.20` over `3,000t`, handedness-dependent
+  direction).
+- **Radiation pressure** — `massFlight[c]+=1` per confirmed
+  deposit wires absorbed momentum → recoil. Real but weak
+  against `38k`-mass knots (needs focused flux or long runs).
+
 ## Substrate chirality — computational parity violation
 
 Symmetric-seeded wound balls (`300`/pair total, identical structure,

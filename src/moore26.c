@@ -556,16 +556,17 @@ void moore26_tick(void){
             if(o->mass<32)continue;
             if(!IS_EVEN(x,y,z))continue;  /* mass on odd cells can't
              * launch — interstitial structure stays pinned */
-            int de=-1;int32_t dd=0;
+            int de=-1;int32_t dd=0,dir=1;
             for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
-                if(d>dd){dd=d;de=e;}
+                int32_t ad=d<0?-d:d;
+                if(ad>dd){dd=ad;de=e;dir=d<0?-1:1;}
             }
             if(de<0||dd<32)continue;
-            /* remap the launch onto the edge channel nearest the
-             * dominant winding axis — face/corner axes don't fly
-             * under the FCC gate. */
-            int fc=2*de;
+            /* launch rides the dominant MEMBER — either handedness
+             * can crawl (was: positive-dd only — -dd knots were
+             * structurally motion-locked). */
+            int fc=dir>0?2*de:2*de+1;
             if(!IS_EDGE(fc)){
                 int bs=-1;for(int c=6;c<18;c++){
                     int s=QChannelVec[c][0]*QChannelVec[fc][0]+QChannelVec[c][1]*QChannelVec[fc][1]+QChannelVec[c][2]*QChannelVec[fc][2];
@@ -869,6 +870,10 @@ void moore26_tick(void){
                     int fwd=ipar>0?!(c&1):ipar<0?(c&1):(qDirBias>=0);
                     n->winding[fwd?c:c^1]+=dep-half+bias;
                     n->winding[fwd?c^1:c]+=half-bias;
+                    /* momentum conservation: the absorbed quantum's
+                     * momentum becomes the knot's momentum — massFlight
+                     * gains the arrival direction (radiation pressure). */
+                    n->massFlight[c]+=1;
                     if(share){
                         int t1=-1,t2=-1;uint32_t m1=0,m2=0;
                         for(int e2=0;e2<QChannels/2;e2++){
