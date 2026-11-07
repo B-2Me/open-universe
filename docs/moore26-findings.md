@@ -196,6 +196,12 @@ still at all separations.
   `2000`t, zero arms/decay — live circulating current on a
   static coil. (Seed caveat: use ENGINE channel vectors — a
   mislabeled vec[] paints an open arc.)
+- **Untested**: `PAR_SIGN`-selective absorption — a coil that
+  arms parity-*matched* offers and declines mismatched ones
+  self-selects its charging spectrum (positive feedback:
+  aligned flux grows `dd` → stronger selectivity). The inverted
+  version (reject matched) is a `dd` stabilizer. One-line gate
+  at the arm path; untested.
 
 ## Runtime tuners (all exported, `build.sh` synced)
 
