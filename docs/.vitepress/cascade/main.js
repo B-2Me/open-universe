@@ -381,18 +381,19 @@ export async function initCascadeSimulator(root, opts = {}) {
   // FCC gate). The tube runs the lattice diagonal so its axis is a
   // real transport direction. The signature demo: >=12 saturated
   // nodes triggers macroscopic string-breaking — charged fragments.
-  const seedTube = (lx, ly, lz) => {
-    const half = 8;
+  /* ——: a flux tube on the {1,1,0} EDGE pair (channels 6/7).
+   * len=17 default: >=12 saturated nodes fractures into charged
+   * recoil fragments — the string-break. half=5 (11 nodes) stays
+   * just under the length gate: a STABLE saturated string — the
+   * scenario shows structure that holds; the paint tool snaps it. */
+  const seedTube = (lx, ly, lz, half = 8) => {
     let n = 0;
     for (let i = -half; i <= half; i++) {
       const x = lx + i, y = ly + i, z = lz;
       if (x < 1 || x >= W3 - 1 || y < 1 || y >= H3 - 1) continue;
       if (i === -half || i === half) wasm._moore26_mass_set(x, y, z, 512);
-      /* 120/120 — JUST below the >=128 fracture gate. The feed ramps
-       * members past saturation live — the tube glows, saturates,
-       * then snaps instead of fracturing invisibly on frame one. */
-      wasm._moore26_winding_set(x, y, z, 6, 120);
-      wasm._moore26_winding_set(x, y, z, 7, 120);
+      wasm._moore26_winding_set(x, y, z, 6, 128);
+      wasm._moore26_winding_set(x, y, z, 7, 128);
       n++;
     }
     return n;
@@ -541,7 +542,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
-    if (s === 'tube') return seedTube(CX, CY, CZ);
+    /* tube scenario = a STABLE string (11 nodes, one short of the
+     * fracture length) — the paint tool's 17-node string snaps */
+    if (s === 'tube') return seedTube(CX, CY, CZ, 5);
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
     if (s === 'ring') return seedRing(CX - 2, CY, CZ);   // even-parity
@@ -686,7 +689,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       if (cell) {
         if (ui.tubeArm) {
           const n = seedTube(cell.lx, cell.ly, cell.lz);
-          say(n ? `flux tube painted — ${n} near-saturated nodes; drive to fracture` : 'off-lattice', 3500);
+          say(n ? `flux tube painted — ${n} saturated nodes; watch it fracture` : 'off-lattice', 3500);
         } else if (ui.ringArm) {
           /* even-parity snap — ring cells must carry packets */
           const px = cell.lx, py = cell.ly, pz = cell.lz;
@@ -789,11 +792,10 @@ export async function initCascadeSimulator(root, opts = {}) {
      * (feed on, beam/tools off) so the seed isn't drowned by whatever
      * was running — reset alone keeps toggles untouched. */
     /* scenarios start QUIET — seeds behave on their own; feed/beam
-     * are opt-in probes. Two exceptions: 'vacuum' (the feed IS the
-     * scenario) and 'tube' (the feed ramps it to the live fracture —
-     * without it the sub-threshold string just sits). */
+     * are opt-in probes. Only 'vacuum' keeps the drive: the
+     * convergent feed IS the vacuum scenario. */
     ui.scenario = e.target.value;
-    ui.drive = ui.scenario === 'vacuum' || ui.scenario === 'tube';
+    ui.drive = ui.scenario === 'vacuum';
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
@@ -865,7 +867,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: near-saturated string; the feed ramps it past the fracture gate live · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: a saturated string held one node under the fracture length — paint a longer one with the tube tool to snap it · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
