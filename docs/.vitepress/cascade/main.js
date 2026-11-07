@@ -448,21 +448,26 @@ export async function initCascadeSimulator(root, opts = {}) {
    * packets ride the dominant member, skip negotiation, and the
    * decay exemption keeps them alive indefinitely. */
   const RING_CH = [6, 12, 16, 7, 13, 17];
-  const seedRing = (cx, cy, cz, stream = 3) => {
+  /* side k: repeat each leg k times — the hexagon still sums to
+   * zero (k * 0) for any k, so a 6-cell ring scales to 6k cells.
+   * rail bypass turns the corners the same way at any size. */
+  const seedRing = (cx, cy, cz, stream = 3, side = 1) => {
     let x = cx, y = cy, z = cz, n = 0;
     for (let i = 0; i < 6; i++) {
       const c = RING_CH[i];
-      for (let e = 0; e < 13; e++) {
-        wasm._moore26_winding_set(x, y, z, 2 * e, 20);
-        wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+      for (let s = 0; s < side; s++) {
+        for (let e = 0; e < 13; e++) {
+          wasm._moore26_winding_set(x, y, z, 2 * e, 20);
+          wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+        }
+        wasm._moore26_winding_set(x, y, z, c, 110);   // dominant member
+        if (stream) {
+          wasm._moore26_packet_set(x, y, z, c, stream);
+          wasm._moore26_packet_nu_set(x, y, z, c, 128);
+        }
+        const v = CV[c];
+        x += v[0]; y += v[1]; z += v[2]; n++;
       }
-      wasm._moore26_winding_set(x, y, z, c, 110);   // dominant member
-      if (stream) {
-        wasm._moore26_packet_set(x, y, z, c, stream);
-        wasm._moore26_packet_nu_set(x, y, z, c, 128);
-      }
-      const v = CV[c];
-      x += v[0]; y += v[1]; z += v[2]; n++;
     }
     return n;
   };
@@ -557,10 +562,14 @@ export async function initCascadeSimulator(root, opts = {}) {
     }
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
-    if (s === 'ring') return seedRing(CX - 2, CY, CZ);   // even-parity
-                                                        // start — odd
-                                                        // cells can't
-                                                        // carry packets
+    /* ring scale: the big 36-cell loop at center + two tiny 6-cell
+     * loops near the edges — same topology, very different size.
+     * All starts are even-parity (odd cells can't carry packets) */
+    if (s === 'ring') {
+      seedRing(10, 12, 18, 2, 1);              // tiny ring, near edge
+      seedRing(52, 50, 46, 2, 1);              // tiny ring, far edge
+      return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);   // the big one
+    }
     if (s === 'wound') return seedWound(CX, CY, CZ, 1);
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -884,7 +893,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: the string lifecycle — a fuse string saturates and snaps while a bright string bleeds its winding into the vacuum · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: closed {111} waveguide — persistent current (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
+    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: the string lifecycle — a fuse string saturates and snaps while a bright string bleeds its winding into the vacuum · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: {111} waveguide loops at two scales — persistent currents (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
