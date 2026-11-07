@@ -50,6 +50,9 @@ uniform sampler3D u_vol2;   // RGBA8: r=packets(flux) g=dd handedness(+128)
 uniform mat4 u_mvp;
 uniform float u_size;
 uniform float u_z_center, u_z_thickness;
+uniform vec3 u_cam_pos, u_view_dir;
+uniform float u_dep_center;   // focal depth along the view axis
+uniform float u_depth;        // 0 = z-slab, 1 = camera-depth slab
 uniform float u_ghost_alpha;
 uniform float u_qmin;
 uniform int u_colorMode;    // 0=structure 1=wake 2=thermal 3=pol 4=composite 5=current 6=handed
@@ -77,8 +80,14 @@ void main() {
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
   }
   float halfT = u_z_thickness * 0.5;
-  float alpha = abs(float(z) - u_z_center) <= halfT ? 1.0 : u_ghost_alpha;
   vec3 p = vec3(float(x), float(y), float(z));
+  /* depth mode: the slab is perpendicular to the VIEW axis — the
+   * front shell peels wherever the camera orbits, so outer cells
+   * can't occlude what's at the focal depth. Same Width control. */
+  float coord = u_depth > 0.5
+      ? dot(p - u_cam_pos, u_view_dir) - u_dep_center
+      : float(z) - u_z_center;
+  float alpha = abs(coord) <= halfT ? 1.0 : u_ghost_alpha;
   vec4 mv = u_mvp * vec4(p, 1.0);
   float ps = u_size * (0.8 + 2.0 * d / 255.0);
   mv.xy += a_corner * ps;
@@ -622,6 +631,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
     'u_ghost_alpha', 'u_qmin', 'u_colorMode', 'u_vol2',
+    'u_cam_pos', 'u_view_dir', 'u_dep_center', 'u_depth',
     'u_nx', 'u_ny', 'u_nxy', 'u_step'])
     U[n] = gl.getUniformLocation(prog, n);
 
@@ -765,7 +775,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   // ---------- state / UI ----------
   const ui = {
     playing: true, tickMs: 0, budget: 400, tick: 0,
-    zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06,
+    zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06, depthSlice: false,
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
@@ -884,6 +894,16 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
+  bind('[data-depth]', 'click', e => {
+    ui.depthSlice = !ui.depthSlice;
+    const b = e.currentTarget;
+    b.classList.toggle('on', ui.depthSlice);
+    b.setAttribute('aria-pressed', String(ui.depthSlice));
+    say(ui.depthSlice
+      ? 'depth slice — slab follows the camera; front shell peels away'
+      : 'z-slice — slab fixed on the lattice z axis');
+    dirty = true;
+  });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
   /* ? help cards — one delegated listener covers every chip. The card
    * floats in the overlay stack until dismissed. */
@@ -1162,6 +1182,19 @@ export async function initCascadeSimulator(root, opts = {}) {
       gl.clearColor(0.02, 0.02, 0.05, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.uniformMatrix4fv(U.u_mvp, false, m4.mul(proj, view));
+      /* depth-slice uniforms — camera world pos + view axis so the
+       * shader can ghost cells by view-depth, not just lattice z */
+      {
+        const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+        const cyw = Math.cos(cam.yaw), syw = Math.sin(cam.yaw);
+        gl.uniform3f(U.u_cam_pos,
+          cam.cx + syw * cp * cam.dist,
+          cam.cy - sp * cam.dist,
+          cam.cz + cyw * cp * cam.dist);
+        gl.uniform3f(U.u_view_dir, -syw * cp, sp, -cyw * cp);
+        gl.uniform1f(U.u_dep_center, cam.dist + ui.zCenter - (D3 >> 1));
+        gl.uniform1f(U.u_depth, ui.depthSlice ? 1 : 0);
+      }
       gl.uniform1f(U.u_size, ui.size);
       gl.uniform1f(U.u_z_center, ui.zCenter);
       gl.uniform1f(U.u_z_thickness, ui.zThick);
