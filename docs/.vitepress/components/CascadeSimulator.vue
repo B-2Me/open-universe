@@ -100,7 +100,7 @@ onUnmounted(() => {
         <div class="cascade-grp grp-util">
           <div class="cascade-grp-row">
             <em>util</em>
-            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders"><span class="g">▤</span><span class="l">tuning</span></button>
+            <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders" aria-label="Tuning sliders"><span class="g">▤</span></button>
           </div>
         </div>
       </div>
@@ -108,14 +108,14 @@ onUnmounted(() => {
         <div class="cascade-grp grp-presets">
           <div class="cascade-grp-row">
             <em>presets</em>
-            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="focus" aria-label="About Focus" title="About Focus"><i>◎</i><i>Focus</i></button><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
+            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="focus" aria-label="About Focus" title="About Focus"><i>◎</i></button><select data-preset aria-label="Camera focus preset" title="Camera focus preset">
               <option value="full" selected>Full lattice</option>
               <option value="core">Core close-up</option>
               <option value="slab">Mid-plane slab</option>
               <option value="side">Side profile</option>
               <option value="lattice">Single plane</option>
             </select></label>
-            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="view" aria-label="About View" title="About View"><i>◐</i><i>View</i></button><select data-colormode aria-label="Data view" title="Data view">
+            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="view" aria-label="About View" title="About View"><i>◐</i></button><select data-colormode aria-label="Data view" title="Data view">
               <option value="4" selected>composite</option>
               <option value="0">structure</option>
               <option value="1">wake</option>
@@ -124,7 +124,7 @@ onUnmounted(() => {
               <option value="5">current</option>
               <option value="6">handed</option>
             </select></label>
-            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i><i>Scen</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
+            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
               <option value="vacuum" selected>vacuum</option>
               <option value="tube">flux tube</option>
               <option value="lump">wound lump</option>
@@ -590,9 +590,9 @@ onUnmounted(() => {
 .cascade-dock:not(.sel-open) .cascade-selects { display: none; }
 .cascade-dock:not(.tune-open) .cascade-sliders { display: none; }
 .cascade-accbtn {
-  min-width: 40px;
+  width: 40px;
   min-height: 40px;
-  padding: 1px 8px;
+  padding: 1px 4px;
   font: 13px monospace;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -624,21 +624,21 @@ onUnmounted(() => {
   color: var(--cascade-muted);
   white-space: nowrap;
 }
-/* stacked field labels — icon over word, and the whole label IS the
-   ? button: bordered like the old chip, green hover glow, click scale */
+/* field labels — a bare icon chip, NOT a stacked button: just the
+   glyph, subtle border, same 28px height as its select so the row
+   reads as [?] [dropdown] pairs instead of tiny buttons */
 .cascade-flab {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 0;
+  justify-content: center;
   line-height: 1;
-  white-space: nowrap;
-  padding: 2px 4px;
+  padding: 0;
+  width: 24px;
   font-family: monospace;
   color: var(--cascade-muted);
-  background: none;                    /* info helper, not a button */
-  border: 1px solid rgba(143, 255, 158, 0.22);
-  border-radius: 7px;
+  background: none;
+  border: 1px solid rgba(143, 255, 158, 0.18);
+  border-radius: 6px;
   cursor: help;
 }
 .cascade-flab:hover {
@@ -663,14 +663,7 @@ onUnmounted(() => {
   box-shadow: 0 0 8px rgba(143, 255, 158, 0.35);
 }
 .cascade-shelp:active { transform: scale(0.93); }
-.cascade-flab i { font-style: normal; }
-.cascade-flab i:first-child { font-size: 12px; line-height: 1.15; }
-.cascade-flab i:last-child {
-  font-size: 6.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
+.cascade-flab i { font-style: normal; font-size: 14px; line-height: 1; }
 /* dropdowns never balloon to their longest option — the collapsed
    text truncates, the open menu still shows full names */
 /* second-row elements: compact height, same 13px text — a dropdown
@@ -679,9 +672,9 @@ onUnmounted(() => {
   height: 28px;
   font-size: 13px;
 }
-.cascade-field select[data-preset]   { width: 116px; }  /* "Full lattice" fits */
-.cascade-field select[data-colormode] { width: 86px; }  /* "composite" fits */
-.cascade-field select[data-scenario]  { width: 100px; } /* "wound lump" fits */
+.cascade-field select[data-preset]   { width: 124px; }  /* "Full lattice" fits */
+.cascade-field select[data-colormode] { width: 104px; }  /* "composite" fits */
+.cascade-field select[data-scenario]  { width: 116px; } /* "wound ball" fits */
 
 /* ? help chips — small neon-green button seated beside each control */
 .cascade-help {
