@@ -202,6 +202,13 @@ still at all separations.
   aligned flux grows `dd` → stronger selectivity). The inverted
   version (reject matched) is a `dd` stabilizer. One-line gate
   at the arm path; untested.
+  **Observational anchors**: optical pumping (a vapor absorbs
+  circularly polarized light → becomes spin-polarized → prefer-
+  entially transmits that polarization — the feedback loop
+  itself, measured since the 1950s); circular dichroism
+  (differential `Δε` absorption of L/R circular light by
+  chiral media); spin-valve GMR (a magnetized contact passes
+  same-spin carriers preferentially).
 
 ## Runtime tuners (all exported, `build.sh` synced)
 
