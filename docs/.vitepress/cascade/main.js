@@ -788,11 +788,12 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* a scenario REPLACES the scene: clear + restore default toggles
      * (feed on, beam/tools off) so the seed isn't drowned by whatever
      * was running — reset alone keeps toggles untouched. */
-    /* scenarios start QUIET — the seeds behave on their own and the
-     * user opts into the feed/beam as a probe. Only 'vacuum' keeps
-     * the drive: the convergent feed IS the vacuum scenario. */
+    /* scenarios start QUIET — seeds behave on their own; feed/beam
+     * are opt-in probes. Two exceptions: 'vacuum' (the feed IS the
+     * scenario) and 'tube' (the feed ramps it to the live fracture —
+     * without it the sub-threshold string just sits). */
     ui.scenario = e.target.value;
-    ui.drive = ui.scenario === 'vacuum';
+    ui.drive = ui.scenario === 'vacuum' || ui.scenario === 'tube';
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
