@@ -749,7 +749,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (el) { el.max = max; el.value = val;
       const o = el.parentElement?.querySelector('output'); if (o) o.value = val; }
   }
-  let rStep = 1;
+  let rStep = 1, lastEv6 = 0;
   const strideInfo = () => {
     const nx = Math.ceil(W3 / rStep), ny = Math.ceil(H3 / rStep), nz = Math.ceil(D3 / rStep);
     return { nx, ny, nxy: nx * ny, count: nx * ny * nz };
@@ -1101,6 +1101,13 @@ export async function initCascadeSimulator(root, opts = {}) {
         if (ui.tickMs > ui.budget) break;
       }
       lastSpent = spent;
+      /* event telemetry → toast: the string-break is a 1-tick event,
+       * invisible at 4tps without an announcement */
+      const ev6 = Number(wasm._moore26_events(6));
+      if (ev6 > lastEv6) {
+        lastEv6 = ev6;
+        say('⚡ string-break — tube fractured, pair produced', 3000);
+      }
       if (ui.tick > 0 && spent > 0) { upload(); dirty = true; }
     } else lastSpent = 0;
 
