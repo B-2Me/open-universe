@@ -544,9 +544,15 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
-    /* tube scenario = a STABLE string (11 nodes, one short of the
-     * fracture length) — the paint tool's 17-node string snaps */
-    if (s === 'tube') return seedTube(CX, CY, CZ, 5).n;
+    /* tube scenario = a STABLE string RIBBON — three parallel
+     * 11-node runs at 220 (each under the 12-node fracture length;
+     * brighter + wider so the structure actually reads at full
+     * lattice zoom). The paint tool's 17-node string snaps. */
+    if (s === 'tube') {
+      seedTube(CX, CY, CZ - 2, 5, 220);
+      seedTube(CX, CY, CZ, 5, 220);
+      return seedTube(CX, CY, CZ + 2, 5, 220).n;
+    }
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
     if (s === 'ring') return seedRing(CX - 2, CY, CZ);   // even-parity
@@ -694,6 +700,9 @@ export async function initCascadeSimulator(root, opts = {}) {
            * the string glows to criticality for ~8 ticks before the
            * engine's own gate fires the fracture. A watchable snap. */
           const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 120);
+          /* de-arm after one paint — the fuse is lit; a second tap
+           * shouldn't stack another string on top mid-detonation */
+          setTubeArm(false);
           if (n) fuse = cells;
           say(n ? `fuse lit — string saturating…` : 'off-lattice', 3500);
         } else if (ui.ringArm) {
