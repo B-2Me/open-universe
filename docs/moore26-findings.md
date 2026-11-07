@@ -224,6 +224,32 @@ still at all separations.
   chiral media); spin-valve GMR (a magnetized contact passes
   same-spin carriers preferentially).
 
+## Substrate chirality — computational parity violation
+
+Symmetric-seeded wound balls (`300`/pair total, identical structure,
+opposite `dd` sign) accrete mass at **1.7:1** — the `+dd` ball
+reaches `~65k` mass, the `−dd` ball only `~36k`. The asymmetry
+persists with `dir_bias=0`, `catch_gate=0`, and `dd_shift=0` —
+structural, not feed- or transaction-driven. (An early parity-
+deposit sign error — `+Par`/`−Par` mapped to `c`/`c^1` instead of
+even/odd member — was fixed; the asymmetry predates it.)
+
+Mechanism (measured): the `−dd` ball emits `−Par` packets on odd
+members, deposits `−dd`, and *self-polarizes* — `dd=−97,516` vs
+`+91,467` at the same seed symmetry. More polarization → lower
+pair minima → fewer mass-unwinds → starved accretion. The `−dd`
+ball churns `3×` more transaction energy (`ev16=177,751` vs
+`57,719`) but accretes half — circulation instead of structure.
+
+Observational anchors: **weak-force parity violation** (Wu's beta-
+decay experiments — nature's measured chirality); **spontaneous
+magnetization** (exchange feedback, Curie transition — the
+self-polarizing runaway is the same mechanism); **optical
+pumping** (polarized medium self-selects its input spectrum).
+
+Open: why `−dd` over-polarizes *more* than `+dd` reinforces —
+the runaway is directional, not symmetric.
+
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,

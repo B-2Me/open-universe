@@ -290,7 +290,8 @@ static uint32_t site_unwind(int x,int y,int z,int si){
             int ni=nbr(x,y,z,QChannelVec[big][0],QChannelVec[big][1],QChannelVec[big][2]);
             int rc=(big&1)?big-1:big+1;
             uint32_t ra=grid_current[ni].winding[rc],rb=grid_current[ni].winding[big];
-            if(ra>rb&&ra-rb>=qCommitMin)continue;      /* reciprocal: closed */
+            if(ra>rb&&ra-rb>=qCommitMin){qEvents[41]++;continue;}      /* reciprocal: closed */
+            else qEvents[40]++;
         }
         if(be<0||m<bm){bm=m;be=e;}
     }
@@ -859,11 +860,13 @@ void moore26_tick(void){
                      * the excess is phantom fraction, NOT lost
                      * energy (booking it to heat minted +0.03%). */
                     /* carried parity sets the deposit's circulation
-                     * direction — the emitter's handedness arrives
-                     * with the quantum (dipole encoding). Falls back
-                     * to dir_bias sign when parity is unset. */
+                     * SIGN — +Par must land as +dd (even member),
+                     * -Par as -dd (odd member), on ANY arrival
+                     * channel. Deposit-to-member, not direction —
+                     * odd-channel packets previously flipped the
+                     * sign (substrate chirality bug). */
                     int ipar=o->incipPar[c];
-                    int fwd=ipar>0?1:ipar<0?0:(qDirBias>=0);
+                    int fwd=ipar>0?!(c&1):ipar<0?(c&1):(qDirBias>=0);
                     n->winding[fwd?c:c^1]+=dep-half+bias;
                     n->winding[fwd?c^1:c]+=half-bias;
                     if(share){
