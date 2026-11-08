@@ -405,6 +405,16 @@ export async function initCascadeSimulator(root, opts = {}) {
         }
       }
     }
+    /* sustained electrodes — charge bleeds via cq transfers, so a
+     * demo knot's ±104 is gone in tens of ticks. Re-pin it each
+     * tick like a held potential. */
+    if (ui.chargeSites) {
+      for (const [cx, cy, cz, chg] of ui.chargeSites)
+        for (let dz = -2; dz <= 2; dz++)
+          for (let dy = -2; dy <= 2; dy++)
+            for (let dx = -2; dx <= 2; dx++)
+              cset(cx + dx, cy + dy, cz + dz, chg);
+    }
     if (ui.pump && ui.pumpAt && room) {
       /* quantum pump — a directed gun firing ch6 packets at the
        * scenario's seed: drives accretion without the isotropic
@@ -735,14 +745,19 @@ export async function initCascadeSimulator(root, opts = {}) {
       ui.pump = true;
       ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
       seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
-      return seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, -104);
+      const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, -104);
+      ui.chargeSites = [[(W3 * 3 >> 3), CY, CZ, 104], [(W3 * 6 >> 3), CY + 4, CZ, -104]];
+      return n2;
     }
-    /* repel — same probe with a +q target: the +par stream bounces
-     * off the same-sign knot instead of feeding it. */
+    /* repel — same probe with two +q targets: the +par stream
+     * bounces off BOTH same-sign knots. */
     if (s === 'repel') {
       ui.pump = true;
       ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
-      return seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
+      seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
+      const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, 104);
+      ui.chargeSites = [[(W3 * 3 >> 3), CY, CZ, 104], [(W3 * 6 >> 3), CY + 4, CZ, 104]];
+      return n2;
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -948,7 +963,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
-    pump: false, pumpAt: null, scenario: 'ring',
+    pump: false, pumpAt: null, chargeSites: null, scenario: 'ring',
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -1005,7 +1020,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     ui.scenario = e.target.value;
     ui.drive = false;   /* every scenario starts quiet — ☀ opts in */
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
-    ui.pump = false; ui.pumpAt = null;   // scenario dispatch re-arms
+    ui.pump = false; ui.pumpAt = null; ui.chargeSites = null;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
