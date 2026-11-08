@@ -57,7 +57,13 @@ static int8_t QChannelVec[26][3] = {
  * grid bias, not physics. Face (0-5) + corner (18-25) channels stay
  * live as structural registers (winding/charge/over-pressure) — they
  * just don't transport. */
-#define PAR_SIGN(n_,c_) ((n_)->winding[c_]>(n_)->winding[(c_)^1]?1:(n_)->winding[c_]<(n_)->winding[(c_)^1]?-1:0)
+/* parity = the PAIR's handedness, not the channel's dominance —
+ * even-member-dominant = +, odd = −, matching the (c&1) convention
+ * used by the chain-share merge and the Phase 6 spin-flip debit.
+ * The old channel-relative check always returned +1 on the dominant
+ * channel, so -dd knots emitted +Par and debited their MINORITY
+ * member — the artificial 1.7:1 self-polarizing runaway. */
+#define PAR_SIGN(n_,c_) ((n_)->winding[(c_)&~1]>(n_)->winding[(c_)|1]?1:(n_)->winding[(c_)&~1]<(n_)->winding[(c_)|1]?-1:0)
 #define PAR_MERGE(n_,c_,p_) do{int32_t acc_=(n_)->packetPar[c_]*(n_)->packet[c_]+(p_);(n_)->packetPar[c_]=(int8_t)(acc_>0?1:acc_<0?-1:0);}while(0)
 #define IS_EDGE(c) ((c)>=6&&(c)<=17)
 /* even sublattice of the ABC hex grid — only parity-even cells carry

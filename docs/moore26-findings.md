@@ -251,31 +251,20 @@ still at all separations.
   deposit wires absorbed momentum → recoil. Real but weak
   against `38k`-mass knots (needs focused flux or long runs).
 
-## Substrate chirality — computational parity violation
+## Substrate chirality — RETRACTED (bookkeeping bug)
 
-Symmetric-seeded wound balls (`300`/pair total, identical structure,
-opposite `dd` sign) accrete mass at **1.7:1** — the `+dd` ball
-reaches `~65k` mass, the `−dd` ball only `~36k`. The asymmetry
-persists with `dir_bias=0`, `catch_gate=0`, and `dd_shift=0` —
-structural, not feed- or transaction-driven. (An early parity-
-deposit sign error — `+Par`/`−Par` mapped to `c`/`c^1` instead of
-even/odd member — was fixed; the asymmetry predates it.)
+The `1.7:1` accretion asymmetry reported here was **a parity-tag
+bug**, not substrate physics. `PAR_SIGN(n,c)` was channel-relative
+(`winding[c] > winding[c^1]`), so a packet emitted on the dominant
+channel always minted `+Par` — a `−dd` knot therefore debited its
+*even minority* member (`p_>0 → (c&~1)`), collapsing its structural
+`min` and starving accretion. Member-relative `PAR_SIGN`
+(even-dominant = `+`, odd = `−` — the convention the rest of the
+engine already used) restores symmetry: `+dd 41,741` vs `−dd
+46,763` (`0.89`, within run variance).
 
-Mechanism (measured): the `−dd` ball emits `−Par` packets on odd
-members, deposits `−dd`, and *self-polarizes* — `dd=−97,516` vs
-`+91,467` at the same seed symmetry. More polarization → lower
-pair minima → fewer mass-unwinds → starved accretion. The `−dd`
-ball churns `3×` more transaction energy (`ev16=177,751` vs
-`57,719`) but accretes half — circulation instead of structure.
-
-Observational anchors: **weak-force parity violation** (Wu's beta-
-decay experiments — nature's measured chirality); **spontaneous
-magnetization** (exchange feedback, Curie transition — the
-self-polarizing runaway is the same mechanism); **optical
-pumping** (polarized medium self-selects its input spectrum).
-
-Open: why `−dd` over-polarizes *more* than `+dd` reinforces —
-the runaway is directional, not symmetric.
+The residual `0.89` is worth a longer-run check — a mild second-
+order asymmetry or plain seed noise, not the runaway.
 
 ## The Meissner lock — committed structure stops bleeding
 
