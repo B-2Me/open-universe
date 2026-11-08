@@ -165,6 +165,9 @@ static int qParFlip=0;   /* parity-flip probability per hop (0-255)
                            * analog: a quantum can invert helicity
                            * in flight, enabling reabsorption it
                            * couldn't otherwise do */
+static int qAbsorbWall=0;   /* absorbing boundary: zero the outer
+ * shell each tick — torus wrap can't recirculate pumped streams
+ * back into the scene (open-box physics for emitter demos) */
 static int qEvapShift=0; /* mass tax shift (0=off): per-tick evap
                            * probability approx mass>>shift /1024 —
                            * the universal friction cost of holding
@@ -1595,6 +1598,15 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    /* absorbing wall — zero the outer shell so torus wrap can't
+     * recirculate pumped streams back into the scene */
+    if(qAbsorbWall){
+        int W=QWidth,H=QHeight,D=QDepth;
+        for(int z=0;z<D;z++)for(int y=0;y<H;y++)for(int x=0;x<W;x++){
+            if(x&&x<W-1&&y&&y<H-1&&z&&z<D-1)continue;
+            memset(&grid_next[z*W*H+y*W+x],0,sizeof(NodeState));
+        }
+    }
     rescan_live();
     AUDIT_PH(9)   /* last phase sample — BEFORE the swap, while
                  * grid_next still holds the staged tick */
@@ -1814,3 +1826,5 @@ void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
 void moore26_rail_gate_set(int v){qRailGate=v;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
+
+void moore26_absorb_set(int v){qAbsorbWall=v;}

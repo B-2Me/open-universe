@@ -699,6 +699,10 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
+    /* absorbing wall for emitter scenarios — torus wrap would
+     * recirculate the pumped stream back into the scene */
+    if (wasm._moore26_absorb_set)
+      wasm._moore26_absorb_set(s === 'attract' || s === 'repel' ? 1 : 0);
     /* tube scenario = the STRING LIFECYCLE in three ribbons:
      * top: a 220 string — glows then conducts its winding into the
      * vacuum (bare tubes dim; the energy spreads, not vanishes)
