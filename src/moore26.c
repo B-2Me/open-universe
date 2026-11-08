@@ -687,12 +687,21 @@ void moore26_tick(void){
             }
             int armed=0;
             for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
-            /* electrostatic screening as occupancy economics: an
-             * accumulated charge lowers the negotiation capacity —
-             * charged nodes decline earlier, shedding flux they
-             * can't accommodate. */
-            int cap=13-((n->charge<0?-n->charge:n->charge)>>3);
-            if(cap<4)cap=4;
+            /* charge-sign binding law: a node with net charge
+             * declines SAME-sign arrivals early — two of the same
+             * charge can't bind without an opposite present.
+             * Opposite-sign arrivals keep full capacity (they
+             * bind and neutralize). Neutral nodes unchanged. */
+            int cap;
+            {
+                int8_t pp=n->packetPar[c];
+                int same=pp&&n->charge&&((n->charge>0)==(pp>0));
+                if(same)cap=4;
+                else{
+                    cap=13-((n->charge<0?-n->charge:n->charge)>>3);
+                    if(cap<4)cap=4;
+                }
+            }
             if(armed>=cap){
                 /* DECLINED — deflect to the freest channel: the packet
                  * bounces off the dense field to find another target
@@ -1462,6 +1471,11 @@ uint32_t moore26_packet_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c];
 }
+void moore26_packet_par_set(int x,int y,int z,int c,int v){
+    if(!grid_current)return;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].packetPar[c]=(int8_t)v;
+    grid_next[z*QWidth*QHeight+y*QWidth+x].packetPar[c]=(int8_t)v;
+}
 void moore26_mass_set(int x,int y,int z,uint32_t v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].mass=v;
@@ -1497,6 +1511,11 @@ uint32_t moore26_phase_get(int x,int y,int z){
 int32_t moore26_charge_get(int x,int y,int z){
     if(!grid_current)return 0;
     return (int32_t)grid_current[z*QWidth*QHeight+y*QWidth+x].charge;
+}
+void moore26_charge_set(int x,int y,int z,int v){
+    if(!grid_current)return;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].charge=(int16_t)v;
+    mark_chunk(x,y,z);
 }
 int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
 
