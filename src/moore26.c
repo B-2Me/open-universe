@@ -466,7 +466,10 @@ void moore26_tick(void){
          * stored energy bleeds ~1/128 per tick into the coarse-
          * grained internals below the node scale. */
         uint16_t h=grid_next[si].heat;
-        if(h)grid_next[si].heat=h-(h>>7);
+        if(h){uint32_t dr=h>>7;grid_next[si].heat=h-dr;
+             qEvents[44]+=dr;   /* the bath is accounted — the
+             * sub-grid drain was a silent black hole; now the
+             * ledger can see exactly what the vacuum swallowed */}
         /* thermal re-emission — the hot sub-grid fluctuates and
          * boils a fraction of its stored energy back into a packet
          * (the CMB-like floor: opaque structure grinds packets to
@@ -528,7 +531,10 @@ void moore26_tick(void){
             uint32_t hit=a<b?a:b;
             if(hit){
                 in[2*e]-=hit;in[2*e+1]-=hit;
-                uint32_t nu=grid_current[si].mass>4?grid_current[si].mass>>2:64;
+                uint32_t nu=hit>255?255:hit;   /* minted packet energy
+                 * comes from the collision itself (the colliding
+                 * massFlight count) — not the background node's
+                 * parked mass, which made nu scenery-dependent */
                 uint32_t r0=255-grid_next[si].packet[2*e],r1=255-grid_next[si].packet[2*e+1];
                 grid_next[si].packet[2*e]  +=hit<r0?hit:r0;
                 grid_next[si].packet[2*e+1]+=hit<r1?hit:r1;
@@ -1303,7 +1309,14 @@ void moore26_tick(void){
                                ?grid_next[si].winding[2*e2]:grid_next[si].winding[2*e2+1];
                     if(m2>=32&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
                 }
-                if(wbe>=0)grid_next[si].winding[2*wbe]++;
+                if(wbe>=0){
+                    /* deposit on the pair's WEAKER member — the
+                     * evaporation restores circulation without
+                     * minting a dd imbalance */
+                    int wm=grid_next[si].winding[2*wbe]
+                          <=grid_next[si].winding[2*wbe+1]?2*wbe:2*wbe+1;
+                    grid_next[si].winding[wm]++;
+                }
                 else grid_next[si].heat++;
                 qEvents[43]++;
                 continue;
