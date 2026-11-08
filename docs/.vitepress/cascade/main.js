@@ -263,10 +263,22 @@ export async function initCascadeSimulator(root, opts = {}) {
     wasm = await createMoore26();
   }
   const dw = parseInt(qs.get('w') || '0');
-  const [W3, H3, D3] = opts.dims || (dw >= 16 ? [dw, dw, dw] : [32, 32, 32]);   // power-of-2 required;
+  let [W3, H3, D3] = opts.dims || (dw >= 16 ? [dw, dw, dw] : [32, 32, 32]);   // power-of-2 required;
                             // 64^3 runs ~550ms/tick single-threaded wasm —
                             // 32^3 keeps the sim interactive (~70ms/tick)
   wasm._moore26_init(W3, H3, D3);
+  /* iOS Safari wasm memory cap: a failed grid calloc leaves a dead
+   * engine (setters no-op, never crash — but the sim shows nothing).
+   * Probe grid_ready and retry at 32^3 before giving up. */
+  const gridReady = () => !wasm._moore26_grid_ready || wasm._moore26_grid_ready();
+  if (!gridReady() && W3 > 32) {
+    [W3, H3, D3] = [32, 32, 32];
+    wasm._moore26_init(W3, H3, D3);
+  }
+  if (!gridReady()) {
+    hud.textContent = 'engine out of memory — mobile wasm cap. Reload or try a smaller grid (?w=16).';
+    return () => {};
+  }
   const N3 = W3 * H3 * D3;
   const CX = W3 >> 1, CY = H3 >> 1, CZ = D3 >> 1;
   const cenX = W3 * 0.5, cenY = H3 * 0.5, cenZ = D3 * 0.5;

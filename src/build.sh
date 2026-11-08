@@ -332,6 +332,7 @@ if emcc moore26.c \
   -s EXPORT_NAME="'createMoore26'" \
   -s EXPORTED_FUNCTIONS="[
     '_moore26_init',
+    '_moore26_grid_ready',
     '_moore26_tick',
     '_moore26_winding_get',
     '_moore26_winding_set',
@@ -414,6 +415,7 @@ if emcc --version 2>/dev/null | grep -qE ' ([4-9]|[0-9]{2,})\.'; then
     -s EXPORT_NAME="'createMoore26MT'" \
     -s EXPORTED_FUNCTIONS="[
       '_moore26_init',
+    '_moore26_grid_ready',
       '_moore26_tick',
       '_moore26_winding_get',
       '_moore26_winding_set',

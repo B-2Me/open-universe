@@ -374,6 +374,7 @@ void moore26_init(int w,int h,int d){
  * grid_next (intra-tick visibility where a phase reads next-state
  * fields it just staged). */
 void moore26_tick(void){
+    if(!grid_current)return;   /* dead engine — failed init */
     qTick++;
     build_proc();
 
@@ -1394,19 +1395,28 @@ void moore26_tick(void){
 }
 
 /* getters/setters for the harnesses — the AoS node's state. Setters
- * mark their chunk live so seeded content is processed next tick. */
+ * mark their chunk live so seeded content is processed next tick.
+ * Every function guards on grid_current: a failed init (mobile
+ * Safari's wasm memory cap) leaves a dead engine — writes must
+ * no-op instead of dereferencing NULL+si*NodeSize into unallocated
+ * heap (the iPhone load-time OOB trap). */
+int moore26_grid_ready(void){return grid_current!=0;}
 uint32_t moore26_winding_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].winding[c];
 }
 void moore26_winding_set(int x,int y,int z,int c,uint32_t v){
+    if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].winding[c]=v;
     grid_next[z*QWidth*QHeight+y*QWidth+x].winding[c]=v;
     mark_chunk(x,y,z);
 }
 uint32_t moore26_packet_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c];
 }
 void moore26_packet_set(int x,int y,int z,int c,uint32_t v){
+    if(!grid_current)return;
     if(!IS_EVEN(x,y,z))return;   /* odd sublattice is not for use —
      * quanta setters silently refuse interstitial cells */
     grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c]=v;
@@ -1414,39 +1424,47 @@ void moore26_packet_set(int x,int y,int z,int c,uint32_t v){
     mark_chunk(x,y,z);
 }
 void moore26_packet_nu_set(int x,int y,int z,int c,uint32_t v){
-    if(!IS_EVEN(x,y,z))return;
+    if(!grid_current||!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c]=v;
 }
 uint32_t moore26_packet_nu_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c];
 }
 void moore26_mass_set(int x,int y,int z,uint32_t v){
+    if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].mass=v;
     mark_chunk(x,y,z);
 }
 uint32_t moore26_mass_get(int x,int y,int z){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].mass;
 }
 uint16_t moore26_heat_get(int x,int y,int z){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].heat;
 }
 void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
-    if(!IS_EVEN(x,y,z))return;
+    if(!grid_current||!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c]=v;
     mark_chunk(x,y,z);
 }
 uint32_t moore26_massflight_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return (i>=0&&i<48)?qEvents[i]:0;}
 void moore26_phase_set(int x,int y,int z,uint32_t v){
+    if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].phase=v&511;
     mark_chunk(x,y,z);
 }
 uint32_t moore26_phase_get(int x,int y,int z){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].phase;
 }
 int32_t moore26_charge_get(int x,int y,int z){
+    if(!grid_current)return 0;
     return (int32_t)grid_current[z*QWidth*QHeight+y*QWidth+x].charge;
 }
 int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
@@ -1461,6 +1479,7 @@ int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
 uint32_t moore26_rg_pointer(void){return (uint32_t)(uintptr_t)rgBuf;}
 void moore26_rg_refresh(void){
     const int ns=QWidth*QHeight*QDepth;
+    if(!grid_current){if(rgBuf)memset(rgBuf,0,(size_t)ns*4);return;}
     if(!rgBuf)rgBuf=(uint8_t*)malloc((size_t)ns*4);
     for(int i=0;i<ns;i++){
         NodeState *n=&grid_current[i];
@@ -1482,6 +1501,7 @@ uint8_t *moore26_rg2_pointer(void){return rg2Buf;}
 void moore26_rg2_refresh(void){
     const int ns=QWidth*QHeight*QDepth;
     if(!rg2Buf)rg2Buf=(uint8_t*)malloc((size_t)ns*4);
+    if(!grid_current){memset(rg2Buf,0,(size_t)ns*4);return;}
     for(int i=0;i<ns;i++){
         NodeState *n=&grid_current[i];
         uint32_t ps=0;
@@ -1496,22 +1516,25 @@ void moore26_rg2_refresh(void){
     }
 }
 void moore26_clear(void){
+    if(!grid_current)return;
     memset(grid_current,0,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
     qTick=0;
 }
 uint32_t moore26_save(void){
+    if(!grid_current)return 1;
     const size_t sz=(size_t)QWidth*QHeight*QDepth*sizeof(NodeState);
     if(!saveBuf)saveBuf=(NodeState*)malloc(sz);
     memcpy(saveBuf,grid_current,sz);
     return 0;
 }
 uint32_t moore26_restore(void){
-    if(!saveBuf)return 1;
+    if(!saveBuf||!grid_current)return 1;
     memcpy(grid_current,saveBuf,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
     return 0;
 }
 /* bulk telemetry — a C-side sum is far cheaper than a JS sweep */
 uint64_t moore26_sum(int what){
+    if(!grid_current)return 0;
     const int ns=QWidth*QHeight*QDepth;
     uint64_t t=0;
     for(int i=0;i<ns;i++){
@@ -1534,6 +1557,7 @@ uint64_t moore26_sum(int what){
 }
 /* center of mass in fixed-point (x<<8) for the HUD core readout */
 uint32_t moore26_cm(int axis){
+    if(!grid_current)return 0;
     const int ns=QWidth*QHeight*QDepth;
     uint64_t m=0,s=0;
     for(int i=0;i<ns;i++){
@@ -1560,6 +1584,7 @@ void moore26_dd_shift_set(int v){qDdShift=v;}
 void moore26_bend_shift_set(int v){qBendShift=v;}
 void moore26_rad_shift_set(int v){qRadShift=v;}
 int32_t moore26_chargeflight_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c];
 }
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
