@@ -1334,21 +1334,29 @@ void moore26_tick(void){
             if(qEvapShift&&o->mass>1&&
                (rand_site(si,15)&1023)<((o->mass>>qEvapShift)&1023)){
                 grid_next[si].mass--;
-                int wbe=-1;uint32_t wbm=0;
-                for(int e2=0;e2<QChannels/2;e2++){
-                    uint32_t m2=grid_next[si].winding[2*e2]<grid_next[si].winding[2*e2+1]
-                               ?grid_next[si].winding[2*e2]:grid_next[si].winding[2*e2+1];
-                    if(m2>=32&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
+                /* RADIATIVE decay — the evaporated mass leaves as a
+                 * quantum on the knot's dominant circulation edge
+                 * (spin-aligned emission, like real particle decay).
+                 * nu=1 per unit — exactly conserving. Falls back to
+                 * heat only if the channel is saturated. */
+                int dch=-1;uint32_t dw=0;
+                for(int e2=6/2;e2<18/2;e2++){
+                    uint32_t dd2=grid_next[si].winding[2*e2]>grid_next[si].winding[2*e2+1]
+                                ?grid_next[si].winding[2*e2]-grid_next[si].winding[2*e2+1]
+                                :grid_next[si].winding[2*e2+1]-grid_next[si].winding[2*e2];
+                    if(dd2>dw){dw=dd2;dch=grid_next[si].winding[2*e2]
+                                        >grid_next[si].winding[2*e2+1]?2*e2:2*e2+1;}
                 }
-                if(wbe>=0){
-                    /* deposit on the pair's WEAKER member — the
-                     * evaporation restores circulation without
-                     * minting a dd imbalance */
-                    int wm=grid_next[si].winding[2*wbe]
-                          <=grid_next[si].winding[2*wbe+1]?2*wbe:2*wbe+1;
-                    grid_next[si].winding[wm]++;
+                if(dch>=0&&grid_next[si].packet[dch]<255){
+                    grid_next[si].packet[dch]++;
+                    grid_next[si].packetNu[dch]=1;
+                    grid_next[si].packetBorn[dch]=(uint8_t)qTick;
+                    grid_next[si].packetPar[dch]=(dch&1)?-1:1;
+                } else {
+                    /* saturated or no circulation — non-radiative
+                     * fall: the mass thermalizes in place */
+                    grid_next[si].heat++;
                 }
-                else grid_next[si].heat++;
                 qEvents[43]++;
                 continue;
             }
