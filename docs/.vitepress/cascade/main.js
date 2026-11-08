@@ -425,8 +425,9 @@ export async function initCascadeSimulator(root, opts = {}) {
         let [sx, sy, sz] = evenSnap(jx, jy, tz + (k & 1));
         if (sx < 1 || sx >= W3 - 1 || sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
         const cur = wasm._moore26_packet_get(sx, sy, sz, 6);
-        if (cur < 8) {
-          pset(sx, sy, sz, 6, cur + 1);
+        const cap = ui.pumpRate || 8;
+        if (cur < cap) {
+          pset(sx, sy, sz, 6, cur + 4);
           nuset(sx, sy, sz, 6, FEED_NU);
         }
       }
@@ -656,12 +657,23 @@ export async function initCascadeSimulator(root, opts = {}) {
    * 9x the mass with locked circulation. */
   /* charged condenser — a wound lump carrying net charge on
    * every cell: the charge-sign binding law's test object */
+  /* charged condenser — a LIGHT knot (mass 48, winding 48, not
+   * the saturated 256/96 lump — the charge register shouldn't
+   * blow the view to white) with net charge on every cell. */
   const seedChargedLump = (cx, cy, cz, chg) => {
-    let n = seedLump(cx, cy, cz);
-    for (let dz = -4; dz <= 4; dz++)
-      for (let dy = -4; dy <= 4; dy++)
-        for (let dx = -4; dx <= 4; dx++)
-          if (dx * dx + dy * dy + dz * dz <= 16) cset(cx + dx, cy + dy, cz + dz, chg);
+    let n = 0;
+    for (let dz = -3; dz <= 3; dz++)
+      for (let dy = -3; dy <= 3; dy++)
+        for (let dx = -3; dx <= 3; dx++) {
+          if (dx * dx + dy * dy + dz * dz > 9) continue;
+          for (let e = 0; e < 13; e++) {
+            wset(cx + dx, cy + dy, cz + dz, 2 * e, 48);
+            wset(cx + dx, cy + dy, cz + dz, 2 * e + 1, 48);
+          }
+          mset(cx + dx, cy + dy, cz + dz, 48);
+          cset(cx + dx, cy + dy, cz + dz, chg);
+          n++;
+        }
     return n;
   };
   const seedZoo = (cx, cy, cz) => {
@@ -742,7 +754,7 @@ export async function initCascadeSimulator(root, opts = {}) {
      * cells upstream. +q upstream repels the +par stream, -q at the
      * far end attracts it — same measurement, made visible. */
     if (s === 'attract') {
-      ui.pump = true;
+      ui.pump = true; ui.pumpRate = 20;
       ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
       seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
       const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, -104);
@@ -752,7 +764,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* repel — same probe with two +q targets: the +par stream
      * bounces off BOTH same-sign knots. */
     if (s === 'repel') {
-      ui.pump = true;
+      ui.pump = true; ui.pumpRate = 20;
       ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
       seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
       const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, 104);
@@ -1020,7 +1032,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     ui.scenario = e.target.value;
     ui.drive = false;   /* every scenario starts quiet — ☀ opts in */
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
-    ui.pump = false; ui.pumpAt = null; ui.chargeSites = null;   // scenario dispatch re-arms
+    ui.pump = false; ui.pumpAt = null; ui.chargeSites = null; ui.pumpRate = 0;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
