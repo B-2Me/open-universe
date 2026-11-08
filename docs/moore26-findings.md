@@ -277,6 +277,38 @@ pumping** (polarized medium self-selects its input spectrum).
 Open: why `−dd` over-polarizes *more* than `+dd` reinforces —
 the runaway is directional, not symmetric.
 
+## The Meissner lock — committed structure stops bleeding
+
+Phase 4 gradient descent used to drain **any** balanced pair
+`>=32` at `a>>3` per tick — rails and tubes dissolved into the
+vacuum (the visible dim-out) while dust below `32` sat frozen.
+The rule was inverted relative to nature: it froze the noise and
+bled the structure.
+
+The lock: balanced pairs in `[commit_min, 128)` skip conduction
+entirely — committed structure is *structure*, not field.
+Pairs `>=128` bleed only the over-pressure excess `(a-127)>>3`.
+
+Measured (32³, seeded `200/200` on `ch6/7`):
+- **before**: `200 → 105 → 69 → 68` and still falling
+- **after**: `200 → 154 → 143`, then `t50 = t400 = 1572` — frozen
+
+Regressions: wound-ball accretion unaffected (`25k` mass —
+unbalanced pairs take the `a!=b` directional path); ring rail
+holds `630/660` dominant winding (was dimming).
+
+Calibration notes: tubes floor at `~143`, not exactly `128` —
+`(a-127)>>3` falls under the `k>=8` transfer gate early. Dust
+`<64` is still effectively frozen (`k<8` never transfers), so
+the "vacuum expels field" half of the Meissner story is inert —
+committed structure persists, but the medium doesn't actively
+push flux back onto rails. Nature's tube persistence is now
+matched on the structure side only.
+
+Consequence: over-pressured tubes relax toward the `128`
+fracture band — `Phase 7` stays armed on any tube that parked
+just over the gate.
+
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
