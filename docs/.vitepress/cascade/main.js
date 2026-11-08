@@ -718,7 +718,7 @@ export async function initCascadeSimulator(root, opts = {}) {
        * independent persistent current, not a coupled junction */
       seedRing((W3 * 11 >> 4), (W3 * 13 >> 4), (W3 * 4 >> 4), 2, 1);
       seedRing((W3 * 12 >> 4), (W3 * 11 >> 4), (W3 * 10 >> 4), 2, 2);
-      seedRing((W3 * 2 >> 4), (W3 * 5 >> 4), (W3 * 10 >> 4), 2, 4);
+      seedRing((W3 * 12 >> 4), (W3 * 3 >> 4), (W3 * 5 >> 4), 2, 4);
       return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);  // 36-cell center
     }
     /* wound = a SPARSE seed + quantum pump — you watch the condenser
