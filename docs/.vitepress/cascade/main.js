@@ -940,7 +940,7 @@ export async function initCascadeSimulator(root, opts = {}) {
           /* the fuse — paint sub-critical (120) then ramp +1/tick:
            * the string glows to criticality for ~8 ticks before the
            * engine's own gate fires the fracture. A watchable snap. */
-          const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 120);
+          const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 124);
           /* de-arm after one paint — the fuse is lit; a second tap
            * shouldn't stack another string on top mid-detonation */
           setTubeArm(false);
@@ -999,7 +999,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
-    pump: false, pumpAt: null, chargeSites: null, scenario: 'ring',
+    pump: false, pumpAt: null, chargeSites: null, scenario: 'tube',
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
