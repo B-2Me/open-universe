@@ -306,12 +306,6 @@ froze. But the probe now leaves `~60k` trapped polarization vs
 `~0` pre-lock: deposited charge persists once conduction stops —
 **charge memory**, not strain-induced dipole.
 
-## Runtime tuners (all exported, `build.sh` synced)
-
-`fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
-`catch_gate`, `dir_bias`, `deflect_align`, `dd_shift`,
-`bend_shift`, `rad_shift`, `phase_gate`, `phase_sync`,
-`chargeflight_get`
 
 ## Genealogy
 
@@ -320,3 +314,63 @@ froze. But the probe now leaves `~60k` trapped polarization vs
 
 Same knot regime across four engines — committed circulation,
 directed rest, dwell parking, annihilation-on-collision.
+
+## Conservation audit arc (ledger sealed to ~0.1%)
+
+Per-phase delta counters (`-DM26_AUDIT`, `moore26_audit(p)`)
+attribute every ledger change to a tick phase. The hunt, in order:
+
+| leak | fix |
+|---|---|
+| `h>>7` silent heat drain | booked to `ev44` (tracked bath) |
+| incip expiry booked `h` not `h·nu` | `h*nu` thermalizes |
+| annihilation `nu=hit` mint (`hit²` out) | `nu=1` per quantum — exact |
+| register-cap truncations (flight/annih/chain-share/emit) | excess → `heat` everywhere |
+| `incipNu` scalar overwrite on shared channel | weighted `nu` mixing at arming |
+| spin-flip debit deleted 1 winding/emission | debited rung → `heat` (parity costs angular momentum, not free energy) |
+| stale `grid_next` resurrected ghosts | `rescan_live` memsets dead chunks before swap |
+
+Result: every transactional phase audits `ΔL=0`; `P7-break`
+carries `−63` string-break bookkeeping; the `5%` void is now a
+`~0.1%` documented seam. Mid-tick `grid_next` sampling in the
+audit shows a `+957` P0 artifact (buffer-staging ghosts, not
+minting) — tick-end `grid_current` sampling is the honest read.
+
+## Mass spectrum — calibrated (Prigogine dissipative structure)
+
+`qEvapShift` mass tax: per-tick evaporation probability
+`(mass>>shift)&1023`, emitting `nu=1` packets on the knot's
+dominant circulation edge (spin-aligned radiation, `ev43`).
+
+- **Closed box**: plateau `~40k`, *supply-bound* — the knot
+  eats until the vacuum starves; tax sets only the residual
+  split (41k/39k/39k for shift 3/4/5)
+- **Open box + sustained flux**: plateau `≈ flux × 2^shift` —
+  measured `467/906/1244` (shift 5 still converging toward
+  `4×` when sampled). Mass is an emergent `supply/friction`
+  value — a real tunable spectrum, not an input
+
+## Charge law — measured field behavior
+
+`charge` (int16) is dynamic — absorption re-charges a node
+(`charge += nu` can flip sign). Sign-aware binding: same-sign
+offers cap at `4`, opposite-sign at `13−|q|>>3`. Measured:
+`ev45=331` same-sign declines vs `35` baseline on a `+104`
+target — repulsion real; `−q` knots decline `+par` ~12% less
+(attraction). Knots also **repolarize** under sustained
+opposite flux — a `−q` node fed `+par` packets flips `+`.
+
+## Absorbing boundary
+
+`qAbsorbWall` (`moore26_absorb_set`) zeroes the outer shell of
+`grid_next` each tick — open-box conditions for emitter
+demos; the x/y torus wrap no longer recirculates pumped
+streams into the measurement.
+
+## Runtime tuners (all exported, `build.sh` synced)
+
+`fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
+`catch_gate`, `dir_bias`, `deflect_align`, `dd_shift`,
+`bend_shift`, `rad_shift`, `phase_gate`, `phase_sync`,
+`evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
+`chargeflight_get`, `audit`
