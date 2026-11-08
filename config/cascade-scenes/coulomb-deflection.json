@@ -1,0 +1,20 @@
+{
+  "name": "coulomb-deflection",
+  "title": "Coulomb Deflection",
+  "physics": "A +par stream bends around a +q charged wall (same-sign cap=4 declines) and dives through a -q wall (opposite-sign cap=8 binds). The charge-sign binding law made spatial.",
+  "grid": "32x32x32",
+  "seed": {
+    "attract_wall": {"x": "5/8*W", "charge": -40, "winding": 140, "span": "y,z ±5"},
+    "repel_wall":   {"x": "5/8*W", "charge": +40, "winding": 140, "span": "y,z ±5"},
+    "comment": "one scene at a time — repel: +q wall + +par stream piles up at it; attract: -q wall + +par stream passes through. |q|=40 gives the cap=4 vs cap=8 contrast (|q|=104 clamps both to 4)."
+  },
+  "tuners": {"evap_shift": 4, "absorb": 1},
+  "emitters": {"feed": false, "beam": false, "pump": true, "pumpRate": 20},
+  "camera": {"focus": "core", "view": "current", "zoom": "1.2"},
+  "timeline": [
+    {"t": "0-50",  "expect": "the +par stream approaches the wall"},
+    {"t": "50-200","expect": "repel: spray piles up at the wall, downstream thins; attract: stream passes through"},
+    {"t": "200+",  "expect": "steady-state barrier-vs-doorway — the field is the wall"}
+  ],
+  "verified": "ev45=331 same-sign declines vs 35 baseline on +104 target (harness-proven)"
+}

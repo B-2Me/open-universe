@@ -1,0 +1,20 @@
+{
+  "name": "string-break",
+  "title": "Macroscopic String-Break",
+  "physics": "A saturated flux tube stretches past the 12-node fracture gate and snaps — pair-producing recoiling charged mass at the endpoints (+128 endpoint mass, ±8 chargeFlight). The confinement signature.",
+  "grid": "32x32x32",
+  "seed": {
+    "tube": {"cells": [[16,16,10],[16,16,12],[16,16,14],[16,16,16],[16,16,18],[16,16,20],[16,16,22],[16,16,24]], "winding": 124, "channels": [6,7]},
+    "comment": "a straight z-axis tube of saturated winding — already past the fracture gate, snaps within ~10 ticks of the first tick"
+  },
+  "tuners": {"evap_shift": 4, "absorb": 0},
+  "emitters": {"feed": false, "beam": false, "pump": false},
+  "camera": {"focus": "core", "view": "composite", "zoom": "1.5"},
+  "timeline": [
+    {"t": "0-10",  "expect": "the tube glows — saturated winding on every node"},
+    {"t": "~10",   "expect": "fracture fires — the tube snaps mid-span"},
+    {"t": "10-40", "expect": "two charged fragments recoil apart (+128 mass each, ±8 chargeFlight); the gap heals"},
+    {"t": "40+",   "expect": "the fragments drift, decay-radiate, and thermalize"}
+  ],
+  "verified": "ev24 counts the break; endpoint mass + recoil = drained tension (exact ledger)"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "prigogine-breather",
+  "title": "Prigogine Breather",
+  "physics": "A wound knot at its dissipative equilibrium — mass plateaus at the flux/friction balance, radiating nu=1 packets on its circulation axis while reabsorbing the ambient field. A living rest mass.",
+  "grid": "32x32x32",
+  "seed": {
+    "knot": {"center": [16,16,16], "radius": 3, "winding": 120, "winding_anti": 180, "mass": 10},
+    "comment": "the r<=3 wound ball — accretes from the feed until the mass tax balances, then breathes"
+  },
+  "tuners": {"evap_shift": 4, "absorb": 0},
+  "emitters": {"feed": true, "beam": false, "pump": false},
+  "camera": {"focus": "core", "view": "mass", "zoom": "2.0"},
+  "timeline": [
+    {"t": "0-300",  "expect": "accretion — the knot eats the ambient feed and grows"},
+    {"t": "300-1000","expect": "plateau — mass settles ~40k, evaporation radiates on the circulation axis"},
+    {"t": "1000+",  "expect": "breathing — steady radiative flux, mass oscillates around equilibrium"}
+  ],
+  "verified": "closed-box plateau ~42k oscillating; open-box M ~ flux * 2^shift"
+}
