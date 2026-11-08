@@ -320,7 +320,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   };
   const cset = (x, y, z, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) return;
-    wasm._moore26_charge_set(x, y, z, v);
+    if (wasm._moore26_charge_set) wasm._moore26_charge_set(x, y, z, v);
   };
   const nuset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
@@ -727,21 +727,21 @@ export async function initCascadeSimulator(root, opts = {}) {
       dia(CX - 2, CY, CZ, [6, 8, 7, 9]);
       return dia(CX, CY, CZ, [10, 12, 11, 13]);
     }
-    /* attract — opposite-charged condensers + a parity stream
-     * aimed through the gap: the +par packets deflect AWAY from
-     * the +q knot and into the -q knot (verified ev45/ev46). */
+    /* attract — opposite-charged condensers ON the pump's {1,1,0}
+     * diagonal so one stream traverses left knot -> gap -> right
+     * knot: +par repelled by +q upstream, attracted to -q at the
+     * far end (verified ev45/ev46). */
     if (s === 'attract') {
-      ui.pump = true; ui.pumpAt = [CX + 8, CY, CZ];
-      seedChargedLump(CX - 8, CY, CZ, 104);
-      return seedChargedLump(CX + 8, CY, CZ, -104);
+      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
+      seedChargedLump(CX - 8, CY - 8, CZ, 104);
+      return seedChargedLump(CX + 8, CY + 8, CZ, -104);
     }
-    /* repel — same-signed condensers + a parity stream through
-     * the gap: packets bounce off BOTH knots — the same-sign
-     * decline gate at work. */
+    /* repel — same-signed condensers on the diagonal: the stream
+     * bounces off BOTH — the same-sign decline gate at work. */
     if (s === 'repel') {
-      ui.pump = true; ui.pumpAt = [CX + 8, CY, CZ];
-      seedChargedLump(CX - 8, CY, CZ, 104);
-      return seedChargedLump(CX + 8, CY, CZ, 104);
+      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
+      seedChargedLump(CX - 8, CY - 8, CZ, 104);
+      return seedChargedLump(CX + 8, CY + 8, CZ, 104);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
