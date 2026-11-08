@@ -19,6 +19,50 @@ on the even-parity sublattice plus face/corner registers that hold
 bound structure; transactions negotiate through an
 offer→incipient→confirm handshake each tick.
 
+## Notation
+
+The shorthand used throughout — defined once here:
+
+**Registers** (per-node state; `c` indexes the 26 channels,
+edge pairs are `2e`/`2e+1`):
+
+- `winding[c]` — committed circulation count; `min(pair) ≥ 32`
+  is bound structure
+- `dd` — signed winding difference across a pair's two members;
+  the coil's handedness and strength
+- `mass` — parked rest energy (the condensation register)
+- `charge` — signed `int16`; biases offer acceptance
+- `heat` — the thermal bath; the friction sink
+- `packet[c]` / `packetNu[c]` / `packetPar[c]` — photon count,
+  energy, and parity-sign in flight
+- `incip[c]` / `incipNu[c]` — pending (incipient) offers awaiting
+  confirmation
+- `armed` — `Σ incip` on a node: the congestion measure
+- `massFlight` / `chargeFlight` — directed momentum transport
+- `grid_current` / `grid_next` — the double-buffered state;
+  phases stage into `next`, the tick swaps
+
+**Event counters** (`ev*` — the harness-readable ledger):
+`ev4` emissions · `ev20` shed energy · `ev23` fusion pairs ·
+`ev24` string-breaks · `ev30` offer declines · `ev43` mass-tax
+evaporations · `ev44` thermalized overflow · `ev45` same-sign
+declines · `ev46` baseline declines
+
+**Tuners** (runtime, all exported):
+`qEvapShift` mass tax · `qConfirmCap` confirm ceiling ·
+`qGroundFloor` winding floor · `qCatchGate` offer gate ·
+`qFusionWall` pair-production threshold (`256`) · `qCommitMin`
+binding threshold (`32`)
+
+**Phases**: `P0` carry · `P1` flight · `P1b` junction annihilation
+· `P1c` mass launch · `P2` offer · `P3` confirm · `P4` winding
+conduction · `P5` phase sync · `P6` emission/decay · `P7` string
+break
+
+**Ledger**: `L = Σ(winding + mass + flight + packet·nu + heat
+± charge)` — the scalar the audits track. `>>` is arithmetic
+shift (`m>>s = m/2^s`); `min(pair)` is a pair's committed min.
+
 ## Deviation audit — verified vs nature
 
 **Where the substrate matches (measured, not asserted):**
