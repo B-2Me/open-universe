@@ -644,6 +644,16 @@ export async function initCascadeSimulator(root, opts = {}) {
    * ring (rail), wound ball (spinning condenser). Verified:
    * balls accrete, rings are pure structure, wound balls hold
    * 9x the mass with locked circulation. */
+  /* charged condenser — a wound lump carrying net charge on
+   * every cell: the charge-sign binding law's test object */
+  const seedChargedLump = (cx, cy, cz, chg) => {
+    let n = seedLump(cx, cy, cz);
+    for (let dz = -4; dz <= 4; dz++)
+      for (let dy = -4; dy <= 4; dy++)
+        for (let dx = -4; dx <= 4; dx++)
+          if (dx * dx + dy * dy + dz * dz <= 16) cset(cx + dx, cy + dy, cz + dz, chg);
+    return n;
+  };
   const seedZoo = (cx, cy, cz) => {
     let n = seedLump(cx - 10, cy, cz);            // plain knot
     n += seedRing(cx - 2, cy - 1, cz, 0);         // bare ring
@@ -716,6 +726,22 @@ export async function initCascadeSimulator(root, opts = {}) {
        * +2x — its plane threads A's hole → interlocked */
       dia(CX - 2, CY, CZ, [6, 8, 7, 9]);
       return dia(CX, CY, CZ, [10, 12, 11, 13]);
+    }
+    /* attract — opposite-charged condensers + a parity stream
+     * aimed through the gap: the +par packets deflect AWAY from
+     * the +q knot and into the -q knot (verified ev45/ev46). */
+    if (s === 'attract') {
+      ui.pump = true; ui.pumpAt = [CX + 8, CY, CZ];
+      seedChargedLump(CX - 8, CY, CZ, 104);
+      return seedChargedLump(CX + 8, CY, CZ, -104);
+    }
+    /* repel — same-signed condensers + a parity stream through
+     * the gap: packets bounce off BOTH knots — the same-sign
+     * decline gate at work. */
+    if (s === 'repel') {
+      ui.pump = true; ui.pumpAt = [CX + 8, CY, CZ];
+      seedChargedLump(CX - 8, CY, CZ, 104);
+      return seedChargedLump(CX + 8, CY, CZ, 104);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -1076,7 +1102,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     buckle:  'a U-bent string — the flexoelectric subject. Fire ➤ beam at the bend and watch the charge dipole (pol view).',
     ring:    '{111} waveguide loops at four sizes (6/12/24/36 cells) — packets ride loss-free as persistent current. View: current.',
     link:    'the Hopf link — two perpendicular diamond loops interlocked. Stream rides both rails (current view).',
-    pair:    'one condenser of each handedness — +dd out-accretes ~1.7× (the substrate chirality). View: handed.',
+    pair:    'one condenser of each handedness — they accrete ~symmetrically now (the 1.7× asymmetry was a parity-bookkeeping bug, retracted). View: handed.',
+    attract: 'opposite-charged condensers (+q left, -q right) with a parity stream through the gap — packets bend AWAY from the +q knot and INTO the -q knot. Verified ev45/ev46: same-sign declines, opposite-sign binds.',
+    repel:   'two same-charged (+q) condensers — the stream bounces off BOTH: same-sign packets get declined at cap=4. Charge is a field here, not a tag.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo. The tube must out-rank the knots to pierce them.',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',
