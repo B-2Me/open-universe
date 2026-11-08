@@ -160,8 +160,17 @@ static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
      * stream doesn't negotiate on an established rail, it flows */
 static int qParFlip=0;   /* parity-flip probability per hop (0-255)
-     * — the neutrino-mass analog: a quantum can invert helicity
-     * in flight, enabling reabsorption it couldn't otherwise do */
+                           * — handedness randomization tax on
+                           * ballistic transport — the neutrino-mass
+                           * analog: a quantum can invert helicity
+                           * in flight, enabling reabsorption it
+                           * couldn't otherwise do */
+static int qEvapShift=0; /* mass tax shift (0=off): per-tick evap
+                           * probability approx mass>>shift /1024 —
+                           * the universal friction cost of holding
+                           * a heavy deadlock. Heavier cells exhaust
+                           * more — size-dependent dissipation gives
+                           * a true plateau, not a ratio gate. */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -1280,6 +1289,25 @@ void moore26_tick(void){
          * mass:bond ratio equilibrating, no minted energy). A bare
          * (massless) site still radiates a packet instead. */
         if(o->mass>0){
+            /* MASS TAX — always-on evaporation: holding mass costs a
+             * per-tick fraction proportional to mass. Small knots
+             * outgrow it under ambient flux; big knots bleed until
+             * evaporation = supply — a dynamic equilibrium set by
+             * thermodynamics, not an authored ratio. */
+            if(qEvapShift&&o->mass>1&&
+               (rand_site(si,15)&1023)<((o->mass>>qEvapShift)&1023)){
+                grid_next[si].mass--;
+                int wbe=-1;uint32_t wbm=0;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t m2=grid_next[si].winding[2*e2]<grid_next[si].winding[2*e2+1]
+                               ?grid_next[si].winding[2*e2]:grid_next[si].winding[2*e2+1];
+                    if(m2>=32&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
+                }
+                if(wbe>=0)grid_next[si].winding[2*wbe]++;
+                else grid_next[si].heat++;
+                qEvents[43]++;
+                continue;
+            }
             uint64_t lw=loop_winding(o);
             if(lw>(uint64_t)o->mass*8){
                 uint32_t shed=site_unwind(x,y,z,si);
@@ -1644,3 +1672,4 @@ void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
 void moore26_rail_gate_set(int v){qRailGate=v;}
+void moore26_evap_shift_set(int v){qEvapShift=v;}
