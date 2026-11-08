@@ -565,9 +565,11 @@ export async function initCascadeSimulator(root, opts = {}) {
    * balls accrete, rings are pure structure, wound balls hold
    * 9x the mass with locked circulation. */
   const seedZoo = (cx, cy, cz) => {
-    let n = seedLump(cx - 16, cy, cz);            // plain knot
-    n += seedRing(cx, cy - 1, cz, 0);             // bare ring
-    n += seedWound(cx + 16, cy, cz, 1);           // wound ball
+    let n = seedLump(cx - 14, cy, cz);            // plain knot
+    n += seedRing(cx - 2, cy - 1, cz, 0);         // bare ring
+    n += seedWound(cx + 14, cy, cz, 1);           // wound ball —
+                                                  // pulled off the
+                                                  // edge band
     return n;
   };
 
@@ -593,10 +595,14 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* ring scale: the big 36-cell loop at center + two tiny 6-cell
      * loops near the edges — same topology, very different size.
      * All starts are even-parity (odd cells can't carry packets) */
+    /* the ring ladder — four {111} loops at sides 1,2,4,6 (6,12,24,
+     * 36 cells) — same topology, a size series. All starts even-
+     * parity, all spans on-grid. */
     if (s === 'ring') {
-      seedRing(10, 12, 18, 2, 1);              // tiny ring, near edge
-      seedRing(52, 50, 46, 2, 1);              // tiny ring, far edge
-      return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);   // the big one
+      seedRing(44, 52, 24, 2, 1);   // 6-cell   (44-46,52-54,22-24)
+      seedRing(48, 44, 42, 2, 2);   // 12-cell  (48-52,44-48,38-42)
+      seedRing(10, 20, 46, 2, 4);   // 24-cell  (10-18,20-28,38-46)
+      return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);  // 36-cell center
     }
     /* wound = a SPARSE seed + quantum pump — you watch the condenser
      * accrete into the saturated ball instead of starting finished */
@@ -606,7 +612,10 @@ export async function initCascadeSimulator(root, opts = {}) {
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
-    if (s === 'quark') return seedWound(CX, CY, CZ, 1);
+    /* quark = the FORMED condenser at +dd (amber, the accreting
+     * handedness) — distinct from 'wound', which shows a -dd
+     * sparse seed growing into condenser under the pump */
+    if (s === 'quark') return seedWound(CX, CY, CZ, -1);
     if (s === 'proton') return seedProton(CX, CY, CZ);
     if (s === 'zoo') return seedZoo(CX, CY, CZ);
     return 0;
