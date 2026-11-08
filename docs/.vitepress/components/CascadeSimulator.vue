@@ -887,6 +887,18 @@ onUnmounted(() => {
   /* inject's six buttons exceed a phone dock — wrap inside the group
      instead of overflowing sideways */
   .cascade-grp-row { flex-wrap: wrap; justify-content: center; gap: 5px; }
+  /* presets row stays ONE line on phones — the three selects +
+     chips scroll horizontally instead of stacking into 3 rows */
+  .grp-presets .cascade-grp-row {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .grp-presets .cascade-grp-row > em { display: none; }   /* label eats a row's worth of space */
+  .cascade-field select[data-preset]   { width: 108px; }
+  .cascade-field select[data-colormode] { width: 86px; }
+  .cascade-field select[data-scenario]  { width: 96px; }
   /* bigger touch targets — the stacked layout already shares the
      on-dot with the icon row globally */
   .cascade-grp-row > button {
