@@ -1298,9 +1298,11 @@ export async function initCascadeSimulator(root, opts = {}) {
       const cx = Number(wasm._moore26_cm(0)) / 256, cyy = Number(wasm._moore26_cm(1)) / 256, cz = Number(wasm._moore26_cm(2)) / 256;
       const cm = mass > 0 ? `core@(${cx.toFixed(1)},${cyy.toFixed(1)},${cz.toFixed(1)})` : 'no knot';
       /* relative clock: 1 tick = light crossing 1 node = 0.1fm/c
-       * (~3.3e-25 s) — same convention as the size scale. */
+       * (~3.3e-25 s, ~6.2e18 Planck times) — same convention as
+       * the size scale. The physical-time equivalents ride along. */
       const age = Math.round(ui.tick * 0.1);
-      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}T=${age}fm/c · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t${mtLive ? `·mt${mtLive}` : ''}`;
+      const sec = ui.tick * 3.33e-25, tP = ui.tick * 6.18e18;
+      hud.textContent = `${ui.playing ? '' : 'PAUSED · '}T=${age}fm/c ≈${sec.toExponential(1)}s ≈${tP.toExponential(1)}tP · mass=${mass} · wind=${(wind/1000).toFixed(0)}k · pkt=${phot} · |q|=${chg} · ${cm} · ${fps.toFixed(0)}fps · ${ui.tickMs.toFixed(0)}ms/t${mtLive ? `·mt${mtLive}` : ''}`;
     }
   };
   raf = requestAnimationFrame(frame);
