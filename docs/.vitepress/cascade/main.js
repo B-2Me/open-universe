@@ -763,7 +763,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       for (let dy = -5; dy <= 5; dy++)
         for (let dz = -5; dz <= 5; dz++) {
           const x = wx, y = CY + dy, z = CZ + dz;
-          wset(x, y, z, 6, 48); wset(x, y, z, 7, 48);
+          /* saturated winding (140 ~ confirm cap) — offers must
+           * JAM on the wall before they confirm, which is what
+           * stacks armed>=cap and fires the sign gate */
+          wset(x, y, z, 6, 140); wset(x, y, z, 7, 140);
           cset(x, y, z, chg); n++;
         }
       return n;
@@ -772,7 +775,9 @@ export async function initCascadeSimulator(root, opts = {}) {
       ui.pump = true; ui.pumpRate = 20;
       const wx = (W3 * 5 >> 3);
       ui.pumpAt = [wx, CY, CZ];
-      const chg = s === 'repel' ? 104 : -104;
+      /* |q|=40: same-sign -> cap=4, opposite -> cap=8 — the real
+       * contrast (|q|=104 clamped both to 4 — no difference) */
+      const chg = s === 'repel' ? 40 : -40;
       ui.chargeSites = [[wx, CY - 4, CZ, chg], [wx, CY + 4, CZ, chg]];
       return chargeWall(wx, chg);
     }
