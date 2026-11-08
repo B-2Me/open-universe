@@ -360,6 +360,22 @@ export async function initCascadeSimulator(root, opts = {}) {
         }
       }
     }
+    if (ui.pump && ui.pumpAt && room) {
+      /* quantum pump — a directed gun firing ch6 packets at the
+       * scenario's seed: drives accretion without the isotropic
+       * flood. Source sits ~14 cells upstream on the {1,1,0} axis. */
+      const [tx, ty, tz] = ui.pumpAt;
+      for (let k = 0; k < 4; k++) {
+        const jx = tx - 10 + ((k * 7) & 3), jy = ty - 10 + ((k * 5) & 3);
+        let [sx, sy, sz] = evenSnap(jx, jy, tz + (k & 1));
+        if (sx < 1 || sx >= W3 - 1 || sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
+        const cur = wasm._moore26_packet_get(sx, sy, sz, 6);
+        if (cur < 8) {
+          wasm._moore26_packet_set(sx, sy, sz, 6, cur + 1);
+          wasm._moore26_packet_nu_set(sx, sy, sz, 6, FEED_NU);
+        }
+      }
+    }
   };
 
   // ⌖: drop a wound rest-mass lump onto the slice plane — mass core +
@@ -485,8 +501,11 @@ export async function initCascadeSimulator(root, opts = {}) {
    * wound 120/180 (bias sign picks the handedness), mass spark 10.
    * bias>0 → -dd (the sterile churning species); bias<0 → +dd (the
    * accreting species — ~1.7x the mass: the substrate chirality). */
-  const seedWound = (cx, cy, cz, bias) => {
-    const a = bias > 0 ? 120 : 180, b = bias > 0 ? 180 : 120;
+  const seedWound = (cx, cy, cz, bias, w = 120) => {
+    /* w scales the whole recipe — 120/180 is the verified species;
+     * a sparse 50/75 seed shows the interior + accretion arc */
+    const a = bias > 0 ? w : Math.round(w * 1.5),
+          b = bias > 0 ? Math.round(w * 1.5) : w;
     let n = 0;
     for (let dz = -3; dz <= 3; dz++)
     for (let dy = -3; dy <= 3; dy++)
@@ -565,9 +584,9 @@ export async function initCascadeSimulator(root, opts = {}) {
      * ~10 ticks and fractures live (the watchable snap)
      * bot: a 140 string — slowest drain, stays lit longest */
     if (s === 'tube') {
-      seedTube(CX, CY, CZ - 3, 5, 220);
-      fuse = seedTube(CX, CY, CZ, 8, 118).cells;
-      return seedTube(CX, CY, CZ + 3, 5, 140).n;
+      seedTube(CX, CY, CZ - 4, 5, 240);            // bright bleeder
+      fuse = seedTube(CX, CY, CZ, 8, 124).cells;   // fuse -> snap
+      return seedTube(CX, CY, CZ + 4, 5, 200).n;   // lit slow-drain
     }
     if (s === 'lump') return seedLump(CX, CY, CZ);
     if (s === 'buckle') return seedBuckle(16);
@@ -579,7 +598,12 @@ export async function initCascadeSimulator(root, opts = {}) {
       seedRing(52, 50, 46, 2, 1);              // tiny ring, far edge
       return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);   // the big one
     }
-    if (s === 'wound') return seedWound(CX, CY, CZ, 1);
+    /* wound = a SPARSE seed + quantum pump — you watch the condenser
+     * accrete into the saturated ball instead of starting finished */
+    if (s === 'wound') {
+      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
+      return seedWound(CX, CY, CZ, 1, 50);
+    }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
     if (s === 'quark') return seedWound(CX, CY, CZ, 1);
@@ -779,6 +803,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: true, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
+    pump: false, pumpAt: null,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -833,6 +858,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     ui.scenario = e.target.value;
     ui.drive = ui.scenario === 'vacuum';
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
+    ui.pump = false; ui.pumpAt = null;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
