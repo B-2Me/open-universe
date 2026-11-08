@@ -374,3 +374,45 @@ streams into the measurement.
 `bend_shift`, `rad_shift`, `phase_gate`, `phase_sync`,
 `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
 `chargeflight_get`, `audit`
+
+## Deviation audit — verified vs nature
+
+**Where the substrate matches (measured, not asserted):**
+
+| claim | status |
+|---|---|
+| Rest mass exists | ✓ Prigogine equilibrium — `~42k` plateau, `M ∝ 2^shift` spectrum |
+| Radiative decay | ✓ spin-aligned `nu=1` emission on the circulation axis |
+| Charge sign matters | ✓ `ev45=331` same-sign declines, `~12%` attraction asymmetry — *local* |
+| Pair production | ✓ fusion wall `256` → `±q` fragments, net-zero charge |
+| String break | ✓ `≥12`-node tubes fracture + charged endpoints — confinement analog |
+| Persistent current | ✓ loss-free rail circulation on rings |
+| Ledger | ✓ `~0.1%` residual, every phase audited |
+
+**Where it deviates — the honest list:**
+
+1. **Charge isn't a field** — no `1/r²`, no long-range force. The
+   sign gate only fires under offer congestion (`armed≥4`).
+   Nature's Coulomb acts at a distance; ours acts at a traffic jam.
+2. **Parity is symmetric** — `0.89-1.0` `dd` ratio. Nature
+   violates `P` in the weak sector.
+3. **Knots don't fly** — mass-anchored winding doesn't follow
+   parked mass (they crawl, not ballistically translate).
+4. **No Lorentz structure** — `c` is a lattice constant
+   (1 hop/tick), not emergent invariance — no time dilation, no
+   length contraction measured.
+5. **Decay isn't a lifetime** — evaporation is a friction tax,
+   not a quantized exponential per species.
+6. **Mass spectrum is approximate** — `~3.4-3.9×` not clean `4×`
+   (finite pump, not an ideal bath).
+7. **No fermion/boson split** — no Pauli exclusion, no
+   spin-statistics.
+8. **Gravity absent** — routing asymmetry proposed, not
+   implemented.
+9. **Ledger `~0.1%`** — `P7-break −63` and the audit's mid-tick
+   artifacts remain documented seams.
+
+**Verdict**: local transaction physics is honest (conservation,
+charge-sign, pair production, confinement); **field-level and
+relativistic physics is the open frontier** — charge range,
+knots-in-motion, and Lorentz structure are the next deviations.
