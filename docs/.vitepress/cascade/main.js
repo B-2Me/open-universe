@@ -869,8 +869,8 @@ export async function initCascadeSimulator(root, opts = {}) {
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06, depthSlice: false,
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
-    drive: true, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
-    pump: false, pumpAt: null,
+    drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
+    pump: false, pumpAt: null, scenario: 'ring',
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -887,6 +887,8 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
+  seedScenario(ui.scenario);   /* boot seeds the default scenario
+                                * (ring — was cold vacuum + feed) */
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
   const toggle = (sel, key, onSay, offSay) => bind(sel, 'click', e => {
     ui[key] = !ui[key];
@@ -923,7 +925,7 @@ export async function initCascadeSimulator(root, opts = {}) {
      * are opt-in probes. Only 'vacuum' keeps the drive: the
      * convergent feed IS the vacuum scenario. */
     ui.scenario = e.target.value;
-    ui.drive = ui.scenario === 'vacuum';
+    ui.drive = false;   /* every scenario starts quiet — ☀ opts in */
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
     ui.pump = false; ui.pumpAt = null;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
@@ -1017,7 +1019,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* per-scenario help — the ? chip beside the dropdown shows the
    * text for whatever scenario is currently loaded */
   const SCEN_HELP = {
-    vacuum:  'cold lattice — the convergent ☀ feed IS this scenario. Cut it and the core starves.',
+    vacuum:  'truly empty lattice — nothing seeded. ☀ feed is an opt-in probe: switch it on for the convergent drive.',
     tube:    'the string lifecycle:\n· top string bleeds its winding into the vacuum (tubes dim by conduction)\n· mid fuse string saturates and fractures live — the string-break\n· bottom drains slowly\npaint a longer one with — for another snap.',
     lump:    'a bound wound knot — it radiates from its surface only; interior density stalls decay.',
     buckle:  'a U-bent string — the flexoelectric subject. Fire ➤ beam at the bend and watch the charge dipole (pol view).',
