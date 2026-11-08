@@ -298,6 +298,26 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* packets live only on the even sublattice — snap a source cell so
    * x+y+z is even (nudge z) or the packet freezes on an interstitial */
   const evenSnap = (x, y, z) => ((x + y + z) & 1) ? [x, y, z + 1] : [x, y, z];
+  /* bounds-checked writers — every seed path goes through these so
+   * an off-grid coordinate skips instead of trapping the wasm on a
+   * smaller grid (the 32^3 default + hardcoded 64^3 coords was the
+   * iPhone load-time OOB). */
+  const wset = (x, y, z, c, v) => {
+    if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
+    wset(x, y, z, c, v);
+  };
+  const mset = (x, y, z, v) => {
+    if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) return;
+    mset(x, y, z, v);
+  };
+  const pset = (x, y, z, c, v) => {
+    if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
+    pset(x, y, z, c, v);
+  };
+  const nuset = (x, y, z, c, v) => {
+    if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
+    nuset(x, y, z, c, v);
+  };
   /* precomputed feed table — a fixed set of shell sources + aimed
    * channels, cycled through per tick. The substrate is 0.1fm cells:
    * runtime Math.random per packet buys nothing over a deterministic
@@ -352,8 +372,8 @@ export async function initCascadeSimulator(root, opts = {}) {
             if (sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
             const cur = wasm._moore26_packet_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
-              wasm._moore26_packet_set(sx, sy, sz, c, cur + 2);
-              wasm._moore26_packet_nu_set(sx, sy, sz, c, FEED_NU);
+              pset(sx, sy, sz, c, cur + 2);
+              nuset(sx, sy, sz, c, FEED_NU);
             }
           }
       }
@@ -367,8 +387,8 @@ export async function initCascadeSimulator(root, opts = {}) {
         const [sx, sy, sz, bc] = FEED_TBL[feedIdx = (feedIdx + 1) & 1023];
         const cur = wasm._moore26_packet_get(sx, sy, sz, bc);
         if (cur < FEED_CAP) {
-          wasm._moore26_packet_set(sx, sy, sz, bc, cur + 1);
-          wasm._moore26_packet_nu_set(sx, sy, sz, bc, FEED_NU);
+          pset(sx, sy, sz, bc, cur + 1);
+          nuset(sx, sy, sz, bc, FEED_NU);
         }
       }
     }
@@ -383,8 +403,8 @@ export async function initCascadeSimulator(root, opts = {}) {
         if (sx < 1 || sx >= W3 - 1 || sy < 1 || sy >= H3 - 1 || sz < 1 || sz >= D3 - 1) continue;
         const cur = wasm._moore26_packet_get(sx, sy, sz, 6);
         if (cur < 8) {
-          wasm._moore26_packet_set(sx, sy, sz, 6, cur + 1);
-          wasm._moore26_packet_nu_set(sx, sy, sz, 6, FEED_NU);
+          pset(sx, sy, sz, 6, cur + 1);
+          nuset(sx, sy, sz, 6, FEED_NU);
         }
       }
     }
@@ -401,11 +421,11 @@ export async function initCascadeSimulator(root, opts = {}) {
       if (dx * dx + dy * dy + dz * dz > LUMP_R * LUMP_R) continue;
       const x = lx + dx, y = ly + dy, z = lz + dz;
       if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
-      wasm._moore26_mass_set(x, y, z, LUMP_M);
+      mset(x, y, z, LUMP_M);
       for (let e = 3; e < 6; e++) {         // edge wound pairs (xy+xz) —
                                             // face pairs are dead under FCC
-        wasm._moore26_winding_set(x, y, z, 2 * e, LUMP_W);
-        wasm._moore26_winding_set(x, y, z, 2 * e + 1, LUMP_W);
+        wset(x, y, z, 2 * e, LUMP_W);
+        wset(x, y, z, 2 * e + 1, LUMP_W);
       }
       n++;
     }
@@ -429,9 +449,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     for (let i = -half; i <= half; i++) {
       const x = lx + i, y = ly + i, z = lz;
       if (x < 1 || x >= W3 - 1 || y < 1 || y >= H3 - 1) continue;
-      if (i === -half || i === half) wasm._moore26_mass_set(x, y, z, 512);
-      wasm._moore26_winding_set(x, y, z, 6, w);
-      wasm._moore26_winding_set(x, y, z, 7, w);
+      if (i === -half || i === half) mset(x, y, z, 512);
+      wset(x, y, z, 6, w);
+      wset(x, y, z, 7, w);
       cells.push([x, y, z]);
       n++;
     }
@@ -459,15 +479,15 @@ export async function initCascadeSimulator(root, opts = {}) {
     for (let t = 0; t <= 1.0001; t += 0.05)
       pts.push([Math.round(CX + A * (2 * t - 1)),
                 Math.round(CY - D / 2 + D * (4 * t * (1 - t))), CZ]);
-    wasm._moore26_mass_set(pts[0][0], pts[0][1], CZ, 512);
+    mset(pts[0][0], pts[0][1], CZ, 512);
     const [ex, ey] = pts[pts.length - 1];
-    wasm._moore26_mass_set(ex, ey, CZ, 512);
+    mset(ex, ey, CZ, 512);
     let n = 0;
     for (let i = 0; i < pts.length - 1; i++) {
       const [x, y] = pts[i], [nx, ny] = pts[i + 1];
       const c = pickChan(nx - x, ny - y);
-      wasm._moore26_winding_set(x, y, CZ, c, 128);
-      wasm._moore26_winding_set(x, y, CZ, c ^ 1, 128);
+      wset(x, y, CZ, c, 128);
+      wset(x, y, CZ, c ^ 1, 128);
       n++;
     }
     return n;
@@ -489,18 +509,21 @@ export async function initCascadeSimulator(root, opts = {}) {
    * zero (k * 0) for any k, so a 6-cell ring scales to 6k cells.
    * rail bypass turns the corners the same way at any size. */
   const seedRing = (cx, cy, cz, stream = 3, side = 1) => {
-    let x = cx, y = cy, z = cz, n = 0;
+    let x, y, z;
+    [x, y, z] = evenSnap(cx, cy, cz);   /* ring start must be even
+                                         * — packets freeze on odd */
+    let n = 0;
     for (let i = 0; i < 6; i++) {
       const c = RING_CH[i];
       for (let s = 0; s < side; s++) {
         for (let e = 0; e < 13; e++) {
-          wasm._moore26_winding_set(x, y, z, 2 * e, 20);
-          wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+          wset(x, y, z, 2 * e, 20);
+          wset(x, y, z, 2 * e + 1, 20);
         }
-        wasm._moore26_winding_set(x, y, z, c, 110);   // dominant member
+        wset(x, y, z, c, 110);   // dominant member
         if (stream) {
-          wasm._moore26_packet_set(x, y, z, c, stream);
-          wasm._moore26_packet_nu_set(x, y, z, c, 128);
+          pset(x, y, z, c, stream);
+          nuset(x, y, z, c, 128);
         }
         const v = CV[c];
         x += v[0]; y += v[1]; z += v[2]; n++;
@@ -526,10 +549,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       const x = cx + dx, y = cy + dy, z = cz + dz;
       if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) continue;
       for (let e = 0; e < 13; e++) {
-        wasm._moore26_winding_set(x, y, z, 2 * e, a);
-        wasm._moore26_winding_set(x, y, z, 2 * e + 1, b);
+        wset(x, y, z, 2 * e, a);
+        wset(x, y, z, 2 * e + 1, b);
       }
-      wasm._moore26_mass_set(x, y, z, 10);
+      mset(x, y, z, 10);
       n++;
     }
     return n;
@@ -553,10 +576,10 @@ export async function initCascadeSimulator(root, opts = {}) {
     let x = cx - 4, y = cy, i = 0;
     while (x <= cx + 4) {
       for (let e = 0; e < 13; e++) {
-        wasm._moore26_winding_set(x, y, cz, 2 * e, 25);
-        wasm._moore26_winding_set(x, y, cz, 2 * e + 1, 25);
+        wset(x, y, cz, 2 * e, 25);
+        wset(x, y, cz, 2 * e + 1, 25);
       }
-      wasm._moore26_winding_set(x, y, cz, i % 2 ? 8 : 6, 200);
+      wset(x, y, cz, i % 2 ? 8 : 6, 200);
       x += 1; y += i % 2 ? -1 : 1; i++; n++;
     }
     return n;
@@ -578,10 +601,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       const v = CV[bc];
       x += v[0]; y += v[1]; z += v[2];
       for (let e = 0; e < 13; e++) {
-        wasm._moore26_winding_set(x, y, z, 2 * e, 25);
-        wasm._moore26_winding_set(x, y, z, 2 * e + 1, 25);
+        wset(x, y, z, 2 * e, 25);
+        wset(x, y, z, 2 * e + 1, 25);
       }
-      wasm._moore26_winding_set(x, y, z, bc, 200);
+      wset(x, y, z, bc, 200);
       n++;
     }
     return n;
@@ -609,9 +632,9 @@ export async function initCascadeSimulator(root, opts = {}) {
    * balls accrete, rings are pure structure, wound balls hold
    * 9x the mass with locked circulation. */
   const seedZoo = (cx, cy, cz) => {
-    let n = seedLump(cx - 14, cy, cz);            // plain knot
+    let n = seedLump(cx - 10, cy, cz);            // plain knot
     n += seedRing(cx - 2, cy - 1, cz, 0);         // bare ring
-    n += seedWound(cx + 14, cy, cz, 1);           // wound ball —
+    n += seedWound(cx + 10, cy, cz, 1);           // wound ball —
                                                   // pulled off the
                                                   // edge band
     return n;
@@ -643,9 +666,12 @@ export async function initCascadeSimulator(root, opts = {}) {
      * 36 cells) — same topology, a size series. All starts even-
      * parity, all spans on-grid. */
     if (s === 'ring') {
-      seedRing(44, 52, 24, 2, 1);   // 6-cell   (44-46,52-54,22-24)
-      seedRing(48, 44, 42, 2, 2);   // 12-cell  (48-52,44-48,38-42)
-      seedRing(10, 20, 46, 2, 4);   // 24-cell  (10-18,20-28,38-46)
+      /* positions are grid fractions — the ladder must fit the
+       * 32^3 default, not just 64^3 (hardcoded 64-grid coords was
+       * the iPhone OOB) */
+      seedRing((W3 * 11 >> 4), (W3 * 13 >> 4), (W3 * 6 >> 4), 2, 1);
+      seedRing((W3 * 12 >> 4), (W3 * 11 >> 4), (W3 * 10 >> 4), 2, 2);
+      seedRing((W3 * 3 >> 4), (W3 * 5 >> 4), (W3 * 11 >> 4), 2, 4);
       return seedRing(CX - 6, CY - 6, CZ + 6, 2, 6);  // 36-cell center
     }
     /* wound = a SPARSE seed + quantum pump — you watch the condenser
@@ -662,12 +688,12 @@ export async function initCascadeSimulator(root, opts = {}) {
           const c = ch[i];
           for (let s = 0; s < 2; s++) {
             for (let e = 0; e < 13; e++) {
-              wasm._moore26_winding_set(x, y, z, 2 * e, 20);
-              wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+              wset(x, y, z, 2 * e, 20);
+              wset(x, y, z, 2 * e + 1, 20);
             }
-            wasm._moore26_winding_set(x, y, z, c, 110);
-            wasm._moore26_packet_set(x, y, z, c, 2);
-            wasm._moore26_packet_nu_set(x, y, z, c, 128);
+            wset(x, y, z, c, 110);
+            pset(x, y, z, c, 2);
+            nuset(x, y, z, c, 128);
             const v = CV[c]; x += v[0]; y += v[1]; z += v[2]; n++;
           }
         }
@@ -675,8 +701,8 @@ export async function initCascadeSimulator(root, opts = {}) {
       };
       /* A: xy-diamond centered (32,32,32); B: xz-diamond offset
        * +2x — its plane threads A's hole → interlocked */
-      dia(30, 32, 32, [6, 8, 7, 9]);
-      return dia(32, 32, 32, [10, 12, 11, 13]);
+      dia(CX - 2, CY, CZ, [6, 8, 7, 9]);
+      return dia(CX, CY, CZ, [10, 12, 11, 13]);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -1297,8 +1323,8 @@ export async function initCascadeSimulator(root, opts = {}) {
           for (const [fx, fy, fz] of fuse) {
             const a = wasm._moore26_winding_get(fx, fy, fz, 6);
             if (a < 128) {
-              wasm._moore26_winding_set(fx, fy, fz, 6, a + 1);
-              wasm._moore26_winding_set(fx, fy, fz, 7, a + 1);
+              wset(fx, fy, fz, 6, a + 1);
+              wset(fx, fy, fz, 7, a + 1);
               done = false;
             }
           }
