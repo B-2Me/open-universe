@@ -1488,6 +1488,13 @@ void moore26_tick(void){
          * (shed>>1 alone lost half of every emission.) */
         if(shed>pn){uint32_t r=shed-pn;
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+r)>65535?65535:(grid_next[si].heat+r));}
+        if(grid_next[si].packet[c]>=255){
+            /* emit cap — the whole rung thermalizes at pn, not 1:
+             * saturated channel returns the emitted energy to the
+             * heat bath instead of deleting pn-1. */
+            uint32_t h3=grid_next[si].heat+pn;
+            grid_next[si].heat=(uint16_t)(h3>65535?65535:h3);
+        } else {
         /* conserve the shared nu register — average-weight instead
          * of overwriting when the channel already holds packets */
         if(grid_next[si].packet[c]){
@@ -1504,11 +1511,17 @@ void moore26_tick(void){
         {
             int8_t p_=grid_next[si].packetPar[c];
             int bm=p_>0?(c&~1):(c|1);
-            if(grid_next[si].winding[bm])grid_next[si].winding[bm]--;
+            if(grid_next[si].winding[bm]){
+                grid_next[si].winding[bm]--;
+                /* the debited rung thermalizes — parity exchange
+                 * costs angular momentum, not free energy; the
+                 * winding unit can't just vanish from L */
+                grid_next[si].heat++;
+            }
         }
-        if(grid_next[si].packet[c]<255)grid_next[si].packet[c]++;
-        else grid_next[si].heat++;   /* thermal overflow � emit cap */
+        grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
+        }
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
