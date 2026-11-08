@@ -456,7 +456,13 @@ void moore26_tick(void){
                 qEvents[7]+=(uint64_t)decay*nuv;
             }
             uint32_t r=v[c]-decay;
-            grid_next[si].packet[c]=(uint8_t)(r>255?255:r);
+            if(r>255){   /* flight cap â€” the truncated swarm
+                          * thermalizes at its own nu, not deleted */
+                uint32_t h2=grid_next[si].heat+(r-255)*nuv;
+                grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);
+                r=255;
+            }
+            grid_next[si].packet[c]=(uint8_t)r;
             grid_next[si].packetNu[c]=(uint8_t)nuv;
             grid_next[si].packetBorn[c]=born[c];
             grid_next[si].packetPar[c]=par[c];
@@ -753,7 +759,7 @@ void moore26_tick(void){
                     }
                 }
                 if(n->packet[fc]<255)n->packet[fc]++;
-                else n->heat++;   /* thermal overflow — deflect cap */
+                else n->heat++;   /* thermal overflow ï¿½ deflect cap */
                 n->packetNu[fc]=(uint8_t)nu;
                 n->packet[c]--;
                 qEvents[30]++;
@@ -762,6 +768,11 @@ void moore26_tick(void){
             n->incip[c]++;
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
+            /* the nu>127 clip deletes the excess at arming â€” the
+             * packet's full nu was consumed, so the clipped part
+             * thermalizes instead of vanishing */
+            if(nu>127){uint32_t h2=n->heat+(nu-127);
+                       n->heat=(uint16_t)(h2>65535?65535:h2);}
             n->incipNu[c]=(uint8_t)((nu>127?127:nu)|(nu==geo_gap(o)?0x80:0));
             n->incipBorn[c]=n->packetBorn[c];
             n->incipPar[c]=n->packetPar[c];
@@ -853,7 +864,7 @@ void moore26_tick(void){
                     } else n->packetNu[c]=(uint8_t)sn;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
                     if(n->packet[c]<255)n->packet[c]++;
-                    else n->heat++;   /* thermal overflow — cap */
+                    else n->heat++;   /* thermal overflow ï¿½ cap */
                     n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
                 } else {
@@ -865,7 +876,7 @@ void moore26_tick(void){
                     } else n->packetNu[c]=(uint8_t)nu;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
                     if(n->packet[c]<255)n->packet[c]++;
-                    else n->heat++;   /* thermal overflow — cap */
+                    else n->heat++;   /* thermal overflow ï¿½ cap */
                     n->packetBorn[c]=(uint8_t)qTick;
                 }
                 continue;
@@ -986,7 +997,10 @@ void moore26_tick(void){
                                     n->heat=(uint16_t)((n->heat+rem)>65535?65535:(n->heat+rem));
                                 } else n->packetNu[dch]=(uint8_t)tn;
                                 PAR_MERGE(n,dch,(dch&1)?-1:1);
-                                n->packet[dch]++;
+                                if(n->packet[dch]<255)n->packet[dch]++;
+                                else n->heat+=tn;   /* chain-share cap â€”
+                                 * a u8 wrap would wipe 256 packets;
+                                 * the chained energy thermalizes */
                                 n->packetBorn[dch]=(uint8_t)qTick;
                             }
                         }
@@ -1415,7 +1429,7 @@ void moore26_tick(void){
             if(grid_next[si].winding[bm])grid_next[si].winding[bm]--;
         }
         if(grid_next[si].packet[c]<255)grid_next[si].packet[c]++;
-        else grid_next[si].heat++;   /* thermal overflow — emit cap */
+        else grid_next[si].heat++;   /* thermal overflow ï¿½ emit cap */
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
