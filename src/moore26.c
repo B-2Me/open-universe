@@ -531,10 +531,10 @@ void moore26_tick(void){
             uint32_t hit=a<b?a:b;
             if(hit){
                 in[2*e]-=hit;in[2*e+1]-=hit;
-                uint32_t nu=hit>255?255:hit;   /* minted packet energy
-                 * comes from the collision itself (the colliding
-                 * massFlight count) — not the background node's
-                 * parked mass, which made nu scenery-dependent */
+                uint32_t nu=1;   /* EXACT conservation: 2*hit flight
+                 * units annihilate into 2*hit quanta — one unit of
+                 * energy each. nu=hit minted hit^2 (quadratic free
+                 * energy — the +1.9% ledger drift). */
                 uint32_t r0=255-grid_next[si].packet[2*e],r1=255-grid_next[si].packet[2*e+1];
                 grid_next[si].packet[2*e]  +=hit<r0?hit:r0;
                 grid_next[si].packet[2*e+1]+=hit<r1?hit:r1;
@@ -812,8 +812,13 @@ void moore26_tick(void){
             if(iage>6){
                 n->incip[c]-=h;
                 /* Landauer dust: erasing an unconfirmed offer costs
-                 * heat — the vacuum's negotiation friction. */
-                n->heat=(uint16_t)((n->heat+h)>65535?65535:(n->heat+h));
+                 * heat — but the offer held REAL energy (the packet
+                 * was consumed into it at arming), so the full h*nu
+                 * thermalizes, not just the count. This was the
+                 * last unbooked leak in the ledger. */
+                uint32_t inu=(o->incipNu[c]&0x7f)?(o->incipNu[c]&0x7f):1;
+                uint32_t ht=(uint32_t)n->heat+h*inu;
+                n->heat=(uint16_t)(ht>65535?65535:ht);
                 continue;
             }
             uint8_t iv=o->incipNu[c];
