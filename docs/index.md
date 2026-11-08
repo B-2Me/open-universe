@@ -13,7 +13,7 @@ hero:
       link: /cascade-demo
     - theme: alt
       text: The Measured Record
-      link: /interference/meso-monograph
+      link: /moore26-findings
     - theme: alt
       text: The Program
       link: /field
@@ -67,7 +67,6 @@ And the honest boundaries — the [deviation audit](/moore26-findings) keeps the
 *   **[moore26 Findings](/moore26-findings)**: the empirical record of the current engine — the sealed ledger, the calibrated mass spectrum, the measured charge field, and the deviation audit that says exactly where the substrate stops matching nature.
 *   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument: the `moore26` 0.1fm substrate live in your browser — knots, photons, heat, and signed charge on the 26-channel Moore lattice.
 *   **[moore26 Substrate](/moore26-substrate)**: the engine architecture — 26 registers per node, the transaction pipeline, and the tuners.
-*   **[The Friction Substrate](/interference/meso-monograph)**: the earlier engine's canonical record (M19–M51) — kept as provenance, every mechanism verified or falsified headless.
 *   **[The Planck Field](/field)**: the theoretical program: why a process-ontology substrate, and what the vanguard lineage already established.
 
 ### Milestone Instruments & History

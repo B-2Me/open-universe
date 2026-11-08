@@ -144,10 +144,10 @@ $$\text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;\vert{}\; 
 
 ### Universality Classes and the Mesoscale Bridge
 
-The eighteen-milestone empirical campaign on `planck3.c` mapped the exact mathematical boundaries of a single-spin, integer-routed True-FCC lattice (later retracted as an implementation artifact. See the [monograph](/interference/meso-monograph)):
+The measured boundary work is archived engine-by-engine (see [moore26 Findings](/moore26-findings) for the current record and the [monograph](/interference/meso-monograph) for the earlier campaigns). The mathematical structure they established:
 
-- **The Single-Spin Bedrock (prototype measurements):** exact mass-current conservation (`fired ≡ pulled`, M2), ballistic v=1 light-cone propagation (M4), classical Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff (M3), threshold avalanche detection (M9), and discrete timing-comb interferometry (M11).
-- **The Universality Class Boundary:** the single-spin winner-take-all constraint enforces a rigid kinematic invariant, v ∈ {0, 1} (M17). Light moves at c = 1; all bound matter (lumps, filaments, breathers, dimers) is permanently anchored at v = 0. Lacking linear field superposition and fractional coupling, the single-spin bedrock coarse-grains into an *alternate* discrete universe, not standard continuum electrodynamics.
+- **The Single-Spin Bedrock (prototype):** exact mass-current conservation, ballistic `v=1` light-cone propagation, Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff, threshold avalanche detection, and discrete timing-comb interferometry.
+- **The Universality Class Boundary:** a single-spin winner-take-all constraint enforces a rigid kinematic invariant, `v ∈ {0, 1}` — light moves at `c`; all bound matter is anchored at `v = 0`. Lacking linear field superposition and fractional coupling, that bedrock coarse-grains into an *alternate* discrete universe, not standard continuum electrodynamics.
 - **The Multi-Channel Mesoscale Specification (`meso3.c` target):** bridging the ~40-order-of-magnitude gap between Planck hops and laboratory observation requires the integer Lattice-Gas Automaton (FHP-class) universality class:
     - **Single-ownership edge arrays**: each link stored once (or under an owner-endpoint convention), eliminating the duplicated-state reconciliation bugs the sync-mode push ledger had to fight.
     - **Multi-channel link allocation (f₁…f₁₂)**: directional integer populations per link, permitting counter-flow and clean wave crossing without forced fusion.

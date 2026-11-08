@@ -83,14 +83,7 @@ Legacy physics obscures this friction by relying on pure, abstract mathematics. 
 
 Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic structures strictly as algorithmic fluid dynamics across the finite-bandwidth 12-port FCC lattice. Chemistry is the physical mechanism by which the substrate optimizes and routes traffic around massive topological deadlocks.
 
-> **Which substrate, where they deviate.** Three engines have carried this ontology, and the vocabulary below needs its engine tag:
->
-> *   **`planck.c` / `planck3.c` (single-spin prototype, M12–M18 — retracted for measurement):** Boolean ports — one bit per channel. *This* is where "Pauli exclusion as a hardware limit" lives: a third loop collides with an occupied bit. Its ABC screw-axis geometry is retained (the claims are kept below as the theory's map, not the record).
-> *   **`meso3i.c` (canonical substrate, M19–M51 + E-series):** same True-FCC geometry — the ABC stacking *is* the FCC lattice; the six channels ⊥(1,1,1) still form a hexagonal ring with exactly two chiral routings (CW/CCW — measured as the wound vault's `C = ±1`). What changed is occupancy: `uint8` populations (255 deep, Maxwell–Boltzmann) replaced Boolean bits, so the hard exclusion is gone — any "Pauli" analog here would emerge from collision statistics, not routing capacity. It also adds the registers the prototype never had: directional rest (stored winding), Q-core condensate with τ=4 emission, per-site `iPH` phase clocks, edge-dwell delay lines, a parallel photon field, and the per-site
-  excitation register `iE` — Planck's `n`: absorbed photons can raise a
-  bound object's energy at fixed mass, which sheds back as light.
->
-> **Current focus:** `moore26` — the live engine behind [Cartan's Cascade](/cascade-demo). The measured record is [moore26 Findings](/moore26-findings) (with the deviation audit); the `meso3i` lineage that came before is archived in the [Friction Substrate monograph](/interference/meso-monograph). The single-spin claims below are the map the engine is measured against, not the record.
+> **Current focus:** `moore26` — the live engine behind [Cartan's Cascade](/cascade-demo). The measured record is [moore26 Findings](/moore26-findings) (with the deviation audit); the earlier engines' lineage and milestone campaigns are archived in the [Friction Substrate monograph](/interference/meso-monograph). The species claims below are the theory's map the engine is measured against, not the record.
 
 ### 1. The Compound Impedance (Atomic Unwinding)
 *   **The Nucleus as Deadlock:** An atomic nucleus is not a cluster of solid spheres; it is a **Compound Impedance**, a massive, contiguous zone of congestion gravity.
@@ -108,20 +101,10 @@ Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic s
 *   **Absorption (Buffer Surge):** When a photon strikes an electron's circulating slipstream, the raw `quanta` surges the local buffer. To prevent catastrophic phase friction, the electron must physically expand into a wider, higher-capacity geometric waveguide (a higher orbital).
 *   **Emission (Thermodynamic Ejection):** When ambient environmental tension pushes back against the artificially inflated slipstream, the grid crushes the electron back down into a tighter geometric valley. The excess routing capacity is cleanly sheared off as an exact, quantized chunk. This localized spray of excess capacity unwinds and propagates outward as a photon. Spectral lines are strictly discrete because they represent the exact geometric difference between two fixed 12-port waveguides.
 
-> **Provenance note (M1–M18 campaign):** the per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure. They predate the grounded measurement campaign and are retained as a target for the mesoscale engine. What the substrate has actually produced is documented below.
+> **Provenance note:** the per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure. The species table the earlier engines produced — lumps, filaments, breathers, dimers — is archived in the [Friction Substrate monograph](/interference/meso-monograph); what `moore26` has actually produced is documented in [moore26 Findings](/moore26-findings).
 
-### 4. The Species Hierarchy: Single-Spin Prototype (planck3.c, M12–M18, retracted)
+### 4. The Species Map — current engine
 
-The discrete substrate's emergent matter, as actually measured: every entry verified by a headless harness, none hand-authored. *(These single-spin prototype results were later retracted as an implementation artifact: retained here as the theory's map, not the record; the current measurements live in [The Friction Substrate](/interference/meso-monograph).)*
+On `moore26`, the measured species are: the **wound knot** (stable rest mass at a dissipative plateau), the **flux tube** (saturated winding that conducts, and fractures past `12` nodes into charged fragments), the **ring** (a `{111}` waveguide carrying a loss-free persistent current), and the **chiral pair** (one `dd` coil of each handedness, accreting symmetrically). The detailed measurements live in [moore26 Findings](/moore26-findings).
 
-| Species | Period | Cells | Status |
-| :--- | :--- | :--- | :--- |
-| **Dead lump** |: | 1 | Inert s=0 momentum trap; ~85% of condensed mass at cavity equilibrium (M14) |
-| **Spin-locked filament** | τ=1 | chain | 1-D deadlock-frozen packet queues; armed but immobile (M14) |
-| **Boundary shuttle** | τ=2 | 1–2 | wall-reflection microcycles, mostly edge-adjacent (M14) |
-| **Monomer breather** | τ=4 | 3 | the "atom": core + two lobes, congestion-captured ejecta; nucleates spontaneously in turbulence on five lattice axes (M12, M14) |
-| **Dimer breather** | τ=4 | 5 | the "molecule": two cores sharing one lobe by phase-division multiplexing; bonds only at Δφ ∈ {1,3}. A discrete exclusion rule, not a force (M16) |
-
-*   **Shedding reality check (M15):** an isolated breather is **dark matter**. Zero spontaneous flux over 75 full cycles; its ejecta is recaptured every period. It sheds mass only when an incoming probe pushes a lobe or core past `DEADLOCK`, whereupon it ionizes completely. True action–frequency coupling (E = hν) does not exist at the single-spin bedrock: breather period is geometric (hop distance), not energetic. That boundary is precisely where `planck3.c` hands off to `meso3.c`.
-*   **The exclusion principle, native:** at shared-lobe contact (d=2), pairs annihilate at Δφ = 0 (core-cell intrusion → saturation) and kill asymmetrically at Δφ = 2 (lobe fusion → theft); only Δφ ∈ {1,3} schedules coexist, bonding as timetable, not potential well.
-*   **The scale buffer:** an atom is not a node. At bedrock grain, each elementary structure is buffered by ~10^74 open vacuum cells (order-of-magnitude scale argument, not a measurement). This is why collision events are elastic rather than shredding: the relational neighborhood is astronomically sparse relative to the condensed object.
+*   **The scale buffer:** an atom is not a node. At `0.1 fm` grain, each elementary structure is buffered by an astronomical count of open vacuum cells — which is why collision events are elastic rather than shredding: the relational neighborhood is sparse relative to the condensed object.
