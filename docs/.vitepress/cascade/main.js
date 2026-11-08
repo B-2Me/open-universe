@@ -1090,8 +1090,36 @@ export async function initCascadeSimulator(root, opts = {}) {
       const dx = e.clientX - gDown[0], dy = e.clientY - gDown[1];
       if (Math.abs(dx) + Math.abs(dy) > 3) gDrag = true;
       if (gDrag) {
-        tgt.yaw += dx * 0.008;
-        tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + dy * 0.008));
+        /* view-space orbit — rotate the camera offset about the
+         * view's up/right axes so a drag always moves the scene the
+         * same way on screen, at any pitch. The old fixed yaw/pitch
+         * deltas degenerate to roll near the poles. */
+        {
+          const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+          const cyw = Math.cos(cam.yaw), syw = Math.sin(cam.yaw);
+          let ox = syw * cp, oy = -sp, oz = cyw * cp;   // offset dir
+          const vx = -ox, vy = -oy, vz = -oz;          // view dir
+          // right = normalize(cross(view, worldUp))
+          let rx = -vz, ry = 0, rz = vx;
+          const rl = Math.hypot(rx, ry, rz) || 1;
+          rx /= rl; rz /= rl;
+          // up2 = cross(right, view)
+          const ux = ry * vz - rz * vy, uy = rz * vx - rx * vz, uz = rx * vy - ry * vx;
+          const rot = (v, a, t) => {
+            const c = Math.cos(t), s = Math.sin(t);
+            const [X, Y, Z] = v, [ax, ay, az] = a;
+            const d = ax * X + ay * Y + az * Z;
+            return [
+              X * c + (ay * Z - az * Y) * s + ax * d * (1 - c),
+              Y * c + (az * X - ax * Z) * s + ay * d * (1 - c),
+              Z * c + (ax * Y - ay * X) * s + az * d * (1 - c)];
+          };
+          let o = rot([ox, oy, oz], [ux, uy, uz], -dx * 0.008);
+          o = rot(o, [rx, ry, rz], dy * 0.008);
+          const ol = Math.hypot(o[0], o[1], o[2]) || 1;
+          tgt.yaw = Math.atan2(o[0] / ol, o[2] / ol);
+          tgt.pitch = Math.max(-1.55, Math.min(1.55, Math.asin(-o[1] / ol)));
+        }
         gDown = [e.clientX, e.clientY];
         dirty = true;
       }
