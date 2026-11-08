@@ -309,6 +309,14 @@ Consequence: over-pressured tubes relax toward the `128`
 fracture band — `Phase 7` stays armed on any tube that parked
 just over the gate.
 
+Post-lock hexbuckle (64³, n=12/scen): `flat=63,785±6,873`,
+`dip0=57,602±5,852`, `dip32=53,755±6,485` — the bend sits within
+`~1.5σ` of flat. **No flexoelectric dipole** — the `charge+=cq`
+transfers that would polarize are the same transfers the lock
+froze. But the probe now leaves `~60k` trapped polarization vs
+`~0` pre-lock: deposited charge persists once conduction stops —
+**charge memory**, not strain-induced dipole.
+
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
