@@ -727,21 +727,22 @@ export async function initCascadeSimulator(root, opts = {}) {
       dia(CX - 2, CY, CZ, [6, 8, 7, 9]);
       return dia(CX, CY, CZ, [10, 12, 11, 13]);
     }
-    /* attract — opposite-charged condensers ON the pump's {1,1,0}
-     * diagonal so one stream traverses left knot -> gap -> right
-     * knot: +par repelled by +q upstream, attracted to -q at the
-     * far end (verified ev45/ev46). */
+    /* attract — the VERIFIED probe geometry, scaled: the ev45=331
+     * run put a charged knot at (3/8)W and a ch6 {+1,+1} stream 10
+     * cells upstream. +q upstream repels the +par stream, -q at the
+     * far end attracts it — same measurement, made visible. */
     if (s === 'attract') {
-      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
-      seedChargedLump(CX - 8, CY - 8, CZ, 104);
-      return seedChargedLump(CX + 8, CY + 8, CZ, -104);
+      ui.pump = true;
+      ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
+      seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
+      return seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, -104);
     }
-    /* repel — same-signed condensers on the diagonal: the stream
-     * bounces off BOTH — the same-sign decline gate at work. */
+    /* repel — same probe with a +q target: the +par stream bounces
+     * off the same-sign knot instead of feeding it. */
     if (s === 'repel') {
-      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
-      seedChargedLump(CX - 8, CY - 8, CZ, 104);
-      return seedChargedLump(CX + 8, CY + 8, CZ, 104);
+      ui.pump = true;
+      ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
+      return seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
