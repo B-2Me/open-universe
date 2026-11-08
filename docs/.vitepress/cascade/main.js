@@ -89,7 +89,7 @@ void main() {
       : float(z) - u_z_center;
   float alpha = abs(coord) <= halfT ? 1.0 : u_ghost_alpha;
   vec4 mv = u_mvp * vec4(p, 1.0);
-  float ps = u_size * (0.8 + 2.0 * d / 255.0);
+  float ps = u_size * (0.8 + 1.1 * d / 255.0);
   mv.xy += a_corner * ps;
   gl_Position = mv;
   vec3 rgb;
