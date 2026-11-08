@@ -1,11 +1,92 @@
+---
+title: moore26 findings
+audio: /audio/moore26-findings.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # moore26 findings
 
-Measured behavior of the 26-register Moore-neighborhood substrate:
-26 registers per node, 12 transporting FCC edge channels (`ch6–17`
-on the even-parity sublattice), face `0–5` and corner `18–25`
-channels as structure-only registers. All numbers are empirical
-outputs of `script/moore/*.mjs` headless harnesses — candidate
-substrate mechanics, not claims about nature.
+This is the measured record of the current engine — `moore26`, a
+26-register Moore/FCC substrate at `0.1 fm` per node. Everything
+on this page is output of headless harnesses against
+`src/moore26.c`, not assumptions: what the lattice actually does
+when the rules run, measured, including the results we had to
+retract. The engine's structure is 12 transporting edge channels
+on the even-parity sublattice plus face/corner registers that hold
+bound structure; transactions negotiate through an
+offer→incipient→confirm handshake each tick.
+
+## Deviation audit — verified vs nature
+
+**Where the substrate matches (measured, not asserted):**
+
+| claim | status |
+|---|---|
+| Rest mass exists | ✓ Prigogine equilibrium — `~42k` plateau, `M ∝ 2^shift` spectrum |
+| Radiative decay | ✓ spin-aligned `nu=1` emission on the circulation axis |
+| Charge sign matters | ✓ `ev45=331` same-sign declines, `~12%` attraction asymmetry — *local* |
+| Pair production | ✓ fusion wall `256` → `±q` fragments, net-zero charge |
+| String break | ✓ `≥12`-node tubes fracture + charged endpoints — confinement analog |
+| Persistent current | ✓ loss-free rail circulation on rings |
+| Ledger | ✓ `~0.1%` residual, every phase audited |
+
+In plain terms: a wound knot holds a stable mass because its
+evaporation rate balances its ambient feed — a genuine
+dissipative structure, not a fixed parameter. It sheds energy as
+real quanta radiated on its circulation axis, the way a particle
+decays. Charged knots measurably bend transaction traffic by
+sign — same-sign offers get declined where opposite-sign ones
+bind. Above an energy threshold, collisions mint pairs of
+oppositely-charged fragments. A saturated tube past twelve nodes
+fractures and throws off charged endpoint mass — the confinement
+signature, watchable live in the demo. Ring loops carry current
+without loss. And the bookkeeping is honest: a phase-by-phase
+audit sealed every leak down to a `~0.1%` documented seam.
+
+**Where it deviates — the honest list** *(observational
+measurements only — what nature's instruments actually record;
+inferred rules like Pauli exclusion are excluded by definition):*
+
+1. **Charge isn't a field** — in nature, two charged objects feel
+   each other across distance (`1/r²`, measured). Ours only pushes
+   on traffic that physically arrives and jams — the gate fires at
+   `armed≥4` offers on a node. Attraction and repulsion are real
+   but local: a congestion effect, not a field.
+2. **Parity is symmetric** — nature's weak sector measurably
+   prefers one handedness (the `P`-violation experiments). Our
+   `dd` coils come out even — `0.89-1.0` ratio, no preference.
+3. **Knots don't fly** — measured particles move ballistically.
+   Ours can't: the binding winding is anchored to where the mass
+   sits, so knots crawl by rebuilding themselves cell-by-cell.
+   No rest-frame momentum is conserved across translation.
+4. **No Lorentz structure** — time dilation is measured every day
+   (muon lifetimes, GPS clocks). Here `c` is simply `1` hop/tick
+   — a lattice constant, not an emergent invariance. Nothing
+   contracts, nothing dilates — yet.
+5. **Decay isn't a lifetime** — nature measures an exponential
+   decay curve with a characteristic lifetime per species. Ours
+   evaporates by a mass-proportional friction tax — the shape is
+   equilibrium decay, not a quantized lifetime.
+6. **Mass spectrum is approximate** — the `2^shift` scaling held
+   at `~3.4-3.9×` not the clean `4×` (a finite pump, not an ideal
+   bath). Nature's particle masses are measured constants; ours
+   are tunable emergent values.
+7. **Gravity absent** — gravitational attraction is measured
+   (Cavendish onward). Routing asymmetry that would act like it
+   is proposed but not implemented.
+8. **Ledger `~0.1%`** — nature conserves exactly. Our audit
+   leaves `P7-break −63` and mid-tick sampling artifacts as
+   documented seams, not physics.
+
+**Verdict**: local transaction physics is honest (conservation,
+charge-sign, pair production, confinement); **field-level and
+relativistic physics is the open frontier** — charge range,
+knots-in-motion, and Lorentz structure are the next deviations.
+
+
 
 ## Scale context
 
@@ -375,49 +456,3 @@ streams into the measurement.
 `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
 `chargeflight_get`, `audit`
 
-## Deviation audit — verified vs nature
-
-**Where the substrate matches (measured, not asserted):**
-
-| claim | status |
-|---|---|
-| Rest mass exists | ✓ Prigogine equilibrium — `~42k` plateau, `M ∝ 2^shift` spectrum |
-| Radiative decay | ✓ spin-aligned `nu=1` emission on the circulation axis |
-| Charge sign matters | ✓ `ev45=331` same-sign declines, `~12%` attraction asymmetry — *local* |
-| Pair production | ✓ fusion wall `256` → `±q` fragments, net-zero charge |
-| String break | ✓ `≥12`-node tubes fracture + charged endpoints — confinement analog |
-| Persistent current | ✓ loss-free rail circulation on rings |
-| Ledger | ✓ `~0.1%` residual, every phase audited |
-
-**Where it deviates — the honest list** *(observational
-measurements only — what nature's instruments actually record;
-inferred rules like Pauli exclusion are excluded by definition):*
-
-1. **Charge isn't a field** — nature measures `1/r²` attraction
-   and repulsion at range; ours fires only under offer congestion
-   (`armed≥4`) — a traffic jam, not a field.
-2. **Parity is symmetric** — `0.89-1.0` `dd` ratio; the weak
-   sector's `P`-violation is a measured observation we don't
-   reproduce.
-3. **Knots don't fly** — measured particles translate
-   ballistically; mass-anchored winding doesn't follow parked
-   mass — ours crawl.
-4. **No Lorentz structure** — time dilation and contraction are
-   measured (muon lifetime, GPS); `c` here is a lattice constant,
-   not emergent invariance.
-5. **Decay isn't a lifetime** — nature measures an exponential
-   decay curve per species; ours is a friction tax, not a
-   quantized lifetime.
-6. **Mass spectrum is approximate** — `~3.4-3.9×` not clean `4×`
-   (finite pump, not an ideal bath); nature's particle masses are
-   measured constants.
-7. **Gravity absent** — gravitational attraction is measured;
-   routing asymmetry is proposed, not implemented.
-8. **Ledger `~0.1%`** — exact conservation is measured; `P7-break
-   −63` and the audit's mid-tick artifacts remain documented
-   seams.
-
-**Verdict**: local transaction physics is honest (conservation,
-charge-sign, pair production, confinement); **field-level and
-relativistic physics is the open frontier** — charge range,
-knots-in-motion, and Lorentz structure are the next deviations.
