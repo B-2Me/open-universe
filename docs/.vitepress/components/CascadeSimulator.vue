@@ -733,7 +733,7 @@ onUnmounted(() => {
   margin-bottom: 5px;
   padding-right: 18px;
 }
-.cascade-card-body { font: 11px/1.55 monospace; color: var(--cascade-muted); }
+.cascade-card-body { font: 11px/1.55 monospace; color: var(--cascade-muted); white-space: pre-line; }
 .cascade-card-x {
   position: absolute;
   top: 6px;

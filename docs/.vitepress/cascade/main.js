@@ -948,13 +948,28 @@ export async function initCascadeSimulator(root, opts = {}) {
     'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
-    scenario: ['Scenario', 'reseed the field — vacuum: cold lattice · flux tube: the string lifecycle — a fuse string saturates and snaps while a bright string bleeds its winding into the vacuum · wound lump: bound knot · hexbuckle: U-bent flexoelectric probe · ring: {111} waveguide loops at two scales — persistent currents (current view) · wound/quark: the spinning condenser · pair: both handednesses — +dd out-accretes ~1.7x (chirality) · meson: two condensers on a heavy tube · proton: 3-quark bound-state attempt · zoo: ball + ring + wound census.'],
+    scenario: ['Scenario', 'reseed the field — then tap ? again for help specific to the selected scenario.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
     speed: ['Speed', 'tick governor in ticks/sec — c here is 1 cell/tick, so uncapped the lattice outruns the eye.'],
     qmin: ['Q≥', 'density floor — a cell is clipped unless its brightest channel reads at least this. Raise it to strip haze and expose skeletons.'],
     zoom: ['Zoom', 'camera distance — same as scroll/pinch or the lens dial at the canvas edge.'],
+  };
+  /* per-scenario help — the ? chip beside the dropdown shows the
+   * text for whatever scenario is currently loaded */
+  const SCEN_HELP = {
+    vacuum:  'cold lattice — the convergent ☀ feed IS this scenario. Cut it and the core starves.',
+    tube:    'the string lifecycle:\n· top string bleeds its winding into the vacuum (tubes dim by conduction)\n· mid fuse string saturates and fractures live — the string-break\n· bottom drains slowly\npaint a longer one with — for another snap.',
+    lump:    'a bound wound knot — it radiates from its surface only; interior density stalls decay.',
+    buckle:  'a U-bent string — the flexoelectric subject. Fire ➤ beam at the bend and watch the charge dipole (pol view).',
+    ring:    '{111} waveguide loops at four sizes (6/12/24/36 cells) — packets ride loss-free as persistent current. View: current.',
+    wound:   'a sparse -dd condenser seed + quantum pump — watch it accrete into the saturated ball. View: handed for the coil.',
+    pair:    'one condenser of each handedness — +dd out-accretes ~1.7× (the substrate chirality). View: handed.',
+    quark:   'the formed +dd condenser — the accreting species. (wound shows how one forms.)',
+    meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo. The tube must out-rank the knots to pierce them.',
+    proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',
+    zoo:     'the species census: plain ball (condenser) + bare ring (rail) + wound ball (spinning condenser), side by side.',
   };
   const card = root.querySelector('[data-card]');
   const cardTitle = root.querySelector('[data-card-title]');
@@ -964,7 +979,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     const h = HELP[key]; if (!h || !card) return;
     /* same chip a second time = toggle closed */
     if (!card.hidden && cardKey === key) { card.hidden = true; cardKey = null; return; }
-    cardTitle.textContent = h[0]; cardBody.textContent = h[1];
+    cardTitle.textContent = h[0];
+    cardBody.textContent = key === 'scenario' && SCEN_HELP[ui.scenario]
+      ? SCEN_HELP[ui.scenario] : h[1];
     card.hidden = false; cardKey = key;
   };
   /* one suppression for every element in the sim — canvas, widgets,
