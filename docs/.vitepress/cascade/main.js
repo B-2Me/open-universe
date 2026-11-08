@@ -282,7 +282,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* the calibrated mass tax — knots now breathe at a real
    * equilibrium (open-box: mass ~ flux * 2^shift), not unbounded
    * condensers. shift=4 was the verified calibration point. */
-  wasm._moore26_evap_shift_set(4);
+  if (wasm._moore26_evap_shift_set) wasm._moore26_evap_shift_set(4);
   const N3 = W3 * H3 * D3;
   const CX = W3 >> 1, CY = H3 >> 1, CZ = D3 >> 1;
   const cenX = W3 * 0.5, cenY = H3 * 0.5, cenZ = D3 * 0.5;
@@ -317,6 +317,10 @@ export async function initCascadeSimulator(root, opts = {}) {
   const pset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
     wasm._moore26_packet_set(x, y, z, c, v);
+  };
+  const cset = (x, y, z, v) => {
+    if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) return;
+    wasm._moore26_charge_set(x, y, z, v);
   };
   const nuset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
