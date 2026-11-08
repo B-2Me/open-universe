@@ -410,9 +410,9 @@ export async function initCascadeSimulator(root, opts = {}) {
      * tick like a held potential. */
     if (ui.chargeSites) {
       for (const [cx, cy, cz, chg] of ui.chargeSites)
-        for (let dz = -2; dz <= 2; dz++)
-          for (let dy = -2; dy <= 2; dy++)
-            for (let dx = -2; dx <= 2; dx++)
+        for (let dz = -4; dz <= 4; dz++)
+          for (let dy = -4; dy <= 4; dy++)
+            for (let dx = -1; dx <= 1; dx++)
               cset(cx + dx, cy + dy, cz + dz, chg);
     }
     if (ui.pump && ui.pumpAt && room) {
@@ -753,23 +753,28 @@ export async function initCascadeSimulator(root, opts = {}) {
      * run put a charged knot at (3/8)W and a ch6 {+1,+1} stream 10
      * cells upstream. +q upstream repels the +par stream, -q at the
      * far end attracts it — same measurement, made visible. */
-    if (s === 'attract') {
+    /* charged WALL — a slab of charged cells spanning the stream
+     * path: every +par packet must negotiate the sign gate, so the
+     * repulsion/attraction is a barrier vs a doorway, not a subtle
+     * bend. attract = -q wall (swallows the stream); repel = +q
+     * wall (the stream piles up against it). */
+    const chargeWall = (wx, chg) => {
+      let n = 0;
+      for (let dy = -5; dy <= 5; dy++)
+        for (let dz = -5; dz <= 5; dz++) {
+          const x = wx, y = CY + dy, z = CZ + dz;
+          wset(x, y, z, 6, 48); wset(x, y, z, 7, 48);
+          cset(x, y, z, chg); n++;
+        }
+      return n;
+    };
+    if (s === 'attract' || s === 'repel') {
       ui.pump = true; ui.pumpRate = 20;
-      ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
-      seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
-      const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, -104);
-      ui.chargeSites = [[(W3 * 3 >> 3), CY, CZ, 104], [(W3 * 6 >> 3), CY + 4, CZ, -104]];
-      return n2;
-    }
-    /* repel — same probe with two +q targets: the +par stream
-     * bounces off BOTH same-sign knots. */
-    if (s === 'repel') {
-      ui.pump = true; ui.pumpRate = 20;
-      ui.pumpAt = [(W3 * 3 >> 3), CY - 2, CZ];
-      seedChargedLump((W3 * 3 >> 3), CY, CZ, 104);
-      const n2 = seedChargedLump((W3 * 6 >> 3), CY + 4, CZ, 104);
-      ui.chargeSites = [[(W3 * 3 >> 3), CY, CZ, 104], [(W3 * 6 >> 3), CY + 4, CZ, 104]];
-      return n2;
+      const wx = (W3 * 5 >> 3);
+      ui.pumpAt = [wx, CY, CZ];
+      const chg = s === 'repel' ? 104 : -104;
+      ui.chargeSites = [[wx, CY - 4, CZ, chg], [wx, CY + 4, CZ, chg]];
+      return chargeWall(wx, chg);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
