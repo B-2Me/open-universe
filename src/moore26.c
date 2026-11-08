@@ -1702,7 +1702,9 @@ void moore26_rg_refresh(void){
         NodeState *n=&grid_current[i];
         uint8_t mx=0;
         for(int c=0;c<QChannels;c++)if(n->winding[c]>mx)mx=n->winding[c];
-        uint8_t r=n->mass?(n->mass>128?255:(uint8_t)(n->mass<<1)):mx;
+        uint8_t r=n->mass?(uint8_t)((n->mass*255)/(n->mass+64)):mx;
+        /* asymptotic mass ramp — never clips: m=64->170, 256->204,
+         * 4k->249 — structure stays legible at any mass */
         rgBuf[4*i+0]=r;
         rgBuf[4*i+1]=(uint8_t)(n->phase>>1);
         rgBuf[4*i+2]=(uint8_t)(n->heat>255?255:n->heat);
