@@ -769,15 +769,29 @@ void moore26_tick(void){
                 qEvents[30]++;
                 continue;
             }
+            /* weighted nu mixing: multiple offers on one channel
+             * share incipNu — merge (count*old + new)/(count+1)
+             * instead of overwriting, so the virtual layer's energy
+             * is the real sum, not the last armer's. The remainder
+             * thermalizes — nothing leaves the ledger. */
+            {
+                uint32_t nnu=nu>127?127:nu;
+                if(nu>127){uint32_t h2=n->heat+(nu-127);
+                           n->heat=(uint16_t)(h2>65535?65535:h2);}
+                if(n->incip[c]){
+                    uint32_t inu2=n->incipNu[c]&0x7f;
+                    uint32_t tot=(uint32_t)inu2*n->incip[c]+nnu;
+                    n->incipNu[c]&=0x80;
+                    n->incipNu[c]|=(uint8_t)(tot/(n->incip[c]+1));
+                    uint32_t r3=tot-(uint32_t)(n->incipNu[c]&0x7f)*(n->incip[c]+1);
+                    if(r3){uint32_t h2=n->heat+r3;
+                           n->heat=(uint16_t)(h2>65535?65535:h2);}
+                } else n->incipNu[c]=(uint8_t)nnu;
+            }
             n->incip[c]++;
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
-            /* the nu>127 clip deletes the excess at arming — the
-             * packet's full nu was consumed, so the clipped part
-             * thermalizes instead of vanishing */
-            if(nu>127){uint32_t h2=n->heat+(nu-127);
-                       n->heat=(uint16_t)(h2>65535?65535:h2);}
-            n->incipNu[c]=(uint8_t)((nu>127?127:nu)|(nu==geo_gap(o)?0x80:0));
+            if(nu==geo_gap(o))n->incipNu[c]|=0x80;
             n->incipBorn[c]=n->packetBorn[c];
             n->incipPar[c]=n->packetPar[c];
             n->packet[c]--;
