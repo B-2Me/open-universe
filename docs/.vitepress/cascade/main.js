@@ -638,16 +638,42 @@ export async function initCascadeSimulator(root, opts = {}) {
     }
     /* wound = a SPARSE seed + quantum pump — you watch the condenser
      * accrete into the saturated ball instead of starting finished */
-    if (s === 'wound') {
-      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
-      return seedWound(CX, CY, CZ, 1, 50);
+    /* link — the Hopf link: two perpendicular diamond loops
+     * interlocked — the 2-component species. Diamonds close in
+     * one plane (xy via 6/8/7/9, xz via 10/12/11/13); B's center
+     * threads A's hole so the loops can't separate without
+     * breaking a rail. */
+    if (s === 'link') {
+      const dia = (cx, cy, cz, ch) => {
+        let x = cx, y = cy, z = cz, n = 0;
+        for (let i = 0; i < 4; i++) {
+          const c = ch[i];
+          for (let s = 0; s < 2; s++) {
+            for (let e = 0; e < 13; e++) {
+              wasm._moore26_winding_set(x, y, z, 2 * e, 20);
+              wasm._moore26_winding_set(x, y, z, 2 * e + 1, 20);
+            }
+            wasm._moore26_winding_set(x, y, z, c, 110);
+            wasm._moore26_packet_set(x, y, z, c, 2);
+            wasm._moore26_packet_nu_set(x, y, z, c, 128);
+            const v = CV[c]; x += v[0]; y += v[1]; z += v[2]; n++;
+          }
+        }
+        return n;
+      };
+      /* A: xy-diamond centered (32,32,32); B: xz-diamond offset
+       * +2x — its plane threads A's hole → interlocked */
+      dia(30, 32, 32, [6, 8, 7, 9]);
+      return dia(32, 32, 32, [10, 12, 11, 13]);
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
-    /* quark = the FORMED condenser at +dd (amber, the accreting
-     * handedness) — distinct from 'wound', which shows a -dd
-     * sparse seed growing into condenser under the pump */
-    if (s === 'quark') return seedWound(CX, CY, CZ, -1);
+      /* quark = a sparse +dd seed under the quantum pump — the
+     * accreting species forming live (amber coil, grows fastest) */
+    if (s === 'quark') {
+      ui.pump = true; ui.pumpAt = [CX, CY, CZ];
+      return seedWound(CX, CY, CZ, -1, 50);
+    }
     if (s === 'proton') return seedProton(CX, CY, CZ);
     if (s === 'zoo') return seedZoo(CX, CY, CZ);
     return 0;
@@ -996,9 +1022,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     lump:    'a bound wound knot — it radiates from its surface only; interior density stalls decay.',
     buckle:  'a U-bent string — the flexoelectric subject. Fire ➤ beam at the bend and watch the charge dipole (pol view).',
     ring:    '{111} waveguide loops at four sizes (6/12/24/36 cells) — packets ride loss-free as persistent current. View: current.',
-    wound:   'a sparse -dd condenser seed + quantum pump — watch it accrete into the saturated ball. View: handed for the coil.',
+    link:    'the Hopf link — two perpendicular diamond loops interlocked. Stream rides both rails (current view).',
     pair:    'one condenser of each handedness — +dd out-accretes ~1.7× (the substrate chirality). View: handed.',
-    quark:   'the formed +dd condenser — the accreting species. (wound shows how one forms.)',
+    quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo. The tube must out-rank the knots to pierce them.',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',
     zoo:     'the species census: plain ball (condenser) + bare ring (rail) + wound ball (spinning condenser), side by side.',
