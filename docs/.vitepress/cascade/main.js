@@ -152,12 +152,13 @@ in vec4 v_color;
 in vec2 v_uv;
 out vec4 frag;
 void main() {
-  float r2 = dot(v_uv, v_uv);
-  if (r2 > 1.0) discard;
-  /* tighter falloff — the 6.0 gaussian blurred each cell into its
-   * neighbors; 14.0 keeps a faint halo but makes the lattice's
-   * discrete cells read crisply */
-  float a = exp(-r2 * 14.0);
+  /* hexagonal cell silhouette — the lattice is FCC; in {111}
+   * projection its cells tile as hexagons, so a hex glyph reads
+   * as a lattice site instead of a blurry disc. SDF over uv. */
+  vec2 p = abs(v_uv);
+  float hex = max(p.x * 0.866 + p.y * 0.5, p.y);
+  if (hex > 1.0) discard;
+  float a = 1.0 - smoothstep(0.55, 0.9, hex);   // crisp cell + soft rim
   /* additive output — overlapping glows brighten, nothing occludes:
    * this is what makes the billboards read as transparent light. */
   frag = vec4(v_color.rgb * v_color.a * a, 1.0);
