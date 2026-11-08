@@ -1144,17 +1144,17 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* per-scenario help — the ? chip beside the dropdown shows the
    * text for whatever scenario is currently loaded */
   const SCEN_HELP = {
-    vacuum:  'truly empty lattice — nothing seeded. ☀ feed is an opt-in probe: switch it on for the convergent drive.',
+    vacuum:  'truly empty lattice — nothing seeded.\n· ☀ feed is an opt-in probe: switch it on for the convergent drive.',
     tube:    'the string lifecycle:\n· top string bleeds its winding into the vacuum (tubes dim by conduction)\n· mid fuse string saturates and fractures live — the string-break\n· bottom drains slowly\npaint a longer one with — for another snap.',
     lump:    'a bound wound knot — it radiates from its surface only; interior density stalls decay.',
     buckle:  'a U-bent string — the flexoelectric subject. Fire ➤ beam at the bend and watch the charge dipole (pol view).',
-    ring:    '{111} waveguide loops at four sizes (6/12/24/36 cells) — packets ride loss-free as persistent current. View: current.',
-    link:    'the Hopf link — two perpendicular diamond loops interlocked. Stream rides both rails (current view).',
-    pair:    'one condenser of each handedness — they accrete ~symmetrically now (the 1.7× asymmetry was a parity-bookkeeping bug, retracted). View: handed.',
-    attract: 'opposite-charged condensers (+q left, -q right) with a parity stream through the gap — packets bend AWAY from the +q knot and INTO the -q knot. Verified ev45/ev46: same-sign declines, opposite-sign binds.',
-    repel:   'two same-charged (+q) condensers — the stream bounces off BOTH: same-sign packets get declined at cap=4. Charge is a field here, not a tag.',
+    ring:    '{111} waveguide loops at four sizes (6/12/24/36 cells) — packets ride loss-free as persistent current.\nView: current.',
+    link:    'the Hopf link — two perpendicular diamond loops interlocked. Stream rides both rails.\nView: current.',
+    pair:    'one condenser of each handedness — a -dd and a +dd coil side by side.\nView: handed (indigo vs amber).',
+    attract: 'a -q charged wall with a +par stream aimed at it — opposite-sign packets bind and pass through.\nWatch the stream continue past the wall.',
+    repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
-    meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo. The tube must out-rank the knots to pierce them.',
+    meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',
     zoo:     'the species census: plain ball (condenser) + bare ring (rail) + wound ball (spinning condenser), side by side.',
   };
@@ -1167,6 +1167,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* same chip a second time = toggle closed */
     if (!card.hidden && cardKey === key) { card.hidden = true; cardKey = null; return; }
     cardTitle.textContent = h[0];
+    cardBody.style.whiteSpace = 'pre-line';   // \n renders as a real line break
     cardBody.textContent = key === 'scenario' && SCEN_HELP[ui.scenario]
       ? SCEN_HELP[ui.scenario] : h[1];
     card.hidden = false; cardKey = key;
