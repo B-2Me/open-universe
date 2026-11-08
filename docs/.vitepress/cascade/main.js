@@ -550,14 +550,46 @@ export async function initCascadeSimulator(root, opts = {}) {
     return n;
   };
 
-  /* proton candidate — three -dd condensers in a triangle. The
-   * three-quark bound-state attempt: do they bind, repel, or
-   * ignore each other? So far they ignore — the flux tubes
-   * don't self-form. Watch 'handed' view for the coils. */
+  /* bond — walk the edge graph from A to B, boosting the dominant
+   * member to 200 on each hop: a flux tube that out-ranks the
+   * knots' 180 so it pierces their shells. Even-parity cells
+   * throughout (edge hops preserve parity). */
+  const seedBond = (ax, ay, az, bx, by, bz) => {
+    let x = ax, y = ay, z = az, n = 0;
+    for (let s = 0; s < 40 && !(x === bx && y === by && z === bz); s++) {
+      let bc = 6, bs = -2;
+      for (let c = 6; c < 18; c++) {
+        const v = CV[c];
+        const sc = v[0] * (bx - x) + v[1] * (by - y) + v[2] * (bz - z);
+        if (sc > bs) { bs = sc; bc = c; }
+      }
+      const v = CV[bc];
+      x += v[0]; y += v[1]; z += v[2];
+      for (let e = 0; e < 13; e++) {
+        wasm._moore26_winding_set(x, y, z, 2 * e, 25);
+        wasm._moore26_winding_set(x, y, z, 2 * e + 1, 25);
+      }
+      wasm._moore26_winding_set(x, y, z, bc, 200);
+      n++;
+    }
+    return n;
+  };
+
+  /* proton candidate — three -dd condensers BOUND by flux tubes:
+   * the 3-quark bound-state attempt with actual confinement
+   * infrastructure, not three free knots in a vacuum. The tubes
+   * still slowly bleed, but they mechanically link the trio. */
   const seedProton = (cx, cy, cz) => {
-    return seedWound(cx, cy - 7, cz, 1)
-         + seedWound(cx - 6, cy + 4, cz, 1)
-         + seedWound(cx + 6, cy + 4, cz, 1);
+    /* even-parity triangle — bonds must land on even cells or
+     * they hold structure but can't conduct */
+    const A = [cx, cy - 6, cz], B = [cx - 6, cy + 6, cz], C = [cx + 6, cy + 6, cz];
+    let n = seedWound(A[0], A[1], A[2], 1)
+          + seedWound(B[0], B[1], B[2], 1)
+          + seedWound(C[0], C[1], C[2], 1);
+    n += seedBond(A[0], A[1], A[2], B[0], B[1], B[2]);
+    n += seedBond(B[0], B[1], B[2], C[0], C[1], C[2]);
+    n += seedBond(C[0], C[1], C[2], A[0], A[1], A[2]);
+    return n;
   };
 
   /* zoo — the species census side by side: plain ball (condenser),
