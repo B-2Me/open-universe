@@ -1090,8 +1090,14 @@ void moore26_tick(void){
                 }
                 continue;
             }
-            if(a<32)continue;
-            uint32_t k=a>>3;
+            /* Meissner lock: committed balanced structure
+             * (commitMin..127) is STRUCTURE, not free field — it
+             * does not gradient-descend into the vacuum. Dust below
+             * commitMin still relaxes; saturated pairs >=128 bleed
+             * only the over-pressure excess, settling at ~128 —
+             * right at the Phase 7 fracture gate. */
+            if(a >= (uint32_t)qCommitMin && a < 128)continue;
+            uint32_t k=(a>=128)?(a-127)>>3:a>>3;
             /* UNDERFLOW GUARD: deductions write grid_next but reads
              * saw grid_current — when several edges drain one node in
              * a tick, next can already be lower than current. Clamp
