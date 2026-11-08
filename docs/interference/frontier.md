@@ -8,7 +8,7 @@ audio: /audio/frontier.mp3
 
 # The Open Frontier
 
-> **Program History.** This is the 2D / single-spin-era experiment log: measured, falsified, and kept as provenance. The current measurement record lives in the [Friction Substrate monograph](/interference/meso-monograph); the current engine is [Joule's Mill](/mill-demo).
+> **Program History.** This is the 2D / single-spin-era experiment log: measured, falsified, and kept as provenance. The current measurement record lives in the [Friction Substrate monograph](/interference/meso-monograph); the current engine is `moore26` ([Cartan's Cascade](/cascade-demo)); [Joule's Mill](/mill-demo) is the archived `meso3i` instrument
 
 *The following is the immediate roadmap for the framework: how the current 2D mechanics scale toward volumetric observables. None of this is implemented in the engine yet; it is the theoretical trajectory, kept honest by that distinction.*
 

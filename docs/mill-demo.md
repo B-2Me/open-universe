@@ -1,6 +1,6 @@
 ---
 title: Joule's Mill
-description: The flagship instrument. A live 3D lattice gas where matter is trapped momentum, light writes spin, and every irreversible event leaves a countable mark.
+description: The archived `meso3i` instrument. A live 3D lattice gas where matter is trapped momentum, light writes spin, and every irreversible event leaves a countable mark.
 outline: false
 layout: page
 pageClass: mill-page

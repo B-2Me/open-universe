@@ -18,7 +18,7 @@ pageClass: loom-page
 
 *A continuous routing cycle, woven from whirlpools: rendering live in your browser.*
 
-> **Milestone instrument.** This page documents the earlier single-spin prototype engine (`planck3.c`), whose stable knots first showed the lattice could hold woven structure. The active engine is the multichannel `meso3i`, **[Joule's Mill](/mill-demo)**, and the current measured record is the [Friction Substrate monograph](/interference/meso-monograph).
+> **Milestone instrument.** This page documents the earlier single-spin prototype engine (`planck3.c`), whose stable knots first showed the lattice could hold woven structure. The active engine is `moore26`, **[Cartan's Cascade](/cascade-demo)**, and the current measured record is [moore26 Findings](/moore26-findings); the `meso3i` instrument [Joule's Mill](/mill-demo) and its [monograph](/interference/meso-monograph) are the archived predecessor.
 
 What you're looking at is a **Hopfion**: a localized standing wave of extreme routing congestion made of 400,000 tiny cells, each one routing data and resolving friction according to the exact same thermodynamic rules that power [Langevin's Wake](/wake-demo). It opens in **metabolism view**, a thermal portrait, not a photograph: the ember ring is the intense phase friction continuously generated to maintain the loop, while the dim red darkness is the surrounding vacuum. Rendered faint because empty cells are culled from the thermal palette (per the substrate's own accounting the vacuum runs warm; it is the phase-locked knot that freezes). Because the underlying flow is woven into a perfectly closed, phase-locked loop, it continuously re-renders itself without unraveling.
 

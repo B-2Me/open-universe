@@ -9,7 +9,7 @@ audio: /audio/field.mp3
 
 # The Planck Field
 
-*This page is the conceptual foundation: the claim and its silhouette. What the substrate has actually **measured** lives in the [Friction Substrate monograph](/interference/meso-monograph), and the live engine is [Joule's Mill](/mill-demo).*
+*This page is the conceptual foundation: the claim and its silhouette. What the substrate has actually **measured** lives in [moore26 Findings](/moore26-findings) — including the deviation audit that says where it stops matching nature — and the live engine is [Cartan's Cascade](/cascade-demo). The earlier engines' record is kept as provenance in the [Friction Substrate monograph](/interference/meso-monograph).*
 
 ## 100 Years of Burying the Planck
 
@@ -90,7 +90,7 @@ Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic s
   excitation register `iE` — Planck's `n`: absorbed photons can raise a
   bound object's energy at fixed mass, which sheds back as light.
 >
-> **Current focus:** `meso3i` — the live engine behind [Joule's Mill](/mill-demo) and the [clock program](/interference/clock-program)'s E-series. The single-spin claims below are the map it is measured against, not the record.
+> **Current focus:** `moore26` — the live engine behind [Cartan's Cascade](/cascade-demo). The measured record is [moore26 Findings](/moore26-findings) (with the deviation audit); the `meso3i` lineage that came before is archived in the [Friction Substrate monograph](/interference/meso-monograph). The single-spin claims below are the map the engine is measured against, not the record.
 
 ### 1. The Compound Impedance (Atomic Unwinding)
 *   **The Nucleus as Deadlock:** An atomic nucleus is not a cluster of solid spheres; it is a **Compound Impedance**, a massive, contiguous zone of congestion gravity.
