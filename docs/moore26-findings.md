@@ -10,7 +10,9 @@ audio: /audio/moore26-findings.mp3
 # Moore26 Findings
 
 This is the measured record of the current engine — `moore26`, a
-26-register Moore/FCC substrate at `0.1 fm` per node. Everything
+Moore/FCC lattice substrate at `0.1 fm` per node where every node
+carries `26` registers (one per channel — the name is the register
+count, not the lattice size). Everything
 on this page is output of headless harnesses against
 `src/moore26.c`, not assumptions: what the lattice actually does
 when the rules run, measured, including the results we had to
@@ -500,3 +502,19 @@ streams into the measurement.
 `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
 `chargeflight_get`, `audit`
 
+
+## External reading
+
+The physics concepts the substrate touches — the real-world
+counterparts the measurements are compared against:
+
+- [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood) — the 26-cell stencil the channels derive from
+- [Face-centered cubic lattice](https://en.wikipedia.org/wiki/Cubic_crystal_system#Face-centered_cubic) — the underlying transport geometry
+- [Lattice gas automaton](https://en.wikipedia.org/wiki/Lattice_gas_automaton) — the method family this engine belongs to
+- [Dissipative structure](https://en.wikipedia.org/wiki/Dissipative_system) — Prigogine's far-from-equilibrium order (the mass plateau)
+- [Color confinement / string breaking](https://en.wikipedia.org/wiki/Color_confinement) — the QCD analog of the tube fracture
+- [Pair production](https://en.wikipedia.org/wiki/Pair_production) — γ+γ → charged fragments at an energy threshold
+- [Parity violation](https://en.wikipedia.org/wiki/Parity_(physics)#Parity_violation) — the weak-sector asymmetry the substrate doesn't reproduce
+- [Yarkovsky–O'Keefe–Radzievskii–Paddack effect](https://en.wikipedia.org/wiki/Yarkovsky%E2%80%93O%27Keefe%E2%80%93Radzievskii%E2%80%93Paddack_effect) — radiative recoil (the proposed knot-motion mechanism)
+- [Transactional interpretation](https://en.wikipedia.org/wiki/Transactional_interpretation) — Kastner's offer/confirm framing, a lineage influence on the handshake
+- [Causal set theory](https://en.wikipedia.org/wiki/Causal_sets) — the discrete-causality program this substrate runs as a working engine
