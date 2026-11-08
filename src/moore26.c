@@ -382,10 +382,43 @@ void moore26_init(int w,int h,int d){
  * per processed node, then the phases read grid_current and write
  * grid_next (intra-tick visibility where a phase reads next-state
  * fields it just staged). */
+#ifdef M26_AUDIT
+/* per-phase ledger attribution — audit_L sweeps the staged
+ * grid_next at each phase boundary; qAuditD[p] accumulates that
+ * phase's delta. The phase that drops L is the bleeder. */
+static int64_t qAuditD[16];
+static uint64_t qAuditLast=0;
+static uint64_t audit_L(void){
+    const int ns=QWidth*QHeight*QDepth;
+    uint64_t t=0;
+    for(int i=0;i<ns;i++){
+        NodeState *n=&grid_next[i];
+        t+=n->mass;t+=n->heat;
+        t+=n->charge<0?-(int32_t)n->charge:n->charge;
+        for(int c=0;c<QChannels;c++){
+            t+=n->winding[c];
+            t+=(uint64_t)n->packet[c]*n->packetNu[c];
+            t+=(uint64_t)n->incip[c]*(n->incipNu[c]&127);
+            t+=n->massFlight[c];
+            t+=n->chargeFlight[c]<0?-(int32_t)n->chargeFlight[c]:n->chargeFlight[c];
+        }
+    }
+    t+=qEvents[44];
+    return t;
+}
+#define AUDIT_PH(p){uint64_t l_=audit_L();qAuditD[p]+=(int64_t)(l_-qAuditLast);qAuditLast=l_;}
+int64_t moore26_audit(int i){return (i>=0&&i<16)?qAuditD[i]:0;}
+#else
+#define AUDIT_PH(p)
+#endif
+
 void moore26_tick(void){
     if(!grid_current)return;   /* dead engine — failed init */
     qTick++;
     build_proc();
+#ifdef M26_AUDIT
+    qAuditLast=audit_L();
+#endif
 
     /* Phase 0: carry — every processed node copies current→next so
      * unwritten fields survive the swap (and vacuum writes zeros,
@@ -394,6 +427,7 @@ void moore26_tick(void){
         grid_next[si]=grid_current[si];
     PROC_NODES_END
 
+    AUDIT_PH(0)
     /* Phase 1: packet flight — packets hop 1 node/tick along their
      * channel direction (c at transit scale). PULL-MODEL: each node
      * reads its upstream neighbor's channel (unique writer per slot —
@@ -508,6 +542,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    AUDIT_PH(1)
     /* Phase 1b: mass stream + junction collide — in-flight mass
      * pulls along its channel (unique writer per slot). Opposing
      * arrivals annihilate AT the meeting node (matter/antimatter ->
@@ -582,6 +617,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    AUDIT_PH(2)
     /* Phase 1c: mass launch — a knot with a dominant directed edge
      * bleeds a fraction of its mass onto the flight channel along
      * the circulation axis every 8th tick (slower than c — the
@@ -625,6 +661,7 @@ void moore26_tick(void){
         PROC_NODES_END
     }
 
+    AUDIT_PH(3)
     /* Phase 2: OFFER — arrived packets arm incipient transactions.
      * A packet on channel c offers to the node; passing the catch
      * gate (bare vacuum ~1/16, deeper structure catches more) and
@@ -799,6 +836,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    AUDIT_PH(4)
     /* Phase 3: CONFIRM — incipients armed LAST tick actualize: each
      * deposits its nu onto the arrival edge (matched, mA+nu<=160)
      * plus a feed to the dominant circulation axis (geometric
@@ -1083,6 +1121,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    AUDIT_PH(5)
     /* Phase 4: winding conduction — the bound state's circulation
      * transferring to neighbors. OVER-PRESSURE ROUTING at 0.1fm:
      * a saturated core shunts excess outward (the interior staying
@@ -1254,6 +1293,7 @@ void moore26_tick(void){
         }
     PROC_NODES_END
 
+    AUDIT_PH(6)
     /* Phase 5: phase-sync — DECOUPLED at 0.1fm. A fast-pass
      * relaxation (~10 iters) lets the phase field reach equilibrium
      * across a ~10-node bound state before the next mechanical tick.
@@ -1283,6 +1323,7 @@ void moore26_tick(void){
         if(qPhaseSync)grid_next[si].phase=phaseA[si];
     PROC_NODES_END
 
+    AUDIT_PH(7)
     /* Phase 6: emission — the bound state radiates. A site at level
      * n>=2 stochastically sheds one rung of its weakest committed
      * edge into a packet. The packet needs a channel mode with room
@@ -1460,6 +1501,7 @@ void moore26_tick(void){
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
 
+    AUDIT_PH(8)
     /* Phase 7: macroscopic string-breaking — forward-trace the
      * continuous >128 saturated tube, fracture only when the
      * INTEGRATED tension (the tube's length) exceeds the macro-
@@ -1530,6 +1572,8 @@ void moore26_tick(void){
     PROC_NODES_END
 
     rescan_live();
+    AUDIT_PH(9)   /* last phase sample — BEFORE the swap, while
+                 * grid_next still holds the staged tick */
     {NodeState *t=grid_current;grid_current=grid_next;grid_next=t;}
 }
 
