@@ -389,28 +389,33 @@ streams into the measurement.
 | Persistent current | ✓ loss-free rail circulation on rings |
 | Ledger | ✓ `~0.1%` residual, every phase audited |
 
-**Where it deviates — the honest list:**
+**Where it deviates — the honest list** *(observational
+measurements only — what nature's instruments actually record;
+inferred rules like Pauli exclusion are excluded by definition):*
 
-1. **Charge isn't a field** — no `1/r²`, no long-range force. The
-   sign gate only fires under offer congestion (`armed≥4`).
-   Nature's Coulomb acts at a distance; ours acts at a traffic jam.
-2. **Parity is symmetric** — `0.89-1.0` `dd` ratio. Nature
-   violates `P` in the weak sector.
-3. **Knots don't fly** — mass-anchored winding doesn't follow
-   parked mass (they crawl, not ballistically translate).
-4. **No Lorentz structure** — `c` is a lattice constant
-   (1 hop/tick), not emergent invariance — no time dilation, no
-   length contraction measured.
-5. **Decay isn't a lifetime** — evaporation is a friction tax,
-   not a quantized exponential per species.
+1. **Charge isn't a field** — nature measures `1/r²` attraction
+   and repulsion at range; ours fires only under offer congestion
+   (`armed≥4`) — a traffic jam, not a field.
+2. **Parity is symmetric** — `0.89-1.0` `dd` ratio; the weak
+   sector's `P`-violation is a measured observation we don't
+   reproduce.
+3. **Knots don't fly** — measured particles translate
+   ballistically; mass-anchored winding doesn't follow parked
+   mass — ours crawl.
+4. **No Lorentz structure** — time dilation and contraction are
+   measured (muon lifetime, GPS); `c` here is a lattice constant,
+   not emergent invariance.
+5. **Decay isn't a lifetime** — nature measures an exponential
+   decay curve per species; ours is a friction tax, not a
+   quantized lifetime.
 6. **Mass spectrum is approximate** — `~3.4-3.9×` not clean `4×`
-   (finite pump, not an ideal bath).
-7. **No fermion/boson split** — no Pauli exclusion, no
-   spin-statistics.
-8. **Gravity absent** — routing asymmetry proposed, not
-   implemented.
-9. **Ledger `~0.1%`** — `P7-break −63` and the audit's mid-tick
-   artifacts remain documented seams.
+   (finite pump, not an ideal bath); nature's particle masses are
+   measured constants.
+7. **Gravity absent** — gravitational attraction is measured;
+   routing asymmetry is proposed, not implemented.
+8. **Ledger `~0.1%`** — exact conservation is measured; `P7-break
+   −63` and the audit's mid-tick artifacts remain documented
+   seams.
 
 **Verdict**: local transaction physics is honest (conservation,
 charge-sign, pair production, confinement); **field-level and
