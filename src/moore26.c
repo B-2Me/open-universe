@@ -492,7 +492,9 @@ void moore26_tick(void){
                         grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
                     } else grid_next[si].packetNu[c]=(uint8_t)nu;
                     PAR_MERGE(&grid_next[si],c,PAR_SIGN(o,c));
-                    grid_next[si].packet[c]++;
+                    if(grid_next[si].packet[c]<255)grid_next[si].packet[c]++;
+                    else grid_next[si].heat++;   /* thermal overflow â€” cap hits
+                                                 * friction, not a u8 wrap */
                     grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
                 }
@@ -536,8 +538,15 @@ void moore26_tick(void){
                  * energy each. nu=hit minted hit^2 (quadratic free
                  * energy â€” the +1.9% ledger drift). */
                 uint32_t r0=255-grid_next[si].packet[2*e],r1=255-grid_next[si].packet[2*e+1];
-                grid_next[si].packet[2*e]  +=hit<r0?hit:r0;
-                grid_next[si].packet[2*e+1]+=hit<r1?hit:r1;
+                uint32_t in0=hit<r0?hit:r0, in1=hit<r1?hit:r1;
+                grid_next[si].packet[2*e]  +=in0;
+                grid_next[si].packet[2*e+1]+=in1;
+                /* thermal overflow â€” congestion becomes friction:
+                 * truncated quanta thermalize, not delete (the
+                 * last packet-cap leak in the ledger) */
+                uint32_t ov=(hit-in0)+(hit-in1);
+                if(ov){uint32_t h2=grid_next[si].heat+ov;
+                       grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);}
                 grid_next[si].packetNu[2*e]=nu;
                 grid_next[si].packetNu[2*e+1]=nu;
                 grid_next[si].packetBorn[2*e]=(uint8_t)qTick;
@@ -743,7 +752,8 @@ void moore26_tick(void){
                         if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
                     }
                 }
-                n->packet[fc]++;
+                if(n->packet[fc]<255)n->packet[fc]++;
+                else n->heat++;   /* thermal overflow — deflect cap */
                 n->packetNu[fc]=(uint8_t)nu;
                 n->packet[c]--;
                 qEvents[30]++;
@@ -842,7 +852,8 @@ void moore26_tick(void){
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)sn;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
-                    n->packet[c]++;
+                    if(n->packet[c]<255)n->packet[c]++;
+                    else n->heat++;   /* thermal overflow — cap */
                     n->packetBorn[c]=(uint8_t)qTick;
                     qEvents[17]++;
                 } else {
@@ -853,7 +864,8 @@ void moore26_tick(void){
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
                     } else n->packetNu[c]=(uint8_t)nu;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
-                    n->packet[c]++;
+                    if(n->packet[c]<255)n->packet[c]++;
+                    else n->heat++;   /* thermal overflow — cap */
                     n->packetBorn[c]=(uint8_t)qTick;
                 }
                 continue;
@@ -1402,7 +1414,8 @@ void moore26_tick(void){
             int bm=p_>0?(c&~1):(c|1);
             if(grid_next[si].winding[bm])grid_next[si].winding[bm]--;
         }
-        grid_next[si].packet[c]++;
+        if(grid_next[si].packet[c]<255)grid_next[si].packet[c]++;
+        else grid_next[si].heat++;   /* thermal overflow — emit cap */
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
