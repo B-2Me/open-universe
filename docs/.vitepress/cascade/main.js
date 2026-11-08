@@ -122,11 +122,10 @@ void main() {
     // composite — cyan structure + red thermal halo + charge tint
     rgb = strcRamp * (0.35 + 0.75 * strc / 255.0) + heatRamp * 0.6
         + polRamp * abs(cq) * 0.9;
-    /* soft clip + density damping — additive blending sums
-     * hundreds of sprites in a knot; per-sprite rgb must stay
-     * small enough that ~20 overlaps read as bright, not 1. */
-    rgb = rgb / (1.0 + rgb) * 0.28;
-    alpha *= 0.22;
+    /* soft clip only — additive blending sums sprites in dense
+     * knots; tone-map the sum but keep sparse structures visible
+     * (alpha untouched — damping it erased the sparse ring) */
+    rgb = rgb / (1.0 + rgb) * 0.45;
   } else if (u_colorMode == 5) {
     // current — packets in flight: electric white-gold stream
     float pw = pk / 255.0;
