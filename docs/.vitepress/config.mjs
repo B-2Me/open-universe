@@ -24,6 +24,8 @@ const readingOrder = [
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: "Cartan's Cascade", link: '/cascade-demo' },
+  { text: 'moore26 Findings', link: '/moore26-findings' },
+  { text: 'moore26 Substrate', link: '/moore26-substrate' },
 
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'Build & Validate', link: '/interference/reproduce' },
@@ -38,7 +40,15 @@ const readingOrder = [
   { text: 'Hopfion Zoo', link: '/hopfion-zoo' },
   { text: "Langevin's Wake", link: '/wake-demo' },
   { text: 'Audiocast', link: '/interference/sessions' },
-  { text: 'Intent', link: '/intent' }
+  { text: 'Intent', link: '/intent' },
+  // — engine archive: the retired substrates stay linked as
+  // provenance, below the current engine's record
+  { text: '— Archive —', link: '/qi3-findings' },
+  { text: 'qi3 Findings', link: '/qi3-findings' },
+  { text: 'qi3 Design', link: '/qi3-design' },
+  { text: 'link3 Report', link: '/link3-substrate-report' },
+  { text: 'FCC Substrate', link: '/fcc-substrate' },
+  { text: 'Knot Primer', link: '/knot-primer' }
 ]
 
 const paradoxItems = [

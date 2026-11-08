@@ -44,27 +44,30 @@ This is not a metaphor we ask you to accept. It is an engine we ask you to measu
 
 ## What the Engine Is
 
-A lattice gas in the honest sense: the descendant of the FHP automata and D3Q19 lattice Boltzmann methods that already earned their place in fluid physics. Each cell carries 19 integer channels of quanta. Streaming hops quanta along channels; collisions reshuffle them under exact mass and momentum conservation; transit friction parks congested flux as rest mass; parked mass radiates only while a carrier transits. Everything else, everything you can see in [Joule's Mill](/mill-demo), is measured outcome, not authored behavior.
+`moore26` — a 26-channel Moore/FCC substrate at `0.1 fm` per node, integer-only state. Each cell carries `26` registers: `12` transporting edge channels on the even-parity sublattice, winding pairs that commit into bound circulation, `mass`, signed `charge`, `heat`, and the offer→incipient→confirm transaction fields that negotiate every exchange. One hop per tick is the operational `c`. The per-phase ledger is audited — every leak found and sealed down to a `~0.1%` documented seam. Everything else is measured outcome, not authored behavior.
 
 ## What It Does: The Current Record
 
-- **Coherent light travels forever.** A unidirectional beam never self-scatters: equal co-moving pairs have no momentum-conserving alternative, a selection rule that emerges from pure integer bookkeeping (M47c).
-- **Collisions thermalize: friction binds.** An anisotropic gas isotropizes to `P/ρ ≈ 0.879` in ~25 ticks (M46); congestion drag turns that same flux into parked, persistent matter (M33–M35).
-- **Matter spins, and light can wind it.** Directional rest channels store angular momentum indefinitely (M39, M42); absorbed photons deposit it with the correct sign (M43), a YORP-class mechanism. The wound vault holds its winding as a stored record (M50).
-- **Only active matter interacts.** Self-radiating lumps genuinely couple: transiently, at short range (M47b). Passive lumps in a bath or a beam do not pull on each other at all. Le Sage shadowing is dead; transaction-mediated coupling survives.
-- **A medium attenuates; vacuum doesn't.** A pulse through a dilute ambient gas loses flux on a measurable mean free path; through vacuum it loses exactly zero (M48).
-- **Matter can be made of heat.** The excitation register `iE` — Planck's `n` — lets absorbed photons raise a bound object's energy at fixed mass and shed back as light; a lump can end as a massless hot object (E20).
-- **Thermodynamics works.** Under per-quantum decay (`IPHOT≥7` — Einstein's A-coefficient), two bodies share a real equilibrium temperature (the Zeroth Law), the photon gas holds ~28% of total energy as a conserved partition constant, and light stays blind to light on the shared plane (E24–E26).
-- **Every irreversible event is countable.** The transaction ledger reads zero in free flight, ~3,700 per window in a driven ember, and zero again in the frozen ground state (M47), the substrate's arrow of time, instrumented.
-- **Refraction and clock lag emerge without varying c.** Photons detained in rest resume as photons after `ILAT`; effective refractive index `n(ρ)` and cavity clock dilation emerge from discrete dwell and path length, with `c` strictly invariant on every hop (E2, E4, E10).
+- **Stable rest mass is real.** A wound knot plateaus at `~42k` mass in a closed box — a Prigogine dissipative structure held at equilibrium by a mass-tax evaporation rule, not a fixed input.
+- **The mass spectrum is tunable.** Under sustained flux, `M ≈ flux × 2^shift` — measured `467 → 906 → ~1600` across the `shift` sweep. Mass is an emergent `supply/friction` value.
+- **Decay is radiative.** The knot sheds `nu=1` quanta on its circulation axis — spin-aligned emission, not silent bookkeeping.
+- **Charge is a field, locally.** Same-sign offers get declined (`331` vs `35` baseline) — the `+q` wall repels `+par` traffic while the `−q` wall binds it. Knots even repolarize under sustained flux.
+- **Pair production conserves.** Above the `256` fusion threshold, collisions mint `±q` charged recoils — net-zero charge, exact ledger.
+- **Strings break like QCD.** Saturated flux tubes past `12` nodes fracture into `+128` endpoint mass + charged recoil — the confinement signature, watchable live.
+- **Persistent currents persist.** Ring waveguides carry loss-free circulation — the substrate's native rail.
+- **The ledger is honest.** `5% → ~0.1%`: every structural leak (heat drain, offer expiry, minting, truncation, parity debit, buffer ghosts) found, instrumented, and sealed.
 
-And the honest boundaries: no sustained gravitational attraction, no structured chemistry yet, no dimensional bridge to meters or seconds. All measured, all documented: the monograph keeps the confounds and retractions as first-class results.
+And the honest boundaries — the [deviation audit](/moore26-findings) keeps the full table: charge is local-congestion, not `1/r²` at range · parity is symmetric (nature violates it) · knots crawl, not fly · no Lorentz structure yet · the ledger holds a `~0.1%` documented seam. The frontier is field-level and relativistic physics.
+
+
+
 
 ## Exploring the Program
 
-*   **[The Friction Substrate](/interference/meso-monograph)**: the canonical empirical record: M19–M51, every mechanism verified or falsified headless.
-*   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument: the `moore26` 0.1fm substrate live in your browser — knots, photons, heat, and signed charge on the 26-channel Moore lattice, eight-thread OpenMP.
-*   **[The Predictive Roadmap](/interference/roadmap)**: what the engine can still reach, and which bridges it honestly can't.
+*   **[moore26 Findings](/moore26-findings)**: the empirical record of the current engine — the sealed ledger, the calibrated mass spectrum, the measured charge field, and the deviation audit that says exactly where the substrate stops matching nature.
+*   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument: the `moore26` 0.1fm substrate live in your browser — knots, photons, heat, and signed charge on the 26-channel Moore lattice.
+*   **[moore26 Substrate](/moore26-substrate)**: the engine architecture — 26 registers per node, the transaction pipeline, and the tuners.
+*   **[The Friction Substrate](/interference/meso-monograph)**: the earlier engine's canonical record (M19–M51) — kept as provenance, every mechanism verified or falsified headless.
 *   **[The Planck Field](/field)**: the theoretical program: why a process-ontology substrate, and what the vanguard lineage already established.
 
 ### Milestone Instruments & History
