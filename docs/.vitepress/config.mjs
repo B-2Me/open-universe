@@ -24,8 +24,8 @@ const readingOrder = [
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: "Cartan's Cascade", link: '/cascade-demo' },
-  { text: 'moore26 Findings', link: '/moore26-findings' },
-  { text: 'moore26 Substrate', link: '/moore26-substrate' },
+  { text: 'Moore26 Findings', link: '/moore26-findings' },
+  { text: 'Moore26 Substrate', link: '/moore26-substrate' },
 
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'Build & Validate', link: '/interference/reproduce' },

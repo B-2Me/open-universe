@@ -1,5 +1,5 @@
 ---
-title: moore26 findings
+title: Moore26 Findings
 audio: /audio/moore26-findings.mp3
 ---
 
@@ -7,7 +7,7 @@ audio: /audio/moore26-findings.mp3
   <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
 </ClientOnly>
 
-# moore26 findings
+# Moore26 Findings
 
 This is the measured record of the current engine — `moore26`, a
 26-register Moore/FCC substrate at `0.1 fm` per node. Everything

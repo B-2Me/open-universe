@@ -1,4 +1,4 @@
-# The moore26 Substrate: Mechanics of a Conserved Discrete Vacuum
+# The Moore26 Substrate: Mechanics of a Conserved Discrete Vacuum
 
 **Abstract** — The `moore26` engine is a discrete cellular automaton
 that models the quantum vacuum not as an empty coordinate space,
