@@ -977,7 +977,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   });
   bind('[data-play]', 'click', e => { ui.playing = !ui.playing; const g = e.currentTarget.querySelector('.g'); if (g) g.textContent = ui.playing ? '⏸' : '▶'; else e.currentTarget.textContent = ui.playing ? '⏸' : '▶'; });
   bind('[data-step]', 'click', () => {
-    if (ui.drive || ui.beam) inject();
+    if (ui.drive || ui.beam || ui.pump) inject();
     wasm._moore26_tick();
     ui.tick++; upload(); dirty = true;
   });
@@ -1357,7 +1357,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       let spent = 0;
       while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
-        if (ui.drive || ui.beam) inject();
+        if (ui.drive || ui.beam || ui.pump) inject();
         if (fuse) {
           /* fuse ramp: +1 winding/member/tick until the fracture
            * gate takes over — the string visibly glows critical */
