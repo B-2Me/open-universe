@@ -279,6 +279,10 @@ export async function initCascadeSimulator(root, opts = {}) {
     hud.textContent = 'engine out of memory — mobile wasm cap. Reload or try a smaller grid (?w=16).';
     return () => {};
   }
+  /* the calibrated mass tax — knots now breathe at a real
+   * equilibrium (open-box: mass ~ flux * 2^shift), not unbounded
+   * condensers. shift=4 was the verified calibration point. */
+  wasm._moore26_evap_shift_set(4);
   const N3 = W3 * H3 * D3;
   const CX = W3 >> 1, CY = H3 >> 1, CZ = D3 >> 1;
   const cenX = W3 * 0.5, cenY = H3 * 0.5, cenZ = D3 * 0.5;
@@ -304,19 +308,24 @@ export async function initCascadeSimulator(root, opts = {}) {
    * iPhone load-time OOB). */
   const wset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
-    wset(x, y, z, c, v);
+    wasm._moore26_winding_set(x, y, z, c, v);
   };
   const mset = (x, y, z, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3) return;
-    mset(x, y, z, v);
+    wasm._moore26_mass_set(x, y, z, v);
   };
   const pset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
-    pset(x, y, z, c, v);
+    wasm._moore26_packet_set(x, y, z, c, v);
   };
   const nuset = (x, y, z, c, v) => {
     if (x < 0 || x >= W3 || y < 0 || y >= H3 || z < 0 || z >= D3 || c < 0 || c >= NCH) return;
-    nuset(x, y, z, c, v);
+    wasm._moore26_packet_nu_set(x, y, z, c, v);
+    /* parity tag — the packet's charge sign = its channel's member
+     * parity (even +1 / odd -1), so the charge-sign binding law
+     * has quanta to act on */
+    if (wasm._moore26_packet_par_set)
+      wasm._moore26_packet_par_set(x, y, z, c, (c & 1) ? -1 : 1);
   };
   /* precomputed feed table — a fixed set of shell sources + aimed
    * channels, cycled through per tick. The substrate is 0.1fm cells:
