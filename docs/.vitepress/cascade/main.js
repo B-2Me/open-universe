@@ -154,7 +154,10 @@ out vec4 frag;
 void main() {
   float r2 = dot(v_uv, v_uv);
   if (r2 > 1.0) discard;
-  float a = exp(-r2 * 6.0);
+  /* tighter falloff — the 6.0 gaussian blurred each cell into its
+   * neighbors; 14.0 keeps a faint halo but makes the lattice's
+   * discrete cells read crisply */
+  float a = exp(-r2 * 14.0);
   /* additive output — overlapping glows brighten, nothing occludes:
    * this is what makes the billboards read as transparent light. */
   frag = vec4(v_color.rgb * v_color.a * a, 1.0);
