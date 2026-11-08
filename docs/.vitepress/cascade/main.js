@@ -122,6 +122,10 @@ void main() {
     // composite — cyan structure + red thermal halo + charge tint
     rgb = strcRamp * (0.35 + 0.75 * strc / 255.0) + heatRamp * 0.6
         + polRamp * abs(cq) * 0.9;
+    /* soft clip — additive sprite blending sums hundreds of
+     * billboards in a dense knot; without tone-mapping the sum
+     * blows to white and kills the structure gradient */
+    rgb = rgb / (1.0 + rgb);
   } else if (u_colorMode == 5) {
     // current — packets in flight: electric white-gold stream
     float pw = pk / 255.0;
