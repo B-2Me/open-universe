@@ -234,10 +234,21 @@ static void rescan_live(void){
     for(int pi=0;pi<nProc;pi++){
         int ci=procList[pi];
         int cz=ci/(CW*CH),cy=(ci%(CW*CH))/CW,cx=ci%CW;
-        for(int z=cz*CHUNK;z<cz*CHUNK+CHUNK&&z<QDepth&&!chunkLive[ci];z++)
-        for(int y=cy*CHUNK;y<cy*CHUNK+CHUNK&&y<QHeight&&!chunkLive[ci];y++)
+        int live_=0;
+        for(int z=cz*CHUNK;z<cz*CHUNK+CHUNK&&z<QDepth&&!live_;z++)
+        for(int y=cy*CHUNK;y<cy*CHUNK+CHUNK&&y<QHeight&&!live_;y++)
         for(int x=cx*CHUNK;x<cx*CHUNK+CHUNK&&x<QWidth;x++)
-            if(node_live(&grid_next[z*QWidth*QHeight+y*QWidth+x])){chunkLive[ci]=1;break;}
+            if(node_live(&grid_next[z*QWidth*QHeight+y*QWidth+x])){live_=1;break;}
+        if(live_){chunkLive[ci]=1;continue;}
+        /* phantom-resurrection seal: a dead chunk's grid_next still
+         * holds stale registers from when it was grid_current two
+         * ticks ago. Zero it before the swap — ghosts can't
+         * re-materialize into the ledger. */
+        for(int z=cz*CHUNK;z<cz*CHUNK+CHUNK&&z<QDepth;z++)
+        for(int y=cy*CHUNK;y<cy*CHUNK+CHUNK&&y<QHeight;y++)
+            memset(&grid_next[z*QWidth*QHeight+y*QWidth+cx*CHUNK],0,
+                   ((QWidth-cx*CHUNK)<CHUNK?QWidth-cx*CHUNK:CHUNK)
+                   *sizeof(NodeState));
     }
 }
 
