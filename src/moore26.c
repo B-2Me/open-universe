@@ -723,16 +723,20 @@ void moore26_tick(void){
              * Opposite-sign arrivals keep full capacity (they
              * bind and neutralize). Neutral nodes unchanged. */
             int cap;
+            int samesign=0;
             {
                 int8_t pp=n->packetPar[c];
-                int same=pp&&n->charge&&((n->charge>0)==(pp>0));
-                if(same)cap=4;
+                samesign=pp&&n->charge&&((n->charge>0)==(pp>0));
+                if(samesign)cap=4;
                 else{
                     cap=13-((n->charge<0?-n->charge:n->charge)>>3);
                     if(cap<4)cap=4;
                 }
             }
             if(armed>=cap){
+                qEvents[samesign?45:46]++;   /* ev45 = same-sign
+                 * decline (the Coulomb repulsion signature),
+                 * ev46 = baseline/congestion decline */
                 /* DECLINED — deflect to the freest channel: the packet
                  * bounces off the dense field to find another target
                  * rather than stacking inside it. */
