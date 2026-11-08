@@ -1270,13 +1270,44 @@ void moore26_tick(void){
          * mass — mass += da+db exactly what the edges lost (the
          * mass:bond ratio equilibrating, no minted energy). A bare
          * (massless) site still radiates a packet instead. */
-        if(o->mass>0&&(uint64_t)o->mass*8<loop_winding(o)){
-            uint32_t shed=site_unwind(x,y,z,si);
-            if(!shed)continue;
-            uint32_t m=grid_next[si].mass+shed;
-            grid_next[si].mass=(uint16_t)(m>65535?65535:m);
-            qEvents[29]++;
-            continue;
+        if(o->mass>0){
+            uint64_t lw=loop_winding(o);
+            if(lw>(uint64_t)o->mass*8){
+                uint32_t shed=site_unwind(x,y,z,si);
+                if(!shed)continue;
+                uint32_t m=grid_next[si].mass+shed;
+                grid_next[si].mass=(uint16_t)(m>65535?65535:m);
+                qEvents[29]++;
+                continue;
+            }
+            /* EVAPORATION — the missing inverse: a starved composite
+             * converts mass back into circulation on its weakest
+             * committed pair. mass ⇄ winding is a capacitor, not a
+             * sink — the knot breathes instead of eating the box.
+             * The fixed point is set by ambient supply vs evaporation,
+             * not by total box energy. */
+            if(lw<(uint64_t)o->mass*4&&o->mass>1){
+                uint32_t ev=o->mass>8?8:o->mass;
+                grid_next[si].mass-=ev;
+                int wbe=-1;uint32_t wbm=0;
+                for(int e2=0;e2<QChannels/2;e2++){
+                    uint32_t m2=grid_next[si].winding[2*e2]<grid_next[si].winding[2*e2+1]
+                               ?grid_next[si].winding[2*e2]:grid_next[si].winding[2*e2+1];
+                    if(m2>=32&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
+                }
+                if(wbe>=0){
+                    uint32_t half=ev>>1;
+                    grid_next[si].winding[2*wbe]+=half;
+                    grid_next[si].winding[2*wbe+1]+=(ev-half);
+                } else {
+                    /* no committed pair to receive — the mass vents
+                     * to heat instead (the radiation sink) */
+                    uint32_t h2=grid_next[si].heat+ev;
+                    grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);
+                }
+                qEvents[42]++;
+                continue;
+            }
         }
         if(!IS_EVEN(x,y,z))continue;   /* packets are born only on the
          * transport graph — odd cells hold structure; their unwound
