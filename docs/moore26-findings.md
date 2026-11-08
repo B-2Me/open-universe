@@ -21,6 +21,8 @@ on the even-parity sublattice plus face/corner registers that hold
 bound structure; transactions negotiate through an
 offer→incipient→confirm handshake each tick.
 
+![The Moore-26 stencil — the 26 neighbors around a node, exploded by z-layer. The 12 edge cells are the FCC transport channels (amber); the 6 face and 8 corner cells hold structure only.](/img/moore26-stencil.svg)
+
 ## Notation
 
 The shorthand used throughout — defined once here:
