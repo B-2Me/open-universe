@@ -250,8 +250,8 @@ alignment scheme changes again.
   ballistic time is NOT dilatable). `localTime` (τ, NodeState off
   456) = conserved proper-time accumulator integrating
   free_*qPhaseAdv each tick — twins diverge 22× under targeted
-  congestion; bound knots run τ≈1-7/800t (collectively frozen at
-  cap=16 — bound matter's own traffic saturates its bandwidth).
+  congestion; bound knots are DEPTH-GRADED, not uniformly frozen:
+  core ticks at max (shielded), shell crawls (congestion tax).
   `bondTick` (off 448) = first-confirm birthday — volumetric
   provenance: fed knots write concentric rings (surface-filtered
   accretion), bath knots write a sponge (volumetric fill);
@@ -269,9 +269,10 @@ alignment scheme changes again.
   instead of flat qWorkCap — tau rate = k*m - C_s verified on
   isolated nodes (14400/72000/288000 at mass 10/40/160). Under
   mass-scaling "mass is frozen time" INVERTS to "mass is
-  accelerated time" — heavier structure ticks faster. Composite-
-  knot tau under mass-scaling is UNMEASURED (the cap=16 freeze
-  was a flat-cap result — prediction is it unfreezes).
+  accelerated time" — heavier structure ticks faster. Composite
+  verification: knot core at mass 10 ticks ~19.2k (=cap 3*8*800),
+  and mass=0 sites get cap=0 — VACUUM HAS NO PROPER TIME: under
+  mass-scaled bandwidth, time exists only where mass exists.
   `qBondAge` tuner = seniority-weighted emission temper — verified
   NON-MONOTONIC (bifurcation knob, not a dial): suppressing early
   sheds reroutes the whole accretion trajectory. `qWorkCap` =
