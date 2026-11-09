@@ -56,8 +56,11 @@ const flyX = () => {
     s += Number(q._moore26_massflight_get(x, y, z, 6)) - Number(q._moore26_massflight_get(x, y, z, 7));
   return s;
 };
-console.log(`FEED=${FEED} WARM=${WARM} BATH=${BATH} — t | mass | wcx | wcy | wcz | ev4 | ev43 | flyX`);
+console.log(`FEED=${FEED} WARM=${WARM} BATH=${BATH} — t | mass | wcx | wcy | wcz | ev4 | ev43 | ev43/mass | flyX`);
+let prevEv = 0;
 for (let t = 0; t <= 2000; t += 100) {
-  console.log(`${t} ${massOf()} ${wcent('x').toFixed(2)} ${wcent('y').toFixed(2)} ${wcent('z').toFixed(2)} ev4=${ev(q, 4)} ev43=${ev(q, 43)} flyX=${flyX()}`);
+  const m = massOf(), e = ev(q, 43), rate = m ? ((e - prevEv) / m).toFixed(3) : '0';
+  console.log(`${t} ${m} ${wcent('x').toFixed(2)} ${wcent('y').toFixed(2)} ${wcent('z').toFixed(2)} ev4=${ev(q, 4)} ev43=${e} ${rate} flyX=${flyX()}`);
+  prevEv = e;
   for (let i = 0; i < 100; i++) { if (BATH) bath(); if (FEED || (WARM && t + i <= WARM)) feed(); q._moore26_tick(); drain(); }
 }
