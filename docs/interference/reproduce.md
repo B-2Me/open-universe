@@ -73,15 +73,29 @@ Serves at `http://localhost:5173/`. The instrument pages boot whichever artifact
 
 ## Step 3: Run a headless experiment
 
-The `script/meso/` harnesses are the measurements themselves: each is a self-contained Node script that loads `docs/public/wasm/ember/meso3i.js`, drives the engine through a scenario, and prints its measurements to stdout:
+The `script/cascade/` harnesses are the current engine's measurements: each is a self-contained Node script that loads `docs/public/wasm/cascade/moore26-stnm.js` via `script/lib/m26.mjs`, drives the engine through a scenario, and prints its measurements to stdout:
 
 ```bash
-node script/meso/eos-thermalize.mjs
+node script/cascade/openbox.mjs
 ```
 
-No config files, no output files: read the header comment at the top of each script for the scenario, then run it and compare its numbers against the monograph.
+No config files, no output files: read the header comment at the top of each script for the scenario, then run it and compare its numbers against [Moore26 Findings](/moore26-findings).
 
-### Harness map: which script produced which claim
+### moore26 harness map: which script produced which claim
+
+| Harness | What it measures | Claim in Findings |
+|---|---|---|
+| `moore26-harness.mjs` | Two-core saturated flux tube — winding/mass centroids + event counters | string-break mechanics |
+| `openbox.mjs` | Open-box driven equilibrium — sustained flux vs mass tax | `M ≈ flux × 2^shift` mass spectrum |
+| `openbox5.mjs` | The `shift=5` asymptote (5k ticks, engine-side absorb wall) | the `~3.4–3.9×` scaling |
+| `closedbox.mjs` | Closed-box plateau — the knot eats until the vacuum starves | supply-bound `~40k` plateau |
+| `ledgerbox.mjs` | The conservation ledger under transaction pressure | `~0.1%` residual audit |
+| `hexbuckle-ensemble.mjs` | Hexbuckle dipole/flexoelectric ensemble | charge memory / dipole tests |
+| `vacuum-isotropy.mjs` | Vacuum propagation isotropy | the `v=1` transport claim |
+
+### The archived `meso3i` harness map
+
+*The earlier engine's measurements — kept for provenance. Each loads `docs/public/wasm/ember/meso3i.js` and prints to stdout; compare its numbers against the [monograph](/interference/meso-monograph).*
 
 | Harness | What it measures | Milestone |
 |---|---|---|
@@ -112,11 +126,11 @@ The `script/*.mjs` suite alongside it (pathfinder, sweep, boost, collide, smatri
 
 ## Step 4: Native C harnesses
 
-`src/test_*.c` is a 29-file headless C suite: conservation ledgers, ballistic time-of-flight, slit apparatus, and the meso3i probes (`test_bath`, `test_shadow`, `test_atten`, `test_accrete`, `test_replay`). Each file documents its own usage line in the header comment. Compile against the engine directly: no local gcc on this machine means Docker:
+`src/test_*.c` is a 29-file headless C suite: conservation ledgers, ballistic time-of-flight, slit apparatus, and the meso3i probes (`test_bath`, `test_shadow`, `test_atten`, `test_accrete`, `test_replay`). The moore26 native smoke is `test_moore26.c`; the audit build compiles `moore26.c` with `-DM26_AUDIT` for the per-phase delta counters. Each file documents its own usage line in the header comment. Compile against the engine directly: no local gcc on this machine means Docker:
 
 ```bash
 docker run --rm -v "$PWD:/src" -w /src/src gcc:13 \
-  sh -c "gcc -O2 -Wall meso3i.c test_atten.c -o /tmp/atten -lm && /tmp/atten 30"
+  sh -c "gcc -O2 -Wall moore26.c test_moore26.c -o /tmp/m26t -fopenmp -lm && /tmp/m26t"
 ```
 
 The planck3 regression vector (`planck3.c` + `planck3_test.c` → `test/loom/t0.bin`/`t400.bin`) is the bit-identity gate between the C and WASM builds: same recipe, see `AGENTS.md`.
