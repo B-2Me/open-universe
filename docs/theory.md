@@ -30,6 +30,10 @@ The causal mathematics: what happens to the calculus when $\Delta x$ and $\Delta
 
 The payoff chapter: who the theory is *for*. A biological body is not a ghost piloting meat: it is the substrate's own recursive interface, a localized locus that forges its connection to the unfolding field. Geometry, on this read, is not the structure of the universe but the sensory compression an interface evolved to survive it, the dashboard, not the machine.
 
+## 5. [The Vanguard](/vanguard): the lineage
+
+The framework doesn't invent a rogue physics from whole cloth — it's a systems integration of what the vanguard already established. 't Hooft's cellular automaton, Lamb & Hobson's no-point-particles critique, Rovelli's relational state, Heisenberg–Euler vacuum saturation, Smolin & Markopoulou's graphity, Hoffman's perceptual interface: the rigorous foundations kept, the unphysical philosophical detours filtered out. The scorecard of where the program agrees, diverges, and goes further.
+
 ---
 
-*When you're ready to watch the substrate actually run, the instruments live under [Interference](/interference).*
+*The engine's measured counterpart to all of this is [Moore26 Findings](/moore26-findings); the instruments live under [Interference](/interference).*
