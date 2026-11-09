@@ -389,3 +389,8 @@ html.dark .sync-text.active {
 .VPNavScreenMenuGroup .VPNavScreenMenuGroupSection .VPNavScreenMenuGroupLink {
   margin-left: 28px;
 }
+
+/* fixed-width ASCII blocks (vanguard diagrams etc.) scroll
+   horizontally instead of overflowing the content column */
+.vp-doc pre { overflow-x: auto; max-width: 100%; }
+.vp-doc pre code { white-space: pre; }
