@@ -1009,15 +1009,15 @@ void moore26_tick(void){
                 if(line<1)line=1;
                 if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue;
                 if(qAlignGate){
-                    /* helicity-selective acceptance: refuse offers
-                     * on pairs whose committed dd is much weaker
-                     * than the node's dominant axis */
+                    /* helicity-selective acceptance on BONDED reach,
+                     * not volatile winding dd — bondDist is written
+                     * by confirmed-transaction ACKs and emission can't
+                     * spend it: refuse offers on axes the node isn't
+                     * already bonded into */
                     int mxd=1;
-                    for(int e2=3;e2<9;e2++){
-                        int d2=abs((int)o->winding[2*e2]-(int)o->winding[2*e2+1]);
-                        if(d2>mxd)mxd=d2;
-                    }
-                    int mydd=abs((int)o->winding[2*arr]-(int)o->winding[2*arr+1]);
+                    for(int e2=0;e2<13;e2++)
+                        if(o->bondDist[e2]>mxd)mxd=o->bondDist[e2];
+                    int mydd=o->bondDist[arr];
                     if(mydd*256<mxd*qAlignGate){
                         /* declined — don't let a refused offer clog
                          * the table: consume it and thermalize nu
