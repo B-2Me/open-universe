@@ -185,8 +185,67 @@ function getRenderableNodes(node, nodes = []) {
   return nodes;
 }
 
-function sanitizeTextForTTS(text) {
-  let sanitized = text;
+// Generic LaTeX -> spoken English. Opt-in per page via
+// `audio_math: true` frontmatter — the mathMap below remains the
+// manual override layer for idioms that need exact phrasing.
+function latexToSpeech(text) {
+  let s = text;
+
+  const greek = {
+    alpha:'alpha',beta:'beta',gamma:'gamma',delta:'delta',epsilon:'epsilon',
+    zeta:'zeta',eta:'eta',theta:'theta',iota:'iota',kappa:'kappa',lambda:'lambda',
+    mu:'mu',nu:'nu',xi:'xi',pi:'pi',rho:'rho',sigma:'sigma',tau:'tau',
+    upsilon:'upsilon',phi:'phi',chi:'chi',psi:'psi',omega:'omega',
+    Delta:'delta',Gamma:'gamma',Theta:'theta',Lambda:'lambda',Xi:'xi',
+    Pi:'pi',Sigma:'sigma',Phi:'phi',Psi:'psi',Omega:'omega'
+  };
+
+  const ops = {
+    '\\times':'times', '\\cdot':'times', '\\div':'divided by',
+    '\\pm':'plus or minus', '\\approx':'approximately', '\\neq':'not equal to',
+    '\\le':'less than or equal to', '\\leq':'less than or equal to',
+    '\\ge':'greater than or equal to', '\\geq':'greater than or equal to',
+    '\\propto':'proportional to', '\\infty':'infinity', '\\sum':'the sum of',
+    '\\prod':'the product of', '\\int':'the integral of', '\\partial':'partial',
+    '\\nabla':'nabla', '\\to':'to', '\\rightarrow':'goes to',
+    '\\leftarrow':'comes from', '\\Rightarrow':'implies', '\\in':'in',
+    '\\mathbb{R}':'the reals', '\\mathbb{C}':'the complex numbers',
+    '\\mathbb{Z}':'the integers', '\\mathbb{N}':'the naturals',
+    '\\hbar':'h-bar', '\\ell':'l', '\\circ':'degrees'
+  };
+
+  // \frac{a}{b} -> "a over b" (iterate for nesting)
+  for (let i = 0; i < 3; i++) {
+    const before = s;
+    s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1 over $2 ');
+    if (s === before) break;
+  }
+  // \sqrt{a} -> "square root of a"
+  s = s.replace(/\\sqrt\{([^{}]*)\}/g, ' square root of $1 ');
+  // \mathbb{X} handled via ops map; \operatorname{...}/\mathrm{...} unwrap
+  s = s.replace(/\\(?:mathrm|operatorname|text|mathit|mathbf|mathrm)\{([^{}]*)\}/g, '$1');
+  // operator names
+  for (const [k, v] of Object.entries(ops)) {
+    s = s.split(k).join(` ${v} `);
+  }
+  // greek commands (longest first so \Delta beats \delta-prefix issues)
+  for (const [k, v] of Object.entries(greek).sort((a,b)=>b[0].length-a[0].length)) {
+    s = s.replace(new RegExp(`\\\\${k}\\b`, 'g'), ` ${v} `);
+  }
+  // sub/superscripts: x_{a b} -> "x sub a b"; x^{a b} -> "x to the a b"
+  s = s.replace(/_\{([^{}]*)\}/g, ' sub $1 ');
+  s = s.replace(/\^\{([^{}]*)\}/g, ' to the $1 ');
+  s = s.replace(/_([A-Za-z0-9])/g, ' sub $1');
+  s = s.replace(/\^([A-Za-z0-9])/g, ' to the $1');
+  // leftover latex commands -> drop the backslash, keep the name
+  s = s.replace(/\\([a-zA-Z]+)/g, ' $1 ');
+  // braces and math delimiters
+  s = s.replace(/[{}$]|\\\(|\\\)|\\\[|\\\]/g, ' ');
+  return s;
+}
+
+function sanitizeTextForTTS(text, useMath = false) {
+  let sanitized = useMath ? latexToSpeech(text) : text;
 
   // 1. Translate LaTeX Formulas to Phonetic English
   const mathMap = {
@@ -245,6 +304,7 @@ async function processFile(filePath) {
   const hashPath = path.join(SYNC_MAP_DIR, `${filename}.hash`);
 
   const content = await fs.readFile(filePath, 'utf-8');
+  const useMath = /^audio_math:\s*true/m.test(content);
   const bodyContent = content.replace(/^[\s\uFEFF]*---\r?\n[\s\S]*?\r?\n---/, '');
 
   const parsedAST = remark().parse(bodyContent);
@@ -256,7 +316,7 @@ async function processFile(filePath) {
   // can't misfire either way.
   const textHash = (() => {
     const h = crypto.createHash('sha256');
-    for (const node of rawNodes) h.update(sanitizeTextForTTS(extractText(node)) || '');
+    for (const node of rawNodes) h.update(sanitizeTextForTTS(extractText(node), useMath) || '');
     return h.digest('hex').slice(0, 16);
   })();
 
@@ -292,7 +352,7 @@ async function processFile(filePath) {
 
   for (const node of rawNodes) {
     let rawText = extractText(node).replace(/\n/g, ' ');
-    let sanitizedText = sanitizeTextForTTS(rawText);
+    let sanitizedText = sanitizeTextForTTS(rawText, useMath);
     
     if (sanitizedText) {
       contentNodes.push({ 
