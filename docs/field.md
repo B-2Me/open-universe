@@ -9,8 +9,6 @@ audio: /audio/field.mp3
 
 # The Planck Field
 
-*This page is the conceptual foundation: the claim and its silhouette. What the substrate has actually **measured** lives in [moore26 Findings](/moore26-findings) — including the deviation audit that says where it stops matching nature — and the live engine is [Cartan's Cascade](/cascade-demo). The earlier engines' record is kept as provenance in the [Friction Substrate monograph](/interference/meso-monograph).*
-
 ## 100 Years of Burying the Planck
 
 For a century, modern physics has been trapped in a mathematical detour. 
