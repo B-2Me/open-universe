@@ -70,10 +70,12 @@ const theoryItems = [
 
 const interferenceItems = [
   { text: 'Overview', link: '/interference' },
-  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
-  { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Moore26 Findings', link: '/moore26-findings' },
-  { text: 'Build & Validate', link: '/interference/reproduce' }
+  { text: 'Moore26 Substrate', link: '/moore26-substrate' },
+  { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Build & Validate', link: '/interference/reproduce' },
+  { text: '— Archive —', link: '/interference/meso-monograph' },
+  { text: 'Friction Substrate', link: '/interference/meso-monograph' }
 ]
 
 // The active instrument first; milestone builds preserved underneath.
