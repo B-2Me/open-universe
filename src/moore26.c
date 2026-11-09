@@ -1425,6 +1425,16 @@ void moore26_tick(void){
                     grid_next[si].packetNu[dch]=1;
                     grid_next[si].packetBorn[dch]=(uint8_t)qTick;
                     grid_next[si].packetPar[dch]=(dch&1)?-1:1;
+                    /* Newton III — the emitted quantum's momentum
+                     * recoils into the knot's flight register on the
+                     * opposite channel, paid from mass so L stays
+                     * sealed (structure → directed momentum). A
+                     * consistently-aligned emitter accumulates net
+                     * thrust along the axis opposite its radiation. */
+                    if(grid_next[si].mass>1){
+                        grid_next[si].mass--;
+                        grid_next[si].massFlight[dch^1]++;
+                    }
                 } else {
                     /* saturated or no circulation — non-radiative
                      * fall: the mass thermalizes in place */
@@ -1524,6 +1534,14 @@ void moore26_tick(void){
         }
         grid_next[si].packet[c]++;
         grid_next[si].packetBorn[c]=(uint8_t)qTick;
+        /* Newton III — emission recoil: the knot pays mass into
+         * its flight register on the opposite channel (structure →
+         * directed momentum, L conserved). A consistently-aligned
+         * emitter accumulates net thrust opposite its radiation. */
+        if(grid_next[si].mass>1){
+            grid_next[si].mass--;
+            grid_next[si].massFlight[c^1]++;
+        }
         }
         qEvents[4]++;qEvents[20]+=shed;
     PROC_NODES_END
