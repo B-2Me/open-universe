@@ -132,6 +132,10 @@ typedef struct {
      * unbounded — unlike phase's mod-512 wrap). Two nodes with the
      * same bondTick but different load histories DIVERGE here:
      * the twins-paradox ledger, conserved and auditable. */
+    int8_t   bondPar;          /* net parity of CONFIRMED bonds —
+     * the node's chirality record (saturating ±127). A label, never
+     * spent: emission can't erode it. bondPar=0 until first confirm
+     * — the node's handedness is SET by its first successful bond. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -183,6 +187,10 @@ static int qWorkCap=32;   /* per-node transaction bandwidth — the C_max.
      * confirms/transfers/emissions). 32 exceeds every measured load
      * (~2/tick on a working knot) -> absolute time by default;
      * lowering it authors a bandwidth where congestion bites. */
+static int qParGate=0;    /* helicity gate at CONFIRM (0=off): offers
+     * whose incipPar disagrees with the node's bondPar are declined —
+     * a left-handed knot refuses right-handed flux. bondPar is set
+     * by the FIRST confirmed bond: self-polarizing chirality. */
 static int qAlignGate=0;  /* coherence gate at CONFIRM (0=off, 1..255):
      * an offer on pair e confirms only if that pair's |dd| >=
      * max|dd| * qAlignGate/256 — the knot preferentially accepts
@@ -1028,10 +1036,24 @@ void moore26_tick(void){
                         continue;
                     }
                 }
+                if(qParGate){
+                    /* helicity selection: the offer's handedness must
+                     * match the node's confirmed-bond chirality */
+                    int8_t op=o->incipPar[c];
+                    if(op&&n->bondPar&&((op>0)!=(n->bondPar>0))){
+                        n->incip[c]--;         /* wrong helicity — decline */
+                        uint32_t ht3=(uint32_t)n->heat+nu;
+                        n->heat=(uint16_t)(ht3>65535?65535:ht3);
+                        continue;
+                    }
+                }
                 if(mA+nu<=qConfirmCap){
                     n->incip[c]--;         /* confirmed — consume the offer */
                     TXN_WORK(n);
                     if(!n->bondTick)n->bondTick=(uint32_t)qTick;
+                    /* the node's chirality accrues from its bonds */
+                    if(o->incipPar[c]>0){if(n->bondPar<127)n->bondPar++;}
+                    else if(o->incipPar[c]<0){if(n->bondPar>-127)n->bondPar--;}
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -1936,6 +1958,7 @@ void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}
+void moore26_par_gate_set(int v){qParGate=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
