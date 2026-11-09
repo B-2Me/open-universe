@@ -1,5 +1,4 @@
 ---
-title: visualizing-the-proton
 audio: /audio/visualizing-the-proton.mp3
 ---
 

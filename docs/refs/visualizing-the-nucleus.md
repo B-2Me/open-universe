@@ -1,5 +1,4 @@
 ---
-title: visualizing-the-nucleus
 audio: /audio/visualizing-the-nucleus.mp3
 ---
 

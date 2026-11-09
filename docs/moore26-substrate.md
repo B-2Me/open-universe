@@ -1,5 +1,4 @@
 ---
-title: moore26-substrate
 audio: /audio/moore26-substrate.mp3
 ---
 

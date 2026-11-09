@@ -1,5 +1,4 @@
 ---
-title: visualizing-the-neutrino
 audio: /audio/visualizing-the-neutrino.mp3
 ---
 
