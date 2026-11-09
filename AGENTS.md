@@ -259,6 +259,19 @@ alignment scheme changes again.
   face = OLD accretion crust — inverted vs nature's erosion).
   `workAge` (off 452) = cumulative txnWork — callus vs relic:
   effort peaks at working shell, birthday at formation site.
+  `bondPar` (int8, off 460) = net parity of confirmed bonds,
+  saturating ±127 — the node's conserved chirality record, set by
+  its FIRST bond (self-polarizing). `qParGate` declines offers
+  whose incipPar disagrees — verified: +polarized knot refuses
+  -flux, holds handedness, ~49% accretion suppression. True
+  delta-m=±1 selection: handedness matching handedness. `qMassCap`
+  = Compton ansatz (0=off): clock bandwidth = mass*qMassCap/16
+  instead of flat qWorkCap — tau rate = k*m - C_s verified on
+  isolated nodes (14400/72000/288000 at mass 10/40/160). Under
+  mass-scaling "mass is frozen time" INVERTS to "mass is
+  accelerated time" — heavier structure ticks faster. Composite-
+  knot tau under mass-scaling is UNMEASURED (the cap=16 freeze
+  was a flat-cap result — prediction is it unfreezes).
   `qBondAge` tuner = seniority-weighted emission temper — verified
   NON-MONOTONIC (bifurcation knob, not a dial): suppressing early
   sheds reroutes the whole accretion trajectory. `qWorkCap` =
