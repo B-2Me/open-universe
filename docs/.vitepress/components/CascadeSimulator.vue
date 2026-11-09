@@ -896,9 +896,9 @@ onUnmounted(() => {
     -webkit-overflow-scrolling: touch;
   }
   .grp-presets .cascade-grp-row > em { display: none; }   /* label eats a row's worth of space */
-  .cascade-field select[data-preset]   { width: 108px; }
-  .cascade-field select[data-colormode] { width: 86px; }
-  .cascade-field select[data-scenario]  { width: 96px; }
+  .cascade-field select[data-preset]   { width: 104px; }
+  .cascade-field select[data-colormode] { width: 82px; }
+  .cascade-field select[data-scenario]  { width: 92px; }
   /* bigger touch targets — the stacked layout already shares the
      on-dot with the icon row globally */
   .cascade-grp-row > button {
@@ -929,7 +929,9 @@ onUnmounted(() => {
   }
   .cascade-field { gap: 4px; }
   .cascade-field > span { font-size: 9px; }
-  .cascade-dock select { padding: 0 20px 0 8px; }
+  /* tighter select padding — the iOS 16px font needs every px
+     of text room it can get inside the fixed widths */
+  .cascade-dock select { padding: 0 12px 0 5px; }
 }
 
 /* phones: shrink the secondary chrome so the HUD keeps the corner */
@@ -946,14 +948,15 @@ onUnmounted(() => {
     width: 42px;
     height: 42px;
     right: 52px;
-    bottom: 6px;
+    top: -48px;      /* above the dock — inside-the-dock gets
+                        clipped by the dock's mobile overflow */
     opacity: 0.65;
   }
   .cascade-zoomlens {
     width: 42px;
     height: 42px;
     right: 6px;
-    bottom: 6px;
+    top: -48px;
   }
 }
 
