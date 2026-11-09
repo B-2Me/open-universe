@@ -8,42 +8,32 @@ audio: /audio/roadmap.mp3
 
 # The Predictive Roadmap: Honest Anchors
 
-The Planck Field is a cellular automaton, so it is governed by **Computational Irreducibility**: there are no algebraic shortcuts ahead of the ticks. That cuts both ways: the substrate can only claim what its measurements actually show, and every comparison to real physics needs a mechanism match, not a borrowed vocabulary.
+The substrate is a cellular automaton — **Computationally Irreducible**: no algebraic shortcuts ahead of the ticks. The engine can only claim what its measurements actually show. This page is the open frontier on `moore26`: what the current engine can still reach, and which bridges it honestly can't.
 
-> **Status note (loom-meso):** This page previously proposed benchmarking integer collision spray against CERN Open Data via an "LSZ reduction." That path is retired. LSZ is a theorem about asymptotic continuous fields with on-shell poles; a discrete 19-channel lattice gas in a ~10⁵-cell open box has neither. The scale gap is worse: a proton spans ~10⁶⁰ Planck volumes. The grid is a trillionth of a trillionth of one proton's internal arena. The anchors below are the ones the engine can actually reach.
->
-> The original collider-telemetry matrix: which observables would map onto which engine quantities *if* a scale path ever existed, plus the grid-scale argument for why it currently can't. Is preserved under Program History: [The Collider Matrix](/interference/collider). It stays conditional: it reopens only if a measured dimensional bridge and an asymptotic-scale domain both materialize.
+The deviation audit in [Moore26 Findings](/moore26-findings) is the honest scorecard this roadmap is measured against. The earlier engines' campaigns (the M-series, E-series, collider-matrix proposals) are archived under [Program History](/interference/methodology) — this page is only the current engine's frontier.
 
-## Step 1: Directional Rest & Latent Spin, *achieved (M39–M45)*
+## Step 1: Charge range — a field, not a jam *(open)*
 
-The single-spin campaign's wall, scalar rest destroys all circulation in ~25 ticks, is crossed on the `loom-meso` branch. `rest[18]` directional parking stores angular momentum without degradation; latency gating shields it; collisions and absorbed light write it with the correct `r × p` sign. Structured matter exists on the substrate: stationary, non-radiating, wound states. "atoms, not whirlpools." See [the monograph](./meso-monograph.md), Part VIII.
+Today the charge law fires under offer congestion — a `cap` gate, a traffic jam. Nature's Coulomb acts at distance. The open question: can a standing virtual layer — persistent unconfirmed offers or phase bias radiated into the vacuum halo — project a gradient that steers traffic before it arrives? Measured next: whether a charged knot's wake deflects a probe stream at range, not just at contact.
 
-## Step 2: The Continuum Bridge
+## Step 2: Knots in motion — ballistic translation *(open)*
 
-Extract the macroscopic constitutive relations of the gas itself, in substrate units, from direct measurement, never presumed:
+A wound knot's binding winding is anchored to where the mass sits: knots crawl by rebuilding themselves cell-by-cell. For a soliton to translate, the circulation pattern must shift its center coherently across the lattice without paying full re-crystallization cost per hop. The radiative-recoil proposal — book the emission momentum the knot currently sheds for free — is the minimal honest mechanism to test first.
 
-*   **Stress tensor.** `Πᵢⱼ = Σ cᵢcⱼf_c` per site/shell. First extraction on a driven ember gives `P/ρ → 0.89–0.98` with off-diagonal shear ≤9%: a nearly ideal isotropic moving fluid, with `P ≈ ρ·⟨c_x²⟩`, `⟨c_x²⟩ = 16/18` in lattice units.
-*   **Wavefront anisotropy.** A point pulse expands as *two* ballistic shells: axials at v=2, diagonals at v=1, each isotropic within ~8% in-class. The lattice is anisotropic across speed classes by construction; claims of emergent isotropy must name the shell.
-*   **Transport.** Sound speed, shear viscosity, and the P(ρ) curve as measured quantities. The open question: whether any coarse-grained limit of the full engine (collisions + friction + rest) recovers hydrodynamic transport without grid artifacts.
+## Step 3: Lorentz structure *(downstream of motion)*
 
-## Step 3: The Yarkovsky/YORP Observational Bridge, *mechanism matched*
+If a knot translates at `0.5c`, half its transaction cycles go to moving structure forward — half as many left for internal update. That processing lag is time dilation as a mechanism, not an axiom. Length contraction follows as Doppler-skewed internal signaling along the travel axis. Measurable only once Step 2 yields real `v`.
 
-Real, radar-measured phenomena running on the same contact mechanics:
+## Step 4: The species census *(in progress)*
 
-*   **Ablation drift (M36):** asymmetric venting propels a lump, the substrate's Yarkovsky-style thrust mechanism.
-*   **Light-written spin (M43):** `IPHOT=3` absorbed photons deposit directional momentum into directional rest; a grazing beam spins matter with the correct sign, a YORP-class mechanism.
-*   **Honesty condition:** these are *mechanism matches* in substrate units. Dimensional claims (meters, seconds, Golevka's ~200 m drift) require a bridge that does not yet exist, and asserting one would repeat the CERN error at a smaller scale.
+Which bound structures persist? Verified so far: the wound knot (dissipative equilibrium), the ring (topologically protected rail), the flux tube (conductor until it fractures). Open: the Hopf-link topology, the chiral-pair lifetime, whether multi-knot bound states hold under sustained flux — the zoo, measured rather than seeded.
 
-## Step 4: Entropic Gravitational Scaling, *revised by M47b*
+## Step 5: Gravity *(proposed, unimplemented)*
 
-M37 was re-measured in three regimes with solo-lump baselines (`script/meso/m37-drift*.mjs`, `src/test_bath.c`):
+Mass-induced routing asymmetry — a knot subtly biasing conduction directions in its neighborhood — is the substrate's candidate mechanism for attraction at range. Not implemented; the honest test is whether ambient packets deflect toward a stationary knot by `δθ ∝ mass`.
 
-*   **Centered drive:** the convergence is *drive-centric infall*. An artifact of the point source, not a two-body force.
-*   **Self-radiating (`fricm>0`, the faithful regime):** a real but *transient* short-range approach (sep ≤12) that reverses as evaporation proceeds. Two active processes ablate each other asymmetrically while dense: not a sustained force.
-*   **Ambient bath (carrier-gated):** zero pairwise residual at every gap. Inert lumps shadow the bath but produce no measurable attraction.
+## The honesty conditions
 
-"Gravity" language is out of the roadmap. What remains is a bounded claim: mutual ablation between actively-radiating lumps, transient and short-range. A dimensional bridge is not discussable.
-
-## Step 5: The Second Law & Decay
-
-M32c/d established that reversible moves cannot accrete: irreversibility is load-bearing for matter formation on this substrate. Exponential decay rates, the entropy ledger of park/emit/drain events, and the relation between stored spin and thermalization are all measurable on the current engine. This is the substrate's cleanest contact point with the transactional/thermodynamic arrow of time.
+- **Mechanism matches, not borrowed vocabulary.** A result is a substrate behavior measured in substrate units; dimensional bridges to meters/seconds/GeV are conditional and always flagged.
+- **Nulls are results.** The retracted chirality, the failed collider-telemetry matrix, the confounds — all first-class records, kept in the archive, not hidden.
+- **The ledger gates claims.** The `~0.1%` documented seam means the engine's bookkeeping is honest enough to trust downstream measurements — and the seam itself stays on the record.
