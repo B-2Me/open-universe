@@ -61,7 +61,7 @@ const paradoxItems = [
 
 const theoryItems = [
   { text: 'Overview', link: '/theory' },
-  { text: 'Paradoxes', items: paradoxItems },
+  { text: 'Paradoxes', link: '/paradox', items: paradoxItems },
   { text: 'Source', link: '/source' },
   { text: 'Math', link: '/math' },
   { text: 'Interface', link: '/interface' },
