@@ -248,7 +248,7 @@ alignment scheme changes again.
 - Clock/history stack (all measured, commit ea6d720 era):
   `qTick` = absolute drumbeat (rail ring: exact period 3, bath-immune;
   ballistic time is NOT dilatable). `localTime` (τ, NodeState off
-  452) = conserved proper-time accumulator integrating
+  456) = conserved proper-time accumulator integrating
   free_*qPhaseAdv each tick — twins diverge 22× under targeted
   congestion; bound knots run τ≈1-7/800t (collectively frozen at
   cap=16 — bound matter's own traffic saturates its bandwidth).
