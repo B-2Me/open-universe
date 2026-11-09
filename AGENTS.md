@@ -263,6 +263,14 @@ alignment scheme changes again.
   NON-MONOTONIC (bifurcation knob, not a dial): suppressing early
   sheds reroutes the whole accretion trajectory. `qWorkCap` =
   authored per-node bandwidth; `qPhaseAdv` = clock rate multiplier.
+  `qAlignGate` tuner = helicity-selective CONFIRM gate on
+  bondDist[e] (ACK-measured bonded reach — the only orientation
+  record emission can't spend; gating on winding dd self-defeats
+  because the knot's own dd-emission erodes the surface axis).
+  Verified: off-axis accretion suppressed 75-90% while the bonded
+  axis still accepts; selection is EMERGENT (bit-identical on
+  symmetric vs dd-biased seeds — bond topology self-organizes
+  from feed geometry + rail paving, not birth memory).
   Honest status: time = authored-but-measured laws, not Lorentz;
   the knot is a jam (zero circulation on all 4 {111} plaquettes),
   dd is Meissner-frozen (no tumble exists), and history records
