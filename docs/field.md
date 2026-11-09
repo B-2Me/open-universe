@@ -81,7 +81,7 @@ Legacy physics obscures this friction by relying on pure, abstract mathematics. 
 
 Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic structures strictly as algorithmic fluid dynamics across the finite-bandwidth 12-port FCC lattice. Chemistry is the physical mechanism by which the substrate optimizes and routes traffic around massive topological deadlocks.
 
-> **Current focus:** `moore26` — the live engine behind [Cartan's Cascade](/cascade-demo). The measured record is [moore26 Findings](/moore26-findings) (with the deviation audit); the earlier engines' lineage and milestone campaigns are archived in the [Friction Substrate monograph](/interference/meso-monograph). The species claims below are the theory's map the engine is measured against, not the record.
+The species claims below are the theory's map the engine is measured against — measured structure lives in [Moore26 Findings](/moore26-findings).
 
 ### 1. The Compound Impedance (Atomic Unwinding)
 *   **The Nucleus as Deadlock:** An atomic nucleus is not a cluster of solid spheres; it is a **Compound Impedance**, a massive, contiguous zone of congestion gravity.
@@ -99,7 +99,7 @@ Unlike continuous probability models (QM/QFT), Causal Chemistry defines atomic s
 *   **Absorption (Buffer Surge):** When a photon strikes an electron's circulating slipstream, the raw `quanta` surges the local buffer. To prevent catastrophic phase friction, the electron must physically expand into a wider, higher-capacity geometric waveguide (a higher orbital).
 *   **Emission (Thermodynamic Ejection):** When ambient environmental tension pushes back against the artificially inflated slipstream, the grid crushes the electron back down into a tighter geometric valley. The excess routing capacity is cleanly sheared off as an exact, quantized chunk. This localized spray of excess capacity unwinds and propagates outward as a photon. Spectral lines are strictly discrete because they represent the exact geometric difference between two fixed 12-port waveguides.
 
-> **Provenance note:** the per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure. The species table the earlier engines produced — lumps, filaments, breathers, dimers — is archived in the [Friction Substrate monograph](/interference/meso-monograph); what `moore26` has actually produced is documented in [moore26 Findings](/moore26-findings).
+The per-element loop assignments above (Iron = 26 loops, Cobalt = 27 loops, transmutation frequencies) are *conjectured geometry*, not measured structure — the map, not the record.
 
 ### 4. The Species Map — current engine
 
