@@ -102,8 +102,7 @@ const historyItems = [
   { text: 'Collider Matrix', link: '/interference/collider' },
   { text: 'Identification Bridge', link: '/interference/identification' },
   { text: 'Substrate Ontology', link: '/interference/ontology' },
-  { text: 'Why Simulate', link: '/interference/usefulness' },
-  { text: 'Podcast', link: '/interference/sessions' }
+  { text: 'Why Simulate', link: '/interference/usefulness' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is
