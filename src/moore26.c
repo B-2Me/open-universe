@@ -65,6 +65,9 @@ static int8_t QChannelVec[26][3] = {
  * member — the artificial 1.7:1 self-polarizing runaway. */
 #define PAR_SIGN(n_,c_) ((n_)->winding[(c_)&~1]>(n_)->winding[(c_)|1]?1:(n_)->winding[(c_)&~1]<(n_)->winding[(c_)|1]?-1:0)
 #define PAR_MERGE(n_,c_,p_) do{int32_t acc_=(n_)->packetPar[c_]*(n_)->packet[c_]+(p_);(n_)->packetPar[c_]=(int8_t)(acc_>0?1:acc_<0?-1:0);}while(0)
+/* count a transaction-work item on a node (saturates — the meter
+ * only needs ~32 of dynamic range, 255 is headroom, not overflow) */
+#define TXN_WORK(n_) do{if((n_)->txnWork<255)(n_)->txnWork++;}while(0)
 #define IS_EDGE(c) ((c)>=6&&(c)<=17)
 /* even sublattice of the ABC hex grid — only parity-even cells carry
  * the transport graph. Edge hops preserve x+y+z parity, so the gate
@@ -111,6 +114,10 @@ typedef struct {
     int16_t  charge;           /* SIGNED bound charge (+q/-q pair-able) */
     uint16_t heat;             /* vacuum heat reservoir (the local temp) */
     uint16_t localDensity;     /* neighbor-sampled density (the gradient) */
+    uint8_t  txnWork;          /* transaction events THIS tick — hops,
+     * arms, confirms, transfers, emissions. In a memoryless substrate
+     * load leaves no backlog, only throughput: this is the counter.
+     * Phase 5 reads it for the phase-advance headroom, then resets. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -154,10 +161,14 @@ static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
 static int qPhaseAdv=0;   /* local phase advance rate per headroom unit
-     * (0=off): phase ticks by (13 - armed incipients) * qPhaseAdv each
-     * cycle before the Jacobi pull. Time is the capacity a node did NOT
-     * spend on external routing — a saturated negotiation table slows
-     * the node's internal clock (the C_i = C_max - C_s budget). */
+     * (0=off): phase ticks by (qWorkCap - load) * qPhaseAdv each cycle
+     * before the Jacobi pull. Time is the capacity a node did NOT
+     * spend on external routing (the C_i = C_max - C_s budget). */
+static int qWorkCap=32;   /* per-node transaction bandwidth — the C_max.
+     * load = armed incipients + txnWork (this tick's hops/arms/
+     * confirms/transfers/emissions). 32 exceeds every measured load
+     * (~2/tick on a working knot) -> absolute time by default;
+     * lowering it authors a bandwidth where congestion bites. */
 static int qVolShare=0;
 static int qChainShare=0;
 static int qResEmit=0;
@@ -457,6 +468,10 @@ void moore26_tick(void){
     PROC_NODES
         if(!IS_EVEN(x,y,z))continue;   /* transport lives on the even sublattice */
         NodeState *o=&grid_current[si];
+        /* the work meter's ledger: zeroed at tick start, filled by
+         * phases 1-4 (read by Phase 5's clock) and 6-7 (visible to
+         * telemetry after the swap) — survives the tick for JS */
+        grid_next[si].txnWork=0;
         /* gather upstream arrivals first — only nodes receiving flux
          * pay the 26-neighbor opacity scan (halo vacuum skips it). */
         uint32_t v[26],nu[26];uint8_t born[26];int8_t par[26];int anyp=0;
@@ -481,6 +496,7 @@ void moore26_tick(void){
              * whatever was parked there (structural reservoir). */
             if(!IS_EDGE(c))continue;
             if(!v[c]){grid_next[si].packet[c]=0;continue;}
+            TXN_WORK(&grid_next[si]);   /* a hop through = routing work */
             uint32_t nuv=nu[c]?nu[c]:1;
             /* decay -> heat: the arriving packet's energy becomes the
              * node's local temperature (not lost — the thermal sink
@@ -844,7 +860,7 @@ void moore26_tick(void){
                            n->heat=(uint16_t)(h2>65535?65535:h2);}
                 } else n->incipNu[c]=(uint8_t)nnu;
             }
-            n->incip[c]++;
+            n->incip[c]++;TXN_WORK(n);   /* arming = table work */
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
             if(nu==geo_gap(o))n->incipNu[c]|=0x80;
@@ -924,6 +940,7 @@ void moore26_tick(void){
                  * downward transition: ONE clone + a rung shed (the
                  * laser analog — not a deposit). */
                 n->incip[c]--;             /* confirmed — consume the offer */
+                TXN_WORK(n);
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(shed>=2){
                     uint32_t sn=shed>>1;
@@ -968,6 +985,7 @@ void moore26_tick(void){
                 if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue;
                 if(mA+nu<=qConfirmCap){
                     n->incip[c]--;         /* confirmed — consume the offer */
+                    TXN_WORK(n);
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -1282,6 +1300,7 @@ void moore26_tick(void){
                 if(fo>=0){
                     int ni3=nbr(nx,ny,nz,QChannelVec[2*fo][0],QChannelVec[2*fo][1],QChannelVec[2*fo][2]);
                     grid_next[si].winding[2*e]-=k;grid_next[si].winding[2*e+1]-=k;
+                    TXN_WORK(&grid_next[si]);
                     #pragma omp atomic
                     grid_next[ni3].winding[2*fo]+=k;
                     #pragma omp atomic
@@ -1298,6 +1317,7 @@ void moore26_tick(void){
                 uint32_t room=128-mn;if(k>room)k=room;
                 if(k>=8){
                     grid_next[si].winding[2*e]-=k;grid_next[si].winding[2*e+1]-=k;
+                    TXN_WORK(&grid_next[si]);
                     #pragma omp atomic
                     grid_next[ni].winding[2*e]+=k;
                     #pragma omp atomic
@@ -1324,7 +1344,7 @@ void moore26_tick(void){
             if(qPhaseAdv&&node_live(n)){
                 int armed=0;
                 for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
-                int free_=13-armed;if(free_<0)free_=0;
+                int free_=qWorkCap-armed-n->txnWork;if(free_<0)free_=0;
                 phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
             } else phaseA[si]=n->phase;
         }
@@ -1556,7 +1576,7 @@ void moore26_tick(void){
             grid_next[si].massFlight[c^1]++;
         }
         }
-        qEvents[4]++;qEvents[20]+=shed;
+        qEvents[4]++;qEvents[20]+=shed;TXN_WORK(&grid_next[si]);   /* emission = work */
     PROC_NODES_END
 
     AUDIT_PH(8)
@@ -1857,6 +1877,7 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_phase_adv_set(int v){qPhaseAdv=v;}
+void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

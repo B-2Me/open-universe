@@ -11,6 +11,7 @@
 import { loadM26 } from '../lib/m26.mjs';
 
 const ADV = parseFloat((process.argv.find(a => a.startsWith('--adv=')) || '--adv=4').split('=')[1]);
+const CAP = parseInt((process.argv.find(a => a.startsWith('--cap=')) || '--cap=32').split('=')[1]);
 const WARM = parseInt((process.argv.find(a => a.startsWith('--warm=')) || '--warm=600').split('=')[1]);
 const PROBE = parseInt((process.argv.find(a => a.startsWith('--probe=')) || '--probe=128').split('=')[1]);
 const FEEDPROBE = process.argv.includes('--feedprobe');
@@ -38,8 +39,9 @@ const N = 32;
 q._moore26_init(N, N, N);
 q._moore26_evap_shift_set(4);
 q._moore26_phase_adv_set(ADV);
+q._moore26_work_cap_set(CAP);
 
-const OFF = { incip: 156, phase: 432 };
+const OFF = { incip: 156, phase: 432, txnWork: 444 };
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
 // state_pointer() is the grid_current base — refetch each tick
@@ -69,7 +71,7 @@ const read = ([x, y, z]) => {
   let armed = 0;
   for (let c = 0; c < 26; c++) armed += b[i + OFF.incip + c];
   const ph = (b[i + OFF.phase] | (b[i + OFF.phase + 1] << 8) | (b[i + OFF.phase + 2] << 16) | (b[i + OFF.phase + 3] << 24)) >>> 0;
-  return { ph, armed };
+  return { ph, armed, work: b[i + OFF.txnWork] };
 };
 
 console.log(`phaseclock: adv=${ADV} warm=${WARM} probe=${PROBE} feedprobe=${FEEDPROBE}`);
@@ -78,26 +80,28 @@ for (let t = 0; t < WARM; t++) { feed(); q._moore26_tick(); }
 const dph = (a, b) => { let d = (b - a) & 511; return d > 256 ? d - 512 : d; };
 // wrap counter: a large negative step = phase wound past 511 -> 0.
 // wraps/100 ticks IS the internal frequency — the dilatable clock.
-const prev = new Map(), wraps = new Map(), armedHist = new Map();
+const prev = new Map(), wraps = new Map(), armedHist = new Map(), workHist = new Map();
 const allSites = [...inner, ...shell];
-for (const s of allSites) { prev.set(s, 0); wraps.set(s, 0); armedHist.set(s, 0); }
+for (const s of allSites) { prev.set(s, 0); wraps.set(s, 0); armedHist.set(s, 0); workHist.set(s, 0); }
 for (let t = 0; t < PROBE; t++) {
   if (FEEDPROBE) feed();
   if (BATH) bath();
   q._moore26_tick();
   for (const s of allSites) {
-    const { ph, armed } = read(s);
+    const { ph, armed, work } = read(s);
     if (dph(prev.get(s), ph) < -256) wraps.set(s, wraps.get(s) + 1);
     prev.set(s, ph);
     armedHist.set(s, armedHist.get(s) + armed);
+    workHist.set(s, workHist.get(s) + work);
   }
 }
 const rate = (sites) => +(sites.reduce((a, s) => a + wraps.get(s), 0) / sites.length / (PROBE / 100)).toFixed(2);
 const aarmed = (sites) => +(sites.reduce((a, s) => a + armedHist.get(s), 0) / sites.length / PROBE).toFixed(3);
 const mphase = (sites) => +(sites.reduce((a, s) => a + prev.get(s), 0) / sites.length).toFixed(1);
-console.log(`wraps/100t: inner=${rate(inner)} shell=${rate(shell)} | mean armed: inner=${aarmed(inner)} shell=${aarmed(shell)} | meanPh: inner=${mphase(inner)} shell=${mphase(shell)}`);
-// per-site detail on a few representatives
-for (const s of [[16,16,16],[15,15,15],[13,13,16],[14,16,16],[16,14,16]]) {
-  if (!wraps.has(s)) continue;
-  console.log(`  (${s}) wraps=${wraps.get(s)} armed=${(armedHist.get(s) / PROBE).toFixed(3)}`);
+const mwork = (sites) => +(sites.reduce((a, s) => a + workHist.get(s), 0) / sites.length / PROBE).toFixed(2);
+console.log(`wraps/100t: inner=${rate(inner)} shell=${rate(shell)} | armed: inner=${aarmed(inner)} shell=${aarmed(shell)} | work/t: inner=${mwork(inner)} shell=${mwork(shell)} | meanPh: inner=${mphase(inner)} shell=${mphase(shell)}`);
+// top workers by total txnWork — where the knot actually routes
+const top = [...allSites].sort((a, b) => workHist.get(b) - workHist.get(a)).slice(0, 8);
+for (const s of top) {
+  console.log(`  (${s}) work=${(workHist.get(s) / PROBE).toFixed(2)}/t armed=${(armedHist.get(s) / PROBE).toFixed(3)} wraps=${wraps.get(s)}`);
 }
