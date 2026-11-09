@@ -4,7 +4,7 @@
 
 The Open Universe is an ontology and framework for exploring thermodynamic reality, and a working instrument for poking it. The premise: the "infinitely divisible empty space" paradigm of legacy physics is an accounting error. Geometry is the dashboard, not the territory. Underneath the dashboard is the **Planck Field**: a dense, saturated, memoryless substrate where nothing actualizes without physical dissipation, where the past is physically consumed to write the present, and the future is radically unwritten.
 
-This repository is that argument made executable: a set of essays auditing the legacy framework, an audio edition of every prose page, and a family of bare-metal C cellular-automata engines running on CPU, WebAssembly, and CUDA: **Joule's Mill** (3D multichannel friction substrate, the flagship instrument) and its milestone builds **Yarkovsky's Ember**, **Hopf's Loom** (3D True-FCC, up to 16.7M nodes headless), and **Langevin's Wake** (2D, 160,000 nodes), plus the headless experiment suite whose measured results fill the research monograph.
+This repository is that argument made executable: a set of essays auditing the legacy framework, an audio edition of every prose page, and a family of bare-metal C cellular-automata engines running on CPU, WebAssembly, and CUDA: **Cartan's Cascade** (the `moore26` 0.1fm substrate, the flagship instrument — 26-register Moore/FCC nodes, offer→incipient→confirm transactions, audited ledger) and the archived lineage behind it: **Joule's Mill** (3D multichannel friction substrate), **Yarkovsky's Ember**, **Hopf's Loom** (3D True-FCC, up to 16.7M nodes headless), and **Langevin's Wake** (2D, 160,000 nodes), plus the headless experiment suite whose measured results fill the findings record.
 
 🌐 **Live site & engine sandbox:** [planckfield.site](https://planckfield.site)
 
@@ -27,6 +27,8 @@ The site is structured as an audit: state the thesis, stress-test it against the
 
 | Page | What it documents |
 |---|---|
+| [**Moore26 Findings**](docs/moore26-findings.md) (`moore26-findings.md`) | The current engine's measured record: sealed ledger, calibrated mass spectrum, charge field, and the deviation audit |
+| [**Moore26 Substrate**](docs/moore26-substrate.md) (`moore26-substrate.md`) | The engine architecture: 26 registers per node, the transaction pipeline, the tuners |
 | [**The Interference**](docs/interference.md) (`interference.md`) | Predict → Interfere → Measure; the lab hub and the separation-of-scales argument |
 | [**Theoretical Audits**](docs/interference/audits.md) (`interference/audits.md`) | Five audits translating each legacy paradox into a testable lab procedure |
 | [**Methodology & Reproducibility**](docs/interference/methodology.md) (`interference/methodology.md`) | The formal spec: FCC lattice invariants, the 6-byte `Node3` state space, the transition operator, discrete causal thermodynamics, and the reproduction suite for every empirical claim |
@@ -42,7 +44,8 @@ The site is structured as an audit: state the thesis, stress-test it against the
 
 | Instrument | What it is |
 |---|---|
-| [**Joule's Mill**](docs/mill-demo.md) (`mill-demo.md`) | The flagship: the full `meso3i` instrument (72×72×36 True-FCC). Directional rest, photon coupling modes, pair rules, latency gating, scene presets, and the apertured plane-wave beam |
+| [**Cartan's Cascade**](docs/cascade-demo.md) (`cascade-demo.md`) | The flagship: the live `moore26` substrate in your browser — knots, photons, heat, signed charge, string-break, the species gallery, and the charge-wall scenes |
+| [**Joule's Mill**](docs/mill-demo.md) (`mill-demo.md`) | Archived `meso3i` instrument (72×72×36 True-FCC): directional rest, photon coupling modes, pair rules, latency gating, scene presets |
 | [**Yarkovsky's Ember**](docs/ember-demo.md) (`ember-demo.md`) | Milestone instrument: the first browser build of the `meso3i` substrate (44³ True-FCC): convergent drive, cold rocks, carrier beam |
 | [**Hopf's Loom**](docs/loom-demo.md) (`loom-demo.md`) | The 3D instrument: a live Hopfion on the 400k-node `planck3.wasm` substrate: tomographic slices, spin-class coloring, knot injection, snapshot rewind |
 | [**The Hopfion Zoo**](docs/hopfion-zoo.md) (`hopfion-zoo.md`) | The measured particle dictionary: 37 stable rest-mass geometries found by sweeping the engine's configuration space, each specimen a real simulation result inspectable in 3D (vtk.js) |

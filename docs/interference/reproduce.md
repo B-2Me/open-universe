@@ -9,9 +9,30 @@ audio: /audio/reproduce.mp3
 
 # Build & Validation Environments
 
-*Every number in the [Friction Substrate monograph](/interference/meso-monograph) came out of a committed harness. This page is the recipe for reproducing any of them: build the engine once, then run the script that made the measurement.*
+*Every number in [Moore26 Findings](/moore26-findings) came out of a committed harness. This page is the recipe for reproducing any of them: build the engine once, then run the script that made the measurement. The earlier engines' reproduction recipes (`meso3i`, `planck3`, `planck`) are archived at the bottom.*
 
-The same `meso3i.c` source runs in three environments: the browser instruments (Joule's Mill, Yarkovsky's Ember), Node headless harnesses, and native C test programs, plus a fourth (CUDA) for the earlier `planck3` engine. All three meso3i environments execute the identical tick; the only difference is who calls it.
+`src/moore26.c` runs in two environments: the browser instrument (Cartan's Cascade) and Node headless harnesses (`script/cascade/*.mjs` via `script/lib/m26.mjs`). Both call the same tick; the only difference is who drives it.
+
+## Reproducing the moore26 record
+
+| Artifact | Consumed by |
+|---|---|
+| `docs/public/wasm/cascade/moore26.{js,wasm}` | Cartan's Cascade browser instrument |
+| `docs/public/wasm/cascade/moore26-stnm.{js,wasm}` | every `script/cascade/*.mjs` headless harness |
+| `moore26-stnm` with `-DM26_AUDIT` | the phase-delta audit counters (`moore26_audit`) |
+
+Headless runs (no config files, no output files — each prints measurements to stdout):
+
+```bash
+node script/cascade/openbox.mjs     # closed/open-box mass-plateau calibration
+node script/cascade/openbox5.mjs    # the shift=5 asymptote run
+```
+
+The audit variant (build `moore26-stnm` with `-DM26_AUDIT`) exposes `moore26_audit(phase)` — the per-phase ledger-delta counters that produced the sealed-ledger table in Findings.
+
+---
+
+## The archived engines' recipes
 
 ## Prerequisites
 
@@ -37,7 +58,8 @@ Outputs:
 
 | Artifact | Engine | Consumed by |
 |---|---|---|
-| `docs/public/wasm/ember/meso3i.{js,wasm}` | `src/meso3i.c` | Joule's Mill, Yarkovsky's Ember, **and every `script/meso/` harness** |
+| `docs/public/wasm/cascade/moore26.{js,wasm}` | `src/moore26.c` | Cartan's Cascade, `script/cascade/*.mjs` harnesses |
+| `docs/public/wasm/ember/meso3i.{js,wasm}` | `src/meso3i.c` | Joule's Mill, Yarkovsky's Ember, **and every `script/meso/` harness** (archive) |
 | `docs/public/wasm/loom/planck3.{js,wasm}` | `src/planck3.c` | Hopf's Loom, Hopfion Zoo, `script/*.mjs` planck3 harnesses |
 | `docs/public/wasm/wake/planck{,-hex}.{js,wasm}` | `src/planck.c` | Langevin's Wake |
 

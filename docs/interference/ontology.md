@@ -3,7 +3,9 @@
 *What the engine mechanically expresses — measured, not asserted.*
 
 This is the Map (what exists) and the Compass (which way the loops
-run) for the meso engine, distilled from the E65–E90 experiments.
+run) for the `meso3i` engine, distilled from the E65–E90 experiments.
+*(Archived engine record — the current engine's map lives in
+[Moore26 Substrate](/moore26-substrate).)*
 Every claim traces to a measured signature; nothing here is an
 authored force.
 

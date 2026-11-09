@@ -6,7 +6,9 @@ title: The Clock Program
 
 *A proposal, not a claim. Everything below is a measurement roadmap —
 the mechanism story is plausible, the two cruxes are open, and the
-distinguishing signatures stand whether or not the calibration ever lands.*
+distinguishing signatures stand whether or not the calibration ever lands.
+*(Measured on the archived `meso3i` engine — the `moore26` record is
+[Moore26 Findings](/moore26-findings).)*
 
 ## The mechanism
 
