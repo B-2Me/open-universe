@@ -1394,9 +1394,11 @@ void moore26_tick(void){
         if(rand_site(si,1)&3)continue;         /* excited-state lifetime */
         if(qBondAge&&o->bondTick){
             /* seniority temper: the older the node's first bond, the
-             * harder it is to shed — history as material strength */
+             * harder it is to shed — history as material strength.
+             * refusal prob ~ aged*qBondAge/65536 on a u8 draw scaled
+             * <<8 so it's a dial, not a cliff */
             uint32_t aged=(uint32_t)qTick-o->bondTick;
-            if((rand_site(si,12)&65535)<(int)(aged*(uint32_t)qBondAge))continue;
+            if((rand_site(si,12)<<8)<(int)((aged*(uint32_t)qBondAge)>>8))continue;
         }
         int line=geo_gap(&grid_next[si]);     /* the gap gates emission */
         if(line<1)continue;
