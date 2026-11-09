@@ -118,6 +118,11 @@ typedef struct {
      * arms, confirms, transfers, emissions. In a memoryless substrate
      * load leaves no backlog, only throughput: this is the counter.
      * Phase 5 reads it for the phase-advance headroom, then resets. */
+    uint32_t bondTick;         /* qTick of FIRST successful confirm —
+     * the node's binding birthday, set once and never rewritten.
+     * bondAge = qTick - bondTick is the volumetric "nestedness":
+     * core nodes are ancient, the accreting shell is young, and a
+     * moving knot's age field skews along its velocity axis. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -941,6 +946,7 @@ void moore26_tick(void){
                  * laser analog — not a deposit). */
                 n->incip[c]--;             /* confirmed — consume the offer */
                 TXN_WORK(n);
+                if(!n->bondTick)n->bondTick=(uint32_t)qTick;   /* binding birthday */
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(shed>=2){
                     uint32_t sn=shed>>1;
@@ -986,6 +992,7 @@ void moore26_tick(void){
                 if(mA+nu<=qConfirmCap){
                     n->incip[c]--;         /* confirmed — consume the offer */
                     TXN_WORK(n);
+                    if(!n->bondTick)n->bondTick=(uint32_t)qTick;
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
