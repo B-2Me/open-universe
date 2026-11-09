@@ -73,9 +73,7 @@ const interferenceItems = [
   { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
   { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: 'Build & Validate', link: '/interference/reproduce' },
-  { text: '— Archive —', link: '/interference/meso-monograph' },
-  { text: 'Friction Substrate', link: '/interference/meso-monograph' }
+  { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
 // The active instrument first; milestone builds preserved underneath.
@@ -91,6 +89,7 @@ const instrumentItems = [
 // Earlier campaigns, prototype engines, and superseded proposals —
 // the provenance of the current model, kept for context.
 const historyItems = [
+  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Methodology', link: '/interference/methodology' },
   { text: 'Open Frontier', link: '/interference/frontier' },
   { text: 'Theoretical Audits', link: '/interference/audits' },
