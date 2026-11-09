@@ -1,3 +1,12 @@
+---
+title: knot-primer
+audio: /audio/knot-primer.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # Knot Primer — Closed Flux Paths on the Substrate
 
 Process ontology: a knot is not a *thing* — it is a **self-

@@ -1,3 +1,12 @@
+---
+title: transaction-ledger
+audio: /audio/transaction-ledger.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Transaction Ledger: Mechanics of the moore26 Vacuum
 
 This document formalizes the transaction rules (`chain_share`, `dir_bias`, and the surplus toll) governing the `moore26` engine. These rules dictate how transient kinetic flux weaves stable topological matter, illustrating how local routing protocols scale into quantum field mechanics. The following analysis strictly separates measured integer data from physical interpretations.

@@ -1,3 +1,12 @@
+---
+title: fcc-substrate
+audio: /audio/fcc-substrate.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The FCC substrate — our flavor
 
 `moore26` runs on the 26-neighbor Moore grid, but its transport

@@ -1,3 +1,12 @@
+---
+title: qi3-findings
+audio: /audio/qi3-findings.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # qi3 Findings — 0.8fm/node Experimental Review
 
 Measured characterization of the transactional local-causal substrate.

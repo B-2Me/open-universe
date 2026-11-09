@@ -4,7 +4,12 @@ description: A live 3D window into the 0.1fm causal substrate. Knots form, radia
 outline: false
 layout: page
 pageClass: cascade-page
+audio: /audio/cascade-demo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <ClientOnly>
   <div class="cascade-stage">

@@ -1,3 +1,12 @@
+---
+title: qi3-method
+audio: /audio/qi3-method.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # qi3 Method — Building Quantum Structure from Local Mechanics
 
 How we built the quantized observables (charge, spin, Pauli,

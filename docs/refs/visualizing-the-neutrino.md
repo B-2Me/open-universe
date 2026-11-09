@@ -1,3 +1,12 @@
+---
+title: visualizing-the-neutrino
+audio: /audio/visualizing-the-neutrino.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # Visualizing the Nucleus — Mysteries of the Neutrino
 
 *MIT Department of Physics — transcript of [https://youtu.be/mAClw7r3ETc](https://youtu.be/mAClw7r3ETc)*

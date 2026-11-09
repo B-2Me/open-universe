@@ -1,3 +1,12 @@
+---
+title: qi3-summary
+audio: /audio/qi3-summary.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # qi3 Summary — 0.8fm/node Substrate vs Nature
 
 A local-causal transactional substrate (18 channels = 9 duplex

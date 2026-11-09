@@ -4,7 +4,12 @@ description: A live 3D window into the friction substrate. Matter condensed from
 outline: false
 layout: page
 pageClass: ember-page
+audio: /audio/ember-demo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <ClientOnly>
   <div class="ember-stage">

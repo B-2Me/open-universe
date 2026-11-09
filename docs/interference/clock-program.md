@@ -1,6 +1,11 @@
 ---
 title: The Clock Program
+audio: /audio/clock-program.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 # The Clock Program
 

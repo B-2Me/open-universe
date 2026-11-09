@@ -1,3 +1,12 @@
+---
+title: visualizing-the-proton
+audio: /audio/visualizing-the-proton.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # Visualizing the Proton — Spin Provides Structure and Order
 
 *MIT Department of Physics — transcript of [https://youtu.be/_2wia1SU4OU](https://youtu.be/_2wia1SU4OU)*

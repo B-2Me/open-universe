@@ -4,7 +4,12 @@ description: The archived `meso3i` instrument. A live 3D lattice gas where matte
 outline: false
 layout: page
 pageClass: mill-page
+audio: /audio/mill-demo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <ClientOnly>
   <div class="mill-stage">

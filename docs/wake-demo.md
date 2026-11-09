@@ -5,7 +5,12 @@ outline: false
 overscroll: false
 layout: page
 pageClass: wake-page
+audio: /audio/wake-demo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <ClientOnly>
   <WakeSimulator />

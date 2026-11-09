@@ -1,3 +1,12 @@
+---
+title: link3-substrate-report
+audio: /audio/link3-substrate-report.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # link3 Substrate Report — What the First Candidate Proved
 
 A mechanics-honest accounting of what the `link3` engine (links, sessions, `ν`

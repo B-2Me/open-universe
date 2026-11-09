@@ -1,3 +1,12 @@
+---
+title: qi3-design
+audio: /audio/qi3-design.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # qi3 — the transactional substrate ("QI realized")
 
 The next engine after link3. Design lineage: CDT (discrete causal lattice),

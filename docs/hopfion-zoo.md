@@ -2,7 +2,12 @@
 layout: page
 title: The Hopfion Zoo
 pageClass: hopfion-page
+audio: /audio/hopfion-zoo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <HopfionViewer />
 

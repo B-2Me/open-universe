@@ -1,3 +1,12 @@
+---
+title: ontology
+audio: /audio/ontology.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # Substrate Ontology
 
 *What the engine mechanically expresses — measured, not asserted.*

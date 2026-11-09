@@ -1,3 +1,12 @@
+---
+title: moore26-substrate
+audio: /audio/moore26-substrate.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Moore26 Substrate: Mechanics of a Conserved Discrete Vacuum
 
 ![The Moore-26 stencil — 26 neighbors around a node by z-layer. The 12 edge cells are the FCC transport channels (amber); 6 face + 8 corner cells are structure-only.](/img/moore26-stencil.svg)

@@ -1,3 +1,12 @@
+---
+title: visualizing-the-nucleus
+audio: /audio/visualizing-the-nucleus.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # Visualizing the Nucleus
 
 *MIT Department of Physics — transcript of [https://youtu.be/ach9JLGs2Yc](https://youtu.be/ach9JLGs2Yc)*

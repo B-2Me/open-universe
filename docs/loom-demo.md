@@ -4,7 +4,12 @@ description: A 3D window into the Planck Field. A self-sustaining routing patter
 outline: false
 layout: page
 pageClass: loom-page
+audio: /audio/loom-demo.mp3
 ---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
 
 <ClientOnly>
   <div class="loom-stage">

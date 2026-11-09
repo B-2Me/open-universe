@@ -1,3 +1,12 @@
+---
+title: identification
+audio: /audio/identification.mp3
+---
+
+<ClientOnly>
+  <StickyAudioPlayer :audioSrc="$frontmatter.audio" />
+</ClientOnly>
+
 # The Identification Bridge
 
 > **Status: open hypothesis, not a claim.** The unit bridge is by
