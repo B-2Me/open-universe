@@ -38,3 +38,31 @@ See also: [fcc-substrate](fcc-substrate) (geometry),
 [moore26-findings](moore26-findings) (phenomenology),
 [transaction-ledger](transaction-ledger) (mechanics), and the
 [rules reference](/data/ref/moore26-rules.html).
+
+## Reference visualizations
+
+What nature's measured structures look like at the engine's own scale —
+external MIT Physics visualizations, mapped onto the substrate's concepts:
+
+**The proton — spin structure at femtometer scale.** The relativistic
+sea the wound knot is the substrate's candidate for: quark-gluon
+constituents, spin flips on exchange, counter-propagating orbital
+flows. The substrate's version: `dd` imbalance, `packetPar` parity
+shed on emission.
+[Transcript + substrate mappings](/refs/visualizing-the-proton)
+
+<iframe src="https://www.youtube.com/embed/_2wia1SU4OU" title="Visualizing the Proton" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+**The nucleus — dynamics at 0.1–3 fm.** Nucleons moving ~1/3 c,
+confined, vibrating — the regime a `0.1 fm` node spacing simulates
+directly.
+[Transcript](/refs/visualizing-the-nucleus)
+
+<iframe src="https://www.youtube.com/embed/ach9JLGs2Yc" title="Visualizing the Nucleus" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+**The neutrino — beta decay and the parity question.** The process
+whose handedness asymmetry the substrate doesn't reproduce yet —
+the deviation audit's open `P`-violation item.
+[Transcript](/refs/visualizing-the-neutrino)
+
+<iframe src="https://www.youtube.com/embed/mAClw7r3ETc" title="Visualizing the Neutrino" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

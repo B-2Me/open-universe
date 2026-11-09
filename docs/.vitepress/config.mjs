@@ -46,6 +46,9 @@ const readingOrder = [
   { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'qi3 Findings', link: '/qi3-findings' },
   { text: 'qi3 Design', link: '/qi3-design' },
+  { text: 'qi3 Overview', link: '/qi3' },
+  { text: 'qi3 Method', link: '/qi3-method' },
+  { text: 'qi3 Summary', link: '/qi3-summary' },
   { text: 'link3 Report', link: '/link3-substrate-report' },
   { text: 'FCC Substrate', link: '/fcc-substrate' },
   { text: 'Knot Primer', link: '/knot-primer' }
@@ -71,6 +74,7 @@ const theoryItems = [
 const interferenceItems = [
   { text: 'Overview', link: '/interference' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
+  { text: 'Transaction Ledger', link: '/transaction-ledger' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Build & Validate', link: '/interference/reproduce' }
@@ -94,6 +98,8 @@ const historyItems = [
   { text: 'Open Frontier', link: '/interference/frontier' },
   { text: 'Theoretical Audits', link: '/interference/audits' },
   { text: 'Collider Matrix', link: '/interference/collider' },
+  { text: 'Identification Bridge', link: '/interference/identification' },
+  { text: 'Substrate Ontology', link: '/interference/ontology' },
   { text: 'Why Simulate', link: '/interference/usefulness' },
   { text: 'Podcast', link: '/interference/sessions' }
 ]
