@@ -127,6 +127,11 @@ typedef struct {
      * conserved effort integral (bondTick is WHEN it formed, this is
      * HOW MUCH it has done). Monotone, never reset: a busy shell
      * accumulates age faster than a shielded core — callus vs relic. */
+    uint32_t localTime;        /* proper time tau = integral of the
+     * node's own clock rate (accumulates free_*qPhaseAdv per tick,
+     * unbounded — unlike phase's mod-512 wrap). Two nodes with the
+     * same bondTick but different load histories DIVERGE here:
+     * the twins-paradox ledger, conserved and auditable. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -1361,6 +1366,7 @@ void moore26_tick(void){
                 for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
                 int free_=qWorkCap-armed-n->txnWork;if(free_<0)free_=0;
                 phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
+                n->localTime+=(uint32_t)free_*qPhaseAdv;   /* tau: proper time */
             } else phaseA[si]=n->phase;
             n->workAge+=n->txnWork;   /* effort history: conserved */
         }
