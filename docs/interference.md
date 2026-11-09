@@ -45,8 +45,6 @@ The substrate is not a metaphor. It runs. The flagship instrument and the milest
 
 ## The Archive
 
-*The earlier engines' campaigns — kept as provenance, not the current record:*
-
 *   **[The Friction Substrate](/interference/meso-monograph)**: the `meso3i` record, milestones M19–M48 — every claim commit-anchored, including the confounds and retractions.
 *   **[The Multi-Channel Bridge](/interference/meso-bridge)**: the M19–M38 consolidation: how the multichannel substrate earned its place over the single-spin prototype.
 *   **[The Clock Program](/interference/clock-program)**: the `meso3i` E-series record: ballistic `1/r²` halos, cavity light-clocks, `n(ρ)` from discrete detention.

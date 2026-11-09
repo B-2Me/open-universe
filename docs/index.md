@@ -71,8 +71,6 @@ And the honest boundaries — the [deviation audit](/moore26-findings) keeps the
 
 ### Milestone Instruments & History
 
-*The earlier engines and campaigns are preserved as the provenance of the current model: the missteps are part of the record, not hidden beneath it.*
-
 *   **[Joule's Mill](/mill-demo)**: the meso3i instrument: the full friction substrate with directional rest, photon coupling, pair rules, and milestone scenes.
 *   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: drive, beam, and the walking comet at 44³.
 *   **[Hopf's Loom](/loom-demo)**: the single-spin prototype engine: a woven 19-loop Hopfion you can slice and perturb.
