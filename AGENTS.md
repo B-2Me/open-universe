@@ -245,6 +245,28 @@ alignment scheme changes again.
   (tube heads only — one fracture, +128 mass per endpoint);
   emission is conserving (nu = shed/2, recapture restores da+db);
   heat is per-node with a −1/128/tick local drain.
+- Clock/history stack (all measured, commit ea6d720 era):
+  `qTick` = absolute drumbeat (rail ring: exact period 3, bath-immune;
+  ballistic time is NOT dilatable). `localTime` (τ, NodeState off
+  452) = conserved proper-time accumulator integrating
+  free_*qPhaseAdv each tick — twins diverge 22× under targeted
+  congestion; bound knots run τ≈1-7/800t (collectively frozen at
+  cap=16 — bound matter's own traffic saturates its bandwidth).
+  `bondTick` (off 448) = first-confirm birthday — volumetric
+  provenance: fed knots write concentric rings (surface-filtered
+  accretion), bath knots write a sponge (volumetric fill);
+  directional wind writes a 5.7× fossil age-gradient (windward
+  face = OLD accretion crust — inverted vs nature's erosion).
+  `workAge` (off 452) = cumulative txnWork — callus vs relic:
+  effort peaks at working shell, birthday at formation site.
+  `qBondAge` tuner = seniority-weighted emission temper — verified
+  NON-MONOTONIC (bifurcation knob, not a dial): suppressing early
+  sheds reroutes the whole accretion trajectory. `qWorkCap` =
+  authored per-node bandwidth; `qPhaseAdv` = clock rate multiplier.
+  Honest status: time = authored-but-measured laws, not Lorentz;
+  the knot is a jam (zero circulation on all 4 {111} plaquettes),
+  dd is Meissner-frozen (no tumble exists), and history records
+  provenance (fuel direction, formation epoch) — not velocity.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or
