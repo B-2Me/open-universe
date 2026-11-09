@@ -123,6 +123,10 @@ typedef struct {
      * bondAge = qTick - bondTick is the volumetric "nestedness":
      * core nodes are ancient, the accreting shell is young, and a
      * moving knot's age field skews along its velocity axis. */
+    uint32_t workAge;          /* lifetime transaction work — the
+     * conserved effort integral (bondTick is WHEN it formed, this is
+     * HOW MUCH it has done). Monotone, never reset: a busy shell
+     * accumulates age faster than a shielded core — callus vs relic. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -1358,6 +1362,7 @@ void moore26_tick(void){
                 int free_=qWorkCap-armed-n->txnWork;if(free_<0)free_=0;
                 phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
             } else phaseA[si]=n->phase;
+            n->workAge+=n->txnWork;   /* effort history: conserved */
         }
     PROC_NODES_END
     for(int iter=0;iter<10&&qPhaseSync;iter++){
