@@ -394,3 +394,8 @@ html.dark .sync-text.active {
    horizontally instead of overflowing the content column */
 .vp-doc pre { overflow-x: auto; max-width: 100%; }
 .vp-doc pre code { white-space: pre; }
+
+/* embedded videos/iframes stay inside the content column on
+   narrow screens (iPhone Safari) — fixed-width attrs clamped */
+.vp-doc iframe { max-width: 100%; }
+.vp-doc iframe[src*="youtube"] { width: 100%; aspect-ratio: 16 / 9; height: auto; }
