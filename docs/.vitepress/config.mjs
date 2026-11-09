@@ -79,6 +79,7 @@ const interferenceItems = [
     { text: 'Transaction Ledger', link: '/transaction-ledger' }
   ]},
   { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Why Simulate', link: '/interference/usefulness' },
   { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
@@ -101,8 +102,7 @@ const historyItems = [
   { text: 'Theoretical Audits', link: '/interference/audits' },
   { text: 'Collider Matrix', link: '/interference/collider' },
   { text: 'Identification Bridge', link: '/interference/identification' },
-  { text: 'Substrate Ontology', link: '/interference/ontology' },
-  { text: 'Why Simulate', link: '/interference/usefulness' }
+  { text: 'Substrate Ontology', link: '/interference/ontology' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is

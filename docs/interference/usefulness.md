@@ -9,7 +9,7 @@ audio: /audio/usefulness.mp3
 
 # The Utility of Causal Simulation
 
-> **Program History.** This essay dates from the prototype era and describes the program's original ambitions: including CERN-telemetry benchmarking, which is now retired (see the [roadmap](/interference/roadmap) status note). Its core argument, a discrete wind tunnel for extracting constitutive laws where continuous calculus fails, is what the meso3i campaign actually executed; the measured results are in the [Friction Substrate monograph](/interference/meso-monograph).
+*This essay argues the case the engine now lives: a discrete wind tunnel for extracting constitutive laws where continuous calculus fails. The current engine's measured results are in [Moore26 Findings](/moore26-findings).*
 
 If we accept the two foundational premises of this framework: first, that reality at the Planck scale ($1.6 \times 10^{-35}\text{ meters}$) is a zero-storage, computationally irreducible substrate; and second, that continuous geometry is already an effective compression algorithm for navigating macroscopic trajectories, a critical question arises:
 
@@ -70,7 +70,7 @@ When we swept mass streams past a tension-emitting core in the engine, the subst
 With sufficient computational scale, the Causal Thermodynamics methodology moves beyond theoretical audits into four applied domains:
 
 ### 1. Collider Telemetry & The S-Matrix Without Free Parameters
-Standard high-energy physics relies on perturbative Feynman expansions and Monte Carlo generators tuned with dozens of empirical coupling constants. By scaling 3D FCC collision matrices (`collide.mjs`), we can map the complete topological S-Matrix, elastic bounce, knot fusion, asymmetric shedding, and radiative unwinding (`+spray`), strictly from integer conservation laws. The resulting branching ratios and Missing Transverse Energy (MET) distributions can be benchmarked directly against raw CERN Open Data detector debris.
+Standard high-energy physics relies on perturbative Feynman expansions and Monte Carlo generators tuned with dozens of empirical coupling constants. By scaling 3D FCC collision matrices (`collide.mjs`), we can map the complete topological S-Matrix, elastic bounce, knot fusion, asymmetric shedding, and radiative unwinding (`+spray`), strictly from integer conservation laws. The resulting branching ratios and spray distributions are mechanism-matched to collision phenomenology — the substrate's own S-matrix, measured in substrate units.
 
 ### 2. Plasma Confinement & Fusion Topology (Spheromaks / Tokamaks)
 Conventional magnetohydrodynamics (MHD) treats fusion plasma as a hot, continuous fluid that must be crushed by external magnetic cages, where it routinely suffers from tearing modes and edge instabilities. 
