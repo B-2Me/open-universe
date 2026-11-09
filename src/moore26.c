@@ -197,6 +197,11 @@ static int qAlignGate=0;  /* coherence gate at CONFIRM (0=off, 1..255):
      * flux that agrees with its committed axis. Emission is already
      * direction-biased (eff_dd); this makes ABSORPTION handed:
      * helicity-selective accretion — the spin-filter. */
+static int qMassCap=0;    /* Compton ansatz (0=off): per-node clock
+     * bandwidth = mass*qMassCap/16 instead of flat qWorkCap — a
+     * heavier node has more headroom -> faster proper time.
+     * tau_rate = k*mass - C_s : rest frequency proportional to
+     * bound mass, still taxed by interaction load. */
 static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
      * P(emission refused) rises with (qTick - bondTick)*qBondAge/65536
      * — an aged node sheds harder than a fresh one. The knot anneals:
@@ -1412,7 +1417,8 @@ void moore26_tick(void){
             if(qPhaseAdv&&node_live(n)){
                 int armed=0;
                 for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
-                int free_=qWorkCap-armed-n->txnWork;if(free_<0)free_=0;
+                int cap=qMassCap?(int)((n->mass*(uint32_t)qMassCap)>>4):qWorkCap;
+                int free_=cap-armed-n->txnWork;if(free_<0)free_=0;
                 phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
                 n->localTime+=(uint32_t)free_*qPhaseAdv;   /* tau: proper time */
             } else phaseA[si]=n->phase;
@@ -1959,6 +1965,7 @@ void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}
 void moore26_par_gate_set(int v){qParGate=v;}
+void moore26_mass_cap_set(int v){qMassCap=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
