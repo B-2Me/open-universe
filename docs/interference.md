@@ -44,15 +44,15 @@ The substrate is not a metaphor. It runs. The flagship instrument and the milest
 The current substrate — `moore26`, the 26-register Moore/FCC engine
 at `0.1 fm` per node — and its measured record:
 
-*   **[Moore26 Substrate](/moore26-substrate)**: the engine architecture — registers, the offer→incipient→confirm pipeline, the phase ledger.
-*   **[Moore26 Findings](/moore26-findings)**: the measured record — sealed ledger, calibrated mass spectrum, charge field, and the deviation audit against nature.
-*   **[Transaction Ledger](/transaction-ledger)**: the mechanics of the transaction layer — how flux becomes structure.
+*   **[Moore26 Substrate](/moore26-substrate)**: the engine architecture. What a node actually stores (26 registers: winding, mass, charge, heat, packet populations, transaction fields), how the offer→incipient→confirm handshake negotiates each tick, and how the phase-by-phase ledger keeps the books auditable.
+*   **[Moore26 Findings](/moore26-findings)**: the measured record, verdict-first. The deviation audit (where the substrate matches nature's *measurements* and where it honestly stops), the calibrated mass spectrum (`M ≈ flux × 2^shift`), the charge law under congestion, pair production, string-break with charged recoil, and the `~0.1%` sealed-ledger audit.
+*   **[Transaction Ledger](/transaction-ledger)**: the mechanics of the transaction layer — how raw flux negotiates into bound structure, the virtual layer of held offers, and the rails that carry committed topology.
 
 ## The Program
 
-*   **[Predictive Roadmap](/interference/roadmap)**: the open frontier — charge range, knots-in-motion, Lorentz structure, gravity.
-*   **[Why Simulate](/interference/usefulness)**: the case for a discrete wind tunnel where continuous calculus fails.
-*   **[Build & Validate](/interference/reproduce)**: run the measurements yourself — the moore26 harnesses first, archived engine recipes below.
+*   **[Predictive Roadmap](/interference/roadmap)**: the open frontier, honestly framed — the five anchors the engine can still reach (charge range, knots-in-motion, Lorentz structure, the species census, gravity) and the bridges it can't.
+*   **[Why Simulate](/interference/usefulness)**: the case for a discrete wind tunnel — where continuous calculus fails (finite bandwidth, routing friction, topological phase-locking) and what a computationally irreducible substrate is actually good for.
+*   **[Build & Validate](/interference/reproduce)**: run the measurements yourself — the `script/cascade/` moore26 harnesses (open-box spectrum, closed-box plateau, the ledger audit) first, the archived engine recipes below.
 
 ## The Archive
 
