@@ -27,7 +27,6 @@ const readingOrder = [
   { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
 
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'Build & Validate', link: '/interference/reproduce' },
   { text: 'Methodology', link: '/interference/methodology' },
   { text: 'Frontier', link: '/interference/frontier' },
@@ -44,6 +43,7 @@ const readingOrder = [
   // — engine archive: the retired substrates stay linked as
   // provenance, below the current engine's record
   { text: '— Archive —', link: '/qi3-findings' },
+  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
   { text: 'qi3 Findings', link: '/qi3-findings' },
   { text: 'qi3 Design', link: '/qi3-design' },
   { text: 'link3 Report', link: '/link3-substrate-report' },
@@ -72,7 +72,7 @@ const interferenceItems = [
   { text: 'Overview', link: '/interference' },
   { text: 'Friction Substrate', link: '/interference/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
