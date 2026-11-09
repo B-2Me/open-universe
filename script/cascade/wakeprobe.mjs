@@ -8,6 +8,7 @@
 import { loadM26, rng } from '../lib/m26.mjs';
 
 const TICKS = parseInt((process.argv.find(a => a.startsWith('--ticks=')) || '--ticks=2000').split('=')[1]);
+const WIND = process.argv.includes('--wind');
 const BATH = 0.02;
 const q = await loadM26();
 const N = 32;
@@ -31,6 +32,7 @@ const bath = () => {
   for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) for (let z = 0; z < N; z++) {
     if (x > 1 && x < N - 2 && y > 1 && y < N - 2 && z > 1 && z < N - 2) continue;
     for (let c = 6; c < 18; c++) {
+      if (WIND && !(x >= N - 2 && CV[c][0] === -1)) continue;   // wind: only -x flux from +x wall
       const nx = x + CV[c][0], ny = y + CV[c][1], nz = z + CV[c][2];
       if (nx < 0 || nx >= N || ny < 0 || ny >= N || nz < 0 || nz >= N) continue;
       if (rnd() / 0x7fffffff < BATH) { q._moore26_packet_set(x, y, z, c, 1); q._moore26_packet_nu_set(x, y, z, c, 96); }
