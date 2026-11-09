@@ -183,6 +183,12 @@ static int qWorkCap=32;   /* per-node transaction bandwidth — the C_max.
      * confirms/transfers/emissions). 32 exceeds every measured load
      * (~2/tick on a working knot) -> absolute time by default;
      * lowering it authors a bandwidth where congestion bites. */
+static int qAlignGate=0;  /* coherence gate at CONFIRM (0=off, 1..255):
+     * an offer on pair e confirms only if that pair's |dd| >=
+     * max|dd| * qAlignGate/256 — the knot preferentially accepts
+     * flux that agrees with its committed axis. Emission is already
+     * direction-biased (eff_dd); this makes ABSORPTION handed:
+     * helicity-selective accretion — the spin-filter. */
 static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
      * P(emission refused) rises with (qTick - bondTick)*qBondAge/65536
      * — an aged node sheds harder than a fresh one. The knot anneals:
@@ -1002,6 +1008,26 @@ void moore26_tick(void){
                 int line=((int)o->mass+((int)o->winding[c]>>2))>>2;
                 if(line<1)line=1;
                 if(nu%(uint32_t)line!=0||nu<(uint32_t)line)continue;
+                if(qAlignGate){
+                    /* helicity-selective acceptance: refuse offers
+                     * on pairs whose committed dd is much weaker
+                     * than the node's dominant axis */
+                    int mxd=1;
+                    for(int e2=3;e2<9;e2++){
+                        int d2=abs((int)o->winding[2*e2]-(int)o->winding[2*e2+1]);
+                        if(d2>mxd)mxd=d2;
+                    }
+                    int mydd=abs((int)o->winding[2*arr]-(int)o->winding[2*arr+1]);
+                    if(mydd*256<mxd*qAlignGate){
+                        /* declined — don't let a refused offer clog
+                         * the table: consume it and thermalize nu
+                         * (active refusal, else the filter deadlocks) */
+                        n->incip[c]--;
+                        uint32_t ht2=(uint32_t)n->heat+nu;
+                        n->heat=(uint16_t)(ht2>65535?65535:ht2);
+                        continue;
+                    }
+                }
                 if(mA+nu<=qConfirmCap){
                     n->incip[c]--;         /* confirmed — consume the offer */
                     TXN_WORK(n);
@@ -1909,6 +1935,7 @@ void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
+void moore26_align_gate_set(int v){qAlignGate=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
