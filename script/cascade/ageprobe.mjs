@@ -8,6 +8,7 @@ import { loadM26 } from '../lib/m26.mjs';
 
 const TICKS = parseInt((process.argv.find(a => a.startsWith('--ticks=')) || '--ticks=800').split('=')[1]);
 const FEED = !process.argv.includes('--nofeed');
+const BATH = parseFloat((process.argv.find(a => a.startsWith('--bath=')) || '--bath=0').split('=')[1]);
 const q = await loadM26();
 const N = 32;
 q._moore26_init(N, N, N); q._moore26_evap_shift_set(4);
@@ -32,9 +33,27 @@ const feed = () => { for (const [c, ox, oz] of spokes) {
   let sx = 16 - ox - CV[c][0], sy = 16 - oz - CV[c][1], sz = 16 - CV[c][2];
   if ((sx + sy + sz) & 1) sz++;
   q._moore26_packet_set(sx, sy, sz, c, 2); q._moore26_packet_nu_set(sx, sy, sz, c, 96); } };
+// isotropic boundary bath — the dense-accretion regime (recoil.mjs
+// pattern): every boundary cell injects inward on all 12 channels
+// at rate BATH. Zero net momentum; pure ambient flux pressure.
+let s = 42;
+const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+const bath = () => {
+  for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) for (let z = 0; z < N; z++) {
+    if (x > 1 && x < N - 2 && y > 1 && y < N - 2 && z > 1 && z < N - 2) continue;
+    for (let c = 6; c < 18; c++) {
+      const nx = x + CV[c][0], ny = y + CV[c][1], nz = z + CV[c][2];
+      if (nx < 0 || nx >= N || ny < 0 || ny >= N || nz < 0 || nz >= N) continue;
+      if (rnd() < BATH) { q._moore26_packet_set(x, y, z, c, 1); q._moore26_packet_nu_set(x, y, z, c, 96); }
+    }
+  }
+};
+const drain = () => { for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) for (let z = 0; z < N; z++) {
+  if (x > 1 && x < N - 2 && y > 1 && y < N - 2 && z > 1 && z < N - 2) continue;
+  for (let c = 0; c < 26; c++) { q._moore26_packet_set(x, y, z, c, 0); q._moore26_winding_set(x, y, z, c, 0); } } };
 
-console.log(`ageprobe: ticks=${TICKS} feed=${FEED}`);
-for (let t = 1; t <= TICKS; t++) { if (FEED) feed(); q._moore26_tick(); }
+console.log(`ageprobe: ticks=${TICKS} feed=${FEED} bath=${BATH}`);
+for (let t = 1; t <= TICKS; t++) { if (FEED) feed(); if (BATH) bath(); q._moore26_tick(); if (BATH) drain(); }
 
 // age map: x-z slice at y=16, ages quantized into rings
 console.log(`\nbondAge map at y=16 (t=${TICKS}) — digits = age/100, '.' = never bonded, ' ' = dead`);
