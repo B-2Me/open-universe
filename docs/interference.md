@@ -28,17 +28,6 @@ This assumes a frictionless, perfectly scalable universe. But when we measure ph
 
 ---
 
-## The Instruments
-
-The substrate is not a metaphor. It runs. The flagship instrument and the milestone builds that led to it:
-
-*   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument, live in your browser. The `moore26` 0.1fm substrate on a 26-channel Moore lattice: offer→incipient→confirm transactions, emission/unwind, photon-photon pair production, conserving string-break with charged recoil, thermal re-emission, and the four-layer render (structure, wake, thermal, polarization). Eight-thread OpenMP when `SharedArrayBuffer` is available.
-*   **[Joule's Mill](/mill-demo)**: the meso3i milestone instrument. A 93,000-cell True-FCC lattice gas with the full measured rule set: directional rest, photon coupling, the `iE` excitation register (bound `n`), pair rules, latency gating, and one-click milestone scenes.
-*   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: convergent drive, carrier beam, cold rocks, and the walk-toward-the-light comet drift at 44³.
-*   **[Hopf's Loom](/loom-demo)**: the earlier single-spin 3D engine (a milestone showcase): a 400,000-node volume renderer orbiting a woven 19-loop Hopfion.
-*   **[The Hopfion Zoo](/hopfion-zoo)**: the prototype's measured knot dictionary: thirty-seven stable geometries from the single-spin era.
-*   **[Langevin's Wake](/wake-demo)**: the original 2D engine where the friction ontology began.
-
 ## The Engine
 
 The current substrate — `moore26`, the 26-register Moore/FCC engine
@@ -53,6 +42,17 @@ at `0.1 fm` per node — and its measured record:
 *   **[Predictive Roadmap](/interference/roadmap)**: the open frontier, honestly framed — the five anchors the engine can still reach (charge range, knots-in-motion, Lorentz structure, the species census, gravity) and the bridges it can't.
 *   **[Why Simulate](/interference/usefulness)**: the case for a discrete wind tunnel — where continuous calculus fails (finite bandwidth, routing friction, topological phase-locking) and what a computationally irreducible substrate is actually good for.
 *   **[Build & Validate](/interference/reproduce)**: run the measurements yourself — the `script/cascade/` moore26 harnesses (open-box spectrum, closed-box plateau, the ledger audit) first, the archived engine recipes below.
+
+## The Instruments
+
+The substrate is not a metaphor. It runs. The flagship instrument and the milestone builds that led to it:
+
+*   **[Cartan's Cascade](/cascade-demo)**: the flagship instrument, live in your browser. The `moore26` 0.1fm substrate on a 26-channel Moore lattice: offer→incipient→confirm transactions, emission/unwind, photon-photon pair production, conserving string-break with charged recoil, thermal re-emission, and the four-layer render (structure, wake, thermal, polarization). Eight-thread OpenMP when `SharedArrayBuffer` is available.
+*   **[Joule's Mill](/mill-demo)**: the meso3i milestone instrument. A 93,000-cell True-FCC lattice gas with the full measured rule set: directional rest, photon coupling, the `iE` excitation register (bound `n`), pair rules, latency gating, and one-click milestone scenes.
+*   **[Yarkovsky's Ember](/ember-demo)**: the first meso3i instrument: convergent drive, carrier beam, cold rocks, and the walk-toward-the-light comet drift at 44³.
+*   **[Hopf's Loom](/loom-demo)**: the earlier single-spin 3D engine (a milestone showcase): a 400,000-node volume renderer orbiting a woven 19-loop Hopfion.
+*   **[The Hopfion Zoo](/hopfion-zoo)**: the prototype's measured knot dictionary: thirty-seven stable geometries from the single-spin era.
+*   **[Langevin's Wake](/wake-demo)**: the original 2D engine where the friction ontology began.
 
 ## The Archive
 
