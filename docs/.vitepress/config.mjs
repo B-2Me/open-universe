@@ -70,9 +70,9 @@ const theoryItems = [
 
 const interferenceItems = [
   { text: 'Overview', link: '/interference' },
-  { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
   { text: 'Roadmap', link: '/interference/roadmap' },
+  { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Build & Validate', link: '/interference/reproduce' }
 ]
 
