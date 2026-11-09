@@ -174,6 +174,10 @@ static int qWorkCap=32;   /* per-node transaction bandwidth — the C_max.
      * confirms/transfers/emissions). 32 exceeds every measured load
      * (~2/tick on a working knot) -> absolute time by default;
      * lowering it authors a bandwidth where congestion bites. */
+static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
+     * P(emission refused) rises with (qTick - bondTick)*qBondAge/65536
+     * — an aged node sheds harder than a fresh one. The knot anneals:
+     * its oldest core hardens from its own formation history. */
 static int qVolShare=0;
 static int qChainShare=0;
 static int qResEmit=0;
@@ -1388,6 +1392,12 @@ void moore26_tick(void){
         NodeState *o=&grid_current[si];
         if(site_level(o)<2)continue;
         if(rand_site(si,1)&3)continue;         /* excited-state lifetime */
+        if(qBondAge&&o->bondTick){
+            /* seniority temper: the older the node's first bond, the
+             * harder it is to shed — history as material strength */
+            uint32_t aged=(uint32_t)qTick-o->bondTick;
+            if((rand_site(si,12)&65535)<(int)(aged*(uint32_t)qBondAge))continue;
+        }
         int line=geo_gap(&grid_next[si]);     /* the gap gates emission */
         if(line<1)continue;
         /* channel occupancy — graded refusal: P(accept)=1-occ/128,
@@ -1885,6 +1895,7 @@ void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_work_cap_set(int v){qWorkCap=v;}
+void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
