@@ -153,6 +153,11 @@ static int qBendShift=0;
 static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
+static int qPhaseAdv=0;   /* local phase advance rate per headroom unit
+     * (0=off): phase ticks by (13 - armed incipients) * qPhaseAdv each
+     * cycle before the Jacobi pull. Time is the capacity a node did NOT
+     * spend on external routing — a saturated negotiation table slows
+     * the node's internal clock (the C_i = C_max - C_s budget). */
 static int qVolShare=0;
 static int qChainShare=0;
 static int qResEmit=0;
@@ -1314,7 +1319,15 @@ void moore26_tick(void){
      * Pull-model: each node averages its neighbors' pull (unique
      * writer — no atomics). Reads next (post-carry), writes next. */
     PROC_NODES
-        if(qPhaseSync)phaseA[si]=grid_next[si].phase;
+        if(qPhaseSync){
+            NodeState *n=&grid_next[si];
+            if(qPhaseAdv&&node_live(n)){
+                int armed=0;
+                for(int cc=0;cc<QChannels;cc++)armed+=n->incip[cc];
+                int free_=13-armed;if(free_<0)free_=0;
+                phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
+            } else phaseA[si]=n->phase;
+        }
     PROC_NODES_END
     for(int iter=0;iter<10&&qPhaseSync;iter++){
         PROC_NODES
@@ -1838,6 +1851,7 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
 }
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
+void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

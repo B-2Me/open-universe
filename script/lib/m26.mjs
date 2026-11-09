@@ -7,17 +7,18 @@ import { createRequire } from 'node:module';
 
 const DIR = join(process.cwd(), 'docs/public/wasm/cascade');
 
-export async function loadM26(file = 'moore26-stnm.js') {
+// moore26.js is the current build.sh output (MODULARIZE factory
+// createMoore26 -> Promise<Module>); the *-stnm/-mt* variants are
+// stale artifacts from an older non-modular build — do NOT load them
+// (the recoil + phase_adv patches only exist in the current build).
+export async function loadM26(file = 'moore26.js') {
   const require = createRequire(import.meta.url);
   const src = readFileSync(join(DIR, file), 'utf8');
-  const Module = {};
-  let ready;
-  const p = new Promise(r => (ready = r));
-  Module.onRuntimeInitialized = () => ready();
-  new Function('module', 'exports', 'require', '__dirname', '__filename', 'Module', src)(
-    { exports: {} }, {}, require, DIR, file, Module);
-  await p;
-  return Module;
+  const mod = { exports: {} };
+  new Function('module', 'exports', 'require', '__dirname', '__filename', src)(
+    mod, mod.exports, require, DIR, file);
+  const factory = mod.exports.createMoore26 || mod.exports;
+  return await factory({});
 }
 
 // moore26 neighborhood: 26 channels = 13 edge pairs (+/- per axis pair).
