@@ -1834,6 +1834,11 @@ uint32_t moore26_cm(int axis){
  * JS strides it by moore26_node_size() to render the grid state. */
 void *moore26_state_pointer(void){return grid_current;}
 int moore26_node_size(void){return (int)sizeof(NodeState);}
+#ifndef GIT_REV
+#define GIT_REV "nogit"
+#endif
+/* build provenance — harnesses read this to refuse stale artifacts */
+const char *moore26_gitrev(void){return GIT_REV;}
 int moore26_channel_count(void){return QChannels;}
 void moore26_fusion_wall_set(int v){qFusionWall=v;}
 void moore26_commit_min_set(int v){qCommitMin=v;}

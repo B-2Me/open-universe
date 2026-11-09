@@ -228,6 +228,15 @@ alignment scheme changes again.
   centroids + event counters; it resolves the repo root as `../..`
   (one level deeper than top-level scripts). Native smoke:
   `src/test_moore26.c` (gcc -O3 -fopenmp moore26.c test_moore26.c).
+- Artifact naming: `docs/public/wasm/cascade/` should contain ONLY
+  `build.sh` outputs — `moore26.js/.wasm` (always) and `moore26-mt.*`
+  (emsdk ≥4.x only). Any other variant name (`-stnm`, `-mtnm`,
+  `-mtd`, `-mtnmd`) is a stale artifact from an older build scheme —
+  delete it. Loading stale artifacts once silently ran every cascade
+  harness on a pre-recoil engine. `loadM26` (script/lib/m26.mjs) now
+  refuses an artifact older than `src/moore26.c` (opt out:
+  `M26_STALE_OK=1`) and prints `rev=` from `moore26_gitrev()` — the
+  engine's build commit, compiled in via `-DGIT_REV`.
 - Grid-size constraint: `NodeState` ≈220B × sites × 2 buffers, so
   256³ (~7.4GB) exceeds wasm32 — use ≤128³ in wasm, or a MEMORY64
   build for bigger. Power-of-2 dims ≥8 required (bitmask wrap +

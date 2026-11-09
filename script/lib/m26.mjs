@@ -1,24 +1,41 @@
 // m26.mjs — shared moore26 wasm loader + grid helpers (p3.mjs pattern).
 // The mtnm glue adopts an injected Module object; we pre-set
 // onRuntimeInitialized and await it — exports land as Module._moore26_*.
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
 
 const DIR = join(process.cwd(), 'docs/public/wasm/cascade');
 
 // moore26.js is the current build.sh output (MODULARIZE factory
-// createMoore26 -> Promise<Module>); the *-stnm/-mt* variants are
-// stale artifacts from an older non-modular build — do NOT load them
-// (the recoil + phase_adv patches only exist in the current build).
+// createMoore26 -> Promise<Module>). Stale-artifact guard: the wasm
+// must be NEWER than src/moore26.c — a harness that silently runs an
+// old engine produces garbage results (this actually happened:
+// moore26-stnm.js predated the recoil + phase_adv patches and every
+// harness loaded it). Opt out with M26_STALE_OK=1 for old artifacts.
 export async function loadM26(file = 'moore26.js') {
   const require = createRequire(import.meta.url);
-  const src = readFileSync(join(DIR, file), 'utf8');
+  const wasmPath = join(DIR, file);
+  const cPath = join(process.cwd(), 'src/moore26.c');
+  let stale = false;
+  try {
+    stale = statSync(wasmPath).mtimeMs < statSync(cPath).mtimeMs;
+  } catch { /* missing files handled by readFileSync below */ }
+  if (stale) {
+    const msg = `${file} is OLDER than src/moore26.c — stale build. ` +
+      `Rebuild via src/build.sh (or M26_STALE_OK=1 to force)`;
+    if (!process.env.M26_STALE_OK) throw new Error(msg);
+    console.warn(`M26_STALE_OK: ${msg}`);
+  }
+  const src = readFileSync(wasmPath, 'utf8');
   const mod = { exports: {} };
   new Function('module', 'exports', 'require', '__dirname', '__filename', src)(
     mod, mod.exports, require, DIR, file);
   const factory = mod.exports.createMoore26 || mod.exports;
-  return await factory({});
+  const Module = await factory({});
+  if (typeof Module._moore26_gitrev === 'function')
+    console.log(`[m26] loaded ${file} rev=${Module.ccall('moore26_gitrev', 'string', [], [])}`);
+  return Module;
 }
 
 // moore26 neighborhood: 26 channels = 13 edge pairs (+/- per axis pair).
