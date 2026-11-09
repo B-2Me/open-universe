@@ -39,27 +39,34 @@ The substrate is not a metaphor. It runs. The flagship instrument and the milest
 *   **[The Hopfion Zoo](/hopfion-zoo)**: the prototype's measured knot dictionary: thirty-seven stable geometries from the single-spin era.
 *   **[Langevin's Wake](/wake-demo)**: the original 2D engine where the friction ontology began.
 
-## The Record
+## The Engine
 
-*   **[moore26 Findings](/moore26-findings)**: the current engine's measured record — sealed ledger, calibrated mass spectrum, charge field, deviation audit.
+The current substrate — `moore26`, the 26-register Moore/FCC engine
+at `0.1 fm` per node — and its measured record:
+
+*   **[Moore26 Substrate](/moore26-substrate)**: the engine architecture — registers, the offer→incipient→confirm pipeline, the phase ledger.
+*   **[Moore26 Findings](/moore26-findings)**: the measured record — sealed ledger, calibrated mass spectrum, charge field, and the deviation audit against nature.
+*   **[Transaction Ledger](/transaction-ledger)**: the mechanics of the transaction layer — how flux becomes structure.
+
+## The Program
+
+*   **[Predictive Roadmap](/interference/roadmap)**: the open frontier — charge range, knots-in-motion, Lorentz structure, gravity.
+*   **[Why Simulate](/interference/usefulness)**: the case for a discrete wind tunnel where continuous calculus fails.
+*   **[Build & Validate](/interference/reproduce)**: run the measurements yourself — the moore26 harnesses first, archived engine recipes below.
 
 ## The Archive
 
-*   **[The Friction Substrate](/interference/meso-monograph)**: the `meso3i` record, milestones M19–M48 — every claim commit-anchored, including the confounds and retractions.
-*   **[The Multi-Channel Bridge](/interference/meso-bridge)**: the M19–M38 consolidation: how the multichannel substrate earned its place over the single-spin prototype.
-*   **[The Clock Program](/interference/clock-program)**: the `meso3i` E-series record: ballistic `1/r²` halos, cavity light-clocks, `n(ρ)` from discrete detention.
-*   **[Predictive Roadmap](/interference/roadmap)**: the honest anchors: what the engines can still reach, and which bridges they can't.
-*   **[Build & Validation Environments](/interference/reproduce)**: run the measurements yourself: the WASM build, the `script/meso` harness map, the native C suite, and the archived telemetry.
-*   **[Planned Audio Sessions](/interference/sessions)**: the living syllabus for the podcast companion.
+The earlier engines' campaigns, kept as provenance:
 
-### Program History
-
-*Earlier campaigns and superseded proposals, kept in context: the missteps are part of the method.*
-
-*   **[Methodology & Reproducibility](/interference/methodology)**: the planck3 engine specification and the deterministic reproduction suite.
-*   **[The Open Frontier](/interference/frontier)**: the 2D-era research log: measured experiments, falsified hypotheses, and engine RFCs.
-*   **[Theoretical Audits](/interference/audits)**: the five forward-looking test proposals (the CERN calibration path in Audit 5 is retired).
-*   **[The Utility of Causal Simulation](/interference/usefulness)**: why a discrete wind tunnel is worth building at all.
+*   **[The Friction Substrate](/interference/meso-monograph)**: the `meso3i` record — every claim commit-anchored, including the confounds and retractions.
+*   **[The Multi-Channel Bridge](/interference/meso-bridge)**: how the multichannel substrate earned its place over the single-spin prototype.
+*   **[The Clock Program](/interference/clock-program)**: the `meso3i` E-series record: ballistic `1/r²` halos, cavity light-clocks.
+*   **[Methodology & Reproducibility](/interference/methodology)**: the planck3 engine specification and reproduction suite.
+*   **[The Open Frontier](/interference/frontier)**: the 2D-era research log — measured experiments, falsified hypotheses.
+*   **[Theoretical Audits](/interference/audits)**: the five forward-looking test proposals (the CERN path in Audit 5 is retired).
+*   **[The Collider Matrix](/interference/collider)**: the retired telemetry-calibration proposal.
+*   **[The Identification Bridge](/interference/identification)**: the open-hypothesis page on what the registers physically are.
+*   **[Substrate Ontology](/interference/ontology)**: the `meso3i` engine's Map and Compass.
 
 ---
 
