@@ -758,8 +758,24 @@ void moore26_tick(void){
             if(k>k2)k=k2;
             if(!k)continue;
             grid_next[si].mass-=k;
+            if(qMomentum){
+                /* RECOIL-WALK: the shed mass emits as quanta on the
+                 * p-channel — the audited offer->incip->confirm path
+                 * re-binds them on the leading edge. The knot eats
+                 * its own forward emission: structure never rides
+                 * loose massFlight, it is OFFERED ahead and bound */
+                uint32_t pk=grid_next[si].packet[fc]+(k>8?8:k);
+                if(pk>255)pk=255;
+                uint32_t add=pk-grid_next[si].packet[fc];
+                grid_next[si].packet[fc]=(uint16_t)pk;
+                grid_next[si].packetNu[fc]=1;
+                grid_next[si].packetBorn[fc]=(uint8_t)qTick;
+                grid_next[si].packetPar[fc]=(fc&1)?-1:1;
+                grid_next[si].massFlight[fc]+=(uint16_t)(k-add);
+            } else {
             uint32_t f=grid_next[si].massFlight[fc]+k;
             grid_next[si].massFlight[fc]=(uint16_t)(f>65535?65535:f);
+            }
             /* the launched mass carries a proportional charge share */
             int32_t qc=(int32_t)o->charge>>4;
             grid_next[si].charge-=qc;
@@ -1085,6 +1101,20 @@ void moore26_tick(void){
                         uint32_t ht3=(uint32_t)n->heat+nu;
                         n->heat=(uint16_t)(ht3>65535?65535:ht3);
                         continue;
+                    }
+                }
+                if(qMomentum){
+                    /* boundary-selective confirm — the offer lands only
+                     * where its channel exits into bare space. An
+                     * interior offer STANDS (expires -> re-emits), so
+                     * flux transposes at the edge instead of churning
+                     * mid-body: momentum books where the quantum lands */
+                    const int8_t *v=QChannelVec[c];
+                    int nx=x+v[0],ny=y+v[1],nz=z+v[2];
+                    if(nx>=0&&nx<QWidth&&ny>=0&&ny<QHeight&&nz>=0&&nz<QDepth){
+                        const NodeState *fn=&grid_current[(nz*QHeight+ny)*QWidth+nx];
+                        uint32_t fa=fn->winding[c&~1],fb=fn->winding[c|1];
+                        if((fa<fb?fa:fb)>=32)continue;   /* interior — keep flying */
                     }
                 }
                 if(mA+nu<=qConfirmCap){
@@ -1654,6 +1684,13 @@ void moore26_tick(void){
                 }
             }
             if(lw>(uint64_t)o->mass*(8-mtilt)){
+                /* ROTATION-TIME rate limit — a bound state translates
+                 * by RE-WINDING at the displaced position, and the
+                 * wound pattern needs ~tau (measured ~100t) to rotate
+                 * one cell over. Shed faster than ~1/128t and the knot
+                 * tears at ~c; this gate keeps the drift inside the
+                 * measured coherence band (v << c, not v ~ c) */
+                if(mtilt&&(rand_site(si,22)&127)!=0)continue;
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(!shed)continue;
                 uint32_t m=grid_next[si].mass+shed;
