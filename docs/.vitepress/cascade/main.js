@@ -713,10 +713,11 @@ export async function initCascadeSimulator(root, opts = {}) {
             wset(CX + dx, CY + dy, CZ + dz, 6, 90);
             wset(CX + dx, CY + dy, CZ + dz, 7, 40);
             mset(CX + dx, CY + dy, CZ + dz, 50);
+            /* born in motion — seed the momentum register so the knot
+             * glides from reset (Newton-1 demo needs no charge phase) */
+            if (wasm._moore26_momentum_at_set)
+              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, 400);
           }
-      ui.boostT = 400;
-      const tb = root.querySelector('[data-thrust]');
-      if (tb) { tb.classList.add('on'); tb.setAttribute('aria-pressed', 'true'); }
       return 27;
     }
     /* absorbing wall for emitter scenarios — torus wrap would
@@ -953,7 +954,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     poke();
     /* left button paints when a tool is armed — right/middle drag is
      * always camera orbit, tool or not */
-    if (e.button === 0 && (ui.lumpArm || ui.tubeArm || ui.ringArm)) {
+    if (e.button === 0 && (ui.lumpArm || ui.tubeArm || ui.ringArm || ui.thrustArm)) {
       const cell = pickCell(e.clientX, e.clientY);
       if (cell) {
         if (ui.tubeArm) {
@@ -976,6 +977,22 @@ export async function initCascadeSimulator(root, opts = {}) {
            * waveguide bypass is on — enable it and say so */
           wasm._moore26_rail_gate_set(64);
           say(n ? `waveguide loop painted — ${n} cells, stream riding (rail bypass on)` : 'off-lattice', 3500);
+        } else if (ui.thrustArm) {
+          /* the kick — write momentum[3] directly on a 3³ block at the
+           * tap point: an impulse to the pair3 axis, then it coasts
+           * on stored p. Shift-click kicks the opposite direction. */
+          if (wasm._moore26_momentum_at_set) {
+            const dir = e.shiftKey ? -1 : 1;
+            for (let dz = -1; dz <= 1; dz++)
+              for (let dy = -1; dy <= 1; dy++)
+                for (let dx = -1; dx <= 1; dx++) {
+                  const kx = cell.lx + dx, ky = cell.ly + dy, kz = cell.lz + dz;
+                  if (kx >= 0 && kx < W3 && ky >= 0 && ky < H3 && kz >= 0 && kz < D3)
+                    wasm._moore26_momentum_at_set(kx, ky, kz, 3, 400 * dir);
+                }
+            setThrustArm(false);
+            say(`${dir > 0 ? '+x' : '-x'} impulse applied — coasting on stored momentum`, 3500);
+          } else say('momentum register not in this wasm build', 3500);
         } else {
           /* shift-click flips the handedness — paint chiral pairs */
           const n = seedWound(cell.lx, cell.ly, cell.lz, e.shiftKey ? -1 : 1);
@@ -1018,7 +1035,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06, depthSlice: false,
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
-    drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
+    drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false, thrustArm: false,
     pump: false, pumpAt: null, chargeSites: null, scenario: 'glide',
     boostT: 0,
   };
@@ -1053,14 +1070,13 @@ export async function initCascadeSimulator(root, opts = {}) {
     wasm._moore26_tick();
     ui.tick++; upload(); dirty = true;
   });
-  /* thrust burst — beam fires for 400 ticks to charge p, then cuts
-   * and the knot coasts on stored momentum (Newton-1 demo) */
-  bind('[data-thrust]', 'click', () => {
-    ui.boostT = 400;
+  const setThrustArm = (on) => {
+    ui.thrustArm = on;
     const b = root.querySelector('[data-thrust]');
-    if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
-    say('thrust — charging momentum; beam cuts at 400');
-  });
+    if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+    if (on) say('thrust armed — tap a structure to kick it along +x (shift: -x)', 4000);
+  };
+  bind('[data-thrust]', 'click', () => { setLumpArm(false); setTubeArm(false); setRingArm(false); setThrustArm(!ui.thrustArm); });
   bind('[data-reset]', 'click', () => {
     /* re-init = full scenario reset, not just clear — restores the
      * initial quiet field the feed/beam/lump tools build on. */
@@ -1084,7 +1100,7 @@ export async function initCascadeSimulator(root, opts = {}) {
      * convergent feed IS the vacuum scenario. */
     ui.scenario = e.target.value;
     ui.drive = false;   /* every scenario starts quiet — ☀ opts in */
-    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false;
+    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false; ui.thrustArm = false;
     ui.pump = false; ui.pumpAt = null; ui.chargeSites = null; ui.pumpRate = 0;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);

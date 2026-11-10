@@ -2048,6 +2048,11 @@ void moore26_align_gate_set(int v){qAlignGate=v;}
 void moore26_par_gate_set(int v){qParGate=v;}
 void moore26_mass_cap_set(int v){qMassCap=v;}
 void moore26_momentum_set(int v){qMomentum=v;}
+void moore26_momentum_at_set(int x,int y,int z,int e,int v){
+    /* direct impulse: set momentum[pair] on one node — the placed
+     * kick tool. Writes the live buffer (same as other at-set). */
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth||e<0||e>12)return;
+    grid_current[(z*QHeight+y)*QWidth+x].momentum[e]=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
