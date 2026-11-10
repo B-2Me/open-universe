@@ -94,6 +94,7 @@ onUnmounted(() => {
             <button data-ringt title="Ring tool — arm, then click to paint a {111} waveguide loop with a live stream" aria-label="Ring tool" aria-pressed="false"><span class="g">◦</span><span class="l">ring</span></button>
             <button data-drive class="tog" aria-pressed="false" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
             <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
+            <button data-thrust title="Thrust burst — 400 ticks of +x beam to charge the knot's momentum, then watch it coast on stored p" aria-label="Thrust burst"><span class="g">⚡</span><span class="l">thrust</span></button>
           </div>
         </div>
         </div>
@@ -126,8 +127,9 @@ onUnmounted(() => {
               <option value="6">handed</option>
             </select></label>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
+              <option value="glide" selected>glide</option>
               <option value="ring">ring</option>
-              <option value="tube" selected>flux tube</option>
+              <option value="tube">flux tube</option>
               <option value="pair">chiral pair</option>
               <option value="attract">charge attract</option>
               <option value="repel">charge repel</option>

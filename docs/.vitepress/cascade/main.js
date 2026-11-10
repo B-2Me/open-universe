@@ -699,6 +699,22 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
+    /* glide = the momentum scenario: inertial drift ON so the knot
+     * can walk on stored p; all other scenarios run it off */
+    if (wasm._moore26_momentum_set)
+      wasm._moore26_momentum_set(s === 'glide' ? 64 : 0);
+    if (s === 'glide') {
+      /* dd-biased committed knot (pair3) + mass — charge it with
+         the ⚡ thrust burst, then watch it coast on stored p */
+      for (let dz = -1; dz <= 1; dz++)
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            wset(CX + dx, CY + dy, CZ + dz, 6, 90);
+            wset(CX + dx, CY + dy, CZ + dz, 7, 40);
+            mset(CX + dx, CY + dy, CZ + dz, 50);
+          }
+      return 27;
+    }
     /* absorbing wall for emitter scenarios — torus wrap would
      * recirculate the pumped stream back into the scene */
     if (wasm._moore26_absorb_set)
@@ -999,7 +1015,8 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false,
-    pump: false, pumpAt: null, chargeSites: null, scenario: 'tube',
+    pump: false, pumpAt: null, chargeSites: null, scenario: 'glide',
+    boostT: 0,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -1031,6 +1048,14 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (ui.drive || ui.beam || ui.pump) inject();
     wasm._moore26_tick();
     ui.tick++; upload(); dirty = true;
+  });
+  /* thrust burst — beam fires for 400 ticks to charge p, then cuts
+   * and the knot coasts on stored momentum (Newton-1 demo) */
+  bind('[data-thrust]', 'click', () => {
+    ui.boostT = 400; ui.beam = true;
+    const b = root.querySelector('[data-beam]');
+    if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
+    say('thrust — charging momentum; beam cuts at 400');
   });
   bind('[data-reset]', 'click', () => {
     /* re-init = full scenario reset, not just clear — restores the
@@ -1410,6 +1435,12 @@ export async function initCascadeSimulator(root, opts = {}) {
       while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
         if (ui.drive || ui.beam || ui.pump) inject();
+        if (ui.boostT && !--ui.boostT) {
+          ui.beam = false;
+          const bb = root.querySelector('[data-beam]');
+          if (bb) { bb.classList.remove('on'); bb.setAttribute('aria-pressed', 'false'); }
+          say('coasting — momentum conserved');
+        }
         if (fuse) {
           /* fuse ramp: +1 winding/member/tick until the fracture
            * gate takes over — the string visibly glows critical */
