@@ -387,3 +387,20 @@ locomotion equilibrates; translation must be slow re-centering.
 Both-buffer rule: ALL at-setters write grid_current+grid_next
 (rescan_live reads next only — single-buffer seeds are invisible
 on alternate ticks).
+
+## The ontology arc — ledgers, processes, quanta, matter lattice
+
+Knots are LEDGERS (transaction records — immortal, anchored).
+Rings are PROCESSES (live circulation — anchored, flow cancels).
+Packets are QUANTA (travel but die — pure exchange).
+Odd sites are the MATTER lattice (mass fully pinned).
+
+Gate chain: site_level>=2 (vol>=128) -> 75% skip -> density throttle
+-> qGroundFloor=512. Ground-state knots are inert (ev43=ev29=0).
+
+The relay arc: odd->even emission fires (ev59), but massFlight
+rides even->even edges into bare vacuum and never lands (catch_
+needs existing structure). Migration needs a guided landing —
+the odd destination attracting the flight — still missing.
+
+tau_relax ~100t (v_drift << v_relax = coherence budget).

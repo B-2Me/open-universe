@@ -176,6 +176,7 @@ static int qFusionWall=256;   /* pair-production energy threshold —
      * of weak ones) */
 static int qCommitMin=32;
 static int qGroundFloor=512;
+static int qLaunchMode=0;   /* 0=massFlight 1=packet+fwd 2=packet-bck 3=direct */
 static int qConfirmCap=160;
 static int qCatchGate=16;
 static int qDirBias=0;
@@ -646,6 +647,9 @@ void moore26_tick(void){
          * node or a committed-winding edge) — bare vacuum lets the
          * quantum keep flying (fragments separate until caught). */
         int catch_=grid_current[si].mass>0;
+        if(!catch_&&!IS_EVEN(x,y,z))catch_=1;   /* odd sites are the
+         * matter lattice — they catch arriving flight even when bare:
+         * that's how matter relays odd->even->odd */
         if(!catch_){
             for(int e=0;e<QChannels/2;e++){
                 uint32_t m2=grid_current[si].winding[2*e]<grid_current[si].winding[2*e+1]
@@ -685,6 +689,21 @@ void moore26_tick(void){
             if(catch_){
                 uint32_t pk=in[2*e]+in[2*e+1];
                 if(pk){
+                    /* even->odd donation: caught mass on an even cell
+                     * donates a share to its odd face-neighbors — the
+                     * matter lattice draws it down. Flight lands even;
+                     * odd sites catch through their even conduit. */
+                    if(IS_EVEN(x,y,z)){
+                        for(int d=0;d<6;d++){
+                            int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
+                            if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                            int ni=(nz*QHeight+ny)*QWidth+nx;
+                            uint32_t give=pk>>3;if(!give)continue;
+                            uint32_t m2=grid_next[ni].mass+give;
+                            grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
+                            pk-=give;   /* conservation: donated share leaves the catch */
+                        }
+                    }
                     uint32_t m=grid_next[si].mass+pk;
                     grid_next[si].mass=(uint16_t)(m>65535?65535:m);
                     /* the parked mass lands with its carried charge */
@@ -711,8 +730,28 @@ void moore26_tick(void){
         PROC_NODES
             NodeState *o=&grid_current[si];
             if(o->mass<32)continue;
-            if(!IS_EVEN(x,y,z))continue;  /* mass on odd cells can't
-             * launch — interstitial structure stays pinned */
+            if(!IS_EVEN(x,y,z)){
+                /* odd→even RELAY — interstitial mass can't transport,
+                 * but it can HAND OFF to a face-adjacent even cell's
+                 * flight channel: matter relays through the exchange
+                 * medium, two hops per odd-site step */
+                const int8_t *fv=QChannelVec[6+((si>>4)%6)];  /* pick a face dir */
+                int fx=x+fv[0]/2,fy=y+fv[1]/2,fz=z+fv[2]/2;   /* odd→face-even
+                 * is a single-axis step — halve the edge vector... use
+                 * the face-neighbor directly: odd+1axis=even */
+                fx=x+((si>>4)&1?1:-1);fy=y;fz=z;              /* ±x even nbr */
+                if(fx<0||fx>=QWidth)continue;
+                int ni=(fz*QHeight+fy)*QWidth+fx;
+                uint32_t k=o->mass>>4;if(!k)k=1;
+                grid_next[si].mass-=k<o->mass?k:o->mass;
+                /* directed relay — ch6 (+x+y) so the hop is coherent:
+                 * mass lands on the next odd cell along the direction,
+                 * not sprayed randomly */
+                uint32_t f=grid_next[ni].massFlight[6]+k;
+                grid_next[ni].massFlight[6]=(uint16_t)(f>65535?65535:f);
+                qEvents[59]++;
+                continue;
+            }
             int de=-1;int32_t dd=0,dir=1;
             if(qMomentum){
                 /* launch on the momentum axis when available: p is the
@@ -758,20 +797,28 @@ void moore26_tick(void){
             if(k>k2)k=k2;
             if(!k)continue;
             grid_next[si].mass-=k;
-            if(qMomentum){
-                /* RECOIL-WALK: the shed mass emits as quanta on the
-                 * p-channel — the audited offer->incip->confirm path
-                 * re-binds them on the leading edge. The knot eats
-                 * its own forward emission: structure never rides
-                 * loose massFlight, it is OFFERED ahead and bound */
-                uint32_t pk=grid_next[si].packet[fc]+(k>8?8:k);
-                if(pk>255)pk=255;
-                uint32_t add=pk-grid_next[si].packet[fc];
-                grid_next[si].packet[fc]=(uint16_t)pk;
-                grid_next[si].packetNu[fc]=1;
-                grid_next[si].packetBorn[fc]=(uint8_t)qTick;
-                grid_next[si].packetPar[fc]=(fc&1)?-1:1;
-                grid_next[si].massFlight[fc]+=(uint16_t)(k-add);
+            if(qMomentum&&qLaunchMode>=1&&qLaunchMode<=3){
+                /* permutation sweep — direction/landing variants:
+                 * 1=packet fwd (+p offer->confirm ahead)
+                 * 2=packet BACK (-p true recoil — bleed behind)
+                 * 3=direct fwd winding transfer (rate-limited) */
+                int lc=qLaunchMode==2?(fc^1):fc;
+                if(qLaunchMode==3){
+                    int nx=x+QChannelVec[fc][0],ny=y+QChannelVec[fc][1],nz=z+QChannelVec[fc][2];
+                    if(nx>=0&&nx<QWidth&&ny>=0&&ny<QHeight&&nz>=0&&nz<QDepth){
+                        NodeState *fn=&grid_next[(nz*QHeight+ny)*QWidth+nx];
+                        fn->winding[fc]+=(uint16_t)(k>65534-fn->winding[fc]?65534-fn->winding[fc]:k);
+                    }
+                } else {
+                    uint32_t pk=grid_next[si].packet[lc]+(k>8?8:k);
+                    if(pk>255)pk=255;
+                    uint32_t add=pk-grid_next[si].packet[lc];
+                    grid_next[si].packet[lc]=(uint16_t)pk;
+                    grid_next[si].packetNu[lc]=1;
+                    grid_next[si].packetBorn[lc]=(uint8_t)qTick;
+                    grid_next[si].packetPar[lc]=(lc&1)?-1:1;
+                    grid_next[si].massFlight[lc]+=(uint16_t)(k-add);
+                }
             } else {
             uint32_t f=grid_next[si].massFlight[fc]+k;
             grid_next[si].massFlight[fc]=(uint16_t)(f>65535?65535:f);
@@ -2097,6 +2144,7 @@ void moore26_align_gate_set(int v){qAlignGate=v;}
 void moore26_par_gate_set(int v){qParGate=v;}
 void moore26_mass_cap_set(int v){qMassCap=v;}
 void moore26_momentum_set(int v){qMomentum=v;}
+void moore26_launch_mode_set(int v){qLaunchMode=v;}
 void moore26_momentum_at_set(int x,int y,int z,int e,int v){
     /* direct impulse: set momentum[pair] on one node — the placed
      * kick tool. Writes BOTH buffers — the drift reads grid_next,
