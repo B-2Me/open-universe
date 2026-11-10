@@ -768,6 +768,17 @@ void moore26_tick(void){
                 grid_next[si].mass-=k<o->mass?k:o->mass;
                 uint32_t m2=grid_next[ni].mass+k;
                 grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
+                /* winding clears too — the committed record re-writes
+                 * at the destination odd site: the SKELETON migrates
+                 * with the flesh, history relocates site to site */
+                for(int c=0;c<QChannels;c++){
+                    uint32_t w2=o->winding[c]>>4;
+                    if(w2){
+                        grid_next[si].winding[c]-=w2;
+                        uint32_t d=grid_next[ni].winding[c]+w2;
+                        grid_next[ni].winding[c]=(uint16_t)(d>65535?65535:d);
+                    }
+                }
                 qEvents[59]++;
                 continue;
             }
