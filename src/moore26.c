@@ -714,7 +714,17 @@ void moore26_tick(void){
             if(!IS_EVEN(x,y,z))continue;  /* mass on odd cells can't
              * launch — interstitial structure stays pinned */
             int de=-1;int32_t dd=0,dir=1;
-            for(int e=0;e<QChannels/2;e++){
+            if(qMomentum){
+                /* launch on the momentum axis when available: p is the
+                 * trajectory, dd is only the structure's compass */
+                int32_t bp=0;
+                for(int e=0;e<QChannels/2;e++){
+                    int32_t p=o->momentum[e];int32_t ap=p<0?-p:p;
+                    if(ap>bp){bp=ap;de=e;dir=p<0?-1:1;}
+                }
+                if(de>=0)dd=bp;
+            }
+            if(de<0)for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
                 int32_t ad=d<0?-d:d;
                 if(ad>dd){dd=ad;de=e;dir=d<0?-1:1;}
@@ -1459,8 +1469,12 @@ void moore26_tick(void){
                      * forward through audited transport — translation
                      * is breathing, free; p share rides to the landing
                      * cell so total p stays conserved */
-                    if(n->winding[ch]>0&&n->massFlight[c2]<65535){
+                    if(n->winding[ch]>0&&n->massFlight[c2]<65534){
+                        /* BOTH registers ride — a coherent composite
+                         * translates, not a winding ghost leaving
+                         * its mass behind (the measured split) */
                         n->winding[ch]--;n->massFlight[c2]++;
+                        if(n->mass>0){n->mass--;n->massFlight[c2]++;}
                         int wp=(int)(n->winding[2*e]+n->winding[2*e+1]);
                         if(wp>0){int32_t dm=(int32_t)((int64_t)p/wp);
                             n->momentum[e]-=dm;nn->momentum[e]+=dm;}
