@@ -1027,14 +1027,14 @@ export async function initCascadeSimulator(root, opts = {}) {
       const ncx = (p[0].x + p[1].x) / 2, ncy = (p[0].y + p[1].y) / 2;
       if (pinch.d > 1) tgt.dist = Math.max(8, Math.min(400, pinch.dist * pinch.d / nd));
       tgt.yaw += (ncx - pinch.cx) * 0.006;
-      tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + (ncy - pinch.cy) * 0.006));
+      tgt.pitch = Math.max(-1.55, Math.min(1.55, tgt.pitch + (ncy - pinch.cy) * 0.006));
       pinch.cx = ncx; pinch.cy = ncy;
       lx = e.clientX; ly = e.clientY;
       dirty = true;
       return;
     }
     tgt.yaw += (e.clientX - lx) * 0.006;
-    tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + (e.clientY - ly) * 0.006));
+    tgt.pitch = Math.max(-1.55, Math.min(1.55, tgt.pitch + (e.clientY - ly) * 0.006));
     lx = e.clientX; ly = e.clientY;
     dirty = true;
   });

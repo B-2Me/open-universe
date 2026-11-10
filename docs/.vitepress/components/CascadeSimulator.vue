@@ -93,9 +93,14 @@ onUnmounted(() => {
             <button data-lump title="Lump tool — arm, then click to drop a wound condenser (shift-click: +dd handedness)" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
             <button data-tube title="Tube tool — arm, then click to paint a saturated flux string" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
             <button data-ringt title="Ring tool — arm, then click to paint a {111} waveguide loop with a live stream" aria-label="Ring tool" aria-pressed="false"><span class="g">◦</span><span class="l">ring</span></button>
+            <button data-thrust title="Thrust tool — arm, then click to kick a structure along +x with stored momentum (shift-click: -x)" aria-label="Thrust kick tool" aria-pressed="false"><span class="g">⚡</span><span class="l">thrust</span></button>
+          </div>
+        </div>
+        <div class="cascade-grp grp-emit">
+          <div class="cascade-grp-row">
+            <em>emit <button class="cascade-help" data-help="grp-emit" aria-label="About the emitters">?</button></em>
             <button data-drive class="tog" aria-pressed="false" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
             <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
-            <button data-thrust class="tog" aria-pressed="false" title="Thrust burst — 400 ticks of +x beam to charge the knot's momentum, then watch it coast on stored p" aria-label="Thrust burst"><span class="g">⚡</span><span class="l">thrust</span></button>
           </div>
         </div>
         </div>
