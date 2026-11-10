@@ -16,13 +16,13 @@ The deviation audit in [Moore26 Findings](/moore26-findings) is the honest score
 
 Today the charge law fires under offer congestion — a `cap` gate, a traffic jam. Nature's Coulomb acts at distance. The open question: can a standing virtual layer — persistent unconfirmed offers or phase bias radiated into the vacuum halo — project a gradient that steers traffic before it arrives? Measured next: whether a charged knot's wake deflects a probe stream at range, not just at contact.
 
-## Step 2: Knots in motion — ballistic translation *(open)*
+## Step 2: Knots in motion — *(measured, appetite-bound)*
 
-A wound knot's binding winding is anchored to where the mass sits: knots crawl by rebuilding themselves cell-by-cell. For a soliton to translate, the circulation pattern must shift its center coherently across the lattice without paying full re-crystallization cost per hop. The radiative-recoil proposal — book the emission momentum the knot currently sheds for free — is the minimal honest mechanism to test first.
+Resolved in moore26: radiative recoil works — `dd`-biased emission books momentum to `massFlight`, and the knot translates (`+1.09` winding-centroid drift/2000t, `rev=f6af469`). The honest limit: the knot decelerates as it accretes (ramjet ceiling, `v→0` as mass grows) — no sustained ballistic regime exists under isotropic flux. Free-flight `v` remains the open piece.
 
-## Step 3: Lorentz structure *(downstream of motion)*
+## Step 3: Lorentz structure *(measured: congestion-keyed, not velocity)*
 
-If a knot translates at `0.5c`, half its transaction cycles go to moving structure forward — half as many left for internal update. That processing lag is time dilation as a mechanism, not an axiom. Length contraction follows as Doppler-skewed internal signaling along the travel axis. Measurable only once Step 2 yields real `v`.
+The proper-time mechanism now exists: `localTime` (τ) integrates each node's unconsumed bandwidth — quiet vs congested twins diverge `22×` under identical `qTick`. But dilation keys on *transaction load*, not `v`: a moving knot's composite clock doesn't slow (translation doesn't tax per-node bandwidth). The remaining gap to Lorentz: making the load that τ reads a *function of motion* — or accepting the congestion law as the substrate's honest answer.
 
 ## Step 4: The species census *(in progress)*
 

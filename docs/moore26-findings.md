@@ -106,14 +106,21 @@ inferred rules like Pauli exclusion are excluded by definition):*
 2. **Parity is symmetric** — nature's weak sector measurably
    prefers one handedness (the `P`-violation experiments). Our
    `dd` coils come out even — `0.89-1.0` ratio, no preference.
-3. **Knots don't fly** — measured particles move ballistically.
-   Ours can't: the binding winding is anchored to where the mass
-   sits, so knots crawl by rebuilding themselves cell-by-cell.
-   No rest-frame momentum is conserved across translation.
-4. **No Lorentz structure** — time dilation is measured every day
-   (muon lifetimes, GPS clocks). Here `c` is simply `1` hop/tick
-   — a lattice constant, not an emergent invariance. Nothing
-   contracts, nothing dilates — yet.
+3. **Knots fly slowly, and only by eating** — the photon rocket
+   is verified: `dd`-biased emission → `massFlight` recoil →
+   `+1.09` winding-centroid drift/2000t on `rev=f6af469`. But the
+   knot decelerates as it gorges (ramjet ceiling, `v→0` as mass
+   grows) — no free ballistic regime exists. Motion is real but
+   appetite-bound.
+4. **Dilation exists — keyed on congestion, not velocity** — the
+   `localTime` (τ) register integrates each node's unconsumed
+   bandwidth; quiet vs congested twins diverge `22×` under
+   identical `qTick` (measured). Ballistic transport stays
+   absolute (rail ring period-3, bath-immune); a moving knot's
+   composite clock doesn't slow — because translation doesn't
+   tax the per-node bandwidth. `ω ∝ m` rest frequency also
+   measured (`qMassCap`, `1:5:20` at `10/40/160`). Lorentz-in-γ
+   remains absent; proper-time dilation is present and authored.
 5. **Decay isn't a lifetime** — nature measures an exponential
    decay curve with a characteristic lifetime per species. Ours
    evaporates by a mass-proportional friction tax — the shape is
@@ -130,9 +137,11 @@ inferred rules like Pauli exclusion are excluded by definition):*
    documented seams, not physics.
 
 **Verdict**: local transaction physics is honest (conservation,
-charge-sign, pair production, confinement); **field-level and
-relativistic physics is the open frontier** — charge range,
-knots-in-motion, and Lorentz structure are the next deviations.
+charge-sign, pair production, confinement, recoil translation);
+a proper-time clock now exists but dilates on *load* not
+*velocity*. **The open deviations**: charge range (field vs
+jam), sustained ballistic motion (ramjet ceiling), and any
+velocity-keyed dilation — the remaining distance to Lorentz.
 
 
 
@@ -209,6 +218,56 @@ angular momentum, thermodynamically irreversible:
   killing the runaway while preserving the `dd=519` dimer bond)*
 - Accretion physics: sustained flux → `mass`+`dd` growth at
   plateaued `heat ~7.4M` — driven `E→m` + `E→L` conversion
+
+## Clock & history stack — measured
+
+The substrate now carries a three-clock architecture plus four
+conserved history registers — every entry below is measured, and
+every mechanism is gated behind a tuner (default off).
+
+**The three clocks:**
+
+- `qTick` — the absolute drumbeat. Rail-ring packets circulate at
+  exactly period-3, immune to `bath=0.05`. Ballistic time is not
+  dilatable; it is the substrate's bookkeeping layer.
+- `localTime` (`τ`, offset 456) — conserved proper time:
+  `Σ free_·adv` per tick, where `free_ = cap − armed − txnWork`.
+  A congested twin accumulated `3,424` vs a quiet twin's `76,800`
+  over 600 ticks — a `22×` proper-time divergence from *load*,
+  not velocity.
+- `bondTick` (offset 448) — first-confirm birthday: volumetric
+  provenance. Fed knots write concentric growth rings
+  (surface-filtered accretion); bath knots fill like a sponge
+  (volumetric, no radial gradient). Directional wind writes a
+  `5.7×` fossil age-skew — windward face is the *old* accretion
+  crust, inverted vs nature's leading-face erosion.
+
+**Structure of the knot clock (measured):** at flat `cap=16` a
+bound knot is depth-graded — shielded core ticks at max, working
+shell crawls. Under `qMassCap` (Compton ansatz, `cap ∝ mass`),
+`τ` scales `1:5:20` at `mass 10/40/160` — and `mass=0` sites get
+`cap=0`: **vacuum has no proper time at all.**
+
+**Selection rules (first in the substrate):**
+
+- `bondDist` gate (`qAlignGate`) — offers confirm only on axes the
+  node is already bonded into: off-axis accretion suppressed
+  `75-90%`; selection is emergent (bit-identical on symmetric vs
+  `dd`-biased seeds — bond topology self-organizes).
+- `bondPar` + `qParGate` — net parity of confirmed bonds vs the
+  offer's `incipPar`: a `+`-polarized knot refuses `−` flux and
+  holds its handedness (~49% suppression). Chirality selection:
+  handedness matching handedness.
+- Lesson from the failed `dd` gate: the coherence source must be
+  a *history record* (`bondDist`, `bondPar`), never a spendable
+  ledger — the knot's own emission erodes `dd` at the surface.
+
+**Honest nulls:** the wound lump has zero live circulation on all
+4 `{111}` plaquette orientations (jam, not vortex); committed `dd`
+is Meissner-frozen (no tumble exists — the emit/reabsorb cycle
+never rotates it); no velocity wake under isotropic flux (history
+records formation, not motion); `qBondAge` seniority temper is a
+bifurcation knob, not a dial.
 
 ## Radiation
 
@@ -501,8 +560,15 @@ streams into the measurement.
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
 `catch_gate`, `dir_bias`, `deflect_align`, `dd_shift`,
 `bend_shift`, `rad_shift`, `phase_gate`, `phase_sync`,
-`evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
+`phase_adv`, `work_cap`, `bond_age`, `align_gate`, `par_gate`,
+`mass_cap`, `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
 `chargeflight_get`, `audit`
+
+**History registers** (bulk-read at `state_pointer` offsets):
+`txnWork` (444) per-tick transaction count · `bondTick` (448)
+first-confirm birthday · `workAge` (452) cumulative effort ·
+`localTime` τ (456) conserved proper-time · `bondPar` (460)
+confirmed-bond chirality
 
 
 ## External reading
