@@ -651,6 +651,17 @@ void moore26_tick(void){
          * matter lattice — they catch arriving flight even when bare:
          * that's how matter relays odd->even->odd */
         if(!catch_){
+            /* GUIDED LANDING — an even cell adjacent to odd mass
+             * catches flight even when bare: the odd site ATTRACTS
+             * the exchange — matter is sticky close-range (virtual
+             * exchange, not free radiation) */
+            for(int d=0;d<6&&!catch_;d++){
+                int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
+                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                if(grid_current[(nz*QHeight+ny)*QWidth+nx].mass>0)catch_=1;
+            }
+        }
+        if(!catch_){
             for(int e=0;e<QChannels/2;e++){
                 uint32_t m2=grid_current[si].winding[2*e]<grid_current[si].winding[2*e+1]
                            ?grid_current[si].winding[2*e]:grid_current[si].winding[2*e+1];
@@ -694,11 +705,17 @@ void moore26_tick(void){
                      * matter lattice draws it down. Flight lands even;
                      * odd sites catch through their even conduit. */
                     if(IS_EVEN(x,y,z)){
+                        /* directed donation — prefer odd neighbors in the
+                         * +x+y (ch6) direction so the relay MARCHES instead
+                         * of spreading: the destination side draws the
+                         * matter, the pattern walks */
                         for(int d=0;d<6;d++){
+                            int fw=(d==0||d==2);   /* +x,+y face neighbors */
+                            if(!fw&&d<4)continue;  /* only forward faces */
                             int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
                             if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
                             int ni=(nz*QHeight+ny)*QWidth+nx;
-                            uint32_t give=pk>>3;if(!give)continue;
+                            uint32_t give=pk>>2;if(!give)continue;
                             uint32_t m2=grid_next[ni].mass+give;
                             grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
                             pk-=give;   /* conservation: donated share leaves the catch */
@@ -729,29 +746,32 @@ void moore26_tick(void){
     if((qTick&7)==0){
         PROC_NODES
             NodeState *o=&grid_current[si];
-            if(o->mass<32)continue;
             if(!IS_EVEN(x,y,z)){
-                /* odd→even RELAY — interstitial mass can't transport,
-                 * but it can HAND OFF to a face-adjacent even cell's
-                 * flight channel: matter relays through the exchange
-                 * medium, two hops per odd-site step */
-                const int8_t *fv=QChannelVec[6+((si>>4)%6)];  /* pick a face dir */
-                int fx=x+fv[0]/2,fy=y+fv[1]/2,fz=z+fv[2]/2;   /* odd→face-even
-                 * is a single-axis step — halve the edge vector... use
-                 * the face-neighbor directly: odd+1axis=even */
-                fx=x+((si>>4)&1?1:-1);fy=y;fz=z;              /* ±x even nbr */
-                if(fx<0||fx>=QWidth)continue;
-                int ni=(fz*QHeight+fy)*QWidth+fx;
+                if(o->mass<4)continue;   /* relay threshold — low floor so
+                 * frontier cells re-emit and the chain marches */
+                /* LEDGER CLEARING — mass never rides free flight. The
+                 * odd cell clears a transaction THROUGH the shared even
+                 * conduit onto the next odd site. Direction = dominant
+                 * momentum pair: the hop follows p, so a "thrown" pattern
+                 * walks where its momentum says. */
+                int be=0;int32_t best=0,dir=1;
+                for(int e=0;e<QChannels/2;e++){
+                    int32_t p=o->momentum[e];int32_t a=p<0?-p:p;
+                    if(a>best){best=a;be=e;dir=p<0?-1:1;}
+                }
+                int ch=2*be+(dir<0);   /* +ch for p>0, opp for p<0 */
+                const int8_t *v=QChannelVec[ch];
+                int nx=x+v[0],ny=y+v[1],nz=z+v[2];
+                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                int ni=(nz*QHeight+ny)*QWidth+nx;
                 uint32_t k=o->mass>>4;if(!k)k=1;
                 grid_next[si].mass-=k<o->mass?k:o->mass;
-                /* directed relay — ch6 (+x+y) so the hop is coherent:
-                 * mass lands on the next odd cell along the direction,
-                 * not sprayed randomly */
-                uint32_t f=grid_next[ni].massFlight[6]+k;
-                grid_next[ni].massFlight[6]=(uint16_t)(f>65535?65535:f);
+                uint32_t m2=grid_next[ni].mass+k;
+                grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
                 qEvents[59]++;
                 continue;
             }
+            if(o->mass<32)continue;   /* even launch threshold */
             int de=-1;int32_t dd=0,dir=1;
             if(qMomentum){
                 /* launch on the momentum axis when available: p is the
