@@ -702,7 +702,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* glide = the momentum scenario: inertial drift ON so the knot
      * can walk on stored p; all other scenarios run it off */
     if (wasm._moore26_momentum_set)
-      wasm._moore26_momentum_set(s === 'glide' ? 64 : 0);
+      wasm._moore26_momentum_set(s === 'glide' ? 255 : 0);
     if (s === 'glide') {
       /* dd-biased committed knot (pair3) + mass — the scenario ARMS
        * its own thrust burst on load so the demo runs itself: beam
@@ -1057,8 +1057,10 @@ export async function initCascadeSimulator(root, opts = {}) {
    * and the knot coasts on stored momentum (Newton-1 demo) */
   bind('[data-thrust]', 'click', () => {
     ui.boostT = 400; ui.beam = true;
-    const b = root.querySelector('[data-beam]');
-    if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
+    for (const sel of ['[data-beam]', '[data-thrust]']) {
+      const b = root.querySelector(sel);
+      if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
+    }
     say('thrust — charging momentum; beam cuts at 400');
   });
   bind('[data-reset]', 'click', () => {
@@ -1441,8 +1443,10 @@ export async function initCascadeSimulator(root, opts = {}) {
         if (ui.drive || ui.beam || ui.pump) inject();
         if (ui.boostT && !--ui.boostT) {
           ui.beam = false;
-          const bb = root.querySelector('[data-beam]');
-          if (bb) { bb.classList.remove('on'); bb.setAttribute('aria-pressed', 'false'); }
+          for (const sel of ['[data-beam]', '[data-thrust]']) {
+            const bb = root.querySelector(sel);
+            if (bb) { bb.classList.remove('on'); bb.setAttribute('aria-pressed', 'false'); }
+          }
           say('coasting — momentum conserved');
         }
         if (fuse) {
