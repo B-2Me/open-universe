@@ -722,7 +722,20 @@ void moore26_tick(void){
                     int32_t p=o->momentum[e];int32_t ap=p<0?-p:p;
                     if(ap>bp){bp=ap;de=e;dir=p<0?-1:1;}
                 }
-                if(de>=0)dd=bp;
+                if(de>=0){
+                    dd=bp;
+                    /* recoil boundary: only a cell whose -p side is
+                     * BARE emits — interior mass would redistribute
+                     * and cancel. The knot bleeds its own trailing
+                     * edge forward: emission asymmetry = propulsion */
+                    const int8_t *v=QChannelVec[o->momentum[de]>0?2*de:2*de+1];
+                    int bx=x-v[0],by=y-v[1],bz=z-v[2];
+                    if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
+                        const NodeState *bn=&grid_current[(bz*QHeight+by)*QWidth+bx];
+                        uint32_t ba=bn->winding[2*de],bb=bn->winding[2*de+1];
+                        if((ba<bb?ba:bb)>=32)continue;   /* interior — no bleed */
+                    }
+                }
             }
             if(de<0)for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
@@ -1533,7 +1546,29 @@ void moore26_tick(void){
         /* unified 0-255 density scale — same field Phase 1 writes */
         uint32_t dens=live*255/QChannels;
         grid_next[si].localDensity=(uint16_t)dens;
-        if(dens&&(rand_site(si,10)&255)<(int)dens){qEvents[28]++;continue;}
+        if(dens&&(rand_site(si,10)&255)<(int)dens){
+            /* momentum boundary exemption — a cell with a bare -p
+             * neighbor is a SURFACE cell, not congested interior:
+             * its capacitor must run or the knot can't bleed its
+             * recoil. The throttle governs interior congestion,
+             * not the directional edge the knot walks on */
+            int exempt=0;
+            if(qMomentum){
+                int be=-1;int32_t bp=0;
+                for(int e=0;e<13;e++){int32_t p=o->momentum[e];
+                    int32_t a=p<0?-p:p;if(a>bp){bp=a;be=e;}}
+                if(be>=0){
+                    const int8_t *v=QChannelVec[o->momentum[be]>0?2*be:2*be+1];
+                    int bx=x-v[0],by=y-v[1],bz=z-v[2];
+                    if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
+                        const NodeState *bn=&grid_current[(bz*QHeight+by)*QWidth+bx];
+                        uint32_t ba=bn->winding[2*be],bb=bn->winding[2*be+1];
+                        if((ba<bb?ba:bb)<32)exempt=1;
+                    }
+                }
+            }
+            if(!exempt){qEvents[28]++;continue;}
+        }
         /* species-inverse: a composite's shed condenses to mass
          * instead of radiating, until the mass:bond ratio equilibrates
          * — the closed cycle where structure and mass hold each
@@ -1608,12 +1643,13 @@ void moore26_tick(void){
                 for(int e=0;e<13;e++){int32_t p=o->momentum[e];
                     int32_t a=p<0?-p:p;if(a>bp){bp=a;be=e;}}
                 if(be>=0){
+                    qEvents[62]++;
                     const int8_t *v=QChannelVec[o->momentum[be]>0?2*be:2*be+1];
                     int bx=x-v[0],by=y-v[1],bz=z-v[2];
                     if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
                         const NodeState *bn=&grid_current[(bz*QHeight+by)*QWidth+bx];
                         uint32_t ba=bn->winding[2*be],bb=bn->winding[2*be+1];
-                        if((ba<bb?ba:bb)<32)mtilt=4;   /* bare behind = trailing edge */
+                        if((ba<bb?ba:bb)<32){mtilt=4;qEvents[63]++;}   /* bare behind = trailing edge */
                     }
                 }
             }
