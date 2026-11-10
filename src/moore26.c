@@ -747,8 +747,10 @@ void moore26_tick(void){
         PROC_NODES
             NodeState *o=&grid_current[si];
             if(!IS_EVEN(x,y,z)){
-                if(o->mass<4)continue;   /* relay threshold — low floor so
-                 * frontier cells re-emit and the chain marches */
+                int hasW=0;
+                {for(int c=6;c<18;c++)if(o->winding[c]){hasW=1;break;}}
+                if(o->mass<4&&!hasW)continue;   /* relay fires on mass OR
+                 * winding — drained cells still forward their skeleton */
                 /* LEDGER CLEARING — mass never rides free flight. The
                  * odd cell clears a transaction THROUGH the shared even
                  * conduit onto the next odd site. Direction = dominant
@@ -779,8 +781,11 @@ void moore26_tick(void){
                  * (tail releases, frontier extends), interior transits
                  * slow — mass flows through the composite */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
-                uint32_t k=o->mass>>shift;if(!k)k=1;
-                grid_next[si].mass-=k<o->mass?k:o->mass;
+                uint32_t k=o->mass>>shift;
+                if(!k)k=1;
+                if(k>o->mass)k=o->mass;   /* winding-only cells relay
+                 * skeleton without minting mass */
+                grid_next[si].mass-=k;
                 /* AUDITED — the offer lands as INCIPIENT state on the
                  * destination odd cell (a transaction in flight through
                  * the shared even conduit), then confirms into mass next
