@@ -759,6 +759,8 @@ void moore26_tick(void){
                     int32_t p=o->momentum[e];int32_t a=p<0?-p:p;
                     if(a>best){best=a;be=e;dir=p<0?-1:1;}
                 }
+                if(!best)continue;   /* no momentum, no relay — the
+                 * matter lattice only walks where p says */
                 int ch=2*be+(dir<0);   /* +ch for p>0, opp for p<0 */
                 const int8_t *v=QChannelVec[ch];
                 int nx=x+v[0],ny=y+v[1],nz=z+v[2];
