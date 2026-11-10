@@ -171,6 +171,20 @@ static int *procList, nProc;
 
 static uint64_t qEvents[64];   /* 48 used; 60/61 = drift diagnostics */
 static uint64_t qTick;
+/* TRANSACTION JOURNAL — God's-eye audit ring: every audited event
+ * writes {tick,src,dst,kind,amount}. Conservation becomes replay —
+ * a ledger imbalance is a discovery, not an error. */
+#define QJRN 4096
+static uint64_t qJournal[QJRN];   /* tick:20 | kind:8 | src:18 | dst:18 */
+static int32_t qJAmt[QJRN];
+static int qJPos=0;
+static void jrn(int src,int dst,int kind,int32_t amt){
+    qJournal[qJPos]=((uint64_t)(qTick&0xFFFFF)<<44)
+                  |((uint64_t)(kind&0xFF)<<36)
+                  |((uint64_t)(src&0x3FFFF)<<18)
+                  |((uint64_t)(dst&0x3FFFF));
+    qJAmt[qJPos]=amt;qJPos=(qJPos+1)&(QJRN-1);
+}
 static int qFusionWall=256;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
      * of weak ones) */
@@ -781,6 +795,14 @@ void moore26_tick(void){
                  * (tail releases, frontier extends), interior transits
                  * slow — mass flows through the composite */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
+                /* LEDGER FEEDBACK — the conduit's accumulated hop-record
+                 * carves the channel: a well-worn path clears faster.
+                 * History shapes dynamics — the ledger becomes inertia */
+                {int cx0=x+v[0];
+                 if(cx0>=0&&cx0<QWidth){
+                     int ci0=(z*QHeight+y)*QWidth+cx0;
+                     if(grid_current[ci0].incip[2*be]>=16&&shift>2)shift--;
+                 }}
                 uint32_t k=o->mass>>shift;
                 if(!k)k=1;
                 if(k>o->mass)k=o->mass;   /* winding-only cells relay
@@ -792,6 +814,8 @@ void moore26_tick(void){
                  * tick: odd->even-recorded->odd, a real transaction */
                 uint32_t m2=grid_next[ni].mass+k;
                 grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
+                jrn(si,ni,59,(int32_t)k);   /* journal the hop —
+                 * God's-eye audit: replayable conservation */
                 /* the EVEN CONDUIT records the clearing — the shared
                  * exchange cell between source and destination books
                  * the transaction: the ledger sees every hop */
@@ -2062,6 +2086,9 @@ uint32_t moore26_massflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return (i>=0&&i<64)?qEvents[i]:0;}
+uint64_t moore26_journal(int i){return qJournal[i&(QJRN-1)];}
+int32_t  moore26_journal_amt(int i){return qJAmt[i&(QJRN-1)];}
+int      moore26_journal_pos(void){return qJPos;}
 void moore26_phase_set(int x,int y,int z,uint32_t v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].phase=v&511;
