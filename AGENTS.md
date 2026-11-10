@@ -342,6 +342,14 @@ run inside a Linux container.
 - Congestion dilation (clock): load → armed full → free_=0 →
   tau frozen — bound matter's own traffic taxes its clock.
 
+## Zoo census — verified stable species (1500 quiet ticks, evap on)
+
+single-pair 780W/1mode · two-mode 1560W/2modes · THREE-MODE
+2340W/3modes (multi-mode bound states are a real family — not
+forced to collapse) · dd-biased 520W (sheds 57% mass to tax,
+structure intact) · charged · big-mass exact (2600=200x13) ·
+thin-27 stable at commit floor. All survive quiet vacuum.
+
 `momentum[13]` (int32, off 464): conserved Noether charge of
 translation — written only by force (ev43 recoil, confirmed-offer
 direction), read by `qMomentum` drift, never spent by it.
