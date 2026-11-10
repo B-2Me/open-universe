@@ -345,3 +345,12 @@ run inside a Linux container.
 `momentum[13]` (int32, off 464): conserved Noether charge of
 translation — written only by force (ev43 recoil, confirmed-offer
 direction), read by `qMomentum` drift, never spent by it.
+NEWTON-1 VERIFIED: trailing-boundary donor predicate (shed only
+when the -p neighbor is uncommitted) makes the knot WALK on
+stored p — monotonic +0.35 cells over 2000 vacuum ticks, and
+v scales with qMomentum (+0.18/+0.08/+1.42 at 32/64/128).
+Bonus: p grows during coast — the knot self-thrusts on its own
+asymmetric ev43 evaporation (radioactive-recoil rocket).
+Drift sheds winding+mass into massFlight (audited capacitor
+channel); the Phase 1c launch rides the p-axis when qMomentum
+is set (dd = structural compass, p = trajectory).

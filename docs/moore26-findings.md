@@ -106,12 +106,16 @@ inferred rules like Pauli exclusion are excluded by definition):*
 2. **Parity is symmetric** — nature's weak sector measurably
    prefers one handedness (the `P`-violation experiments). Our
    `dd` coils come out even — `0.89-1.0` ratio, no preference.
-3. **Knots fly slowly, and only by eating** — the photon rocket
-   is verified: `dd`-biased emission → `massFlight` recoil →
-   `+1.09` winding-centroid drift/2000t on `rev=f6af469`. But the
-   knot decelerates as it gorges (ramjet ceiling, `v→0` as mass
-   grows) — no free ballistic regime exists. Motion is real but
-   appetite-bound.
+3. **Knots fly — and now coast** — the photon rocket is verified:
+   `dd`-biased emission → `massFlight` recoil → `+1.09`
+   winding-centroid drift/2000t on `rev=f6af469`. Newton's first
+   law is now mechanical: the conserved `momentum[13]` register
+   (written only by force, never spent by motion) lets a charged
+   knot keep walking in vacuum — `+0.35` cells/2000t coast, and
+   `v ∝ qMomentum` (`+0.18/+0.08/+1.42` at 32/64/128). It even
+   self-thrusts on its own `ev43` evaporation — a radioactive-
+   recoil rocket. Caveat: drift is slow and feed still dominates
+   under sustained flux.
 4. **Dilation exists — keyed on congestion, not velocity** — the
    `localTime` (τ) register integrates each node's unconsumed
    bandwidth; quiet vs congested twins diverge `22×` under
