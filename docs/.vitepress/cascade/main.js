@@ -704,8 +704,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (wasm._moore26_momentum_set)
       wasm._moore26_momentum_set(s === 'glide' ? 64 : 0);
     if (s === 'glide') {
-      /* dd-biased committed knot (pair3) + mass — charge it with
-         the ⚡ thrust burst, then watch it coast on stored p */
+      /* dd-biased committed knot (pair3) + mass — the scenario ARMS
+       * its own thrust burst on load so the demo runs itself: beam
+       * charges p for 400 ticks, then the knot coasts. */
       for (let dz = -1; dz <= 1; dz++)
         for (let dy = -1; dy <= 1; dy++)
           for (let dx = -1; dx <= 1; dx++) {
@@ -713,6 +714,9 @@ export async function initCascadeSimulator(root, opts = {}) {
             wset(CX + dx, CY + dy, CZ + dz, 7, 40);
             mset(CX + dx, CY + dy, CZ + dz, 50);
           }
+      ui.boostT = 400; ui.beam = true;
+      const bb = root.querySelector('[data-beam]');
+      if (bb) { bb.classList.add('on'); bb.setAttribute('aria-pressed', 'true'); }
       return 27;
     }
     /* absorbing wall for emitter scenarios — torus wrap would
