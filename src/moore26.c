@@ -1449,50 +1449,7 @@ void moore26_tick(void){
                 phaseA[si]=(n->phase+(uint32_t)free_*qPhaseAdv)&511;
                 n->localTime+=(uint32_t)free_*qPhaseAdv;   /* tau: proper time */
             } else phaseA[si]=n->phase;
-            n->workAge+=n->txnWork;   /* effort history: conserved */
-            if(qMomentum){
-                /* inertial drift: |p| per pair is a PERSISTENT push —
-                 * each tick a small chance to slide one committed
-                 * winding unit toward the momentum direction. p is
-                 * read, never spent: force changes it, motion doesn't */
-                for(int e=0;e<13;e++){
-                    int p=n->momentum[e];if(!p)continue;
-                    qEvents[61]++;   /* p visible to drift — diagnostic */
-                    if((rand_site(si,16+e)&255)>=((p>0?p:-p)*qMomentum>>4))continue;
-                    int c2=p>0?2*e:2*e+1;
-                    const int8_t *v=QChannelVec[c2];
-                    int nx=x+v[0],ny=y+v[1],nz=z+v[2];
-                    if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
-                    NodeState *nn=&grid_next[(nz*QHeight+ny)*QWidth+nx];
-                    /* TRAILING-BOUNDARY only: an interior cell's shed
-                     * just reshuffles inside the knot (centroid-
-                     * neutral). Only a donor whose -p neighbor is
-                     * uncommitted actually walks the pattern. */
-                    int bx=x-v[0],by=y-v[1],bz=z-v[2];
-                    if(bx<0||bx>=QWidth||by<0||by>=QHeight||bz<0||bz>=QDepth)continue;
-                    NodeState *bn=&grid_next[(bz*QHeight+by)*QWidth+bx];
-                    uint32_t ba=bn->winding[2*e],bb=bn->winding[2*e+1];
-                    if((ba<bb?ba:bb)>=32)continue;   /* committed behind
-                     * = interior — skip */
-                    int ch=n->winding[2*e]>=n->winding[2*e+1]?2*e:2*e+1;
-                    /* trailing edge de-binds into FLIGHT: the unwind ->
-                     * massFlight -> re-wind capacitor carries structure
-                     * forward through audited transport — translation
-                     * is breathing, free; p share rides to the landing
-                     * cell so total p stays conserved */
-                    if(n->winding[ch]>0&&n->massFlight[c2]<65534){
-                        qEvents[60]++;   /* drift fires — diagnostic */
-                        /* BOTH registers ride — a coherent composite
-                         * translates, not a winding ghost leaving
-                         * its mass behind (the measured split) */
-                        n->winding[ch]--;n->massFlight[c2]++;
-                        if(n->mass>0){n->mass--;n->massFlight[c2]++;}
-                        int wp=(int)(n->winding[2*e]+n->winding[2*e+1]);
-                        if(wp>0){int32_t dm=(int32_t)((int64_t)p/wp);
-                            n->momentum[e]-=dm;nn->momentum[e]+=dm;}
-                    }
-                }
-            }
+            n->workAge+=n->txnWork;
         }
     PROC_NODES_END
     for(int iter=0;iter<10&&qPhaseSync;iter++){
@@ -1640,10 +1597,26 @@ void moore26_tick(void){
              * the p-launch to carry forward. Asymmetric breathing:
              * the knot walks on its own unwind/wind cycle. */
             int mtilt=0;
-            if(qMomentum){int32_t bp=0;
+            if(qMomentum){
+                /* BOUNDARY-AWARE tilt — find the dominant |p| pair and
+                 * its direction; only a cell whose -p neighbor is
+                 * BARE (the knot's trailing edge) de-binds easier.
+                 * Interior cells keep the full threshold: the knot
+                 * breathes directionally, not uniformly — momentum is
+                 * the orientation of its own unwind/wind cycle */
+                int be=-1;int32_t bp=0;
                 for(int e=0;e<13;e++){int32_t p=o->momentum[e];
-                    if(p<0)p=-p;if(p>bp)bp=p;}
-                mtilt=(int)(bp>>5);if(mtilt>4)mtilt=4;}
+                    int32_t a=p<0?-p:p;if(a>bp){bp=a;be=e;}}
+                if(be>=0){
+                    const int8_t *v=QChannelVec[o->momentum[be]>0?2*be:2*be+1];
+                    int bx=x-v[0],by=y-v[1],bz=z-v[2];
+                    if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
+                        const NodeState *bn=&grid_current[(bz*QHeight+by)*QWidth+bx];
+                        uint32_t ba=bn->winding[2*be],bb=bn->winding[2*be+1];
+                        if((ba<bb?ba:bb)<32)mtilt=4;   /* bare behind = trailing edge */
+                    }
+                }
+            }
             if(lw>(uint64_t)o->mass*(8-mtilt)){
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(!shed)continue;
