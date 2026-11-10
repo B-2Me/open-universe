@@ -381,7 +381,7 @@ export async function initCascadeSimulator(root, opts = {}) {
       /* a beam on FCC: no pure +x exists, and the 4-edge family fans
        * into a cone. One edge channel (6 = {1,1,0}) is a straight
        * line — a real collimated stream. */
-      const isBeam = ui.beam && c === 6;
+      const isBeam = (ui.beam || ui.boostT > 0) && c === 6;
       if (isBeam) {
         /* the beam is a probe stream on {1,1,0} — it drifts +y as it
          * advances, so a CY-centered source misses the core entirely.
@@ -714,9 +714,9 @@ export async function initCascadeSimulator(root, opts = {}) {
             wset(CX + dx, CY + dy, CZ + dz, 7, 40);
             mset(CX + dx, CY + dy, CZ + dz, 50);
           }
-      ui.boostT = 400; ui.beam = true;
-      const bb = root.querySelector('[data-beam]');
-      if (bb) { bb.classList.add('on'); bb.setAttribute('aria-pressed', 'true'); }
+      ui.boostT = 400;
+      const tb = root.querySelector('[data-thrust]');
+      if (tb) { tb.classList.add('on'); tb.setAttribute('aria-pressed', 'true'); }
       return 27;
     }
     /* absorbing wall for emitter scenarios — torus wrap would
@@ -1056,11 +1056,9 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* thrust burst — beam fires for 400 ticks to charge p, then cuts
    * and the knot coasts on stored momentum (Newton-1 demo) */
   bind('[data-thrust]', 'click', () => {
-    ui.boostT = 400; ui.beam = true;
-    for (const sel of ['[data-beam]', '[data-thrust]']) {
-      const b = root.querySelector(sel);
-      if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
-    }
+    ui.boostT = 400;
+    const b = root.querySelector('[data-thrust]');
+    if (b) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
     say('thrust — charging momentum; beam cuts at 400');
   });
   bind('[data-reset]', 'click', () => {
@@ -1440,13 +1438,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       let spent = 0;
       while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
-        if (ui.drive || ui.beam || ui.pump) inject();
+        if (ui.drive || ui.beam || ui.pump || ui.boostT) inject();
         if (ui.boostT && !--ui.boostT) {
-          ui.beam = false;
-          for (const sel of ['[data-beam]', '[data-thrust]']) {
-            const bb = root.querySelector(sel);
-            if (bb) { bb.classList.remove('on'); bb.setAttribute('aria-pressed', 'false'); }
-          }
+          const tb = root.querySelector('[data-thrust]');
+          if (tb) { tb.classList.remove('on'); tb.setAttribute('aria-pressed', 'false'); }
           say('coasting — momentum conserved');
         }
         if (fuse) {
