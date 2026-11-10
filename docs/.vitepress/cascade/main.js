@@ -712,11 +712,11 @@ export async function initCascadeSimulator(root, opts = {}) {
           for (let dx = -1; dx <= 1; dx++) {
             wset(CX + dx, CY + dy, CZ + dz, 6, 90);
             wset(CX + dx, CY + dy, CZ + dz, 7, 40);
-            mset(CX + dx, CY + dy, CZ + dz, 50);
+            mset(CX + dx, CY + dy, CZ + dz, 200);
             /* born in motion — seed the momentum register so the knot
              * glides from reset (Newton-1 demo needs no charge phase) */
             if (wasm._moore26_momentum_at_set)
-              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, 400);
+              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, 1000);
           }
       return 27;
     }
@@ -1070,11 +1070,12 @@ export async function initCascadeSimulator(root, opts = {}) {
     wasm._moore26_tick();
     ui.tick++; upload(); dirty = true;
   });
+  const thrustBtn = root.querySelector('[data-thrust]');
   const setThrustArm = (on) => {
     ui.thrustArm = on;
-    const b = root.querySelector('[data-thrust]');
-    if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
-    if (on) say('thrust armed — tap a structure to kick it along +x (shift: -x)', 4000);
+    canvas.style.cursor = on ? TOOL_CURSOR : '';
+    if (thrustBtn) { thrustBtn.classList.toggle('armed', on); thrustBtn.setAttribute('aria-pressed', String(on)); }
+    say(on ? 'thrust tool armed — tap a structure to kick it along +x · shift-tap = -x · ⚡ to cancel' : '', 0);
   };
   bind('[data-thrust]', 'click', () => { setLumpArm(false); setTubeArm(false); setRingArm(false); setThrustArm(!ui.thrustArm); });
   bind('[data-reset]', 'click', () => {
