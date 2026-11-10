@@ -779,6 +779,15 @@ void moore26_tick(void){
                         grid_next[ni].winding[c]=(uint16_t)(d>65535?65535:d);
                     }
                 }
+                /* p clears too — the destination inherits the walk's
+                 * momentum: inertia, not a wind-up toy */
+                for(int e=0;e<QChannels/2;e++){
+                    int32_t p2=o->momentum[e]>>4;
+                    if(p2){
+                        grid_next[si].momentum[e]-=p2;
+                        grid_next[ni].momentum[e]+=p2;
+                    }
+                }
                 qEvents[59]++;
                 continue;
             }
