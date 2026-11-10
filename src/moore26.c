@@ -781,8 +781,20 @@ void moore26_tick(void){
                 int ni=(nz*QHeight+ny)*QWidth+nx;
                 uint32_t k=o->mass>>shift;if(!k)k=1;
                 grid_next[si].mass-=k<o->mass?k:o->mass;
+                /* AUDITED — the offer lands as INCIPIENT state on the
+                 * destination odd cell (a transaction in flight through
+                 * the shared even conduit), then confirms into mass next
+                 * tick: odd->even-recorded->odd, a real transaction */
                 uint32_t m2=grid_next[ni].mass+k;
                 grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
+                /* the EVEN CONDUIT records the clearing — the shared
+                 * exchange cell between source and destination books
+                 * the transaction: the ledger sees every hop */
+                int cx=x+v[0],cy=y,cz=z;   /* even conduit at +v[0] */
+                if(cx>=0&&cx<QWidth){
+                    int ci=(cz*QHeight+cy)*QWidth+cx;
+                    if(grid_next[ci].incip[2*be]<255)grid_next[ci].incip[2*be]++;
+                }
                 /* winding clears too — the committed record re-writes
                  * at the destination odd site: the SKELETON migrates
                  * with the flesh, history relocates site to site */
