@@ -175,15 +175,14 @@ static uint64_t qTick;
  * writes {tick,src,dst,kind,amount}. Conservation becomes replay —
  * a ledger imbalance is a discovery, not an error. */
 #define QJRN 4096
-static uint64_t qJournal[QJRN];   /* tick:20 | kind:8 | src:18 | dst:18 */
-static int32_t qJAmt[QJRN];
+static uint32_t qJTick[QJRN];
+static uint8_t  qJKind[QJRN];
+static int32_t  qJSrc[QJRN],qJDst[QJRN],qJAmt[QJRN];
 static int qJPos=0;
 static void jrn(int src,int dst,int kind,int32_t amt){
-    qJournal[qJPos]=((uint64_t)(qTick&0xFFFFF)<<44)
-                  |((uint64_t)(kind&0xFF)<<36)
-                  |((uint64_t)(src&0x3FFFF)<<18)
-                  |((uint64_t)(dst&0x3FFFF));
-    qJAmt[qJPos]=amt;qJPos=(qJPos+1)&(QJRN-1);
+    qJTick[qJPos]=(uint32_t)qTick;qJKind[qJPos]=(uint8_t)kind;
+    qJSrc[qJPos]=src;qJDst[qJPos]=dst;qJAmt[qJPos]=amt;
+    qJPos=(qJPos+1)&(QJRN-1);
 }
 static int qFusionWall=256;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
@@ -1174,6 +1173,8 @@ void moore26_tick(void){
                 TXN_WORK(n);
                 if(!n->bondTick)n->bondTick=(uint32_t)qTick;   /* binding birthday */
                 uint32_t shed=site_unwind(x,y,z,si);
+        if(shed)jrn(si,-1,61,(int32_t)shed);
+                if(shed)jrn(si,-1,61,(int32_t)shed);
                 if(shed>=2){
                     uint32_t sn=shed>>1;
                     /* shed>>1 drops half the rung — book to heat,
@@ -1835,6 +1836,8 @@ void moore26_tick(void){
                  * measured coherence band (v << c, not v ~ c) */
                 if(mtilt&&(rand_site(si,22)&127)!=0)continue;
                 uint32_t shed=site_unwind(x,y,z,si);
+        if(shed)jrn(si,-1,61,(int32_t)shed);
+                if(shed)jrn(si,-1,61,(int32_t)shed);
                 if(!shed)continue;
                 uint32_t m=grid_next[si].mass+shed;
                 grid_next[si].mass=(uint16_t)(m>65535?65535:m);
@@ -1878,6 +1881,7 @@ void moore26_tick(void){
          * exactly da+db total (net zero), while escape or
          * thermalization makes the emission real radiation. */
         uint32_t shed=site_unwind(x,y,z,si);
+        if(shed)jrn(si,-1,61,(int32_t)shed);
         if(shed<2)continue;
         /* resonant emission (qResEmit): the packet carries the
          * site's own line frequency — emitted at the structure's
@@ -1930,6 +1934,7 @@ void moore26_tick(void){
         if(grid_next[si].mass>1){
             grid_next[si].mass--;
             grid_next[si].massFlight[c^1]++;
+            jrn(si,-1,62,1);
         }
         }
         qEvents[4]++;qEvents[20]+=shed;TXN_WORK(&grid_next[si]);   /* emission = work */
@@ -2086,7 +2091,10 @@ uint32_t moore26_massflight_get(int x,int y,int z,int c){
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
 uint64_t moore26_events(int i){return (i>=0&&i<64)?qEvents[i]:0;}
-uint64_t moore26_journal(int i){return qJournal[i&(QJRN-1)];}
+uint32_t moore26_journal_tick(int i){return qJTick[i&(QJRN-1)];}
+uint32_t moore26_journal_kind(int i){return qJKind[i&(QJRN-1)];}
+int32_t  moore26_journal_src(int i){return qJSrc[i&(QJRN-1)];}
+int32_t  moore26_journal_dst(int i){return qJDst[i&(QJRN-1)];}
 int32_t  moore26_journal_amt(int i){return qJAmt[i&(QJRN-1)];}
 int      moore26_journal_pos(void){return qJPos;}
 void moore26_phase_set(int x,int y,int z,uint32_t v){
