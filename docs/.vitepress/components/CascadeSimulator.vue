@@ -70,6 +70,7 @@ onUnmounted(() => {
            shrink-wrapped dock, not the canvas's far edge -->
       <canvas class="cascade-zoomlens" data-zoomlens width="128" height="128" title="Zoom lens — drag up/down to zoom; double-click resets" aria-label="Zoom lens"></canvas>
       <canvas class="cascade-gizmo" data-gizmo width="128" height="128" title="Orientation — double-click to reset view" aria-label="Orientation gizmo"></canvas>
+      <div class="cascade-dock-scroll">
       <div class="cascade-well cascade-transport" role="group" aria-label="Controls">
         <div class="cascade-grp grp-time">
           <div class="cascade-grp-row">
@@ -152,6 +153,7 @@ onUnmounted(() => {
         <label><button class="cascade-shelp" type="button" data-help="speed" aria-label="About Speed" title="About Speed">Speed</button><input type="range" data-speed min="1" max="120" step="1" value="20"><output>20</output></label>
         <label><button class="cascade-shelp" type="button" data-help="qmin" aria-label="About Q≥" title="About Q≥">Q≥</button><input type="range" data-qmin min="1" max="120" step="1" value="1"><output>1</output></label>
         <label><button class="cascade-shelp" type="button" data-help="zoom" aria-label="About Zoom" title="About Zoom">Zoom</button><input type="range" data-zoom min="8" max="200" step="1" value="25"><output>25</output></label>
+      </div>
       </div>
     </div>
   </div>
@@ -869,15 +871,24 @@ onUnmounted(() => {
     margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 8px);
     /* a fully-expanded dock can't be allowed to squeeze the canvas to
-       zero — cap it and let it scroll internally */
-    max-height: 52vh;
-    max-height: 52svh;
-    overflow-y: auto;
-    overflow-x: hidden;            /* a wrapping group must never
-                                      scroll the dock sideways */
+       zero — cap the INNER scroll well, not the dock itself: the
+       zoom lens + gizmo anchor at top:-48px above the dock and
+       overflow-y:auto would clip them (the iPhone missing-widgets
+       bug). Dock stays overflow:visible; only the wells scroll. */
+    overflow: visible;
     overscroll-behavior: contain;
     touch-action: manipulation;    /* rapid button taps must not
                                       trigger double-tap zoom */
+  }
+  .cascade-dock-scroll {
+    max-height: 52vh;
+    max-height: 52svh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
   }
   /* both control wells must wrap — seven labeled selects and twelve
      transport buttons never fit one narrow row */
