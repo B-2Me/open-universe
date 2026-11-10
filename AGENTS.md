@@ -293,3 +293,55 @@ alignment scheme changes again.
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or
 run inside a Linux container.
+
+## Mechanism audit — inversions + feedback loops (session findings)
+
+**Inversions** (where a mechanism's sign/direction flips vs intent):
+
+- `qAlignGate` on `dd` — self-defeating: gate reads surface `dd`,
+  emission erodes the same axis → evaluates an eroded compass.
+  Lesson: coherence source must be a history record, never a
+  spendable ledger.
+- Wind/ram — windward face accretes the OLD crust (5.7x fossil
+  skew): inverted vs nature's leading-face erosion. In moore26
+  the leading edge is a museum, not a wear surface.
+- "Mass is frozen time" → inverted: interaction freezes time,
+  quiet knots tick at max. Under `qMassCap` it inverts again:
+  mass IS accelerated time (heavier = faster clock).
+- Knot "spin" — jam, not vortex: `dd` is a frozen directional
+  imbalance, zero live circulation on all 4 plaquettes, Meissner-
+  locked under feed. Spin = structural handedness, not motion.
+- `qEvapShift` dial direction — higher shift = WEAKER tax
+  (shift divisor, not strength). Sweeps must invert the dial.
+- Drift `>32` floor — donors stayed committed → knot GREW into
+  its momentum direction (accretion creep) instead of walking.
+  Fixed: donors may shed below floor → trailing edge de-binds.
+- `momentum` copy bug — `nn->momentum = n->momentum` duplicated p
+  per drift (a pump). Fixed: moved unit carries `p/w` share —
+  total p conserved exactly.
+
+**Feedback loops** (self-reinforcing or self-stabilizing cycles):
+
+- Bond bootstrap (positive): dd-biased emission → ACK rail-paving
+  writes `bondDist` on the dominant axis → `qAlignGate` accepts
+  preferentially there → more bonds on that axis → axis
+  self-polarizes. Emergent, seed-independent (bit-identical on
+  symmetric seeds).
+- Chirality lock (positive): first confirmed bond sets `bondPar`
+  → `qParGate` accepts matching helicity → same-sign bonds grow →
+  handedness locks in. Self-polarizing spin filter.
+- Dissipative growth (bounded): structure → opacity → accretion →
+  more structure, bounded by mass tax → ~42k Prigogine plateau.
+- Ramjet ceiling (negative): emission recoil → translation, but
+  ambient accretion grows mass faster → v→0. Motion starves its
+  own engine.
+- Vacuum freeze (stable fixpoint): zero traffic → chunk not in
+  active ledger → node unprocessed → no evap/emission → stays
+  quiet forever. A pure-vacuum knot is off the causal ledger —
+  not just stable, unprocessed.
+- Congestion dilation (clock): load → armed full → free_=0 →
+  tau frozen — bound matter's own traffic taxes its clock.
+
+`momentum[13]` (int32, off 464): conserved Noether charge of
+translation — written only by force (ev43 recoil, confirmed-offer
+direction), read by `qMomentum` drift, never spent by it.

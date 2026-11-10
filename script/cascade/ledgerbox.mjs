@@ -5,6 +5,9 @@ import { loadM26 } from '../lib/m26.mjs';
 const q = await loadM26();
 q._moore26_init(32,32,32);
 q._moore26_evap_shift_set(4);
+const BA = +(process.env.BONDAGE ?? 0);
+if (BA) q._moore26_bond_age_set(BA);
+console.log(`bond_age=${BA}`);
 const W=(x,y,z,c,v)=>q._moore26_winding_set(x,y,z,c,v);
 const M=(x,y,z,v)=>q._moore26_mass_set(x,y,z,v);
 for(let dz=-3;dz<=3;dz++)for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){

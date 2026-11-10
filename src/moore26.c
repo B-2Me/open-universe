@@ -1454,11 +1454,17 @@ void moore26_tick(void){
                     if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
                     NodeState *nn=&grid_next[(nz*QHeight+ny)*QWidth+nx];
                     int ch=n->winding[2*e]>=n->winding[2*e+1]?2*e:2*e+1;
-                    if(n->winding[ch]>32&&nn->winding[ch]<65535){
+                    /* donor may shed BELOW the commit floor — the
+                     * trailing edge de-binds (relocalizes, not
+                     * annihilates) so the pattern walks, not creeps */
+                    if(n->winding[ch]>0&&nn->winding[ch]<65535){
                         n->winding[ch]--;nn->winding[ch]++;
-                        nn->momentum[e]=n->momentum[e];   /* p rides
-                         * with the structure it carries — pattern
-                         * translation propagates the state forward */
+                        /* p is extensive — the moved unit carries its
+                         * proportional share, never a copy: total p
+                         * conserved exactly across the transfer */
+                        int wp=(int)(n->winding[2*e]+n->winding[2*e+1]);
+                        if(wp>0){int32_t dm=(int32_t)((int64_t)p/wp);
+                            n->momentum[e]-=dm;nn->momentum[e]+=dm;}
                     }
                 }
             }
