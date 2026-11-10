@@ -948,6 +948,8 @@ export async function initCascadeSimulator(root, opts = {}) {
   let lastInteract = 0, dirty = true;
   const poke = () => { lastInteract = performance.now(); };
   let dragging = false, lx = 0, ly = 0;
+  const pts = new Map();   /* active pointers — multi-touch track */
+  let pinch = null;        /* {d, cx, cy, dist} while 2 fingers down */
   /* suppress the browser context menu — right-drag is camera control */
   canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('pointerdown', e => {
@@ -1002,20 +1004,49 @@ export async function initCascadeSimulator(root, opts = {}) {
       return;
     }
     dragging = true; lx = e.clientX; ly = e.clientY;
-    /* accumulate from the RENDERED orientation — cam lags tgt during
-     * a drag, so adding to stale tgt makes the view jump */
     tgt.yaw = cam.yaw; tgt.pitch = cam.pitch;
+    /* multi-pointer track — two fingers = pinch zoom + centroid orbit */
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) {
+      const p = [...pts.values()];
+      pinch = { d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y),
+                cx: (p[0].x + p[1].x) / 2, cy: (p[0].y + p[1].y) / 2,
+                dist: tgt.dist };
+    }
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', e => {
     if (!dragging) return;
     poke();
+    const rec = pts.get(e.pointerId);
+    if (rec) { rec.x = e.clientX; rec.y = e.clientY; }
+    if (pinch && pts.size >= 2) {
+      /* pinch — scale distance by finger spread, orbit by centroid */
+      const p = [...pts.values()];
+      const nd = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+      const ncx = (p[0].x + p[1].x) / 2, ncy = (p[0].y + p[1].y) / 2;
+      if (pinch.d > 1) tgt.dist = Math.max(8, Math.min(400, pinch.dist * pinch.d / nd));
+      tgt.yaw += (ncx - pinch.cx) * 0.006;
+      tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + (ncy - pinch.cy) * 0.006));
+      pinch.cx = ncx; pinch.cy = ncy;
+      lx = e.clientX; ly = e.clientY;
+      dirty = true;
+      return;
+    }
     tgt.yaw += (e.clientX - lx) * 0.006;
     tgt.pitch = Math.max(-1.4, Math.min(1.4, tgt.pitch + (e.clientY - ly) * 0.006));
     lx = e.clientX; ly = e.clientY;
     dirty = true;
   });
-  canvas.addEventListener('pointerup', () => { dragging = false; });
+  const endPt = (e) => {
+    pts.delete(e.pointerId);
+    if (pts.size < 2) pinch = null;
+    if (pts.size === 0) dragging = false;
+    /* resume orbit baseline from the surviving finger's position */
+    else if (pts.size === 1) { const p = [...pts.values()][0]; lx = p.x; ly = p.y; }
+  };
+  canvas.addEventListener('pointerup', endPt);
+  canvas.addEventListener('pointercancel', endPt);
   const keepAwake = async () => {
     if (!document.hidden && !wakeLock && 'wakeLock' in navigator)
       try { wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
