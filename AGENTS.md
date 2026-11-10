@@ -362,3 +362,28 @@ asymmetric ev43 evaporation (radioactive-recoil rocket).
 Drift sheds winding+mass into massFlight (audited capacitor
 channel); the Phase 1c launch rides the p-axis when qMomentum
 is set (dd = structural compass, p = trajectory).
+
+## Momentum arc — the timescale verdict (measured, not assumed)
+
+Trusted mechanics (verified): momentum[13] conserved int32, force-
+only writes, proportional transfer, trailing-boundary predicates,
+p-launch, boundary-aware capacitor tilt, boundary-selective confirm,
+boundary exemption from density throttle.
+
+Gate chain to excited-state processing: site_level>=2 (vol>=128) ->
+75% lifetime skip -> density throttle -> qGroundFloor=512. Ground-
+state knots are inert to the whole section (ev43=ev29=0 explained).
+
+THE REAL CONSTRAINT — speed hierarchy: 1 hop/tick = c at 0.1fm.
+A composite's internal dynamics cycle at ~1/tick; ANY transport
+running near that rate asks the structure to relocate at ~c and
+guarantees shred/sprawl/park. Coherent translation requires
+v_drift << v_relaxation (knot re-forms on ~10-100t timescales —
+measured live-cell growth 63->171/500t). The +0.35/2000t creep was
+the correct regime; every "faster" mechanism pushed toward c and
+failed. Knots are position-anchored attractors — transport-based
+locomotion equilibrates; translation must be slow re-centering.
+
+Both-buffer rule: ALL at-setters write grid_current+grid_next
+(rescan_live reads next only — single-buffer seeds are invisible
+on alternate ticks).
