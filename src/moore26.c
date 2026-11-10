@@ -1463,6 +1463,16 @@ void moore26_tick(void){
                     int nx=x+v[0],ny=y+v[1],nz=z+v[2];
                     if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
                     NodeState *nn=&grid_next[(nz*QHeight+ny)*QWidth+nx];
+                    /* TRAILING-BOUNDARY only: an interior cell's shed
+                     * just reshuffles inside the knot (centroid-
+                     * neutral). Only a donor whose -p neighbor is
+                     * uncommitted actually walks the pattern. */
+                    int bx=x-v[0],by=y-v[1],bz=z-v[2];
+                    if(bx<0||bx>=QWidth||by<0||by>=QHeight||bz<0||bz>=QDepth)continue;
+                    NodeState *bn=&grid_next[(bz*QHeight+by)*QWidth+bx];
+                    uint32_t ba=bn->winding[2*e],bb=bn->winding[2*e+1];
+                    if((ba<bb?ba:bb)>=32)continue;   /* committed behind
+                     * = interior — skip */
                     int ch=n->winding[2*e]>=n->winding[2*e+1]?2*e:2*e+1;
                     /* trailing edge de-binds into FLIGHT: the unwind ->
                      * massFlight -> re-wind capacitor carries structure
