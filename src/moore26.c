@@ -1623,7 +1623,16 @@ void moore26_tick(void){
                 continue;
             }
             uint64_t lw=loop_winding(o);
-            if(lw>(uint64_t)o->mass*8){
+            /* momentum tilts the capacitor: high-|p| cells de-bind
+             * easier — trailing structure releases into mass for
+             * the p-launch to carry forward. Asymmetric breathing:
+             * the knot walks on its own unwind/wind cycle. */
+            int mtilt=0;
+            if(qMomentum){int32_t bp=0;
+                for(int e=0;e<13;e++){int32_t p=o->momentum[e];
+                    if(p<0)p=-p;if(p>bp)bp=p;}
+                mtilt=(int)(bp>>5);if(mtilt>4)mtilt=4;}
+            if(lw>(uint64_t)o->mass*(8-mtilt)){
                 uint32_t shed=site_unwind(x,y,z,si);
                 if(!shed)continue;
                 uint32_t m=grid_next[si].mass+shed;
