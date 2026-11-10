@@ -136,6 +136,13 @@ typedef struct {
      * the node's chirality record (saturating ±127). A label, never
      * spent: emission can't erode it. bondPar=0 until first confirm
      * — the node's handedness is SET by its first successful bond. */
+    int32_t  momentum[13];     /* structure momentum per pair — the
+     * Noether charge of translation symmetry: a STATE, not a fuel.
+     * Written only by force (emission recoil, confirmed-offer
+     * direction); read by the drift step but NEVER decremented by
+     * it — moving costs no momentum, only forces change it.
+     * Unbounded p: drift chance saturates at 1 hop/tick = c, so
+     * v asymptotes while p diverges — gamma for free. */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -197,6 +204,11 @@ static int qAlignGate=0;  /* coherence gate at CONFIRM (0=off, 1..255):
      * flux that agrees with its committed axis. Emission is already
      * direction-biased (eff_dd); this makes ABSORPTION handed:
      * helicity-selective accretion — the spin-filter. */
+static int qMomentum=0;   /* inertial drift (0=off, 1..255): per-tick
+     * chance |p|*qMomentum/256 that a node pushes one committed
+     * winding unit of a pair forward along its momentum direction.
+     * The drift reads momentum but does NOT spend it — p persists
+     * until a force changes it: Newton's first law as mechanics. */
 static int qMassCap=0;    /* Compton ansatz (0=off): per-node clock
      * bandwidth = mass*qMassCap/16 instead of flat qWorkCap — a
      * heavier node has more headroom -> faster proper time.
@@ -1059,6 +1071,11 @@ void moore26_tick(void){
                     /* the node's chirality accrues from its bonds */
                     if(o->incipPar[c]>0){if(n->bondPar<127)n->bondPar++;}
                     else if(o->incipPar[c]<0){if(n->bondPar>-127)n->bondPar--;}
+                    /* an offer absorbed into structure pushes it the
+                     * way the packet was travelling — force on the
+                     * momentum register (F=dp/dt: only force writes) */
+                    {int pe=c>>1;int32_t *mp=&n->momentum[pe];
+                     if(c&1){if(*mp<(1<<30))(*mp)++;}else{if(*mp>-(1<<30))(*mp)--;}}
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -1423,6 +1440,28 @@ void moore26_tick(void){
                 n->localTime+=(uint32_t)free_*qPhaseAdv;   /* tau: proper time */
             } else phaseA[si]=n->phase;
             n->workAge+=n->txnWork;   /* effort history: conserved */
+            if(qMomentum){
+                /* inertial drift: |p| per pair is a PERSISTENT push —
+                 * each tick a small chance to slide one committed
+                 * winding unit toward the momentum direction. p is
+                 * read, never spent: force changes it, motion doesn't */
+                for(int e=0;e<13;e++){
+                    int p=n->momentum[e];if(!p)continue;
+                    if((rand_site(si,16+e)&255)>=((p>0?p:-p)*qMomentum>>4))continue;
+                    int c2=p>0?2*e:2*e+1;
+                    const int8_t *v=QChannelVec[c2];
+                    int nx=x+v[0],ny=y+v[1],nz=z+v[2];
+                    if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                    NodeState *nn=&grid_next[(nz*QHeight+ny)*QWidth+nx];
+                    int ch=n->winding[2*e]>=n->winding[2*e+1]?2*e:2*e+1;
+                    if(n->winding[ch]>32&&nn->winding[ch]<65535){
+                        n->winding[ch]--;nn->winding[ch]++;
+                        nn->momentum[e]=n->momentum[e];   /* p rides
+                         * with the structure it carries — pattern
+                         * translation propagates the state forward */
+                    }
+                }
+            }
         }
     PROC_NODES_END
     for(int iter=0;iter<10&&qPhaseSync;iter++){
@@ -1551,6 +1590,10 @@ void moore26_tick(void){
                     if(grid_next[si].mass>1){
                         grid_next[si].mass--;
                         grid_next[si].massFlight[dch^1]++;
+                        /* momentum books the recoil too — force on
+                         * structure, direction of the recoil channel */
+                        int pe=dch>>1;int32_t *mp=&grid_next[si].momentum[pe];
+                        if(dch&1){if(*mp<(1<<30))(*mp)++;}else{if(*mp>-(1<<30))(*mp)--;}
                     }
                 } else {
                     /* saturated or no circulation — non-radiative
@@ -1966,6 +2009,7 @@ void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}
 void moore26_par_gate_set(int v){qParGate=v;}
 void moore26_mass_cap_set(int v){qMassCap=v;}
+void moore26_momentum_set(int v){qMomentum=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
