@@ -764,9 +764,22 @@ void moore26_tick(void){
                 int ch=2*be+(dir<0);   /* +ch for p>0, opp for p<0 */
                 const int8_t *v=QChannelVec[ch];
                 int nx=x+v[0],ny=y+v[1],nz=z+v[2];
-                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                /* three-zone relay — tail sheds fast, interior transits
+                 * slow, frontier receives: mass flows THROUGH the
+                 * composite toward the leading edge instead of every
+                 * cell bleeding uniformly (approximates a transit ledger
+                 * with no extra state) */
+                int tail=0,front=0;
+                {int bx=x-v[0],by=y-v[1],bz=z-v[2];
+                 if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
+                     if(grid_current[(bz*QHeight+by)*QWidth+bx].mass==0)tail=1;}
+                 if(nx>=0&&nx<QWidth&&ny>=0&&ny<QHeight&&nz>=0&&nz<QDepth){
+                     if(grid_current[(nz*QHeight+ny)*QWidth+nx].mass==0)front=1;}}
+                int shift=(tail||front)?3:6;  /* both edges shed fast
+                 * (tail releases, frontier extends), interior transits
+                 * slow — mass flows through the composite */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
-                uint32_t k=o->mass>>4;if(!k)k=1;
+                uint32_t k=o->mass>>shift;if(!k)k=1;
                 grid_next[si].mass-=k<o->mass?k:o->mass;
                 uint32_t m2=grid_next[ni].mass+k;
                 grid_next[ni].mass=(uint16_t)(m2>65535?65535:m2);
@@ -774,7 +787,7 @@ void moore26_tick(void){
                  * at the destination odd site: the SKELETON migrates
                  * with the flesh, history relocates site to site */
                 for(int c=0;c<QChannels;c++){
-                    uint32_t w2=o->winding[c]>>4;
+                    uint32_t w2=o->winding[c]>>shift;
                     if(w2){
                         grid_next[si].winding[c]-=w2;
                         uint32_t d=grid_next[ni].winding[c]+w2;
@@ -784,7 +797,7 @@ void moore26_tick(void){
                 /* p clears too — the destination inherits the walk's
                  * momentum: inertia, not a wind-up toy */
                 for(int e=0;e<QChannels/2;e++){
-                    int32_t p2=o->momentum[e]>>4;
+                    int32_t p2=o->momentum[e]>>shift;
                     if(p2){
                         grid_next[si].momentum[e]-=p2;
                         grid_next[ni].momentum[e]+=p2;
