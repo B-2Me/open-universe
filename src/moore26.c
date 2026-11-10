@@ -169,7 +169,7 @@ static int CW,CH,CD,nChunks;
 static uint8_t *chunkLive, *chunkProc;
 static int *procList, nProc;
 
-static uint64_t qEvents[48];
+static uint64_t qEvents[64];   /* 48 used; 60/61 = drift diagnostics */
 static uint64_t qTick;
 static int qFusionWall=256;   /* pair-production energy threshold —
      * nua+nub must clear it (each packet above ~mc2, not a crowd
@@ -1457,6 +1457,7 @@ void moore26_tick(void){
                  * read, never spent: force changes it, motion doesn't */
                 for(int e=0;e<13;e++){
                     int p=n->momentum[e];if(!p)continue;
+                    qEvents[61]++;   /* p visible to drift — diagnostic */
                     if((rand_site(si,16+e)&255)>=((p>0?p:-p)*qMomentum>>4))continue;
                     int c2=p>0?2*e:2*e+1;
                     const int8_t *v=QChannelVec[c2];
@@ -1480,6 +1481,7 @@ void moore26_tick(void){
                      * is breathing, free; p share rides to the landing
                      * cell so total p stays conserved */
                     if(n->winding[ch]>0&&n->massFlight[c2]<65534){
+                        qEvents[60]++;   /* drift fires — diagnostic */
                         /* BOTH registers ride — a coherent composite
                          * translates, not a winding ghost leaving
                          * its mass behind (the measured split) */
@@ -1855,13 +1857,13 @@ void moore26_packet_set(int x,int y,int z,int c,uint32_t v){
     if(!IS_EVEN(x,y,z))return;   /* odd sublattice is not for use —
      * quanta setters silently refuse interstitial cells */
     grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c]=v;
-    grid_current[z*QWidth*QHeight+y*QWidth+x].packetBorn[c]=(uint8_t)qTick;
-    mark_chunk(x,y,z);
+        grid_next[z*QWidth*QHeight+y*QWidth+x].packet[c]=v;    grid_current[z*QWidth*QHeight+y*QWidth+x].packetBorn[c]=(uint8_t)qTick;
+        grid_next[z*QWidth*QHeight+y*QWidth+x].packetBorn[c]=(uint8_t)qTick;    mark_chunk(x,y,z);
 }
 void moore26_packet_nu_set(int x,int y,int z,int c,uint32_t v){
     if(!grid_current||!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c]=v;
-}
+        grid_next[z*QWidth*QHeight+y*QWidth+x].packetNu[c]=v;}
 uint32_t moore26_packet_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c];
@@ -1874,6 +1876,7 @@ void moore26_packet_par_set(int x,int y,int z,int c,int v){
 void moore26_mass_set(int x,int y,int z,uint32_t v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].mass=v;
+    grid_next[z*QWidth*QHeight+y*QWidth+x].mass=v;
     mark_chunk(x,y,z);
 }
 uint32_t moore26_mass_get(int x,int y,int z){
@@ -1887,17 +1890,17 @@ uint16_t moore26_heat_get(int x,int y,int z){
 void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
     if(!grid_current||!IS_EVEN(x,y,z))return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c]=v;
-    mark_chunk(x,y,z);
+        grid_next[z*QWidth*QHeight+y*QWidth+x].massFlight[c]=v;    mark_chunk(x,y,z);
 }
 uint32_t moore26_massflight_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
 }
-uint64_t moore26_events(int i){return (i>=0&&i<48)?qEvents[i]:0;}
+uint64_t moore26_events(int i){return (i>=0&&i<64)?qEvents[i]:0;}
 void moore26_phase_set(int x,int y,int z,uint32_t v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].phase=v&511;
-    mark_chunk(x,y,z);
+        grid_next[z*QWidth*QHeight+y*QWidth+x].phase=v&511;    mark_chunk(x,y,z);
 }
 uint32_t moore26_phase_get(int x,int y,int z){
     if(!grid_current)return 0;
@@ -1910,7 +1913,7 @@ int32_t moore26_charge_get(int x,int y,int z){
 void moore26_charge_set(int x,int y,int z,int v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].charge=(int16_t)v;
-    mark_chunk(x,y,z);
+        grid_next[z*QWidth*QHeight+y*QWidth+x].charge=(int16_t)v;    mark_chunk(x,y,z);
 }
 int32_t moore26_cvc(int c,int i){return QChannelVec[c][i];}
 
@@ -2050,9 +2053,12 @@ void moore26_mass_cap_set(int v){qMassCap=v;}
 void moore26_momentum_set(int v){qMomentum=v;}
 void moore26_momentum_at_set(int x,int y,int z,int e,int v){
     /* direct impulse: set momentum[pair] on one node — the placed
-     * kick tool. Writes the live buffer (same as other at-set). */
+     * kick tool. Writes BOTH buffers — the drift reads grid_next,
+     * and momentum is never copied current->next (field added after
+     * the phase-copy paths), so a current-only write is invisible. */
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth||e<0||e>12)return;
-    grid_current[(z*QHeight+y)*QWidth+x].momentum[e]=v;}
+    uint32_t si=(z*QHeight+y)*QWidth+x;
+    grid_current[si].momentum[e]=v;grid_next[si].momentum[e]=v;}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
