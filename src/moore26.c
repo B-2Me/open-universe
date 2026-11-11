@@ -784,6 +784,33 @@ void moore26_tick(void){
                  * surface-driven, not path-driven. */
                 if(o->bondPar&&o->mass)
                 for(int d=0;d<6;d++){
+                    /* CHARGED CONDUIT — the knee extended: charge
+                     * residue travels with in-flight mass, so opposite
+                     * parity arrives as SIGNAL before the matter does.
+                     * A conduit holding charge that disagrees with this
+                     * cell's handedness conducts the mismatch: the cell
+                     * edge burns into scar, the charge spends down */
+                    {int cx3=x+((d==0)-(d==1)),cy3=y+((d==2)-(d==3)),cz3=z+((d==4)-(d==5));
+                     if(cx3>=0&&cx3<QWidth&&cy3>=0&&cy3<QHeight&&cz3>=0&&cz3<QDepth){
+                         int cj=(cz3*QHeight+cy3)*QWidth+cx3;
+                         int16_t cq=grid_current[cj].charge;
+                         if(cq&&((cq>0)!=(o->bondPar>0))){
+                             int32_t burn=o->mass,acc=cq<0?-cq:cq;
+                             if(burn>acc*4)burn=acc*4;   /* charge limits the burn
+                              * rate — the signal spends as it conducts */
+                             if(burn>0){
+                                 uint32_t cur=grid_current[cj].winding[d];
+                                 uint32_t nv=cur+burn; if(nv>65535)nv=65535;
+                                 grid_current[cj].winding[d]=(uint16_t)nv;
+                                 grid_next[cj].winding[d]=(uint16_t)nv;
+                                 int32_t nq=grid_current[cj].charge-(cq>0?burn/4:-burn/4);
+                                 grid_current[cj].charge=(int16_t)nq;
+                                 grid_next[cj].charge=(int16_t)nq;
+                                 o->mass-=(uint16_t)burn;
+                                 grid_next[si].mass=o->mass;
+                                 jrn(si,cj,65,(int32_t)burn);
+                             }
+                         }}}
                     int nx2=x+2*((d==0)-(d==1)),
                         ny2=y+2*((d==2)-(d==3)),
                         nz2=z+2*((d==4)-(d==5));
@@ -1195,9 +1222,13 @@ void moore26_tick(void){
             uint32_t f=grid_next[si].massFlight[fc]+k;
             grid_next[si].massFlight[fc]=(uint16_t)(f>65535?65535:f);
             }
-            /* the launched mass carries a proportional charge share */
+            /* the launched mass carries a proportional charge share —
+             * plus the emitter's HANDEDNESS: bondPar signs the exhaust
+             * so the stream carries chirality as charge, landing as
+             * +q/-q on distant conduits (the parity signal at range) */
             int32_t qc=(int32_t)o->charge>>4;
             grid_next[si].charge-=qc;
+            if(o->bondPar)qc+=(o->bondPar>0?1:-1);
             int32_t cf=(int32_t)grid_next[si].chargeFlight[fc]+qc;
             grid_next[si].chargeFlight[fc]=(int8_t)(cf>127?127:cf<-127?-127:cf);
         PROC_NODES_END
