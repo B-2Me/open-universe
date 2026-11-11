@@ -1576,6 +1576,26 @@ void moore26_tick(void){
                     /* the node's chirality accrues from its bonds */
                     if(o->incipPar[c]>0){if(n->bondPar<127)n->bondPar++;}
                     else if(o->incipPar[c]<0){if(n->bondPar>-127)n->bondPar--;}
+                    /* charge PROVENANCE — the first established answer
+                     * mints the dipole: the confirming node takes the
+                     * offer's handedness as its charge, the opposite
+                     * sign rides the conduit back upstream toward the
+                     * offerer. +q/-q born at the handshake, summed 0 —
+                     * charge is the record of an asymmetry a bond made,
+                     * never a free register */
+                    if(o->incipPar[c]){
+                        int q2=(o->incipPar[c]>0?1:-1);
+                        int32_t nc=(int32_t)n->charge+q2;
+                        n->charge=(int16_t)(nc>32767?32767:nc<-32767?-32767:nc);
+                        const int8_t *bv=QChannelVec[c];
+                        int bxx=x-bv[0],byy=y-bv[1],bzz=z-bv[2];
+                        if(bxx>=0&&bxx<QWidth&&byy>=0&&byy<QHeight&&bzz>=0&&bzz<QDepth){
+                            int bi=(bzz*QHeight+byy)*QWidth+bxx;
+                            int32_t oc=(int32_t)grid_next[bi].charge-q2;
+                            grid_next[bi].charge=(int16_t)(oc>32767?32767:oc<-32767?-32767:oc);
+                            grid_current[bi].charge=grid_next[bi].charge;
+                        }
+                    }
                     /* an offer absorbed into structure pushes it the
                      * way the packet was travelling — force on the
                      * momentum register (F=dp/dt: only force writes) */
