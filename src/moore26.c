@@ -915,11 +915,10 @@ void moore26_tick(void){
                 /* field saturation — |p| capped: the medium's momentum
                  * is bounded (bandwidth limit), else the write runs
                  * away exponentially and overflows */
-                /* DISABLED — self-drag: the field pulls the source's
-                 * own outer cells too (can't distinguish own mass
-                 * from foreign matter). Needs a proper design — the
-                 * write must mark whose field it is or only apply to
-                 * matter outside the source's cluster. */
+                /* DISABLED — still wrong: uniform -x wind + mass
+                 * shredding (97% loss). The field writes need real
+                 * provenance (whose mass sourced them), not just a
+                 * corrected pair map. Revisit with a source tag. */
                 (void)e0;(void)e1;(void)s0;(void)s1;
             }}
             /* FIELD-DRAG — even cells with p push odd neighbors: amplify
