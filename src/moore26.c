@@ -806,6 +806,17 @@ void moore26_tick(void){
                         uint32_t nv=cur+e; if(nv>65535)nv=65535;
                         grid_current[ci].winding[d]=(uint16_t)nv;
                         grid_next[ci].winding[d]=(uint16_t)nv;
+                        /* the scar REMEMBERS handedness: bit d of
+                         * charge = parity sign of the +d-side cell
+                         * (the −d side is implied opposite — the law
+                         * only fires on mismatch). charge persists;
+                         * packetPar is rebuilt from upstream each tick */
+                        int16_t ch2=grid_current[ci].charge;
+                        if(nb->bondPar>0)ch2|=(1<<d);else ch2&=~(1<<d);
+                        ch2|=0x40;   /* validity tag — nonzero bits
+                         * alone can't mean "recorded a negative" */
+                        grid_current[ci].charge=ch2;
+                        grid_next[ci].charge=ch2;
                         /* clear BOTH buffers — ni2's own iteration
                          * later copies grid_current over grid_next,
                          * so clearing next alone just oscillates */
@@ -843,11 +854,13 @@ void moore26_tick(void){
                     nbb->mass=(uint16_t)(scar-half>65535?65535:scar-half);
                     grid_next[ia].mass=na->mass;
                     grid_next[ib].mass=nbb->mass;
-                    /* born NEUTRAL — bondPar is self-polarizing: it
-                     * must come from the pair's first real bond, not
-                     * a stamp. Opposite parities emerge from their
-                     * transactions; if they meet again mismatched,
-                     * the contact law decides honestly */
+                    /* replay the scar's parity record — charge bit d
+                     * holds the +d-side cell's sign; the −d side gets
+                     * the mirror. Chirality is conserved information:
+                     * annihilation recorded it, production replays it */
+                    int8_t pa=(o->charge&(1<<d))?127:-127;
+                    na->bondPar=pa;  grid_next[ia].bondPar=pa;
+                    nbb->bondPar=-pa;grid_next[ib].bondPar=-pa;
                     /* escape kick — born touching the scar, the pair
                      * would instantly re-annihilate; momentum away
                      * from each other lets them clear the conduit
@@ -1006,6 +1019,15 @@ void moore26_tick(void){
                         grid_next[si].momentum[e]-=p2;
                         grid_next[ni].momentum[e]+=p2;
                     }
+                }
+                /* chirality rides the handoff — bondPar is the
+                 * pattern's handedness record, not the site's: when
+                 * the whole residue relocates, the label goes with
+                 * it (else produced particles shed their parity on
+                 * the first hop) */
+                if(o->bondPar){
+                    grid_next[ni].bondPar=o->bondPar;
+                    grid_next[si].bondPar=0;
                 }
                 qEvents[59]++;
                 continue;
@@ -2521,6 +2543,9 @@ void moore26_bondpar_set(int x,int y,int z,int v){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return;
     uint32_t si=(z*QHeight+y)*QWidth+x;
     grid_current[si].bondPar=(int8_t)v;grid_next[si].bondPar=(int8_t)v;}
+int moore26_bondpar_get(int x,int y,int z){
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
+    return grid_current[(z*QHeight+y)*QWidth+x].bondPar;}
 void moore26_rail_gate_set(int v){qRailGate=v;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
 
