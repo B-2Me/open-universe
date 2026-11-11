@@ -835,6 +835,13 @@ void moore26_tick(void){
                  * p is now ubiquitous (field-drag) so this gate is
                  * load-bearing, not just a front flag */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
+                /* HANDEDNESS GATE — the ledger itself refuses a
+                 * mismatched neighbor: if both cells carry bondPar
+                 * and they disagree, the relay can't hand off.
+                 * The knee forms by refusal, not saturation —
+                 * a left-handed knot can't merge a right-handed one. */
+                {int8_t bp0=o->bondPar,bp1=grid_current[ni].bondPar;
+                 if(bp0&&bp1&&((bp0>0)!=(bp1>0)))continue;}
                 /* BACKPRESSURE — the conduit's own incipient record
                  * throttles the hop: a loaded lane stalls, a clear
                  * lane lets the relay through. The medium's traffic
@@ -2411,6 +2418,12 @@ void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
+void moore26_bondpar_set(int x,int y,int z,int v){
+    /* seeded chirality: bondPar is normally written by confirmed
+     * offers — this stamps it directly for handedness tests */
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return;
+    uint32_t si=(z*QHeight+y)*QWidth+x;
+    grid_current[si].bondPar=(int8_t)v;grid_next[si].bondPar=(int8_t)v;}
 void moore26_rail_gate_set(int v){qRailGate=v;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
 
