@@ -994,9 +994,11 @@ void moore26_tick(void){
              * emissions along that axis. Biased flux reaches foreign
              * matter through feeding, not through p donation — bound
              * cells stay bound, they just eat bent flux */
-            if(de<0&&hd>=0&&hm>0){
+            if(hd>=0&&hm>0){
                 int ax=hd>>1,plus=!(hd&1);
-                de=ax==2?5:3;   /* axis pair — same map as the write */
+                de=ax==2?5:3;   /* axis pair — the mass overrides
+                 * the cell's own compass: the stream bends toward
+                 * the source regardless of local momentum */
                 dir=plus?1:-1;
             }
             if(de<0)for(int e=0;e<QChannels/2;e++){
