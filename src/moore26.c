@@ -826,10 +826,17 @@ void moore26_tick(void){
                      int ci0=(z*QHeight+y)*QWidth+cx0;
                      if(grid_current[ci0].incip[2*be]>=16&&shift>2)shift--;
                  }}
-                uint32_t k=o->mass>>shift;
-                if(!k)k=1;
-                if(k>o->mass)k=o->mass;   /* winding-only cells relay
-                 * skeleton without minting mass */
+                /* INVERTED — relocation is a complete handoff: the
+                 * decode zone fully passes through a site, clearing
+                 * its whole residue at once. The wake is reserved
+                 * for fracture: if the destination can't absorb the
+                 * full residue, the site can't land cleanly — it
+                 * tears, shedding a fraction instead (a wake means
+                 * the knot broke, not that it moved). */
+                uint32_t k=o->mass;
+                uint32_t room=65535-grid_next[ni].mass;
+                if(k>room)k=room>0?(o->mass>>shift?o->mass>>shift:1):0;
+                if(k>o->mass)k=o->mass;
                 grid_next[si].mass-=k;
                 /* AUDITED — the offer lands as INCIPIENT state on the
                  * destination odd cell (a transaction in flight through
@@ -858,10 +865,12 @@ void moore26_tick(void){
                         grid_next[ni].winding[c]=(uint16_t)(d>65535?65535:d);
                     }
                 }
-                /* p clears too — the destination inherits the walk's
-                 * momentum: inertia, not a wind-up toy */
+                /* p clears too — FULL handoff matching the mass: if
+                 * the whole residue relocates, the whole momentum
+                 * goes with it (fractional p bleed deadlocked the
+                 * walk after ~60 hops — inertia died mid-march) */
                 for(int e=0;e<QChannels/2;e++){
-                    int32_t p2=o->momentum[e]>>shift;
+                    int32_t p2=o->momentum[e];
                     if(p2){
                         grid_next[si].momentum[e]-=p2;
                         grid_next[ni].momentum[e]+=p2;
