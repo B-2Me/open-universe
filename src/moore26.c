@@ -769,6 +769,26 @@ void moore26_tick(void){
                  * conduit onto the next odd site. Direction = dominant
                  * momentum pair: the hop follows p, so a "thrown" pattern
                  * walks where its momentum says. */
+                /* FLUX-DRAG (read side) — the stream itself drags
+                 * matter: sum each even neighbor's signed per-pair
+                 * packet imbalance into p. Direction AND chirality —
+                 * the pair's two members are opposite directions, so
+                 * the signed flux is the field's real twist.
+                 * Conservation-bounded: quanta, not donated p. */
+                for(int d=0;d<6;d++){
+                    int ex=x+(d==0)-(d==1),ey=y+(d==2)-(d==3),ez=z+(d==4)-(d==5);
+                    if(ex<0||ex>=QWidth||ey<0||ey>=QHeight||ez<0||ez>=QDepth)continue;
+                    int ei=(ez*QHeight+ey)*QWidth+ex;
+                    if(!IS_EVEN(ex,ey,ez))continue;
+                    const NodeState *en=&grid_current[ei];
+                    for(int e=0;e<QChannels/2;e++){
+                        int32_t imb=(int32_t)en->packet[2*e]-(int32_t)en->packet[2*e+1];
+                        int32_t share=imb>>1;
+                        int32_t cur=grid_next[si].momentum[e],
+                                ac=cur<0?-cur:cur;
+                        if(share&&ac<(1<<16))grid_next[si].momentum[e]+=share;
+                    }
+                }
                 int be=0;int32_t best=0,dir=1;
                 for(int e=0;e<QChannels/2;e++){
                     int32_t p=o->momentum[e];int32_t a=p<0?-p:p;
