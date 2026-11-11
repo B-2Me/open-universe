@@ -989,6 +989,16 @@ void moore26_tick(void){
                     }
                 }
             }
+            /* ROUTING DEFLECTION — mass bends the stream, not the
+             * receiver: a conduit with a heavy odd neighbor aims its
+             * emissions along that axis. Biased flux reaches foreign
+             * matter through feeding, not through p donation — bound
+             * cells stay bound, they just eat bent flux */
+            if(de<0&&hd>=0&&hm>0){
+                int ax=hd>>1,plus=!(hd&1);
+                de=ax==2?5:3;   /* axis pair — same map as the write */
+                dir=plus?1:-1;
+            }
             if(de<0)for(int e=0;e<QChannels/2;e++){
                 int32_t d=(int)o->winding[2*e]-(int)o->winding[2*e+1];
                 int32_t ad=d<0?-d:d;
