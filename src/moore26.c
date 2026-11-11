@@ -777,6 +777,46 @@ void moore26_tick(void){
         PROC_NODES
             NodeState *o=&grid_current[si];
             if(!IS_EVEN(x,y,z)){
+                /* CONTACT ANNIHILATION — parity-mismatched odd cells
+                 * sharing a conduit cancel on contact: the ledger
+                 * interaction is the trigger, not a relay choice.
+                 * Matter+antimatter burns at the shared boundary —
+                 * surface-driven, not path-driven. */
+                if(o->bondPar&&o->mass)
+                for(int d=0;d<6;d++){
+                    int nx2=x+2*((d==0)-(d==1)),
+                        ny2=y+2*((d==2)-(d==3)),
+                        nz2=z+2*((d==4)-(d==5));
+                    if(nx2<0||nx2>=QWidth||ny2<0||ny2>=QHeight||nz2<0||nz2>=QDepth)continue;
+                    int ni2=(nz2*QHeight+ny2)*QWidth+nx2;
+                    if(ni2<=si)continue;   /* one pass per pair —
+                     * else both cells cancel each other and the u16
+                     * underflows (grid_current stale vs grid_next) */
+                    const NodeState *nb=&grid_current[ni2];
+                    if(nb->bondPar&&nb->mass&&((nb->bondPar>0)!=(o->bondPar>0))){
+                        uint32_t a=o->mass,b=nb->mass;
+                        /* energy lands as WINDING on the shared
+                         * conduit — the persistent ledger register
+                         * (carved trails proved it holds); the
+                         * annihilation scar IS a transaction record */
+                        int cx2=(x+nx2)/2, cy2=(y+ny2)/2, cz2=(z+nz2)/2;
+                        int ci=(cz2*QHeight+cy2)*QWidth+cx2;
+                        uint32_t e=a+b; if(e>4096)e=4096;
+                        uint32_t cur=grid_current[ci].winding[d];
+                        uint32_t nv=cur+e; if(nv>65535)nv=65535;
+                        grid_current[ci].winding[d]=(uint16_t)nv;
+                        grid_next[ci].winding[d]=(uint16_t)nv;
+                        /* clear BOTH buffers — ni2's own iteration
+                         * later copies grid_current over grid_next,
+                         * so clearing next alone just oscillates */
+                        o->mass=0;
+                        grid_next[si].mass=0;
+                        ((NodeState*)nb)->mass=0;
+                        grid_next[ni2].mass=0;
+                        jrn(si,ni2,63,(int32_t)a);
+                        jrn(ni2,si,63,(int32_t)b);
+                    }
+                }
                 int hasW=0;
                 {for(int c=6;c<18;c++)if(o->winding[c]){hasW=1;break;}}
                 if(o->mass<4&&!hasW)continue;   /* relay fires on mass OR
@@ -835,13 +875,21 @@ void moore26_tick(void){
                  * p is now ubiquitous (field-drag) so this gate is
                  * load-bearing, not just a front flag */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
-                /* HANDEDNESS GATE — the ledger itself refuses a
-                 * mismatched neighbor: if both cells carry bondPar
-                 * and they disagree, the relay can't hand off.
-                 * The knee forms by refusal, not saturation —
-                 * a left-handed knot can't merge a right-handed one. */
+                /* HANDEDNESS LAW — matching parity merges; opposite
+                 * parity CANCELS: the handoff goes through but both
+                 * sides thermalize — matter+antimatter doesn't refuse
+                 * contact, it annihilates (mass -> heat, conserved). */
                 {int8_t bp0=o->bondPar,bp1=grid_current[ni].bondPar;
-                 if(bp0&&bp1&&((bp0>0)!=(bp1>0)))continue;}
+                 if(bp0&&bp1&&((bp0>0)!=(bp1>0))){
+                     uint32_t a=o->mass,b=grid_next[ni].mass;
+                     grid_next[si].heat+=a;
+                     grid_next[ni].heat+=b;
+                     grid_next[si].mass-=a;
+                     grid_next[ni].mass-=b;
+                     jrn(si,ni,63,(int32_t)a);
+                     jrn(ni,si,63,(int32_t)b);
+                     continue;
+                 }}
                 /* BACKPRESSURE — the conduit's own incipient record
                  * throttles the hop: a loaded lane stalls, a clear
                  * lane lets the relay through. The medium's traffic
