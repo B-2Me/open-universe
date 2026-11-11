@@ -714,9 +714,13 @@ export async function initCascadeSimulator(root, opts = {}) {
             wset(CX + dx, CY + dy, CZ + dz, 7, 40);
             mset(CX + dx, CY + dy, CZ + dz, 200);
             /* born in motion — seed the momentum register so the knot
-             * glides from reset (Newton-1 demo needs no charge phase) */
-            if (wasm._moore26_momentum_at_set)
-              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, 1000);
+             * glides from reset (Newton-1 demo needs no charge phase).
+             * The relay walks on ODD cells — they get the strong p;
+             * even-cell p stays low, it only feeds the field-drag */
+            if (wasm._moore26_momentum_at_set) {
+              const odd = ((CX + dx + CY + dy + CZ + dz) & 1) !== 0;
+              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, odd ? 3200 : 400);
+            }
           }
       return 27;
     }
