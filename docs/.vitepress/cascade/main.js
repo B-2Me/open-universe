@@ -956,21 +956,15 @@ export async function initCascadeSimulator(root, opts = {}) {
   let pinch = null;        /* {d, cx, cy, dist} while 2 fingers down */
   /* suppress the browser context menu — right-drag is camera control */
   canvas.addEventListener('contextmenu', e => e.preventDefault());
-  canvas.addEventListener('pointerdown', e => {
-    poke();
-    /* left button paints when a tool is armed — right/middle drag is
-     * always camera orbit, tool or not */
-    if (e.button === 0 && (ui.lumpArm || ui.tubeArm || ui.ringArm || ui.thrustArm)) {
-      const cell = pickCell(e.clientX, e.clientY);
+  /* inject as a reusable fn — tap fires once, hold-to-repeat fires
+   * every ~350ms while the pointer stays down */
+  const fireInject = (cell, shiftKey) => {
       if (cell) {
         if (ui.tubeArm) {
           /* the fuse — paint sub-critical (120) then ramp +1/tick:
            * the string glows to criticality for ~8 ticks before the
            * engine's own gate fires the fracture. A watchable snap. */
           const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 124);
-          /* de-arm after one paint — the fuse is lit; a second tap
-           * shouldn't stack another string on top mid-detonation */
-          setTubeArm(false);
           if (n) fuse = cells;
           say(n ? `fuse lit — string saturating…` : 'off-lattice', 3500);
         } else if (ui.ringArm) {
@@ -988,7 +982,7 @@ export async function initCascadeSimulator(root, opts = {}) {
            * tap point: an impulse to the pair3 axis, then it coasts
            * on stored p. Shift-click kicks the opposite direction. */
           if (wasm._moore26_momentum_at_set) {
-            const dir = e.shiftKey ? -1 : 1;
+            const dir = shiftKey ? -1 : 1;
             for (let dz = -1; dz <= 1; dz++)
               for (let dy = -1; dy <= 1; dy++)
                 for (let dx = -1; dx <= 1; dx++) {
@@ -1000,15 +994,29 @@ export async function initCascadeSimulator(root, opts = {}) {
                     wasm._moore26_momentum_at_set(kx, ky, kz, 3, (odd ? 3200 : 400) * dir);
                   }
                 }
-            setThrustArm(false);
             say(`${dir > 0 ? '+x' : '-x'} impulse applied — coasting on stored momentum`, 3500);
           } else say('momentum register not in this wasm build', 3500);
         } else {
           /* shift-click flips the handedness — paint chiral pairs */
-          const n = seedWound(cell.lx, cell.ly, cell.lz, e.shiftKey ? -1 : 1);
-          say(n ? `${e.shiftKey ? '+dd' : '-dd'} condenser dropped — ${n} sites bound` : 'off-lattice', 2500);
+          const n = seedWound(cell.lx, cell.ly, cell.lz, shiftKey ? -1 : 1);
+          say(n ? `${shiftKey ? '+dd' : '-dd'} condenser dropped — ${n} sites bound` : 'off-lattice', 2500);
         }
       } else say('edge-on view — pick while the slice plane is facing you', 4500);
+  };
+  let holdTimer = null;
+  canvas.addEventListener('pointerdown', e => {
+    poke();
+    /* left button paints when a tool is armed — right/middle drag is
+     * always camera orbit, tool or not */
+    if (e.button === 0 && (ui.lumpArm || ui.tubeArm || ui.ringArm || ui.thrustArm)) {
+      const cell = pickCell(e.clientX, e.clientY);
+      fireInject(cell, e.shiftKey);
+      /* hold-to-repeat — keep injecting while the pointer stays down */
+      holdTimer = setInterval(() => {
+        const c2 = pickCell(e.clientX, e.clientY);
+        if (c2) fireInject(c2, e.shiftKey);
+      }, 350);
+      canvas.setPointerCapture(e.pointerId);
       return;
     }
     dragging = true; lx = e.clientX; ly = e.clientY;
@@ -1047,6 +1055,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     dirty = true;
   });
   const endPt = (e) => {
+    if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
     pts.delete(e.pointerId);
     if (pts.size < 2) pinch = null;
     if (pts.size === 0) dragging = false;
@@ -1350,7 +1359,8 @@ export async function initCascadeSimulator(root, opts = {}) {
   };
   if (gizmo) {
     let lastTap = 0;
-    const resetView = () => applyPreset('full');
+    const resetView = () => { tgt.yaw = 0.7; tgt.pitch = 0.45; dirty = true; };
+    /* reset rotation only — zoom (dist) stays where the user left it */
     gizmo.addEventListener('dblclick', e => { e.preventDefault(); resetView(); });
     gizmo.addEventListener('contextmenu', e => e.preventDefault());
     /* drag on the gizmo orbits the camera (either button); a plain
