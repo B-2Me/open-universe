@@ -753,10 +753,12 @@ void moore26_tick(void){
     AUDIT_PH(2)
     /* Phase 1c: mass launch — a knot with a dominant directed edge
      * bleeds a fraction of its mass onto the flight channel along
-     * the circulation axis every 8th tick (slower than c — the
-     * internal clock). The stream parks it one node on: the knot
-     * crawls along its own directedness. */
-    if((qTick&7)==0){
+     * INVERTED — no authored drumbeat: the relay may fire any tick,
+     * but only while its conduit lane has capacity. The conduit's
+     * own incipient record IS the congestion — a loaded lane stalls
+     * the hop, a clear lane lets it through. Speed is set by the
+     * medium's traffic, not a schedule. */
+    {
         PROC_NODES
             NodeState *o=&grid_current[si];
             if(!IS_EVEN(x,y,z)){
@@ -818,13 +820,19 @@ void moore26_tick(void){
                  * p is now ubiquitous (field-drag) so this gate is
                  * load-bearing, not just a front flag */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
-                /* LEDGER FEEDBACK — the conduit's accumulated hop-record
-                 * carves the channel: a well-worn path clears faster.
-                 * History shapes dynamics — the ledger becomes inertia */
+                /* BACKPRESSURE — the conduit's own incipient record
+                 * throttles the hop: a loaded lane stalls, a clear
+                 * lane lets the relay through. The medium's traffic
+                 * sets the knot's speed — congestion, not schedule.
+                 * (This is the gate, returned as physics.) */
                 {int cx0=x+v[0];
                  if(cx0>=0&&cx0<QWidth){
                      int ci0=(z*QHeight+y)*QWidth+cx0;
-                     if(grid_current[ci0].incip[2*be]>=16&&shift>2)shift--;
+                     uint8_t load=grid_current[ci0].incip[2*be];
+                     if(load>=32)continue;   /* lane saturated — stall
+                      * the hop this tick, the knot waits for capacity */
+                     if(load>=16&&shift>2)shift--;   /* worn path carves
+                      * faster — ledger feedback (history = inertia) */
                  }}
                 /* INVERTED — relocation is a complete handoff: the
                  * decode zone fully passes through a site, clearing
