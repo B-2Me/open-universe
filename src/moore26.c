@@ -793,6 +793,10 @@ void moore26_tick(void){
                 int shift=(tail||front)?3:6;  /* both edges shed fast
                  * (tail releases, frontier extends), interior transits
                  * slow — mass flows through the composite */
+                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)
+                    continue;   /* edge cells can't relay off-grid —
+                 * p is now ubiquitous (field-drag) so this gate is
+                 * load-bearing, not just a front flag */
                 int ni=(nz*QHeight+ny)*QWidth+nx;
                 /* LEDGER FEEDBACK — the conduit's accumulated hop-record
                  * carves the channel: a well-worn path clears faster.
@@ -846,10 +850,41 @@ void moore26_tick(void){
                 qEvents[59]++;
                 continue;
             }
-            /* FIELD-DRAG — even cells with p push odd neighbors, but
-             * only along the RECEIVER's own dominant pair: the medium
-             * amplifies matter's intent, it doesn't set it (scattered
-             * donations flooded be[] and randomized the walk) */
+
+            /* CURVATURE WRITE — mass curves the medium: an even cell
+             * writes field-p toward its heaviest odd neighbor. The
+             * conduit routes flow AT the mass — other matter reading
+             * that flow feels attraction. */
+            {int hm=0,hd=-1;
+             for(int d=0;d<6;d++){
+                int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
+                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                int ni=(nz*QHeight+ny)*QWidth+nx;
+                if(IS_EVEN(nx,ny,nz))continue;
+                if(grid_current[ni].mass>hm){hm=grid_current[ni].mass;hd=d;}
+             }
+             if(hd>=0&&hm>0){
+                /* axis->pair map: each axis is the sum of two
+                 * diagonals — +x=pair3(+x+y)+pair4(+x-y);
+                 * +y=pair3(+)+pair4(-); +z=pair5(+)+pair6(-).
+                 * Wrong-map field wrote everything onto x -> -x wind */
+                int plus=!(hd&1), ax=hd>>1;
+                int e0=ax==2?5:3, e1=e0+1;
+                int s0=plus?1:-1, s1=ax==0?s0:-s0;
+                /* field saturation — |p| capped: the medium's momentum
+                 * is bounded (bandwidth limit), else the write runs
+                 * away exponentially and overflows */
+                /* DISABLED — self-drag: the field pulls the source's
+                 * own outer cells too (can't distinguish own mass
+                 * from foreign matter). Needs a proper design — the
+                 * write must mark whose field it is or only apply to
+                 * matter outside the source's cluster. */
+                (void)e0;(void)e1;(void)s0;(void)s1;
+            }}
+            /* FIELD-DRAG — even cells with p push odd neighbors: amplify
+             * the receiver's own dominant pair where it has one; where
+             * the receiver has no intent, the medium SETS it — field-p
+             * gives directionless matter a direction */
             for(int d=0;d<6;d++){
                 int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
                 if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
@@ -861,10 +896,24 @@ void moore26_tick(void){
                     int32_t ra=rp<0?-rp:rp;
                     if(ra>bp){bp=ra;be=e;}
                 }
-                if(be<0)continue;   /* no intent to amplify */
-                int32_t share=o->momentum[be]>>8;
-                if(share)grid_next[ni].momentum[be]+=share;
+                if(be>=0){
+                    int32_t share=o->momentum[be]>>8,
+                            cur=grid_next[ni].momentum[be],
+                            ac=cur<0?-cur:cur;
+                    if(share&&ac<(1<<20))grid_next[ni].momentum[be]+=share;
+                }else{
+                    /* directionless matter inherits the donor's whole
+                     * field — coherent fields need broadcast; clamped
+                     * like the write (bandwidth-bounded momentum) */
+                    for(int e=0;e<QChannels/2;e++){
+                        int32_t share=o->momentum[e]>>8,
+                                cur=grid_next[ni].momentum[e],
+                                ac=cur<0?-cur:cur;
+                        if(share&&ac<(1<<20))grid_next[ni].momentum[e]+=share;
+                    }
+                }
             }
+
             if(o->mass<32)continue;   /* even launch threshold */
             int de=-1;int32_t dd=0,dir=1;
             if(qMomentum){
