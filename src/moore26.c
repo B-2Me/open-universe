@@ -560,11 +560,26 @@ void moore26_tick(void){
             if(!IS_EDGE(c))continue;
             if(!v[c]){grid_next[si].packet[c]=0;continue;}
             TXN_WORK(&grid_next[si]);   /* a hop through = routing work */
+            /* PER-HOP WEAR — the transit itself books a record on
+             * the conduit's own lane: even a packet that dies here
+             * has worn the path it took. The beam paves its own way
+             * forward, cell by cell — the trail deepens with use. */
+            {uint32_t w0=o->winding[c]+1;
+             grid_next[si].winding[c]=(uint16_t)(w0>65535?65535:w0);}
             uint32_t nuv=nu[c]?nu[c]:1;
             /* decay -> heat: the arriving packet's energy becomes the
              * node's local temperature (not lost — the thermal sink
              * the emit/reabsorb loop needs for equilibrium). */
             uint32_t decay=(v[c]*(uint32_t)live)>>8;
+            /* WAVEGUIDE — a well-worn channel is paved: the conduit's
+             * own incipient record on this lane suppresses the density
+             * tax. History clears the path it keeps — the ledger
+             * guides the flow, not just stalls it (the fourth
+             * inversion: records route, not congest). */
+            if(o->winding[c]>=16)decay>>=1;
+            if(o->winding[c]>=64)decay>>=1;
+            if(o->winding[c]>=256)decay>>=1;  /* deep wear = low-loss
+             * lane — the carved trail lives in winding[] */
             int rail=0;
             if(qRailGate){
                 /* waveguide exemption: a saturated rail rides
