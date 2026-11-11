@@ -112,6 +112,10 @@ typedef struct {
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
     int16_t  charge;           /* SIGNED bound charge (+q/-q pair-able) */
+    uint8_t  scarPar;          /* annihilation parity record — bit d
+     * (faces 0-5) = handedness of the +d-side cell at cancellation;
+     * bit 6 = validity tag. A RECORD, not a conductor: kept out of
+     * charge so the scar's memory can't itself conduct a burn. */
     uint16_t heat;             /* vacuum heat reservoir (the local temp) */
     uint16_t localDensity;     /* neighbor-sampled density (the gradient) */
     uint8_t  txnWork;          /* transaction events THIS tick — hops,
@@ -192,6 +196,12 @@ static int qGroundFloor=512;
 static int qLaunchMode=0;   /* 0=massFlight 1=packet+fwd 2=packet-bck 3=direct */
 static int qConfirmCap=160;
 static int qCatchGate=16;
+static int qIncipTtl=6;   /* arbitration window — how many ticks an
+     * unconfirmed offer stands before the vacuum reclaims it to
+     * heat. The substrate's effective reach: a longer window lets
+     * transaction influence walk further before timing out, at the
+     * price of a denser standing-offer cloud (armed>=cap declines
+     * rise — congestion is the constraint class that pushes back). */
 static int qDirBias=0;
 static int qDeflectAlign=0;
 static int qDdShift=0;
@@ -594,8 +604,18 @@ void moore26_tick(void){
                 if(rail)decay=0;
             }
             /* the floor must respect the rail too — a random 1-unit
-             * drip re-arms decay right after the exemption zeroes it */
-            if(!rail&&decay<1&&(rand_site(si,40+c)&7)==0)decay=1;
+             * drip re-arms decay right after the exemption zeroes it.
+             * WARM PATH: the drip's odds scale with lane wear — the
+             * same tiers as the proportional tax. A lone quantum's
+             * survival is history-dependent: virgin vacuum kills
+             * ~1/8/hop, a well-worn channel ~1/64. The transaction
+             * layer's reach is a property of accumulated records,
+             * not a fixed constant of the substrate. */
+            uint32_t dm=7;
+            if(o->winding[c]>=16)dm=(dm<<1)|1;
+            if(o->winding[c]>=64)dm=(dm<<1)|1;
+            if(o->winding[c]>=256)dm=(dm<<1)|1;
+            if(!rail&&decay<1&&(rand_site(si,40+c)&dm)==0)decay=1;
             if(decay>v[c])decay=v[c];
             if(decay){
                 uint32_t h=grid_next[si].heat+decay*nuv;
@@ -835,16 +855,18 @@ void moore26_tick(void){
                         grid_current[ci].winding[d]=(uint16_t)nv;
                         grid_next[ci].winding[d]=(uint16_t)nv;
                         /* the scar REMEMBERS handedness: bit d of
-                         * charge = parity sign of the +d-side cell
+                         * scarPar = parity sign of the +d-side cell
                          * (the −d side is implied opposite — the law
-                         * only fires on mismatch). charge persists;
-                         * packetPar is rebuilt from upstream each tick */
-                        int16_t ch2=grid_current[ci].charge;
-                        if(nb->bondPar>0)ch2|=(1<<d);else ch2&=~(1<<d);
-                        ch2|=0x40;   /* validity tag — nonzero bits
+                         * only fires on mismatch). Dedicated register:
+                         * recording it in charge made the memory
+                         * itself a live conductor — the record burned
+                         * its own products. Records don't conduct. */
+                        uint8_t sp=grid_current[ci].scarPar;
+                        if(nb->bondPar>0)sp|=(1<<d);else sp&=~(1<<d);
+                        sp|=0x40;   /* validity tag — nonzero bits
                          * alone can't mean "recorded a negative" */
-                        grid_current[ci].charge=ch2;
-                        grid_next[ci].charge=ch2;
+                        grid_current[ci].scarPar=sp;
+                        grid_next[ci].scarPar=sp;
                         /* clear BOTH buffers — ni2's own iteration
                          * later copies grid_current over grid_next,
                          * so clearing next alone just oscillates */
@@ -886,7 +908,7 @@ void moore26_tick(void){
                      * holds the +d-side cell's sign; the −d side gets
                      * the mirror. Chirality is conserved information:
                      * annihilation recorded it, production replays it */
-                    int8_t pa=(o->charge&(1<<d))?127:-127;
+                    int8_t pa=(o->scarPar&(1<<d))?127:-127;
                     na->bondPar=pa;  grid_next[ia].bondPar=pa;
                     nbb->bondPar=-pa;grid_next[ib].bondPar=-pa;
                     /* newborn tag — the contact law yields one tick so
@@ -1459,7 +1481,7 @@ void moore26_tick(void){
                &&(rand_site(si,60+c)&255)<qParFlip)
                 n->incipPar[c]=(int8_t)-n->incipPar[c];
             uint8_t iage=(uint8_t)(qTick-o->incipBorn[c]);
-            if(iage>6){
+            if(iage>qIncipTtl){
                 n->incip[c]-=h;
                 /* Landauer dust: erasing an unconfirmed offer costs
                  * heat — but the offer held REAL energy (the packet
@@ -2577,6 +2599,7 @@ void moore26_commit_min_set(int v){qCommitMin=v;}
 void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
+void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_dd_shift_set(int v){qDdShift=v;}
