@@ -858,6 +858,10 @@ void moore26_tick(void){
                  * at the destination odd site: the SKELETON migrates
                  * with the flesh, history relocates site to site */
                 for(int c=0;c<QChannels;c++){
+                    /* skeleton bleeds fractionally — the record
+                     * trails the mass. Full skeleton handoff mints
+                     * runaway winding (u16 underflow cascade —
+                     * the accretion explosion) */
                     uint32_t w2=o->winding[c]>>shift;
                     if(w2){
                         grid_next[si].winding[c]-=w2;
