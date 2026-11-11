@@ -846,22 +846,24 @@ void moore26_tick(void){
                 qEvents[59]++;
                 continue;
             }
-            /* FIELD-DRAG — an even cell with momentum drags the matter
-             * lattice: its p donates a share to odd face-neighbors,
-             * conserved. The medium tells matter how to move */
-            for(int e=0;e<QChannels/2;e++){
-                int32_t p=o->momentum[e];
-                if(!p)continue;
-                int32_t share=p>>6;if(!share)continue;
-                for(int d=0;d<6;d++){
-                    int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
-                    if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
-                    int ni=(nz*QHeight+ny)*QWidth+nx;
-                    if(IS_EVEN(nx,ny,nz))continue;
-                    grid_next[ni].momentum[e]+=share;
+            /* FIELD-DRAG — even cells with p push odd neighbors, but
+             * only along the RECEIVER's own dominant pair: the medium
+             * amplifies matter's intent, it doesn't set it (scattered
+             * donations flooded be[] and randomized the walk) */
+            for(int d=0;d<6;d++){
+                int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
+                if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                int ni=(nz*QHeight+ny)*QWidth+nx;
+                if(IS_EVEN(nx,ny,nz))continue;
+                int be=-1;int32_t bp=0;
+                for(int e=0;e<QChannels/2;e++){
+                    int32_t rp=grid_current[ni].momentum[e];
+                    int32_t ra=rp<0?-rp:rp;
+                    if(ra>bp){bp=ra;be=e;}
                 }
-                int32_t ap=p<0?-p:p,out=share*6;
-                grid_next[si].momentum[e]-=(out>ap?ap:out)*(p<0?-1:1);
+                if(be<0)continue;   /* no intent to amplify */
+                int32_t share=o->momentum[be]>>8;
+                if(share)grid_next[ni].momentum[be]+=share;
             }
             if(o->mass<32)continue;   /* even launch threshold */
             int de=-1;int32_t dd=0,dir=1;
