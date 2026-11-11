@@ -142,7 +142,7 @@ void main() {
   } else {
     rgb = strcRamp * (0.35 + 0.85 * strc / 255.0);
   }
-  rgb = rgb * 1.3 + vec3(0.02);   // additive saturates — lower gain keeps color
+  rgb = rgb * 1.6 + vec3(0.02);   // higher gain — more opaque cells
   v_color = vec4(rgb, alpha);
 }`;
 
@@ -158,7 +158,8 @@ void main() {
   vec2 p = abs(v_uv);
   float hex = max(p.x * 0.866 + p.y * 0.5, p.y);
   if (hex > 1.0) discard;
-  float a = 1.0 - smoothstep(0.55, 0.9, hex);   // crisp cell + soft rim
+  float a = 1.0 - smoothstep(0.72, 0.96, hex);   // tighter rim —
+   * cells read as solid sites, not fuzzy glows */
   /* additive output — overlapping glows brighten, nothing occludes:
    * this is what makes the billboards read as transparent light. */
   frag = vec4(v_color.rgb * v_color.a * a, 1.0);
