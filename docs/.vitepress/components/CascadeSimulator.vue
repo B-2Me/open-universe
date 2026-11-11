@@ -32,7 +32,15 @@ onMounted(async () => {
     try {
       cleanup = await initCascadeSimulator(host.value)
     } catch (e) {
-      if (hud) hud.textContent = 'ERR ' + (e && e.message || e)
+      if (hud) {
+        hud.textContent = 'ERR ' + (e && e.message || e)
+        /* tap the HUD to copy the error text */
+        hud.style.pointerEvents = 'auto'
+        hud.style.cursor = 'copy'
+        hud.title = 'tap to copy'
+        hud.addEventListener('click', () =>
+          navigator.clipboard?.writeText(hud.textContent), { once: true })
+      }
       console.error(e)
     }
   }
