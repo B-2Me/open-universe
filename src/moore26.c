@@ -846,6 +846,23 @@ void moore26_tick(void){
                 qEvents[59]++;
                 continue;
             }
+            /* FIELD-DRAG — an even cell with momentum drags the matter
+             * lattice: its p donates a share to odd face-neighbors,
+             * conserved. The medium tells matter how to move */
+            for(int e=0;e<QChannels/2;e++){
+                int32_t p=o->momentum[e];
+                if(!p)continue;
+                int32_t share=p>>6;if(!share)continue;
+                for(int d=0;d<6;d++){
+                    int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
+                    if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
+                    int ni=(nz*QHeight+ny)*QWidth+nx;
+                    if(IS_EVEN(nx,ny,nz))continue;
+                    grid_next[ni].momentum[e]+=share;
+                }
+                int32_t ap=p<0?-p:p,out=share*6;
+                grid_next[si].momentum[e]-=(out>ap?ap:out)*(p<0?-1:1);
+            }
             if(o->mass<32)continue;   /* even launch threshold */
             int de=-1;int32_t dd=0,dir=1;
             if(qMomentum){
