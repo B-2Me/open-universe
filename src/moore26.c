@@ -1777,6 +1777,7 @@ void moore26_tick(void){
             if(qEvapShift&&o->mass>1&&
                (rand_site(si,15)&1023)<((o->mass>>qEvapShift)&1023)){
                 grid_next[si].mass--;
+                jrn(si,-1,60,1);   /* radiative evaporation */
                 /* RADIATIVE decay — the evaporated mass leaves as a
                  * quantum on the knot's dominant circulation edge
                  * (spin-aligned emission, like real particle decay).
@@ -1870,6 +1871,7 @@ void moore26_tick(void){
             if(lw<(uint64_t)o->mass*4&&o->mass>1){
                 uint32_t ev=o->mass>8?8:o->mass;
                 grid_next[si].mass-=ev;
+                jrn(si,-1,60,(int32_t)ev);   /* capacitor wind drain */
                 int wbe=-1;uint32_t wbm=0;
                 for(int e2=0;e2<QChannels/2;e2++){
                     uint32_t m2=grid_next[si].winding[2*e2]<grid_next[si].winding[2*e2+1]
