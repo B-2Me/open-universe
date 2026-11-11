@@ -993,8 +993,12 @@ export async function initCascadeSimulator(root, opts = {}) {
               for (let dy = -1; dy <= 1; dy++)
                 for (let dx = -1; dx <= 1; dx++) {
                   const kx = cell.lx + dx, ky = cell.ly + dy, kz = cell.lz + dz;
-                  if (kx >= 0 && kx < W3 && ky >= 0 && ky < H3 && kz >= 0 && kz < D3)
-                    wasm._moore26_momentum_at_set(kx, ky, kz, 3, 400 * dir);
+                  if (kx >= 0 && kx < W3 && ky >= 0 && ky < H3 && kz >= 0 && kz < D3) {
+                    /* odd cells carry the walk — strong p there;
+                     * even cells just feed the field-drag */
+                    const odd = ((kx + ky + kz) & 1) !== 0;
+                    wasm._moore26_momentum_at_set(kx, ky, kz, 3, (odd ? 3200 : 400) * dir);
+                  }
                 }
             setThrustArm(false);
             say(`${dir > 0 ? '+x' : '-x'} impulse applied — coasting on stored momentum`, 3500);
