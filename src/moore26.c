@@ -1550,8 +1550,22 @@ void moore26_tick(void){
                     int8_t op=o->incipPar[c];
                     if(op&&n->bondPar&&((op>0)!=(n->bondPar>0))){
                         n->incip[c]--;         /* wrong helicity — decline */
-                        uint32_t ht3=(uint32_t)n->heat+nu;
+                        /* the refusal ANSWERS: the declined offer is
+                         * not pure heat — it emits a counter-parity
+                         * recoil quantum on the RETURN channel (c^1):
+                         * a sliver of flight carrying the refuser's
+                         * charge back upstream. Each leg resolves
+                         * locally from the arrival record, not a
+                         * stored route — the recoil walks the offer's
+                         * own trail home */
+                        int8_t rc=(int8_t)(n->bondPar>0?1:-1);
+                        int32_t cf=(int32_t)n->chargeFlight[c^1]+rc;
+                        n->chargeFlight[c^1]=(int8_t)(cf>127?127:cf<-127?-127:cf);
+                        uint32_t mf=(uint32_t)n->massFlight[c^1]+(nu>4?nu>>2:1);
+                        n->massFlight[c^1]=(uint16_t)(mf>65535?65535:mf);
+                        uint32_t ht3=(uint32_t)n->heat+(nu>>1);
                         n->heat=(uint16_t)(ht3>65535?65535:ht3);
+                        jrn(si,-1,66,(int32_t)rc);   /* refusal recoil logged */
                         continue;
                     }
                 }
