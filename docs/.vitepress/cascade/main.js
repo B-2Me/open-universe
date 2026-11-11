@@ -1422,11 +1422,19 @@ export async function initCascadeSimulator(root, opts = {}) {
     });
   }
   bind('[data-uitoggle]', 'click', () => root.classList.toggle('dock-hidden'));
-  bind('[data-fs]', 'click', () => {
-    const el = root;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
-  });
+  /* fullscreen — iPhone Safari has no element fullscreen API at all
+   * (requestFullscreen is iPad/desktop only, webkit-prefixed there):
+   * hide the button where no backend exists instead of dead-tapping */
+  {
+    const fsBtn = root.querySelector('[data-fs]');
+    const enter = root.requestFullscreen || root.webkitRequestFullscreen;
+    if (!enter) fsBtn.style.display = 'none';
+    else bind('[data-fs]', 'click', () => {
+      const cur = document.fullscreenElement || document.webkitFullscreenElement;
+      if (cur) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      else (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+    });
+  }
 
   const PRESETS = {
     full:    { yaw: 0.7,  pitch: 0.45, dist: 80,  zCenter: D3 >> 1, zThick: D3 },
