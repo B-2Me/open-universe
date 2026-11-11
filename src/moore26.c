@@ -817,6 +817,55 @@ void moore26_tick(void){
                         jrn(ni2,si,63,(int32_t)b);
                     }
                 }
+            }else{
+                /* PAIR PRODUCTION — the annihilation scar is stored
+                 * energy in the ledger; a conduit whose face-channel
+                 * scar exceeds threshold splits it back into an
+                 * opposite-parity pair on the two odd cells it
+                 * separates. The inversion of contact cancellation:
+                 * energy record -> +mass/-mass, parity books balance. */
+                for(int d=0;d<6;d++){
+                    uint32_t scar=o->winding[d];
+                    if(scar<64)continue;
+                    int dx=(d==0)-(d==1),dy=(d==2)-(d==3),dz=(d==4)-(d==5);
+                    int xa=x+dx,ya=y+dy,za=z+dz,
+                        xb=x-dx,yb=y-dy,zb=z-dz;
+                    if(xa<0||xa>=QWidth||ya<0||ya>=QHeight||za<0||za>=QDepth)continue;
+                    if(xb<0||xb>=QWidth||yb<0||yb>=QHeight||zb<0||zb>=QDepth)continue;
+                    int ia=(za*QHeight+ya)*QWidth+xa,
+                        ib=(zb*QHeight+yb)*QWidth+xb;
+                    NodeState *na=&grid_current[ia],
+                              *nbb=&grid_current[ib];
+                    if(na->mass||nbb->mass)continue;   /* occupied —
+                     * production needs empty sites on both sides */
+                    uint32_t half=scar>>1;
+                    na->mass=(uint16_t)(half>65535?65535:half);
+                    nbb->mass=(uint16_t)(scar-half>65535?65535:scar-half);
+                    grid_next[ia].mass=na->mass;
+                    grid_next[ib].mass=nbb->mass;
+                    /* born NEUTRAL — bondPar is self-polarizing: it
+                     * must come from the pair's first real bond, not
+                     * a stamp. Opposite parities emerge from their
+                     * transactions; if they meet again mismatched,
+                     * the contact law decides honestly */
+                    /* escape kick — born touching the scar, the pair
+                     * would instantly re-annihilate; momentum away
+                     * from each other lets them clear the conduit
+                     * before contact law fires again */
+                    int pr=d>>1, sgn=(d&1)?-1:1;
+                    int32_t kick=(int32_t)(half>32767?32767:half);
+                    na->momentum[pr]+=sgn*kick;
+                    nbb->momentum[pr]-=sgn*kick;
+                    grid_next[ia].momentum[pr]=na->momentum[pr];
+                    grid_next[ib].momentum[pr]=nbb->momentum[pr];
+                    o->winding[d]=0;
+                    grid_next[si].winding[d]=0;
+                    jrn(si,ia,64,(int32_t)half);
+                    jrn(si,ib,64,-(int32_t)(scar-half));
+                }
+                continue;   /* even cells take no relay path */
+            }
+            {
                 int hasW=0;
                 {for(int c=6;c<18;c++)if(o->winding[c]){hasW=1;break;}}
                 if(o->mass<4&&!hasW)continue;   /* relay fires on mass OR
