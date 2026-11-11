@@ -793,7 +793,8 @@ void moore26_tick(void){
                      * else both cells cancel each other and the u16
                      * underflows (grid_current stale vs grid_next) */
                     const NodeState *nb=&grid_current[ni2];
-                    if(nb->bondPar&&nb->mass&&((nb->bondPar>0)!=(o->bondPar>0))){
+                    if(nb->bondPar&&nb->mass&&((nb->bondPar>0)!=(o->bondPar>0))
+                       &&o->bondTick!=(uint32_t)qTick&&nb->bondTick!=(uint32_t)qTick){
                         uint32_t a=o->mass,b=nb->mass;
                         /* energy lands as WINDING on the shared
                          * conduit — the persistent ledger register
@@ -861,6 +862,12 @@ void moore26_tick(void){
                     int8_t pa=(o->charge&(1<<d))?127:-127;
                     na->bondPar=pa;  grid_next[ia].bondPar=pa;
                     nbb->bondPar=-pa;grid_next[ib].bondPar=-pa;
+                    /* newborn tag — the contact law yields one tick so
+                     * the escape kick lands before re-annihilation can
+                     * fire; without it the pair loops scar<->pair
+                     * forever, indistinguishable from frozen mass */
+                    na->bondTick=(uint32_t)qTick;grid_next[ia].bondTick=(uint32_t)qTick;
+                    nbb->bondTick=(uint32_t)qTick;grid_next[ib].bondTick=(uint32_t)qTick;
                     /* escape kick — born touching the scar, the pair
                      * would instantly re-annihilate; momentum away
                      * from each other lets them clear the conduit
@@ -1020,12 +1027,11 @@ void moore26_tick(void){
                         grid_next[ni].momentum[e]+=p2;
                     }
                 }
-                /* chirality rides the handoff — bondPar is the
-                 * pattern's handedness record, not the site's: when
-                 * the whole residue relocates, the label goes with
-                 * it (else produced particles shed their parity on
-                 * the first hop) */
-                if(o->bondPar){
+                /* chirality rides a COMPLETE handoff — bondPar is the
+                 * pattern's handedness record: whole-residue
+                 * relocation takes the label, but a torn hop (k<mass)
+                 * keeps it at the majority-mass site */
+                if(o->bondPar&&k==o->mass){
                     grid_next[ni].bondPar=o->bondPar;
                     grid_next[si].bondPar=0;
                 }
