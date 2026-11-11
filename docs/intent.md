@@ -19,6 +19,14 @@ This site is an **audit of our philosophical architecture**.
 
 For centuries, thinkers have proposed high-level designs for how the universe works. Determinism, simulation theory, the static block universe. Today, we have the actual material specifications, provided by statistical physics, thermodynamics, and information theory. My intent is to act as a systems integrator. **I am doing the exact work that institutional physics abandoned: dragging the math back down out of the chalkboard clouds and forcing it to answer to objective, measured nature.**
 
+## What the Substrate Is
+
+The cleanest account of what the engine turned out to be: **a streaming codec that mirrors measurable reality.**
+
+The lattice isn't a universe in miniature; it's a decode pipeline. The even-parity sublattice is the bitstream — every packet, offer, and confirmation is a change-record in transit. The odd-parity sublattice is the framebuffer — the materialized state the stream decodes into. Mass is the decoded frame; the ledger is the decode history; movement is the decoder re-rendering a pattern at the next site rather than transporting a thing.
+
+The claim is deliberately bounded: we didn't find reality's hardware — we can't compare to a reference implementation from inside the stream. We engineered a codec whose outputs mirror the measurements: conservation, momentum transport, bound structure, proper-time bookkeeping. Every new mechanism gets a checksum. When the deltas replay the state, the codec holds.
+
 ## What We Are Auditing
 
 We are auditing legacy ideas to see which ones hold their boundaries, and which ones physically dissipate when exposed to the actual mechanics of **The Planck Field**:
