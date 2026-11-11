@@ -896,7 +896,9 @@ void moore26_tick(void){
              * writes field-p toward its heaviest odd neighbor. The
              * conduit routes flow AT the mass — other matter reading
              * that flow feels attraction. */
-            {int hm=0,hd=-1;
+            int hm=0,hd=-1;   /* heaviest odd neighbor + its face —
+             * hd drives both the write AND the drag's provenance */
+            {
              for(int d=0;d<6;d++){
                 int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
                 if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
@@ -915,10 +917,15 @@ void moore26_tick(void){
                 /* field saturation — |p| capped: the medium's momentum
                  * is bounded (bandwidth limit), else the write runs
                  * away exponentially and overflows */
-                /* DISABLED — still wrong: uniform -x wind + mass
-                 * shredding (97% loss). The field writes need real
-                 * provenance (whose mass sourced them), not just a
-                 * corrected pair map. Revisit with a source tag. */
+                /* CURVATURE — the conduit routes flow AT the mass:
+                 * field-p strength written on the axis pairs, sign
+                 * toward the source. Provenance is geometric: only
+                 * receivers NOT adjacent to the source get pulled —
+                 * the source's own cluster is already at the mass */
+                /* DISABLED v3 — p donation makes bound cells relay,
+                 * which shreds them regardless of direction/provenance.
+                 * A static field must deflect ROUTING, not grant
+                 * momentum — different mechanism needed. */
                 (void)e0;(void)e1;(void)s0;(void)s1;
             }}
             /* FIELD-DRAG — even cells with p push odd neighbors: amplify
@@ -926,6 +933,9 @@ void moore26_tick(void){
              * the receiver has no intent, the medium SETS it — field-p
              * gives directionless matter a direction */
             for(int d=0;d<6;d++){
+                /* provenance: the face the source mass sits on is its
+                 * own cluster — only pull OTHER receivers toward it */
+                if(d==hd)continue;
                 int nx=x+(d==0)-(d==1),ny=y+(d==2)-(d==3),nz=z+(d==4)-(d==5);
                 if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
                 int ni=(nz*QHeight+ny)*QWidth+nx;
