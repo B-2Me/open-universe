@@ -404,3 +404,44 @@ needs existing structure). Migration needs a guided landing —
 the odd destination attracting the flight — still missing.
 
 tau_relax ~100t (v_drift << v_relax = coherence budget).
+
+## Canonical parity-state map (target architecture)
+
+ODD sublattice = being (sustained state, never transports):
+  mass          bound volume — the ledger of being
+  momentum[13]  matter's conserved motion (matter-p)
+  localTime     proper-time accumulator
+  workAge       cumulative transaction work
+  bondTick      formation provenance
+  bondPar       chirality record
+  charge        static polarization
+  structural heat/strain
+
+EVEN sublattice = doing (event state, the transport graph):
+  packet[*]     quanta in flight
+  incipient[*]  armed negotiations (+Nu/Born/Par)
+  massFlight    in-flight mass exchange
+  chargeFlight  in-flight charge
+  winding[c]    channel-commitment HISTORY — the record of doing,
+                lives with the events it records
+  momentum[13]  FIELD momentum (the medium's drag — distinct
+                semantic from odd matter-p)
+  phase         Jacobi wake / interference clock
+
+Ambiguities to resolve in a bipartite refactor:
+  phase    — both lattices use it; different semantics (wake vs clock)
+  heat     — split: even=ambient friction, odd=structural strain
+  winding  — currently lives on both parities; target: even-only
+             (the knot's skeleton is its transaction records, which
+             stay where the transactions happened — a migrating knot
+             writes NEW history at the destination, doesn't carry it)
+
+Consequence: bound structure resolves to odd-mass + even transaction
+records co-located — a knot = matter sites embedded in the record of
+their own exchanges. The relay already approximates this (odd->odd
+clearing books incip on the conduit).
+
+This is likely the moore26 engine's expiration date: a successor
+engine with a bipartite NodeState (two node types or parity-indexed
+SoA) would enforce the split in hardware, not via IS_EVEN gates.
+moore26 remains the prototype that measured the split was real.
