@@ -38,6 +38,7 @@ const SIZE   = +argv.size || 32;
 const AXIAL  = argv.axial !== undefined ? +argv.axial : 1;  /* axial catch shift (0=off) */
 const SHOTS  = +argv.shots || 3;                            /* quanta per probe arm */
 const CATCH  = +argv.catch || 4;                            /* catch gate (P=lvl/CATCH) */
+const CHARGE = +argv.charge || 0;                           /* on-cone feed ticks before probing */
 
 /* FCC edge-channel transport vectors, channels 6..17 */
 const V = [[1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],
@@ -83,11 +84,42 @@ function trial(st) {
     const A = ps.find(p => p[4] > 0), B = ps.find(p => p[4] < 0);
     if (!A || !B) return null;
 
+    /* CHARGE phase — feed each product matched-parity offers on its
+     * containing pairs so the skeleton accretes real committed
+     * exchange through transactions (the species-inverse rebuild),
+     * not just the minted seed that bleeds thin during the hop. */
+    if (CHARGE) {
+        for (let k = 0; k < CHARGE; k++) {
+            for (const [P, par] of [[A, 1], [B, -1]]) {
+                for (const pair of CONE[AXIS]) {
+                    const c = 2 * pair, v = V[c - 6];
+                    const sx = P[0] - v[0], sy = P[1] - v[1], sz = P[2] - v[2];
+                    if (sx < 1 || sy < 1 || sz < 1 || sx >= SIZE-1 || sy >= SIZE-1 || sz >= SIZE-1) continue;
+                    let line = (P[3] + (M._moore26_winding_get(P[0],P[1],P[2],c) >> 2)) >> 2;
+                    if (line < 1) line = 1;
+                    M._moore26_packet_set(sx, sy, sz, c, 2);
+                    M._moore26_packet_nu_set(sx, sy, sz, c, line > 127 ? 127 : line);
+                    M._moore26_packet_par_set(sx, sy, sz, c, par);
+                }
+            }
+            M._moore26_tick();
+        }
+        /* settle gap — let the feed's armed incipients confirm or
+         * expire, else probes hit a congested table (ev46 deflects
+         * and the feed's own residue pollutes the readout) */
+        for (let k = 0; k < 6; k++) M._moore26_tick();
+        /* re-locate — accretion may have moved the products */
+        const ps2 = findProducts();
+        const A2 = ps2.find(p => p[4] > 0), B2 = ps2.find(p => p[4] < 0);
+        if (A2 && B2) { A[0]=A2[0]; A[1]=A2[1]; A[2]=A2[2]; A[3]=A2[3]; B[0]=B2[0]; B[1]=B2[1]; B[2]=B2[2]; B[3]=B2[3]; }
+    }
+
     /* sustained probe stream — a packet visits the cell one tick, so
      * each tick re-seeds fresh quanta upstream of BOTH products: every
      * tick is a new arming draw (the refusal-verified geometry). */
     const shots = [];
-    for (const [P, pair, par] of [[A, st.aPair, st.aPar], [B, st.bPair, st.bPar]]) {
+    const arms = st.solo ? [[A, st.aPair, st.aPar]] : [[A, st.aPair, st.aPar], [B, st.bPair, st.bPar]];
+    for (const [P, pair, par] of arms) {
         const c = 2 * pair; /* + member of the pair */
         const w0 = M._moore26_winding_get(P[0], P[1], P[2], c)
             + M._moore26_winding_get(P[0], P[1], P[2], c ^ 1);
@@ -122,8 +154,26 @@ const settings = [
     { aPair: CONE[AXIS][0], aPar: +1, bPair: ALLP.find(p => !inCone(AXIS, p)), bPar: +1, tag: 'onC + | offC +' },
 ];
 
-console.log(`pair-cone: axis=${AXIS} gate=${GATE} trials=${TRIALS} size=${SIZE}`);
+console.log(`pair-cone: axis=${AXIS} gate=${GATE} trials=${TRIALS} size=${SIZE} charge=${CHARGE}`);
 console.log(`cone pairs: ${CONE[AXIS].join(',')}  transverse: ${ALLP.filter(p=>!inCone(AXIS,p)).join(',')}`);
+
+/* --sweep mode: single-arm angular response curve — probe A with
+ * matched parity on each of the six edge pairs, report settle rate.
+ * This is the substrate's E(theta): acceptance vs measurement axis. */
+if (argv.sweep) {
+    console.log('pair     P(settle)  N   cone?');
+    for (const pair of ALLP) {
+        let n = 0, ok = 0;
+        for (let t = 0; t < TRIALS; t++) {
+            const r = trial({ aPair: pair, aPar: +1, bPair: pair, bPar: -1, solo: true });
+            if (!r) continue;
+            n++; if (r[0]) ok++;
+        }
+        console.log(`p${pair}      ${(n ? ok / n : NaN).toFixed(3).padStart(7)} ${String(n).padStart(5)}   ${inCone(AXIS, pair) ? 'CONE' : 'transverse'}`);
+    }
+    process.exit(0);
+}
+
 console.log('setting            E(A,B)   P(A+)   P(B+)   P(both)  N');
 for (const st of settings) {
     let n = 0, sum = 0, aA = 0, aB = 0, both = 0;
