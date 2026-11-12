@@ -142,3 +142,58 @@ if (argv.nuscan) {
     console.log(`interferometer: E=${E} D=${D} nu=${nu} armA=8hop armB=24hop wall=${WALL}`);
     run(nu, true);
 }
+
+/* --cw mode: continuous-wave two-arm superposition.
+ * Steady emission on both arms -> every tick at D, arm A offers op_A =
+ * nu*8 and arm B offers op_B = nu*24 (mod 256), offset dphi = nu*16.
+ * With the phase gate armed, each arm's acceptance tracks whether its
+ * op lands inside the node's receptive window — joint arm activity vs
+ * nu is the substrate's fringe: dphi~0 -> correlated, dphi~128 ->
+ * anticorrelated.
+ * Readout: per tick, does ch6 (A) / ch7 (B) show armed incipient or a
+ * real deposit (winding delta > 1)? Correlate over the window. */
+if (argv.cw) {
+    const GATE = +argv.phasegate || 48;
+    const ADV  = +argv.phaseadv || 8;
+    console.log('nu   dphi   P(A)   P(B)   E=<ab>  corr');
+    for (let nu = (DMASS >> 2); nu <= 127; nu += 4) {
+        const onu = nu - (nu % (DMASS >> 2));
+        M._moore26_init(SIZE, SIZE, SIZE);
+        M._moore26_catch_gate_set(CATCH);
+        M._moore26_phase_gate_set(GATE);
+        M._moore26_phase_adv_set(ADV);
+        M._moore26_phase_sync_set(1);
+        M._moore26_mass_set(D[0], D[1], D[2], DMASS);
+        /* carve arm B so its 24-hop survival is usable, drain residue */
+        for (let t = 0; t < 100; t++) {
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 6);
+            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, 1);
+            M._moore26_tick();
+        }
+        for (let t = 0; t < 140; t++) M._moore26_tick();
+        let ticks = 0, aA = 0, aB = 0, both = 0, sAB = 0;
+        const W = +argv.window || 80;
+        for (let t = 0; t < W; t++) {
+            const w6a = M._moore26_winding_get(D[0], D[1], D[2], 6),
+                  w7a = M._moore26_winding_get(D[0], D[1], D[2], 7);
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 2);
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 2);
+            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_A, onu);
+            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, onu);
+            M._moore26_packet_par_set(E[0], E[1], E[2], ARM_A, 1);
+            M._moore26_packet_par_set(E[0], E[1], E[2], ARM_B, 1);
+            M._moore26_tick();
+            /* activity = real deposit (delta>1) OR armed incipient */
+            const okA = (M._moore26_winding_get(D[0], D[1], D[2], 6) - w6a > 1)
+                     || (M._moore26_incipient_get(D[0], D[1], D[2], 6) > 0);
+            const okB = (M._moore26_winding_get(D[0], D[1], D[2], 7) - w7a > 1)
+                     || (M._moore26_incipient_get(D[0], D[1], D[2], 7) > 0);
+            ticks++; if (okA) aA++; if (okB) aB++;
+            if (okA && okB) both++;
+            sAB += (okA ? 1 : -1) * (okB ? 1 : -1);
+        }
+        const dphi = (onu * 16) & 255;
+        console.log(`${onu}   ${String(dphi).padStart(4)}   ${(aA / ticks).toFixed(2)}  ${(aB / ticks).toFixed(2)}  ${(both / ticks).toFixed(2)}   ${(sAB / ticks).toFixed(3)}`);
+    }
+    process.exit(0);
+}

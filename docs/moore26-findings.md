@@ -670,3 +670,33 @@ three separate effects, two of them real physics:
 
 Verdict: cone law = where the object was bonded; drift selectivity =
 where it is going. Two independent directional observables, both local.
+
+
+## Interferometer: phase readout verified, merge-on-phase absent
+
+`script/cascade/interferometer.mjs` — the torus IS the beam splitter:
+one emitter fires both pair members; arm A geodesic (8 hops), arm B
+wraparound (24). Two-lobe arrivals resolved (Dt~19 vs predicted 16).
+
+**Phase carriers verified**: each packet's born-tick gives op =
+nu*age mod 256 — a real internal clock ticking nu per hop (substrate
+de Broglie relation, spatial period 256/nu hops). Arm A arrivals all
+read op=164 (coherent within arm); arm B shifted by nu*dL exactly.
+
+**Honest null on two-arm interference**: no register exists where two
+arms' phases can combine — offers are processed per-channel,
+same-channel packets share velocity (can never meet), incipNu merge
+requires same-channel arrival (impossible for unequal arm lengths at
+1 hop/tick). The phase gate instead gives per-arm FILTERING: arm A
+accepted in an op-band around the node phase (nu=30,60,90,100 cluster,
+ops ~208-240 under gate +-48). Phase-selective detection: real.
+
+**Cross-arm coupling exists through proper time**: armed offers consume
+headroom (free_ = cap - armed - txnWork), headroom drives phi_D's
+advance — arm A's traffic slows the detector's clock, shifting arm B's
+acceptance window. Second-order; unresolved at these windows.
+
+**Storage-ring finding**: carve residue on a warmed torus lane
+circulates indefinitely — the drip floor alone bounds lifetime; warm
+lanes host self-sustaining populations. drain-phase protocol: residue
+dies (~150 ticks), wear records persist — warm lane, clear field.
