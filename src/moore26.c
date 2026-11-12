@@ -196,6 +196,7 @@ static int qGroundFloor=512;
 static int qLaunchMode=0;   /* 0=massFlight 1=packet+fwd 2=packet-bck 3=direct */
 static int qConfirmCap=160;
 static int qCatchGate=16;
+static int qAxialCatch=0;
 static int qIncipTtl=6;   /* arbitration window — how many ticks an
      * unconfirmed offer stands before the vacuum reclaims it to
      * heat. The substrate's effective reach: a longer window lets
@@ -900,8 +901,45 @@ void moore26_tick(void){
                     if(na->mass||nbb->mass)continue;   /* occupied —
                      * production needs empty sites on both sides */
                     uint32_t half=scar>>1;
-                    na->mass=(uint16_t)(half>65535?65535:half);
-                    nbb->mass=(uint16_t)(scar-half>65535?65535:scar-half);
+                    uint32_t sa=half,sb=scar-half;
+                    /* AXIAL SPIN — the scar's direction is the pair's
+                     * shared quantization axis. FCC edges are face
+                     * diagonals: each axis is CONTAINED in four of the
+                     * six edge pairs (|cos|=1/sqrt2), the other two
+                     * are transverse. Mint the skeleton mirrored on
+                     * all four containing pairs — the product's own
+                     * record then IS an acceptance cone: probes on a
+                     * 45-degree edge read the spin, 90-degree probes
+                     * read nothing. Angle-dependence from geometry
+                     * and the cell's circulation, not an authored
+                     * cos^2. bondDist = provenance reach: the bond
+                     * that bore the pair spans two sites. Skeleton
+                     * is deducted from the mass share — the scar's
+                     * budget seals. */
+                    static const int8_t AXP[3][4]={
+                        {3,4,5,6},   /* x: ch6..13 contain x */
+                        {3,4,7,8},   /* y: ch6..9, ch14..17 */
+                        {5,6,7,8}};  /* z: ch10..17 */
+                    uint32_t qa=sa>>4,qb=sb>>4,ska=0,skb=0;
+                    for(int i2=0;i2<4;i2++){
+                        int e=AXP[d>>1][i2];
+                        na->winding[2*e]=(uint16_t)qa;
+                        na->winding[2*e+1]=(uint16_t)(qa>>1);
+                        nbb->winding[2*e]=(uint16_t)(qb>>1);
+                        nbb->winding[2*e+1]=(uint16_t)qb;
+                        ska+=qa+(qa>>1); skb+=qb+(qb>>1);
+                        na->bondDist[e]=2;nbb->bondDist[e]=2;
+                    }
+                    for(int e=3;e<9;e++){
+                        grid_next[ia].winding[2*e]=na->winding[2*e];
+                        grid_next[ia].winding[2*e+1]=na->winding[2*e+1];
+                        grid_next[ib].winding[2*e]=nbb->winding[2*e];
+                        grid_next[ib].winding[2*e+1]=nbb->winding[2*e+1];
+                        grid_next[ia].bondDist[e]=na->bondDist[e];
+                        grid_next[ib].bondDist[e]=nbb->bondDist[e];
+                    }
+                    na->mass=(uint16_t)(sa>ska?sa-ska:1);
+                    nbb->mass=(uint16_t)(sb>skb?sb-skb:1);
                     grid_next[ia].mass=na->mass;
                     grid_next[ib].mass=nbb->mass;
                     /* replay the scar's parity record — charge bit d
@@ -1083,6 +1121,18 @@ void moore26_tick(void){
                 if(o->bondPar&&k==o->mass){
                     grid_next[ni].bondPar=o->bondPar;
                     grid_next[si].bondPar=0;
+                }
+                /* provenance relocates whole too — bondDist is the
+                 * pattern's measured-bond record (the axial skeleton's
+                 * reach), not circulating energy: a complete handoff
+                 * carries the object ENTIRE, else the align gate at
+                 * the new site sees a stranger wearing the mass */
+                if(k==o->mass){
+                    for(int e=0;e<QChannels/2;e++){
+                        if(o->bondDist[e]>grid_next[ni].bondDist[e])
+                            grid_next[ni].bondDist[e]=o->bondDist[e];
+                        grid_next[si].bondDist[e]=0;
+                    }
                 }
                 qEvents[59]++;
                 continue;
@@ -1328,6 +1378,17 @@ void moore26_tick(void){
                     n->packetPar[rc]=n->packetPar[c];
                     n->packet[c]=0;}
                 if(rc>=0)continue;
+            }
+            /* axial catch (qAxialCatch): the offer meets the
+             * absorber's committed record WHERE IT LANDS —
+             * committed exchange on the arrival channel's own
+             * pair raises that offer's catch level. The skeleton
+             * is the polarizer: angle-selectivity falls out of
+             * the cell's circulation record, no authored cos². */
+            if(qAxialCatch){
+                uint32_t wa=o->winding[c],wb=o->winding[c^1];
+                uint32_t wm=wa<wb?wa:wb;
+                lvl+=(int)(wm>>qAxialCatch);if(lvl>8)lvl=8;
             }
             if((rand_site(si,20+c)%qCatchGate)>=lvl)continue;     /* catch gate */
             uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
@@ -2599,6 +2660,7 @@ void moore26_commit_min_set(int v){qCommitMin=v;}
 void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
+void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}

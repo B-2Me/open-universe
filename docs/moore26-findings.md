@@ -590,3 +590,56 @@ counterparts the measurements are compared against:
 - [Yarkovsky–O'Keefe–Radzievskii–Paddack effect](https://en.wikipedia.org/wiki/Yarkovsky%E2%80%93O%27Keefe%E2%80%93Radzievskii%E2%80%93Paddack_effect) — radiative recoil (the proposed knot-motion mechanism)
 - [Transactional interpretation](https://en.wikipedia.org/wiki/Transactional_interpretation) — Kastner's offer/confirm framing, a lineage influence on the handshake
 - [Causal set theory](https://en.wikipedia.org/wiki/Causal_sets) — the discrete-causality program this substrate runs as a working engine
+
+
+## Axial products: the acceptance cone (pair-cone)
+
+`script/cascade/pair-cone.mjs` — joint-coincidence axial measurement on
+scar-produced pairs. Mechanic: annihilation leaves a face-channel scar
+with a parity record (`scarPar`); when the scar exceeds threshold it
+produces a mirrored pair on the two odd cells it separates — mass share,
+mirrored `bondPar`, opposite escape kick, and now a **volumetric flux
+skeleton**: mirrored `dd` circulation minted on the four edge pairs
+containing the separation axis, plus `bondDist=2` on those pairs as the
+bond-reach provenance. FCC edges are face diagonals — each axis is
+contained in exactly four of the six edge pairs (|cos|=1/sqrt2), the
+other two transverse — so the skeleton is literally an acceptance cone
+in edge-space, and angle-dependence falls out of geometry + the cell's
+own record rather than any authored cos^2 law.
+
+Two fixes made the cone interrogable. `bondDist` was birth-site state —
+the escape kick relocated the object but the record stayed behind, so
+the align gate at the product's live cell saw a stranger. The relay now
+hands `bondDist` off whole on complete relocation (a provenance record,
+not circulating energy). And the skeleton is deducted from the mass
+share — the earlier mint overspent ~12% of the scar budget.
+
+Proof (`--trials=12 --catch=4 --axial=1`, probed channels on all six
+edge pairs, both arms simultaneously, outcome = pair-winding jump >=8
+vs +1/tick wear):
+
+- chirality law: matched parity accepts ~92%, crossed refuses 100% —
+  *mirrored* at the two products (same probe parity reads opposite
+  verdicts at A and B)
+- cone law: transverse-pair probes refused 100% at both arms;
+  containing pairs pass (`qAlignGate` reads `bondDist`)
+- rotation control: x-scar -> cone on pairs {3,4,5,6}, refuse {7,8};
+  y-scar -> cone on {3,4,7,8}, refuse {5,6}. The cone follows the
+  provenance axis, not grid bias.
+- E(A,B) decomposes exactly as a deterministic shared-record model
+  predicts — perfect anti-correlation under same-parity probes is a
+  *revealed label*, not a Bell violation. This substrate is a local
+  hidden-variable model by construction; the result verifies the
+  record is real, axial, mirrored, and independently enforceable.
+
+`qAxialCatch` (`moore26_axial_catch_set`, shift 0..15) adds a
+channel-local term to the catch level — committed exchange
+`min(w[c],w[c^1])` on the arrival pair raises that offer's catch
+level. The graded (probabilistic) version of axial acceptance — a
+lottery weighted by alignment rather than a binary cone — is the
+remaining piece for any Bell-shaped statistics; current skeletons
+settle too thin (~1-2 per pair after the w>>shift relay bleed) for
+the gradient to dominate.
+
+Verdict: axial measurement basis operational. Bertlmann-with-axes —
+correlated birth records independently enforceable, not Bell.
