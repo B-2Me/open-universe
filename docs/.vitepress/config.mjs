@@ -25,6 +25,7 @@ const readingOrder = [
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: "Cartan's Cascade", link: '/cascade-demo' },
   { text: 'Moore26 Findings', link: '/moore26-findings' },
+  { text: 'Moore26 Constants', link: '/moore26-constants' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
 
   { text: 'Build & Validate', link: '/interference/reproduce' },
@@ -76,6 +77,7 @@ const interferenceItems = [
   { text: 'Moore26', items: [
     { text: 'Substrate', link: '/moore26-substrate' },
     { text: 'Findings', link: '/moore26-findings' },
+    { text: 'Constants', link: '/moore26-constants' },
     { text: 'Transaction Ledger', link: '/transaction-ledger' }
   ]},
   { text: 'Roadmap', link: '/interference/roadmap' },
