@@ -46,6 +46,27 @@ in these docs:
 | **redshift** | nu-decay in transit (`ev7` books `decay·nu` → heat). Energy lost per hop to the medium, not stretched space | conservation arc |
 | **Casimir force** | **absent — falsified.** Needs a boundary-shaped fluctuation spectrum; the authored bath is volumetric and boundary-blind. The fork: external reservoirs (shadowing) or rail-hosted standing flux (true modes) | casimir.mjs null ×2 |
 
+## The scale confound
+
+Nature's vacuum answers to boundaries at every tested separation —
+~1 fm bag cavities to ~10 μm plates — with no preferred cavity
+size anywhere. A hard floor *should* cap that response at its own
+grain; it doesn't. The reconciliation demand on any discrete
+substrate is therefore **discrete substrate, scale-free response**:
+the floor must admit boundary-shaped spectra at every scale a
+boundary can be built, not only at the grain.
+
+This substrate's honest status: ballistic flux is *not* a spectrum
+(casimir null ×2). But closed resonant paths are — a ring of
+circumference C admits only carriers with `nu·C ≡ 0 (mod 256)`:
+**a geometry-selected mode ladder**, the discrete form of cavity
+quantization. The scale-free demand translates into: does the
+substrate produce boundary-shaped spectra at *every* cavity size
+a ring or lattice cavity can take — and does the admitted ladder
+track `nu·C ≡ 0`? That is measurable today at 32³, no 10⁵ fm
+grid required — and its outcome decides whether the confound is
+reproduced or merely re-described.
+
 ## What changes when you translate
 
 **The Casimir lesson is the general case.** The theory doc said

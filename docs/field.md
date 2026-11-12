@@ -50,6 +50,25 @@ To visualize how macroscopic physical structures span the abyss down to this fun
 *   **The Atomic Nucleus (~10²⁰ Planck lengths across):** Ranging from 1 to 7 femtometers depending on mass, the nucleus represents a dense nexus of strong relational binding. 
 *   **Complex Structures & Human Scale (~10³⁵ Planck lengths across):** When we scale up to a human being (roughly 1 meter tall), the number jumps to 10³⁵ Planck lengths. To put that in perspective: a single human body spans more Planck-length increments than there are grains of sand across all the beaches and deserts of Earth combined, more even than drops of water in all the oceans.
 
+**The scale confound.** The hierarchy above hides the deepest open
+tension in the reconciliation. If the Planck grain is a hard
+fundamental floor, then nothing should behave scale-free across
+twenty orders of magnitude — yet the vacuum does. The Casimir
+effect is measured between plates separated by **0.1–10 μm**, and
+QCD bag models invoke the same vacuum energy inside **~1 fm**
+hadron cavities. Nobody can state how large "a cavity" is, because
+a cavity has no fundamental size: it is an emergent boundary, built
+of atoms, and the vacuum's fluctuation spectrum is shaped by it at
+*every* separation we can test. A truly fundamental floor would
+cap that response at the floor's own scale; a floor that responds
+to arbitrary boundaries is reporting an **emergent, scale-free
+spectrum** laid over the discrete grain. Reconciling these two
+facts — discrete substrate, scale-free response — is precisely the
+confound physics has not closed, and it is the same confound any
+candidate substrate must reproduce before its discretization can
+be called honest. How this substrate carries — or fails to carry —
+that spectrum is tracked in [Nature → Substrate](/nature-translation).
+
 Every level of complexity is a nested cascade of relational actualizations. A substrate bound by these material limits constrains actualization by strict rules:
 
 *   **The Speed of Causality:** Legacy physics calls *c* the "speed of light," but light does not define *c*; rather, *c* defines light. Fundamentally, *c* is the absolute maximum rate at which a relational state change can propagate across the field. Resolving relational tension requires thermodynamic exertion. If the sun suddenly vanished, the Earth would not instantly drift out of orbit. It would take eight minutes for the loss of gravitational tension to propagate across the relational field. For those eight minutes, Earth would orbit a ghost, because the causal ripple of its absence had not yet actualized at our local boundary.
