@@ -2489,6 +2489,18 @@ uint32_t moore26_packet_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packetNu[c];
 }
+uint32_t moore26_incipient_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].incip[c];
+}
+uint32_t moore26_incipient_nu_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].incipNu[c];
+}
+uint32_t moore26_packet_born_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].packetBorn[c];
+}
 void moore26_packet_par_set(int x,int y,int z,int c,int v){
     if(!grid_current)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].packetPar[c]=(int8_t)v;

@@ -108,8 +108,20 @@ function run(nu, verbose) {
         M._moore26_tick();
         const s = snapD();
         const dw6 = s.w6 - prev.w6, dw7 = s.w7 - prev.w7;
-        if (verbose && (dw6 > 0 || dw7 > 0 || s.p6 || s.p7))
-            console.log(`t=${t} p6=${s.p6} p7=${s.p7} +w6=${dw6} +w7=${dw7} w6=${s.w6} w7=${s.w7} heat=${s.heat}`);
+        /* phase readout: each arriving packet's born-tick gives its
+         * age -> op = nu*age mod 256 — the arm's path-length phase */
+        if (verbose) for (const c of [6, 7]) {
+            const pk = M._moore26_packet_get(D[0], D[1], D[2], c);
+            if (pk) {
+                const born = M._moore26_packet_born_get(D[0], D[1], D[2], c);
+                const pnu = M._moore26_packet_nu_get(D[0], D[1], D[2], c);
+                const qt = CARVE + DRAIN + t;
+                const age = (qt - born + 256) & 255;
+                console.log(`t=${t} arm${c === 6 ? 'A' : 'B'} arrived pk=${pk} nu=${pnu} born=${born} age=${age} op=${(pnu * age) & 255}`);
+            }
+        }
+        if (verbose && (dw6 > 0 || dw7 > 0))
+            console.log(`t=${t} +w6=${dw6} +w7=${dw7} w6=${s.w6} w7=${s.w7} heat=${s.heat}`);
         trace.push({ t, dw6, dw7, w6: s.w6, w7: s.w7 });
         prev = s;
     }
