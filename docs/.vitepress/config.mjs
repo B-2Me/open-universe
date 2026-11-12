@@ -27,6 +27,7 @@ const readingOrder = [
   { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Moore26 Constants', link: '/moore26-constants' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
+  { text: 'Nature → Substrate', link: '/nature-translation' },
 
   { text: 'Build & Validate', link: '/interference/reproduce' },
   { text: 'Methodology', link: '/interference/methodology' },

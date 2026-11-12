@@ -14,7 +14,8 @@ from a headless harness against `src/moore26.c`, not from analogy.
 Entries are organized by sector with the conditions under which they
 were measured and the harness that produced them. Values marked
 "authored" are law parameters we wrote; everything else is what the
-lattice produced. Distances in cells, times in ticks.
+lattice produced. Distances in cells, times in ticks. Nature-vocabulary
+translations live in [Nature → Substrate](/nature-translation).
 
 ## Transport & reach
 
