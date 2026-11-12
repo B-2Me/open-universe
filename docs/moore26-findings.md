@@ -874,3 +874,35 @@ near the detector and arrive on "wrong" channels carrying real
 Character: this substrate's vacuum noise = shepherded sidescatter —
 directional, coherent, phase-preserving leakage (~42% of driven flux)
 around every lane, over a perfectly inert vacuum.
+
+
+## Fluctuation spectroscopy: is Gaussian "free" in a structured medium?
+
+script/cascade/noise-spectrum.mjs — stray-packet counts in an off-lane
+probe patch, coarse-grained at bin widths 1..64 ticks, with Fano
+factor, skewness, kurtosis, autocorrelation.
+
+ANSWER: NO — not at these scales. Deterministic emission (1 packet/
+tick) produces super-Poissonian halo arrivals: Fano DIVERGES under
+coarse-graining (1.06 -> 6.2 at W=64) instead of converging to 1.
+Skew/kurt do approach a symmetric platykurtic shape — a Gaussian
+envelope over a colored process. The medium generates its own
+fluctuations; correlations never die, so the CLT never engages.
+
+TTL REGIME DIAGRAM (incipient standing window = memory coupling):
+  ttl=4:   white past lag3 — no memory, no resonance
+  ttl=6:   +0.48 -> dip -> hump at lag~16 (0.24)
+  ttl=12:  same ~16-tick period, stronger (0.28)
+  ttl=24:  red spectrum — rho 0.77 -> 0.28 still decaying at lag24
+The ~16-tick mode does NOT track TTL (6 and 12 ring identically —
+likely the 32-hop toroidal lap's half period or congestion/wear
+relaxation), but its EXCITATION needs standing clouds. TTL controls
+the coupling between stream and the medium's memory kernel:
+short = white, matched = resonant ringing, long = red 1/f-like drift.
+
+This is the Johnson-Nyquist idea inverted: noise spectrum = the
+medium's dynamical fingerprint. The substrate's vacuum noise is a
+spectroscope for its internal timescales — closer to nature's 1/f
+flicker (correlated, memory-carrying) than to thermal jitter.
+Nature's Gaussianity presumably requires weakly-coupled independent
+sectors — a many-lane/many-emitter vacuum test is the natural probe.
