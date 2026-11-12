@@ -99,6 +99,9 @@ typedef struct {
     uint8_t  incip[26];        /* armed incipients per channel (negotiations) */
     uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag) */
     uint8_t  incipBorn[26];    /* each incipient's offer birth tick (tau) */
+    uint8_t  incipOp[26];      /* arrival-phase signature: op=nu*age at
+                                * arming, frozen — the standing offer's
+                                * phase as presented to the absorber */
     uint8_t  packetBorn[26];   /* packet birth tick — propagates with nu */
     int8_t   packetPar[26];    /* packet parity: emitter circulation sign
                                  * riding the quantum — ±1, the conserved
@@ -210,6 +213,11 @@ static int qBendShift=0;
 static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
+static int qMergeGate=0;   /* merge-on-phase arbitration: offers
+     * joining a standing cloud must be in-phase (circular distance
+     * of born-ops) with something armed — else thermalize (0=off) */
+static int qMergeMin=0;    /* arbitration is an absorber property: only
+     * nodes with mass >= qMergeMin host a refusing field (0=any node) */
 static int qOfferTorque=0; /* offer field drags node phase (0=off,
      * else right-shift divisor on the incipient pull sum) */
 static int qPhaseAdv=0;   /* local phase advance rate per headroom unit
@@ -1483,7 +1491,32 @@ void moore26_tick(void){
                            n->heat=(uint16_t)(h2>65535?65535:h2);}
                 } else n->incipNu[c]=(uint8_t)nnu;
             }
+            /* MERGE-ON-PHASE (qMergeGate) — the first law where two
+             * transaction histories compare: when incipients already
+             * stand at this node, the new offer's arrival phase
+             * op=nu*age mod 256 is checked against each standing
+             * incipient's frozen arrival phase (incipOp). If the whole
+             * cloud is anti-phase, the offer thermalizes — relative
+             * phase arbitrates who may join the field. In-phase: the
+             * cloud admits. Same-path offers always agree (one path,
+             * one phase); the gate only discriminates path difference. */
+            int opn=((int)nu*(int)((qTick&255)-(uint32_t)n->packetBorn[c]))&255;
+            if(qMergeGate&&armed&&o->mass>=qMergeMin){
+                int aligned=0;
+                for(int cc=0;cc<QChannels;cc++){
+                    if(!o->incip[cc])continue;
+                    int d=opn-(int)o->incipOp[cc];
+                    if(d<0)d=-d;if(d>128)d=256-d;
+                    if(d<=qMergeGate){aligned=1;break;}
+                }
+                if(!aligned){
+                    n->heat=(uint16_t)((n->heat+nu)>65535?65535:n->heat+nu);
+                    qEvents[50]++;   /* phase-opposed decline */
+                    continue;
+                }
+            }
             n->incip[c]++;TXN_WORK(n);   /* arming = table work */
+            n->incipOp[c]=(uint8_t)opn;
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
             if(nu==geo_gap(o))n->incipNu[c]|=0x80;
@@ -2706,6 +2739,8 @@ void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_offer_torque_set(int v){qOfferTorque=v>=0&&v<16?v:0;}
+void moore26_merge_gate_set(int v){qMergeGate=v>=0&&v<=128?v:0;}
+void moore26_merge_min_set(int v){qMergeMin=v>=0?v:0;}
 void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}

@@ -721,3 +721,71 @@ either does not propagate into confirm decisions or is far below the
 statistics. Kept as a tuner for stronger tests; the honest read is
 that a real merge-on-phase likely needs to act on the confirm/arbit
 decision directly, not on clock dynamics.
+
+
+## Merge-on-phase arbitration: the first superposition register — FRINGE MEASURED
+
+After the offer-torque null, the remaining design was stated precisely:
+relative phase must enter where a decision is made — the arming/
+arbitration step — not upstream on clock dynamics.
+
+**The law (authored, explicit — NOT emergent):** `qMergeGate` +
+`qMergeMin`. At an absorber node (mass >= qMergeMin; lane nodes ~0 so
+only real absorbers arbitrate), an offer arming while incipients stand
+is admitted only if its frozen arrival-phase signature
+`op = nu*age mod 256` is within qMergeGate of some standing member's
+`incipOp`. Otherwise the offer thermalizes (heat += nu, ev50) — the
+refused energy lands in the absorber's heat ledger, not the void.
+New register `incipOp[26]` freezes each incipient's arrival phase at
+arming; phases are compared at presentation, so same-path offers
+always agree (one path, one phase) and cross-path offers differ by
+exactly nu*DeltaL. The first substrate law where the field's response
+depends on relative phase — the superposition term TIQM puts in the
+absorber's answer.
+
+**Earlier draft bug caught by measurement:** the first implementation
+compared standing incipients' ops as-of-NOW (incipBorn age keeps
+ticking while standing) — clouds self-anti-phased and every stream
+self-refused at high nu (ev50 ~190/window at nu=70). Freezing at
+arrival (incipOp) restored same-arm coherence; phDecl dropped ~7x.
+
+**Second confound caught:** ev50 is a global counter — early "fringe"
+declines were torus lap-mixing residue at non-detector nodes, and
+merge-on P(B) suppression was initially EQUAL at all dphi: en-route
+attrition at mid-lane standing clouds, not absorber arbitration.
+`qMergeMin` restricted arbitration to mass-bearing absorbers.
+
+Protocol: balanced arms E=(4,4,14),D=(16,16,14) — LA=12,LB=20 hops,
+dphi = nu*8 mod 256; phase gate OFF (merge is the only discriminator);
+incipTTL=32 for real joint occupancy (0.28-0.59 vs ~0.02 at TTL=8).
+
+VERDICT TABLE (P(B), merge-off baseline -> merge=48):
+  aligned (circ.dist<=48), 6 nu rows (4,28,32,60,64,96):
+      0.59->0.59, 0.15->0.15, 0.47->0.47, 0.41->0.41,
+      0.51->0.49, 0.19->0.17  -- BIT-IDENTICAL, law transparent in-phase
+  anti-phase (dist>48):
+      nu=12 (d96):  0.42->0.00
+      nu=16 (d128): 0.72->0.00
+      nu=48 (d128): 0.34->0.00          -- TOTAL exclusion
+  gate edge nu=72 (d64): 0.56->0.60     -- jitter-smeared boundary
+  B-solo control nu=16: P(B)=0.65, phDecl=0 -- same arm, same law,
+      zero declines; refusal is purely RELATIONAL (phase difference
+      between histories), not a property of B's path.
+
+Mutual exclusion: whichever arm's cloud seeds first sets the field's
+phase; the other arm is refused — corr goes negative on refuse rows
+(-0.45..-0.68). Anti-phase meetings thermalize at the absorber
+(+heat, ledger sealed).
+
+Decoherence by path jitter: wavelength = 256/nu hops. At nu=64 a 2-hop
+detour flips phase 128 — high-nu fringes smear (nu=64 aligned row
+still shows phDecl=62 from arrival-age spread). At nu<=16, lambda
+16-64 hops >> jitter — clean. Real physics, not artifact.
+
+What this is: a local, deterministic, ledger-sealed interference law —
+relative phase of transaction histories arbitrates who may join a
+standing field. What it is NOT: no claim of QM equivalence; the gate
+is authored, binary, and the absorber's exclusion is winner-take-cloud
+rather than amplitude arithmetic. The honest reading: this is the
+minimal place where two phases can talk, and when they do, the
+substrate produces a fringe.

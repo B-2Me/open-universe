@@ -31,7 +31,8 @@ const argv = Object.fromEntries(process.argv.slice(2).map(a => {
     const m = a.match(/^--([^=]+)(?:=(.*))?$/); return m ? [m[1], m[2] ?? true] : [a, true];
 }));
 const SIZE  = 32;
-const E = [8, 8, 14], D = [16, 16, 14];  /* even-parity cells only */
+const E = argv.e ? argv.e.split(',').map(Number) : [8, 8, 14];
+const D = argv.d ? argv.d.split(',').map(Number) : [16, 16, 14];  /* even cells only */
 const ARM_A = 6, ARM_B = 7;
 const DMASS = +argv.dmass || 40;
 const CATCH = +argv.catch || 4;
@@ -153,37 +154,52 @@ if (argv.nuscan) {
  * Readout: per tick, does ch6 (A) / ch7 (B) show armed incipient or a
  * real deposit (winding delta > 1)? Correlate over the window. */
 if (argv.cw) {
-    const GATE = +argv.phasegate || 48;
-    const ADV  = +argv.phaseadv || 8;
-    console.log('nu   dphi   P(A)   P(B)   E=<ab>  corr');
-    for (let nu = (DMASS >> 2); nu <= 127; nu += 4) {
-        const onu = nu - (nu % (DMASS >> 2));
+    const GATE = argv.phasegate !== undefined ? +argv.phasegate : 48;
+    const ADV  = argv.phaseadv !== undefined ? +argv.phaseadv : 8;
+    const ARMS = (argv.arms || 'AB').toUpperCase();
+    const LA = ((D[0] - E[0]) % SIZE + SIZE) % SIZE;
+    const LB = ((E[0] - D[0]) % SIZE + SIZE) % SIZE;
+    console.log(`nu   dphi   P(A)   P(B)   joint  corr   phDecl  +heat  [arms=${ARMS} LA=${LA} LB=${LB}]`);
+    const NULIST = argv.nus ? argv.nus.split(',').map(Number)
+        : Array.from({ length: 32 }, (_, i) => (DMASS >> 2) + i * 4)
+             .map(nu => nu - (nu % (DMASS >> 2)));
+    for (const onu of NULIST) {
         M._moore26_init(SIZE, SIZE, SIZE);
         M._moore26_catch_gate_set(CATCH);
         M._moore26_phase_gate_set(GATE);
         M._moore26_phase_adv_set(ADV);
         M._moore26_phase_sync_set(1);
         if (argv.torque !== undefined && M._moore26_offer_torque_set) M._moore26_offer_torque_set(+argv.torque);
+        if (argv.merge !== undefined && M._moore26_merge_gate_set) M._moore26_merge_gate_set(+argv.merge);
+        if (argv.mergemin !== undefined && M._moore26_merge_min_set) M._moore26_merge_min_set(+argv.mergemin);
         if (argv.ttl && M._moore26_incip_ttl_set) M._moore26_incip_ttl_set(+argv.ttl);
         M._moore26_mass_set(D[0], D[1], D[2], DMASS);
-        /* carve arm B so its 24-hop survival is usable, drain residue */
+        /* carve both lanes so survival is usable, drain residue */
         for (let t = 0; t < 100; t++) {
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 6);
             M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 6);
+            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_A, 1);
             M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, 1);
             M._moore26_tick();
         }
         for (let t = 0; t < 140; t++) M._moore26_tick();
         let ticks = 0, aA = 0, aB = 0, both = 0, sAB = 0;
+        const ev0 = Number(M._moore26_events(50));
+        const h0 = M._moore26_heat_get(D[0], D[1], D[2]);
         const W = +argv.window || 80;
         for (let t = 0; t < W; t++) {
             const w6a = M._moore26_winding_get(D[0], D[1], D[2], 6),
                   w7a = M._moore26_winding_get(D[0], D[1], D[2], 7);
-            M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 8);
-            M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 8);
-            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_A, onu);
-            M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, onu);
-            M._moore26_packet_par_set(E[0], E[1], E[2], ARM_A, 1);
-            M._moore26_packet_par_set(E[0], E[1], E[2], ARM_B, 1);
+            if (ARMS.includes('A')) {
+                M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 8);
+                M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_A, onu);
+                M._moore26_packet_par_set(E[0], E[1], E[2], ARM_A, 1);
+            }
+            if (ARMS.includes('B')) {
+                M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 8);
+                M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, onu);
+                M._moore26_packet_par_set(E[0], E[1], E[2], ARM_B, 1);
+            }
             M._moore26_tick();
             /* activity = real deposit (delta>1) OR armed incipient */
             const okA = (M._moore26_winding_get(D[0], D[1], D[2], 6) - w6a > 1)
@@ -194,8 +210,10 @@ if (argv.cw) {
             if (okA && okB) both++;
             sAB += (okA ? 1 : -1) * (okB ? 1 : -1);
         }
-        const dphi = (onu * 16) & 255;
-        console.log(`${onu}   ${String(dphi).padStart(4)}   ${(aA / ticks).toFixed(2)}  ${(aB / ticks).toFixed(2)}  ${(both / ticks).toFixed(2)}   ${(sAB / ticks).toFixed(3)}`);
+        const dphi = (onu * (LB - LA)) & 255;
+        const pd = Number(M._moore26_events(50)) - ev0;
+        const dh = M._moore26_heat_get(D[0], D[1], D[2]) - h0;
+        console.log(`${onu}   ${String(dphi).padStart(4)}   ${(aA / ticks).toFixed(2)}  ${(aB / ticks).toFixed(2)}  ${(both / ticks).toFixed(2)}   ${(sAB / ticks).toFixed(3)}  ${pd}   +h=${dh}`);
     }
     process.exit(0);
 }
