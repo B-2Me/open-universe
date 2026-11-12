@@ -215,6 +215,11 @@ alignment scheme changes again.
 
 ## moore26 (0.1fm cascade engine)
 
+- `docs/moore26-findings.md` = the measured record (narrative);
+  `docs/moore26-constants.md` = the constants catalog (numbers).
+  CONVENTION: whenever a harness produces a new measured constant,
+  record it in findings AND mirror it into the constants table
+  (value + conditions + harness) in the same commit.
 - `src/moore26.c` — the 0.1fm/node engine (26-neighbor Moore
   stencil, AoS `NodeState`, vacuum-skip 8³ chunk ledger, OpenMP
   phases). Wasm output goes to `docs/public/wasm/cascade/`

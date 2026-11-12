@@ -9,6 +9,10 @@ audio: /audio/moore26-findings.mp3
 
 # Moore26 Findings
 
+*Numerical constants distilled from this page live in the
+[Constants Catalog](/moore26-constants) — when a measurement below
+produces a new number, mirror it there.*
+
 This is the measured record of the current engine — `moore26`, a
 Moore/FCC lattice substrate at `0.1 fm` per node where every node
 carries `26` registers (one per channel — the name is the register
