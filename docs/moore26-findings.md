@@ -643,3 +643,30 @@ the gradient to dominate.
 
 Verdict: axial measurement basis operational. Bertlmann-with-axes —
 correlated birth records independently enforceable, not Bell.
+
+
+## Anomaly resolution: charge suppression + drift selectivity
+
+The within-cone asymmetry (p6 >> p3-p5 in charged sweeps) resolved into
+three separate effects, two of them real physics:
+
+- **Harness cross-traffic** (fixed): B-arm refusal massFlight deposited
+  on A's transverse pairs; feed-phase deflected offers wrote real
+  bondDist off-cone; armed feed incipients congested the probe window.
+  Solo probing + 6-tick settle gap -> transverse pairs now 0.000 clean.
+- **Charge suppression** (physics): sustained matched-parity feeding
+  accretes deep skeleton (cone pairs ~50-120 committed) but each
+  confirm also mints same-sign charge via charge provenance; the
+  charged product then declines same-sign probe arrivals at cap=4 —
+  post-charge cone acceptance drops ~10x. The feed binds what it feeds.
+- **Drift-direction selectivity** (physics, verified): probing each
+  cone-pair member separately shows acceptance concentrated on the
+  HEAD-ON channel — probes traveling against the product's residual
+  momentum direction. A (kick -x): +x probes favored (ch6 20/20 vs
+  ch7 14/20, ch12 19/20 vs ch13 17/20). B (kick +x): exact mirror
+  (ch13 19/20 vs ch12 6/20, ch7 19/20 vs ch6 4/20). ~3-5x selectivity,
+  flipping with momentum sign — a ram-pressure-like observable: the
+  object catches what it runs into. Emergent, unauthored.
+
+Verdict: cone law = where the object was bonded; drift selectivity =
+where it is going. Two independent directional observables, both local.
