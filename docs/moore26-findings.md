@@ -700,3 +700,24 @@ acceptance window. Second-order; unresolved at these windows.
 circulates indefinitely — the drip floor alone bounds lifetime; warm
 lanes host self-sustaining populations. drain-phase protocol: residue
 dies (~150 ticks), wear records persist — warm lane, clear field.
+
+
+## Coherence attempt: offer-field torque — NULL at tested strength
+
+`qOfferTorque` (moore26_offer_torque_set): standing incipients pull
+the node phase toward their born-ops, weighted by nu — the TIQM
+"absorber responds to the field's coherent sum" implemented as local
+clock torque (derived, not an authored amplitude factor). Required
+incip TTL ~24 so a multi-component cloud exists at all.
+
+CW two-arm sweep, corr=<oA*oB> vs dphi=nu*16, 80-tick windows:
+  torque=4:  dphi=128 -> -0.20 | dphi=0 -> +0.08
+  torque=0:  dphi=128 -> -0.21 | dphi=0 -> +0.09   (identical)
+
+Verdict: NO measurable coherence effect at this strength/window. The
+corr-vs-dphi structure is fully produced by gate-window selectivity
+plus congestion competition for the incip cap. The clock torque
+either does not propagate into confirm decisions or is far below the
+statistics. Kept as a tuner for stronger tests; the honest read is
+that a real merge-on-phase likely needs to act on the confirm/arbit
+decision directly, not on clock dynamics.

@@ -163,6 +163,8 @@ if (argv.cw) {
         M._moore26_phase_gate_set(GATE);
         M._moore26_phase_adv_set(ADV);
         M._moore26_phase_sync_set(1);
+        if (argv.torque !== undefined && M._moore26_offer_torque_set) M._moore26_offer_torque_set(+argv.torque);
+        if (argv.ttl && M._moore26_incip_ttl_set) M._moore26_incip_ttl_set(+argv.ttl);
         M._moore26_mass_set(D[0], D[1], D[2], DMASS);
         /* carve arm B so its 24-hop survival is usable, drain residue */
         for (let t = 0; t < 100; t++) {
@@ -176,8 +178,8 @@ if (argv.cw) {
         for (let t = 0; t < W; t++) {
             const w6a = M._moore26_winding_get(D[0], D[1], D[2], 6),
                   w7a = M._moore26_winding_get(D[0], D[1], D[2], 7);
-            M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 2);
-            M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 2);
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_A, 8);
+            M._moore26_packet_set(E[0], E[1], E[2], ARM_B, 8);
             M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_A, onu);
             M._moore26_packet_nu_set(E[0], E[1], E[2], ARM_B, onu);
             M._moore26_packet_par_set(E[0], E[1], E[2], ARM_A, 1);

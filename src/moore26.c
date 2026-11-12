@@ -210,6 +210,8 @@ static int qBendShift=0;
 static int qRadShift=0;
 static int qPhaseGate=0;
 static int qPhaseSync=1;
+static int qOfferTorque=0; /* offer field drags node phase (0=off,
+     * else right-shift divisor on the incipient pull sum) */
 static int qPhaseAdv=0;   /* local phase advance rate per headroom unit
      * (0=off): phase ticks by (qWorkCap - load) * qPhaseAdv each cycle
      * before the Jacobi pull. Time is the capacity a node did NOT
@@ -2076,6 +2078,23 @@ void moore26_tick(void){
                     if(dp<-255)dp+=511;
                     pull+=dp>>4;
                 }
+                /* OFFER-FIELD TORQUE (qOfferTorque) — the standing
+                 * cloud's armed incipients pull the node clock toward
+                 * their own born-phases, weighted by nu: a coherent
+                 * offer field turns the absorber's clock together, an
+                 * incoherent one cancels. The absorber responds to the
+                 * field's coherent sum — interference emergent from
+                 * local torque, no authored amplitude factor. */
+                if(qOfferTorque){
+                    for(int c=0;c<QChannels;c++){
+                        uint32_t ic=grid_next[si].incip[c];if(!ic)continue;
+                        int age=((int)(qTick&255)-(int)grid_current[si].incipBorn[c])&255;
+                        int op=((int)(grid_current[si].incipNu[c]&0x7f)*age)&255;
+                        int dp=op-(int)(ph&255);
+                        if(dp>128)dp-=256;if(dp<-128)dp+=256;
+                        pull+=(dp*(int)ic)>>qOfferTorque;
+                    }
+                }
                 phaseB[si]=(uint32_t)((int)ph+pull)&511;
             } else phaseB[si]=phaseA[si];
         PROC_NODES_END
@@ -2686,6 +2705,7 @@ int32_t moore26_chargeflight_get(int x,int y,int z,int c){
 void moore26_phase_gate_set(int v){qPhaseGate=v;}
 void moore26_phase_sync_set(int v){qPhaseSync=v;}
 void moore26_phase_adv_set(int v){qPhaseAdv=v;}
+void moore26_offer_torque_set(int v){qOfferTorque=v>=0&&v<16?v:0;}
 void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}
