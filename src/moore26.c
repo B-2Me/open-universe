@@ -208,6 +208,10 @@ static int qIncipTtl=6;   /* arbitration window — how many ticks an
      * rise — congestion is the constraint class that pushes back). */
 static int qDirBias=0;
 static int qDeflectAlign=0;
+static int qReflect=0;      /* declined offers REFLECT down the mirror
+ * member c^1 (recoil = 2 kick units on the refuser) instead of
+ * deflecting/thermalizing — P = qReflect/256 per decline. 0 = off. */
+
 static int qDdShift=0;
 static int qBendShift=0;
 static int qRadShift=0;
@@ -289,6 +293,10 @@ static inline uint8_t rand_site(int si,int salt){
              +qTick*0xD1B54A32D192ED03ULL;
     s^=s>>30;s*=0xBF58476D1CE4E5B9ULL;s^=s>>27;s*=0x94D049BB133111EBULL;s^=s>>31;
     return (uint8_t)(s>>56);
+}
+
+static inline int REFLECT(int si,int c){
+    return qReflect&&((int)(rand_site(si,60+c)&255)<qReflect);
 }
 
 /* bitwise-wrap neighbor: the power-of-2 dims make wrapping a mask,
@@ -1472,6 +1480,24 @@ void moore26_tick(void){
                 qEvents[samesign?45:46]++;   /* ev45 = same-sign
                  * decline (the Coulomb repulsion signature),
                  * ev46 = baseline/congestion decline */
+                if(REFLECT(si,c)){
+                    /* REFLECTION — the offer returns down the mirror
+                     * member of its own pair: the packet keeps its nu,
+                     * the refuser takes a 2-unit recoil kick (absorb
+                     * + re-emit). Degeneracy-pressure push: a packed
+                     * field literally pushes back. ev53 */
+                    int mc=c^1;
+                    if(n->packet[mc]<255){
+                        n->packet[mc]++;
+                        n->packetNu[mc]=(uint8_t)(nu>127?127:nu);
+                        n->packetBorn[mc]=n->packetBorn[c];
+                        int sgn=(c&1)?1:-1;
+                        n->momentum[c>>1]+=sgn*2;
+                        qEvents[53]++;
+                        n->packet[c]--;
+                        continue;
+                    }
+                }
                 /* DECLINED — deflect to the freest channel: the packet
                  * bounces off the dense field to find another target
                  * rather than stacking inside it. */
@@ -1544,8 +1570,24 @@ void moore26_tick(void){
                     if(d<=qMergeGate){aligned=1;break;}
                 }
                 if(!aligned){
+                    if(REFLECT(si,c)){
+                        int mc=c^1;
+                        if(n->packet[mc]<255){
+                            n->packet[mc]++;
+                            n->packetNu[mc]=(uint8_t)(nu>127?127:nu);
+                            n->packetBorn[mc]=n->packetBorn[c];
+                            int sgn=(c&1)?1:-1;
+                            n->momentum[c>>1]+=sgn*2;
+                            qEvents[53]++;
+                            n->packet[c]--;
+                            qEvents[50]++;
+                            continue;
+                        }
+                    }
                     n->heat=(uint16_t)((n->heat+nu)>65535?65535:n->heat+nu);
                     qEvents[52]+=nu;   /* energy side of the decline */
+                    n->packet[c]--;    /* consumed — a declined offer
+                     * must not linger after its nu is credited */
                     qEvents[50]++;   /* phase-opposed decline */
                     continue;
                 }
@@ -2792,6 +2834,7 @@ void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
+void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
 void moore26_dd_shift_set(int v){qDdShift=v;}
 void moore26_bend_shift_set(int v){qBendShift=v;}
 void moore26_rad_shift_set(int v){qRadShift=v;}
