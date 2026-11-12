@@ -818,3 +818,25 @@ the lower-flux arm entirely. The measured knee tracks the authored
 boundary at essentially the resolution limit — the substrate adds
 jitter-width smearing, not softening. To read knee 2 symmetrically
 would need a matched-length geometry with both arms well-fed.
+
+
+## Knee "hole" resolved: off-route arrivals, not a law anomaly
+
+The 96/112 sub-band (P(B)=0.23-0.26 inside the anti-phase floor) was
+fully dissected. D's incipient cloud is PURE — ch6 members only, all
+frozen at op=80, stacking 13+ deep, no strays on other channels.
+The ch7 "B" armers that leaked carried incipOp=104 (nu=8 stream
+packets, age=13 hops) — far shorter than the nominal 22-hop wrap arm.
+Mechanism: packets wander off the B lane, cross the bulk, and enter D
+on ch7 from BEHIND (E->(17,17)->D ~13 hops). They carry genuinely
+in-phase ops — the gate correctly admits them: arbitration reads the
+offer's ACTUAL measured path phase, not the channel label — positive
+evidence the law tracks real transaction history.
+
+Strict attribution added to knee-map.mjs (incipop_get: count ch7
+armers only when their frozen op is within +-24 of nominal
+nu*(LB-1)). Result: the entire leak vanishes — nominal-arm exclusion
+is TOTAL across the anti-phase band (strict <= 0.03 at every refuse
+point). The unfiltered "leak" is a bulk-route arrival population that
+varies with geometry (0.00-0.26 per point), admitted at the in-window
+rate ~96/256 as expected for quasi-random ops.

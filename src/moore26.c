@@ -2545,6 +2545,10 @@ uint32_t moore26_incipient_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].incip[c];
 }
+uint32_t moore26_incipop_get(int x,int y,int z,int c){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].incipOp[c];
+}
 uint32_t moore26_incipient_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].incipNu[c];
