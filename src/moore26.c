@@ -1005,11 +1005,11 @@ void moore26_tick(void){
                  * momentum pair: the hop follows p, so a "thrown" pattern
                  * walks where its momentum says. */
                 /* FLUX-DRAG (read side) — the stream itself drags
-                 * matter: sum each even neighbor's signed per-pair
-                 * packet imbalance into p. Direction AND chirality —
-                 * the pair's two members are opposite directions, so
-                 * the signed flux is the field's real twist.
-                 * Conservation-bounded: quanta, not donated p. */
+                 * matter by ABSORPTION: the body eats `share` packets
+                 * off the dominant member of each pair (1dp/packet,
+                 * same accounting as confirm kicks), and the packets'
+                 * nu returns to body heat via ev52 — a standing packet
+                 * can no longer mint momentum every tick it sits. */
                 for(int d=0;d<6;d++){
                     int ex=x+(d==0)-(d==1),ey=y+(d==2)-(d==3),ez=z+(d==4)-(d==5);
                     if(ex<0||ex>=QWidth||ey<0||ey>=QHeight||ez<0||ez>=QDepth)continue;
@@ -1021,7 +1021,18 @@ void moore26_tick(void){
                         int32_t share=imb>>1;
                         int32_t cur=grid_next[si].momentum[e],
                                 ac=cur<0?-cur:cur;
-                        if(share&&ac<(1<<16))grid_next[si].momentum[e]+=share;
+                        if(!share||ac>=(1<<16))continue;
+                        int dom=imb>0?2*e:2*e+1;
+                        int n=share<0?-share:share,
+                            avail=grid_next[ei].packet[dom];
+                        if(n>avail)n=avail;
+                        if(!n)continue;
+                        grid_next[ei].packet[dom]=(uint8_t)(avail-n);
+                        qEvents[52]+=(uint64_t)n*grid_current[ei].packetNu[dom];
+                        uint32_t h=(uint32_t)grid_next[si].heat+
+                                   (uint32_t)n*grid_current[ei].packetNu[dom];
+                        grid_next[si].heat=(uint16_t)(h>65535?65535:h);
+                        grid_next[si].momentum[e]+=share<0?-n:n;
                     }
                 }
                 int be=0;int32_t best=0,dir=1;
@@ -1219,7 +1230,12 @@ void moore26_tick(void){
                     int32_t share=o->momentum[be]>>8,
                             cur=grid_next[ni].momentum[be],
                             ac=cur<0?-cur:cur;
-                    if(share&&ac<(1<<20))grid_next[ni].momentum[be]+=share;
+                    if(share&&ac<(1<<20)){
+                        grid_next[ni].momentum[be]+=share;
+                        grid_next[si].momentum[be]-=share;   /* conserved:
+                         * a coherent field REDISTRIBUTES the kick —
+                         * broadcast without debit mints 2^-8/tick */
+                    }
                 }else{
                     /* directionless matter inherits the donor's whole
                      * field — coherent fields need broadcast; clamped
@@ -1228,7 +1244,10 @@ void moore26_tick(void){
                         int32_t share=o->momentum[e]>>8,
                                 cur=grid_next[ni].momentum[e],
                                 ac=cur<0?-cur:cur;
-                        if(share&&ac<(1<<20))grid_next[ni].momentum[e]+=share;
+                        if(share&&ac<(1<<20)){
+                            grid_next[ni].momentum[e]+=share;
+                            grid_next[si].momentum[e]-=share;
+                        }
                     }
                 }
             }
