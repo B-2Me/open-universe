@@ -44,7 +44,8 @@ in these docs:
 | **photon / quantum** | a conserved packet: `{count, nu, parity, born}` on edge channels 6–17. A transaction quantum, not a wave packet | transport stack |
 | **wavefunction collapse** | transaction confirmation: incipient → mass write. Resolution at a ledger event, matching the FLOW_CAP account — no observer needed | transaction ledger |
 | **redshift** | nu-decay in transit (`ev7` books `decay·nu` → heat). Energy lost per hop to the medium, not stretched space | conservation arc |
-| **Casimir force** | **absent — falsified.** Needs a boundary-shaped fluctuation spectrum; the authored bath is volumetric and boundary-blind. The fork: external reservoirs (shadowing) or rail-hosted standing flux (true modes) | casimir.mjs null ×2 |
+| **Casimir force** | **absent as radiated force — the conducted variant is the open fork.** Boundary-shaped spectra don't exist (boundary-blind volumetric bath), and shadowing is structurally forbidden (no collimated transport — every umbra refills in ~2 cells). Even in nature the mainstream view is that the force is *matter-generated*: Lifshitz theory sums retarded van der Waals between plate atoms, Jaffe (2005) derives the same result with no zero-point vocabulary — the vacuum-mode language is bookkeeping, and gravity is excluded by ~10^27 magnitude. Substrate version: the force must be **conducted along a shared live structure**, not radiated across a gap | casimir.mjs null ×2; shadow-probe.mjs; momentum-field.mjs |
+| **force at range** | **current along a path.** Momentum is a marching order relayed through winding/mass — it leads the mass, drains at dead ends, and is vacuumed on matter-free cells. Nothing propagates through vacuum: no collimated flux, no resting field. The substrate is a contact universe | momentum-field.mjs |
 
 ## The scale confound
 
@@ -77,6 +78,16 @@ rename; it tells you *which parts of a nature-claim have a referent
 here and which don't*. Shadowing existed (weakly); mode exclusion
 didn't — and now we know that if a Casimir analog is to exist, it
 must be *built* on resonant paths, not found in ballistic flux.
+
+**"Force" is a funded write, not a medium.** The substrate has
+exactly one demonstrated force: absorption of a packet writes ±1 on
+the body's momentum pair (funded — the packet is consumed). What it
+lacks is the whole rest of the vocabulary: no contact repulsion
+(bodies merge or annihilate, never bounce), no tension (winding
+trails don't pull taut), no field pressure (resting fields are
+vacuumed). Ballistics exist; bounce does not. Any pull-type law —
+gravity analog, Casimir analog, binding — has to be authored as a
+rule before it can be measured as a phenomenon.
 
 **Wavelength is an interference property.** λ = 256/nu is defined
 only where two phases meet — at the merge gate, in the record of a

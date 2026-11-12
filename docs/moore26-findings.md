@@ -1009,32 +1009,60 @@ Literal-EM Casimir remains out of scope: at 0.1 fm/node the
 real effect needs ~10^5 fm grids — the analog question is
 whether boundary-shaped vacuum spectra exist at all.
 
-## Force from offer density — MEASURED, plus a thrust instability
+## Force from offer density — MEASURED; the "instability" was a mint
 
 (script/cascade/force-probe.mjs) Two controlled opposed packet
 streams at a 3x3 mass plate; confirmed offers kick momentum[pair]
 signed by travel direction (+x channels decrement, -x increment).
-Net momentum summed over pairs 3-6 on the plate neighborhood.
 
-LINEAR REGIME (low flux): correct-sign drift, rate-scaled —
-  ra=0.2 -> ~0   ra=0.4 -> -3   ra=0.6 -> -10   (300t)
-+x-only stream pushes the plate along +x (away from source):
-radiation pressure exists natively — offer-density asymmetry IS
-a force law. Balanced streams wander near zero as required.
+FIRST RUN showed a nonlinear runaway (+872 sustained, sign-flipping,
+even under balanced streams) — initially reported as a thrust
+instability. AUDIT: two momentum mints, both now sealed:
 
-NONLINEAR REGIME (onset ~ra 0.8): momentum runaway —
-  ra=0.8: burst +544 mid-run, ends -1 (intermittent)
-  ra=1.0: +872 sustained; even balanced ra=rb=1 -> +349
-Sustained bombardment past a threshold ignites coherent thrust
-with sign-flipping bursts — structures convert ambient flux into
-self-propulsion once excited. This may be the substrate's true
-vacuum-force regime: hot baths don't gently push structures,
-they ignite them. Onset characterization pending.
+  1. flux-drag read side minted share=imb>>1 per tick per even
+     neighbor with no debit — standing packets pushed forever.
+     FIX: the body ABSORBS share packets off the dominant member
+     (1dp/packet, nu -> heat via ev52). Funded radiation pressure.
+  2. broadcast shared p>>8 to neighbors without debiting donor
+     (2^-8/tick amplifier above |p|=256). FIX: donor debited —
+     a coherent field now REDISTRIBUTES the kick.
 
-CONSEQUENCE for Casimir: the force-write path exists and works;
-what cavities still lack is a sustained GEOMETRIC arrival
-asymmetry. Transaction-starved pockets DO exert inward force by
-subtraction (fewer kicks from the starved face) — Le Sage
-mechanics, natively in the registers. The runaway adds a caveat:
-high-T baths may thrust structures regardless of geometry.
+POST-FIX INVERSION SET (300t, rate 1.0): +x -> -20, -x -> +13,
+balanced -> +1. A mint cannot produce that pattern; funded
+absorption inverts with the source and cancels under balance.
+Radiation pressure is real, funded, and bounded.
+
+## The force census — what "force" exists in this substrate
+
+(shadow-probe.mjs, momentum-field.mjs — full audits)
+
+| coupling | status | mechanism |
+|---|---|---|
+| radiation pressure | REAL, funded | absorption -> 1dp/packet, signed by travel direction |
+| thrust instability | LEAK, sealed | was minted momentum, not a phenomenon |
+| Le Sage / depletion shadow | STRUCTURALLY ABSENT | FCC edge-only transport: all flight is diagonal, no collimated beam can exist, every umbra refills laterally in ~2 cells (fluxAsym ~0 at probe regardless of absorber size) |
+| resting momentum field | STRUCTURALLY ABSENT | momentum on a matter-free cell is vacuumed (node_live excludes it); through structure it is a marching current that drains at dead ends |
+| conducted momentum | REAL | relay hands p to the frontier cell ahead of mass each tick — propagates along winding trails/mass chains, the only demonstrated inter-structure coupling |
+| contact bounce / repulsion | MISSING RULE | handedness law merges same-parity, annihilates opposite — bodies never repel; no elastic collision path exists |
+| tension / restoring | MISSING RULE | winding trails have no contract-elastic term; nothing pulls connected bodies taut |
+| vacuum back-reaction | NOT AUTHORED | structure cannot locally reshape the bath's flux except through the heat reservoir |
+
+CONSEQUENCE: the substrate is a CONTACT UNIVERSE. Force only travels
+where structure physically carries it — bonds, winding trails, mass
+chains, packet streams that reach. Action at a distance is forbidden
+twice over: no collimated flux (isotropy ansatz) and no resting
+field (frontier-drain). If a Casimir-class attraction exists here it
+must be CONDUCTED — two bodies sharing a live structure whose medium
+flux loads the link asymmetrically — not radiated across a gap.
+
+CASIMIR is matter-generated even in nature: the Lifshitz/dispersion
+picture computes the identical force as summed retarded van der
+Waals interactions BETWEEN THE PLATE ATOMS (Jaffe 2005 derives it
+with no zero-point vocabulary at all; the force vanishes as the
+coupling -> 0). Gravity is excluded by ~27 orders of magnitude and
+wrong scaling — nobody mistakes it for mass attraction. So "the
+plates generate the force internally" is mainstream — the vacuum-
+mode language is the boundary-method bookkeeper of what the
+materials do. Our substrate version says the same: the medium is
+the ledger, the bodies write the entries.
 
