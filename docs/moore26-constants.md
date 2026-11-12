@@ -141,7 +141,7 @@ lattice produced. Distances in cells, times in ticks.
 |---|---|
 | ordinary two-arm interference without merge law | **null** — independent channels never compare phases |
 | qOfferTorque clock coherence | **null** — identical with law on/off at tested strength |
-| Casimir-like effect | **null** — inert vacuum, two plates feel nothing |
+| Casimir-like effect | **null x2** — inert vacuum (unseeded); seeded bath shows no gap depletion in shadowing OR long-lambda regimes (d=4-12, <=0.5% vs noise) — mechanism diagnosed: volumetric sources + radiative equilibrium + ballistic packets = no boundary-shaped spectrum |
 
 *Method note: every number above was produced against a fresh grid or
 isolated trial; shared-state ordering contamination was audited out of

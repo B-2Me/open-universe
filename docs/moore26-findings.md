@@ -966,3 +966,46 @@ driven-halo vacuum statistics; Brownian motion of structures;
 Casimir-like shielding between absorbers in a warm bath;
 noise-spectrum whitening under many independent emitters.
 
+## Casimir probe: hot-medium plate attraction — NULL, mechanism diagnosed
+
+Theory prediction (paradox/quantum §4): a hot ambient medium,
+restricted between two plates, pushes them together — outside
+tension exceeds inside tension. Tested directly with the seeded
+thermal bath (script/cascade/casimir.mjs): two 9x9 mass plates
+(mass=2000) at separation d, thermostat bath, packet density in
+the inter-plate gap vs a matched control volume.
+
+WARM BATH (nu~30, lambda~8.5 cells — geometric shadowing regime):
+  d=4: depletion 4.1%   d=8: 1.2%   d=12: 2.8%
+  non-monotonic, near the no-plate baseline (23.85/width)
+
+COLD LONG-LAMBDA BATH (nu~4, lambda~64 cells — mode regime d<lambda):
+  d=4: 0.5%   d=8: 0.3%   d=12: -0.1%   — flat null
+
+VERDICT: no measurable Casimir-like depletion in either regime.
+The null has a mechanism, not just a scale problem:
+
+1. Volumetric sources: seeded heat emits inside the gap too — the
+   cavity's own reservoir refills it. Authored emission is
+   boundary-blind; there is no mode spectrum for plates to cut.
+2. Radiative equilibrium: plates absorb flux -> thermalize ->
+   re-emit isotropically through the same channel. A persistent
+   shadow cannot survive equilibrium — the textbook Le Sage
+   failure, reproduced rather than assumed.
+3. Ballistic, not modal: packets carry phase but traverse, they
+   don't stand. A cavity is only felt at the plate surface — by
+   which point the packet is already inside.
+
+CONSEQUENCE FOR THE THEORY DOC: "hot medium restricted between
+plates" fails as SHADOWING in this substrate for the same
+thermodynamic reason it fails in nature. What the prediction
+actually requires is a boundary-shaped fluctuation spectrum —
+i.e. standing modes. Two forks could still produce an analog:
+(a) external-reservoir geometry (flux must transport into the
+gap -> real shadowing, but Le Sage, not Casimir);
+(b) bath on closed resonant paths (rails/rings) where flux
+genuinely stands — then a cavity could cut wavelengths.
+Literal-EM Casimir remains out of scope: at 0.1 fm/node the
+real effect needs ~10^5 fm grids — the analog question is
+whether boundary-shaped vacuum spectra exist at all.
+
