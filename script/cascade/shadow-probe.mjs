@@ -39,20 +39,27 @@ const M = await loadM26();
 const CV = [,,,,,, [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],[0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1]];
 const PLUSX = [6, 8, 10, 12];
 const MINUSX = [7, 9, 11, 13];
-const AX = 16, QX = 20, CY = 16, CZ = 16;
+/* ODD sublattice only: even cells take no relay path -
+ * mass/drag/motion machinery never fires there */
+const AX = 17, CY = 16, CZ = 16;
+const QX = +(argv.qx ?? 21);
 
 let s = SEED;
 const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
 
-const face = [];
-for (let dy = -2; dy <= 2; dy++) for (let dz = -2; dz <= 2; dz++)
-  face.push([QX, CY + dy, CZ + dz]);
-const PSIZE = +(argv.psize ?? 1);   // plate half-width: 1 => 3x3, 2 => 5x5
+const FW = +(argv.fw ?? 1);   // beam face half-width (match plate size)
+/* beam A (+x) aims at the PLATE face - the converged core is fully
+ * intercepted; the probe sits behind in its geometric shadow.
+ * beam B (-x) aims at the PROBE face = the ambient counter-flux. */
+const PSIZE = +(argv.psize ?? 1);   // plate half-width: 1 => 3x3
 const plate = [];
 for (let dy = -PSIZE; dy <= PSIZE; dy++) for (let dz = -PSIZE; dz <= PSIZE; dz++)
   plate.push([AX, CY + dy, CZ + dz]);
+const probeFace = [];
+for (let dy = -FW; dy <= FW; dy++) for (let dz = -FW; dz <= FW; dz++)
+  probeFace.push([QX, CY + dy, CZ + dz]);
 
-function inject(channels, rate) {
+function inject(channels, rate, face) {
   for (const c of channels) {
     const v = CV[c];
     for (const [px, py, pz] of face) {
@@ -85,12 +92,30 @@ function fluxAsym() {
 }
 function plateCX() {   // plate mass centroid x (tracks its march)
   let num = 0, den = 0;
-  for (let x = AX - 3; x <= AX + 4; x++)
+  for (let x = AX - 4; x <= AX + 5; x++)
     for (let y = CY - 3; y <= CY + 3; y++)
       for (let z = CZ - 3; z <= CZ + 3; z++) {
         const m = M._moore26_mass_get(x, y, z);
         num += x * m; den += m;
       }
+  return den ? (num / den).toFixed(2) : 'nan';
+}
+/* +x-channel packets in the slab just upstream of the probe:
+ * with the absorber eating the beam, nonzero here = plate shed */
+function shedCensus() {
+  let n = 0;
+  for (let y = CY - 3; y <= CY + 3; y++)
+    for (let z = CZ - 3; z <= CZ + 3; z++)
+      for (const c of PLUSX) n += M._moore26_packet_get(AX + 1, y, z, c);
+  return n;
+}
+function probeCX() {   // probe mass centroid x — actual displacement,
+                       // immune to momentum-field contamination
+  let num = 0, den = 0;
+  for (const [x, y, z] of probe) {
+    const m = M._moore26_mass_get(x, y, z);
+    num += x * m; den += m;
+  }
   return den ? (num / den).toFixed(2) : 'nan';
 }
 function momAt(cx, span) {
@@ -112,15 +137,15 @@ for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++)
 for (const [x, y, z] of probe) M._moore26_mass_set(x, y, z, QMASS);
 
 console.log(`shadow-probe: plate=${PLATE ? `${2*PSIZE+1}x${2*PSIZE+1}@${AX} mass=${PMASS}` : 'OFF'} ` +
-            `probe 3x3@${QX} mass=${QMASS} ra=${RA} rb=${RB} gap=${GAP} nu=${NU} vfloor=${VFLOOR}`);
+            `probe 3x3@${QX}(odd) mass=${QMASS} ra=${RA} rb=${RB} gap=${GAP} nu=${NU} vfloor=${VFLOOR}`);
 function plateHeat() {
   let h = 0;
   for (const [x, y, z] of plate) h += M._moore26_heat_get(x, y, z);
   return h;
 }
-console.log('t  probeMom  fluxAsym(+ => shadow)  plateMom  plateCX  pk_total');
+console.log('t  probeMom  probeCX(<21 => toward plate)  fluxAsym  plateCX  pk_total');
 for (let t = 0; t <= TICKS; t++) {
   if (t % 25 === 0)
-    console.log(`${t}  ${probeMom()}  ${fluxAsym()}  ${momAt(AX, 1)}  ${plateCX()}  ${M._moore26_packet_total()}`);
-  if (t < TICKS) { inject(PLUSX, RA); inject(MINUSX, RB); M._moore26_tick(); }
+    console.log(`${t}  ${probeMom()}  ${probeCX()}  ${fluxAsym()}  ${plateCX()}  ${M._moore26_packet_total()}`);
+  if (t < TICKS) { inject(PLUSX, RA, plate); inject(MINUSX, RB, probeFace); M._moore26_tick(); }
 }
