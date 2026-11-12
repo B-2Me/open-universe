@@ -840,3 +840,37 @@ is TOTAL across the anti-phase band (strict <= 0.03 at every refuse
 point). The unfiltered "leak" is a bulk-route arrival population that
 varies with geometry (0.00-0.26 per point), admitted at the in-window
 rate ~96/256 as expected for quasi-random ops.
+
+
+## Vacuum census: the substrate's noise floor and the sidescatter halo
+
+Aggregate census getters (moore26_packet_total / moore26_incip_total)
+enabled grid-wide population counts.
+
+QUIET VACUUM: exactly 0 packets / 0 incipients over 100+ ticks.
+The vacuum is INERT — no spontaneous fluctuations. All vacuum "noise"
+is driven.
+
+MASS-SHINED VACUUM: a lone unbonded mass=40 node emits nothing in 200
+ticks. Bare mass does not shine; vacuum flux requires wound/driven
+structure.
+
+DRIVEN AFTERGLOW (stream off): 234pk/235ip -> 21/108 (t=40) -> 0/4
+(t=80) -> 0/0 (t=120). Packet half-life ~35 ticks on warm lanes;
+incipient clouds linger ~2x longer. No persistent population.
+
+THE HALO (single ch6 lane stream, census at t=120):
+  on-lane:        39 packets (57%)
+  in-plane stray: 29 packets (42%)  — almost all still ch6-channeled
+  out-of-plane:    1 packet
+Strays keep their CHANNEL while leaving the lane cells — they
+sidestep into parallel displaced transport, same velocity, same age,
+SAME PHASE as the lane population. The halo is a coherent
+parallel-flow sheath, not thermal noise. This is the vacuum-noise
+population that leaked into the knee map: halo members re-channel
+near the detector and arrive on "wrong" channels carrying real
+(in-phase) ops — correctly admitted by the merge gate.
+
+Character: this substrate's vacuum noise = shepherded sidescatter —
+directional, coherent, phase-preserving leakage (~42% of driven flux)
+around every lane, over a perfectly inert vacuum.

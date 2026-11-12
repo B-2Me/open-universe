@@ -2521,6 +2521,20 @@ void moore26_winding_set(int x,int y,int z,int c,uint32_t v){
     grid_next[z*QWidth*QHeight+y*QWidth+x].winding[c]=v;
     mark_chunk(x,y,z);
 }
+uint64_t moore26_packet_total(void){
+    if(!grid_current)return 0;
+    uint64_t t=0;
+    for(uint32_t i=0;i<QSites;i++)
+        for(int c=0;c<QChannels;c++)t+=grid_current[i].packet[c];
+    return t;
+}
+uint64_t moore26_incip_total(void){
+    if(!grid_current)return 0;
+    uint64_t t=0;
+    for(uint32_t i=0;i<QSites;i++)
+        for(int c=0;c<QChannels;c++)t+=grid_current[i].incip[c];
+    return t;
+}
 uint32_t moore26_packet_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packet[c];
