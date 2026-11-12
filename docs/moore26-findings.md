@@ -566,11 +566,17 @@ streams into the measurement.
 ## Runtime tuners (all exported, `build.sh` synced)
 
 `fusion_wall`, `commit_min`, `ground_floor`, `confirm_cap`,
-`catch_gate`, `dir_bias`, `deflect_align`, `dd_shift`,
+`catch_gate`, `axial_catch`, `dir_bias`, `deflect_align`, `dd_shift`,
 `bend_shift`, `rad_shift`, `phase_gate`, `phase_sync`,
 `phase_adv`, `work_cap`, `bond_age`, `align_gate`, `par_gate`,
 `mass_cap`, `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
-`chargeflight_get`, `audit`
+`chargeflight_get`, `audit`, `incip_ttl`, `offer_torque`,
+`merge_gate`, `merge_min`
+
+**Phase/history getters**: `incipient_get`, `incipient_nu_get`,
+`incipop_get`, `incip_total`, `packet_get`, `packet_total`,
+`packet_nu`, `packet_born`, `packet_par`, `winding_get`,
+`mass_get`, `heat_get`, `events(i)`
 
 **History registers** (bulk-read at `state_pointer` offsets):
 `txnWork` (444) per-tick transaction count · `bondTick` (448)

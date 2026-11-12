@@ -12,9 +12,13 @@ The substrate is a cellular automaton — **Computationally Irreducible**: no al
 
 The deviation audit in [Moore26 Findings](/moore26-findings) is the honest scorecard this roadmap is measured against. The earlier engines' campaigns (the M-series, E-series, collider-matrix proposals) are archived under [Program History](/interference/methodology) — this page is only the current engine's frontier.
 
-## Step 1: Charge range — a field, not a jam *(open)*
+## Step 1: Charge range — a field, not a jam *(open, narrowed)*
 
-Today the charge law fires under offer congestion — a `cap` gate, a traffic jam. Nature's Coulomb acts at distance. The open question: can a standing virtual layer — persistent unconfirmed offers or phase bias radiated into the vacuum halo — project a gradient that steers traffic before it arrives? Measured next: whether a charged knot's wake deflects a probe stream at range, not just at contact.
+Today the charge law fires under offer congestion — a `cap` gate, a traffic jam. Nature's Coulomb acts at distance. The open question: can a standing virtual layer — persistent unconfirmed offers or phase bias radiated into the vacuum halo — project a gradient that steers traffic before it arrives? **Update:** the vacuum census bounds this hard — the undriven vacuum is perfectly inert (0 fluctuations) and bare mass emits nothing, so there is no ambient field to project. The only mediated "field" measured is the driven sidescatter halo (~42% of lane flux, phase-preserving, ~1–2 cells wide) — a force channel, not a Coulomb. The question narrows to whether halo-mediated coupling between adjacent lanes can be shaped into a gradient law.
+
+## Step 1b: Interference — phase arbitration *(measured — authored law)*
+
+Resolved into a working instrument: the toroidal two-arm interferometer resolves path-length phase exactly (`Δop = nu·ΔL`), and the authored merge-on-phase arbitration (`qMergeGate`/`qMergeMin`, frozen `incipOp` register) produces a real fringe — in-phase offer clouds admit bit-identically to the no-law baseline, anti-phase clouds mutually exclude (joint occupancy exactly 0). The knee is razor-sharp at the authored boundary, jitter-limited; the exclusion floor is total for nominal-arm traffic. Honest flag: the superposition term is *authored*, not emergent — the substrate needed an explicit arbitration law where two histories compare phases. Everything upstream of it (phase carriers, path resolution, coherent arms) is emergent and measured.
 
 ## Step 2: Knots in motion — *(measured, appetite-bound)*
 
@@ -30,7 +34,11 @@ Which bound structures persist? Verified so far: the wound knot (dissipative equ
 
 ## Step 5: Gravity *(proposed, unimplemented)*
 
-Mass-induced routing asymmetry — a knot subtly biasing conduction directions in its neighborhood — is the substrate's candidate mechanism for attraction at range. Not implemented; the honest test is whether ambient packets deflect toward a stationary knot by `δθ ∝ mass`.
+Mass-induced routing asymmetry — a knot subtly biasing conduction directions in its neighborhood — is the substrate's candidate mechanism for attraction at range. Not implemented; the honest test is whether ambient packets deflect toward a stationary knot by `δθ ∝ mass`. **New datum:** the sidescatter halo gives a concrete deflection channel — ~42% of stream flux shepherds parallel; whether a knot's presence biases halo trajectories toward itself is now measurable with census getters.
+
+## Step 6: Vacuum noise spectrum *(measured — new field)*
+
+The substrate's noise is medium-generated: quiet vacuum is perfectly inert, but driven lanes shed a coherent sidescatter halo whose arrival statistics are super-Poissonian and colored — Fano diverges 1.06→6.2 under integration, autocorrelation rings at ~16 ticks, and the incipient TTL dials the color white→resonant→red. Open: attribute the ~16-tick mode (toroidal half-lap vs dynamical timescale), measure the halo's spatial correlation length, and the deep question — does Gaussian statistics emerge with many weakly-coupled sectors (many-emitter vacuum)?
 
 ## The honesty conditions
 

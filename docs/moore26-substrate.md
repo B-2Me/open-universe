@@ -44,6 +44,7 @@ routing of discrete kinetic flux.
 
 See also: [fcc-substrate](fcc-substrate) (geometry),
 [moore26-findings](moore26-findings) (phenomenology),
+[moore26-constants](moore26-constants) (measured constants),
 [transaction-ledger](transaction-ledger) (mechanics), and the
 [rules reference](/data/ref/moore26-rules.html).
 
