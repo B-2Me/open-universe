@@ -249,7 +249,13 @@ alignment scheme changes again.
 - Known behavior: string-break fires on ≥12-node saturated tubes
   (tube heads only — one fracture, +128 mass per endpoint);
   emission is conserving (nu = shed/2, recapture restores da+db);
-  heat is per-node with a −1/128/tick local drain.
+  heat is per-node with a −1/128/tick local drain (ev44).
+  Thermal re-emission (`vac_floor`/`vac_rate`, defaults 128/64 =
+  legacy hardcode) mints `h>>3` packets from heat on edge
+  channels; `heat_set` seeds a bath — it writes BOTH buffers and
+  must `mark_chunk` or the vacuum-skip ledger never wakes.
+  Flux-aware ledger: Δheat = ev51(mint)+ev44(drain)−ev7(decay)
+  −ev52(all 19 reabsorb sites) — verified closing exactly 0.
 - Clock/history stack (all measured, commit ea6d720 era):
   `qTick` = absolute drumbeat (rail ring: exact period 3, bath-immune;
   ballistic time is NOT dilatable). `localTime` (τ, NodeState off

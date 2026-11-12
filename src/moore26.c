@@ -216,6 +216,11 @@ static int qPhaseSync=1;
 static int qMergeGate=0;   /* merge-on-phase arbitration: offers
      * joining a standing cloud must be in-phase (circular distance
      * of born-ops) with something armed — else thermalize (0=off) */
+static int qVacFloor=128;   /* heat threshold for thermal re-emission —
+     * lower = warmer ambient floor; the bath is heat-funded (sealed),
+     * so cold vacuum stays honestly dark */
+static int qVacRate=64;     /* re-emission odds: 1/qVacRate per hot node
+     * per tick (0=off) */
 static int qMergeMin=0;    /* arbitration is an absorber property: only
      * nodes with mass >= qMergeMin host a refusing field (0=any node) */
 static int qOfferTorque=0; /* offer field drags node phase (0=off,
@@ -309,7 +314,9 @@ static inline int nbr(int x,int y,int z,int dx,int dy,int dz){
 /* content test — a chunk is live if any node carries structure or
  * packets; the scan early-outs on the first live node found. */
 static int node_live(const NodeState *n){
-    if(n->mass)return 1;
+    if(n->mass||n->heat)return 1;   /* heat is stored energy — a hot
+        * node is not vacuum (it can thermally re-emit), so it must
+        * stay on the process list or the bath goes dark */
     for(int c=0;c<QChannels;c++)
         if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
     return 0;
@@ -638,6 +645,7 @@ void moore26_tick(void){
                           * thermalizes at its own nu, not deleted */
                 uint32_t h2=grid_next[si].heat+(r-255)*nuv;
                 grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);
+                qEvents[52]+=(uint64_t)(r-255)*nuv;
                 r=255;
             }
             grid_next[si].packet[c]=(uint8_t)r;
@@ -659,7 +667,7 @@ void moore26_tick(void){
          * (the CMB-like floor: opaque structure grinds packets to
          * heat, hot vacuum stochastically re-radiates). CONSERVED:
          * heat is debited exactly the minted nu. */
-        if(h>128&&(rand_site(si,50)&63)==0){
+        if(h>qVacFloor&&qVacRate>0&&(rand_site(si,50)%qVacRate)==0){
             /* re-emit only onto transporting edge channels — a packet
              * minted on a face/corner register would freeze there. */
             int c=6+rand_site(si,51)%12;
@@ -674,13 +682,16 @@ void moore26_tick(void){
                         grid_next[si].packetNu[c]=(uint8_t)(tot/(grid_next[si].packet[c]+1));
                         uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
                         grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
+                        qEvents[52]+=rem;
                     } else grid_next[si].packetNu[c]=(uint8_t)nu;
                     PAR_MERGE(&grid_next[si],c,PAR_SIGN(o,c));
                     if(grid_next[si].packet[c]<255)grid_next[si].packet[c]++;
-                    else grid_next[si].heat++;   /* thermal overflow — cap hits
+                    else{grid_next[si].heat++;qEvents[52]++;}   /* thermal overflow — cap hits
                                                  * friction, not a u8 wrap */
                     grid_next[si].packetBorn[c]=(uint8_t)qTick;
                     qEvents[10]++;
+                    qEvents[51]+=nu;   /* minted nu — the bath's
+                     * energy flux, ledger-visible */
                 }
             }
         }
@@ -745,7 +756,8 @@ void moore26_tick(void){
                  * last packet-cap leak in the ledger) */
                 uint32_t ov=(hit-in0)+(hit-in1);
                 if(ov){uint32_t h2=grid_next[si].heat+ov;
-                       grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);}
+                       grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);
+                       qEvents[52]+=ov;}
                 grid_next[si].packetNu[2*e]=nu;
                 grid_next[si].packetNu[2*e+1]=nu;
                 grid_next[si].packetBorn[2*e]=(uint8_t)qTick;
@@ -1050,6 +1062,7 @@ void moore26_tick(void){
                      uint32_t a=o->mass,b=grid_next[ni].mass;
                      grid_next[si].heat+=a;
                      grid_next[ni].heat+=b;
+                     qEvents[52]+=(uint64_t)a+b;
                      grid_next[si].mass-=a;
                      grid_next[ni].mass-=b;
                      jrn(si,ni,63,(int32_t)a);
@@ -1480,7 +1493,8 @@ void moore26_tick(void){
             {
                 uint32_t nnu=nu>127?127:nu;
                 if(nu>127){uint32_t h2=n->heat+(nu-127);
-                           n->heat=(uint16_t)(h2>65535?65535:h2);}
+                           n->heat=(uint16_t)(h2>65535?65535:h2);
+                           qEvents[52]+=nu-127;}
                 if(n->incip[c]){
                     uint32_t inu2=n->incipNu[c]&0x7f;
                     uint32_t tot=(uint32_t)inu2*n->incip[c]+nnu;
@@ -1488,7 +1502,8 @@ void moore26_tick(void){
                     n->incipNu[c]|=(uint8_t)(tot/(n->incip[c]+1));
                     uint32_t r3=tot-(uint32_t)(n->incipNu[c]&0x7f)*(n->incip[c]+1);
                     if(r3){uint32_t h2=n->heat+r3;
-                           n->heat=(uint16_t)(h2>65535?65535:h2);}
+                           n->heat=(uint16_t)(h2>65535?65535:h2);
+                           qEvents[52]+=r3;}
                 } else n->incipNu[c]=(uint8_t)nnu;
             }
             /* MERGE-ON-PHASE (qMergeGate) — the first law where two
@@ -1511,6 +1526,7 @@ void moore26_tick(void){
                 }
                 if(!aligned){
                     n->heat=(uint16_t)((n->heat+nu)>65535?65535:n->heat+nu);
+                    qEvents[52]+=nu;   /* energy side of the decline */
                     qEvents[50]++;   /* phase-opposed decline */
                     continue;
                 }
@@ -1587,6 +1603,7 @@ void moore26_tick(void){
                 uint32_t inu=(o->incipNu[c]&0x7f)?(o->incipNu[c]&0x7f):1;
                 uint32_t ht=(uint32_t)n->heat+h*inu;
                 n->heat=(uint16_t)(ht>65535?65535:ht);
+                qEvents[52]+=(uint64_t)h*inu;
                 continue;
             }
             uint8_t iv=o->incipNu[c];
@@ -1607,11 +1624,13 @@ void moore26_tick(void){
                      * merge nu into occupied traffic */
                     uint32_t rem2=shed-sn;
                     n->heat=(uint16_t)((n->heat+rem2)>65535?65535:(n->heat+rem2));
+                    qEvents[52]+=rem2;
                     if(n->packet[c]){
                         uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+sn;
                         n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                        qEvents[52]+=r3;
                     } else n->packetNu[c]=(uint8_t)sn;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
                     if(n->packet[c]<255)n->packet[c]++;
@@ -1624,6 +1643,7 @@ void moore26_tick(void){
                         n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
                         uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
                         n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                        qEvents[52]+=r3;
                     } else n->packetNu[c]=(uint8_t)nu;
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
                     if(n->packet[c]<255)n->packet[c]++;
@@ -1659,6 +1679,7 @@ void moore26_tick(void){
                         n->incip[c]--;
                         uint32_t ht2=(uint32_t)n->heat+nu;
                         n->heat=(uint16_t)(ht2>65535?65535:ht2);
+                        qEvents[52]+=nu;
                         continue;
                     }
                 }
@@ -1683,6 +1704,7 @@ void moore26_tick(void){
                         n->massFlight[c^1]=(uint16_t)(mf>65535?65535:mf);
                         uint32_t ht3=(uint32_t)n->heat+(nu>>1);
                         n->heat=(uint16_t)(ht3>65535?65535:ht3);
+                        qEvents[52]+=nu>>1;
                         jrn(si,-1,66,(int32_t)rc);   /* refusal recoil logged */
                         continue;
                     }
@@ -1835,10 +1857,11 @@ void moore26_tick(void){
                                     n->packetNu[dch]=(uint8_t)(tot/(n->packet[dch]+1));
                                     uint32_t rem=tot-(uint32_t)n->packetNu[dch]*(n->packet[dch]+1);
                                     n->heat=(uint16_t)((n->heat+rem)>65535?65535:(n->heat+rem));
+                                    qEvents[52]+=rem;
                                 } else n->packetNu[dch]=(uint8_t)tn;
                                 PAR_MERGE(n,dch,(dch&1)?-1:1);
                                 if(n->packet[dch]<255)n->packet[dch]++;
-                                else n->heat+=tn;   /* chain-share cap —
+                                else{n->heat+=tn;qEvents[52]+=tn;}   /* chain-share cap —
                                  * a u8 wrap would wipe 256 packets;
                                  * the chained energy thermalizes */
                                 n->packetBorn[dch]=(uint8_t)qTick;
@@ -2347,6 +2370,7 @@ void moore26_tick(void){
                      * to heat instead (the radiation sink) */
                     uint32_t h2=grid_next[si].heat+ev;
                     grid_next[si].heat=(uint16_t)(h2>65535?65535:h2);
+                    qEvents[52]+=ev;
                 }
                 qEvents[42]++;
                 continue;
@@ -2372,13 +2396,15 @@ void moore26_tick(void){
          * carries pn, the remainder dissipates as friction heat.
          * (shed>>1 alone lost half of every emission.) */
         if(shed>pn){uint32_t r=shed-pn;
-            grid_next[si].heat=(uint16_t)((grid_next[si].heat+r)>65535?65535:(grid_next[si].heat+r));}
+            grid_next[si].heat=(uint16_t)((grid_next[si].heat+r)>65535?65535:(grid_next[si].heat+r));
+            qEvents[52]+=r;}
         if(grid_next[si].packet[c]>=255){
             /* emit cap — the whole rung thermalizes at pn, not 1:
              * saturated channel returns the emitted energy to the
              * heat bath instead of deleting pn-1. */
             uint32_t h3=grid_next[si].heat+pn;
             grid_next[si].heat=(uint16_t)(h3>65535?65535:h3);
+            qEvents[52]+=pn;
         } else {
         /* conserve the shared nu register — average-weight instead
          * of overwriting when the channel already holds packets */
@@ -2387,6 +2413,7 @@ void moore26_tick(void){
             grid_next[si].packetNu[c]=(uint8_t)(tot/(grid_next[si].packet[c]+1));
             uint32_t rem=tot-(uint32_t)grid_next[si].packetNu[c]*(grid_next[si].packet[c]+1);
             grid_next[si].heat=(uint16_t)((grid_next[si].heat+rem)>65535?65535:(grid_next[si].heat+rem));
+            qEvents[52]+=rem;
         } else grid_next[si].packetNu[c]=(uint8_t)pn;
         PAR_MERGE(&grid_next[si],c,PAR_SIGN(&grid_next[si],c));
         /* spin-flip debit: the parity quantum costs 1 unit of the
@@ -2759,6 +2786,18 @@ void moore26_phase_adv_set(int v){qPhaseAdv=v;}
 void moore26_offer_torque_set(int v){qOfferTorque=v>=0&&v<16?v:0;}
 void moore26_merge_gate_set(int v){qMergeGate=v>=0&&v<=128?v:0;}
 void moore26_merge_min_set(int v){qMergeMin=v>=0?v:0;}
+void moore26_vac_floor_set(int v){qVacFloor=v>=0?v:128;}
+void moore26_vac_rate_set(int v){qVacRate=v>=0?v:64;}
+void moore26_heat_set(int x,int y,int z,int v){
+    /* seed a thermal reservoir: writes BOTH buffers (unprocessed
+     * chunks never see the current->next copy) and wakes the chunk
+     * ledger — a heat-only node is live now that re-emission exists */
+    if(!grid_current)return;
+    int i=((z&(QDepth-1))*QHeight+(y&(QHeight-1)))*QWidth+(x&(QWidth-1));
+    uint16_t hv=(uint16_t)(v<0?0:v>65535?65535:v);
+    grid_current[i].heat=hv;grid_next[i].heat=hv;
+    mark_chunk(x&(QWidth-1),y&(QHeight-1),z&(QDepth-1));
+}
 void moore26_work_cap_set(int v){qWorkCap=v;}
 void moore26_bond_age_set(int v){qBondAge=v;}
 void moore26_align_gate_set(int v){qAlignGate=v;}

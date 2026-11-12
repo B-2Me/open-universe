@@ -571,7 +571,7 @@ streams into the measurement.
 `phase_adv`, `work_cap`, `bond_age`, `align_gate`, `par_gate`,
 `mass_cap`, `evap_shift`, `absorb`, `charge_set`, `packet_par_set`,
 `chargeflight_get`, `audit`, `incip_ttl`, `offer_torque`,
-`merge_gate`, `merge_min`
+`merge_gate`, `merge_min`, `vac_floor`, `vac_rate`, `heat_set`
 
 **Phase/history getters**: `incipient_get`, `incipient_nu_get`,
 `incipop_get`, `incip_total`, `packet_get`, `packet_total`,
@@ -916,3 +916,53 @@ spectroscope for its internal timescales — closer to nature's 1/f
 flicker (correlated, memory-carrying) than to thermal jitter.
 Nature's Gaussianity presumably requires weakly-coupled independent
 sectors — a many-lane/many-emitter vacuum test is the natural probe.
+
+## Thermal vacuum channel: conserved re-emission, flux-aware audit
+
+The substrate's vacuum is inert absent drive (census above), but
+the engine long carried a dormant CMB-like pathway: a node whose
+heat reservoir exceeds a threshold stochastically boils energy
+back into a packet. That pathway is now exposed and audited:
+
+- `vac_floor` (default 128): heat threshold for re-emission.
+- `vac_rate` (default 64): 1-in-N odds per hot node per tick.
+  Defaults are bit-identical to the legacy `h>128 && rand&63`
+  hardcode — all prior measurements reproduce.
+- `heat_set(x,y,z,v)`: seeds a thermal reservoir. Writes BOTH
+  buffers and wakes the chunk ledger — previously heat-only
+  nodes were invisible to `node_live` and the reservoir sat
+  dark forever (a hot node is definitionally not vacuum).
+- `ev51` = heat→packet minted nu (the bath's energy flux).
+- `ev52` = nu-equivalent reabsorbed into heat across the 19
+  uncountered credit sites (cap truncations, decline refunds,
+  mixing remainders, TTL expiry, annihilation, recoil, vents).
+- `ev7` (pre-existing) = packet decay → heat.
+
+SEALED AUDIT (32³, 4×4 patch seeded heat=4000/node at floor=64,
+rate=8, 200 ticks):
+  Δheat = 17731
+  ev51 mint = 31714   ev44 drain = 12171
+  ev7 decay return = 18996   ev52 reabsorb = 7158
+  Δheat − (ev51 + ev44 − ev7 − ev52) = 0   EXACT CLOSURE
+
+The heat ledger is now fully flux-aware: every nu leaving heat
+is counter-visible (mint ev51, drain ev44) and every nu
+returning is counter-visible (decay ev7, everything else ev52).
+The bath's thermodynamic cycle — structure → heat → vacuum
+flux → reabsorption — is closed and measurable end to end.
+
+Remaining caveat: u16 heat saturation (>65535) still clamps
+silently — unreachable in seeded baths ≤4000/node but a real
+ceiling for extreme drives.
+
+Seeded-bath behavior (floor=64, rate=8): a 16-node 4000-heat
+patch emits ~4.3 packets/tick into random edge channels with
+nu=h>>3 (≈31–34 avg minted nu/emission, ev10=857 events/200t).
+Emitted flux random-walks off the patch, decays via ev7, and
+partially rethermalizes — a driven, funded, measured bath.
+
+Nature-analog now testable: quiet vs seeded-thermal vs
+driven-halo vacuum statistics; Brownian motion of structures;
+Casimir-like shielding between absorbers in a warm bath;
+noise-spectrum whitening under many independent emitters.
+

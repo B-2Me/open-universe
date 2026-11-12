@@ -121,6 +121,20 @@ lattice produced. Distances in cells, times in ticks.
 | incipient merge remainder | → heat | weighted-nu mixing | engine |
 | string-break payout | +128 mass per endpoint | ≥12-node saturated tubes | harness |
 
+## Thermal vacuum (flux-aware ledger)
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| re-emission floor | 128 heat (authored default, `vac_floor`) | `h>floor` gates boiling | seeded bath |
+| re-emission rate | 1/64 per hot node·tick (authored, `vac_rate`) | defaults = legacy hardcode | seeded bath |
+| minted nu | `h>>3` (≤255) per emission | heat debited exactly nu | seeded bath |
+| emission channel | random edge 6..17 only | face/corner never minted | engine |
+| seeded-bath flux | ~4.3 emissions/tick, ~37 nu avg | 16-node × heat=4000 patch, floor=64 rate=8 | seeded bath |
+| heat-ledger closure | **exactly 0** residual | Δheat = ev51+ev44−ev7−ev52, 200t | seeded bath |
+| `ev51` | heat→packet minted nu | bath energy flux | counter |
+| `ev52` | all reabsorbed nu→heat (19 sites) | caps/declines/remainders/TTL/annih/recoil | counter |
+| heat saturation | >65535 clamps silently | caveat: extreme drives only | engine |
+
 ## Nulls on record
 
 | claim tested | result |
