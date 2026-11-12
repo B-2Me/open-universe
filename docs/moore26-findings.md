@@ -1009,3 +1009,32 @@ Literal-EM Casimir remains out of scope: at 0.1 fm/node the
 real effect needs ~10^5 fm grids — the analog question is
 whether boundary-shaped vacuum spectra exist at all.
 
+## Force from offer density — MEASURED, plus a thrust instability
+
+(script/cascade/force-probe.mjs) Two controlled opposed packet
+streams at a 3x3 mass plate; confirmed offers kick momentum[pair]
+signed by travel direction (+x channels decrement, -x increment).
+Net momentum summed over pairs 3-6 on the plate neighborhood.
+
+LINEAR REGIME (low flux): correct-sign drift, rate-scaled —
+  ra=0.2 -> ~0   ra=0.4 -> -3   ra=0.6 -> -10   (300t)
++x-only stream pushes the plate along +x (away from source):
+radiation pressure exists natively — offer-density asymmetry IS
+a force law. Balanced streams wander near zero as required.
+
+NONLINEAR REGIME (onset ~ra 0.8): momentum runaway —
+  ra=0.8: burst +544 mid-run, ends -1 (intermittent)
+  ra=1.0: +872 sustained; even balanced ra=rb=1 -> +349
+Sustained bombardment past a threshold ignites coherent thrust
+with sign-flipping bursts — structures convert ambient flux into
+self-propulsion once excited. This may be the substrate's true
+vacuum-force regime: hot baths don't gently push structures,
+they ignite them. Onset characterization pending.
+
+CONSEQUENCE for Casimir: the force-write path exists and works;
+what cavities still lack is a sustained GEOMETRIC arrival
+asymmetry. Transaction-starved pockets DO exert inward force by
+subtraction (fewer kicks from the starved face) — Le Sage
+mechanics, natively in the registers. The runaway adds a caveat:
+high-T baths may thrust structures regardless of geometry.
+

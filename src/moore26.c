@@ -2805,6 +2805,12 @@ void moore26_par_gate_set(int v){qParGate=v;}
 void moore26_mass_cap_set(int v){qMassCap=v;}
 void moore26_momentum_set(int v){qMomentum=v;}
 void moore26_launch_mode_set(int v){qLaunchMode=v;}
+int32_t moore26_momentum_at_get(int x,int y,int z,int e){
+    /* read the structure momentum on edge-pair e — force from
+     * confirmed-offer flux asymmetry lands here (F=dp/dt) */
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth||e<0||e>12)return 0;
+    return grid_current[(z*QHeight+y)*QWidth+x].momentum[e];
+}
 void moore26_momentum_at_set(int x,int y,int z,int e,int v){
     /* direct impulse: set momentum[pair] on one node — the placed
      * kick tool. Writes BOTH buffers — the drift reads grid_next,

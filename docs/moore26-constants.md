@@ -136,6 +136,15 @@ translations live in [Nature → Substrate](/nature-translation).
 | `ev52` | all reabsorbed nu→heat (19 sites) | caps/declines/remainders/TTL/annih/recoil | counter |
 | heat saturation | >65535 clamps silently | caveat: extreme drives only | engine |
 
+## Force from density (offer->momentum)
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| momentum kick | ±1 per confirmed offer | signed by travel channel parity | force-probe |
+| linear force | ~rate-scaled drift | ra 0.4->-3, 0.6->-10 (300t, 3x3 plate) | force-probe |
+| thrust onset | ~ra 0.8 intermittent, 1.0 sustained | bursts to ±500-1000, sign-flipping | force-probe |
+| balanced streams | ~0 in linear regime; runaway above onset | ra=rb=0.5 ~flat; ra=rb=1 -> +349 | force-probe |
+
 ## Nulls on record
 
 | claim tested | result |
