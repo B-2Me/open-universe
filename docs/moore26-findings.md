@@ -789,3 +789,32 @@ is authored, binary, and the absorber's exclusion is winner-take-cloud
 rather than amplitude arithmetic. The honest reading: this is the
 minimal place where two phases can talk, and when they do, the
 substrate produces a fringe.
+
+
+## Knee map: the arbitration boundary resolved (script/cascade/knee-map.mjs)
+
+Fixed nu=8 (lambda=32 hops >> path jitter ~1-2 hops), scanned emitter
+along the diagonal E=(k,k,14), k=1..15 — each placement gives a
+different arm difference dL={2..30} hence dphi=8*dL covering the full
+phase circle in 16-unit steps, both authored boundaries (dist=48)
+sampled. Per point: merge=48 vs merge=0 matched-flux runs.
+
+Observed curve (P(B)_on vs circular dist from 0):
+  dist 16-48 (admit band):  joint = min(PA,PB) ~0.55-0.68, pd~0
+      — full cloud coexistence, law transparent
+  dist 48->64 boundary:     joint 0.55 -> 0.00 in ONE step (dL=2 hops)
+      — the knee is razor sharp, width <= jitter*nu (~16 units)
+  dist 64-72 (edge):        bistable mutual exclusion — both arms
+      partially alive (PA=.33,PB=.46) but coexist ZERO ticks
+  dist 80-176 (floor):      total exclusion of the weaker arm,
+      P(B)=0.00-0.05, joint=0
+  dist 48-16 second knee:   unreadable — B baseline starves at LB>=29
+      (0.00-0.45); partial recovery at dphi=224 only
+
+Structure: the arbitration is winner-take-cloud — phase-opposed
+incipient populations never stand simultaneously; the edge is
+bistable (either arm can hold the field) while the deep band excludes
+the lower-flux arm entirely. The measured knee tracks the authored
+boundary at essentially the resolution limit — the substrate adds
+jitter-width smearing, not softening. To read knee 2 symmetrically
+would need a matched-length geometry with both arms well-fed.
