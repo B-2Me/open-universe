@@ -1067,3 +1067,51 @@ mode language is the boundary-method bookkeeper of what the
 materials do. Our substrate version says the same: the medium is
 the ledger, the bodies write the entries.
 
+
+## Statistical gravity: pull-to-source + dead-end seal — MECHANISM CONFIRMED
+
+(script/cascade/source-pull.mjs, depletion-gravity.mjs) The kick
+sign convention resolves: a confirmed offer on channel c writes
+momentum[c>>1] with sign (c&1?+:-), and the relay maps p>0 to the
+even channel (+v). Absorbing a +x+y packet therefore drives drift
+-x-y: **the transaction pulls the node UPSTREAM, toward the flux
+source**. Pull-model semantics made literal — prior "radiation
+pressure" readings were attraction-to-source all along (mirror
+arm flipped sign; balanced streams canceled — consistent either
+way, the direction was mislabeled).
+
+source-pull: single ch6 injector at B-(6,6), probe (odd, m=256):
+mass 256->270, centroid cx 17.00->16.95 marching toward emitter;
+control flat. Bodies drift toward what feeds them.
+
+depletion-gravity (external-reservoir bath, 4x2048 absorber on the
+ch7 axis, probe at B): mean box-momentum[3] — control -5.86,
+A@+12 -10.07, A@+24 -11.76, A@-12 -2.58. Directional residual
+flips with the absorber's side: a SINK REPELS — it eats the flux
+that would pull the probe toward it. Le Sage inverts in a
+pull-universe; +24>+12 reflects bath anisotropy (absorber nearer
+the boundary emitters eats a stronger directional component).
+
+**Dead-end broadcast leak — SEALED (rules-order bug).** The
+field-drag broadcast debited the donor p>>8 per face-neighbor
+without checking receiver liveness; shares written to bare cells
+were vacuumed by rescan_live in the same tick — donor debited,
+receiver zeroed. Broadcast now refuses dead destinations
+(node_live(grid_next)); momentum backs up at live frontiers
+instead of draining — dead ends became walls, emergent pressure.
+
+**Ring-cavity matrix (first run) — no ladder.** ev50=0 at every
+(C,nu): offers confirm in ~2t while injection spacing was 8t, so
+the standing cloud never coexists and the merge gate never
+compares phases; detWind tracked nu (energy deposited), not
+admission. Mode selection needs a persistent standing cloud —
+unbuilt, not disproven.
+
+Gravity synthesis: no force needed — three statistical biases:
+(a) flux ROUTES toward structure (worn-lane waveguide +
+mass-bent emission), (b) transactions PULL toward source, (c)
+accretion deposits preferentially at structure (catch gate +
+flight-park). A pure sink repels (eats the pull); a living knot
+that recycles flux into emission becomes a persistent local
+source — the candidate mechanism for mass-attracts-mass is
+re-emission, not depletion.

@@ -1241,6 +1241,14 @@ void moore26_tick(void){
                 if(nx<0||nx>=QWidth||ny<0||ny>=QHeight||nz<0||nz>=QDepth)continue;
                 int ni=(nz*QHeight+ny)*QWidth+nx;
                 if(IS_EVEN(nx,ny,nz))continue;
+                /* dead-end seal: a broadcast paid to a bare cell is
+                 * vacuumed by rescan_live the same tick — the donor is
+                 * debited for nothing. Refuse the write and the kick
+                 * backs up on the live frontier instead: the dead end
+                 * becomes a WALL, pressure accumulates where the
+                 * field can't propagate (no field without matter —
+                 * but no paying vacuum either). */
+                if(!node_live(&grid_next[ni]))continue;
                 int be=-1;int32_t bp=0;
                 for(int e=0;e<QChannels/2;e++){
                     int32_t rp=grid_current[ni].momentum[e];

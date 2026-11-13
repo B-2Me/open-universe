@@ -44,7 +44,7 @@ in these docs:
 | **photon / quantum** | a conserved packet: `{count, nu, parity, born}` on edge channels 6–17. A transaction quantum, not a wave packet | transport stack |
 | **wavefunction collapse** | transaction confirmation: incipient → mass write. Resolution at a ledger event, matching the FLOW_CAP account — no observer needed | transaction ledger |
 | **redshift** | nu-decay in transit (`ev7` books `decay·nu` → heat). Energy lost per hop to the medium, not stretched space | conservation arc |
-| **Casimir force** | **absent as radiated force — the conducted variant is the open fork.** Boundary-shaped spectra don't exist (boundary-blind volumetric bath), and shadowing is structurally forbidden (no collimated transport — every umbra refills in ~2 cells). Even in nature the mainstream view is that the force is *matter-generated*: Lifshitz theory sums retarded van der Waals between plate atoms, Jaffe (2005) derives the same result with no zero-point vocabulary — the vacuum-mode language is bookkeeping, and gravity is excluded by ~10^27 magnitude. Substrate version: the force must be **conducted along a shared live structure**, not radiated across a gap | casimir.mjs null ×2; shadow-probe.mjs; momentum-field.mjs |
+| **Casimir force** | **absent as radiated force — the spectral variant is the open fork.** Two different mechanisms must not be conflated: geometric *shadowing* (structurally forbidden — no collimated transport, every umbra refills in ~2 cells) vs spectral *mode exclusion* (the real Casimir mechanism — the cavity filters which modes can stand, not which flux can arrive). The substrate's "vacuum" is conducted by live structure: a gap that can't support the resonant path **starves the medium's structure**, not its flux. Even in nature the mainstream view is that the force is *matter-generated*: Lifshitz sums retarded van der Waals between plate atoms, Jaffe (2005) derives it with no zero-point vocabulary. Substrate version: mode exclusion needs a standing cloud — first ring-cavity matrix found none (ev50=0: offers confirm faster than they coexist, so the gate never compares phases) | casimir.mjs null ×2; shadow-probe.mjs; ring-cavity.mjs matrix; depletion-gravity.mjs |
 | **force at range** | **current along a path.** Momentum is a marching order relayed through winding/mass — it leads the mass, drains at dead ends, and is vacuumed on matter-free cells. Nothing propagates through vacuum: no collimated flux, no resting field. The substrate is a contact universe | momentum-field.mjs |
 
 ## The scale confound
@@ -61,12 +61,17 @@ This substrate's honest status: ballistic flux is *not* a spectrum
 (casimir null ×2). But closed resonant paths are — a ring of
 circumference C admits only carriers with `nu·C ≡ 0 (mod 256)`:
 **a geometry-selected mode ladder**, the discrete form of cavity
-quantization. The scale-free demand translates into: does the
-substrate produce boundary-shaped spectra at *every* cavity size
-a ring or lattice cavity can take — and does the admitted ladder
-track `nu·C ≡ 0`? That is measurable today at 32³, no 10⁵ fm
-grid required — and its outcome decides whether the confound is
-reproduced or merely re-described.
+quantization. First measurement (ring-cavity.mjs matrix, C=8–24):
+**no ladder formed** — `ev50=0` across every (C, nu) cell. The gate
+only discriminates path difference, and same-path offers always
+agree; worse, offers confirm in ~2 ticks while the cloud needs
+coexisting incipients to compare — at 8-tick injection spacing the
+table never holds two phases at once. Deposits tracked nu, not
+admission: `detWind` rose monotonically with nu regardless of
+ladder position. The ladder is not disproven — it is unbuilt:
+mode selection needs a standing cloud (denser injection, longer
+incipient lifetime, or self-sustaining circulation), and until one
+exists there is nothing for a cavity to cut.
 
 ## What changes when you translate
 
