@@ -1136,3 +1136,26 @@ of a body's mass-flow imbalance: net eater repels, net emitter
 attracts, equilibrium is transparent. Gravity-as-static-property
 is refuted; the remaining candidate is force-as-imbalance —
 decaying structure pulls, feeding structure pushes.
+
+## Starved emitter arm: force tracks net emission — full dose-response
+
+(knot-source.mjs --arms=starved) 4x4 block of even cells saturated
+with committed winding (6 pairs x400, vol ~2400 — above the 512
+ground-state floor below which a knot CANNOT unwind: meta-stable,
+dark). Single-cell emitters fire ~1 rung/2-3t near the floor —
+knots are intrinsically dim, a real constraint on emission-driven
+forces.
+
+  anchor                   mom3 mean   vs control
+  cold sink (net eater)    -13.45      -4.31  repels
+  living-faint (recycler)   -9.36      -0.22  neutral
+  control (none)            -9.14       0.00
+  living (balanced)         -8.68      +0.46  neutral
+  starved block (emitter)   -6.75      +2.39  attracts
+
+Mom3 increases monotonically with the anchor's emitted fraction —
+a dose-response curve across the whole range, not just endpoints.
+Force = net mass-flow imbalance: decaying structure attracts,
+feeding structure repels, equilibrium is transparent. The first
+measured ATTRACTION between separated bodies in the substrate —
+and it is a decay signature, not a mass property.

@@ -38,7 +38,12 @@ const BURN  = +(argv.burn  ?? 0.5);
 const M = await loadM26();
 const BX = 25, BY = 24, BZ = 32;               // probe (odd)
 const AX = 33, AY = 32, AZ = 32;               // anchor (odd)
-const ARMS = ['control','cold','living','living-faint'];
+const ARMS = String(argv.arms ?? 'control,cold,living,living-faint').split(',');
+/* 'starved' = pure net emitter: EVEN cells (they radiate directly
+ * onto the arming graph — odd-cell emissions fly the odd sublattice
+ * and can never arm), saturated winding, no mass — unwind outpaces
+ * the thin catch a massless cell manages => net source.
+ * Prediction vs control: mom3 goes POSITIVE (pull toward anchor). */
 
 function seedBath() {
   for (let z = 0; z < SIZE; z++)
@@ -49,7 +54,19 @@ function seedBath() {
           M._moore26_heat_set(x, y, z, HEAT);
 }
 const CELLS = [[0,0],[2,0],[0,2],[2,2]];
+/* even-parity emitter block — 4x4 saturated cells on the +8 diag.
+ * Emission needs committed volume >512/site (ground-state floor:
+ * a knot below the floor CANNOT unwind — meta-stable, dark). */
+const ECELLS = [];
+for (let dx = 0; dx <= 6; dx += 2)
+  for (let dy = 0; dy <= 6; dy += 2) ECELLS.push([32+dx, 32+dy]);
 function seedAnchor(kind) {
+  if (kind === 'starved') {
+    for (const [x, y] of ECELLS)
+      for (const c of [6,7,8,9,10,11,12,13,14,15,16,17])
+        M._moore26_winding_set(x, y, AZ, c, 400);
+    return;
+  }
   for (const [dx, dy] of CELLS) {
     const x = AX+dx, y = AY+dy, z = AZ;
     M._moore26_mass_set(x, y, z, 2048);
