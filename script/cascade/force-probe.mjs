@@ -36,6 +36,9 @@ const MASS  = +(argv.mass  ?? 10);
 const CATCH = +(argv.catch ?? 2);
 const SEED  = +(argv.seed  ?? 12345);
 const REFL  = +(argv.reflect ?? 0);    // declined offers bounce back
+const TENS  = +(argv.tension ?? 0);    // bond-stretch pulls bends together
+const STR   = +(argv.string ?? 0);     // constant-force pull past slack
+const SLACK = +(argv.slack ?? 2);
 
 const M = await loadM26();
 const CV = [,,,,,, [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],[0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1]];
@@ -73,14 +76,17 @@ function momentum() {
 M._moore26_init(SIZE, SIZE, SIZE);
 M._moore26_catch_gate_set(CATCH);
 M._moore26_reflect_set(REFL);
+M._moore26_tension_set(TENS);
+M._moore26_string_set(STR);
+M._moore26_slack_set(SLACK);
 for (const [x, y, z] of plate) M._moore26_mass_set(x, y, z, MASS);
 
 console.log(`force-probe: plate 3x3@(${PX},${PY},${PZ}) mass=${MASS} ` +
-            `+x rate=${RA} -x rate=${RB} gap=${GAP} nu=${NU} catch=1/${CATCH} reflect=${REFL}`);
+            `+x rate=${RA} -x rate=${RB} gap=${GAP} nu=${NU} catch=1/${CATCH} reflect=${REFL} tension=${TENS} string=${STR} slack=${SLACK}`);
 console.log('t  netMom(+x trav -> -)   pk_total');
 for (let t = 0; t <= TICKS; t++) {
   if (t % 25 === 0)
-    console.log(`${t}  ${momentum()}  ${M._moore26_packet_total()}`);
+    console.log(`${t}  ${momentum()}  ${M._moore26_packet_total()}  ev53=${M._moore26_events(53)} ev54=${M._moore26_events(54)} ev55=${M._moore26_events(55)}`);
   if (t < TICKS) {
     inject(PLUSX, RA); inject(MINUSX, RB);
     M._moore26_tick();

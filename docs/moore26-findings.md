@@ -1044,7 +1044,7 @@ Radiation pressure is real, funded, and bounded.
 | resting momentum field | STRUCTURALLY ABSENT | momentum on a matter-free cell is vacuumed (node_live excludes it); through structure it is a marching current that drains at dead ends |
 | conducted momentum | REAL | relay hands p to the frontier cell ahead of mass each tick — propagates along winding trails/mass chains, the only demonstrated inter-structure coupling |
 | contact bounce / repulsion | AUTHORED + MEASURED | `qReflect` (0-255): declined offers reflect down the mirror channel c^1, refuser takes 2-unit recoil — degeneracy pressure: packed fields push back harder (+33% push at unsaturated flux, +89% saturated, ev53 counted, conservation-sealed) |
-| tension / restoring | MISSING RULE | winding trails have no contract-elastic term; nothing pulls connected bodies taut |
+| tension / restoring | AUTHORED + MEASURED | two knobs on the ACK reach meter: `qTension` (harmonic F=k·dd, bidirectional, produces underdamped oscillation) and `qString` (confinement: constant pull while reach>slack — resists at constant rate, slingback when strong, silent below slack, released by the existing string-break fracture). ~25-46 stretch events/tick — the strain field is pervasive |
 | vacuum back-reaction | NOT AUTHORED | structure cannot locally reshape the bath's flux except through the heat reservoir |
 
 CONSEQUENCE: the substrate is a CONTACT UNIVERSE. Force only travels

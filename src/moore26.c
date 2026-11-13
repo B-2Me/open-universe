@@ -208,6 +208,15 @@ static int qIncipTtl=6;   /* arbitration window — how many ticks an
      * rise — congestion is the constraint class that pushes back). */
 static int qDirBias=0;
 static int qDeflectAlign=0;
+static int qString=0;       /* confinement-style tension: while a
+ * bond's measured reach exceeds qSlack, its bend cells take a
+ * CONSTANT mutual pull (sigma per completed transaction) — force
+ * independent of stretch magnitude, silent when slack. 0 = off. */
+static int qSlack=2;
+static int qTension=0;     /* bond stretch -> mutual pull: when a
+ * bond's measured ACK reach grows by dd hops, the conduit's two
+ * bend cells take min(dd,qTension) kicks toward each other.
+ * 0 = off. The speed limit IS the distance meter. */
 static int qReflect=0;      /* declined offers REFLECT down the mirror
  * member c^1 (recoil = 2 kick units on the refuser) instead of
  * deflecting/thermalizing — P = qReflect/256 per decline. 0 = off. */
@@ -1623,7 +1632,65 @@ void moore26_tick(void){
             uint8_t a=grid_current[up].ack[c];
             if(!a){n->ack[c]=0;continue;}
             uint8_t ttl=grid_current[up].ackTtl[c],rtt=grid_current[up].ackRtt[c];
-            if(ttl<=1){n->bondDist[c>>1]=rtt>1?(uint8_t)(rtt>>1):1;qEvents[14]++;}
+            if(ttl<=1){
+                int reach=rtt>1?(int)(rtt>>1):1;
+                int dd=reach-(int)o->bondDist[c>>1];
+                n->bondDist[c>>1]=(uint8_t)reach;qEvents[14]++;
+                /* TENSION (qTension): the bond stretched by dd hops —
+                 * pull its two bend cells toward each other. For edge
+                 * vec v=(a,b,0) the odd cells flanking the conduit sit
+                 * at +(a,0,0) and +(0,b,0); their mutual axis is itself
+                 * an edge vector, so each takes a kick toward the other
+                 * on that pair — reciprocal contraction, measured not
+                 * assumed. ev54 = stretch events. */
+                if(qString&&reach>qSlack){
+                    const int8_t *v=QChannelVec[2*(c>>1)];
+                    int o1[3]={v[0],0,0},o2[3]={0,0,0};
+                    if(v[0]&&v[1]){o1[0]=v[0];o2[1]=v[1];}
+                    else if(v[0]&&v[2]){o1[0]=v[0];o2[2]=v[2];}
+                    else{o1[1]=v[1];o2[2]=v[2];}
+                    int kv[3]={o2[0]-o1[0],o2[1]-o1[1],o2[2]-o1[2]};
+                    int m=-1;
+                    for(int c2=6;c2<18;c2++){
+                        const int8_t *w=QChannelVec[c2];
+                        if(w[0]==kv[0]&&w[1]==kv[1]&&w[2]==kv[2]){m=c2;break;}
+                    }
+                    if(m>=0){
+                        int ia=nbr(x,y,z,o1[0],o1[1],o1[2]),
+                            ib=nbr(x,y,z,o2[0],o2[1],o2[2]);
+                        int sgn=(m&1)?-1:1;
+                        if(ia>=0&&ia<QSites){grid_next[ia].momentum[m>>1]+=sgn*qString;qEvents[55]++;}
+                        if(ib>=0&&ib<QSites){grid_next[ib].momentum[m>>1]-=sgn*qString;qEvents[55]++;}
+                    }
+                }
+                if(qTension&&dd){
+                    const int8_t *v=QChannelVec[2*(c>>1)];
+                    int o1[3]={v[0],0,0},o2[3]={0,0,0};
+                    if(v[0]&&v[1]){o1[0]=v[0];o2[1]=v[1];}
+                    else if(v[0]&&v[2]){o1[0]=v[0];o2[2]=v[2];}
+                    else{o1[1]=v[1];o2[2]=v[2];}
+                    int kv[3]={o2[0]-o1[0],o2[1]-o1[1],o2[2]-o1[2]};
+                    int m=-1;
+                    for(int c2=6;c2<18;c2++){
+                        const int8_t *w=QChannelVec[c2];
+                        if(w[0]==kv[0]&&w[1]==kv[1]&&w[2]==kv[2]){m=c2;break;}
+                    }
+                    if(m>=0){
+                        /* F = k*dd, BIDIRECTIONAL: stretch pulls the
+                         * bend cells together, compression pushes them
+                         * apart — dd IS the strain, qTension the
+                         * spring constant (kick = dd*qTension>>4;
+                         * tension=16 => k=1). */
+                        int kick=dd*qTension>>4;
+                        if(kick>127)kick=127; if(kick<-127)kick=-127;
+                        int ia=nbr(x,y,z,o1[0],o1[1],o1[2]),
+                            ib=nbr(x,y,z,o2[0],o2[1],o2[2]);
+                        int sgn=(m&1)?-1:1;
+                        if(ia>=0&&ia<QSites){grid_next[ia].momentum[m>>1]+=sgn*kick;qEvents[54]++;}
+                        if(ib>=0&&ib<QSites){grid_next[ib].momentum[m>>1]-=sgn*kick;qEvents[54]++;}
+                    }
+                }
+            }
             else{n->ack[c]=a;n->ackTtl[c]=ttl-1;n->ackRtt[c]=rtt;
                 /* the answer paves the rail: redistribute 1 unit of
                  * committed winding from the node's freest channel
@@ -2835,6 +2902,9 @@ void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
+void moore26_tension_set(int v){qTension=v<0?0:v>127?127:v;}
+void moore26_string_set(int v){qString=v<0?0:v>127?127:v;}
+void moore26_slack_set(int v){qSlack=v<1?1:v;}
 void moore26_dd_shift_set(int v){qDdShift=v;}
 void moore26_bend_shift_set(int v){qBendShift=v;}
 void moore26_rad_shift_set(int v){qRadShift=v;}
