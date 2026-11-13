@@ -1175,3 +1175,27 @@ when the packet survives — range is set by carrier lifetime
 attractive force is screened, not power-law: a third measured
 deviation from nature's gravity (after: force = imbalance, not
 mass; pull is upstream, not downstream).
+
+## Density flips the sign of gravity — force is object x medium balance
+
+(knot-source.mjs starved arm, bath RATE sweep) The SAME 4x4
+starved emitter block at fixed depth, three ambient densities:
+
+  rate=16 (sparse)  control -1.63   starved -1.63   d =  0.00
+  rate=8            control -9.14   starved -6.75   d = +2.39
+  rate=4  (dense)   control -13.84  starved -43.95  d = -30.11
+
+Emission is intrinsic and floor-throttled (roughly constant);
+absorption scales with ambient flux (catch gate eats more in a
+richer medium). So the anchor's balance flips with density:
+net emitter in sparse vacuum (attracts), net eater in dense
+medium (repels). The baseline ensemble also scales with density
+(-1.63/-9.14/-13.84) — the ambient medium IS the kick ensemble.
+
+Consequence: gravity's SIGN is a function of ambient conducted
+density, with a measured crossover between rate 4 and 16 where
+force vanishes. A dense-medium universe repels its structures;
+a sparse one attracts — the substrate's "gravity" is a phase
+diagram, not a constant. (Ground-state floor also characterized:
+qGroundFloor=512 knob verified — lower floor lets knots radiate
+deeper; committed vol <= floor = meta-stable dark bound state.)
