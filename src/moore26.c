@@ -111,6 +111,9 @@ typedef struct {
     uint8_t  ackTtl[26];       /* hops remaining back to the emitter */
     uint8_t  ackRtt[26];       /* the round-trip the ACK delivers */
     uint8_t  bondDist[13];     /* measured edge reach (hops) — feeds L2 */
+    uint16_t strainBank;       /* banked elastic energy on this conduit —
+     * stretch deposits, kicks withdraw, contraction drains. The
+     * stored tension that funds the force. */
     int8_t   chargeFlight[26]; /* charge quanta riding the mass flight */
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
@@ -336,6 +339,7 @@ static int node_live(const NodeState *n){
         * stay on the process list or the bath goes dark */
     for(int c=0;c<QChannels;c++)
         if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
+    if(n->strainBank)return 1;
     return 0;
 }
 
@@ -1652,8 +1656,15 @@ void moore26_tick(void){
                     if(qString){
                         eN+=(uint64_t)qString*(reach>qSlack?reach-qSlack:0);
                         eO+=(uint64_t)qString*(pb>qSlack?pb-qSlack:0);}
-                    if(eN>eO)qEvents[56]+=eN-eO;
-                    else if(eO>eN)qEvents[57]+=eO-eN;
+                    if(eN>eO){
+                        qEvents[56]+=eN-eO;
+                        uint32_t b=n->strainBank+(eN-eO);
+                        n->strainBank=(uint16_t)(b>65535?65535:b);
+                    } else if(eO>eN){
+                        qEvents[57]+=eO-eN;
+                        uint32_t d=(uint32_t)(eO-eN);
+                        n->strainBank=d>n->strainBank?0:n->strainBank-d;
+                    }
                 }
                 /* TENSION (qTension): the bond stretched by dd hops —
                  * pull its two bend cells toward each other. For edge
@@ -1678,8 +1689,13 @@ void moore26_tick(void){
                         int ia=nbr(x,y,z,o1[0],o1[1],o1[2]),
                             ib=nbr(x,y,z,o2[0],o2[1],o2[2]);
                         int sgn=(m&1)?-1:1;
-                        if(ia>=0&&ia<QSites){grid_next[ia].momentum[m>>1]+=sgn*qString;qEvents[55]++;}
-                        if(ib>=0&&ib<QSites){grid_next[ib].momentum[m>>1]-=sgn*qString;qEvents[55]++;}
+                        /* funded: each bend's kick spends banked strain */
+                        int ka=qString>(int)n->strainBank?(int)n->strainBank:qString;
+                        if(ka>0){n->strainBank-=ka;
+                            grid_next[ia].momentum[m>>1]+=sgn*ka;qEvents[55]++;}
+                        int kb=qString>(int)n->strainBank?(int)n->strainBank:qString;
+                        if(kb>0){n->strainBank-=kb;
+                            grid_next[ib].momentum[m>>1]-=sgn*kb;qEvents[55]++;}
                     }
                 }
                 if(qTension&&dd){
@@ -1705,8 +1721,15 @@ void moore26_tick(void){
                         int ia=nbr(x,y,z,o1[0],o1[1],o1[2]),
                             ib=nbr(x,y,z,o2[0],o2[1],o2[2]);
                         int sgn=(m&1)?-1:1;
-                        if(ia>=0&&ia<QSites){grid_next[ia].momentum[m>>1]+=sgn*kick;qEvents[54]++;}
-                        if(ib>=0&&ib<QSites){grid_next[ib].momentum[m>>1]-=sgn*kick;qEvents[54]++;}
+                        int kabs=kick<0?-kick:kick;
+                        int spend=kabs>(int)n->strainBank?(int)n->strainBank:kabs;
+                        if(!spend)goto notension;
+                        n->strainBank-=spend;
+                        kick=kick<0?-spend:spend;
+                        {grid_next[ia].momentum[m>>1]+=sgn*kick;
+                         grid_next[ib].momentum[m>>1]-=sgn*kick;
+                         qEvents[54]++;}
+                        notension:;
                     }
                 }
             }
