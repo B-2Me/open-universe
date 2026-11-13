@@ -86,7 +86,7 @@ console.log(`force-probe: plate 3x3@(${PX},${PY},${PZ}) mass=${MASS} ` +
 console.log('t  netMom(+x trav -> -)   pk_total');
 for (let t = 0; t <= TICKS; t++) {
   if (t % 25 === 0)
-    console.log(`${t}  ${momentum()}  ${M._moore26_packet_total()}  ev53=${M._moore26_events(53)} ev54=${M._moore26_events(54)} ev55=${M._moore26_events(55)}`);
+    console.log(`${t}  ${momentum()}  ${M._moore26_packet_total()}  ev53=${M._moore26_events(53)} ev54=${M._moore26_events(54)} ev55=${M._moore26_events(55)} stored=${M._moore26_events(56)-M._moore26_events(57)}`);
   if (t < TICKS) {
     inject(PLUSX, RA); inject(MINUSX, RB);
     M._moore26_tick();

@@ -1634,8 +1634,27 @@ void moore26_tick(void){
             uint8_t ttl=grid_current[up].ackTtl[c],rtt=grid_current[up].ackRtt[c];
             if(ttl<=1){
                 int reach=rtt>1?(int)(rtt>>1):1;
-                int dd=reach-(int)o->bondDist[c>>1];
+                int pb=(int)o->bondDist[c>>1];
+                int dd=reach-pb;
                 n->bondDist[c>>1]=(uint8_t)reach;qEvents[14]++;
+                /* STRAIN-ENERGY CENSUS — each law's potential per bond:
+                 * harmonic E = k*r^2/2 (k = qTension/16, so E = T*r^2>>5),
+                 * string E = sigma*max(0, reach-slack) — the LINEAR
+                 * potential of confinement (constant force because dE/dr
+                 * = sigma, and what pair-produces on break). ev56 banks
+                 * growth, ev57 releases contraction — the substrate's
+                 * elastic energy inventory is now ledger-visible. */
+                {
+                    uint64_t eN=0,eO=0;
+                    if(qTension){
+                        eN+=(uint64_t)reach*reach*qTension>>5;
+                        eO+=(uint64_t)pb*pb*qTension>>5;}
+                    if(qString){
+                        eN+=(uint64_t)qString*(reach>qSlack?reach-qSlack:0);
+                        eO+=(uint64_t)qString*(pb>qSlack?pb-qSlack:0);}
+                    if(eN>eO)qEvents[56]+=eN-eO;
+                    else if(eO>eN)qEvents[57]+=eO-eN;
+                }
                 /* TENSION (qTension): the bond stretched by dd hops —
                  * pull its two bend cells toward each other. For edge
                  * vec v=(a,b,0) the odd cells flanking the conduit sit
