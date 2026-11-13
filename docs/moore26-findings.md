@@ -1159,3 +1159,19 @@ Force = net mass-flow imbalance: decaying structure attracts,
 feeding structure repels, equilibrium is transparent. The first
 measured ATTRACTION between separated bodies in the substrate —
 and it is a decay signature, not a mass property.
+
+## Range law: conducted attraction is FLAT (carrier-limited, not geometric)
+
+(knot-source.mjs --arms=starved --ad=d) 4x4 starved emitter block
+at d=4,8,12,16 on the +diag; probe mom3 mean vs control -9.14:
+
+  d=4:  -6.24 (+2.90)    d=8:  -6.75 (+2.39)
+  d=12: -5.86 (+3.28)    d=16: -5.72 (+3.42)
+
+Attraction does NOT decay with distance (variation is within the
+single-run chaotic spread). A conducted pull delivers full weight
+when the packet survives — range is set by carrier lifetime
+(per-hop decay on unworn lanes), not geometry. The substrate's
+attractive force is screened, not power-law: a third measured
+deviation from nature's gravity (after: force = imbalance, not
+mass; pull is upstream, not downstream).

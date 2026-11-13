@@ -57,9 +57,10 @@ const CELLS = [[0,0],[2,0],[0,2],[2,2]];
 /* even-parity emitter block — 4x4 saturated cells on the +8 diag.
  * Emission needs committed volume >512/site (ground-state floor:
  * a knot below the floor CANNOT unwind — meta-stable, dark). */
+const AD = +(argv.ad ?? 8);                  // anchor distance, cells
 const ECELLS = [];
 for (let dx = 0; dx <= 6; dx += 2)
-  for (let dy = 0; dy <= 6; dy += 2) ECELLS.push([32+dx, 32+dy]);
+  for (let dy = 0; dy <= 6; dy += 2) ECELLS.push([BX+AD+dx, BY+AD+dy]);
 function seedAnchor(kind) {
   if (kind === 'starved') {
     for (const [x, y] of ECELLS)
@@ -124,7 +125,7 @@ function run(kind) {
            dx: s1.cx - s0.cx, dy: s1.cy - s0.cy };
 }
 
-console.log(`knot-source: bath ${HEAT}/${FLOOR}/${RATE}/top${TOPUP}, ${TICKS}t, anchor at +8 diag`);
+console.log(`knot-source: bath ${HEAT}/${FLOOR}/${RATE}/top${TOPUP}, ${TICKS}t, anchor at +${AD} diag`);
 for (const a of ARMS) {
   console.log(`arm ${a}:`);
   const r = run(a);
