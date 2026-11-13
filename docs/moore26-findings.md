@@ -1115,3 +1115,24 @@ flight-park). A pure sink repels (eats the pull); a living knot
 that recycles flux into emission becomes a persistent local
 source — the candidate mechanism for mass-attracts-mass is
 re-emission, not depletion.
+
+## Cold sink vs living knot: equilibrium structure is force-NEUTRAL
+
+(script/cascade/knot-source.mjs) Same bath/geometry as
+depletion-gravity; anchor at B+8*(1,1,0), probe reads box
+momentum[3] mean over trailing half:
+
+  control       -9.14   (mass 256->553)
+  cold sink     -13.45  (mass 256->756)   repels: -4.31
+  living knot   -8.68   (mass 256->675)   neutral: +0.46
+  living-faint  -9.36   (mass 256->697)   neutral: -0.22
+
+A mass-only absorber repels (eats upstream pull flux). Adding
+committed winding — which radiates via site_unwind — erases the
+repulsion to baseline at both emission rates: the knot passes the
+kick ensemble through, absorbed pull re-radiated in equal measure.
+Force in this substrate is NOT a property of mass; it is the sign
+of a body's mass-flow imbalance: net eater repels, net emitter
+attracts, equilibrium is transparent. Gravity-as-static-property
+is refuted; the remaining candidate is force-as-imbalance —
+decaying structure pulls, feeding structure pushes.
