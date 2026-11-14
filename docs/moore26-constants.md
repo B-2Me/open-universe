@@ -145,12 +145,28 @@ translations live in [Nature → Substrate](/nature-translation).
 | thrust onset | ~ra 0.8 intermittent, 1.0 sustained | bursts to ±500-1000, sign-flipping | force-probe |
 | balanced streams | ~0 in linear regime; runaway above onset | ra=rb=0.5 ~flat; ra=rb=1 -> +349 | force-probe |
 
+## qRecoilLaw funded-impulse constants (law=4 unless noted)
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| confirm kick | nu>>N (nu=96,N=4 -> -6) | funded: deposit = nu-kick | inline node |
+| sub-quantum landing | kick=0 for nu<2^N | soft landing threshold | inline node |
+| photoevaporation | node mass -1 per confirm (64->63) | debited from node mass; massless can't eject | inline node |
+| spectral impedance | line~mass>>2; mass=1000 -> line~252 > nu_max 127 | heavy structure reflects ordinary quanta | inline node |
+| hop wear | winding+1 on transit member per hop | 31 worn channels per 60t coast | inline node |
+| launch debit | pay=min(k,|p|) on launch axis | never binds: k~p>>2<p, winding path unreachable | inline node |
+| beam shadow | ~6% downstream attenuation (203/217) | nu=140 beam, 4000-mass knot, 50t | inline node |
+| surf speed | ~1 cell/tick, knot rides beam front | radiation sailing, mass conserved | inline node |
+| wake shielding | downstream knot 100% shadowed -> sweep-merge (m=8000) | two knots in series on beam | inline node |
+
 ## Nulls on record
 
 | claim tested | result |
 |---|---|
 | ordinary two-arm interference without merge law | **null** — independent channels never compare phases |
 | qOfferTorque clock coherence | **null** — identical with law on/off at tested strength |
+| knot hop-rate on its own worn rail | **null** — identical trajectory virgin vs pre-worn; rail selectivity acts on flux spectrum only |
+| launch shortfall (drive-reservoir starvation) | **vacuous** — p-driven launch self-funds (k<p always); winding-driven path unreachable under current gates |
 | Casimir-like effect | **null x2** — inert vacuum (unseeded); seeded bath shows no gap depletion in shadowing OR long-lambda regimes (d=4-12, <=0.5% vs noise) — mechanism diagnosed: volumetric sources + radiative equilibrium + ballistic packets = no boundary-shaped spectrum |
 
 *Method note: every number above was produced against a fresh grid or

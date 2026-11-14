@@ -2025,3 +2025,64 @@ gates so the rail is live infrastructure, not inert bookkeeping.
 knot's motion, confirming the old trail was inert bookkeeping.
 Free persistence, priced landings, paid propulsion — the ledger
 is now closed on all measured paths.
+
+## qRecoilLaw follow-ups — rail reuse, shortfall, beam shielding (measured)
+
+### Rail reuse: knot-speed NULL, flux selectivity POSITIVE
+
+Pre-worn lane vs virgin lane, same knot fixture:
+- knot trajectory IDENTICAL at every sampled tick (x=36..61 over
+  30t) — worn medium does not change the mass hop rate.
+- beam flux through worn lane: 80 alive / 10 reached x>=55 vs
+  virgin lane 270 / 37 — a 3.4x attenuation. The worn lane's
+  spectral line (winding>>2) rejects off-shell nu=140 traffic:
+  carved rails are SELECTIVE WAVEGUIDES — tuned by their own
+  wear history, transmitting resonant nu and thermalizing the rest.
+- This is the 'warm routing' feedback made literal: transit wears
+  topography, topography filters later transit by energy spectrum.
+  Knots pave but don't (yet) ride their own rail differently —
+  the selectivity acts on FLUX, not on the knot's hop gate.
+
+### Launch shortfall: unreachable under current gates (honest negative)
+
+- p3=8 knot: no launch — the dd>=32 directedness gate rejects it
+  before the funding path runs. p and trajectory identical to a
+  p=256 knot that launches normally.
+- p-driven launches are self-funding BY CONSTRUCTION: k~p>>2 < p
+  always, so the emitter can never be short on the axis it fires.
+- The p=0 winding-driven launch path is unreachable: the hop
+  block's be<0 continue skips the launch phase entirely.
+- Conclusion: the bounded debit (pay=min(k,|p|)) is correct
+  conservation armor but never binds — either the winding-driven
+  launch needs a reachable gate, or the shortfall is vacuous.
+
+### Beam shielding: shadow + radiation sailing + flux-driven merger
+
+Setup: ch6 (+x,+y) beam, nu=140 (under qConfirmCap), knot = mass
+4000 odd cell adjacent to the lane (face conduit on the path).
+- Single knot: ~6% integrated attenuation downstream (203 vs 217)
+  AND the knot gains funded momentum (net p=11) then SURFS — rides
+  downwind at ~1 cell/tick along the beam direction, coherent,
+  mass exactly 4000. Radiation-pressure sailing: flux sweeps
+  matter at the beam's own hop speed.
+- Two knots in series (A upstream, B 19 cells downstream): B sits
+  in A's wake — the beam front never passes A (A rides the front),
+  so B is FULLY shadowed and stays parked until A sweeps into it;
+  they merge (m=8000) and the merged body keeps surfing to the
+  wall. Identical under law0 and law4; law4 holds total mass at
+  exactly 4000/8000 while law0 drifted +7 (minted trail-mass).
+- Le Sage reading: directional flux yields a SWEEP, not
+  attraction — a shadowing body is pushed into what it shadows.
+  The same per-quantum mechanic in an ISOTROPIC bath is mutual
+  shadowing -> net inward drift -> the mechanism Le Sage
+  conjectured, now funded per-quantum with no authored attraction.
+
+### Correction to round-3 interpretation
+
+The 'dissolve and re-condense' reading was a scan-window artifact:
+a narrow x/y box missed the diagonal (+x,+y) walk. Full-grid
+tracking shows the knot WALKS intact at ~1 cell/tick, mass fixed
+at 4000 throughout — relocation, not teleport-by-dissolution.
+Propulsion = persistent directional hopping; the funded launch
+debit still applies per hop, and law4 closes the residual mass
+mint that law0 carried (+5..7 over 30-60t).
