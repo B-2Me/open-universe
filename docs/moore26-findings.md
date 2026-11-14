@@ -1860,3 +1860,57 @@ lanes — the trail thins naturally, (c) keep the pull-universe sign
 intact. The "expense of acceleration" already exists structurally:
 interior transit is force-free; only boundary landings produce
 force — motion is free, landing is the transaction.
+
+## Boundary taxonomy + the charge/transit null (4caf5b9 follow-on)
+
+### The substrate's boundary species (enumerated)
+
+The confirm/decline stack distinguishes SEVEN distinct boundaries,
+each a different species of "where a state-change may land":
+
+1. **Infrastructure edge** — committed-winding forward test; the
+   kick books at the receding beam front (measured, 4caf5b9).
+2. **Mass surface** — the odd-cell drain; separate writer, opposite
+   (downstream/Newtonian) sign, funded by eaten packets.
+3. **Spectral** — `nu % line` on-shell gate; a boundary in energy
+   space, not position.
+4. **Parity/identity** — qParGate handedness mismatch; declines
+   ANSWER with counter-parity recoil flight upstream.
+5. **Phase** — qMergeGate: offer's arrival phase (nu*age mod 256)
+   vs standing cloud; anti-phase thermalizes. The quantum carries
+   its own clock — arrival phase is frozen into incipOp.
+6. **Bandwidth** — qConfirmCap; over-cap quanta never land.
+7. **Congestion wall** — saturation decline → qDeflectAlign tangent
+   routing (60-degree forward neighbors), nu conserved — a
+   work-free redirect, the magnetic-shaped mechanism.
+
+### Charge probe: NULL — no transit-acting force exists
+
+Experiment: parity-tagged ch6 beam through a charged conduit patch
+(±40), three arms (uncharged / same-sign / opp-sign), qDeflectAlign
+on. Results: identical downstream in all arms; ev45 same-sign
+declines = 0 even with 25 pkts/tick on a committed-winding conduit.
+
+Mechanism: charge enters ONLY the offer-capacity gate
+(`cap = qCapBase − |q|>>shift`, or qCapSame for same-sign parity).
+Declines require `armed >= cap` — an incipient PILEUP. Transiting
+packets arm at ~1/16 catch and confirm/expire faster than they
+accumulate; the cap is unreachable at any beam density we produced.
+Charge is an absorption-permission register — it modulates WHO MAY
+LAND, never who passes through. It also sheds (40→23 over 60t via
+qChargeShed mobility on winding routes).
+
+### Consequence: no magnetism, by construction
+
+A moving charged knot's hop-channel selection reads momentum only —
+charge never enters. No mechanism anywhere reads a passing quantum
+and redirects it. Every force in the substrate is a transaction-
+event force; there is no transit-acting coupling. The principle the
+mechanics keep converging on: **state-change is priced, persistence
+is free** — free along lanes, free in internal circulation, priced
+at landings/emissions, direction-priced at deflection declines,
+never priced mid-flight. Gravity then = rate asymmetry of
+absorption events (needs shielding scale — statistical, matching
+the scale-only framing). The lone exception is still the minted
+nu=1 hop-trail kick on virgin lanes — a bookkeeping record
+inheriting the offer force path.
