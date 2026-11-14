@@ -2086,3 +2086,65 @@ at 4000 throughout — relocation, not teleport-by-dissolution.
 Propulsion = persistent directional hopping; the funded launch
 debit still applies per hop, and law4 closes the residual mass
 mint that law0 carried (+5..7 over 30-60t).
+
+## qWearDecay + the flame hunt — medium-forgetting, rail runaway, mass precipitation
+
+### qWearDecay: the forgetting medium (implemented, measured)
+
+New control: conduit winding loses w>>N per tick — exponential above
+2^N, stochastic full-fade below (rails truly vanish, not just thin).
+Even cells only — the transport graph forgets; odd-cell structure
+winding is untouched. Being keeps its memory; the medium doesn't.
+
+Carved-rail decay curves (measured):
+- N=0: rail holds 19/19 forever (baseline — permanent memory)
+- N=8: 18 -> 13 -> 6 -> 5 -> 3 -> 2 over 400t (stochastic regime)
+- N=6: 14 -> 4 -> 0 over 160t
+- N=4: 6 -> 0 within 80t (decay visible even during carving)
+
+### Rail runaway — warm routing has no equilibrium without forgetting
+
+The deep discovery: sustained probe traffic keeps DEPOSITING wear —
+a saturated rail under continued flux grows monotonically
+(989 -> 6421 over ~600t at N=0) and stays fully opaque (thru=0).
+Wear is positive feedback: traffic wears, wear captures, the
+spectral line rises until the lane becomes a reflector. Rails do
+not stabilize — they clog to death.
+
+With decay on (N=6) the same lane grew only 989 -> 1745 — decay
+retards ~7x but loses the race under load: the fixed point
+W* = 2^N x deposit_rate sits far above the opacity threshold.
+Forgetting wins only when traffic stops. Vacuum memory is
+crystalline under load, diffusive in quiet — the warm-routing
+gravity analog inherits this asymmetry: maintained lanes harden,
+abandoned lanes heal.
+
+### The flame hunt — what a 'living' structure would require
+
+Piloted: knot fed by counter-propagating beams (pinned against
+surfing) at rates 4/16/60, mass tax probes. Findings:
+
+- Fed knots SURF or disperse before reaching feed equilibrium —
+  a directional beam cannot produce a standing flame; the knot
+  rides it. Pinning needs multi-directional flux.
+- The beam-COLLISION SITE is the persistent transaction locus:
+  heat accumulates at the crossing (192/1056/5744+ by rate) —
+  the substrate's flame is a place, not a knot.
+- rate=60 drove site heat to the 65535 cap, then ~66000 MASS
+  appeared — superheat precipitation: energy pumped past the heat
+  ceiling condenses into structure. Needs characterization.
+- Odd-cell heat is immortal: ev44 drain and ev51 re-emission live
+  in the even-cell phase, so structural (odd-cell) heat never
+  drains — a permanent thermal fossil at the transaction site.
+  (Not a ledger bug — node_live counts heat — but a real species
+  asymmetry: conduit heat cools, structural heat is frozen record.)
+- The mass tax (qEvapShift) does NOT apply to bare mass — it only
+  runs inside the composite-shed path (guarded by the shedding
+  machinery). Single-site mass blobs are exempt: measured mass=4000
+  at shift=3 over 300t — exact zero decay. INERT MASS IS IMMORTAL;
+  ONLY ORGANIZED STRUCTURE PAYS THE HOLDING TAX. The flame needs
+  a wound composite knot (dictionary seed), not a blob — that's
+  the correct next fixture.
+- Accretion confirmed in passing: fed blobs grew 500->626 and
+  4000->4066 via shed-condensation (the mass:bond equilibrator),
+  then plateaued.

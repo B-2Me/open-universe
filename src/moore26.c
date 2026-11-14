@@ -265,6 +265,12 @@ static int qVacFloor=128;   /* heat threshold for thermal re-emission —
      * so cold vacuum stays honestly dark */
 static int qVacRate=64;     /* re-emission odds: 1/qVacRate per hot node
      * per tick (0=off) */
+static int qWearDecay=0;    /* medium-forgetting shift: conduit winding
+     * loses w>>N per tick (0=off, permanent memory). Applies ONLY to
+     * the transport graph — odd-cell winding is structure, not medium.
+     * Exponential above 2^N, stochastic full-fade below (rails truly
+     * vanish). A forgetting medium makes wear-mediated routing
+     * diffusive rather than crystalline — the warm-routing dial. */
 static int qMergeMin=0;    /* arbitration is an absorber property: only
      * nodes with mass >= qMergeMin host a refusing field (0=any node) */
 static int qOfferTorque=0; /* offer field drags node phase (0=off,
@@ -732,6 +738,22 @@ void moore26_tick(void){
              qEvents[44]+=dr;   /* the bath is accounted — the
              * sub-grid drain was a silent black hole; now the
              * ledger can see exactly what the vacuum swallowed */}
+        /* wear relaxation — the medium forgets. Conduit winding
+         * (committed transit memory) loses ~1/2^N per tick:
+         * exponential above the shift floor, stochastic full-fade
+         * below so rails truly vanish. Even cells only (this phase
+         * skips the odd sublattice) — structure keeps its memory,
+         * only the medium forgets. Chunks stay ledger-active while
+         * winding>0, so decaying lanes are visited until gone. */
+        if(qWearDecay>0){
+            for(int c=0;c<QChannels;c++){
+                uint16_t w=grid_next[si].winding[c];
+                if(!w)continue;
+                uint16_t d=(uint16_t)(w>>qWearDecay);
+                if(!d&&(rand_site(si,60+c)&((1u<<qWearDecay)-1))==0)d=1;
+                if(d)grid_next[si].winding[c]=w-d;
+            }
+        }
         /* thermal re-emission — the hot sub-grid fluctuates and
          * boils a fraction of its stored energy back into a packet
          * (the CMB-like floor: opaque structure grinds packets to
@@ -3291,6 +3313,10 @@ int moore26_bondpar_get(int x,int y,int z){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
     return grid_current[(z*QHeight+y)*QWidth+x].bondPar;}
 void moore26_rail_gate_set(int v){qRailGate=v;}
+void moore26_wear_decay_set(int v){qWearDecay=v<0?0:v>16?16:v;}
+int moore26_localtime_get(int x,int y,int z){
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
+    return (int)grid_current[(z*QHeight+y)*QWidth+x].localTime;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
 
 void moore26_absorb_set(int v){qAbsorbWall=v;}

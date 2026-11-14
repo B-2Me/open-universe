@@ -159,6 +159,17 @@ translations live in [Nature → Substrate](/nature-translation).
 | surf speed | ~1 cell/tick, knot rides beam front | radiation sailing, mass conserved | inline node |
 | wake shielding | downstream knot 100% shadowed -> sweep-merge (m=8000) | two knots in series on beam | inline node |
 
+## Wear decay + rail dynamics (qWearDecay)
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| rail half-life | ~2^N ticks (stochastic floor for w<2^N) | even-cell winding only; odd structure untouched | inline node |
+| rail runaway | W: 989->6421 over ~600t at N=0 | sustained traffic monotonically deepens rails -> opacity | inline node |
+| decay vs load | N=6 retards ~7x but still saturates under traffic | forgetting wins only when traffic stops | inline node |
+| odd-cell heat | permanent fossil (no drain, no re-emission) | ev44/ev51 live in even-cell phase | inline node |
+| superheat precipitation | heat 65535 -> ~66000 mass appeared | rate=60 opposed-beam site | inline node |
+| bare-mass immortality | mass tax exempt: 4000 for 300t at shift=3 | qEvapShift only runs in composite-shed path | inline node |
+
 ## Nulls on record
 
 | claim tested | result |
@@ -166,6 +177,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | ordinary two-arm interference without merge law | **null** — independent channels never compare phases |
 | qOfferTorque clock coherence | **null** — identical with law on/off at tested strength |
 | knot hop-rate on its own worn rail | **null** — identical trajectory virgin vs pre-worn; rail selectivity acts on flux spectrum only |
+| standing flame from a directional feed | **negative** — fed knots surf or disperse; the persistent locus is the collision SITE (heat spot), not a knot |
 | launch shortfall (drive-reservoir starvation) | **vacuous** — p-driven launch self-funds (k<p always); winding-driven path unreachable under current gates |
 | Casimir-like effect | **null x2** — inert vacuum (unseeded); seeded bath shows no gap depletion in shadowing OR long-lambda regimes (d=4-12, <=0.5% vs noise) — mechanism diagnosed: volumetric sources + radiative equilibrium + ballistic packets = no boundary-shaped spectrum |
 
