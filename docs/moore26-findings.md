@@ -1272,3 +1272,49 @@ On transacting cells charge persisted (phases rewrite it), which is
 why the bath target's charge drifted instead. Now all three records
 sustain liveness — a conserved signed record can no longer be
 silently sealed away.
+
+## Knot-vs-knot duel: threshold precedence + collision repulsion
+
+(script/cascade/conduit-burn.mjs --duel; static knots, flight-delivered
+charge — no kicks)
+
+CONSERVATION BUG FIXED first: the momentum-relay handedness check
+fired annihilation per-cell — when two opposite-parity knots kicked
+toward each other BOTH fired, and the second read stale grid_current
+mass on an already-zeroed node: 0-4000 u16-underflow minted ~61k
+mass + phantom heat. Fix: availability-clamped burn (a=min(o->mass,
+next.mass)) — repeat fires are idempotent. The contact path was
+already safe (ni2<=si guard + writes =0 both buffers).
+
+THRESHOLD PRECEDENCE (measured): opposite-parity odd knots at
+distance 2 (sharing a conduit) annihilate unconditionally at t=0 —
+contact annihilation is charge-free and dominates the charge-burn
+cascade. A mediated charge interaction between ADJACENT opposite-
+parity knots is unreachable; annihilation always fires first.
+Same-parity or bare knots at distance 2: perfectly stable (4000/4000,
+mass conserved exactly).
+
+SERIAL COMPETITION for one shared charge: same-parity pair (bp+20/+20)
+sharing conduit C with sustained -16 influx — ONLY the lower-si knot
+burns (64/t until the -16/tick spend equilibrates; measured ~32/t
+with the 1-tick land-vs-scan duty cycle). K2 never sees charge: the
+burn spends it in BOTH buffers within the tick. The shared conduit
+is a serial resource — first-come monopoly, measured not assumed.
+PRIVATE-conduit control: both burn independently ~26-32/t each.
+
+COLLISION-VERTEX REPULSION — the emergent two-body force: opposing
+mass flights on the SAME axis pair (ch6+ch7) collide on the shared
+conduit -> hit=min(a,b) packet storm -> congestion -> drag-write
+momentum -> mass-hop relay. Both knots receive mom=+/-25 and push
+RADIALLY AWAY from the vertex at 1 cell/tick sustained, mass+bondPar
++bondDist carried whole (whole-residue handoff verified by direct
+cell scan: positions track, mass stays 4000, bp intact).
+Same-direction beams: nothing (hit needs both directions occupied).
+Charge modulation: +q on the +dir channel AND -q on the -dir channel
+suppresses repulsion to a common -1 drift; reversed or same-sign
+charge leaves full +/-25. The induced force is the collision
+congestion, charge-gated — exactly "a cascade tipping feedback
+thresholds," and the first sustained coherent mover observed.
+
+Signal latency: flight lands post-scan, so sustained burn duty-cycle
+is ~50% — effective mediated rate 2|q|/tick vs pinned-charge 4|q|.

@@ -1120,14 +1120,24 @@ void moore26_tick(void){
                  * contact, it annihilates (mass -> heat, conserved). */
                 {int8_t bp0=o->bondPar,bp1=grid_current[ni].bondPar;
                  if(bp0&&bp1&&((bp0>0)!=(bp1>0))){
-                     uint32_t a=o->mass,b=grid_next[ni].mass;
-                     grid_next[si].heat+=a;
-                     grid_next[ni].heat+=b;
-                     qEvents[52]+=(uint64_t)a+b;
-                     grid_next[si].mass-=a;
-                     grid_next[ni].mass-=b;
-                     jrn(si,ni,63,(int32_t)a);
-                     jrn(ni,si,63,(int32_t)b);
+                     /* availability-clamped burn: o->mass is the stale
+                      * pre-tick read — when both cells kick at each
+                      * other the second firing would subtract 4000
+                      * from an already-zeroed next.mass and u16-wrap
+                      * to ~61k. Clamp to what's staged so repeat
+                      * fires are idempotent (conservation hole) */
+                     uint32_t a=o->mass<grid_next[si].mass
+                               ?o->mass:grid_next[si].mass,
+                              b=grid_next[ni].mass;
+                     if(a&&b){
+                         grid_next[si].heat+=a;
+                         grid_next[ni].heat+=b;
+                         qEvents[52]+=(uint64_t)a+b;
+                         grid_next[si].mass-=a;
+                         grid_next[ni].mass-=b;
+                         jrn(si,ni,63,(int32_t)a);
+                         jrn(ni,si,63,(int32_t)b);
+                     }
                      continue;
                  }}
                 /* BACKPRESSURE — the conduit's own incipient record
