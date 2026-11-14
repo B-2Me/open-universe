@@ -1158,7 +1158,24 @@ void moore26_tick(void){
                     for(int e=0;e<QChannels/2;e++){
                         int32_t a=o->momentum[e];if(a<0)a=-a;tot+=a;}
                     if(tot>0){
-                        int64_t pick=((int64_t)rand_site(si,200)*tot)>>8;
+                        /* the momentum field + drumbeat draw the
+                         * channel — not a site coin. Cells sharing a
+                         * reservoir at the same tick draw IDENTICALLY:
+                         * bond-share equilibrated composites zigzag in
+                         * lockstep. Site-salted draws decohered bound
+                         * pairs into random-walk doublets (~sqrt(t)
+                         * diffusion measured). A pure p-hash is wrong:
+                         * the reservoir survives the hop, so the draw
+                         * would repeat every tick — qTick supplies the
+                         * temporal leg of the path integral. */
+                        uint64_t h=1469598103934665603ULL;
+                        for(int e=0;e<QChannels/2;e++){
+                            h^=(uint64_t)(uint32_t)o->momentum[e];
+                            h*=1099511628211ULL;
+                            h^=h>>13;}
+                        h^=qTick*0x9E3779B97F4A7C15ULL;
+                        h^=h>>13;h*=0xBF58476D1CE4E5B9ULL;h^=h>>27;
+                        int64_t pick=(int64_t)(h%(uint64_t)tot);
                         for(int e=0;e<QChannels/2;e++){
                             int32_t a=o->momentum[e];if(a<0)a=-a;
                             if(pick<a){be=e;dir=o->momentum[e]<0?-1:1;break;}
@@ -1294,7 +1311,13 @@ void moore26_tick(void){
                  * keeps it at the majority-mass site */
                 if(o->bondPar&&k==o->mass){
                     grid_next[ni].bondPar=o->bondPar;
-                    grid_next[si].bondPar=0;
+                    /* guard the clear: when two cells trade sites in
+                     * one pass (lockstep vol-draw pairs), an arrival
+                     * may already have written its handedness here —
+                     * clear only a genuinely vacated cell, else the
+                     * departing cell's clear clobbers the arriver's
+                     * record (measured: vol pair leader lost bp) */
+                    if(!grid_next[si].mass)grid_next[si].bondPar=0;
                 }
                 /* provenance relocates whole too — bondDist is the
                  * pattern's measured-bond record (the axial skeleton's
@@ -1305,7 +1328,7 @@ void moore26_tick(void){
                     for(int e=0;e<QChannels/2;e++){
                         if(o->bondDist[e]>grid_next[ni].bondDist[e])
                             grid_next[ni].bondDist[e]=o->bondDist[e];
-                        grid_next[si].bondDist[e]=0;
+                        if(!grid_next[si].mass)grid_next[si].bondDist[e]=0;
                     }
                 }
                 qEvents[59]++;

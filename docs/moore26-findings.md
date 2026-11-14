@@ -1542,3 +1542,35 @@ substrate mechanics): the bond-share is the mechanism that makes
 'force on a body' mean 'displacement of the body' at scales above
 one cell. Without it, every force law measured so far is a
 surface-cell property with no bulk interpretation.
+
+## Composite coherence under vol routing — synchronized draws
+
+Two experiments on a bound pair (winding-committed conduit, qBondShare=1,
+composite p3=p4 seeded on the leader):
+
+  site-salted draws (original): sep jumped 1->3 at t1 and held — the
+    bond-share kept momentum flowing but each cell executed its own
+    lottery, so separation became a bounded random walk (metastable
+    doublet, slow sqrt(t) diffusion). Vol routing decohered the body.
+  momentum+qTick hash: the draw now hashes the whole momentum VECTOR
+    with the drumbeat — cells holding identical reservoirs at identical
+    ticks draw identically, no site salt, no shared register needed.
+    Pair: sep=1 for 12 ticks, parallel zigzag, coherent. A pure
+    p-hash is insufficient: the reservoir survives the hop so the draw
+    would repeat every tick — qTick supplies temporal variation.
+
+  caveat measured: hash uses RAW values, so proportional-but-unequal
+    reservoirs still decorrelate. The pair survives because bond-share
+    equilibrates before the draw; a 4-chain shows ONE transient
+    mis-draw at the wavefront tail (reservoir still unequilibrated),
+    then re-locks — coherent jitter, not a tear. span held 3 for 8t.
+
+Ordering bug found + fixed in the same pass: cells trading sites in one
+tick (lockstep vol pair) let the departing cell's source-clear
+(bondPar=0, bondDist[e]=0) clobber the arriver's just-written record —
+the leader lost its handedness at t3. Clears are now mass-emptiness
+guarded (grid_next[si].mass==0). Arithmetic handoffs (mass, winding,
+momentum debits) were already safe — only blind clears needed guards.
+
+Determinism: three fresh inits produce byte-identical pair trajectories
+(qTick reset in init, draw is pure function of reservoir + tick).
