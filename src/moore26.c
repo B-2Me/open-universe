@@ -299,6 +299,10 @@ static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
      * its oldest core hardens from its own formation history. */
 static int qVolShare=0;
 static int qChainShare=0;
+static int qBondShare=0;   /* 0=off: momentum strictly per-cell.
+ * Nonzero = right-shift: an odd cell deposits momentum[e]>>qBondShare
+ * into each committed face conduit (donor-debited) — bound structure
+ * equilibrates impulse through the medium, composites move as one. */
 static int qVolRoute=0;    /* 0=argmax-axis hop (baseline). Nonzero:
  * hop axis drawn ~|p| per tick — composite momentum walks its
  * vector (zigzag path, vector centroid). The multi-axis dead state
@@ -1094,6 +1098,48 @@ void moore26_tick(void){
                                    (uint32_t)n*grid_current[ei].packetNu[dom];
                         grid_next[si].heat=(uint16_t)(h>65535?65535:h);
                         grid_next[si].momentum[e]+=share<0?-n:n;
+                    }
+                    /* BOND-SHARE (qBondShare) — the momentum a body
+                     * holds should act on the WHOLE bound structure,
+                     * not the surface cell the field touched. The bond
+                     * conduit itself carries the impulse: through a
+                     * committed face conduit the partner odd cell sits
+                     * 2 lattice steps along the face vector — the share
+                     * p>>qBondShare of every momentum component moves
+                     * cell->cell (conduit-mediated p>>8 can't carry
+                     * single quanta; the bond is the rigid link).
+                     * Conserved: donor debited, partner credited.
+                     * 0 = off (strictly per-cell momentum, baseline). */
+                    if(qBondShare){
+                        uint32_t mn=0;
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
+                                      ?en->winding[2*e2]:en->winding[2*e2+1];
+                            if(mm>mn)mn=mm;}
+                        if(mn>=qCommitMin){
+                            int px=x+2*((d==0)-(d==1)),
+                                py=y+2*((d==2)-(d==3)),
+                                pz=z+2*((d==4)-(d==5));
+                            if(px>=0&&px<QWidth&&py>=0&&py<QHeight&&pz>=0&&pz<QDepth){
+                                int pi=(pz*QHeight+py)*QWidth+px;
+                                if(grid_current[pi].mass){
+                                    for(int m=0;m<QChannels/2;m++){
+                                        /* read the PRE-TICK reservoir:
+                                         * sourcing from grid_next lets a
+                                         * deposit cascade A->B->C inside
+                                         * one pass when scan order aligns
+                                         * with share direction — instant
+                                         * transmission, no internal sound
+                                         * speed. grid_current makes the
+                                         * wave travel 1 bond/tick. */
+                                        int32_t share=o->momentum[m]>>qBondShare;
+                                        if(share){
+                                            grid_next[pi].momentum[m]+=share;
+                                            grid_next[si].momentum[m]-=share;}
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 int be=-1,dir=1;
@@ -3117,6 +3163,7 @@ void moore26_momentum_at_set(int x,int y,int z,int e,int v){
     mark_chunk(x,y,z);}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_vol_route_set(int v){qVolRoute=v;}
+void moore26_bond_share_set(int v){qBondShare=v>0&&v<16?v:0;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}

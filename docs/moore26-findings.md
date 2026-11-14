@@ -1505,3 +1505,40 @@ speed-of-nature structure, now fully mapped:
   Composite velocity under VOL = vector-sampled: centroid tracks
   the p-vector at ~c; baseline could not express non-axis
   directions at all (systematic argmax-tie bias to low index).
+
+qBondShare (moore26.c:1102-1144) — momentum transmits through bonds.
+Baseline defect measured: a bound pair (two mass cells sharing a
+committed conduit) SHEARS instantly — p on one cell moves it at c,
+the partner never moves. No rigid-body mechanics existed: momentum
+was strictly per-cell.
+
+the mechanic: an odd cell deposits momentum[e]>>qBondShare (from its
+PRE-TICK reservoir — see caveat) through each face conduit that
+carries a committed pair (max pair >= qCommitMin) to the partner odd
+cell 2 steps along the face vector. Conserved, donor-debited. The
+conduit-mediated alternative (deposit into conduit, let drag carry
+it) fails on quantization: conduit->odd drag moves p>>8 — single
+quanta can't cross a >>8 floor; the bond must carry the impulse.
+
+measured (pair + chains, p3=40 on the head cell only):
+  OFF:      head walks +diag at c, tail frozen — pure shear
+  SH1, pair: both cells translate in lockstep at c, geometry held —
+            FIRST coherent composite mover
+  SH1, 4-chain: the impulse wavefront engages cells sequentially —
+            exactly 1 bond/tick — a measurable internal sound speed.
+            Tail starts moving ~N bonds after the head. At scale, a
+            pushed body answers as a whole after ~L bonds of wave
+            transit — center-of-mass impulse emerges from per-cell
+            registers + bond transmission.
+
+caveat fixed during dev: sourcing the share from grid_next let
+deposits cascade A->B->C inside a single pass when scan order
+aligned with the wave — superluminal impulse inside the body.
+grid_current sourcing enforces the 1-bond/tick wavefront. Also
+shift>=1 required (>>0 overdrew the reservoir on multi-bond cells).
+
+scale note (user framing — energy = measurable displacement, not
+substrate mechanics): the bond-share is the mechanism that makes
+'force on a body' mean 'displacement of the body' at scales above
+one cell. Without it, every force law measured so far is a
+surface-cell property with no bulk interpretation.
