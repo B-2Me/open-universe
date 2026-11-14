@@ -1325,3 +1325,14 @@ graded radiation-pressure-like law, saturating above pk~100-200.
 The vertex pushes adjacent matter AWAY at ~half the colliding
 flux; momentum writes ~25 directly (not the drag >>8 share of the
 conduit's +-1 residue — write path still being traced).
+
+Write path dissected (moore26.c:1063-1086): odd cells scan their 6
+face conduits for packet imbalance imb=packet[2e]-packet[2e+1] and
+absorb n=|imb|>>1 quanta from the dominant channel — packets DEBITED
+(conserved), nu->heat (ev52), momentum += sign*n. Radiation pressure
+as ledger absorption: a body eats the field's directional surplus
+and inherits its momentum + energy in one shot per quantum. The
+collision vertex sprays packets outward; a knot absorbs the surplus
+escaping past it -> pushed outward, symmetric both sides. |p|=pk/2
+is imb>>1 read through directly; ~pk200 saturation = u8 packet cap.
+Full cascade: collide -> storm -> spray -> imb -> absorb -> hop.
