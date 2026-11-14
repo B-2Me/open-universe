@@ -1618,3 +1618,32 @@ Cluster battery (vol routing + bond-share, seeded committed winding):
   NOTE: packets seeded adjacent to mass were drained by the knot
   before transit (imbalance drain beats the worn-lane write) — the
   beam needs to arrive from upstream, not sit on the bond conduit.
+
+## Endogenous force — self-kick works, free-space radiation doesn't
+
+Hot-conduit emission vs a bare neighbor (vac_rate=1, heat=60000):
+
+  emitter on the knot's OWN face conduit: the knot gets kicked
+  reliably — first momentum write ~t10, then walks at c. Direction =
+  whichever axis the first surplus lands on (edge-channel quantized,
+  not radial). (31,32,32) beside hot (32,32,32): walked (0,-1,+1).
+  Hot (30,32,32): walked (-1,+1,0). Hot (31,32,31): (-1,0,-1).
+  => endogenous force confirmed at contact range.
+
+  emitter 4 conduits from B (37,32,32), 200 ticks, heat 60000->118:
+  ZERO packets reached B's face conduit, ZERO momentum on B. Packet
+  population saturates ~16 (emission ~1/t vs decay) as a dilute
+  random-walk spray — isotropic minting onto 12 edge channels can't
+  form a directional surplus at range. A lone packet needs 2+ surplus
+  on one channel to write one momentum quantum (imb>>1).
+
+  => "radiation pressure" is not a range force in this substrate:
+  channeled transport + density-tax decay kills isotropic flux within
+  ~2 hops. Force at range exists ONLY along established worn lanes —
+  the collision-duel beams delivered +-25 imbalance because flux
+  travels the rail, not free space. The substrate's field lines are
+  literally the carved channels — a knot sprays nothing coherently
+  unless a lane already guides it.
+
+  caveat: emitted packets carry nu capped at 255 and packetBorn parity
+  of the source's lane sign; none of that helped coherence at range.
