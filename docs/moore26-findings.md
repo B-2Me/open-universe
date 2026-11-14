@@ -1804,3 +1804,59 @@ git archaeology on the momentum-write convention:
   wake = deceleration through medium interaction. Prototype
   candidate: qRecoilLaw control (0=current minted trail,
   1=funded trail debit).
+
+## The confirm-kick species map (a56afc8 follow-on, measured)
+
+The flat ±1 confirm kick was traced to its full gating chain
+(moore26.c ~1936-2084). `qEvents[3]` counts *standing-offer scans*
+(h = incip count per channel), not confirms — a diagnostic trap.
+
+### What a transaction must pass to produce force
+
+1. **On-shell spectral gate**: `nu % line == 0 && nu >= line` where
+   `line = (mass + winding[c]>>2) >> 2`. Off-shell offers STAND —
+   they influence (incipient state) without depositing.
+2. **Boundary-selective confirm** (qMomentum): the offer lands only
+   where its channel exits into bare space. Interior offers re-emit
+   and keep flying — the beam paves its lane and the force lands at
+   the *receding front*, not mid-lane. Measured: seeded conduit at
+   (32,32,32) took zero kicks; ±1 quanta landed at x=33..53+ along
+   the beam axis — a moving surface-pressure boundary.
+3. **Confirm cap**: nu > 160 (qConfirmCap) never confirms — heavy
+   quanta stand, expire, re-emit. Absorption has a bandwidth.
+
+### Species conflation, demonstrated
+
+| species | nu | result |
+|---|---|---|
+| hop bookkeeping record | 0 (reads as 1) | confirms on bare lanes (line=1), kicks −1 minted — THE TRAIL |
+| packet offer on-shell | ≤160 | kicks ±1 flat, minted — NOT nu-weighted |
+| packet offer over-cap | >160 | never confirms — no force at all |
+| imbalance drain (odd eats conduit pkts) | funded by eaten packet | ±1 per packet, DOWNSTREAM sign (Newtonian push) |
+
+Full-grid audit: nu=10 beam vs nu=160 beam → identical |p| totals
+(4 vs 5 over 211-212 confirms). The kick is a flat unit per
+transaction regardless of the offer's energy — force ∝ absorption
+*rate*, not power. The sign asymmetry drain(downstream)/kick(upstream)
+is the two conventions coexisting — both deliberate per 73ef092.
+
+### The trail is fresh-medium only — measured
+
+Hop record nu=1: confirms on bare conduit (line=1) → −1 trail.
+On a worn lane (winding 200 → line=12) the record fails on-shell,
+stands, expires — **zero trail written**. Established lanes are
+silent to motion bookkeeping: the medium stops recording recoil
+for hops across carved paths. The wake exists only in virgin
+medium — persistent currents do not accumulate counter-flow
+records on their own lanes.
+
+### Where this leaves qRecoilLaw
+
+The conflation is narrower than feared: the force write is one
+flat quantum per confirm, gated by nu but not scaled by it. A
+nu-weighted funded kick would (a) make photon pressure ∝ absorbed
+energy, (b) leave hop records (nu=0→1) kicking ~nothing on bare
+lanes — the trail thins naturally, (c) keep the pull-universe sign
+intact. The "expense of acceleration" already exists structurally:
+interior transit is force-free; only boundary landings produce
+force — motion is free, landing is the transaction.
