@@ -1199,3 +1199,76 @@ a sparse one attracts — the substrate's "gravity" is a phase
 diagram, not a constant. (Ground-state floor also characterized:
 qGroundFloor=512 knob verified — lower floor lets knots radiate
 deeper; committed vol <= floor = meta-stable dark bound state.)
+
+## Charge coupling is a capacity rule, not a field — and a second channel is graded
+
+(charge-coupling.mjs --burst=8) Isotropic 12-emitter parity bath on a
+charged absorber, charge pinned, 150-300t. arming is 1 offer/channel/tick
+— a trickle and a firehose transacted identically until qArmBurst let
+each quantum negotiate (density was invisible to the ledger — the
+inversion the knob fixed). armed_avg (time-mean incipient occupancy)
+reads the effective cap directly:
+
+  Q     armed_avg   authored cap    declines/300t
+  0       11.2      13 (unbound)       1102
+  +16      3.4       4 (same-sign)     1451+
+  -16      9.5      11                 1339
+  +64      3.4       4                 ~1600
+  -64      4.4       5                 ~1620
+
+Same-sign repulsion is a STEP at q!=0 (flat in |q| — no Coulomb
+scaling); opposite-sign declines GROW with |q| toward the same floor
+(cap 13-|q|>>3 hits 4 at |q|>=72) — charge suppresses admission for
+BOTH signs, only asymmetrically. capSame=13 control: all arms read
+armed=11.09 identically — the whole effect is the cap rule, no
+emergent residue. capShift=7 (|q|>>7=0): opposite-sign interaction
+vanishes — the graded term is the authored >>3 alone. Force is
+quantized per decline (2 kick-units/reflect, ev53); excess-decline
+cross-section ~7-13% of attempts, flat in q and flux — a discrete
+coupling, not an alpha.
+
+(conduit-burn.mjs) The GRADED coupling lives in a different channel:
+a bondPar-handed odd cell facing an oppositely-charged face conduit
+burns mass->conduit winding at min(mass,4|q|)/tick, spending the
+charge down burn/4 — total cascade = 4|q| exactly (measured 16,32,
+64,128,256 at |q|=4..64; dM/dt slope k=4.00 sustained under --pin;
+zero at same-sign, zero without bondPar, zero at diagonal — the
+trigger is contact-local, sign-selective, self-terminating on charge
+exhaustion). mass->winding transfers 1:1 on the shared conduit.
+
+(remote arm) chargeFlight delivers the trigger ahead of matter:
+charge seeded 2 cells upstream lands on the shared conduit at t=0;
+the knot's burn ignites t=1 and stops after exactly 4|cf| delivered.
+"Signal precedes matter" — remote interaction = a local threshold
+cascade relayed by charge mobility at transport speed.
+
+Force taxonomy after these runs: (1) admission threshold (cap —
+statistical, binary-ish), (2) burn cascade (graded, capacity-bound),
+(3) load thresholds (stall/carve — traffic-mediated), (4) contact
+annihilation (bondPar mismatch). Every "force" is a threshold
+cascade, not a field; the only linear coupling measured is charge
+as burn-capacity (k=4).
+
+## Gate audit: authored constants wearing physics costumes
+
+New knobs (default-preserving): qArmBurst (offers/channel/tick),
+qStallLoad (incip>=32 mass-hop stall — verified: wall at load=24
+arrests at stall=8, passes at stall=64, bit-identical stall=0),
+qCarveLoad (incip>=16 carve slowdown), qCapSame/qCapBase/qCapShift
+(the whole charge-cap law — see above), qWornGate (worn-lane decay
+threshold), qSat (the 128 shared by emission routing, Meissner band,
+over-pressure shunt, occupancy pick, string-break — one pressure
+gauge in 5 mechanics), qChargeShed (charge>>4 mobility on routed
+winding + mass launch). Fixed: three literal 32s now track
+qCommitMin (committed-pair semantics at 3 sites); bondpar_set /
+momentum_at_set now mark_chunk (seeds were landing in dead space).
+
+## Charge needs process to persist (ledger bug, fixed)
+
+node_live omitted charge/bondPar/momentum: a charge-only cell is
+"dead", so the phantom-resurrection seal memset its grid_next —
+seeded charge alternated -64/0/-64/0 across buffers (verified).
+On transacting cells charge persisted (phases rewrite it), which is
+why the bath target's charge drifted instead. Now all three records
+sustain liveness — a conserved signed record can no longer be
+silently sealed away.

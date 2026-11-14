@@ -223,6 +223,29 @@ static int qTension=0;     /* bond stretch -> mutual pull: when a
 static int qReflect=0;      /* declined offers REFLECT down the mirror
  * member c^1 (recoil = 2 kick units on the refuser) instead of
  * deflecting/thermalizing — P = qReflect/256 per decline. 0 = off. */
+static int qArmBurst=1;     /* max offer negotiations per channel per
+ * tick. The packet count is a swarm amplitude: serializing at 1 makes
+ * a trickle and a firehose transact identically — density invisible
+ * to the ledger. >1 lets each quantum roll its own catch; the table
+ * fills to cap and the excess converts to declines/recoil, so
+ * transaction pressure becomes proportional to incident flux. */
+static int qStallLoad=32;   /* conduit incipient count that hard-stalls
+ * a mass hop — the medium's traffic sets the knot's speed. 0 = off. */
+static int qCarveLoad=16;   /* conduit load that slows the carve
+ * (shift--): partial backpressure below the stall. 0 = off. */
+static int qCapSame=4;      /* arming cap vs SAME-sign parity arrivals */
+static int qCapBase=13;     /* arming cap at zero charge */
+static int qCapShift=3;     /* non-same-sign cap = base - |charge|>>shift */
+static int qWornGate=16;    /* committed-winding wear that halves transit
+ * decay (the conductance-memory threshold: a carried lane is fast) */
+static int qSat=128;          /* the pair-saturation pressure gauge — shared
+ * by emission routing, Meissner relaxation, over-pressure shunt,
+ * occupancy pick and the string-break tube detector. One constant,
+ * five mechanics: if knot stability tracks this independently, the
+ * coupling is structural not coincidental. */
+static int qChargeShed=4;     /* charge mobility: routed winding and mass
+ * launches displace charge>>qChargeShed (1/16 per event) — how fast a
+ * bound charge record drifts with its energy. */
 
 static int qDdShift=0;
 static int qBendShift=0;
@@ -337,6 +360,12 @@ static int node_live(const NodeState *n){
     if(n->mass||n->heat)return 1;   /* heat is stored energy — a hot
         * node is not vacuum (it can thermally re-emit), so it must
         * stay on the process list or the bath goes dark */
+    /* records other cells read must persist: charge is a conserved
+     * signed ledger (dipole minting sums to zero — sealing it away
+     * silently breaks the global sum), bondPar is the chirality record
+     * the burn and parGate read, momentum is the force ledger */
+    if(n->charge||n->bondPar)return 1;
+    for(int e=0;e<13;e++)if(n->momentum[e])return 1;
     for(int c=0;c<QChannels;c++)
         if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
     if(n->strainBank)return 1;
@@ -625,7 +654,7 @@ void moore26_tick(void){
              * tax. History clears the path it keeps — the ledger
              * guides the flow, not just stalls it (the fourth
              * inversion: records route, not congest). */
-            if(o->winding[c]>=16)decay>>=1;
+            if(o->winding[c]>=qWornGate)decay>>=1;
             if(o->winding[c]>=64)decay>>=1;
             if(o->winding[c]>=256)decay>>=1;  /* deep wear = low-loss
              * lane — the carved trail lives in winding[] */
@@ -651,7 +680,7 @@ void moore26_tick(void){
              * layer's reach is a property of accumulated records,
              * not a fixed constant of the substrate. */
             uint32_t dm=7;
-            if(o->winding[c]>=16)dm=(dm<<1)|1;
+            if(o->winding[c]>=qWornGate)dm=(dm<<1)|1;
             if(o->winding[c]>=64)dm=(dm<<1)|1;
             if(o->winding[c]>=256)dm=(dm<<1)|1;
             if(!rail&&decay<1&&(rand_site(si,40+c)&dm)==0)decay=1;
@@ -1110,9 +1139,9 @@ void moore26_tick(void){
                  if(cx0>=0&&cx0<QWidth){
                      int ci0=(z*QHeight+y)*QWidth+cx0;
                      uint8_t load=grid_current[ci0].incip[2*be];
-                     if(load>=32)continue;   /* lane saturated — stall
+                     if(qStallLoad&&load>=qStallLoad)continue;   /* lane saturated — stall
                       * the hop this tick, the knot waits for capacity */
-                     if(load>=16&&shift>2)shift--;   /* worn path carves
+                     if(qCarveLoad&&load>=qCarveLoad&&shift>2)shift--;   /* worn path carves
                       * faster — ledger feedback (history = inertia) */
                  }}
                 /* INVERTED — relocation is a complete handoff: the
@@ -1302,7 +1331,7 @@ void moore26_tick(void){
                     if(bx>=0&&bx<QWidth&&by>=0&&by<QHeight&&bz>=0&&bz<QDepth){
                         const NodeState *bn=&grid_current[(bz*QHeight+by)*QWidth+bx];
                         uint32_t ba=bn->winding[2*de],bb=bn->winding[2*de+1];
-                        if((ba<bb?ba:bb)>=32)continue;   /* interior — no bleed */
+                        if((ba<bb?ba:bb)>=(uint32_t)qCommitMin)continue;   /* interior — no bleed */
                     }
                 }
             }
@@ -1369,7 +1398,7 @@ void moore26_tick(void){
              * plus the emitter's HANDEDNESS: bondPar signs the exhaust
              * so the stream carries chirality as charge, landing as
              * +q/-q on distant conduits (the parity signal at range) */
-            int32_t qc=(int32_t)o->charge>>4;
+            int32_t qc=(int32_t)o->charge>>qChargeShed;
             grid_next[si].charge-=qc;
             if(o->bondPar)qc+=(o->bondPar>0?1:-1);
             int32_t cf=(int32_t)grid_next[si].chargeFlight[fc]+qc;
@@ -1429,7 +1458,13 @@ void moore26_tick(void){
         int lvl=site_level(o);if(lvl<1)lvl=1;
         if(!IS_EVEN(x,y,z))continue;   /* packets never arm on odd cells */
         for(int c=0;c<QChannels;c++){
-            if(!n->packet[c])continue;
+            /* OFFER BURST — each quantum on the conduit gets its own
+             * negotiation this tick (catch roll salted per attempt so
+             * the swarm isn't all-or-nothing; armed recomputed inside
+             * so a dense swarm admits to cap then declines). Default 1
+             * reproduces the legacy one-offer channel exactly. */
+            for(int att=0;att<qArmBurst;att++){
+            if(!n->packet[c])break;
             /* rail bypass: if THIS NODE carries a saturated rail,
              * arriving packets ride it — re-channeled onto the
              * node's most-committed member, skipping negotiation.
@@ -1461,7 +1496,7 @@ void moore26_tick(void){
                 uint32_t wm=wa<wb?wa:wb;
                 lvl+=(int)(wm>>qAxialCatch);if(lvl>8)lvl=8;
             }
-            if((rand_site(si,20+c)%qCatchGate)>=lvl)continue;     /* catch gate */
+            if((rand_site(si,20+c+att*64)%qCatchGate)>=lvl)continue;   /* catch gate — per-quantum roll (att=0 keeps legacy salt) */
             uint32_t nu=n->packetNu[c]?n->packetNu[c]:1;
             /* OFF-SHELL arming: the nu%line resonance check moved to
              * CONFIRM. A virtual offer doesn't need the absorber's
@@ -1491,10 +1526,10 @@ void moore26_tick(void){
             {
                 int8_t pp=n->packetPar[c];
                 samesign=pp&&n->charge&&((n->charge>0)==(pp>0));
-                if(samesign)cap=4;
+                if(samesign)cap=qCapSame;
                 else{
-                    cap=13-((n->charge<0?-n->charge:n->charge)>>3);
-                    if(cap<4)cap=4;
+                    cap=qCapBase-((n->charge<0?-n->charge:n->charge)>>qCapShift);
+                    if(cap<qCapSame)cap=qCapSame;
                 }
             }
             if(armed>=cap){
@@ -1622,6 +1657,7 @@ void moore26_tick(void){
             n->incipPar[c]=n->packetPar[c];
             n->packet[c]--;
             qEvents[5]++;
+            }
         }
     PROC_NODES_END
 
@@ -1898,7 +1934,7 @@ void moore26_tick(void){
                     if(nx>=0&&nx<QWidth&&ny>=0&&ny<QHeight&&nz>=0&&nz<QDepth){
                         const NodeState *fn=&grid_current[(nz*QHeight+ny)*QWidth+nx];
                         uint32_t fa=fn->winding[c&~1],fb=fn->winding[c|1];
-                        if((fa<fb?fa:fb)>=32)continue;   /* interior — keep flying */
+                        if((fa<fb?fa:fb)>=(uint32_t)qCommitMin)continue;   /* interior — keep flying */
                     }
                 }
                 if(mA+nu<=qConfirmCap){
@@ -2075,13 +2111,13 @@ void moore26_tick(void){
                         int e2=(k_+rot2)%13;
                         int32_t d2=eff_dd(n,e2);
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
-                        if(d2>dd&&m2<128){dd=d2;fe=e2;}
+                        if(d2>dd&&m2<(uint32_t)qSat){dd=d2;fe=e2;}
                     }
                     uint32_t fm=999;
                     for(int k_=0;k_<QChannels/2&&fe<0;k_++){
                         int e2=(k_+rot2)%13;
                         uint32_t m2=n->winding[2*e2]<n->winding[2*e2+1]?n->winding[2*e2]:n->winding[2*e2+1];
-                        if(m2<128&&m2<fm){fm=m2;fe=e2;}
+                        if(m2<(uint32_t)qSat&&m2<fm){fm=m2;fe=e2;}
                     }
                     if(fe<0){
                         int32_t ch=(int32_t)n->charge+(int32_t)nu;
@@ -2141,7 +2177,7 @@ void moore26_tick(void){
                 int ni=nbr(x,y,z,vb[0],vb[1],vb[2]);
                 uint32_t rm=grid_current[ni].winding[2*e]<grid_current[ni].winding[2*e+1]
                           ?grid_current[ni].winding[2*e]:grid_current[ni].winding[2*e+1];
-                if(!qDdShift||rm<128){
+                if(!qDdShift||rm<(uint32_t)qSat){
                     if(qDdShift>=1){
                         uint32_t dk=ex>>qDdShift;
                         uint32_t dav=o->winding[big]-sent[big];
@@ -2200,8 +2236,8 @@ void moore26_tick(void){
              * commitMin still relaxes; saturated pairs >=128 bleed
              * only the over-pressure excess, settling at ~128 —
              * right at the Phase 7 fracture gate. */
-            if(a >= (uint32_t)qCommitMin && a < 128)continue;
-            uint32_t k=(a>=128)?(a-127)>>3:a>>3;
+            if(a >= (uint32_t)qCommitMin && a < (uint32_t)qSat)continue;
+            uint32_t k=(a>=(uint32_t)qSat)?(a-(qSat-1))>>3:a>>3;
             /* UNDERFLOW GUARD: deductions write grid_next but reads
              * saw grid_current — when several edges drain one node in
              * a tick, next can already be lower than current. Clamp
@@ -2228,7 +2264,7 @@ void moore26_tick(void){
                 ny=(y+QChannelVec[ni==niP?2*e:2*e+1][1])&QMaskY,
                 nz=(z+QChannelVec[ni==niP?2*e:2*e+1][2])&QMaskZ;
             uint32_t mn=mP<mM?mP:mM;
-            if(mn>=128){
+            if(mn>=(uint32_t)qSat){
                 /* over-pressure shunt — the saturated recipient routes
                  * the excess to its own freest neighbor (the core not
                  * crystallizing, the knot's perimeter draining). */
@@ -2256,13 +2292,13 @@ void moore26_tick(void){
                     /* charge rides the transfer — routed winding
                      * displaces the node's charge share (the induced-
                      * dipole path: asymmetric routing polarizes). */
-                    int32_t cq=(int32_t)grid_next[si].charge>>4;
+                    int32_t cq=(int32_t)grid_next[si].charge>>qChargeShed;
                     grid_next[si].charge-=cq;
                     #pragma omp atomic
                     grid_next[ni3].charge+=cq;
                 }
             } else {
-                uint32_t room=128-mn;if(k>room)k=room;
+                uint32_t room=(uint32_t)qSat-mn;if(k>room)k=room;
                 if(k>=8){
                     grid_next[si].winding[2*e]-=k;grid_next[si].winding[2*e+1]-=k;
                     TXN_WORK(&grid_next[si]);
@@ -2271,7 +2307,7 @@ void moore26_tick(void){
                     #pragma omp atomic
                     grid_next[ni].winding[2*e+1]+=k;
                     /* charge rides the winding transfer */
-                    int32_t cq=(int32_t)grid_next[si].charge>>4;
+                    int32_t cq=(int32_t)grid_next[si].charge>>qChargeShed;
                     grid_next[si].charge-=cq;
                     #pragma omp atomic
                     grid_next[ni].charge+=cq;
@@ -2384,7 +2420,7 @@ void moore26_tick(void){
                  :(try_==0&&dch>=0)?dch
                  :6+rand_site(si,2+try_)%12;   /* edge channels only */
             uint32_t occ=grid_next[si].packet[tc];
-            if(occ<128&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
+            if(occ<(uint32_t)qSat&&(rand_site(si,6+try_)&127)>=(int)occ){c=tc;break;}
         }
         if(c<0){qEvents[31]++;continue;}       /* modes refuse — stable */
         /* density refusal — the measured neighborhood structure is
@@ -2537,7 +2573,7 @@ void moore26_tick(void){
                 for(int e2=0;e2<QChannels/2;e2++){
                     uint32_t m2=grid_next[si].winding[2*e2]<grid_next[si].winding[2*e2+1]
                                ?grid_next[si].winding[2*e2]:grid_next[si].winding[2*e2+1];
-                    if(m2>=32&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
+                    if(m2>=(uint32_t)qCommitMin&&(wbe<0||m2<wbm)){wbm=m2;wbe=e2;}
                 }
                 if(wbe>=0){
                     uint32_t half=ev>>1;
@@ -2635,18 +2671,18 @@ void moore26_tick(void){
          * are dead registers under FCC; pair production on them
          * would freeze the recoiling mass. */
             uint32_t a=grid_current[si].winding[2*e],b=grid_current[si].winding[2*e+1];
-            if(a<128||a!=b)continue;
+            if(a<(uint32_t)qSat||a!=b)continue;
             /* only the tube HEAD fires — the upstream neighbor must be
              * unsaturated (else every node of the same tube fractures
              * simultaneously, minting endpoint mass per node). */
             int un=nbr(x,y,z,-QChannelVec[2*e][0],-QChannelVec[2*e][1],-QChannelVec[2*e][2]);
             uint32_t ua=grid_current[un].winding[2*e],ub=grid_current[un].winding[2*e+1];
-            if(ua>=128&&ua==ub)continue;
+            if(ua>=(uint32_t)qSat&&ua==ub)continue;
             int len=0;
             for(int step=0;step<16;step++){
                 int tni=nbr(x,y,z,QChannelVec[2*e][0]*step,QChannelVec[2*e][1]*step,QChannelVec[2*e][2]*step);
                 uint32_t na=grid_current[tni].winding[2*e],nb=grid_current[tni].winding[2*e+1];
-                if(na>=128&&na==nb)len++;else break;
+                if(na>=(uint32_t)qSat&&na==nb)len++;else break;
             }
             if(len>=12){
                 /* macro-tension — the whole tube saturated: fracture,
@@ -2772,6 +2808,19 @@ uint32_t moore26_incipient_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].incipNu[c];
 }
+void moore26_incipient_set(int x,int y,int z,int c,uint32_t v){
+    if(!grid_current)return;
+    NodeState *n0=&grid_current[z*QWidth*QHeight+y*QWidth+x],
+              *n1=&grid_next[z*QWidth*QHeight+y*QWidth+x];
+    n0->incip[c]=n1->incip[c]=(uint8_t)(v>255?255:v);
+    n0->incipBorn[c]=n1->incipBorn[c]=(uint8_t)qTick;
+    if(!(n0->incipNu[c]&0x7f)){n0->incipNu[c]=n1->incipNu[c]=1;}
+    mark_chunk(x,y,z);
+}
+uint32_t moore26_localdensity_get(int x,int y,int z){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].localDensity;
+}
 uint32_t moore26_packet_born_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].packetBorn[c];
@@ -2803,6 +2852,12 @@ void moore26_massflight_set(int x,int y,int z,int c,uint32_t v){
 uint32_t moore26_massflight_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].massFlight[c];
+}
+void moore26_chargeflight_set(int x,int y,int z,int c,int v){
+    if(!grid_current||!IS_EVEN(x,y,z))return;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c]=(int8_t)v;
+        grid_next[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c]=(int8_t)v;
+    mark_chunk(x,y,z);
 }
 uint64_t moore26_events(int i){return (i>=0&&i<64)?qEvents[i]:0;}
 uint32_t moore26_journal_tick(int i){return qJTick[i&(QJRN-1)];}
@@ -2952,6 +3007,15 @@ void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
+void moore26_arm_burst_set(int v){qArmBurst=v>0&&v<256?v:1;}
+void moore26_stall_load_set(int v){qStallLoad=v>=0&&v<256?v:32;}
+void moore26_carve_load_set(int v){qCarveLoad=v>=0&&v<256?v:16;}
+void moore26_cap_same_set(int v){qCapSame=v>=0&&v<64?v:4;}
+void moore26_cap_base_set(int v){qCapBase=v>0&&v<64?v:13;}
+void moore26_cap_shift_set(int v){qCapShift=v>=0&&v<8?v:3;}
+void moore26_worn_gate_set(int v){qWornGate=v>=0&&v<256?v:16;}
+void moore26_sat_set(int v){qSat=v>0&&v<256?v:128;}
+void moore26_charge_shed_set(int v){qChargeShed=v>=0&&v<8?v:4;}
 void moore26_tension_set(int v){qTension=v<0?0:v>127?127:v;}
 void moore26_string_set(int v){qString=v<0?0:v>127?127:v;}
 void moore26_slack_set(int v){qSlack=v<1?1:v;}
@@ -3000,7 +3064,8 @@ void moore26_momentum_at_set(int x,int y,int z,int e,int v){
      * the phase-copy paths), so a current-only write is invisible. */
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth||e<0||e>12)return;
     uint32_t si=(z*QHeight+y)*QWidth+x;
-    grid_current[si].momentum[e]=v;grid_next[si].momentum[e]=v;}
+    grid_current[si].momentum[e]=v;grid_next[si].momentum[e]=v;
+    mark_chunk(x,y,z);}
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
@@ -3010,7 +3075,8 @@ void moore26_bondpar_set(int x,int y,int z,int v){
      * offers — this stamps it directly for handedness tests */
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return;
     uint32_t si=(z*QHeight+y)*QWidth+x;
-    grid_current[si].bondPar=(int8_t)v;grid_next[si].bondPar=(int8_t)v;}
+    grid_current[si].bondPar=(int8_t)v;grid_next[si].bondPar=(int8_t)v;
+    mark_chunk(x,y,z);}
 int moore26_bondpar_get(int x,int y,int z){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
     return grid_current[(z*QHeight+y)*QWidth+x].bondPar;}
