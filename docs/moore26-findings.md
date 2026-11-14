@@ -1995,3 +1995,33 @@ force now — momentum books at the absorption event regardless of
 which edge receives the energy. Consistent with the principle:
 state-change priced, persistence free — a landing is a state-change
 wherever the energy settles.
+
+## qRecoilLaw round 3 — funded launch, topographic wake, coast preserved
+
+**The real propulsion mode discovered:** a knot with momentum doesn't
+rocket — it DISSOLVES. Measured: mass=4000 knot fully disassembled
+into massFlight over ~3 ticks, the wave flew +x at transport speed,
+re-condensed at x=61 with m=4000, p=256 intact. Self-propulsion is
+teleport-by-dissolution: bleed the trailing edge forward, land,
+reconstitute. The exhaust carries implicit momentum (mass at flight
+speed) which re-deposits on landing.
+
+**Funded launch (measured):** launch debits the emitter's own drive
+— pay=min(k,|p|) on the launch axis, exhaust carries implicit
+momentum, landing re-deposits. Recondensed knot identical under
+both laws (conservation through the wave now consistent).
+Shortfall when |p|<k documented — can't spend drive it lacks.
+
+**Topographic wake (measured):** under the law, each hop writes
+winding+1 on the crossed conduit's transit-direction member — the
+medium records WHERE it was crossed, in the direction of travel.
+60-tick coast: 31 worn channels vs legacy's 5 ghost -p cells.
+The knot carves a real rail through virgin medium — first crossing
+paves, followers ride the worn lane, and wear feeds commit/bond
+gates so the rail is live infrastructure, not inert bookkeeping.
+
+**Newton-1 preserved:** trajectories identical across laws
+(31->62 in 60t) — the silenced trail changed nothing about the
+knot's motion, confirming the old trail was inert bookkeeping.
+Free persistence, priced landings, paid propulsion — the ledger
+is now closed on all measured paths.

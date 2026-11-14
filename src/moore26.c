@@ -1295,6 +1295,17 @@ void moore26_tick(void){
                             grid_next[ci].incipNu[2*be]=0;
                         grid_next[ci].incip[2*be]++;
                     }
+                    /* qRecoilLaw: the transit also WEARS the lane —
+                     * the crossed conduit deepens on the transit-
+                     * direction member, the same currency packet
+                     * traffic spends. A topographic wake, not a
+                     * force record: the knot's own motion carves its
+                     * rail — first crossing paves, followers ride
+                     * the worn lane. */
+                    if(qRecoilLaw){
+                        uint32_t wv=grid_next[ci].winding[ch]+1;
+                        grid_next[ci].winding[ch]=(uint16_t)(wv>65535?65535:wv);
+                    }
                 }
                 /* winding clears too — the committed record re-writes
                  * at the destination odd site: the SKELETON migrates
@@ -1498,6 +1509,19 @@ void moore26_tick(void){
             if(k>k2)k=k2;
             if(!k)continue;
             grid_next[si].mass-=k;
+            /* funded launch (qRecoilLaw): the exhaust flies at full
+             * transport speed — k mass at 1 cell/tick carries k
+             * quanta of implicit momentum. Debit the emitter's own
+             * drive on the launch axis: propulsion spends stored
+             * momentum, sustained thrust drains the reservoir.
+             * Shortfall (|p|<k) is an unpaid remainder — the knot
+             * can't spend drive it doesn't hold. */
+            if(qRecoilLaw){
+                int32_t *lp=&grid_next[si].momentum[de];
+                int32_t bal=dir>0?*lp:-*lp;
+                int32_t pay=(int32_t)k<bal?(int32_t)k:(bal>0?bal:0);
+                *lp-=dir>0?pay:-pay;
+            }
             if(qMomentum&&qLaunchMode>=1&&qLaunchMode<=3){
                 /* permutation sweep — direction/landing variants:
                  * 1=packet fwd (+p offer->confirm ahead)
