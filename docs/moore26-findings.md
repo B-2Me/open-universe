@@ -1478,3 +1478,30 @@ And the non-commuting position of helicity quanta is the continuum
 analog of our argmax problem: a knot cannot resolve all momentum
 components in one hop — the vol walk answers it the way path
 integrals do, by sampling the components over time.
+
+CONGESTION WALL = MOMENTUM PUMP (measured): incipient-armed
+conduits seeded ahead of a walking knot don't stall it — the
+confirms keep depositing -1 momentum on the conduit, drag pushes
+it onto the knot, the sign flips and the knot RETREATS at full c.
+v never dips below 1 hop/tick — sub-c motion exists only through
+stall-gated ticks (incip>=qStallLoad blocks the hop that tick, no
+deceleration ramp). "A wall" in this substrate is a reflector:
+transaction density absorbs and re-emits momentum back at the
+approaching body.
+
+baseline-vs-VOL at the wall (p3=30+p4=20, wall on axis-3 only):
+  BASE: first hop +diag hits the pump, momentum flips, argmax
+        commits to surviving axis-4 -> clean slide along flank,
+        exits at (47,18)/16t.
+  VOL:  keeps drawing axis-3 at stale weight (~60%) -> re-engages
+        the pump repeatedly -> wanders right-down, exits (37,18).
+  The weighted draw is memoryless: it re-pays the block
+  probability every tick. A spend-on-blocked or recency-weighted
+  variant would fix it — deferred (p stays free today).
+
+speed-of-nature structure, now fully mapped:
+  v = 1 hop/tick whenever p!=0 and the drawn channel lands —
+  enable-gated, magnitude-free. Sub-c = c*(1-stall fraction) only.
+  Composite velocity under VOL = vector-sampled: centroid tracks
+  the p-vector at ~c; baseline could not express non-axis
+  directions at all (systematic argmax-tie bias to low index).
