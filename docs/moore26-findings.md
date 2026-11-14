@@ -1387,3 +1387,52 @@ decline-reflect recoil (1561/1646 +-2), imbalance drain (1063 +-n).
 Coupling precedence measured: the +-1 confirm kick can preempt the
 +-25 imbalance cascade by 1 tick — same conduit, competing writers,
 order decided by rand_site phase, not magnitude.
+
+MOMENTUM WRITER/READER MAP (coupling audit):
+
+writers -> momentum[13]:
+  1043  pair-production kick       +-kick on the two odd cells (ev55 side)
+  1092  imb-drain                  +-n, n=|imb|>>1 — dominant force write,
+                                   packet-supply limited (u8 cap => |d p|
+                                   <= ~127/tick, matches the ~145-200
+                                   measured saturation)
+  1214  hop handoff                1:1 transfer, conserved relocation
+  1305  conduit drag share         p>>8 -> live odd faces, donor-debited
+  1561  decline-reflect recoil     +-2 on conduit (ev53)
+  1756  tension/string kick        +-kick on odd pairs
+  1980  confirm direction          +-1 on absorber, per transaction
+
+readers:
+  relay 1095-1104: argmax|p| axis + sign -> ONE channel hop; magnitude
+      picks WHICH axis, never speed or distance
+  liveness 368: nonzero keeps the record alive
+  drag 1305: conduit p>>8 broadcast — a conduit needs |p|>=256 before
+      its first quantum reaches matter (recoil +-2 is sub-quantization:
+      128+ accumulated recoils before one share) — ev53 reservoir is
+      effectively frozen on conduits unless a storm packs it
+  launch dir 1346/2466/2553: sign only
+
+counter-balances / rate-limiters (measured):
+  * confirm +-1 vs imb +-25: the small write PREEMPTS the large one —
+    the early hop walks the knot off the conduit face before the
+    imbalance accumulates. Order beats magnitude (transaction layer
+    eats the same packet reservoir the drain reads, 1 quantum at a
+    time, and its timing is rand_site/qTick gated ~1/16).
+  * arm consumes packets -> tips imb by +-1 per armed quantum -> the
+    offer layer and the drain compete for the same reservoir.
+  * reflect +-2 vs drag >>8: recoil accrues on the conduit but can't
+    leak until it clears the 256 floor — two momentum registers with
+    mismatched gain sharing one reservoir.
+
+SPEED OF NATURE (measured, knot seeded p on odd site):
+  p3=1 / 30 / 1000 -> IDENTICAL (+1,+1,0)/tick. Magnitude is dead
+  state: hop is argmax-axis + sign, always 1 cell. p3=30+p0=20 ->
+  identical to p3=30 alone: orthogonal momentum is inert cargo,
+  carried whole by the handoff but producing zero displacement
+  component. No decay path observed for odd-cell p (no drain other
+  than handoff): preserving momentum is free; only force writes
+  change it. So: moving matter costs ~0 (any p!=0 => full speed
+  forever); creating matter costs the pair-production wall
+  (dep>>5 mass, nu sum >= qFusionWall). The asymmetry the user
+  predicted is structural: transport is enable-gated, creation is
+  energy-gated.
