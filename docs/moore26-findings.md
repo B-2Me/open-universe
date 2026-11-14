@@ -1686,3 +1686,49 @@ conduit (31,33,32) carrying ch8 offers, qTension=16 = k1):
   bond record to ride with the mass — odd-cell bondDist already
   travels with handoffs and is read by the align gate, so the
   provenance path exists; nothing currently converts it to a kick.
+
+## Self-carved wells + the confinement law
+
+(a) SELF-CARVED GRAVITY — the knot's own activity deepens the medium's
+grip. Two measurements:
+
+  worn vs fresh bond conduit (w=400 vs 0, same traffic/pair):
+    fresh: 10 acks / 7 kicks in 80t; worn: 81 acks / 19 kicks —
+    8x transaction rate, ~2.7x kick authority. The worn lane carries
+    more offers -> more confirms -> more returning acks -> more
+    restoring authority. The well's depth IS its traffic.
+
+  self-carving loop: 4 hot face-conduits around a knot emit for 60t ->
+    their own transit writes wear on the knot's face-conduit network:
+    winding total 402->1865, 55 channels worn. The knot literally
+    carves the lanes that hold it — sustained activity deepens the
+    medium's grip on itself. Gravity-analog: matter paving its own
+    potential well, no authored field.
+
+  BUT depth doesn't fix brittleness: worn and fresh wells break at
+  identical escT under momentum injection (+1/4t, +1/8t, +1/12t) —
+  position-anchored kicks can't recover a departed cell at any rate.
+
+(b) qString CONFINEMENT — the second potential, isolated properly
+  (controls persist across init! tension_set(0)/string_set(0) needed —
+  same harness-pollution class as qTick):
+
+  OFF (no potential): the pair drifts under ambient drain pushes —
+    A even stranded onto the even-parity conduit site (31,33,32) —
+    parity-breaking hop, face/corner caveat live in the wild.
+  S16 slack=1: 34 string-kick writes (~17 events x 2 bend cells),
+    pair held at well. T16: 16 kicks, same hold.
+  => string gives ~2x kick rate vs dd-scaled tension on reach~1-3
+    traffic: constant-force confinement while reach>slack. Kicks are
+    still strainBank-funded and position-anchored — same brittleness.
+
+  reach semantics: rtt counts offer TIME (birth->confirm), not just
+  distance — congestion-delayed confirms inflate reach, reading as
+  stretch. A busy bond literally pulls harder — the well tightens
+  under load (physically sensible coupling: crowding = strain).
+
+  synthesis: two potentials now measured — harmonic (tension, dd-
+  proportional) and confinement (string, constant over slack), both
+  real, funded, and brittle. The well = transaction traffic at a
+  conduit pulling flanking mass to its bend sites; "force" at this
+  scale is carved-lane potential, not body-to-body spring.
