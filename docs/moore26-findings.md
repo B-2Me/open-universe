@@ -1574,3 +1574,47 @@ momentum debits) were already safe — only blind clears needed guards.
 
 Determinism: three fresh inits produce byte-identical pair trajectories
 (qTick reset in init, draw is pure function of reservoir + tick).
+
+## Composite bodies at scale — rigidity is load-pattern dependent
+
+Cluster battery (vol routing + bond-share, seeded committed winding):
+
+  2D plaquette, ALL cells pushed equally (p3=p4=40):
+    PERFECT rigid translation — span (2,2) held 10 ticks, n=4
+    throughout, coherent zigzag. Reservoir-synchronized draws make
+    equal-reservoir cells step identically.
+
+  3D cube, 2x2x2 = 8 cells / 12 bond conduits, all pushed:
+    PERFECT rigid translation — span (2,2,2) held 8 ticks.
+
+  2D plaquette, ONE CORNER pushed (torque load):
+    translates (centroid +1x/tick) but deforms — span wobbles to (2,4);
+    at t8 two cells drew onto the same site and MERGED (m=8000 on one
+    cell, n=4->3). Corner push -> shear -> occasional collision merge.
+
+  2D plaquette, LEFT EDGE pushed (2 of 4 cells):
+    progressive shear — span_y grows 3->5->7->9->11 as the pushed
+    column outruns the trailing column; body stays connected (n=4,
+    bonds hold) but geometry degrades into a skewed streak.
+
+  => the composite's shear modulus is ~0: rigidity exists ONLY via
+  momentum-reservoir equilibration, which carries no geometric
+  constraint. Symmetric loads translate; asymmetric loads deform and
+  can merge cells. "Force on a body" at scale now has three measured
+  regimes: rigid translation / coherent jitter (wavefront) / shear-
+  deformation with merge risk — all from per-cell registers + bond
+  transmission, no authored body frame.
+
+## Bond provenance — what the share reads and who writes it
+
+  qBondShare transmits through a face conduit whose committed pair
+  min(winding[2e],winding[2e+1]) >= qCommitMin (default 32).
+  winding[c] is the worn-lane record: +1 written on the cell a packet
+  ARRIVES at during transit (measured: seeded w6=5 -> 6 after one
+  transiting hop; seeded-at-source accrues 0 because wear lands on
+  the destination). A sustained 60-pk/tick beam wrote w6 ~70/40t.
+  => authentic bond formation = counter-propagating traffic over the
+  conduit for ~25 ticks; seeded winding is register-equivalent.
+  NOTE: packets seeded adjacent to mass were drained by the knot
+  before transit (imbalance drain beats the worn-lane write) — the
+  beam needs to arrive from upstream, not sit on the bond conduit.
