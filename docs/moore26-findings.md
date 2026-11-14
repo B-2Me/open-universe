@@ -1732,3 +1732,33 @@ grip. Two measurements:
   real, funded, and brittle. The well = transaction traffic at a
   conduit pulling flanking mass to its bend sites; "force" at this
   scale is carved-lane potential, not body-to-body spring.
+
+## The momentum trail is the medium's recoil ledger — and it's minted
+
+Followed the ~1/hop "leak" to ground. Mechanism chain:
+
+  knot hops -> the crossed face conduit books incip[2*be]++ (line
+  ~1280: "the EVEN CONDUIT records the clearing") -> next tick it
+  confirms -> the confirm writes momentum[c>>1] +/-1 on the conduit
+  (line ~2083, "an offer absorbed into structure pushes it the way
+  the packet was travelling").
+
+  measured: knot p=256 walks 12 hops with ALL 256 intact; each crossed
+  conduit holds exactly -1 (opposite the knot's travel — even channel
+  -> -1, odd -> +1 = recoil convention) forever after. One quantum
+  minted per hop, one per conduit, ZERO debit anywhere.
+
+  => mass transit writes a recoil ledger into the medium — the
+  substrate books the knot's passage direction in every conduit it
+  crosses. Currently UNFUNDED: total system momentum changes by -1
+  per hop with no payer. Either a conservation hole, or the seed of
+  the "expense of acceleration": if the transit debited the knot,
+  sustained motion would cost ~1 p/hop — the medium would tax
+  traversal, and a reservoir would have real range (~p hops before
+  stall). Motion is currently free; the recoil record exists but
+  charges no one.
+
+  side-effect of the trail: -1 conduit momentum feeds field-drag
+  (p>>8 -> sub-quantum, never reaches matter), backpressure reads —
+  the wake is mostly inert bookkeeping today, but it IS a real
+  medium memory of transit direction.
