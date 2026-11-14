@@ -1336,3 +1336,54 @@ collision vertex sprays packets outward; a knot absorbs the surplus
 escaping past it -> pushed outward, symmetric both sides. |p|=pk/2
 is imb>>1 read through directly; ~pk200 saturation = u8 packet cap.
 Full cascade: collide -> storm -> spray -> imb -> absorb -> hop.
+
+RETRACTION + RESOLUTION — the "charge selectivity" suppression:
+the +/-1/-1 suppress signature was NOT charge physics. Byte-identical
+grid diff (A+16 on ch6 vs B+16 on ch7: charge=+16 both, ZERO bytes
+differ after 1 tick) proves per-channel chargeFlight provenance is
+fully collapsed into scalar node charge at deposit — no consumer
+reads route direction. The real discriminator: rand_site salts every
+gate roll with the GLOBAL qTick, and moore26_init never reset it —
+sequential inits in one process ran at different roll phases. The
+ch6 arm roll rand_site(si,26)%16==0 fires at qTick in {1,17,57,60};
+sweep arms landing on cumulative ticks {1-4} or {17-20} armed an
+incipient whose CONFIRM (moore26.c:1980) writes momentum[3]-=1 on
+the conduit -> drag shares -1 to both knots -> they hop 1 tick
+BEFORE the +-25 imbalance drain lands -> big kick falls on vacated
+origin cells -> reads as "-1 common drift". Suppress set {1,3,12,16}
+maps exactly onto runs whose cumulative-qTick window contained 1
+or 17. Charge value, sign, and channel: all irrelevant.
+Fix (this commit): qTick=0 in moore26_init (init = fresh universe;
+previously only moore26_clear reset it) and qTick captured by
+save/restore. Post-fix all arms deterministic and charge-symmetric.
+The one REAL charge asymmetry that survives: sign-selective burn —
+A-16 erodes K1 64 mass (4|q|) at t=1, K2 at t=3 (burn scan reads
+grid_current -> 1-tick deposit latency), A+16 nothing (same-sign
+as bondPar=+20).
+
+Granularity answer (measured): charge exists per-channel ONLY in
+transit (chargeFlight[26]) and collapses to a node scalar on
+deposit (moore26.c:817/848 sum cin[2e]+cin[2e+1]). The engine's
+two directional-charge writers: pair production mints +/-q onto
+OPPOSITE channels of the same axis (1456-1457 — a dipole leg
+record) and launch sheds bondPar-signed charge onto the launch
+channel (1411-1415 — handedness->charge in transit). Both erase
+direction at the next landing. If "polarity as a planck-scale
+force" wants a register, the existing directional registers are
+packetPar/incipPar (per-channel parity) — charge never maps into
+parity today; adding per-channel bound charge (charge[26]) or
+preserving the flight dipole on deposit is the authored option,
+but nothing measured requires it yet.
+
+Momentum magnitude is dead state: relay hop is always 1 cell —
+momentum read for SIGN only (QChannelVec pick at 1346/2466/2553)
+and nonzero-ness (node_live:368, relay trigger). p=-1 and p=+/-25
+both yield exactly 1 cell/tick. "Speed of nature" is currently a
+binary: impulse!=0 -> full speed. |p| only matters via the drag
+share (p>>8 to odd neighbors) and as hop fuel is never spent —
+moving costs nothing (reservoir, no decay observed over 10 ticks).
+Where the sign comes from: confirmed-offer momentum (1980 +-1),
+decline-reflect recoil (1561/1646 +-2), imbalance drain (1063 +-n).
+Coupling precedence measured: the +-1 confirm kick can preempt the
++-25 imbalance cascade by 1 tick — same conduit, competing writers,
+order decided by rand_site phase, not magnitude.

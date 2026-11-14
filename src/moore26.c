@@ -547,6 +547,13 @@ void moore26_init(int w,int h,int d){
         return;
     }
     memset(qEvents,0,sizeof(qEvents));
+    /* init = a fresh universe: the absolute drumbeat must restart —
+     * rand_site salts every gate roll with qTick, so a carried-over
+     * counter silently phase-shifts every stochastic gate between
+     * sequential inits in one process (sweeps became unreproducible:
+     * same seeds, different roll phase -> phantom "charge
+     * selectivity" in the collision-repulsion arms). */
+    qTick=0;
 }
 
 /* the tick — the offer/answer transaction cycle. One carry-forward
@@ -2949,16 +2956,21 @@ void moore26_clear(void){
     memset(grid_current,0,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
     qTick=0;
 }
+static uint64_t qTickSave=0;
 uint32_t moore26_save(void){
     if(!grid_current)return 1;
     const size_t sz=(size_t)QWidth*QHeight*QDepth*sizeof(NodeState);
     if(!saveBuf)saveBuf=(NodeState*)malloc(sz);
     memcpy(saveBuf,grid_current,sz);
+    qTickSave=qTick;   /* the drumbeat is part of the state — rand_site
+     * salts every roll with it, so a saved universe must keep its
+     * phase or restored runs diverge */
     return 0;
 }
 uint32_t moore26_restore(void){
     if(!saveBuf||!grid_current)return 1;
     memcpy(grid_current,saveBuf,(size_t)QWidth*QHeight*QDepth*sizeof(NodeState));
+    qTick=qTickSave;
     return 0;
 }
 /* bulk telemetry — a C-side sum is far cheaper than a JS sweep */
