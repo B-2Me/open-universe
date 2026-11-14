@@ -1318,3 +1318,10 @@ thresholds," and the first sustained coherent mover observed.
 
 Signal latency: flight lands post-scan, so sustained burn duty-cycle
 is ~50% — effective mediated rate 2|q|/tick vs pinned-charge 4|q|.
+
+Collision-repulsion scaling: induced |p| = pk/2 linear (beam pk
+10/25/50/100/200 -> |p| 5/13/25/50/145 symmetric both knots) —
+graded radiation-pressure-like law, saturating above pk~100-200.
+The vertex pushes adjacent matter AWAY at ~half the colliding
+flux; momentum writes ~25 directly (not the drag >>8 share of the
+conduit's +-1 residue — write path still being traced).
