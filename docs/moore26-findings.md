@@ -1914,3 +1914,50 @@ absorption events (needs shielding scale — statistical, matching
 the scale-only framing). The lone exception is still the minted
 nu=1 hop-trail kick on virgin lanes — a bookkeeping record
 inheriting the offer force path.
+
+## qRecoilLaw prototype — species-aware funded impulse (measured)
+
+**The violation it fixes:** the hop ledger record (`incip++` on the
+crossed conduit) flowed through the OFFER confirm machinery — a
+bookkeeping entry (no nu, no parity, no phase) inherited the offer's
+force write, minting −1/hop momentum on virgin lanes (on-shell
+nu=1 vs line=1) and minting h*1 expiry heat on worn lanes. Paperwork
+was being processed as if it were an energy-bearing offer.
+
+**Implementation (moore26.c):**
+- Hop write: fresh record on an empty channel zeroes stale incipNu —
+  `incipNu==0` becomes the bookkeeping signature (real offers always
+  carry nu>=1). Merging into a standing offer leaves the offer's nu
+  in charge — self-healing, no flag bit needed.
+- Confirm path: `incipNu==0` channels clear `incip-=h` before all
+  gates — no on-shell test, no boundary test, no kick, no ack, no
+  expiry thermalization. The ledger sees every crossing; paperwork
+  is not an interaction.
+- Real offers: `kick = nu>>qRecoilLaw` (N=0..7), DEBITED from the
+  structure deposit — `nuIn = nu-kick` feeds winding/charge/route
+  deposits. The absorbed energy splits between impulse and record
+  instead of minting both. nu < 2^N lands softly (kick=0).
+- Pull-universe sign preserved (even c -> -, odd c -> +).
+- Setter: `moore26_recoil_law_set(0..7)`.
+
+**Measured verification:**
+| arm | result |
+|---|---|
+| trail, law=0 | trail=1 (baseline preserved) |
+| trail, law=4 | trail=0 — bare-lane minted kick gone |
+| kick, law=0 | p3=-1 flat |
+| kick, law=4 | p3=-6 = -(96>>4) — nu-scaled, p=E/c |
+| funding | pair winding +97 vs +92 — deposit drops by the kick |
+| worn lane | standing=0 both; heat 27 vs 26 — expiry mint stopped |
+
+**Noted in passing (pre-existing quirks, not introduced):**
+- The over-cap else path ("arrival edge full") deposits nu into
+  internal edges WITHOUT consuming the offer — standing offers
+  re-deposit each tick until TTL expiry. Saturating charge absorbs
+  it in practice. A repeat-mint worth revisiting.
+- `massFlight[c]+=1` per confirm mints a flight quantum on the
+  arrival channel — the Newtonian-sign counterpart of the kick,
+  also flat and unfunded.
+- `incipBorn` is not set by hop records; legacy bookkeeping confirms
+  minted acks with garbage rtt into the strain path. Under the law
+  they no longer do — tension/string lose the hop-transit stimulus.

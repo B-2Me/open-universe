@@ -201,6 +201,11 @@ static int qCommitMin=32;
 static int qGroundFloor=512;
 static int qLaunchMode=0;   /* 0=massFlight 1=packet+fwd 2=packet-bck 3=direct */
 static int qConfirmCap=160;
+static int qRecoilLaw=0;   /* 0 = legacy flat minted ±1 confirm kick.
+    * N>0: funded species-aware impulse — confirm kick = nu>>N debited
+    * from the structure deposit (p=E/c quantized), and hop-transit
+    * bookkeeping records (incipNu 0x40) clear the ledger without
+    * force, acks or thermalized expiry — paperwork, not offers. */
 static int qCatchGate=16;
 static int qAxialCatch=0;
 static int qIncipTtl=6;   /* arbitration window — how many ticks an
@@ -1277,7 +1282,19 @@ void moore26_tick(void){
                 int cx=x+v[0],cy=y,cz=z;   /* even conduit at +v[0] */
                 if(cx>=0&&cx<QWidth){
                     int ci=(cz*QHeight+cy)*QWidth+cx;
-                    if(grid_next[ci].incip[2*be]<255)grid_next[ci].incip[2*be]++;
+                    if(grid_next[ci].incip[2*be]<255){
+                        /* bookkeeping species (qRecoilLaw): a fresh
+                         * record on an empty channel is PURE ledger —
+                         * no nu, no parity, no phase. Zero the stale
+                         * nu so the record reads incipNu==0, the
+                         * bookkeeping signature the confirm path
+                         * tests. Only when the channel is empty —
+                         * merging into standing offers leaves the
+                         * offer's real nu in charge. */
+                        if(grid_next[ci].incip[2*be]==0)
+                            grid_next[ci].incipNu[2*be]=0;
+                        grid_next[ci].incip[2*be]++;
+                    }
                 }
                 /* winding clears too — the committed record re-writes
                  * at the destination odd site: the SKELETON migrates
@@ -1907,6 +1924,16 @@ void moore26_tick(void){
         for(int c=0;c<QChannels;c++){
             uint32_t h=o->incip[c];
             if(!h)continue;
+            /* bookkeeping species (qRecoilLaw): hop-transit ledger
+             * records are paperwork, not offers — the hop write
+             * leaves incipNu==0, the signature of a record carrying
+             * no energy. Clear them through the ledger without
+             * gates, force, acks or thermalized expiry: the ledger
+             * sees every crossing, paperwork is not an interaction. */
+            if(qRecoilLaw&&!(o->incipNu[c]&0x7f)){
+                n->incip[c]-=h;
+                continue;
+            }
             /* standing offers persist: an incipient is consumed only
              * when it CONFIRMS (decremented in the confirm branches
              * below). Unconfirmed offers stand for ~6 ticks — the
@@ -2079,9 +2106,18 @@ void moore26_tick(void){
                     }
                     /* an offer absorbed into structure pushes it the
                      * way the packet was travelling — force on the
-                     * momentum register (F=dp/dt: only force writes) */
+                     * momentum register (F=dp/dt: only force writes).
+                     * qRecoilLaw=N: funded species-aware impulse —
+                     * kick = nu>>N, p=E/c quantized — and DEBITED from
+                     * the structure deposit below (nuIn): the absorbed
+                     * energy splits between impulse and record instead
+                     * of minting both. nu<2^N lands softly (kick=0 —
+                     * sub-quantum offers book no force). */
+                    int kick=qRecoilLaw?(int)(nu>>qRecoilLaw):1;
+                    uint32_t nuIn=nu-(uint32_t)kick;
                     {int pe=c>>1;int32_t *mp=&n->momentum[pe];
-                     if(c&1){if(*mp<(1<<30))(*mp)++;}else{if(*mp>-(1<<30))(*mp)--;}}
+                     if(c&1){if(*mp<(1<<30)-kick)(*mp)+=kick;}
+                     else   {if(*mp>-(1<<30)+kick)(*mp)-=kick;}}
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -2094,9 +2130,9 @@ void moore26_tick(void){
                      * bound structure absorbs volumetrically: energy
                      * follows the node's own routing, not just the
                      * arrival channel. */
-                    uint32_t share=((uint32_t)nu*qVolShare)>>8;
-                    uint32_t cnu=qChainShare?((uint32_t)nu*qChainShare)>>8:0;
-                    uint32_t dep=nu-share;   /* cnu is funded by the
+                    uint32_t share=((uint32_t)nuIn*qVolShare)>>8;
+                    uint32_t cnu=qChainShare?((uint32_t)nuIn*qChainShare)>>8:0;
+                    uint32_t dep=nuIn-share;  /* cnu is funded by the
                      * rail toll (winding), not carved from dep */
                     /* signed qDirBias: >0 biases toward the travel
                      * direction (c, momentum forward); <0 biases
@@ -2204,7 +2240,7 @@ void moore26_tick(void){
                         if(d2>dd){dd=d2;de=e2;}
                     }
                     if(de>=0){
-                        int32_t feed=(dd*nu)>>9;if(feed<0)feed=0;
+                        int32_t feed=(dd*nuIn)>>9;if(feed<0)feed=0;
                         /* conserving: the feed REDIRECTS deposited
                          * energy — taken from the biased arrival
                          * member (src), added to the dominant edge.
@@ -3119,6 +3155,7 @@ void moore26_fusion_wall_set(int v){qFusionWall=v;}
 void moore26_commit_min_set(int v){qCommitMin=v;}
 void moore26_ground_floor_set(int v){qGroundFloor=v;}
 void moore26_confirm_cap_set(int v){qConfirmCap=v;}
+void moore26_recoil_law_set(int v){qRecoilLaw=v<0?0:v>7?7:v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
 void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
