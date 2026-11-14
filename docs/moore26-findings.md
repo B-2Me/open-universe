@@ -1647,3 +1647,42 @@ Hot-conduit emission vs a bare neighbor (vac_rate=1, heat=60000):
 
   caveat: emitted packets carry nu capped at 255 and packetBorn parity
   of the source's lane sign; none of that helped coherence at range.
+
+## Tension mechanics — a medium-anchored potential well, not a spring
+
+Live-traffic test (diagonal pair A=(31,32,32) B=(32,33,32), shared
+conduit (31,33,32) carrying ch8 offers, qTension=16 = k1):
+
+  machinery confirmed live: offers confirm downstream, acks ride back
+  on the opposite channel (ev14 climbing), ttl expiry delivers
+  reach=rtt>>1, dd=reach-bondDist kicks the two "bend cells" flanking
+  the conduit (ev54). Kick magnitude = dd*qTension>>4, funded by
+  strainBank (elastic ledger, ev56/57).
+
+  HOLD: with only ambient drain pushes, the pair held its bend sites
+  80 ticks, ev54=22 — the tension well cancels arriving transport
+  kicks, ~0.2 momentum/tick of restoring authority.
+
+  BREAK: sustained +1 momentum per 4 ticks on B's escape axis -> free
+  at t=2, gone forever. The kick writes to the conduit's bend
+  POSITIONS (conduit+o1/o2); a hopped-off cell leaves a ghost site
+  that keeps absorbing kicks. Recovery of a departed cell is
+  IMPOSSIBLE — the bond has no reach beyond the lattice sites it
+  bends through, and the strain measure (rtt) is conduit-link
+  latency, lattice-fixed, blind to where the mass went.
+
+  => the tension bond is BRITTLE: holds quiescent mass at the
+  conduit, resists jitter, breaks irreversibly at first committed
+  displacement. NOT a spring — no elastic recovery exists anywhere
+  in the engine.
+
+  vacuum framing (user note — tuning for zero-g, gravitic gradient
+  unknown at this scale): the position-anchored kick is a
+  MEDIUM-anchored potential — force toward fixed lattice positions
+  regardless of which body occupies them. That is the closest
+  existing analog to an external gradient in the substrate: the
+  conduit+traffic makes a local potential well in the medium itself.
+  A body-internal restoring force (shear modulus >0) would need the
+  bond record to ride with the mass — odd-cell bondDist already
+  travels with handoffs and is read by the align gate, so the
+  provenance path exists; nothing currently converts it to a kick.
