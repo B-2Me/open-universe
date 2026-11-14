@@ -168,6 +168,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | decay vs load | N=6 retards ~7x but still saturates under traffic | forgetting wins only when traffic stops | inline node |
 | odd-cell heat | permanent fossil (no drain, no re-emission) | ev44/ev51 live in even-cell phase | inline node |
 | superheat precipitation | heat 65535 -> ~66000 mass appeared | rate=60 opposed-beam site | inline node |
+| flame extinction floor | ~89 remnant (asymptotic, untaxed when quiescent) | unfed wound knot, qEvapShift=3 | flame.mjs |
+| flame plateau | ~1050 (r=4) / ~1890 (r=16) | feed-rate-dependent sustained mass | flame.mjs |
+| motion dilation | none: tau=32/tick at v=c identical to parked | localTime site-bound; beings carry no clock | twin probe |
 | bare-mass immortality | mass tax exempt: 4000 for 300t at shift=3 | qEvapShift only runs in composite-shed path | inline node |
 
 ## Nulls on record

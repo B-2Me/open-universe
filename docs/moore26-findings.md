@@ -2148,3 +2148,52 @@ surfing) at rates 4/16/60, mass tax probes. Findings:
 - Accretion confirmed in passing: fed blobs grew 500->626 and
   4000->4066 via shed-condensation (the mass:bond equilibrator),
   then plateaued.
+
+## The flame exists (script/cascade/flame.mjs) + twin-paradox negative
+
+### Twin paradox: structurally impossible — beings don't carry clocks
+
+localTime is site-bound: the medium owns time, not the being.
+Measured: a knot hopping EVERY TICK (1 cell/tick = c!) lands each
+site's tau at exactly 32 — full qWorkCap rate, identical to a
+parked twin. The hop writes no txnWork on the being's own node —
+relocation costs the clock nothing. So:
+
+- no motion dilation: v_being can equal v_flux = c at full tau
+- no comoving clock: a knot's 'proper time' is written into its
+  trail — the medium's record of the being, not the being's own
+  accumulator. The trail sum IS the being's total elapsed tau.
+- the clock law is dTau ~ (cap - work): congestion taxes tau
+  (prior: 22x divergence under targeted congestion), velocity
+  doesn't. Neo-Lorentzian flavor: motion vs the medium is
+  absolute, and it is time-free.
+
+### Flame: maintenance-dependent persistence measured
+
+Fixture: wound composite (mass=500 + committed winding pair
+6/7=200 -> site_level=2, shedding-capable), 12-direction
+isotropic edge bath, qEvapShift=3 (mass tax on shed events).
+
+| rate | M trajectory | regime |
+| 0  | 500 -> 89 asymptotic | extinction: de-excites to remnant |
+| 4  | fluctuating 870-1480 | marginal burn |
+| 16 | 500 -> 1890 plateau  | clean burn: feed-rate-dependent |
+| 60 | heat pinned 65535 -> crashes ~5000, M -> ~1630 | superheat precipitation |
+
+- IGNITION exists: wound knots need shed-capable structure
+  (site_level>=2). Bare blobs can't burn at all — exempt.
+- EXTINCTION = de-excitation, not annihilation: the unfed wound
+  knot relaxes to a quiescent ~89 remnant and FREEZES — the mass
+  tax only fires during shed events, so a fully relaxed remnant
+  is untaxed. Mass survives; the process dies. The corpse keeps
+  the mass and loses the closure — activity is what costs.
+- STEADY STATE: mass plateau rises with feed rate (~1050 @ r=4,
+  ~1890 @ r=16) — feed-rate-dependent sustained structure.
+- BLOWOUT'S ANALOG IS CONDENSATION — overdriving precipitates
+  mass instead of dispersing it (heat-cap conversion again).
+
+So the substrate's ontology DOES contain the third persistence
+regime: not immortal (bare mass) and not mortal-by-collision,
+but conditional-on-throughput — and its death is de-excitation
+to an inert remnant, matching the closure-graph picture where
+dying = vertices demoting from 'both' to 'came-from'.
