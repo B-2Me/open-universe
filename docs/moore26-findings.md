@@ -1436,3 +1436,45 @@ SPEED OF NATURE (measured, knot seeded p on odd site):
   (dep>>5 mass, nu sum >= qFusionWall). The asymmetry the user
   predicted is structural: transport is enable-gated, creation is
   energy-gated.
+
+VOLUMETRIC ROUTING (qVolRoute, moore26.c:1096-1121) — the hop axis
+is drawn ~|p| per tick (rand_site salt 200), replacing argmax. The
+momentum vector becomes the path DISTRIBUTION: the knot zigzags
+through channel space and its centroid walks the composite vector —
+the lattice version of a path integral over momentum components.
+Single-axis p is untouched (one weight, always drawn) — full duel
+regression identical.
+
+measured (knot seeded p, 12 ticks):
+  p3=20+p4=20  BASE: (+1,+1)/t forever (45deg off-vector, p4 dead)
+                VOL:  net +x ~1 cell/t, y bounded +-2 (zigzag)
+  p3=20+p4=-20 BASE: (+1,+1)/t
+                VOL:  net +y ~1 cell/t, x zigzags (true composite!)
+  wild two-axis collision (4 beams, axes 3+4 on C=(34,32,32)):
+    knots induced p3=+-25 AND p4=+-25. BASE walked the axis-3
+    diagonal (tie-break bias 45deg off-radial); VOL pushed
+    radially outward (K1 net -x, K2 net +x, y canceling).
+
+baseline defect this fixes: argmax-axis is a LINEAR router with a
+systematic angular bias — equal components always break toward the
+lower axis index. Force direction on the lattice was an artifact of
+index order, not the field. VOL makes force direction read the
+whole vector. Speed is still 1 hop/tick (each hop moves one cell —
+the zigzag keeps net progress at ~c for axis-aligned composites).
+
+caveat: the draw covers all 13 axes incl faces(0-2)/corners(9-12).
+Face/corner p flips lattice parity -> lands on an even cell -> no
+relay (odd-only) -> strand trap. Same trap exists in baseline when
+face p dominates; natural force writers (imb drain, confirm,
+reflect) only ever write edge axes 3-8, so wild dynamics never
+draws a parity-breaking hop. Seeded face/corner p strands by
+design, not accident.
+
+Skagerstam 2018 (three-slit/Sorkin-kappa) cross-read: apparent
+k!=0 three-path interference dissolves under properly normalized
+boundary conditions — the same lesson as our phantom charge
+selectivity (cumulative qTick = mismatched boundary conditions).
+And the non-commuting position of helicity quanta is the continuum
+analog of our argmax problem: a knot cannot resolve all momentum
+components in one hop — the vol walk answers it the way path
+integrals do, by sampling the components over time.

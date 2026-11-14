@@ -299,6 +299,10 @@ static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
      * its oldest core hardens from its own formation history. */
 static int qVolShare=0;
 static int qChainShare=0;
+static int qVolRoute=0;    /* 0=argmax-axis hop (baseline). Nonzero:
+ * hop axis drawn ~|p| per tick — composite momentum walks its
+ * vector (zigzag path, vector centroid). The multi-axis dead state
+ * becomes the path distribution. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1092,12 +1096,35 @@ void moore26_tick(void){
                         grid_next[si].momentum[e]+=share<0?-n:n;
                     }
                 }
-                int be=0;int32_t best=0,dir=1;
-                for(int e=0;e<QChannels/2;e++){
-                    int32_t p=o->momentum[e];int32_t a=p<0?-p:p;
-                    if(a>best){best=a;be=e;dir=p<0?-1:1;}
+                int be=-1,dir=1;
+                if(qVolRoute){
+                    /* VOLUMETRIC ROUTING — draw the hop axis weighted
+                     * by |p| each tick: the walk samples the momentum
+                     * VECTOR, so a composite impulse produces composite
+                     * drift (zigzag path, vector centroid — the lattice
+                     * path-integral over momentum components). Baseline
+                     * argmax discards every component but the dominant
+                     * one; p3=+x+p4=-y hops diagonally forever instead
+                     * of netting +x. Single-axis p is unchanged: the
+                     * only weight is always drawn. |p| now means
+                     * something — it sets the path distribution. */
+                    int64_t tot=0;
+                    for(int e=0;e<QChannels/2;e++){
+                        int32_t a=o->momentum[e];if(a<0)a=-a;tot+=a;}
+                    if(tot>0){
+                        int64_t pick=((int64_t)rand_site(si,200)*tot)>>8;
+                        for(int e=0;e<QChannels/2;e++){
+                            int32_t a=o->momentum[e];if(a<0)a=-a;
+                            if(pick<a){be=e;dir=o->momentum[e]<0?-1:1;break;}
+                            pick-=a;}
+                    }
+                }else{
+                    int32_t best=0;
+                    for(int e=0;e<QChannels/2;e++){
+                        int32_t p=o->momentum[e];int32_t a=p<0?-p:p;
+                        if(a>best){best=a;be=e;dir=p<0?-1:1;}}
                 }
-                if(!best)continue;   /* no momentum, no relay — the
+                if(be<0)continue;   /* no momentum, no relay — the
                  * matter lattice only walks where p says */
                 int ch=2*be+(dir<0);   /* +ch for p>0, opp for p<0 */
                 const int8_t *v=QChannelVec[ch];
@@ -3089,6 +3116,7 @@ void moore26_momentum_at_set(int x,int y,int z,int e,int v){
     grid_current[si].momentum[e]=v;grid_next[si].momentum[e]=v;
     mark_chunk(x,y,z);}
 void moore26_vol_share_set(int v){qVolShare=v;}
+void moore26_vol_route_set(int v){qVolRoute=v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
