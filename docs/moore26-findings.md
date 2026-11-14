@@ -1762,3 +1762,45 @@ Followed the ~1/hop "leak" to ground. Mechanism chain:
   (p>>8 -> sub-quantum, never reaches matter), backpressure reads —
   the wake is mostly inert bookkeeping today, but it IS a real
   medium memory of transit direction.
+
+## History trace — the antipodal sign is deliberate; the mint isn't
+
+git archaeology on the momentum-write convention:
+
+  dbe29a6 (momentum[13] birth, "Newton-1 register"): the c&1?++:--
+  antipodal write existed from day one, applied identically to
+  absorb-confirms and launch recoils. Design rule stated there:
+  "moving costs no momentum, only forces change it."
+
+  73ef092 (statistical gravity): the sign was confirmed DELIBERATE —
+  "the transaction pull is upstream; radiation pressure was
+  attraction-to-source mislabeled." Le Sage pull-universe: absorbing
+  flux marks a node to drift TOWARD the source. The -1 convention
+  is the gravity mechanic, not an inversion.
+
+  276f7af (precedent): flux-drag broadcast minted momentum -> fixed
+  by donor debit. House rule: momentum writes must be funded.
+
+  => two force conventions coexist TODAY by design:
+     imbalance drain (imb>>1, ~+-25): pushes DOWNSTREAM with the
+       stream — Newtonian radiation pressure, funded by consumed
+       packets. Dominates collisions (duel repulsion).
+     confirm kick (+-1): pulls UPSTREAM against the arrival —
+       Le Sage pull-to-source. Unfunded (minted).
+  And the knot's transit trail (conduit -1/hop) reads coherently
+  under pull-universe semantics: "pulled toward where the knot was"
+  = an attractor wake trailing the mover.
+
+  SELF-PROPULSION already exists under this convention: the launch
+  bleeds trailing-edge mass forward and writes "pulled toward the
+  exhaust" — the knot follows its own wake (cf. link3's LRECOIL:
+  funded antipodal emission kick — same physics, opposite sign map).
+
+  OPEN — the funding gap: confirm kick, trail recoil, and launch
+  recoil write are all minted. Funding the trail debit from the
+  hopping knot would make motion cost ~1 p/hop through the medium:
+  inertia as transit tax — the measurable "expense of acceleration".
+  Under pull-universe sign the knot LOSES forward p paying its
+  wake = deceleration through medium interaction. Prototype
+  candidate: qRecoilLaw control (0=current minted trail,
+  1=funded trail debit).
