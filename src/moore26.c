@@ -2156,8 +2156,18 @@ void moore26_tick(void){
                     n->winding[fwd?c^1:c]+=half-bias;
                     /* momentum conservation: the absorbed quantum's
                      * momentum becomes the knot's momentum — massFlight
-                     * gains the arrival direction (radiation pressure). */
-                    n->massFlight[c]+=1;
+                     * gains the arrival direction (radiation pressure).
+                     * qRecoilLaw: FUNDED photoevaporation — the ejected
+                     * quantum is the node's OWN mass, debited from the
+                     * reservoir. Massless nodes can't be pushed:
+                     * radiation pressure accelerates only what has
+                     * mass to lose. Locally = radiation-driven mass
+                     * transport; at scale = the downwind shadow. */
+                    if(qRecoilLaw){
+                        if(n->mass){n->mass--;n->massFlight[c]++;}
+                    } else {
+                        n->massFlight[c]+=1;
+                    }
                     if(share){
                         int t1=-1,t2=-1;uint32_t m1=0,m2=0;
                         for(int e2=0;e2<QChannels/2;e2++){
@@ -2254,6 +2264,25 @@ void moore26_tick(void){
                     /* arrival edge full — route internally: dominant
                      * directedness first (circulation axis), else the
                      * freest edge (the corner). */
+                    /* qRecoilLaw: an internally-routed offer still
+                     * LANDS — the absorption event happened, so the
+                     * transaction closes (consume) and the impulse
+                     * books (nu>>N funded, debited from the deposit
+                     * like any landing). Momentum belongs to the
+                     * absorption event, not to which edge the energy
+                     * settles on. Legacy law: the offer stands and
+                     * re-deposits every tick until TTL — a repeat
+                     * mint kept only for baseline comparison. */
+                    uint32_t nuIn2=nu;
+                    if(qRecoilLaw){
+                        n->incip[c]--;         /* landed — consume */
+                        TXN_WORK(n);
+                        int kick=(int)(nu>>qRecoilLaw);
+                        int pe=c>>1;int32_t *mp=&n->momentum[pe];
+                        if(c&1){if(*mp<(1<<30)-kick)(*mp)+=kick;}
+                        else   {if(*mp>-(1<<30)+kick)(*mp)-=kick;}
+                        nuIn2=nu-(uint32_t)kick;
+                    }
                     int fe=-1;int32_t dd=0;
                     int rot2=(x+y+z+si)%13;
                     for(int k_=0;k_<QChannels/2;k_++){
@@ -2269,11 +2298,11 @@ void moore26_tick(void){
                         if(m2<(uint32_t)qSat&&m2<fm){fm=m2;fe=e2;}
                     }
                     if(fe<0){
-                        int32_t ch=(int32_t)n->charge+(int32_t)nu;
+                        int32_t ch=(int32_t)n->charge+(int32_t)nuIn2;
                         n->charge=(int16_t)(ch>32767?32767:ch);
                         continue;
                     }
-                    n->winding[2*fe]+=nu;n->winding[2*fe+1]+=nu;
+                    n->winding[2*fe]+=nuIn2;n->winding[2*fe+1]+=nuIn2;
                 }
             }
             qEvents[3]+=h;qEvents[16]+=(uint64_t)h*nu;

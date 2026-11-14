@@ -1961,3 +1961,37 @@ was being processed as if it were an energy-bearing offer.
 - `incipBorn` is not set by hop records; legacy bookkeeping confirms
   minted acks with garbage rtt into the strain path. Under the law
   they no longer do — tension/string lose the hop-transit stimulus.
+
+## qRecoilLaw round 2 — internal-landing force + funded photoevaporation
+
+**Internal-route mint closed (measured):** over-cap offers (mA+nu>160)
+previously re-deposited nu every tick without consuming — a runaway
+mint (~+800/tick into winding, overflow into saturating charge, zero
+force). Under the law the internally-routed offer now LANDS: consumed,
+kick=nu>>N books on the arrival axis, deposit gets nuIn. Measured:
+law=0 w=8175/incip=7/p3=0/charge=1576 vs law=4 w=3307/incip=1/
+p3=-48 (8 landings x -6)/charge=0. Nature check: absorbed quanta
+deposit momentum regardless of which mode the energy lands in —
+force books at the absorption EVENT, not the edge.
+
+**Funded photoevaporation (measured):** massFlight[c]+=1 per confirm
+was minted mass. Under the law the ejected quantum is the node's own
+mass — mass-- funds the flight write, massless nodes can't be pushed.
+Verified: knot mass 64->63 on one confirm (kick -6 for nu=108),
+legacy kept 64 + free flight. Local reading: radiation-driven mass
+transport (comet tail). Statistical reading: downwind flux replaced
+by slow massive quantum = shadow = shielding — ONE mechanism serving
+the direct force and the macro attenuation.
+
+**Spectral impedance discovered (measured):** the on-shell gate
+line=(mass+winding>>2)>>2 means a mass node's absorption bandwidth
+scales with its mass — mass=1000 -> line~252 > incipNu max 127 ->
+ordinary quanta can NEVER land. Heavy structure is a reflector,
+light structure an absorber. Absorption impedance ~ mass — a real
+result: inertia and spectral rejection share the same register.
+
+**Boundary answer updated:** internally-routed landings DO produce
+force now — momentum books at the absorption event regardless of
+which edge receives the energy. Consistent with the principle:
+state-change priced, persistence free — a landing is a state-change
+wherever the energy settles.
