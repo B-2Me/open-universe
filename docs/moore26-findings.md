@@ -2906,3 +2906,34 @@ far-field angular amplitude. The honest claim is "scattering
 response is nu-structured and geometry-dependent"; the
 diffraction-pattern claim needs an angular readout (per-channel
 outgoing distribution) we haven't built yet.
+
+## Deviation-age spectrum — grown vs authored vs worn structure
+
+script/cascade/devage.mjs + two new exports (moore26_bondtick_get,
+moore26_workage_get). Census of all wound cells after a sustained
+ch14 feed vs an authored winding_set fixture:
+
+    GROWN (300t feed):    99 wound cells
+        25 birthday'd (bondTick spread t4..t291 over the feed window)
+        74 ageless (wear-deposited winding — traffic scars, no bonds)
+    AUTHORED (12x96):     1 wound cell — bondTick=0, workAge=0
+    GROWN+DECAYED (200t feed + 150t idle):
+        69 wound cells, 21 birthdays survive decay (t4..t189)
+
+Measured consequences:
+
+- The winding field has TWO grades of deviation: wear (transit
+  scars — no provenance) and committed bonds (timestamped). The
+  bondTick distribution is the formation stratigraphy that
+  winding magnitude alone hides.
+- Formation is progressive: birthdays span the entire feed
+  window, not a single nucleation instant.
+- Stratigraphy outlives magnitude — birthdays persist through
+  150t of decay erosion (fossil record).
+- AUTHORED structure is perfectly ageless (bondTick=0,
+  workAge=0) — the spectrum is a clean discriminator between
+  grown and authored structure. Honest flag: winding_set
+  fixtures differ from grown structure in kind, not degree.
+- Per-channel resolution note: bondTick/workAge are per-NODE
+  registers. A true per-channel deviation-age spectrum would
+  need a new per-channel field — not currently tracked.

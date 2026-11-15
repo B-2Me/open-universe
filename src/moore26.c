@@ -3355,6 +3355,12 @@ void moore26_wear_decay_set(int v){qWearDecay=v<0?0:v>16?16:v;}
 int moore26_localtime_get(int x,int y,int z){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
     return (int)grid_current[(z*QHeight+y)*QWidth+x].localTime;}
+int moore26_bondtick_get(int x,int y,int z){
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
+    return (int)grid_current[(z*QHeight+y)*QWidth+x].bondTick;}
+int moore26_workage_get(int x,int y,int z){
+    if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
+    return (int)grid_current[(z*QHeight+y)*QWidth+x].workAge;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
 
 void moore26_absorb_set(int v){qAbsorbWall=v;}

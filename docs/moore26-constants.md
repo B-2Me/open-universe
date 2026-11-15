@@ -229,3 +229,6 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | comb nu-tracking | nu=128->lambda=2 denser comb {2,4,6,12,14}; nu=32->{2} | R=15 depth burst | inline node |
 | scattering dip | def=0 at nu=24 for wound+tube all lengths; onset nu>=48 (tube def 13-15) | dense ch14 beam, 60t | formfactor.mjs |
 | scatter saturation | tube def/out saturate by L=2 (len 5) at nu=64 | length sweep | formfactor.mjs |
+| deviation ages | grown knot birthdays spread t4..t291; authored bondTick=0 | 300t ch14 feed vs winding_set | devage.mjs |
+| wear vs bond split | grown fixture: 74 ageless wear cells vs 25 birthday'd bond cells | same run | devage.mjs |
+| stratigraphy survival | 21 birthdays persist after 150t decay | 200t feed + 150t idle | devage.mjs |
