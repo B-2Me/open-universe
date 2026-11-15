@@ -300,6 +300,26 @@ alignment scheme changes again.
   the knot is a jam (zero circulation on all 4 {111} plaquettes),
   dd is Meissner-frozen (no tumble exists), and history records
   provenance (fuel direction, formation epoch) — not velocity.
+- Optical/interference campaign (measured, commits 9be12cc..d488950):
+  stimulated emission = delta resonance at nu==geo_gap (tracks
+  winding exactly); stimulator transmits + clone at line nu,
+  phase-locked via incipBorn inheritance — true optical gain ~3x.
+  Ensemble linewidth ~20% via decay drift (comb, not Lorentzian).
+  HBT comb: pair separations all multiples of lambda=256/nu;
+  support edge inverts source extent R; chaoticity kills it.
+  qMergeGate/qMergeMin = phase arbitration on incipient clouds;
+  qResEmit = spontaneous emission at the line. Scattering is
+  absorption-dominated (nu=24 transmission dip, onset >=48) —
+  no far-field dσ/dΩ yet. New exports moore26_bondtick_get /
+  moore26_workage_get + moore26_geo_gap (debug). Harnesses:
+  resonance.mjs, coherence.mjs, hbt.mjs, formfactor.mjs,
+  devage.mjs, thingtrack.mjs. KEY FIXTURE LESSONS: stim needs
+  committed volume > qGroundFloor (six pairs @128 = 768 OK,
+  four = exactly floor = fails); offers arm on ARRIVAL not
+  seeding (seed one hop upstream); catch gate is a stochastic
+  roll (thin arm-rate ~6%/hop attenuates deep emitters);
+  winding_set leaves bondTick=0 — authored structure is
+  detectably ageless vs grown structure.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

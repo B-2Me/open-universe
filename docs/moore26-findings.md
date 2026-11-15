@@ -43,24 +43,46 @@ edge pairs are `2e`/`2e+1`):
 - `heat` — the thermal bath; the friction sink
 - `packet[c]` / `packetNu[c]` / `packetPar[c]` — photon count,
   energy, and parity-sign in flight
-- `incip[c]` / `incipNu[c]` — pending (incipient) offers awaiting
-  confirmation
+- `incip[c]` / `incipNu[c]` / `incipBorn[c]` / `incipOp[c]` /
+  `incipPar[c]` — pending (incipient) offers awaiting
+  confirmation; `incipBorn` is the offer's epoch, `incipOp`
+  its operational phase (`nu·age mod 256`)
 - `armed` — `Σ incip` on a node: the congestion measure
 - `massFlight` / `chargeFlight` — directed momentum transport
+- `momentum[13]` — conserved matter-momentum per pair (written
+  only by force, never spent by motion)
+- `bondTick` — qTick of first confirm; the node's formation
+  birthday (deviation-age stratigraphy)
+- `workAge` — cumulative transaction work (callus vs relic)
+- `localTime` — proper-time accumulator (congestion dilation)
+- `bondPar` — net chirality of confirmed bonds, saturating
+  ±127 (conserved handedness record)
 - `grid_current` / `grid_next` — the double-buffered state;
   phases stage into `next`, the tick swaps
 
 **Event counters** (`ev*` — the harness-readable ledger):
-`ev4` emissions · `ev20` shed energy · `ev23` fusion pairs ·
-`ev24` string-breaks · `ev30` offer declines · `ev43` mass-tax
-evaporations · `ev44` thermalized overflow · `ev45` same-sign
-declines · `ev46` baseline declines
+`ev4` emissions · `ev17` stimulated emissions · `ev20` shed
+energy · `ev23` fusion pairs · `ev24` string-breaks · `ev30`
+offer declines · `ev43` mass-tax evaporations · `ev44`
+thermalized overflow · `ev45` same-sign declines · `ev46`
+baseline declines · `ev50` phase-opposed declines · `ev51`
+bath-minted nu · `ev52` heat absorbs/dissipates · `ev53`
+reflections · `ev55` momentum kicks · `ev59` relay/parity
+events · journal kinds `59/61/63/65` = mass hop, site unwind,
+annihilation, charge burn
 
 **Tuners** (runtime, all exported):
 `qEvapShift` mass tax · `qConfirmCap` confirm ceiling ·
 `qGroundFloor` winding floor · `qCatchGate` offer gate ·
 `qFusionWall` pair-production threshold (`256`) · `qCommitMin`
-binding threshold (`32`)
+binding threshold (`32`) · `qMergeGate`/`qMergeMin` phase
+arbitration · `qPhaseGate`/`qRailGate`/`qAxialCatch` routing
+gates · `qResEmit` line-frequency emission · `qMassCap`
+Compton-ansatz bandwidth · `qMomentum`/`qLaunchMode`/`qRecoilLaw`
+inertia + propulsion · `qVolRoute`/`qVolShare`/`qBondShare`/
+`qChainShare` composite mechanics · `qBondAge` seniority temper ·
+`qParGate` handedness gate · `qWearDecay`/`qIncipTTL`/
+`qStallLoad`/`qCarveLoad` aging + congestion
 
 **Phases**: `P0` carry · `P1` flight · `P1b` junction annihilation
 · `P1c` mass launch · `P2` offer · `P3` confirm · `P4` winding
@@ -84,6 +106,14 @@ shift (`m>>s = m/2^s`); `min(pair)` is a pair's committed min.
 | String break | ✓ `≥12`-node tubes fracture + charged endpoints — confinement analog |
 | Persistent current | ✓ loss-free rail circulation on rings |
 | Ledger | ✓ `~0.1%` residual, every phase audited |
+| Stimulated emission | ✓ delta resonance at `nu==geo_gap`; line tracks winding exactly (96→24…192→48) |
+| Optical gain + coherence | ✓ ~3× flux at the line; stimulator transmits, clone at line nu phase-locked to offer epoch |
+| Transition energy | ✓ `dW/stim = 32.3` = the line; books close exactly |
+| Ensemble linewidth | ✓ ~20% of line position via decay drift — measured comb, not authored width |
+| Two-particle correlation | ✓ comb at `λ=256/nu`; support edge ∝ source extent R; chaoticity kills it |
+| Structure scattering | ~ nu-structured response (dip at nu=24, onset ≥48) — absorption-dominated, no far-field pattern yet |
+| Formation stratigraphy | ✓ deviation-age spectrum discriminates grown/authored/worn structure; birthdays survive decay |
+| No thing-table | ✓ relay = complete handoff + timestamped trail; identity is reconstructed, not stored |
 
 In plain terms: a wound knot holds a stable mass because its
 evaporation rate balances its ambient feed — a genuine
@@ -97,6 +127,15 @@ fractures and throws off charged endpoint mass — the confinement
 signature, watchable live in the demo. Ring loops carry current
 without loss. And the bookkeeping is honest: a phase-by-phase
 audit sealed every leak down to a `~0.1%` documented seam.
+On top of that: an excited knot amplifies a resonant probe —
+the stimulator passes through and a phase-locked clone joins it,
+funded by exactly the transition energy; the ensemble line has
+a real ~20% width written by the structure's own decay; co-
+emitted quanta bunch on a comb whose spacing is the quantum's
+wavelength and whose extent inverts the source size; and nothing
+in the lattice is a "thing" — identity is a trail of timestamped
+transactions, which is why the deviation-age record can tell a
+grown knot from an authored one.
 
 **Where it deviates — the honest list** *(observational
 measurements only — what nature's instruments actually record;
@@ -132,7 +171,11 @@ inferred rules like Pauli exclusion are excluded by definition):*
 5. **Decay isn't a lifetime** — nature measures an exponential
    decay curve with a characteristic lifetime per species. Ours
    evaporates by a mass-proportional friction tax — the shape is
-   equilibrium decay, not a quantized lifetime.
+   equilibrium decay, not a quantized lifetime. *Nuance added
+   later: spontaneous emission at the line (`qResEmit`) and
+   stimulated gain are real transitions, and the ensemble
+   linewidth (~20%) emerges from the drift — but no per-species
+   exponential lifetime constant exists.*
 6. **Mass spectrum is approximate** — the `2^shift` scaling held
    at `~3.4-3.9×` not the clean `4×` (a finite pump, not an ideal
    bath). Nature's particle masses are measured constants; ours
@@ -143,13 +186,34 @@ inferred rules like Pauli exclusion are excluded by definition):*
 8. **Ledger `~0.1%`** — nature conserves exactly. Our audit
    leaves `P7-break −63` and mid-tick sampling artifacts as
    documented seams, not physics.
+9. **Scattering is absorption-dominated** — probes are captured
+   into winding/heat more than deflected; the nu=24 transmission
+   dip and ≥48 onset are real, but there is no far-field angular
+   diffraction pattern (dσ/dΩ) yet.
+10. **Linewidth is a comb, not a Lorentzian** — the ensemble
+    response has teeth at the visited decay frequencies
+    (~{26,30,32}); the envelope is honest, the fine structure is
+    the integer decay path, not nature's smooth profile.
+11. **The winding→frequency map is authored** — `geo_gap`'s
+    formula (`((m>>2)*2)/L2`) is a design choice; its
+    consequences (line tracking, re-emission at the line) are
+    measured, but the map itself is not emergent.
+12. **Authored fixtures are detectable** — `winding_set` leaves
+    `bondTick=0`/`workAge=0` (perfectly ageless); grown structure
+    differs in kind, not degree. Claims resting on authored
+    structure carry that caveat.
 
 **Verdict**: local transaction physics is honest (conservation,
 charge-sign, pair production, confinement, recoil translation);
 a proper-time clock now exists but dilates on *load* not
-*velocity*. **The open deviations**: charge range (field vs
-jam), sustained ballistic motion (ramjet ceiling), and any
-velocity-keyed dilation — the remaining distance to Lorentz.
+*velocity*; and an optical/interferometric layer is measured
+(stimulated emission, gain, phase coherence, ensemble linewidth,
+two-particle femtoscopy combs with source-size inversion).
+**The open deviations**: charge range (field vs jam), sustained
+ballistic motion (ramjet ceiling), velocity-keyed dilation,
+far-field diffraction patterns, Lorentzian line shapes, and
+per-species lifetimes — the remaining distance to Lorentz plus
+the distance to real amplitudes.
 
 
 

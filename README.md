@@ -27,7 +27,7 @@ The site is structured as an audit: state the thesis, stress-test it against the
 
 | Page | What it documents |
 |---|---|
-| [**Moore26 Findings**](docs/moore26-findings.md) (`moore26-findings.md`) | The current engine's measured record: sealed ledger, calibrated mass spectrum, charge field, and the deviation audit |
+| [**Moore26 Findings**](docs/moore26-findings.md) (`moore26-findings.md`) | The current engine's measured record: sealed ledger, calibrated mass spectrum, charge field, stimulated emission with gain + coherence, femtoscopy correlations, deviation-age stratigraphy, and the deviation audit |
 | [**Moore26 Substrate**](docs/moore26-substrate.md) (`moore26-substrate.md`) | The engine architecture: 26 registers per node, the transaction pipeline, the tuners |
 | [**The Interference**](docs/interference.md) (`interference.md`) | Predict → Interfere → Measure; the lab hub and the separation-of-scales argument |
 | [**Theoretical Audits**](docs/interference/audits.md) (`interference/audits.md`) | Five audits translating each legacy paradox into a testable lab procedure |

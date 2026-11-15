@@ -20,6 +20,28 @@ Today the charge law fires under offer congestion — a `cap` gate, a traffic ja
 
 Resolved into a working instrument: the toroidal two-arm interferometer resolves path-length phase exactly (`Δop = nu·ΔL`), and the authored merge-on-phase arbitration (`qMergeGate`/`qMergeMin`, frozen `incipOp` register) produces a real fringe — in-phase offer clouds admit bit-identically to the no-law baseline, anti-phase clouds mutually exclude (joint occupancy exactly 0). The knee is razor-sharp at the authored boundary, jitter-limited; the exclusion floor is total for nominal-arm traffic. Honest flag: the superposition term is *authored*, not emergent — the substrate needed an explicit arbitration law where two histories compare phases. Everything upstream of it (phase carriers, path resolution, coherent arms) is emergent and measured.
 
+## Step 1c: Optics + femtoscopy — *(measured — full campaign)*
+
+The phase layer paid off as a working optical regime: stimulated
+emission is a delta resonance at `nu==geo_gap` tracking the wound
+structure exactly; the stimulator transmits and the clone carries
+the line frequency phase-locked to the offer's epoch — real
+optical gain (~3× flux), funded by releasing exactly `line` of
+committed winding per event. The ensemble linewidth (~20% of
+line position) emerges from decay drift — measured, not authored.
+Femtoscopy works: co-emitted bursts show a two-particle comb at
+`λ=256/nu`, the comb support inverts source extent R, and
+chaotic sources kill it — the HBT measurement with both
+directions of the inversion. Structure scattering is
+nu-dependent (transmission dip, high-nu onset) but
+absorption-dominated — **open**: a real far-field angular
+readout for a true form factor, per-species lifetimes, and the
+Bell-class scar-correlation test the phase register now enables.
+Provenance layer added: `bondTick`/`workAge` stratigraphy
+discriminates grown vs authored vs worn structure, and the
+bare-mass relay writes a timestamped birthday trail — identity
+is reconstructed from local records, not stored.
+
 ## Step 2: Knots in motion — *(measured, appetite-bound)*
 
 Resolved in moore26: radiative recoil works — `dd`-biased emission books momentum to `massFlight`, and the knot translates (`+1.09` winding-centroid drift/2000t, `rev=f6af469`). The honest limit: the knot decelerates as it accretes (ramjet ceiling, `v→0` as mass grows) — no sustained ballistic regime exists under isotropic flux. Free-flight `v` remains the open piece.

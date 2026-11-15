@@ -40,7 +40,15 @@ equilibrium of 47:161 (~0.285) across a 4× size range.
 The `moore26` architecture demonstrates that inertia, binding
 energy, linear superposition, and the First Law of Thermodynamics
 can arise from the asymmetric deposition and chained volumetric
-routing of discrete kinetic flux.
+routing of discrete kinetic flux. A later campaign added the
+optical/interferometric layer: stimulated emission at a
+structure-tracking resonance with true gain (stimulator
+transmits, clone at the line), phase coherence via epoch
+inheritance, an ensemble linewidth driven by decay drift,
+two-particle femtoscopy combs at `λ=256/nu` with source-size
+inversion, and a deviation-age stratigraphy (`bondTick`/`workAge`)
+that discriminates grown structure from authored fixtures —
+identity as a reconstructed formation trail, not a stored thing.
 
 See also: [fcc-substrate](fcc-substrate) (geometry),
 [moore26-findings](moore26-findings) (phenomenology),

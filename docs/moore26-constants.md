@@ -225,10 +225,26 @@ translations live in [Nature → Substrate](/nature-translation).
 isolated trial; shared-state ordering contamination was audited out of
 the early sweeps (see findings). Harnesses live in `script/cascade/`;
 the engine is `src/moore26.c`; builds through `src/build.sh` only.*
+
+## Optical & interferometric
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| stim resonance | delta at nu==geo_gap; 36 ev17 at nu=32, zero at +/-1 | 6 committed pairs @128, pumped | resonance.mjs |
+| line tracking | w->gap: 96->24, 128->32, 160->40, 192->48 | weakest-pair gap | resonance.mjs |
+| optical gain | ~3x downstream flux at the line (104 vs 36) | stimulator transmits, clone at line | resonance.mjs |
+| transition energy | dW/stim = 32.3 ~= line | 6 pairs @128 | resonance.mjs |
+| ensemble linewidth | stim hist {26:10,30:4,32:3} ~20% of line | unpumped decay drift | resonance.mjs |
+| correlation comb | admitted-depth seps all mult. of lambda=256/nu | co-emitted depth burst | hbt.mjs |
 | HBT source-size | comb spacing=lambda=256/nu fixed; support edge ~R (R=8->sep4, R=15->sep12) | coherent depth burst nu=64, merge gate 8 | inline node / hbt.mjs |
 | comb nu-tracking | nu=128->lambda=2 denser comb {2,4,6,12,14}; nu=32->{2} | R=15 depth burst | inline node |
 | scattering dip | def=0 at nu=24 for wound+tube all lengths; onset nu>=48 (tube def 13-15) | dense ch14 beam, 60t | formfactor.mjs |
 | scatter saturation | tube def/out saturate by L=2 (len 5) at nu=64 | length sweep | formfactor.mjs |
+
+## Provenance & deviation-age
+
+| constant | value | conditions | harness |
+|---|---|---|---|
 | deviation ages | grown knot birthdays spread t4..t291; authored bondTick=0 | 300t ch14 feed vs winding_set | devage.mjs |
 | wear vs bond split | grown fixture: 74 ageless wear cells vs 25 birthday'd bond cells | same run | devage.mjs |
 | stratigraphy survival | 21 birthdays persist after 150t decay | 200t feed + 150t idle | devage.mjs |

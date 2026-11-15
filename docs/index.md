@@ -44,7 +44,7 @@ This is not a metaphor we ask you to accept. It is an engine we ask you to measu
 
 ## The Project in One Paragraph
 
-The instrument that runs this claim is `moore26` — a discrete, local, causal lattice substrate at `0.1 fm` per node. Particles are knots of trapped traffic; light is momentum in flight; every exchange is a negotiated transaction between neighbors. It reproduces stable rest mass, radiative decay, signed charge, pair production, and string-breaking confinement — all measured, all in the open. Where it stops matching nature is written down too, line by line.
+The instrument that runs this claim is `moore26` — a discrete, local, causal lattice substrate at `0.1 fm` per node. Particles are knots of trapped traffic; light is momentum in flight; every exchange is a negotiated transaction between neighbors. It reproduces stable rest mass, radiative decay, signed charge, pair production, string-breaking confinement, stimulated emission with real gain, phase-coherent clones, ensemble linewidths, and two-particle femtoscopy correlations — all measured, all in the open. Where it stops matching nature is written down too, line by line.
 
 ## Where to Go
 
