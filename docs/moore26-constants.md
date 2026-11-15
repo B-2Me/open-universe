@@ -199,7 +199,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | geo_gap line | nu=(bm>>2)*2/L2 exact | weakest committed pair bm, L2=bondDist^2 or edgeLen2 | resonance.mjs |
 | stim resonance | delta at nu==geo_gap only | 0 at +-1 nu; stim=36/80 probes at line | resonance.mjs |
 | line vs structure | w->gap: 96->24,128->32,160->40,192->48 | 6 pumped pairs; spectrum tracks exactly | resonance.mjs |
-| stim clone | nu=shed>>1~=4, born=emission tick, stimulator's channel | collimated, phase-incoherent | resonance.mjs |
+| stim clone | nu=shed>>1~=4, born=stimulator's incipBorn (phase-locked epoch), stimulator's channel | collimated, phase-coherent down-conversion | resonance.mjs |
 | stim floor | committed volume must exceed 512 | tv=512 refuses unwind (flag still sets) | resonance.mjs |
 | stim rate | ~36-45% of resonant probes | pumped 6-pair fixture | resonance.mjs |
 | qResEmit spectrum | emitted nu = line, drifts 32->26 as state decays | spontaneous emission, unpumped | inline node |

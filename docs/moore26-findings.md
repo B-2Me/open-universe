@@ -2717,9 +2717,14 @@ Clone born = emission tick — fresh clock, phase reset.
   laser emits AT the line — ours emits softer than the stimulator.
   The spontaneous channel (Phase 6) with qResEmit emits AT the
   line but drifts as the state decays (spectrum 26-32 recorded).
-- Phase coherence: NONE — clone born = emission tick, no
-  correlation with stimulator arrival phase. Energetic +
-  directional amplification, not coherent amplification.
+- Phase coherence: FIXED (post-measurement authored change,
+  src/moore26.c clone branch): clone packetBorn = the stimulator's
+  incipBorn, not the emit tick. Measured: clone.born = probe seed
+  tick exactly; clone phase at emit = nu_c*(emit-born) = nonzero,
+  deterministic. The clone is phase-locked to the offer's epoch —
+  an 8:1 down-conversion (nu 32->4) with shared temporal origin:
+  parametric-emission structure rather than degenerate lasing.
+  Under the old law clone phase at emit was always 0.
 - Linewidth: ZERO in the stim channel (integer-exact equality).
   Nature's lines carry lifetime-broadened width; our excited state
   does decay (Phase 6 self-emission) but the stim resonance

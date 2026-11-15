@@ -2035,7 +2035,10 @@ void moore26_tick(void){
                     PAR_MERGE(n,c,PAR_SIGN(n,c));
                     if(n->packet[c]<255)n->packet[c]++;
                     else n->heat++;   /* thermal overflow � cap */
-                    n->packetBorn[c]=(uint8_t)qTick;
+                    n->packetBorn[c]=o->incipBorn[c];   /* clone inherits
+                     * the stimulator's epoch — phase-locked to the offer
+                     * that triggered the transition (coherent emission),
+                     * not a fresh clock */
                     qEvents[17]++;
                 } else {
                     if(n->packet[c]){
