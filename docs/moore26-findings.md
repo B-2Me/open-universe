@@ -2608,3 +2608,50 @@ matter but do not interact with each other. No interference
 observable exists at the packet level — packetNu is an energy tag
 averaged on merge, there is no phase register; the fm-scale
 "interference" channel (beam-beam opacity) measures null.
+
+## Interference fringes — phase arbitration measured (qMergeGate)
+
+The substrate has a real phase degree of freedom after all, gated off
+by default: every packet carries a rotating phase op = nu*age mod 256
+(born at mint; nu is the packet's clock rate — a de Broglie internal-
+clock structure). Armed incipients freeze their arrival phase on the
+cell; qMergeGate admits a new offer only if its phase lands within
+qMergeGate of some standing cloud member — anti-phase offers decline
+to heat or reflect.
+
+### The measurement (script/cascade/fringes.mjs)
+
+Absorber = mass-bearing even cell at two rail termini; arm A = 4-hop
+ch6 rail, arm B = 8-hop ch8 rail -> path difference d=4 cells. Sweep
+nu (phase diff = nu*d mod 256 at constant geometry — attenuation
+identical across the sweep, so modulation is phase, not path loss):
+
+    nu:      8   16   24   32   40   48   56   64
+    nu*d:   32   64   96  128  160  192  224    0
+    ev50:    0    9    9   10   10    9    2    2   (phase declines)
+
+~80-90% modulation depth, fringe width = the gate window (32 phase
+units ~ 45 degrees). Frozen cloud ops confirm the algebra: A parks
+at nu*4, B at nu*8 mod 256 — exact. Controls: single arm = self-
+coherent at all nu (0-1 declines); gate=0 admits all.
+
+### What kind of fringe this is (honest characterization)
+
+- It is a count histogram vs phase difference — the same observable
+  as a real fringe (nobody measures phase directly; the histogram IS
+  the measurement).
+- It is NOT single-quantum superposition: packets are pointlike, one
+  path each. The mechanism is phase-matching of arrivals against a
+  stored reference cloud — a homodyne/lock-in structure: the
+  absorber's transaction history is the local oscillator. Closest
+  nature kin: stimulated-emission selection / second-order
+  (intensity) interference like HBT — which is the actual fm-scale
+  technique (femtoscopy).
+- Asymmetry on record: at anti-phase the ch8 cloud wins the
+  occupancy race and ch6 declines — competition for the standing
+  cloud, not a symmetric interferogram.
+- The law is authored, not emergent: qMergeGate is a control we
+  wrote. The measured content = the phase algebra (op = nu*age)
+  works exactly as specified and produces real count modulation
+  with correct controls — a fringe observable, not an asserted
+  abstraction.
