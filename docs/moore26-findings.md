@@ -2238,3 +2238,53 @@ is immobile even when the knot as *mass* walks.
   negligible — it needs many bodies or long integration. Gravity
   as statistical shadowing is inherently a weak-coupling effect,
   consistent with why it only shows up at macroscopic scale.
+
+## Federated transport — formation flying is not binding; flight writes nothing
+
+### Two-core wound pair, orthogonal kick (cohesion fixture, feed cut at kick)
+
+A(13,16,16)+B(19,22,16), 5-cell saturated filament (winding 128
+bidirectional ch6/7) between them, bond warmed 80t, feed CUT, then
+both cores kicked +300 on pair 4 = (1,-1,0), ORTHOGONAL to the bond
+axis so translation can't drive them together:
+
+- Both cores translated in lockstep: (x+y) separation held exactly
+  12.0 the entire flight, mass 512 each, stall at ~16 hops when the
+  kick was spent.
+- Old filament: 1280 winding intact — the ENTIRE tube stayed behind
+  as a fossil scar.
+- Destination: inter-knot winding = 0, knot self-winding = 0 — the
+  masses arrived completely bare and never re-bonded.
+
+Formation flying is ballistic coincidence, not binding: two masses
+with identical momentum keep formation because they hop identically.
+The bond never tried to follow — the masses ripped off it and it
+sat. Even a multi-cell wound structure is site-bound: every vertex
+anchored, so the whole graph anchored.
+
+### Coaxial kick failure mode (control datum)
+
+Kicking both +300 on the bond axis itself drove A into B: fused to
+a single m=1000 walking knot (then feed buried it at 66k). Adjacent
+bound cells merge on contact — a 1-cell knot is the only 'portable'
+composite, and it carries no wound structure anyway.
+
+### Bare flight is ontologically SILENT — the worldline is not written
+
+Probed the pair's flight path (~17 sites along (1,-1,0)):
+- flight-channel winding = 0, all-channel winding = 0
+- localTime along the path = 0
+
+Contrast: PACKET flight writes rail-winding (offers/confirms/acks
+transact, the medium remembers). MASS flight transacts nothing — a
+bare register move — so it deposits zero structure and zero history,
+and once the mass leaves, the nodes die and even the transient tau
+record erases.
+
+SHARPENED LAW: structure is TRANSACTION-bound, not merely
+site-bound. A wound knot is a set of closed transaction loops at
+specific addresses — it can't move because relocation transacts
+nothing, so nothing of it persists en route. A mobile being in this
+ontology would have to transact WHILE flying: a fed knot carving
+its rail in real time, structure as a continuously re-written
+wake — pattern propagation, not pattern transport.
