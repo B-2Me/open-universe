@@ -131,6 +131,7 @@ onUnmounted(() => {
               <option value="lattice">Single plane</option>
             </select></label>
             <button class="cascade-flab cascade-depth tog" type="button" data-depth aria-pressed="false" aria-label="Depth slice" title="Depth slice — the slab follows the camera; peels the front shell"><i>◧</i></button>
+            <button class="cascade-flab cascade-depth tog on" type="button" data-trail aria-pressed="true" aria-label="Relay trail" title="Trail — show/hide the wake a moving structure leaves: relay crumbs + timestamped formation events (the substrate's own history record)"><i>≋</i></button>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="view" aria-label="About View" title="About View"><i>◐</i></button><select data-colormode aria-label="Data view" title="Data view">
               <option value="4" selected>composite</option>
               <option value="0">structure</option>

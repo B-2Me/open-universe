@@ -718,23 +718,21 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (wasm._moore26_momentum_set)
       wasm._moore26_momentum_set(s === 'glide' ? 255 : 0);
     if (s === 'glide') {
-      /* dd-biased committed knot (pair3) + mass — the scenario ARMS
-       * its own thrust burst on load so the demo runs itself: beam
-       * charges p for 400 ticks, then the knot coasts. */
+      /* bare-mass knot + seeded momentum — the Newton-1 coast. Mass
+       * goes on ODD cells only: the matter lattice walks odd->odd
+       * through the even conduit; even cells just feed field-drag.
+       * No winding on purpose: committed winding can't hop (the
+       * speed-structure exclusion) — a wound knot sheds its mass and
+       * strands a winding exoskeleton at the origin. Bare mass
+       * coasts farther and leaves only faint relay crumbs behind. */
       for (let dz = -1; dz <= 1; dz++)
         for (let dy = -1; dy <= 1; dy++)
           for (let dx = -1; dx <= 1; dx++) {
-            wset(CX + dx, CY + dy, CZ + dz, 6, 90);
-            wset(CX + dx, CY + dy, CZ + dz, 7, 40);
-            mset(CX + dx, CY + dy, CZ + dz, 200);
-            /* born in motion — seed the momentum register so the knot
-             * glides from reset (Newton-1 demo needs no charge phase).
-             * The relay walks on ODD cells — they get the strong p;
-             * even-cell p stays low, it only feeds the field-drag */
-            if (wasm._moore26_momentum_at_set) {
-              const odd = ((CX + dx + CY + dy + CZ + dz) & 1) !== 0;
-              wasm._moore26_momentum_at_set(CX + dx, CY + dy, CZ + dz, 3, odd ? 3200 : 400);
-            }
+            const x = CX + dx, y = CY + dy, z = CZ + dz;
+            const odd = ((x + y + z) & 1) !== 0;
+            if (odd) mset(x, y, z, 200);
+            if (wasm._moore26_momentum_at_set)
+              wasm._moore26_momentum_at_set(x, y, z, 3, odd ? 3200 : 400);
           }
       return 27;
     }
@@ -1118,7 +1116,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 400, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06, depthSlice: false,
-    qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
+    qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0, trail: true,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false, thrustArm: false,
     pump: false, pumpAt: null, pumpRate: 0, chargeSites: null, scenario: 'glide',
@@ -1266,6 +1264,16 @@ export async function initCascadeSimulator(root, opts = {}) {
       : 'z-slice — slab fixed on the lattice z axis');
     dirty = true;
   });
+  bind('[data-trail]', 'click', e => {
+    ui.trail = !ui.trail;
+    const b = e.currentTarget;
+    b.classList.toggle('on', ui.trail);
+    b.setAttribute('aria-pressed', String(ui.trail));
+    say(ui.trail
+      ? 'trail on — the relay wake shows (the substrate writes its own history)'
+      : 'trail hidden — relay crumbs clipped below the floor');
+    dirty = true;
+  });
   bind('[data-zoom]', 'input', e => { tgt.dist = +e.target.value; readout(e); poke(); dirty = true; });
   /* ? help cards — one delegated listener covers every chip. The card
    * floats in the overlay stack until dismissed. */
@@ -1295,6 +1303,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     pair:    'one condenser of each handedness — a -dd and a +dd coil side by side.\nView: handed (indigo vs amber).',
     attract: 'a -q charged wall with a +par stream aimed at it — opposite-sign packets bind and pass through.\nWatch the stream continue past the wall.',
     repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
+    glide:   'a bare-mass knot coasting on seeded momentum — the Newton-1 relay.\n· mass walks odd->odd through the even conduit, ~1 cell/tick\n· each hop is a complete local handoff — there is no moving object, only transactions\n· the faint wake it leaves is the trail of formation events; the ≋ trail toggle hides it.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
     laser:   'stimulated emission — three wound cells sit on the beam path, pumped so their line stays at nu=32, probed by a resonant nu=32 stream.\n· probes arm at the line and fire ev17: the transmitted packet gets a collimated clone — the beam leaves BRIGHTER than it entered\n· the pumped winding holds the line; unwound, the medium would detune and go dark — that detuning IS the measured linewidth.',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
@@ -1626,7 +1635,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       gl.uniform1f(U.u_z_center, ui.zCenter);
       gl.uniform1f(U.u_z_thickness, ui.zThick);
       gl.uniform1f(U.u_ghost_alpha, ui.ghostAlpha);
-      gl.uniform1f(U.u_qmin, ui.qmin);
+      /* trail off -> raise the clip floor past relay residue
+       * (crumbs mass<=3, worn winding <=4) — the wake the substrate
+       * writes. Real structure sits far above 8. */
+      gl.uniform1f(U.u_qmin, ui.trail ? ui.qmin : Math.max(ui.qmin, 8));
       gl.uniform1i(U.u_colorMode, ui.colorMode);
       const si = strideInfo();
       gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
