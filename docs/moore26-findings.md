@@ -2386,3 +2386,61 @@ Being in this medium is a FIXTURE, not a vehicle:
   going. The causal asymmetry vs Conway's glider is structural:
   the glider's pattern CAUSES its successor; here the pattern
   RECORDS its predecessor.
+
+## Nature-calibration: scattering profile (Hofstadter analog) + vacuum opacity
+
+### The missing basic thing — virgin vacuum is lossy
+
+Found while building the scatter probe: a lone quantum on virgin
+medium decays ~1/8/hop (stochastic floor drip, dm=7). Mean free
+path ~7.5 cells = 0.75 fm. A worn lane drops it to ~1/64 and a
+saturated rail (qRailGate) to ~zero — transport reach is a
+property of accumulated records, not a constant. Deeply
+load-bearing for all prior flux measurements: every 'beam' result
+was measured on self-worn or dense streams; sparse lone quanta
+attenuate ~85-90% over ~22 hops in virgin medium.
+
+Also discovered in the handoff code: a FULL-residue mass hop
+carries momentum + bondPar (chirality) + bondDist (provenance)
+to the destination — the mobile kernel is bigger than mass+par.
+
+### Interaction profile: hard edge at 1 face-hop, direction-asymmetric
+
+ch6 packet stream (nu=140, gap=2, 250t) swept past a bare 2000-mass
+knot on the x-y=const line family; observable = momentum transfer
+(knot surfs downwind):
+- d=-1 only: knot caught the beam, surfed 32 cells to the wall
+  after ~155t of momentum accumulation. All other offsets: zero
+  interaction, mass untouched.
+- d=+1 (the mirror face-pair, also face-adjacent): NOTHING. The
+  profile is a hard edge at exactly 1 face distance AND only on
+  one of the two closest lines — direction-asymmetric.
+- Mirror test, ch8 (1,-1,0) beam on both its face-adjacent lines
+  (x+y=29, 31): zero interaction at either. The push is specific
+  to the +6/d=-1 geometry.
+- Candidate mechanism (authored, flagged): the caught-mass donation
+  prefers +x,+y face neighbors ('so the relay MARCHES') — the
+  matter lattice has a built-in forward-face asymmetry. The
+  scattering asymmetry likely traces to it rather than to physics.
+
+### Response is structure-dependent — same flux, different physics
+
+| knot type | at d=-1 (interacting line) | off-line |
+|---|---|---|
+| bare m2000 | surfs to wall, mass intact | untouched |
+| wound (committed pair) | FEEDS: mass 2000->67208 saturating; pinned, never moves | erodes 2000->1520 (shed tax) |
+| 2x2 blob (500/cell) | splits: in-range cells walk (m1000 to wall), out-of-range stay (m1000) | untouched |
+
+Same beam, three responses: momentum transfer (bare), accretion
+(wound), partial ablation (blob). The knot's STRUCTURE, not its
+mass, determines whether flux pushes it or feeds it.
+
+### Cross-section reading (honest)
+
+Single-cell knot = point object: hard-edged interaction disk of
+radius ~0.1 fm (1 face-hop), below the proton's 0.84 fm rms
+charge radius (~8 cells) — our knots are parton-scale, not
+proton-scale. The proton's exponential matter distribution is a
+COMPOSITE statement; the analog measurement here needs a
+multi-cell composite large enough to have internal structure
+(blob showed only per-cell response, no collective profile yet).
