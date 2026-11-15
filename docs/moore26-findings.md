@@ -2197,3 +2197,44 @@ regime: not immortal (bare mass) and not mortal-by-collision,
 but conditional-on-throughput — and its death is de-excitation
 to an inert remnant, matching the closure-graph picture where
 dying = vertices demoting from 'both' to 'came-from'.
+
+## Dilation exists (internal work), structure can't move, Le Sage scale bound
+
+### Clock dilation via internal economy — measured, small
+
+Parked wound knot (mass=500 + committed pair, site_level=2,
+shedding): tau ~31.85/tick vs bare control 32.0/tick — its own
+shed-cycle work taxes its clock ~0.5%. The clock law
+dTau ~ (cap - work) verified with INTERNAL load, not just
+congestion.
+
+### STRUCTURE CANNOT MOVE — beings travel bare
+
+The moving wound knot hopped with winding=0 at every site: the
+wound structure stayed behind at the origin site. Mass relocates
+via flight; committed winding is site-bound and cannot follow.
+So there is no 'moving wound knot' — motion STRIPS the wound
+state, which is the only state that was taxing the clock. Deep
+result: the substrate's mobility hierarchy is inverted vs naive
+expectation — bare mass is maximally mobile (v=c, full tau),
+structured being is site-anchored. To carry structure you'd need
+to transport the wound bonds themselves — the knot as *pattern*
+is immobile even when the knot as *mass* walks.
+
+### Le Sage two-knot fog — shadow real but below drift threshold
+
+- nobath control: both knots frozen at dx=10 for 400t — zero
+  vacuum interaction. Clean null.
+- isotropic fog (3-4 pk/channel/tick): knots random-walk via
+  absorbed kicks; solo knot left the region by t39 while the
+  paired A stayed parked 400t under identical fog draws —
+  suggestive mutual stabilization, not proven (chaos).
+- corridor flux: shadow corridor 10 vs control 7 (knots) —
+  no depletion vs baseline 9 vs 4. The mutual shadow is real
+  per-quantum (6% in directed beam) but ~100x diluted in
+  isotropic flux at 1-node cross-section: below noise at
+  400t integration.
+- SCALE BOUND (honest): single-body shadow-gravity is real but
+  negligible — it needs many bodies or long integration. Gravity
+  as statistical shadowing is inherently a weak-coupling effect,
+  consistent with why it only shows up at macroscopic scale.

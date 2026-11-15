@@ -170,7 +170,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | superheat precipitation | heat 65535 -> ~66000 mass appeared | rate=60 opposed-beam site | inline node |
 | flame extinction floor | ~89 remnant (asymptotic, untaxed when quiescent) | unfed wound knot, qEvapShift=3 | flame.mjs |
 | flame plateau | ~1050 (r=4) / ~1890 (r=16) | feed-rate-dependent sustained mass | flame.mjs |
-| motion dilation | none: tau=32/tick at v=c identical to parked | localTime site-bound; beings carry no clock | twin probe |
+| motion dilation | none for bare mass (tau=32/tick at v=c) | localTime site-bound | twin probe |
+| internal-work dilation | ~0.5% (wound knot 31.85 vs bare 32.0/tick) | shed cycles tax own clock | wound-twin |
+| wound mobility | zero: winding is site-bound, hopping strips structure | mass moves, being stays | wound-twin |
 | bare-mass immortality | mass tax exempt: 4000 for 300t at shift=3 | qEvapShift only runs in composite-shed path | inline node |
 
 ## Nulls on record
@@ -179,6 +181,7 @@ translations live in [Nature → Substrate](/nature-translation).
 |---|---|
 | ordinary two-arm interference without merge law | **null** — independent channels never compare phases |
 | qOfferTorque clock coherence | **null** — identical with law on/off at tested strength |
+| Le Sage drift from mutual shadow (1-node bodies, fog bath) | **below noise** at 400t — real per-quantum but ~100x diluted isotropically; needs scale |
 | knot hop-rate on its own worn rail | **null** — identical trajectory virgin vs pre-worn; rail selectivity acts on flux spectrum only |
 | standing flame from a directional feed | **negative** — fed knots surf or disperse; the persistent locus is the collision SITE (heat spot), not a knot |
 | launch shortfall (drive-reservoir starvation) | **vacuous** — p-driven launch self-funds (k<p always); winding-driven path unreachable under current gates |
