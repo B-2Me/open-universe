@@ -2556,3 +2556,12 @@ Every produced pair separates along the scar's own direction —
 the pair's relative momentum is collinear with their shared spin
 axis. Back-to-back emission along the quantization axis, the way
 real pair production aligns momentum and spin.
+
+### Branching + charge threshold (reaction constants, cont.)
+
+- Multi-face scars fire independently per channel: x -> 1 pair
+  (128 mass), x+y -> 2 pairs (256), x+y+z -> 3 pairs (384). Each
+  pair lands across its own scar's face — additive, linear, no
+  arbitration between channels.
+- Charge-burn has NO threshold: q=-1 still burns exactly 4 mass.
+  The 4:1 electrolysis ratio holds to single-quantum resolution.
