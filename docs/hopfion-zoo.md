@@ -15,7 +15,7 @@ audio: /audio/hopfion-zoo.mp3
 
 # The Hopfion Zoo
 
-> **Milestone archive.** These specimens were measured on the earlier single-spin prototype engine (`planck3.c`): real, stable eigenstates of *that* substrate, whose kinematics were later found to be an alternate discrete universe (matter permanently at v=0). The active engine is `moore26`, documented in [moore26 Findings](/moore26-findings); the `meso3i` record is archived in the [monograph](/interference/meso-monograph).
+> **Milestone archive.** These specimens were measured on the earlier single-spin prototype engine (`planck3.c`): real, stable eigenstates of *that* substrate, whose kinematics were later found to be an alternate discrete universe (matter permanently at v=0). The active engine is `moore26`, documented in [moore26 Findings](/moore26-findings); the `meso3i` record is archived in the [monograph](/interference/archive/meso-monograph).
 
 Every specimen in this carousel is a **measured eigenstate of the
 prototype substrate**: a closed loop geometry that survived 400 ticks of the

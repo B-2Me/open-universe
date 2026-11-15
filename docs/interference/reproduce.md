@@ -95,7 +95,7 @@ No config files, no output files: read the header comment at the top of each scr
 
 ### The archived `meso3i` harness map
 
-*The earlier engine's measurements — kept for provenance. Each loads `docs/public/wasm/ember/meso3i.js` and prints to stdout; compare its numbers against the [monograph](/interference/meso-monograph).*
+*The earlier engine's measurements — kept for provenance. Each loads `docs/public/wasm/ember/meso3i.js` and prints to stdout; compare its numbers against the [monograph](/interference/archive/meso-monograph).*
 
 | Harness | What it measures | Milestone |
 |---|---|---|

@@ -10,7 +10,7 @@ audio: /audio/roadmap.mp3
 
 The substrate is a cellular automaton — **Computationally Irreducible**: no algebraic shortcuts ahead of the ticks. The engine can only claim what its measurements actually show. This page is the open frontier on `moore26`: what the current engine can still reach, and which bridges it honestly can't.
 
-The deviation audit in [Moore26 Findings](/moore26-findings) is the honest scorecard this roadmap is measured against. The earlier engines' campaigns (the M-series, E-series, collider-matrix proposals) are archived under [Program History](/interference/methodology) — this page is only the current engine's frontier.
+The deviation audit in [Moore26 Findings](/moore26-findings) is the honest scorecard this roadmap is measured against. The earlier engines' campaigns (the M-series, E-series, collider-matrix proposals) are archived under [Program History](/interference/archive/methodology) — this page is only the current engine's frontier.
 
 ## Step 1: Charge range — a field, not a jam *(open, narrowed)*
 

@@ -23,7 +23,7 @@ audio: /audio/mill-demo.mp3
 
 *The friction substrate, live in your browser: a universe where nothing moves for free and everything interesting happens at contact.*
 
-This is `meso3i` compiled to WebAssembly: 93,000 live cells, each carrying 19 integer channels of real quanta. There is no empty space and there are no objects: only directional traffic on a lattice, and the parked deposits that congestion leaves behind. Cyan is moving flux; amber is **parked momentum**: mass, in the only sense this universe has. Every behavior you can produce here is a measured milestone in the [Friction Substrate](/interference/meso-monograph) record (M33–M51), not a scripted animation.
+This is `meso3i` compiled to WebAssembly: 93,000 live cells, each carrying 19 integer channels of real quanta. There is no empty space and there are no objects: only directional traffic on a lattice, and the parked deposits that congestion leaves behind. Cyan is moving flux; amber is **parked momentum**: mass, in the only sense this universe has. Every behavior you can produce here is a measured milestone in the [Friction Substrate](/interference/archive/meso-monograph) record (M33–M51), not a scripted animation.
 
 The page boots into the **glowing ember**: a lone lump under feed, radiating photons that re-absorb as **bound excitation** — Planck's `n`, glowing magenta where light gets stored inside matter. It's the E20 greenhouse scene live. From there the controls are the experiment, grouped by job: **time** (play/step/reset), **inject** (**☀** pours an 18-spoke convergent feed that grows a breathing dissipative core; **➤** fires an apertured photon plane wave; **⚭** drops the two-body preset), **ops** (orbit, snapshot), and **presets** — the **Scene** menu reproduces the milestone regimes in one click.
 
@@ -66,7 +66,7 @@ The page boots into the **glowing ember**: a lone lump under feed, radiating pho
 
 - The vortex tool writes *momentum*, not structure: under scalar rest, circulation thermalizes (M38's "rocks, not atoms" wall, loom-scale). Under **directional** rest the same seed parks as a wound state that keeps ~half its angular momentum and re-animates with the original sign (M39/M42).
 - The ☀ drive is a convergent *point source*: the M47b audit showed it can masquerade as two-body attraction. The ⚭ preset lumps are self-radiating (`fricm>0`), which is the faithful regime.
-- Everything else, accretion, breathing, quiescence, beam drift, transaction counters, attenuation, was measured headless; each claim in the [monograph](/interference/meso-monograph) is commit-anchored.
+- Everything else, accretion, breathing, quiescence, beam drift, transaction counters, attenuation, was measured headless; each claim in the [monograph](/interference/archive/meso-monograph) is commit-anchored.
 
 :::
 

@@ -52,4 +52,4 @@ The instrument that runs this claim is `moore26` — a discrete, local, causal l
 *   **[Moore26 Findings](/moore26-findings)** — the measured record, including the honest deviation audit.
 *   **[The Planck Field](/field)** — the theory: why a process-ontology substrate at all.
 *   **[The Program](/interference)** — the lab hub: instruments, roadmap, and how to reproduce every number.
-*   **[Milestone Instruments & History](/interference/methodology)** — the earlier engines and campaigns, kept as provenance.
+*   **[Milestone Instruments & History](/interference/archive/methodology)** — the earlier engines and campaigns, kept as provenance.

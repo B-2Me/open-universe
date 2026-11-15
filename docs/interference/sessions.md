@@ -16,7 +16,7 @@ audio: /audio/sessions.mp3
 
 ## Episode 02: The Latency Buffer & The Swerve
 * **Anchor Media:** *Devs* (Mini-series)
-* **Focus:** Directly expanding on **[Audit 4 (The Calorimetry of Agency)](/interference/audits)**. We look at the thermodynamic exertion required to break the "tramlines" of determinism. We explore how the absolute speed of causality ($c$) provides the physical latency necessary for free will, giving the biological interface the breathing room to simulate, predict, and ultimately swerve.
+* **Focus:** Directly expanding on **[Audit 4 (The Calorimetry of Agency)](/interference/archive/audits)**. We look at the thermodynamic exertion required to break the "tramlines" of determinism. We explore how the absolute speed of causality ($c$) provides the physical latency necessary for free will, giving the biological interface the breathing room to simulate, predict, and ultimately swerve.
 
 ## Episode 03: Your Memories are Scars, Not Time Machines
 * **Anchor Media:** *Memento* (Film)

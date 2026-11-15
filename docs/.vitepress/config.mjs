@@ -21,7 +21,7 @@ const readingOrder = [
   { text: 'Vanguard', link: '/vanguard' },
 
   { text: 'Interference', link: '/interference' },
-  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
+  { text: 'Friction Substrate', link: '/interference/archive/meso-monograph' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: "Cartan's Cascade", link: '/cascade-demo' },
   { text: 'Moore26 Findings', link: '/moore26-findings' },
@@ -30,10 +30,10 @@ const readingOrder = [
   { text: 'Nature → Substrate', link: '/nature-translation' },
 
   { text: 'Build & Validate', link: '/interference/reproduce' },
-  { text: 'Methodology', link: '/interference/methodology' },
-  { text: 'Frontier', link: '/interference/frontier' },
-  { text: 'Audits', link: '/interference/audits' },
-  { text: 'Collider Matrix', link: '/interference/collider' },
+  { text: 'Methodology', link: '/interference/archive/methodology' },
+  { text: 'Frontier', link: '/interference/archive/frontier' },
+  { text: 'Audits', link: '/interference/archive/audits' },
+  { text: 'Collider Matrix', link: '/interference/archive/collider' },
   { text: 'Why Simulate', link: '/interference/usefulness' },
 
   { text: "Yarkovsky's Ember", link: '/ember-demo' },
@@ -45,7 +45,7 @@ const readingOrder = [
   // — engine archive: the retired substrates stay linked as
   // provenance, below the current engine's record
   { text: '— Archive —', link: '/qi3-findings' },
-  { text: 'Meso Bridge', link: '/interference/meso-bridge' },
+  { text: 'Meso Bridge', link: '/interference/archive/meso-bridge' },
   { text: 'qi3 Findings', link: '/qi3-findings' },
   { text: 'qi3 Design', link: '/qi3-design' },
   { text: 'qi3 Overview', link: '/qi3' },
@@ -81,6 +81,7 @@ const interferenceItems = [
     { text: 'Constants', link: '/moore26-constants' },
     { text: 'Transaction Ledger', link: '/transaction-ledger' }
   ]},
+  { text: 'Substrate Ontology', link: '/interference/ontology' },
   { text: 'Roadmap', link: '/interference/roadmap' },
   { text: 'Why Simulate', link: '/interference/usefulness' },
   { text: 'Build & Validate', link: '/interference/reproduce' }
@@ -99,13 +100,13 @@ const instrumentItems = [
 // Earlier campaigns, prototype engines, and superseded proposals —
 // the provenance of the current model, kept for context.
 const historyItems = [
-  { text: 'Friction Substrate', link: '/interference/meso-monograph' },
-  { text: 'Methodology', link: '/interference/methodology' },
-  { text: 'Open Frontier', link: '/interference/frontier' },
-  { text: 'Theoretical Audits', link: '/interference/audits' },
-  { text: 'Collider Matrix', link: '/interference/collider' },
-  { text: 'Identification Bridge', link: '/interference/identification' },
-  { text: 'Substrate Ontology', link: '/interference/ontology' }
+  { text: 'Friction Substrate', link: '/interference/archive/meso-monograph' },
+  { text: 'Methodology', link: '/interference/archive/methodology' },
+  { text: 'Open Frontier', link: '/interference/archive/frontier' },
+  { text: 'Theoretical Audits', link: '/interference/archive/audits' },
+  { text: 'Collider Matrix', link: '/interference/archive/collider' },
+  { text: 'Identification Bridge', link: '/interference/archive/identification' },
+  { text: 'Substrate Ontology', link: '/interference/archive/ontology' }
 ]
 
 // Top bar = section heads only. Everything else in readingOrder is

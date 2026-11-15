@@ -34,12 +34,13 @@ The current substrate — `moore26`, the 26-register Moore/FCC engine
 at `0.1 fm` per node — and its measured record:
 
 *   **[Moore26 Substrate](/moore26-substrate)**: the engine architecture. What a node actually stores (26 registers: winding, mass, charge, heat, packet populations, transaction fields), how the offer→incipient→confirm handshake negotiates each tick, and how the phase-by-phase ledger keeps the books auditable.
-*   **[Moore26 Findings](/moore26-findings)**: the measured record, verdict-first. The deviation audit (where the substrate matches nature's *measurements* and where it honestly stops), the calibrated mass spectrum (`M ≈ flux × 2^shift`), the charge law under congestion, pair production, string-break with charged recoil, and the `~0.1%` sealed-ledger audit.
+*   **[Moore26 Findings](/moore26-findings)**: the measured record, verdict-first. The deviation audit (where the substrate matches nature's *measurements* and where it honestly stops), the calibrated mass spectrum (`M ≈ flux × 2^shift`), the charge law under congestion, pair production, string-break with charged recoil, the optical layer (stimulated emission with real gain, phase-coherent clones, ensemble linewidth from decay drift, femtoscopy correlation combs with source-size inversion), the deviation-age stratigraphy, and the `~0.1%` sealed-ledger audit.
+*   **[Substrate Ontology](/interference/ontology)**: the current engine's Map and Compass — what exists (deviation, quanta, bound structure, granular time, per-tick chance, provenance registers) and which way the loops run (transactions, emission, the stimulated branch, decay, accretion, the relay). Mass = confined frequency; identity = a reconstructed trail.
 *   **[Transaction Ledger](/transaction-ledger)**: the mechanics of the transaction layer — how raw flux negotiates into bound structure, the virtual layer of held offers, and the rails that carry committed topology.
 
 ## The Program
 
-*   **[Predictive Roadmap](/interference/roadmap)**: the open frontier, honestly framed — the five anchors the engine can still reach (charge range, knots-in-motion, Lorentz structure, the species census, gravity) and the bridges it can't.
+*   **[Predictive Roadmap](/interference/roadmap)**: the open frontier, honestly framed — the anchors the engine can still reach (charge range, far-field diffraction, per-species lifetimes, the Bell-class scar correlation, knots-in-motion, Lorentz structure, the species census, gravity) and the bridges it can't.
 *   **[Why Simulate](/interference/usefulness)**: the case for a discrete wind tunnel — where continuous calculus fails (finite bandwidth, routing friction, topological phase-locking) and what a computationally irreducible substrate is actually good for.
 *   **[Build & Validate](/interference/reproduce)**: run the measurements yourself — the `script/cascade/` moore26 harnesses (open-box spectrum, closed-box plateau, the ledger audit) first, the archived engine recipes below.
 
@@ -58,15 +59,15 @@ The substrate is not a metaphor. It runs. The flagship instrument and the milest
 
 The earlier engines' campaigns, kept as provenance:
 
-*   **[The Friction Substrate](/interference/meso-monograph)**: the `meso3i` record — every claim commit-anchored, including the confounds and retractions.
-*   **[The Multi-Channel Bridge](/interference/meso-bridge)**: how the multichannel substrate earned its place over the single-spin prototype.
-*   **[The Clock Program](/interference/clock-program)**: the `meso3i` E-series record: ballistic `1/r²` halos, cavity light-clocks.
-*   **[Methodology & Reproducibility](/interference/methodology)**: the planck3 engine specification and reproduction suite.
-*   **[The Open Frontier](/interference/frontier)**: the 2D-era research log — measured experiments, falsified hypotheses.
-*   **[Theoretical Audits](/interference/audits)**: the five forward-looking test proposals (the CERN path in Audit 5 is retired).
-*   **[The Collider Matrix](/interference/collider)**: the retired telemetry-calibration proposal.
-*   **[The Identification Bridge](/interference/identification)**: the open-hypothesis page on what the registers physically are.
-*   **[Substrate Ontology](/interference/ontology)**: the `meso3i` engine's Map and Compass.
+*   **[The Friction Substrate](/interference/archive/meso-monograph)**: the `meso3i` record — every claim commit-anchored, including the confounds and retractions.
+*   **[The Multi-Channel Bridge](/interference/archive/meso-bridge)**: how the multichannel substrate earned its place over the single-spin prototype.
+*   **[The Clock Program](/interference/archive/clock-program)**: the `meso3i` E-series record: ballistic `1/r²` halos, cavity light-clocks.
+*   **[Methodology & Reproducibility](/interference/archive/methodology)**: the planck3 engine specification and reproduction suite.
+*   **[The Open Frontier](/interference/archive/frontier)**: the 2D-era research log — measured experiments, falsified hypotheses.
+*   **[Theoretical Audits](/interference/archive/audits)**: the five forward-looking test proposals (the CERN path in Audit 5 is retired).
+*   **[The Collider Matrix](/interference/archive/collider)**: the retired telemetry-calibration proposal.
+*   **[The Identification Bridge](/interference/archive/identification)**: the open-hypothesis page on what the registers physically are.
+*   **[Substrate Ontology](/interference/archive/ontology)**: the `meso3i` engine's Map and Compass.
 
 ---
 

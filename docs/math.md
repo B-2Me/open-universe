@@ -144,7 +144,7 @@ $$\text{dim} \sim \text{coordination number}: \quad 6 \text{ (hex)} \;\vert{}\; 
 
 ### Universality Classes and the Mesoscale Bridge
 
-The measured boundary work is archived engine-by-engine (see [moore26 Findings](/moore26-findings) for the current record and the [monograph](/interference/meso-monograph) for the earlier campaigns). The mathematical structure they established:
+The measured boundary work is archived engine-by-engine (see [moore26 Findings](/moore26-findings) for the current record and the [monograph](/interference/archive/meso-monograph) for the earlier campaigns). The mathematical structure they established:
 
 - **The Single-Spin Bedrock (prototype):** exact mass-current conservation, ballistic `v=1` light-cone propagation, Rayleigh–Jeans equipartition with a Brillouin-zone Nyquist cutoff, threshold avalanche detection, and discrete timing-comb interferometry.
 - **The Universality Class Boundary:** a single-spin winner-take-all constraint enforces a rigid kinematic invariant, `v ∈ {0, 1}` — light moves at `c`; all bound matter is anchored at `v = 0`. Lacking linear field superposition and fractional coupling, that bedrock coarse-grains into an *alternate* discrete universe, not standard continuum electrodynamics.

@@ -8,7 +8,7 @@ audio: /audio/methodology.mp3
 
 # Methodology & Reproducibility
 
-> **Program History.** This documents the earlier single-spin prototype engines (`planck.c` / `planck3.c`): still the correct spec for reproducing the Hopfion Zoo and Hopf's Loom milestones. The active engine is `src/moore26.c` — see [moore26 Findings](/moore26-findings); the `meso3i` era is archived in the [Friction Substrate monograph](/interference/meso-monograph) and the [Multi-Channel Bridge](/interference/meso-bridge)
+> **Program History.** This documents the earlier single-spin prototype engines (`planck.c` / `planck3.c`): still the correct spec for reproducing the Hopfion Zoo and Hopf's Loom milestones. The active engine is `src/moore26.c` — see [moore26 Findings](/moore26-findings); the `meso3i` era is archived in the [Friction Substrate monograph](/interference/archive/meso-monograph) and the [Multi-Channel Bridge](/interference/archive/meso-bridge)
 
 This document specifies the formal mathematical architecture, state-space invariants, causal thermodynamic laws, and deterministic reproduction protocols for the **Langevin's Wake** (`planck.c`) and **Hopf's Loom** (`planck3.c`) discrete lattice engines.
 
@@ -109,7 +109,7 @@ Every headless run continuously audits four primary macroscopic observables:
 
 ## 6. Falsification Summary (Negative Results)
 
-Before isolating the 37 stable 3D Hopfion eigenstates on the True FCC lattice, five alternative hypotheses were falsified and logged in [The Open Frontier](/interference/frontier):
+Before isolating the 37 stable 3D Hopfion eigenstates on the True FCC lattice, five alternative hypotheses were falsified and logged in [The Open Frontier](/interference/archive/frontier):
 
 * **Active ZPE Shielding [RFC-042, `hexzpe`]:** A reciprocating $q=1$ floor maintained exact macro-isotropy ($\text{netP} = 0$) at $h \approx 181$, but caused 2D rings to absorb floor mass and sever earlier than sparse foam.
 * **Unclosed Vortex Envelopes [RFC-043, `hexvort`]:** Continuum-quantized tangent rings leaked radially and clumped into "vortex necklaces" (`ccirc` $\to 0.02$), proving that **streamline closure by construction** is required for zero-loss survival.
@@ -117,7 +117,7 @@ Before isolating the 37 stable 3D Hopfion eigenstates on the True FCC lattice, f
 * **Planar Z-Relief Channels [RFC-045 / RFC-046, `+zshadow` / `+zhopfion`]:** Out-of-plane overflow drains suppressed deadlock knots (`fdead` $\to 0.015$) but bled $43\%\text{–}83\%$ of band mass because displaced re-entry destroyed toroidal-poloidal winding topology.
 * **HCP Parity Frustration [RFC-047]:** On an A-B-A-B stacked-hex 12-port grid, layer-alternating vertical azimuths deleted required descent ports on even layers (`0/29` lock-tolerant closures), necessitating the parity-free A-B-C **True FCC** lattice [RFC-048].
 
-> **Continuation note:** this summary ends with the Hopfion-dictionary era. The subsequent grounded-measurement campaign characterized a single-spin prototype node whose constraints are implementation artifacts, not target physics; its record remains in git history. The multichannel findings that carry forward are consolidated in [The Multi-Channel Bridge](/interference/meso-bridge).
+> **Continuation note:** this summary ends with the Hopfion-dictionary era. The subsequent grounded-measurement campaign characterized a single-spin prototype node whose constraints are implementation artifacts, not target physics; its record remains in git history. The multichannel findings that carry forward are consolidated in [The Multi-Channel Bridge](/interference/archive/meso-bridge).
 
 ---
 

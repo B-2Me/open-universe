@@ -180,7 +180,7 @@ To navigate the site without falling back into mechanistic traps, use the follow
 
 ### The Substrate-Grounded Bridge
 
-The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom the substrate expresses, the process-ontology interpretation, and where it stands today on the current engine. *(The full per-engine measurement record lives in [moore26 Findings](/moore26-findings); the earlier engines' campaigns are archived in the [meso monograph](/interference/meso-monograph).)*
+The table above is the philosophical translation. The table below is the *empirical* one: each row names a physical idiom the substrate expresses, the process-ontology interpretation, and where it stands today on the current engine. *(The full per-engine measurement record lives in [moore26 Findings](/moore26-findings); the earlier engines' campaigns are archived in the [meso monograph](/interference/archive/meso-monograph).)*
 
 | Legacy Term | The Bridge Idiom | Process Ontology Reality |
 | :--- | :--- | :--- |

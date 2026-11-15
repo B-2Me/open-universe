@@ -15,7 +15,7 @@ audio: /audio/collider.mp3
 > * **No on-shell poles.** Collider cross-sections are residues of field-theory propagator poles; the engine has no fields, only integer channel populations.
 > * **The scale gap.** A proton spans ~10⁶⁰ Planck volumes; the largest grid ever run is ~10⁷ cells. The substrate would need a dimensional bridge that does not exist and is not claimed.
 >
-> What survives is the *direction* of the questions: which engine observables would a collider-like quantity map onto *if* a scale path ever existed? The [roadmap](/interference/roadmap) tracks that as a conditional, not a commitment. The measured program that replaced it, constitutive quantities in lattice units (`P/ρ`, mean free path, transaction rates), is the [Friction Substrate monograph](/interference/meso-monograph).
+> What survives is the *direction* of the questions: which engine observables would a collider-like quantity map onto *if* a scale path ever existed? The [roadmap](/interference/roadmap) tracks that as a conditional, not a commitment. The measured program that replaced it, constitutive quantities in lattice units (`P/ρ`, mean free path, transaction rates), is the [Friction Substrate monograph](/interference/archive/meso-monograph).
 
 ---
 
