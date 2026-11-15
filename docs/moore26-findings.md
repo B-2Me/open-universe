@@ -2732,7 +2732,18 @@ Under-funded states transmit without gain.
   an 8:1 down-conversion (nu 32->4) with shared temporal origin:
   parametric-emission structure rather than degenerate lasing.
   Under the old law clone phase at emit was always 0.
-- Linewidth: ZERO in the stim channel (integer-exact equality).
-  Nature's lines carry lifetime-broadened width; our excited state
-  does decay (Phase 6 self-emission) but the stim resonance
-  doesn't inherit any width — an authored delta, not a Lorentzian.
+- Linewidth: REVISED after measurement. Per-tick the gate is a
+  delta (integer-exact nu==geo_gap) — but the ENSEMBLE response
+  has real width, and it needs no authored Lorentzian: as the
+  unpumped state decays (self-emission + stim-driven shedding),
+  geo_gap drifts — weakest-pair shedding walks bm down (~8
+  nu-steps per stim), then resets to ~31 when that pair decommits
+  and the next pair becomes weakest. The line ratchets through the
+  band 32..11 repeatedly. Stim-response histogram vs probe nu over
+  the full decay: nu=26->10, nu=30->4, nu=32->3, all else zero
+  (deterministic, reproduced 3x). A comb-structured, red-skewed
+  profile spanning ~6 nu units = ~20% fractional width — the same
+  order as fm-scale hadronic resonances (rho/Delta have Gamma/M
+  ~15-20%). The measured width IS the decaying line's occupancy
+  histogram — the ensemble integrates the line over the state's
+  life, which is what a real linewidth measurement does.

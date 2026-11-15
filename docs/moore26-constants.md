@@ -205,6 +205,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | stim floor | committed volume must exceed 512 | tv=512 refuses unwind (flag still sets) | resonance.mjs |
 | stim rate | ~36-45% of resonant probes | pumped 6-pair fixture | resonance.mjs |
 | qResEmit spectrum | emitted nu = line, drifts 32->26 as state decays | spontaneous emission, unpumped | inline node |
+| ensemble linewidth | response nu=26:10, 30:4, 32:3 (comb, red-skewed, ~20% of line) | unpumped decay, stim histogram over full life | inline node |
 
 ## Nulls on record
 
