@@ -206,6 +206,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | stim rate | ~36-45% of resonant probes | pumped 6-pair fixture | resonance.mjs |
 | qResEmit spectrum | emitted nu = line, drifts 32->26 as state decays | spontaneous emission, unpumped | inline node |
 | ensemble linewidth | response nu=26:10, 30:4, 32:3 (comb, red-skewed, ~20% of line) | unpumped decay, stim histogram over full life | inline node |
+| correlation comb | admitted-depth separations all mult. of lambda=256/nu | co-emitted depth burst, merge gate | hbt.mjs |
+| chaoticity contrast | comb dies entirely for random-nu sources | random-nu burst vs coherent | hbt.mjs |
 
 ## Nulls on record
 

@@ -2747,3 +2747,86 @@ Under-funded states transmit without gain.
   ~15-20%). The measured width IS the decaying line's occupancy
   histogram — the ensemble integrates the line over the state's
   life, which is what a real linewidth measurement does.
+
+## The ensemble-observables principle (program-level finding)
+
+The laser arc surfaced a rule that now governs how every claim in
+this document should be read:
+
+**Physics at this scale is not made of laws-per-event — it is made
+of distributions that laws-per-event generate.** Nobody measures a
+linewidth, a form factor, a cross-section, or an HBT radius in a
+single event. Every detection reads one definite number; the named
+observable is a property of the accumulated histogram over an
+ensemble — many events, or one system integrated over its life.
+
+Three times in this arc, an apparent divergence from nature turned
+out to be a histogram we had not accumulated yet:
+
+- Phase existed (packetBorn clock + incipOp freeze) but there was
+  no "interference" until the merge gate was swept — the fringe is
+  a count histogram, never a single arrival.
+- Stimulated emission existed but ev17 stayed zero through five
+  fixture failures; the mechanism only showed once its activation
+  conditions (floor, arming site, catch roll) were understood.
+- The "missing linewidth" — an authored delta gate — was resolved
+  by the ensemble response: the gap ratchets as the excited state
+  decays, and the stim-vs-nu histogram over its life is a
+  comb-structured red-skewed profile ~20% of the line position.
+  Same as nature: the rho meson's 150 MeV width exists in no
+  single event — it IS the invariant-mass histogram.
+
+Design rule going forward: NEVER author ensemble-level laws — no
+hand-tuned widths, no authored cross-sections. If a measured
+histogram mismatches nature's, the fix belongs in per-event
+mechanics. The per-event sharpness is faithful; ensembles carry
+the widths, in both systems.
+
+## Femtoscopy — two-particle correlation comb (script/cascade/hbt.mjs)
+
+The fm-scale interferometry observable: a two-particle correlation
+function, not a single-particle fringe. Fixture: co-emitted burst
+(born=0) from emitters at depths 1..15 on the ch14 axis upstream of
+detector K (even cell, mass=512, committed winding on pairs e3-e6 —
+raises site_level so offers arm; gap=40 kept away from probe nu so
+stim can't pollute). Packet from depth d arrives at t=d carrying
+op=nu*d mod 256 — arrival phase encodes emission depth; the merge
+gate admits iff op lands within qMergeGate of a stored cloud phase.
+
+### The comb — correlation period = lambda = 256/nu
+
+    nu=64 (lambda=4): admitted depths {2,6,14} — pairwise
+        separations {4,8,12} — ALL multiples of 4
+    nu=32 (lambda=8): admitted {2} — d=10 revival missed to
+        arm-rate thinning (packets arm en route at bare cells,
+        ~6%/hop survival attenuation)
+    chaotic source (random nu/emitter): admitted {2} or {2,3} —
+        the comb dies
+
+The two-particle correlation function vs source separation is a
+comb with period lambda=256/nu cells — at nu=64, 0.4 fm in the
+0.1 fm/node mapping. Pairs of quanta emitted at separations that
+are multiples of the coherence wavelength bunch at the detector;
+other separations anti-correlate (decline to heat). The period is
+DERIVED from nu — emergent from the phase algebra, not authored.
+
+### The chaoticity contrast
+
+Random-phase sources kill the comb entirely — bunching is a
+phase-coherence property of the source, not kinematics. This is
+the HBT intercept parameter: in real femtoscopy C(q)=1+lambda*f(q),
+the intercept reads source coherence (coherent sources bunch,
+chaotic don't). Ours does the same — correlation contrast = source
+phase-coherence.
+
+### Honest characterization
+
+- Second-order (intensity) correlation — coincidences between two
+  detection events — the actual fm-scale technique, since no
+  single-particle slit apparatus can exist at this scale.
+- The mechanism is authored (merge gate) — the correlation
+  STRUCTURE (comb period = 256/nu) is emergent.
+- Not yet the full HBT: the source-size inversion (correlation
+  width ~ 1/R for a chaotic extended source) hasn't been measured
+  — our comb reads the quantum's wavelength in source space; the
+  R-knob measurement needs a denser, phase-diverse source.
