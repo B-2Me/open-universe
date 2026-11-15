@@ -113,6 +113,20 @@ translations live in [Nature → Substrate](/nature-translation).
 | angular (torque) transfer | ddL +1→+23, ddR +5→−15 / 2000t | sep=12, counter-rotating gears | torque transfer |
 | mediation | grazing emission → flank deposition | YORP mechanism on conserved engine | torque transfer |
 
+## Confinement & reaction constants
+
+| constant | value | conditions | harness |
+|---|---|---|---|
+| string potential | E = qString·(reach−slack), linear | saturated tube, funded kicks | string-tension |
+| bank saturation | qString·(reach_max−slack) e.g. 128 = 16·8 | L=9 tube, kicks 50–400 | string-tension |
+| break minting slope | +127 mass per cell of tube length | L≥12 fractures | string-tension |
+| relativistic escape | any 1-hop/tick separation is unrecoverable | qString ≤32, m=512 | string-tension |
+| pair-production barrier | scar ≥64, hard gate | face-channel conduit scar | reaction states |
+| production yield | ~62.5–64% of scar → mass (rest → skeleton) | scar 64–400 | reaction states |
+| charge-burn stoichiometry | exactly 4 mass per |q|, no threshold | q=−1…−400 | reaction states |
+| production branching | linear per channel — x=1, x+y=2, x+y+z=3 pairs | multi-face scars | reaction states |
+| beam-beam crossing | ~97–136% survival — transparent | perpendicular worn rails, crossing cell | crossing |
+
 ## Conservation
 
 | constant | value | conditions | harness |

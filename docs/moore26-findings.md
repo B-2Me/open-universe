@@ -2565,3 +2565,46 @@ real pair production aligns momentum and spin.
   arbitration between channels.
 - Charge-burn has NO threshold: q=-1 still burns exactly 4 mass.
   The 4:1 electrolysis ratio holds to single-quantum resolution.
+
+## String tension + beam transparency — the force/flux complement
+
+### Confining potential: E = sigma*(reach - slack), sigma = qString
+
+Saturated tube between mass cores (script/cascade/string-tension.mjs):
+stretching banks strain energy at exactly qString per unit reach over
+slack — bank saturated at 128 = 16*(10-2) for qString=16, and
+32/64/128/256 for qString=4/8/16/32. Linear rising potential, not
+harmonic: the stored energy is proportional to extension, the QCD
+string form V(r) = sigma*r with a slack offset. The bank IS the
+elastic potential ledger — kicks (ev55) spend it back at min(qString,
+bank) per confirmed transaction until drained.
+
+### String breaking converts the linear potential to endpoint mass
+
+Break threshold at L>=12 filament cells confirmed: L<=11 tubes hold
+(+~10 feed noise); L>=12 fractures and mints +1415 (L=12), +1542
+(L=13), +1669 (L=14) total mass — slope +127 per added cell, i.e.
+minted mass grows LINEARLY in tube length exactly as stored strain
+does. The stored potential does not dissipate — it materializes as
+matter at the fracture, the string-breaking -> pair-production
+conversion in ledger form.
+
+### Relativistic escape: kicked cores outrun the string
+
+Any kick that reaches 1 hop/tick escapes permanently — sep saturates
+at the torus wall (55.7) regardless of qString<=32. The confining
+force only operates on sub-luminal separation; mass at c crosses the
+fracture criterion faster than pull-back acts. Confinement is a
+LOW-VELOCITY law — consistent with the speed-structure exclusion.
+
+### Beam-beam crossing: quanta are mutually transparent
+
+Two perpendicular worn rails (ch6 x ch8) sharing one even cell
+(script/cascade/crossing.mjs): cross-fed streams deliver ~97-136% of
+their solo throughput — no blocking, no scattering, no merging at the
+shared cell. Packet streams are non-self-interacting (photon-like,
+not gluon-like): the medium's exchange quanta carry force between
+matter but do not interact with each other. No interference
+observable exists at the packet level — packetNu is an energy tag
+averaged on merge, there is no phase register; the fm-scale
+"interference" channel (beam-beam opacity) measures null.
