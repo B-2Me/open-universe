@@ -2655,3 +2655,72 @@ coherent at all nu (0-1 declines); gate=0 admits all.
   works exactly as specified and produces real count modulation
   with correct controls — a fringe observable, not an asserted
   abstraction.
+
+## Stimulated emission — the resonance measured (ev17)
+
+The stim branch (incipNu bit7 -> site_unwind + clone) is now
+positively measured (script/cascade/resonance.mjs). Fixture: wound
+cell with 6 committed pairs at w=128 (committed volume 768 >
+qGroundFloor 512), pumped back to 128 each tick to pin the excited
+state; probe = one packet/tick on ch14 arriving at the cell.
+
+### Resonance curve — a delta at the line
+
+    nu:        26  27  28  29  30  31  32  33  34  35  36  37  38
+    stim:       0   0   0   0   0   0  36   0   0   0   0   0   0
+    confirms: ~960 avg off-line, 120 at the line
+
+The stim response is exactly nu==geo_gap: zero response at +-1 nu —
+an authored delta function, no linewidth in the stim channel.
+Confirms DROP at the line (120 vs ~950): resonant offers route to
+the stim branch instead of depositing — the resonance is visible in
+both channels.
+
+### The line tracks the structure — "the spectrum IS the structure"
+
+Pumped winding w on all 6 pairs; predicted gap = (w>>2)*2/L2:
+
+    w:       96  128  160  192
+    gap:     24   32   40   48
+    stim at: 24   32   40   48   (only at the predicted nu)
+
+### Clone characterization
+
+Per stim event: rung shed ~8 winding total (4 per edge member);
+clone exits on the STIMULATOR'S channel (collimated — continues
+downstream next tick, the laser directionality property). Clone
+nu = shed>>1 ~= 4 (the transition quantum — NOT the stimulator's
+nu=32; occasionally ~18 after merging with in-flight traffic).
+Clone born = emission tick — fresh clock, phase reset.
+
+### Activation thresholds (all measured)
+
+- Committed volume must EXCEED qGroundFloor (512): 4 pairs @128
+  (tv=512) -> flag sets but site_unwind refuses, stim=0. 6 pairs
+  (tv=768) -> fires. The "population inversion" analog: no rung
+  available above ground = no downward transition to stimulate.
+- The offer must ARM on the wound cell: seeding the probe ON the
+  cell fails (it flies out during Phase 1 before Phase 2 can arm);
+  bare upstream cells can catch it first (gap=0 there -> no flag).
+  Working seed = 1 hop upstream, arrives and offers same tick.
+- Controls: floor-blocked (stim=0), bare grid (stim=0),
+  off-resonance by +-1 nu (stim=0).
+
+### Honest nature comparison (authored law, measured response)
+
+- Einstein-B structure: resonant offer -> downward transition +
+  one emitted quantum, rate ~ flux. MEASURED.
+- Collimated emission along the stimulating beam. MEASURED —
+  the clone rides the stimulator's channel.
+- Emitted quantum's nu (4) != stimulator nu (32): the clone
+  carries the raw shed-rung share, not the line frequency. A real
+  laser emits AT the line — ours emits softer than the stimulator.
+  The spontaneous channel (Phase 6) with qResEmit emits AT the
+  line but drifts as the state decays (spectrum 26-32 recorded).
+- Phase coherence: NONE — clone born = emission tick, no
+  correlation with stimulator arrival phase. Energetic +
+  directional amplification, not coherent amplification.
+- Linewidth: ZERO in the stim channel (integer-exact equality).
+  Nature's lines carry lifetime-broadened width; our excited state
+  does decay (Phase 6 self-emission) but the stim resonance
+  doesn't inherit any width — an authored delta, not a Lorentzian.

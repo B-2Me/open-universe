@@ -3032,6 +3032,10 @@ uint32_t moore26_incipient_nu_get(int x,int y,int z,int c){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].incipNu[c];
 }
+uint32_t moore26_geo_gap(int x,int y,int z){
+    if(!grid_current)return 0;
+    return (uint32_t)geo_gap(&grid_current[z*QWidth*QHeight+y*QWidth+x]);
+}
 void moore26_incipient_set(int x,int y,int z,int c,uint32_t v){
     if(!grid_current)return;
     NodeState *n0=&grid_current[z*QWidth*QHeight+y*QWidth+x],
