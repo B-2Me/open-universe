@@ -2937,3 +2937,38 @@ Measured consequences:
 - Per-channel resolution note: bondTick/workAge are per-NODE
   registers. A true per-channel deviation-age spectrum would
   need a new per-channel field — not currently tracked.
+
+## There is no thing — tracking identity through local state
+
+script/cascade/thingtrack.mjs: bare odd-cell mass=512, momentum
+kick on pair 7 (32768) -> the mass relays odd->odd through the
+even conduit at exactly 1 cell/tick (complete handoff — the
+decode-zone relay clears the whole residue per hop).
+
+Measured trajectory:
+
+    t=0:  mass at (17,16,16)
+    t=1+: hops (17,17,17) -> (17,18,18) -> ... 1 cell/tick
+    trail: EVERY vacated site writes m=1 residue + bondTick =
+        the tick the vacate-confirm landed
+        (17,17,17)bt3  (17,18,18)bt4  (17,19,19)bt5  ...
+    residue is invisible otherwise: w=0, m=1
+
+What the measurement says about the ontology:
+
+- The substrate keeps NO thing-table. The mass register
+  relocates wholesale; each site records only "a transaction
+  confirmed at tick N." No cell knows what passed through —
+  the trail site at (17,20,20) carries bt6 and nothing else.
+- Identity is reconstructed, not stored: WE connect the
+  timestamped sites and call it a trajectory. The substrate's
+  only account is the local deviation record.
+- The deviation-age record IS the visualization layer: with
+  w=0 and m=1 residue, the path is invisible to every other
+  register. bondTick alone makes the motion legible — the
+  substrate literally writes its own track as it moves.
+- Nature's version is a detector track: a bubble chamber never
+  sees a particle — it sees a sequence of timestamped local
+  ionization events; the "particle" is the reconstructed
+  pattern. Our trail of birthdays is the same object: local
+  transactions, spatially ordered, temporally stamped.

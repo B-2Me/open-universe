@@ -232,3 +232,5 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | deviation ages | grown knot birthdays spread t4..t291; authored bondTick=0 | 300t ch14 feed vs winding_set | devage.mjs |
 | wear vs bond split | grown fixture: 74 ageless wear cells vs 25 birthday'd bond cells | same run | devage.mjs |
 | stratigraphy survival | 21 birthdays persist after 150t decay | 200t feed + 150t idle | devage.mjs |
+| relay speed | bare kicked mass: 1 cell/tick complete handoff, odd->odd via even conduit | odd cell m512, momentum pair7=32768 | thingtrack.mjs |
+| birthday trail | every vacated site writes m=1 + bondTick=confirm-tick | same | thingtrack.mjs |
