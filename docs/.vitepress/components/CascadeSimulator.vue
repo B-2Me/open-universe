@@ -63,7 +63,7 @@ onUnmounted(() => {
     <div class="cascade-stage">
       <canvas class="cascade-canvas" aria-label="Cartan's Cascade 3D moore26 lattice renderer"></canvas>
       <div class="cascade-overlay-tl">
-        <div class="cascade-hud" data-hud title="T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = parked quanta · wind = bound circulation · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div><button class="cascade-copy" data-copy title="Copy telemetry" aria-label="Copy telemetry">⧉</button>
+        <div class="cascade-hud" data-hud title="T = elapsed time in fm/c (1 tick = light crossing 0.1fm ≈ 3.3e-25 s) · mass = energy bound in a local cycle · wind = deviation from empty (bound circulation) · pkt = free quanta · |q| = net charge · core@(x,y,z) = mass centroid · fps = render rate · ms/t = compute time per tick">booting…</div><button class="cascade-copy" data-copy title="Copy telemetry" aria-label="Copy telemetry">⧉</button>
         <div class="cascade-status" data-status></div>
         <div class="cascade-card" data-card hidden>
           <button class="cascade-card-x" data-card-x aria-label="Close">×</button>
@@ -99,16 +99,16 @@ onUnmounted(() => {
           <div class="cascade-grp-row">
             <em>inject <button class="cascade-help" data-help="grp-inject" aria-label="About the injection tools">?</button></em>
             <button data-lump title="Lump tool — arm, then click to drop a wound condenser (shift-click: +dd handedness)" aria-label="Wound lump tool" aria-pressed="false"><span class="g">⌖</span><span class="l">lump</span></button>
-            <button data-tube title="Tube tool — arm, then click to paint a saturated flux string" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
+            <button data-tube title="Tube tool — arm, then click to paint a fuse string that saturates and fractures" aria-label="Flux tube tool" aria-pressed="false"><span class="g">—</span><span class="l">tube</span></button>
             <button data-ringt title="Ring tool — arm, then click to paint a {111} waveguide loop with a live stream" aria-label="Ring tool" aria-pressed="false"><span class="g">◦</span><span class="l">ring</span></button>
-            <button data-thrust title="Thrust tool — arm, then click to kick a structure along +x with stored momentum (shift-click: -x)" aria-label="Thrust kick tool" aria-pressed="false"><span class="g">⚡</span><span class="l">thrust</span></button>
+            <button data-thrust title="Thrust tool — arm, then click to kick a structure along the {1,1,0} axis with stored momentum (shift-click: reverse)" aria-label="Thrust kick tool" aria-pressed="false"><span class="g">⚡</span><span class="l">thrust</span></button>
           </div>
         </div>
         <div class="cascade-grp grp-emit">
           <div class="cascade-grp-row">
             <em>emit <button class="cascade-help" data-help="grp-emit" aria-label="About the emitters">?</button></em>
             <button data-drive class="tog" aria-pressed="false" title="Convergent feed — 26 quantum spokes pour at the core" aria-label="Toggle convergent drive"><span class="g">☀</span><span class="l">feed</span></button>
-            <button data-beam class="tog" aria-pressed="false" title="Quantum beam — +x stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
+            <button data-beam class="tog" aria-pressed="false" title="Quantum beam — {1,1,0} diagonal stream; the probe bombardment" aria-label="Toggle quantum beam"><span class="g">➤</span><span class="l">beam</span></button>
           </div>
         </div>
         </div>
@@ -148,6 +148,7 @@ onUnmounted(() => {
               <option value="attract">charge attract</option>
               <option value="repel">charge repel</option>
               <option value="quark">quark</option>
+              <option value="laser">laser</option>
               <option value="meson">meson</option>
               <option value="proton">proton</option>
               <option value="zoo">zoo</option>

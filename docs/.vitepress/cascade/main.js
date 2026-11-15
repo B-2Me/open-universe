@@ -394,7 +394,7 @@ export async function initCascadeSimulator(root, opts = {}) {
             const cur = wasm._moore26_packet_get(sx, sy, sz, c);
             if (cur < BEAM_CAP) {
               pset(sx, sy, sz, c, cur + 2);
-              nuset(sx, sy, sz, c, FEED_NU);
+              nuset(sx, sy, sz, c, ui.beamNu || FEED_NU);
             }
           }
       }
@@ -439,6 +439,13 @@ export async function initCascadeSimulator(root, opts = {}) {
           nuset(sx, sy, sz, 6, FEED_NU);
         }
       }
+    }
+    /* laser pump — reseed the gain medium's winding each tick so the
+     * line stays pinned at geo_gap=32 (a cw laser, not a decaying
+     * flashlamp — unpumped, the line drifts down and detunes) */
+    if (ui.laserCells) {
+      for (const [kx, ky, kz] of ui.laserCells)
+        for (let c = 6; c < 18; c++) wset(kx, ky, kz, c, 128);
     }
   };
 
@@ -696,6 +703,13 @@ export async function initCascadeSimulator(root, opts = {}) {
   /* scenario dispatch — shared by the Scenario select AND reset,
    * so ⟲ restores the same seed every time. */
   const seedScenario = (s) => {
+    /* per-scenario state that inject()/tick consult — clear first so
+     * a stale fixture can't leak into the next seed */
+    ui.laserCells = null; ui.beamNu = 0;
+    /* measured emission law: radiated quanta carry the structure's
+     * characteristic line (geo_gap), not shed/2 — the spectral
+     * signature is what makes radiative decay readable */
+    if (wasm._moore26_res_emit_set) wasm._moore26_res_emit_set(1);
     /* scenario-specific registers: ring needs the rail bypass ON
      * (persistent current); the rest run negotiation as normal */
     wasm._moore26_rail_gate_set(s === 'ring' ? 64 : 0);
@@ -725,9 +739,10 @@ export async function initCascadeSimulator(root, opts = {}) {
       return 27;
     }
     /* absorbing wall for emitter scenarios — torus wrap would
-     * recirculate the pumped stream back into the scene */
+     * recirculate the pumped stream back into the scene. laser too:
+     * the amplified beam should exit, not wrap and re-hit */
     if (wasm._moore26_absorb_set)
-      wasm._moore26_absorb_set(s === 'attract' || s === 'repel' ? 1 : 0);
+      wasm._moore26_absorb_set((s === 'attract' || s === 'repel' || s === 'laser') ? 1 : 0);
     /* tube scenario = the STRING LIFECYCLE in three ribbons:
      * top: a 220 string — glows then conducts its winding into the
      * vacuum (bare tubes dim; the energy spreads, not vanishes)
@@ -819,6 +834,25 @@ export async function initCascadeSimulator(root, opts = {}) {
       const chg = s === 'repel' ? 40 : -40;
       ui.chargeSites = [[wx, CY - 4, CZ, chg], [wx, CY + 4, CZ, chg]];
       return chargeWall(wx, chg);
+    }
+    /* laser — the measured stimulated-emission demo: a gain medium
+     * of wound cells lying ON the beam path, pumped so geo_gap stays
+     * pinned at 32, probed by a resonant nu=32 beam. Offers arm at
+     * the line -> ev17 fires: the probe transmits AND clones — the
+     * stream gets brighter through the knot, not dimmer */
+    if (s === 'laser') {
+      ui.laserCells = [];
+      /* three even cells along ch6 {1,1,0} through center — the beam
+       * passes through all of them. All 6 edge pairs @128: committed
+       * volume 1536 > 512 floor, weakest pair 128 -> geo_gap = 32 */
+      for (const d of [-1, 0, 1]) {
+        const kx = CX + d, ky = CY + d, kz = CZ;
+        mset(kx, ky, kz, 256);
+        for (let c = 6; c < 18; c++) wset(kx, ky, kz, c, 128);
+        ui.laserCells.push([kx, ky, kz]);
+      }
+      ui.beam = true; ui.beamNu = 32;   /* resonant probe at the line */
+      return 3;
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -963,8 +997,11 @@ export async function initCascadeSimulator(root, opts = {}) {
         if (ui.tubeArm) {
           /* the fuse — paint sub-critical (120) then ramp +1/tick:
            * the string glows to criticality for ~8 ticks before the
-           * engine's own gate fires the fracture. A watchable snap. */
-          const { n, cells } = seedTube(cell.lx, cell.ly, cell.lz, 8, 124);
+           * engine's own gate fires the fracture. A watchable snap.
+           * evenSnap: tube cells must sit on the transport parity or
+           * the string can't conduct — an odd-plane tube is inert */
+          const [tx, ty, tz] = evenSnap(cell.lx, cell.ly, cell.lz);
+          const { n, cells } = seedTube(tx, ty, tz, 8, 124);
           if (n) fuse = cells;
           say(n ? `fuse lit — string saturating…` : 'off-lattice', 3500);
         } else if (ui.ringArm) {
@@ -994,7 +1031,7 @@ export async function initCascadeSimulator(root, opts = {}) {
                     wasm._moore26_momentum_at_set(kx, ky, kz, 3, (odd ? 3200 : 400) * dir);
                   }
                 }
-            say(`${dir > 0 ? '+x' : '-x'} impulse applied — coasting on stored momentum`, 3500);
+            say(`${dir > 0 ? '+' : '-'}{1,1,0} impulse applied — coasting on stored momentum`, 3500);
           } else say('momentum register not in this wasm build', 3500);
         } else {
           /* shift-click flips the handedness — paint chiral pairs */
@@ -1084,8 +1121,8 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false, thrustArm: false,
-    pump: false, pumpAt: null, chargeSites: null, scenario: 'glide',
-    boostT: 0,
+    pump: false, pumpAt: null, pumpRate: 0, chargeSites: null, scenario: 'glide',
+    boostT: 0, laserCells: null, beamNu: 0,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
     const el = root.querySelector(sel);
@@ -1102,8 +1139,7 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
-  seedScenario(ui.scenario);   /* boot seeds the default scenario
-                                * (ring — was cold vacuum + feed) */
+  seedScenario(ui.scenario);   /* boot seeds the default scenario (glide) */
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
   const toggle = (sel, key, onSay, offSay) => bind(sel, 'click', e => {
     ui[key] = !ui[key];
@@ -1134,6 +1170,12 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* reset restores the CURRENT scenario (re-seed, keep toggles) —
      * without this, reset always dropped to cold vacuum */
     seedScenario(ui.scenario);
+    /* the scenario may re-arm emitters (laser re-arms the beam) —
+     * re-sync the buttons or they can lie about the live stream */
+    for (const [sel, on] of [['[data-drive]', ui.drive], ['[data-beam]', ui.beam]]) {
+      const b = root.querySelector(sel);
+      if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+    }
     upload(); dirty = true;
     say(ui.drive ? 'cleared — spokes are still feeding' : 'cleared — cold vacuum');
   });
@@ -1152,9 +1194,11 @@ export async function initCascadeSimulator(root, opts = {}) {
     ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false; ui.thrustArm = false;
     ui.pump = false; ui.pumpAt = null; ui.chargeSites = null; ui.pumpRate = 0;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
-    tSync('[data-drive]', ui.drive); tSync('[data-beam]', false);
     const s = ui.scenario;
     seedScenario(s);
+    /* sync toggles to the state the scenario left — laser re-arms
+     * the beam, so a hardcoded 'false' would lie about the stream */
+    tSync('[data-drive]', ui.drive); tSync('[data-beam]', ui.beam);
     upload(); dirty = true;
     say(s === 'vacuum' ? 'cold vacuum' : `seeded ${s}`);
   });
@@ -1162,7 +1206,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     'convergent feed on — 26 quantum spokes pouring at the core',
     'feed cut — the core starves');
   toggle('[data-beam]', 'beam',
-    '+x quantum beam on — the probe stream',
+    '{1,1,0} quantum beam on — the probe stream',
     'beam off');
   /* armed-tool cursor — white crosshair edged in black: reads on the
    * dark canvas AND any bright field underneath (a fixed cursor can't
@@ -1228,7 +1272,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const HELP = {
     'grp-time': ['time controls', '⏸ play/pause the tick loop · ⏭ step exactly one tick · ⟲ reset — re-initializes the quiet field scenario.'],
     'grp-ops': ['session ops', '⟳ orbit — turntable camera; double-click the gizmo to reset the view.'],
-    'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — +x quantum stream, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturated flux string · ◦ ring — paint a waveguide loop with a live stream.'],
+    'grp-inject': ['injection tools', 'things that add to the field: ☀ feed — convergent 26-spoke quantum drive · ➤ beam — quantum stream on {1,1,0}, the probe bombardment · ⌖ lump — drop a -dd condenser (shift-tap = +dd) · — tube — paint a saturating fuse string · ◦ ring — paint a waveguide loop with a live stream · ⚡ thrust — kick a structure on stored momentum (shift-tap = reverse).'],
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
     scenario: ['Scenario', 'reseed the field — then tap ? again for help specific to the selected scenario.'],
@@ -1252,6 +1296,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     attract: 'a -q charged wall with a +par stream aimed at it — opposite-sign packets bind and pass through.\nWatch the stream continue past the wall.',
     repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
+    laser:   'stimulated emission — three wound cells sit on the beam path, pumped so their line stays at nu=32, probed by a resonant nu=32 stream.\n· probes arm at the line and fire ev17: the transmitted packet gets a collimated clone — the beam leaves BRIGHTER than it entered\n· the pumped winding holds the line; unwound, the medium would detune and go dark — that detuning IS the measured linewidth.',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',
     zoo:     'the species census: plain ball (condenser) + bare ring (rail) + wound ball (spinning condenser), side by side.',
@@ -1512,7 +1557,9 @@ export async function initCascadeSimulator(root, opts = {}) {
       let spent = 0;
       while (ui.tickDebt >= quantum && spent < ui.budget) {
         const t0 = performance.now();
-        if (ui.drive || ui.beam || ui.pump || ui.boostT) inject();
+        /* laser pump lives in inject() — it must run even when the
+         * user pauses the beam, or the gain medium decays unpumped */
+        if (ui.drive || ui.beam || ui.pump || ui.boostT || ui.laserCells) inject();
         if (ui.boostT && !--ui.boostT) {
           const tb = root.querySelector('[data-thrust]');
           if (tb) { tb.classList.remove('on'); tb.setAttribute('aria-pressed', 'false'); }
