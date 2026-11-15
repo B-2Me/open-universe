@@ -2972,3 +2972,52 @@ What the measurement says about the ontology:
   ionization events; the "particle" is the reconstructed
   pattern. Our trail of birthdays is the same object: local
   transactions, spatially ordered, temporally stamped.
+
+## Synthesis — mass is not energy, and things are not objects
+
+Two results from this session crystallize the substrate's
+ontology and match nature's measured content:
+
+### Mass = confined frequency (not "energy")
+
+E=mc^2 is a conversion, not an identity. Nature's
+counterexample: the photon has energy but zero mass — it has a
+rate (nu) but no bound cycle, no rest frame, no address. Mass
+specifically = the energy of a bound oscillation: Dirac's
+zitterbewegung makes a confined particle tremble at 2mc^2/hbar;
+every measured "mass" at fm scale is a frequency-domain readout
+(decay-product invariant mass, line spacings, decay rates).
+
+The substrate has the same shape:
+
+    packet nu    = rate + energy, free in flight  (photon-like:
+                                                    no mass)
+    winding      = nu trapped in circulation — deviation
+                   looping in place (bound cycle)
+    geo_gap      = the circulation's characteristic frequency
+                   — the structure's "mass" readout, measured
+                   through re-emission spectra
+
+So "mass" in this substrate = nu with an address. Not a
+separate scalar — the frequency of a deviation that cannot
+leave. Same operational content as nature: mass is what
+frequency looks like when it is confined.
+
+### Identity = formation trail (no thing-table)
+
+thingtrack.mjs measured the relay: a kicked bare mass hands
+off completely odd->odd at 1 cell/tick; every vacated site
+writes m=1 + a fresh bondTick at the confirm tick. The trail
+is invisible to every other register (w=0). The substrate
+keeps no thing-state — each site knows only "a transaction
+confirmed at tick N." "The same thing" is our reconstruction
+from timestamped local records — the same object a bubble
+chamber reconstructs from ionization hits.
+
+Combined with devage.mjs: grown structure carries birthdays
+(stratigraphy survives decay), authored winding is ageless,
+wear scars are ageless too. The deviation field is not one
+thing: it is trail (timestamps) vs scar (winding, no
+provenance) vs committed structure (both). The record, not
+the magnitude, is what differentiates a structure from a
+disturbance.
