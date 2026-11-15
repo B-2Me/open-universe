@@ -2325,3 +2325,64 @@ choice. The substrate's 'glider' would have to be saltatory:
 dwell ~130t to commit, hop, re-dwell — a frog, not a glider.
 Open: whether a slow mover (congestion-stalled, recoil-drift
 ~0.033c class) accumulates a co-moving committed shell.
+
+## Mobility variants — saltation, leapfrog, congestion, isotropic winding
+
+### Dwelling knot feed geometry matters (saltation arm 1)
+
+Directed chase-feed (packets on 6 face-neighbors, ch6) at a PARKED
+knot wrote almost nothing near it (shell tot=2/150t) — directed
+flux just beams away downstream. The deep chase-fed trail (3465)
+was beam wear, not knot-centered structure.
+
+### Isotropic micro-bath winds the knot — and digests it
+
+All-12-edge-channel feed on a 5x5 even-cell ring around the knot,
+150t: FIRST endogenous winding of the knot's own cell —
+knotW=334, 12 channels committed (>=128), neighborhood tot=4462.
+But mass eroded 512->11 (bath ablates faster than accretion holds)
+and the post-kick remnant no longer launches. The bath converts a
+walker into a wound fossil: structure accrued at the price of
+mobility — the knot that gained a body lost the mass needed to
+move it. Speed-structure exclusion now shown in BOTH directions:
+moving can't grow structure; growing structure kills motion.
+
+### Leapfrog — bonds transmit zero translation
+
+Bonded pair (80t warmed filament), kicked ONLY A orthogonal:
+A translated its full 16 hops identical to unfed; B never moved.
+The filament anchors each cell to the medium at its address —
+it is not a spring between partners. No drag, no follow, no
+re-bond. 'Federated locomotion' is absent, not just weak.
+
+### Congestion stall — sparse beams don't gate mass relay
+
+Knot (m=512, kick=300) aimed through a 6x11-cell beam wall fed
+40%/tick: sailed through at 1 hop/tick, zero stalls. Lane
+incipient load from sparse transient packets never reaches the
+qStallLoad=32 gate — kicked mass bulldozes traffic it outweighs.
+
+### moveclock run — fixture null
+
+dd-biased vs balanced 3x3x3 knots (mass-10 cells, bath 0.02,
+600t warm): all phase registers read 0 at probe — knots went
+quiescent, no wind-up data. Only datum: mover's WINDING centroid
+drifted -0.83x over ~700t — dd-biased emission writes records
+asymmetrically forward. The knot pre-wears its own lane: the
+nearest thing to 'structure leading the mass' measured so far —
+but it is wake-deposit ahead, not a carried body.
+
+### The accumulated law (mobility/structure)
+
+Being in this medium is a FIXTURE, not a vehicle:
+- mass moves at c: bare, thin trail, no structure, no tau
+- transacting while moving: deep comet wake, still bare
+- dwelling + isotropic flux: structure grows ON the knot —
+  and erodes it below the launch threshold in the same act
+- bonds anchor to the medium; nothing transmits translation
+- records shape future traffic (rails guide, lanes stall) but
+  never propagate themselves — winding is always a memory of
+  where transactions happened, never a plan of where they're
+  going. The causal asymmetry vs Conway's glider is structural:
+  the glider's pattern CAUSES its successor; here the pattern
+  RECORDS its predecessor.
