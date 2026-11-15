@@ -2288,3 +2288,40 @@ nothing, so nothing of it persists en route. A mobile being in this
 ontology would have to transact WHILE flying: a fed knot carving
 its rail in real time, structure as a continuously re-written
 wake — pattern propagation, not pattern transport.
+
+## Soliton probe — the comet regime: deep wake, bare knot (CORRECTION)
+
+### Correction to "bare flight writes nothing"
+
+The hop-trail wear IS real — it lands on the EVEN conduit cell
+crossed in each hop (`winding[ch]+1` per transit, qRecoilLaw
+branch), one cell off the odd flight path. The earlier probe
+scanned the odd sublattice only and read 0. Verified directly:
+each of a kicked knot's conduit crossings reads w8=1. So bare
+flight writes a THIN topographic scar (+1/conduit, uncommitted)
+on the exchange sublattice — still no tau, no committed body.
+
+### Chase-fed in-flight knot — wake deepens ~200x but never leads
+
+Bare knot, pair-3 kick, packets seeded on its 4 even face-neighbors
+EVERY tick (transacting while flying), 80t:
+- trail: 3465 total winding over 181 channels, max=97/ch — the
+  wake approaches the commit threshold (128) as a deep rail.
+- knot's own cells: winding=0 at every sampled site including
+  mid-flight. Chase-feed never winds the knot itself.
+
+THE COMET REGIME: a transacting-in-flight knot carves a live,
+near-committed wake but remains bare — structure trails, never
+leads. The knot's own winding can't grow because winding forms
+only between PERSISTENT transaction partners (bonds/confirms need
+repeated interaction at stable addresses), and a knot at 1
+hop/tick gives every conduit exactly one crossing.
+
+SPEED-STRUCTURE EXCLUSION (measured): commitment needs ~128
+transactions at a stable address; c-flight offers 1. A knot can
+only grow a body where it dwells — mobility and structuredness
+trade against each other as a law of the medium, not a tuning
+choice. The substrate's 'glider' would have to be saltatory:
+dwell ~130t to commit, hop, re-dwell — a frog, not a glider.
+Open: whether a slow mover (congestion-stalled, recoil-drift
+~0.033c class) accumulates a co-moving committed shell.
