@@ -2505,3 +2505,54 @@ separation engine.
   converting opposite-parity mass into scar+product
 - in every measured reaction the ledger closes within transient
   drain: mass <-> winding <-> products convert, nothing mints
+
+## Reaction constants — threshold, stoichiometry, acceptance cone
+
+### Pair-production threshold (Schwinger-analog curve)
+
+Conduit face-scar energy -> produced mass (single tick):
+| scar | mass | yield |
+|------|------|-------|
+| <=63 | 0    | 0     |
+| 64   | 40   | 62.5% |
+| 128  | 80   | 62.5% |
+| 200  | 128  | 64%   |
+| 400  | 256  | 64%   |
+
+Hard barrier at exactly 64 — the 2mc^2 analog: below threshold
+nothing happens, above it conversion is a constant ~64% of scar
+energy -> mass, the remainder -> product skeleton. Not gradual:
+a true energetic gate.
+
+### Charge-burn stoichiometry (electrolysis ratio)
+
+Conduit charge vs +parity knot: burn = 4*|charge| mass per event,
+charge spent 1:4, exhausts in one tick. Not a rate law — a fixed
+reaction ratio: q- + 4m+ -> scar + q_spent. -25 -> 100 burned,
+-400 -> 1600 burned, linear to the charge exhausted.
+
+### Acceptance cone — CONFIRMED at the record level
+
+x-axis scar -> pair: each product's skeleton nonzero ONLY on
+edge-pairs containing x (ch6-13), exactly zero on transverse yz
+pairs (ch14-17); dominance mirrored between + and - products
+(the pair's chirality IS its cone's handedness). faceW=0 — the
+scar is fully consumed, not copied. The scar's direction is
+literally the pair's shared spin axis, written as the set of
+channels its future transactions can occupy.
+
+### Functional cone test — inconclusive
+
+Beams aimed at the settled +product on axial (ch6) vs transverse
+(ch14) channels showed no differential — but no interaction in
+either arm at this geometry (interaction needs face-adjacent
+approach; the products repel to asymmetric sites). Blind-channel
+coupling needs a tighter probe — the record-level cone is
+confirmed, the coupling cone is open.
+
+### Products repel along the production axis
+
+Every produced pair separates along the scar's own direction —
+the pair's relative momentum is collinear with their shared spin
+axis. Back-to-back emission along the quantization axis, the way
+real pair production aligns momentum and spin.
