@@ -126,6 +126,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | charge-burn stoichiometry | exactly 4 mass per |q|, no threshold | q=−1…−400 | reaction states |
 | production branching | linear per channel — x=1, x+y=2, x+y+z=3 pairs | multi-face scars | reaction states |
 | beam-beam crossing | ~97–136% survival — transparent | perpendicular worn rails, crossing cell | crossing |
+| packet phase | op = nu·age mod 256, exact (frozen ops verified) | qMergeGate armed cloud | fringes |
+| fringe visibility | ~80–90% (declines 10 vs ~1) | d=4 path diff, nu sweep, gate=32 | fringes |
+| fringe width | = qMergeGate window (±32 phase units) | same | fringes |
 
 ## Conservation
 
