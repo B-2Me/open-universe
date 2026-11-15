@@ -2019,27 +2019,58 @@ void moore26_tick(void){
         if(shed)jrn(si,-1,61,(int32_t)shed);
                 if(shed)jrn(si,-1,61,(int32_t)shed);
                 if(shed>=2){
-                    uint32_t sn=shed>>1;
-                    /* shed>>1 drops half the rung — book to heat,
-                     * merge nu into occupied traffic */
-                    uint32_t rem2=shed-sn;
-                    n->heat=(uint16_t)((n->heat+rem2)>65535?65535:(n->heat+rem2));
-                    qEvents[52]+=rem2;
-                    if(n->packet[c]){
-                        uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+sn;
-                        n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
-                        uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
-                        n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
-                        qEvents[52]+=r3;
-                    } else n->packetNu[c]=(uint8_t)sn;
-                    PAR_MERGE(n,c,PAR_SIGN(n,c));
-                    if(n->packet[c]<255)n->packet[c]++;
-                    else n->heat++;   /* thermal overflow � cap */
-                    n->packetBorn[c]=o->incipBorn[c];   /* clone inherits
-                     * the stimulator's epoch — phase-locked to the offer
-                     * that triggered the transition (coherent emission),
-                     * not a fresh clock */
-                    qEvents[17]++;
+                    /* LASER bookkeeping: the transition energy = the
+                     * line — the emitted clone must carry nu (the
+                     * resonant frequency), and the stimulator is NOT
+                     * absorbed: it transmits. 1 in -> 2 out, funded by
+                     * releasing `nu` winding from the committed state.
+                     * Shed rungs until the release covers the line. */
+                    uint32_t released=shed;
+                    while(released<nu){
+                        uint32_t s2=site_unwind(x,y,z,si);
+                        if(!s2)break;
+                        released+=s2;
+                        jrn(si,-1,61,(int32_t)s2);
+                    }
+                    if(released>=nu){
+                        /* fully funded: emit the pair — stimulator +
+                         * clone — both at nu, both phase-locked to the
+                         * offer's epoch (mutually coherent). Excess
+                         * released -> heat. */
+                        uint32_t rem2=released-nu;
+                        if(rem2){
+                            n->heat=(uint16_t)((n->heat+rem2)>65535?65535:(n->heat+rem2));
+                            qEvents[52]+=rem2;
+                        }
+                        if(n->packet[c]){
+                            uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+2*nu;
+                            n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+2));
+                            uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+2);
+                            n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                            qEvents[52]+=r3;
+                        } else n->packetNu[c]=(uint8_t)nu;
+                        PAR_MERGE(n,c,PAR_SIGN(n,c));
+                        n->packet[c]=(n->packet[c]<=253)?n->packet[c]+2:255;
+                        n->packetBorn[c]=o->incipBorn[c];
+                        qEvents[17]++;
+                    } else {
+                        /* under-funded transition (near ground): the
+                         * offer transmits, the partial release
+                         * thermalizes — no gain below inversion. */
+                        n->heat=(uint16_t)((n->heat+released)>65535?65535:(n->heat+released));
+                        qEvents[52]+=released;
+                        if(n->packet[c]){
+                            uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+nu;
+                            n->packetNu[c]=(uint8_t)(tot/(n->packet[c]+1));
+                            uint32_t r3=tot-(uint32_t)n->packetNu[c]*(n->packet[c]+1);
+                            n->heat=(uint16_t)((n->heat+r3)>65535?65535:(n->heat+r3));
+                            qEvents[52]+=r3;
+                        } else n->packetNu[c]=(uint8_t)nu;
+                        PAR_MERGE(n,c,PAR_SIGN(n,c));
+                        if(n->packet[c]<255)n->packet[c]++;
+                        else n->heat++;
+                        n->packetBorn[c]=o->incipBorn[c];
+                    }
                 } else {
                     if(n->packet[c]){
                         uint32_t tot=(uint32_t)n->packetNu[c]*n->packet[c]+nu;

@@ -2686,12 +2686,12 @@ Pumped winding w on all 6 pairs; predicted gap = (w>>2)*2/L2:
 
 ### Clone characterization
 
-Per stim event: rung shed ~8 winding total (4 per edge member);
-clone exits on the STIMULATOR'S channel (collimated — continues
-downstream next tick, the laser directionality property). Clone
-nu = shed>>1 ~= 4 (the transition quantum — NOT the stimulator's
-nu=32; occasionally ~18 after merging with in-flight traffic).
-Clone born = emission tick — fresh clock, phase reset.
+Per stim event: `line` winding released (measured dW/stim=32.3
+unpumped — the transition energy = the gap); the stimulator
+TRANSMITS and a clone emits — both at nu=line on the STIMULATOR'S
+channel (collimated, continues downstream — laser directionality).
+Both packets born = the offer's epoch (phase-locked pair).
+Under-funded states transmit without gain.
 
 ### Activation thresholds (all measured)
 
@@ -2712,11 +2712,18 @@ Clone born = emission tick — fresh clock, phase reset.
   one emitted quantum, rate ~ flux. MEASURED.
 - Collimated emission along the stimulating beam. MEASURED —
   the clone rides the stimulator's channel.
-- Emitted quantum's nu (4) != stimulator nu (32): the clone
-  carries the raw shed-rung share, not the line frequency. A real
-  laser emits AT the line — ours emits softer than the stimulator.
-  The spontaneous channel (Phase 6) with qResEmit emits AT the
-  line but drifts as the state decays (spectrum 26-32 recorded).
+- Emitted quantum: FIXED — the clone now carries nu=line (= the
+  stimulator's frequency). The stimulator TRANSMITS (re-emitted at
+  its nu, not absorbed): 1 in -> 2 out per stim event, funded by
+  shedding `line` winding (the transition energy = the line).
+  Measured: dW/stim = 32.3 (unpumped), clone nu=32, both packets
+  born=stimulator epoch -> mutually coherent pair. Under-funded
+  (near ground floor) -> transmit only, no gain.
+- GAIN measured (resonance.mjs): downstream flux at nu=32 = 104
+  vs 36 baseline (~3x) — resonant optical amplification; off-line
+  flux unchanged. The medium adds quanta to the resonant mode.
+- Spontaneous channel (Phase 6) with qResEmit emits AT the line
+  but drifts as the state decays (spectrum 26-32 recorded).
 - Phase coherence: FIXED (post-measurement authored change,
   src/moore26.c clone branch): clone packetBorn = the stimulator's
   incipBorn, not the emit tick. Measured: clone.born = probe seed

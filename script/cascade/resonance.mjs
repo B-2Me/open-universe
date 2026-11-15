@@ -101,3 +101,20 @@ console.log('\n=== CLONE CHARACTERIZATION (nu=32) ===');
     console.log(`stim@${c.t}  clone@${c.at}  nu=${c.nu}  born=${c.born}`);
   console.log(`total stim=${r.stim}`);
 }
+
+console.log('\n=== GAIN: downstream flux at the line ===');
+for (const nu of [30, 31, 32, 33, 34]) {
+  M._moore26_init(SIZE, SIZE, SIZE);
+  M._moore26_wear_decay_set(0);
+  M._moore26_incip_ttl_set(249);
+  const e0 = ev(17);
+  let flux = 0;
+  for (let t = 0; t < T; t++) {
+    for (const ch of PAIRS) M._moore26_winding_set(...K, ch, 128);
+    M._moore26_packet_set(...SRC, CH, 1);
+    M._moore26_packet_nu_set(...SRC, CH, nu);
+    M._moore26_tick();
+    flux += M._moore26_packet_get(...DOWN, CH);
+  }
+  console.log(`nu=${nu}  stim=${ev(17) - e0}  downstreamFlux=${flux}`);
+}
