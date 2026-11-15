@@ -225,3 +225,7 @@ translations live in [Nature → Substrate](/nature-translation).
 isolated trial; shared-state ordering contamination was audited out of
 the early sweeps (see findings). Harnesses live in `script/cascade/`;
 the engine is `src/moore26.c`; builds through `src/build.sh` only.*
+| HBT source-size | comb spacing=lambda=256/nu fixed; support edge ~R (R=8->sep4, R=15->sep12) | coherent depth burst nu=64, merge gate 8 | inline node / hbt.mjs |
+| comb nu-tracking | nu=128->lambda=2 denser comb {2,4,6,12,14}; nu=32->{2} | R=15 depth burst | inline node |
+| scattering dip | def=0 at nu=24 for wound+tube all lengths; onset nu>=48 (tube def 13-15) | dense ch14 beam, 60t | formfactor.mjs |
+| scatter saturation | tube def/out saturate by L=2 (len 5) at nu=64 | length sweep | formfactor.mjs |

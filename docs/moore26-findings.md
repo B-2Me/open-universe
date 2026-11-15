@@ -2830,3 +2830,79 @@ phase-coherence.
   width ~ 1/R for a chaotic extended source) hasn't been measured
   — our comb reads the quantum's wavelength in source space; the
   R-knob measurement needs a denser, phase-diverse source.
+
+## Femtoscopy II — source-size inversion + form-factor scattering (measured)
+
+### HBT source-size inversion — the R-knob now swept
+
+Coherent emitters (nu=64, lambda=4) placed at depths d=1..R along
+the beam axis; arrival tick = depth; admitted-depth set recorded
+per tick. The two-particle correlation is now measured in BOTH
+directions:
+
+    R=4:  admitted {2}            — no pairs
+    R=8:  admitted {2,6}          — pair sep {4}
+    R=10: admitted {2,6}          — sep {4}   (depth 10 lost to
+                                          catch-gate thinning)
+    R=12: admitted {2,6}          — sep {4}
+    R=15: admitted {2,6,14}       — seps {4,8,12}
+
+- comb SPACING stays lambda=4 at every R — the wavelength ruler
+  is set by nu, not by source size;
+- comb SUPPORT (max pair separation) grows with R: 4 -> 12 as
+  R goes 8 -> 15 — the correlation envelope edge inverts the
+  source extent. Missing teeth (e.g. depth 10) are the known
+  ~6%/hop arm-rate attenuation — stochastic thinning, not signal;
+- nu sweep at fixed R=15: nu=32 lambda=8 -> admitted {2} only;
+  nu=128 lambda=2 -> admitted {2,4,6,12,14}, separations {2,4,6,
+  8,10,12} — denser comb at shorter wavelength, spacing tracks
+  lambda exactly;
+- chaotic control (random nu per emitter): R=8 -> {2,7} sep {5}
+  (non-periodic); R=15 -> {2} alone — comb dies, as before.
+
+This is the femtoscopy inversion: measure the correlation comb,
+read lambda=256/nu (the quantum's wavelength — what real HBT
+calls the relative momentum) and read the support edge -> source
+radius R. Both observables are histogram features over the
+depth-resolved admission record — no per-event width exists,
+consistent with the ensemble-observables principle.
+
+### Form-factor / diffraction scattering — first probe
+
+script/cascade/formfactor.mjs: dense probe beam (8 packets/tick,
+60 ticks) down ch14 through K=(12,12,12); three structures —
+bare mass, point wound cell (all 12 edge pairs at 96), wound
+tube (extent 2L+1 along the beam axis, 8 pairs/cell at 96).
+Readout: deflections (ev30 congestion-diverts + ev50 declines)
+and surviving packet census in a 7^3 box.
+
+Measured response vs probe nu:
+
+    nu=8..16:   wound def=7 flat, tube def=4, out~16-20
+    nu=24:      wound def=0, tube def=0  — TRANSMISSION DIP,
+                the structure is transparent at nu=24 at every
+                tested length
+    nu=32:      wound def=7, tube def=4
+    nu=48..128: wound def=7 flat; tube def 13->15, out drops
+                18->7->13->12 — strong structure-dependent
+                scattering above nu~48
+
+Length sweep at nu=64 (tube):
+    L=0 len=1:  out=20 def=5
+    L=1 len=3:  out=19 def=13
+    L=2 len=5:  out=13 def=15
+    L=4 len=9:  out=12 def=15  — saturates once the tube
+                intercepts the beam
+
+Honest characterization: this is a structure-dependent
+scattering cross-section vs probe nu — a form-factor-like
+response (the wound geometry, not bare mass, controls the
+deflection count; bare control is flat zero-deflection at every
+nu). The nu=24 transparency window and the nu>=48 onset are
+real measured features. NOT yet a clean diffraction pattern:
+no resolved minima/maxima series vs angle — the substrate's
+scattering is channel-selective deflection + absorption, not a
+far-field angular amplitude. The honest claim is "scattering
+response is nu-structured and geometry-dependent"; the
+diffraction-pattern claim needs an angular readout (per-channel
+outgoing distribution) we haven't built yet.
