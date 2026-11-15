@@ -2444,3 +2444,64 @@ proton-scale. The proton's exponential matter distribution is a
 COMPOSITE statement; the analog measurement here needs a
 multi-cell composite large enough to have internal structure
 (blob showed only per-cell response, no collective profile yet).
+
+## Reaction states — the substrate's particle physics (0.1 fm is the RIGHT scale)
+
+At this scale the honest object is not a macroscopic body but a
+reaction: |in> -> |out> with conservation audited per sector.
+Three reactions now measured end-to-end.
+
+### R1 — parity-conjugate contact (repulsion-limited annihilation)
+
+in: m500(bp+20) + m500(bp-20), separation 2, charge-free
+out: m316(+127) + m316(-127) repelled to separation 4 +
+     w370 conduit scars (168+168 at the origin sites)
+ledger: 1000 -> 632 mass + 370 winding — CLOSES.
+
+Physics: chirality-conjugate knots partially annihilate on
+contact (mass -> winding scar, not heat), saturate each other's
+parity to +-127, then REPEL — separation 2 -> 4 and frozen. The
+substrate's matter/antimatter analog: conjugates can't coexist at
+contact range, and the burn rate limits total conversion.
+
+### R2 — pair production (scar -> +- pair)
+
+in: conduit face-channel scar winding[d]=200 (d<6)
+out: m64(bp+127) + m64(bp-127) on the two odd cells the conduit
+     separates, each carrying a minted wound skeleton +
+     bondDist=2 provenance; products repel immediately.
+ledger: 200 -> 128 mass + 72 skeleton — EXACT.
+
+Gate: scar>=64 AND both odd neighbors empty. The scar's
+direction mints as the pair's SHARED quantization axis (the
+skeleton is written on the 4 edge-pairs containing that axis —
+an acceptance cone: probes aligned read the spin, transverse
+read nothing). Not feedable by packets — they ride edge
+channels; only annihilation/charge-burn recharges a face scar.
+
+### R3 — charge-catalyzed cascade (charge-selective chemistry)
+
+in: m500(bp+20) beside conduit charge -200
+out: m215(bp-127) + w121 + conduit charge -22
+physics: the conduit charge selectively burns OPPOSITE-parity
+matter into a face scar (rate ~4x|charge|); the scar fires R2;
+the +product re-burns beside the negative conduit while the
+-product repels clear and GROWS (162->215, accreting burn
+residue). Net: 500 units of +matter -> 215 units of -matter +
+records. A charge bath imprints its sign on surviving matter —
+charge-asymmetric production = the substrate's chiral
+separation engine.
+
+### The reaction ontology so far
+
+- parity (bondPar) = the conserved quantum number: produced in
+  +- pairs, never solo (R2), burned by conjugate contact (R1)
+- conjugates repel after partial burn — annihilation is
+  rate-limited, not instant
+- scars = stored reaction energy on conduit face channels;
+  a scar is simultaneously a bond record, an energy reservoir,
+  and a spin quantization axis
+- charge = chemical potential for handedness: it spends down
+  converting opposite-parity mass into scar+product
+- in every measured reaction the ledger closes within transient
+  drain: mass <-> winding <-> products convert, nothing mints
