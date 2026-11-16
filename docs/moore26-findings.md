@@ -3498,3 +3498,46 @@ A self-confining current structure would need either (a) cells
 bound to the conduit lattice by something OTHER than the pinch,
 or (b) a drive that survives lattice motion — the spheromak
 question stays open, now with a measured reason why it's hard.
+
+## Junction semantics, tracking electrodes, and the yield barrier
+
+(engine change + charge-circuit.mjs --mode=pwire2 / --mode=wmerge)
+
+JUNCTION SEMANTICS (engine): a committed conduit now couples
+EVERY massive odd cell touching it — the odd face-neighbor scan
+replaces the single 2-along-face partner. Straight wires are
+unchanged (verified: Ohm's law, diode, Ampère, magrange all
+byte-identical results) — but a cell that hops DIAGONAL-adjacent
+to committed structure now stays linked instead of dying.
+Circuits can heal topologically; pushes still land on the entry
+face axis.
+
+TRACKING ELECTRODES (pwire2): the +V/0 pins follow the wire's
+surviving termini each tick. The drive DOES survive end-erosion
+(ends tracked x9 -> x11 as the source cell left) — but the pinch
+also dislodges an interior cell once its neighbor leaves and
+unbalances it: mid-wire gap -> open circuit -> flux ~3. The
+drive survives topology loss at the ENDS, not in the middle.
+
+WIRE MERGE (wmerge): two free parallel wires, terminals pinned
+so current survives, interior free. At mag=8/12/16 the result is
+identical: 2 cells adjacent to the pinned ends leave early
+(asymmetric pinch at the boundary), the remaining 10 hold
+sub-threshold forever — sep frozen at 2.00 for 120 ticks.
+
+THE YIELD BARRIER — the deep result: steady magnetic force
+below a hop threshold does NOT accumulate into motion (momentum
+drains faster than it piles up — lattice rigidity / a static-
+friction analog), and force above it scatters cells off their
+lanes ballistically. There is no regime where the force does
+SUSTAINED slow work on free cells. Combined with balanced
+interior pinch, self-confinement is doubly blocked:
+  (1) interior equilibrium  -> net force only at ends/defects
+  (2) sub-threshold rigidity -> sustained slow migration absent
+What WOULD work, in order of substrate-honesty:
+  a. momentum accumulation (weaker drag / bigger reservoir)
+  b. pulsed drive (force spikes over threshold, discrete creep)
+  c. cells bound to conduits (scaffold) — or the current living
+     in the CONDUIT (even cells), not the cells, so structure
+     motion can't kill it — the deepest option: make conduction
+     a property of the committed lattice itself.

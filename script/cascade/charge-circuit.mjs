@@ -875,4 +875,118 @@ if (MODE === 'pwire') {
   process.exit(0);
 }
 
+if (MODE === 'pwire2') {
+  // TRACKING ELECTRODES — the "plasma carries its circuit" test:
+  // instead of fixed pins, the +V/0 terminals follow the wire's
+  // surviving ends each tick. When the pinch pulls an end cell
+  // off the lattice, the drive doesn't die with the first break —
+  // it re-pins on the next surviving terminus and keeps pushing
+  // current through the shrinking arc. Question: does the wire
+  // erode cell-by-cell all the way down (sequential pinch eating
+  // its own ends) or reach a stable current-carrying remnant?
+  const MK = +(argv.mag ?? 12), V = +(argv.v ?? 256), T = +(argv.ticks ?? 250);
+  const L = +(argv.l ?? 8);
+  function seedW() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    seedWire(L);
+  }
+  // wire termini = extreme-x mass cells still sitting on the
+  // committed conduit path (y=16 row): min and max x with mass
+  const termini = () => {
+    let lo = -1, hi = -1;
+    for (let x = 0; x < 32; x++)
+      if (q._moore26_mass_get(x, 16, 16) > 10) { if (lo < 0) lo = x; hi = x; }
+    return { lo, hi };
+  };
+  console.log(`\n=== pwire2: free wire + tracking electrodes, V=${V} mag=${MK} ===`);
+  for (const mk of [MK, 0]) {
+    seedW();
+    q._moore26_mag_kick_set(mk);
+    console.log(`  -- magKick=${mk}:`);
+    for (let t = 0; t <= T; t++) {
+      if (t % 25 === 0 || t === T) {
+        const e = termini();
+        const live = e.lo >= 0 ? q._moore26_flux_get((e.lo + e.hi) >> 1 | 1, ...YZ, 0) : 0;
+        console.log(`    t=${String(t).padStart(3)}  ends=x${e.lo}..x${e.hi}` +
+          `  span=${e.hi - e.lo}  mid.flux_x=${Math.round(live / 10)}`);
+      }
+      if (t < T) {
+        q._moore26_tick();
+        const e = termini();
+        if (e.lo >= 0 && e.hi > e.lo) {
+          q._moore26_charge_set(e.lo, ...YZ, V);   // electrode tracks
+          q._moore26_charge_set(e.hi, ...YZ, 0);   // the moving ends
+        }
+      }
+    }
+  }
+  process.exit(0);
+}
+
+if (MODE === 'wmerge') {
+  // WIRE MERGE — two free parallel wires carrying current attract
+  // (the Ampere term is much bigger than self-pinch). y-wires at
+  // y=16/y=18 with coupling links at (x,17), both driven +x.
+  // Plasma filaments merge this way; do ours? Track the mean
+  // y-separation of the two wires' mass centroids vs time.
+  // Cases: same-direction current (attract), opposite (repel),
+  // mag=0 (dead). The catch recorded in findings: cells hopping
+  // off their lanes break their links — capture may kill the
+  // current, leaving a statically-bound clump.
+  const MK = +(argv.mag ?? 8), V = +(argv.v ?? 512), T = +(argv.ticks ?? 120);
+  const wA = [], wB = [], links = [];
+  for (let i = 0; i <= 6; i++) { wA.push([9 + 2 * i, 16]); wB.push([9 + 2 * i, 18]); }
+  for (let x = 11; x <= 19; x += 2) links.push([x, 17]);
+  function seedMerge() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    for (const [x, y] of wA.concat(wB)) q._moore26_mass_set(x, y, 16, MASS);
+    for (let i = 0; i < 6; i++) { wound(10 + 2 * i, 16, 16); wound(10 + 2 * i, 18, 16); }
+    for (const [x, y] of links) wound(x, y, 16);
+  }
+  const centroidY = (y0, y1) => {
+    let ys = 0, n = 0;
+    for (let x = 0; x < 32; x++)
+      for (let y = y0; y <= y1; y++)
+        if (q._moore26_mass_get(x, y, 16) > 10) { ys += y; n++; }
+    return n ? ys / n : NaN;
+  };
+  // drive ends + pin the TERMINAL cells (mass+momentum) so the
+  // current survives end-erosion; interior cells x=11..19 stay
+  // FREE — they're what the attraction gets to move
+  const TERM = [[9, 16], [21, 16], [9, 18], [21, 18]];
+  const drive = (par) => {
+    q._moore26_charge_set(9, 16, 16, V);
+    q._moore26_charge_set(21, 16, 16, 0);
+    q._moore26_charge_set(9, 18, 16, par ? V : 0);
+    q._moore26_charge_set(21, 18, 16, par ? 0 : V);
+    for (const [x, y] of TERM) {
+      q._moore26_mass_set(x, y, 16, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
+    }
+  };
+  function runMerge(par, label, mk = MK) {
+    seedMerge();
+    q._moore26_mag_kick_set(mk);
+    console.log(`  -- ${label}:`);
+    for (let t = 0; t <= T; t++) {
+      if (t % 15 === 0) {
+        const ca = centroidY(14, 16), cb = centroidY(17, 19);
+        let n = 0;
+        for (let x = 0; x < 32; x++) for (let y = 13; y <= 21; y++)
+          if (q._moore26_mass_get(x, y, 16) > 10) n++;
+        console.log(`    t=${String(t).padStart(3)}  cA_y=${ca.toFixed(2)} cB_y=${cb.toFixed(2)}` +
+          `  sep=${(cb - ca).toFixed(2)}  cells=${n}`);
+      }
+      if (t < T) { q._moore26_tick(); drive(par); }
+    }
+  }
+  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} ===`);
+  runMerge(1, 'parallel currents   (expect ATTRACT -> sep shrinks)');
+  runMerge(0, 'antiparallel currents (expect REPEL -> sep grows)');
+  runMerge(1, 'mag=0 control        (expect static)', 0);
+  process.exit(0);
+}
+
 console.log('unknown mode ' + MODE);

@@ -1228,12 +1228,28 @@ void moore26_tick(void){
                                       ?en->winding[2*e2]:en->winding[2*e2+1];
                             if(mm>mn)mn=mm;}
                         if(mn>=qCommitMin){
-                            int px=x+2*((d==0)-(d==1)),
-                                py=y+2*((d==2)-(d==3)),
-                                pz=z+2*((d==4)-(d==5));
+                            int ex=x+((d==0)-(d==1)),
+                                ey=y+((d==2)-(d==3)),
+                                ez=z+((d==4)-(d==5));
                             int fired=0,mfired=0;
-                            if(px>=0&&px<QWidth&&py>=0&&py<QHeight&&pz>=0&&pz<QDepth){
+                            /* JUNCTION — a committed conduit couples
+                             * EVERY massive odd cell touching it, not
+                             * only the partner 2-along-face. Straight
+                             * wires see the same single partner (the
+                             * other odd neighbors are empty); a cell
+                             * that hops diagonal-adjacent to committed
+                             * structure STAYS LINKED — the circuit
+                             * heals instead of dying at the first
+                             * dislocation. Pushes still land on the
+                             * entry face d's axis (the wire pushes at
+                             * its endpoint). */
+                            for(int pf=0;pf<6;pf++){
+                                int px=ex+((pf==0)-(pf==1)),
+                                    py=ey+((pf==2)-(pf==3)),
+                                    pz=ez+((pf==4)-(pf==5));
+                                if(px<0||px>=QWidth||py<0||py>=QHeight||pz<0||pz>=QDepth)continue;
                                 int pi=(pz*QHeight+py)*QWidth+px;
+                                if(pi==si)continue;
                                 if(grid_current[pi].mass){
                                     if(qBondShare)
                                     for(int m=0;m<QChannels/2;m++){
