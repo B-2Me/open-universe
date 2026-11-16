@@ -424,11 +424,15 @@ alignment scheme changes again.
   face-touch and transit-wake — both RECORD-ONLY (4*s*sign into
   conduit fluxV). Debiting carrier momentum at either jams charge
   into fewer cells (flux 48-74, flux^2 erosion feedback): yield is
-  binary — a sub-threshold toll can only jam, never brake. Record-
-  only is conserving and clean (ghost+wall still holds 8), but the
-  stall never bites at this scale (~5 escaper transits spread over
-  ~80 wall faces; first crossing always free since the deposit
-  lands post-relay). fsheath --wall=N --stall=M.
+  binary — a sub-threshold toll can only jam, never brake. STALL
+  uses FUSE semantics: in-flight dep counts toward its own test
+  and denied attempts still deposit (ratchet). MEASURED WIN:
+  --wall=1 --stall=8 holds 8 contiguous cells incl. the x9
+  drive-end terminal the ghost bottle always loses — no vessel,
+  no field needed; flux identical to baseline (no jam). CAVEAT:
+  unpaid strain records share fluxV with the paid react reservoir
+  — wall+react together can mint momentum via the press.
+  fsheath --wall=N --stall=M.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

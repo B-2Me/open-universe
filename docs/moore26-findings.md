@@ -3793,3 +3793,31 @@ WALL-PRESSURE / STRAIN-STALL (fsheath --wall --stall):
   deposits land on WIRE conduits along the force axis, so the press
   feeds longitudinal jitter = extra dislodging kicks, never transverse
   wall pressure. Erosion cannot fund walls under force-pair deposits.
+
+FUSE-ORDERING FIX (stall gate ordering revisited):
+  Original order was a BREACH COUNTER: stall check read CURRENT
+  strain, hop executed, deposit wrote NEXT — the deposit could not
+  inform its own relay decision (first crossing always free), and a
+  denied attempt deposited nothing (wall learned only from breaches,
+  never from resistance; sustained pressure was invisible).
+  Fuse semantics now: stall tests ws + in_flight dep >= threshold,
+  and a DENIED attempt still writes its strain (the pressure was
+  real even though the relay wasn't). Attack funds defense;
+  resistance ratchets the wall harder each retry.
+  MEASURED (fsheath --wall=1 --stall=8, 200t): escaper impulse
+  dep=4*(|pd|>>1) ~= 8-12, so stall=8 catches the first attempt on a
+  virgin wall. bare+wall+stall AND no-vessel+wall+stall both hold 8
+  CONTIGUOUS cells at x9..x25 — INCLUDING the drive-end terminal the
+  authored ghost bottle always loses (ghost: 8 at x11..x25). ev27
+  ~40-47k = denied attempts re-pressing and ratcheting each tick.
+  Flux decays identical to baseline — no charge-jam; mass held while
+  current flows = confinement, not freezing. First self-organizing
+  confinement that matches and locally exceeds the authored bottle,
+  needing no field, no poling, no vessel geometry — the wall is
+  emergent in the lane itself.
+  CONSERVATION CAVEAT: stall/ratchet deposits are UNPAID records in
+  fluxV — the same register qFieldReact's press treats as spendable
+  momentum. With wall+react enabled together the press could spend
+  unpaid strain = minting. Either wall strain needs its own
+  register, or the press must distinguish paid counter-impulse from
+  wake-records. Unresolved by design — flagged, not hidden.

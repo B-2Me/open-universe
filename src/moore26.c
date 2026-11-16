@@ -2077,13 +2077,41 @@ void moore26_tick(void){
                       * |fluxV| strain resists transit: pressure on the
                       * wall IS occupancy — a hardened lane blocks the
                       * hop like a loaded one. Walls that harden under
-                      * attack. */
+                      * attack. FUSE semantics: the in-flight impulse
+                      * counts toward its own test (a hit that loads
+                      * the wall past threshold is resisted, not given
+                      * a free first crossing), and a DENIED attempt
+                      * still writes its strain — the pressure was real
+                      * even though the relay wasn't. Attack funds
+                      * defense: resistance ratchets the wall. */
                      if(qWallStall){
                          int ws=0;
                          for(int a=0;a<3;a++){
                              int32_t v2=grid_current[ci0].fluxV[a];
                              ws+=v2<0?-v2:v2;}
-                         if(ws>=qWallStall)continue;
+                         int dep=0,axs=-1;
+                         if(qWallPress){
+                             int32_t pd=o->momentum[be];
+                             int s=(pd<0?-pd:pd)>>qWallPress;
+                             if(s){
+                                 int ax=0;
+                                 for(int a=1;a<3;a++)
+                                     if(v[a]*v[a]>v[ax]*v[ax])ax=a;
+                                 if(v[ax]){dep=4*s;axs=ax;}
+                             }
+                         }
+                         if(ws+dep>=qWallStall){
+                             if(axs>=0){
+                                 int vs2=v[axs]>0?1:-1;
+                                 int32_t rv=grid_next[ci0].fluxV[axs]
+                                           +dep*vs2;
+                                 grid_next[ci0].fluxV[axs]=(int16_t)
+                                     (rv>32767?32767
+                                      :rv<-32768?-32768:rv);
+                                 qEvents[27]+=(uint64_t)dep;
+                             }
+                             continue;
+                         }
                      }
                  }}
                 /* INVERTED — relocation is a complete handoff: the

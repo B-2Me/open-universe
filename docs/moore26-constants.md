@@ -259,7 +259,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | launch shortfall (drive-reservoir starvation) | **vacuous** — p-driven launch self-funds (k<p always); winding-driven path unreachable under current gates |
 | Casimir-like effect | **null x2** — inert vacuum (unseeded); seeded bath shows no gap depletion in shadowing OR long-lambda regimes (d=4-12, <=0.5% vs noise) — mechanism diagnosed: volumetric sources + radiative equilibrium + ballistic packets = no boundary-shaped spectrum |
 
-| wall strain-stall self-hardening | **null at this scale** — record-only deposits correct/conserving (no charge-jam, flux identical to baseline) but stall=16 never bites: ~5 escaper transits across ~80 conduit faces can't charge any wall to threshold before the wire stabilizes at 7 cells |
+| wall strain-stall (breach-counter order) | **null at this scale** — record-only deposits correct/conserving (no charge-jam, flux identical to baseline) but stall=16 never bites: ~5 escaper transits across ~80 conduit faces can't charge any wall to threshold before the wire stabilizes at 7 cells |
+| wall strain-stall (fuse order: in-flight dep counts, denial ratchets) | **8 contiguous cells incl. drive-end x9 terminal, 200t** — beats ghost bottle (8 at x11, loses terminal); needs no vessel/field; flux identical to baseline; stall=8 catches single escaper dep~8-12 |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
