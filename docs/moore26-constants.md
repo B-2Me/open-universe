@@ -135,6 +135,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | induction EMF | k=Δflux≫ind exactly: 8/tick during 64/tick ramp, silent at DC, +320 spike at release (Lenz-signed) | `qMagInd`=3, fluxP register | charge-circuit --mode=faraday |
 | junction pinch | self-attraction of a driven link: reversal-invariant, log-log slope **2.00** = I² (Bennett relation) | `qMagKick`=6, single A–B link | charge-circuit --mode=pinch --shift=1 |
 | conducted wave | disturbance propagates ~1 hop/tick; `ind=2` under-damped ringing, `ind=1` saturated period-2 limit cycle, `ind=3` dies in 2 hops | 9-cell induction chain, carrier +200 | charge-circuit --mode=wave --ind=2 |
+| transformer loading | funded EMF sags primary flux −8.4% (1695→1552); induced charge feedback −10% — reflected impedance | `qIndLoad`=1, ramping primary | charge-circuit --mode=tload |
+| ring pinch | −0.6/cell/tick inward radial bias (pinned); free ring opens at a corner → stable arc | 32-cell ring, sustained pump | charge-circuit --mode=pring |
+| wire pinch confinement | fails: interior pinch cancels, ends erode — column necks at ends (sausage-instability analog), self-limits | free 9-cell wire | charge-circuit --mode=pwire --shift=1 |
 
 ## Confinement & reaction constants
 

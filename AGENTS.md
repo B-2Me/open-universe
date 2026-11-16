@@ -374,7 +374,12 @@ alignment scheme changes again.
   period-2 limit cycle at the int16 rails. Carriers required —
   transmission-line wave, NOT vacuum light. Pinch: driven
   links self-attract reversal-invariantly, slope exactly 2.00
-  (Bennett I^2). `--mode=pinch|wave|faraday|magrange`.
+  (Bennett I^2). `qIndLoad` debits partner flux by dir*k —
+  funded EMF, primary sags −8.4% (reflected impedance,
+  --mode=tload). Pinch confinement FAILS honestly: interior
+  cells in balanced equilibrium, ends neck off — the
+  sausage-instability analog (--mode=pring|pwire).
+  `--mode=pinch|wave|faraday|magrange|tload|pring|pwire`.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

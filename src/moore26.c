@@ -399,6 +399,12 @@ static int qMagInd=0;      /* 0=off. Nonzero = right-shift INDUCTION:
  * Lenz-signed side — the induced current opposes the change.
  * Conserving (self debited, neighbor credited); EMF work is
  * authored like qTension. ev24 = induced charge moved. */
+static int qIndLoad=0;     /* 0=free EMF (authored work). Nonzero =
+ * FUNDED induction: the partner's flux is debited by the same
+ * dir*k the receivers gain — the reflected-impedance term, so
+ * the primary pays for the secondary's induced current. The
+ * limit cycle and the wave then draw on a real current, not
+ * an authored one — measurable as primary flux sag. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1440,7 +1446,18 @@ void moore26_tick(void){
                                                      (f>32767?32767:f<-32768?-32768:f);
                                                  f=grid_next[qi].flux[a3]+dir*k;
                                                  grid_next[qi].flux[a3]=(int16_t)
-                                                     (f>32767?32767:f<-32768?-32768:f);}
+                                                     (f>32767?32767:f<-32768?-32768:f);
+                                                 /* FUNDING (qIndLoad): the
+                                                  * primary pays — its flux
+                                                  * is debited by the same
+                                                  * signed amount, the
+                                                  * reflected-impedance term
+                                                  * a real transformer shows */
+                                                 if(qIndLoad){
+                                                     f=grid_next[pi].flux[a3]+dir*k;
+                                                     grid_next[pi].flux[a3]=(int16_t)
+                                                         (f>32767?32767:f<-32768?-32768:f);}
+                                                 }
                                                 qEvents[24]+=(uint64_t)k;
                                             }
                                         }
@@ -3897,6 +3914,7 @@ void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
 void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
 void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
 void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
+void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){
     if(!grid_current||a<0||a>2)return 0;

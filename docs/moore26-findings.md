@@ -3456,3 +3456,45 @@ EMF that acts on the conduit without a carrier to push, which
 no current mechanism provides. Also authored-work caveat: the
 induced EMF transfers charge but spends nothing — the energy
 book for EM work is still open (same status as qTension).
+
+## Funded induction, and what the pinch does to a free lattice
+
+(charge-circuit.mjs --mode=tload / --mode=pring / --mode=pwire)
+
+FUNDED INDUCTION (qIndLoad): the induced EMF now debits the
+partner's flux by the same dir*k the receivers gain — reflected
+impedance, the primary pays. Transformer fixture (primary V
+ramps 16/tick, secondary B-C coupled):
+  ind=0           : P.flux ramps, ev24=0 — no coupling
+  ind=2 free      : P.flux 1695, ev24=858
+  ind=2 funded    : P.flux 1552 (-8.4% sag), ev24=769 (-10% —
+                    the sag itself damps the EMF: real feedback)
+The load term is MEASURED as primary flux sag — a transformer's
+reflected impedance, closing the authored-work caveat for the
+EMF specifically.
+
+RING PINCH (32-cell square ring, diode-flanked pump, sustained):
+  pinned radial impulse: -0.6/cell/tick INWARD under drive+pinch;
+  0.0 in all controls (no current / no magKick / neither).
+  Free lattice: one corner cell dislodged by t=25, ring OPENED,
+  circulation died, stable arc at meanR 9.83 (vs 9.21 seeded).
+  Drive-only control: ring intact, flux climbs steadily.
+
+WIRE PINCH (free 9-cell wire, driven):
+  mag=10, V=1024: pinch impulse ~6000/tick >> lattice hold —
+      wire destroyed in <25 ticks (cells scattered).
+  mag=16, V=128 : end-erosion — source-end cell pulled inward
+      and off, span 16->14, then the open end severed the drive;
+      residual arc stable with flux ~3.
+  mag=0         : wire stable, flux -> 500 steady conduction.
+
+THE PHYSICS READ — this is the sausage-instability result, not a
+fixture failure: interior cells sit in balanced pinch (each link
+pulls equally both ways, net ~0), so net force lives ONLY at the
+ends/defects — the column necks off exactly where a real
+Z-pinch does. The pinch constricts but self-limits: erosion
+opens the circuit, which kills the current driving the pinch.
+A self-confining current structure would need either (a) cells
+bound to the conduit lattice by something OTHER than the pinch,
+or (b) a drive that survives lattice motion — the spheromak
+question stays open, now with a measured reason why it's hard.

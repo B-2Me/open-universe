@@ -686,4 +686,193 @@ if (MODE === 'wave') {
   process.exit(0);
 }
 
+if (MODE === 'pring') {
+  // RING PINCH — the spheromak question: does a driven current ring
+  // constrict or hold? 16x16 square ring (32 cells) with a
+  // diode-flanked heat pump driving circulation (heat repinned =
+  // sustained battery). qMagKick pinches every current-carrying
+  // link: same-side links compress (parallel flux), corner links
+  // see opposite-side flux (antiparallel -> repel).
+  //   pinned phase: net radial impulse/cell/tick (inward = pinch)
+  //   free phase  : mean radius of the ring's mass vs time —
+  //                 constrict, hold, or disassemble?
+  const MK = +(argv.mag ?? 10), RATE = +(argv.rate ?? 8);
+  const HP = +(argv.heat ?? 10000), T = +(argv.ticks ?? 150);
+  const QC = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1],
+    [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],
+    [0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1]];
+  const RING = [], LINK = [];
+  for (let x = 9; x <= 25; x += 2) { RING.push([x, 8]); RING.push([x, 24]); }
+  for (let y = 10; y <= 22; y += 2) { RING.push([9, y]); RING.push([25, y]); }
+  for (let x = 10; x <= 24; x += 2) { LINK.push([x, 8]); LINK.push([x, 24]); }
+  for (let y = 11; y <= 23; y += 2) { LINK.push([9, y]); LINK.push([25, y]); }
+  const PUMP = [11, 8], CTR = [17, 16];
+  function seedRing(mk, drive) {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(mk);
+    q._moore26_heat_pump_set(RATE);
+    q._moore26_diode_set(1);
+    for (const [x, y] of RING) q._moore26_mass_set(x, y, 16, MASS);
+    for (const [x, y] of LINK) wound(x, y, 16);
+    if (drive) {
+      q._moore26_bondpar_set(...PUMP, 16, +1);
+      q._moore26_bondpar_set(10, 8, 16, +1);
+      q._moore26_bondpar_set(12, 8, 16, +1);
+    }
+  }
+  const force3 = (x, y) => {
+    const F = [0, 0, 0];
+    for (let e = 3; e <= 8; e++) {
+      const p = q._moore26_momentum_at_get(x, y, 16, e);
+      for (let a = 0; a < 3; a++) F[a] += p * QC[2 * e][a];
+    }
+    return F;
+  };
+  // PINNED: radial impulse per ring cell per tick
+  function radialImpulse(mk, drive) {
+    seedRing(mk, drive);
+    let fr = 0;
+    for (let t = 0; t < 40; t++) {
+      q._moore26_tick();
+      if (t >= 20)
+        for (const [x, y] of RING) {
+          const F = force3(x, y);
+          const rx = x - CTR[0], ry = y - CTR[1], r = Math.hypot(rx, ry) || 1;
+          fr += (F[0] * rx + F[1] * ry) / r;
+        }
+      q._moore26_heat_set(...PUMP, 16, drive ? HP : 0);
+      for (const [x, y] of RING)
+        for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
+    }
+    return fr / (20 * RING.length);
+  }
+  console.log(`\n=== pring: 32-cell ring, pump rate=${RATE} mag=${MK} ===`);
+  const fDD = radialImpulse(MK, true), fDN = radialImpulse(MK, false);
+  const fND = radialImpulse(0, true),  fNN = radialImpulse(0, false);
+  console.log(`  radial impulse/cell/tick (negative = INWARD = pinch):`);
+  console.log(`    drive+pinch : ${fDD.toFixed(1)}`);
+  console.log(`    pinch, dead : ${fDN.toFixed(1)}   (no current -> no pinch)`);
+  console.log(`    drive, no mk: ${fND.toFixed(1)}   (conduction without mag force)`);
+  console.log(`    neither     : ${fNN.toFixed(1)}   (baseline)`);
+  // FREE: ring radius trajectory, drive+pinch vs drive-only
+  function freeRing(mk, drive, label) {
+    seedRing(mk, drive);
+    console.log(`  ${label}:`);
+    for (let t = 0; t <= T; t++) {
+      if (t % 25 === 0) {
+        let n = 0, rs = 0;
+        for (let z = 0; z < 32; z++) for (let y = 0; y < 32; y++)
+          for (let x = 0; x < 32; x++) {
+            const m = q._moore26_mass_get(x, y, z);
+            if (m > 10) { n++; rs += Math.hypot(x - CTR[0], y - CTR[1]); }
+          }
+        const fl = RING.slice(0, 8).map(([x, y]) => Math.round(q._moore26_flux_get(x, y, 16, 0) / 10));
+        console.log(`    t=${String(t).padStart(3)}  cells=${n}  meanR=${(rs / (n || 1)).toFixed(2)}` +
+          `  bot.flux_x=[${fl.join(',')}]`);
+      }
+      q._moore26_heat_set(...PUMP, 16, drive ? HP : 0);
+      q._moore26_tick();
+    }
+  }
+  freeRing(MK, true, 'free drive+pinch');
+  freeRing(0,  true, 'free drive only ');
+  process.exit(0);
+}
+
+if (MODE === 'tload') {
+  // TRANSFORMER LOADING — does the funded EMF make the primary pay?
+  // Primary wire A-P-A' along x, terminals pinned with V RAMPING
+  // (sustained dI/dt). Secondary B y-linked to P with charge and a
+  // committed conduit to C. Conditions:
+  //   ind=0      : no induction at all
+  //   ind=2 load=0: free EMF (authored work)
+  //   ind=2 load=1: funded — P.flux should SAG vs the free run
+  const MI = +(argv.ind ?? 2), R = +(argv.ramp ?? 16), VMAX = +(argv.vmax ?? 2048);
+  const T = +(argv.ticks ?? 90);
+  const A = [9, 16], P = [11, 16], AP = [13, 16];
+  const B = [11, 18], C = [9, 18];
+  function seedT() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_ind_set(MI);
+    wound(10, 16, 16); wound(12, 16, 16);   // A-P, P-A' primary conduits
+    wound(11, 17, 16);                      // P-B coupling
+    wound(10, 18, 16);                      // B-C conduit
+    for (const c of [A, P, AP, B, C]) q._moore26_mass_set(...c, 16, MASS);
+    q._moore26_charge_set(...B, 16, 400);
+  }
+  function runT(ind, load) {
+    seedT();
+    q._moore26_mag_ind_set(ind);
+    q._moore26_ind_load_set(load);
+    const out = [];
+    for (let t = 0; t <= T; t++) {
+      const V = Math.min(VMAX, t * R);
+      q._moore26_tick();
+      q._moore26_charge_set(...A, 16, V);
+      q._moore26_charge_set(...AP, 16, 0);
+      if (t % 10 === 0)
+        out.push(`    t=${String(t).padStart(3)} V=${String(V).padStart(4)}` +
+          `  P.flux=${String(q._moore26_flux_get(...P, 16, 0)).padStart(6)}` +
+          `  B.flux=${String(q._moore26_flux_get(...B, 16, 0)).padStart(6)}` +
+          `  B.q=${String(q._moore26_charge_get(...B, 16)).padStart(5)}` +
+          `  C.q=${String(q._moore26_charge_get(...C, 16)).padStart(5)}` +
+          `  ev24=${Number(q._moore26_events(24))}`);
+    }
+    return out;
+  }
+  console.log(`\n=== tload: primary V ramps ${R}/tick->${VMAX}, ` +
+    `secondary B-C, ind=${MI} ===`);
+  console.log('  -- ind=0 (no coupling):');
+  runT(0, 0).forEach(r => console.log(r));
+  console.log(`  -- ind=${MI}, FREE EMF:`);
+  runT(MI, 0).forEach(r => console.log(r));
+  console.log(`  -- ind=${MI}, FUNDED (primary pays):`);
+  runT(MI, 1).forEach(r => console.log(r));
+  console.log('  expect: P.flux sags in the funded run while B/C still get current');
+  process.exit(0);
+}
+
+if (MODE === 'pwire') {
+  // WIRE PINCH (sausage analog): a straight current-carrying wire
+  // of FREE cells. Interior cells feel balanced link pinch; END
+  // cells feel only inward pull -> the wire should contract toward
+  // its center. Measure wire extent (mass xmin..xmax) vs time,
+  // pinch on vs off. Terminals pinned +V/0 drive the current.
+  const MK = +(argv.mag ?? 10), V = +(argv.v ?? 1024), T = +(argv.ticks ?? 200);
+  const L = +(argv.l ?? 8);
+  function seedW() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    seedWire(L);
+    q._moore26_charge_set(9, ...YZ, V);
+    q._moore26_charge_set(9 + 2 * L, ...YZ, 0);
+  }
+  const extent = () => {
+    let lo = 99, hi = 0, n = 0;
+    for (let x = 0; x < 32; x++)
+      if (q._moore26_mass_get(x, 16, 16) > 10) { n++; if (x < lo) lo = x; if (x > hi) hi = x; }
+    return { lo, hi, n };
+  };
+  console.log(`\n=== pwire: ${L + 1}-cell free wire, V=${V} mag=${MK} shift=${SHIFT} ===`);
+  for (const mk of [MK, 0]) {
+    seedW();
+    q._moore26_mag_kick_set(mk);
+    console.log(`  -- magKick=${mk}:`);
+    for (let t = 0; t <= T; t++) {
+      if (t % 25 === 0) {
+        const e = extent();
+        const fl = [9, 13, 17, 21].map(x => Math.round(q._moore26_flux_get(x, ...YZ, 0) / 10));
+        console.log(`    t=${String(t).padStart(3)}  cells=${e.n}  extent=x${e.lo}..x${e.hi}` +
+          `  span=${e.hi - e.lo}  flux=[${fl.join(',')}]`);
+      }
+      if (t < T) {
+        q._moore26_tick();
+        q._moore26_charge_set(9, ...YZ, V);
+        q._moore26_charge_set(9 + 2 * L, ...YZ, 0);
+      }
+    }
+  }
+  process.exit(0);
+}
+
 console.log('unknown mode ' + MODE);
