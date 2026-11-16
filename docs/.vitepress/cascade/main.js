@@ -1239,7 +1239,10 @@ export async function initCascadeSimulator(root, opts = {}) {
      * convergent feed IS the vacuum scenario. */
     ui.scenario = e.target.value;
     ui.drive = false;   /* every scenario starts quiet — ☀ opts in */
-    ui.beam = false; ui.lumpArm = false; ui.tubeArm = false; ui.ringArm = false; ui.thrustArm = false;
+    ui.beam = false;
+    /* armed-tool flags go through the setters — raw ui.*Arm=false
+     * left the button 'armed' class + tool cursor stale */
+    setLumpArm(false); setTubeArm(false); setRingArm(false); setThrustArm(false);
     ui.pump = false; ui.pumpAt = null; ui.chargeSites = null; ui.pumpRate = 0;   // scenario dispatch re-arms
     const tSync = (sel, on) => { const b = root.querySelector(sel); if (b) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } };
     const s = ui.scenario;
@@ -1285,9 +1288,9 @@ export async function initCascadeSimulator(root, opts = {}) {
     if (ringBtn) { ringBtn.classList.toggle('armed', on); ringBtn.setAttribute('aria-pressed', String(on)); }
     say(on ? 'ring tool armed — tap to paint a waveguide loop + stream · ◦ to cancel' : '', 0);
   };
-  bind('[data-lump]', 'click', () => { setTubeArm(false); setRingArm(false); setLumpArm(!ui.lumpArm); });
-  bind('[data-tube]', 'click', () => { setLumpArm(false); setRingArm(false); setTubeArm(!ui.tubeArm); });
-  bind('[data-ringt]', 'click', () => { setLumpArm(false); setTubeArm(false); setRingArm(!ui.ringArm); });
+  bind('[data-lump]', 'click', () => { setTubeArm(false); setRingArm(false); setThrustArm(false); setLumpArm(!ui.lumpArm); });
+  bind('[data-tube]', 'click', () => { setLumpArm(false); setRingArm(false); setThrustArm(false); setTubeArm(!ui.tubeArm); });
+  bind('[data-ringt]', 'click', () => { setLumpArm(false); setTubeArm(false); setThrustArm(false); setRingArm(!ui.ringArm); });
   bind('[data-spin]', 'click', e => {
     ui.turntable = !ui.turntable;
     e.currentTarget.setAttribute('aria-pressed', String(ui.turntable));
