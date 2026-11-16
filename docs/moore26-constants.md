@@ -146,6 +146,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | conduit vessel | anti-sheath + aligned-caps: 8 contiguous cells stable 200t vs 7 gapped baseline; inverted polarity → 6 cells (signature); holds at B=512/1024 | full cage: 4 transverse evens/cell + end caps | charge-circuit --mode=fsheath --shift=1 |
 | self-poled vessel | runaway — write rule poles aligned (wrong sign); erosion writes −Δ → death spiral; even-flux decay >>6 halves growth, doubles survival | `qVacPol` + resistive loss | charge-circuit --mode=fsheath --vacpol=6 |
 | strain reservoir | press delivered (ev27); symmetric internal kicks deposit canceling strain → zero net reservoir (wmerge); pinch erosion = rare threshold kicks (ev21≈8) below press floor | `qFieldReact` | wmerge --react / fsheath |
+| tail-work | react=4: fluxV→−408 fill, net force 78→33, ev27 +396 after field death, drains to −12 floor; react=1: fluxV≡0, ev27=ev26 exactly (perfect elastic reflector) | rfill, B=400 40t hold | charge-circuit --mode=rfill |
+| react conservation fix | uncapped shift<2 minted momentum (4t>|v| → ±312 limit cycle); debit now capped 4t≤|v| | rfill | — |
+| proportional poling | field ∝ live current: −4→sheath −117 benign (7 cells=baseline); −2→−34/site spread (6); Δ-write both signs runaway | `qPolProp` | fsheath --polprop |
+| self-confinement gap | working vessel needs ~500 field/site vs self-write cap ~live current (~50-100): ~10× amplification needed | fsheath | — |
 
 ## Confinement & reaction constants
 

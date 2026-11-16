@@ -3718,3 +3718,51 @@ from the conduit — elastic strain that spends what it stores.
   triply characterized: per-tick threshold, no sub-threshold
   accumulation channel, and symmetric internal forces can't
   self-fund a reservoir.
+
+## Strain reservoir tail-work + the three poling write rules
+
+(engine + charge-circuit.mjs --mode=rfill / fsheath --polprop)
+
+TAIL-WORK VERIFIED (rfill): cell A + poled conduit E, field B=400
+held 40t then killed, probe electrode seated on E's far side.
+  react=4: fluxV fills to -408 (asymmetric — field-force kicks
+  deposit one-sided counter-impulse, no partner to cancel);
+  back-reaction drops net force 78->33/tick. After field death
+  the stored strain keeps pressing: ev27 +396 tail, probe takes
+  -48 net momentum, reservoir drains to the -12 floor. The medium
+  spends stored strain on matter with no live field — delayed
+  work, measured.
+  react=1: fluxV stays EXACTLY 0 and ev27=ev26 (12792=12792) —
+  the tight-coupling limit is a perfectly elastic medium
+  returning the full counter-impulse same-tick. Newton's third
+  law as a rigid wall.
+  CONSERVATION FIX: uncapped shift<2 drained 4t>|v| per tick —
+  sign-flipped the reservoir and minted momentum in a ±312
+  limit cycle (ev27 +49920 with a dead field). Debit now capped
+  4t<=|v|; react>=2 was always safe.
+  ALSO: strain strands when no visitor remains (v frozen with
+  no touching mass — stored, not lost; physically correct).
+
+THIRD LAW DEPOSIT NOTE: the earlier "no fluxV" diagnostic read
+conduit flux[], not fluxV[] — deposits were always landing;
+fluxv_get/set exports added for direct reads.
+
+THE THREE WRITE RULES (self-poling, fsheath):
+  qVacPol=+6 (paramagnetic Δ-write): sheath -414, runaway —
+  erosion -Δ spikes dominate; wire dies (1 cell @200t).
+  qVacPol=-6 (diamagnetic Δ-write, NEW): sheath -407 — the
+  write flips sign correctly but the outcome doesn't: the
+  Δ-store is HISTORY-driven (ramp + death spikes), not
+  field-proportional-to-I. Both signs end anti-400 via
+  different routes; both destroy the wire.
+  qPolProp (NEW, field ~ ±I_live relaxation): the write that
+  was missing. -4 writes the anti-sheath correctly (-117,
+  no runaway, 7 cells = baseline, benign). -2 spreads the
+  field over the vessel via the wave pass (-34/site, 6 cells).
+  SCALING OBSTRUCTION, now quantitative: self-written field
+  caps at ~live current (~50-100/site); the ghost vessel's
+  working confinement needs ~500/site = ~10x current. A wire
+  cannot amplify its own field — self-confinement by this
+  route needs either gain (strain accumulation over time,
+  i.e. the fluxV reservoir as the field's integrator) or a
+  geometry that concentrates the write.

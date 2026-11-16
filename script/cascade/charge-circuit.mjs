@@ -1057,7 +1057,7 @@ if (MODE === 'fsheath') {
   // the walls and the walls press back — self-hardening vessel.
   const MK = +(argv.mag ?? 16), V = +(argv.v ?? 128), T = +(argv.ticks ?? 200);
   const L = +(argv.l ?? 8), B = +(argv.field ?? 512), VP = +(argv.vacpol ?? 3);
-  const RX = +(argv.react ?? 0);
+  const RX = +(argv.react ?? 0), NOCAPS = +(argv.nocaps ?? 0);
   const SH = [];                              // sheath evens (±y,±z per cell)
   for (let i = 0; i <= L; i++) {
     const x = 9 + 2 * i;
@@ -1068,7 +1068,7 @@ if (MODE === 'fsheath') {
     reset(SHIFT, HEAT);
     seedWire(L);
     if (sheath) { for (const [x, y, z] of SH) wound(x, y, z);
-                  for (const [x, y, z] of CAPS) wound(x, y, z); }
+                  if (!NOCAPS) for (const [x, y, z] of CAPS) wound(x, y, z); }
   }
   const extent = () => {
     let lo = 99, hi = 0, n = 0;
@@ -1082,11 +1082,12 @@ if (MODE === 'fsheath') {
       if (q._moore26_mass_get(x, y, 16) > 10) n++;
     return n;
   };
-  function runS(mk, vp, rx, pole, sheath, label) {
+  function runS(mk, vp, rx, pole, sheath, label, pp) {
     seedS(sheath);
     q._moore26_mag_kick_set(mk);
     q._moore26_vac_pol_set(vp);
     q._moore26_field_react_set(rx);
+    q._moore26_pol_prop_set(pp ?? 0);
     console.log(`  -- ${label}:`);
     const e25 = Number(q._moore26_events(25)), e27 = Number(q._moore26_events(27));
     for (let t = 0; t <= T; t++) {
@@ -1111,6 +1112,12 @@ if (MODE === 'fsheath') {
   }
   console.log(`\n=== fsheath: wire + conduit vessel, V=${V} mag=${MK} B=${B} ===`);
   runS(MK, VP, 0, 0, 1, `self-poled vessel (vacpol=${VP}, resistive)`);
+  runS(MK, -Math.abs(VP), 0, 0, 1, `self-poled DIAMAGNETIC (vacpol=${-Math.abs(VP)}: sheath writes anti)${NOCAPS ? ', NO CAPS' : ''}`);
+  const PP = +(argv.polprop ?? 0);
+  if (PP) {
+    runS(MK, 0, 0, 0, 1, `PROP-poled anti-sheath (polprop=${-PP}: field ~ -I live)`, -Math.abs(PP));
+    runS(MK, 0, 0, 0, 1, `PROP-poled aligned (polprop=+${PP}: control)`, Math.abs(PP));
+  }
   runS(MK, VP, +(argv.react2 ?? 4), 0, 1, `self-poled + react=${+(argv.react2 ?? 4)} (strain-hardened)`);
   runS(MK, 0, 0, -B, 1, `ghost vessel: sheath anti ${-B}, caps aligned ${B} (ideal bottle)`);
   runS(MK, 0, 0, +B, 1, `ghost vessel INVERTED: sheath aligned, caps anti (expect worse)`);
@@ -1164,6 +1171,65 @@ if (MODE === 'fpush') {
   runF(0,  [0, +400], 'static A  ( 0,+B)');
   runF(+F, [1, +400], 'perp field(+f,B_y)');
   console.log('  expect: aligned -> +x toward conduit, anti -> -x away, all controls 0');
+  process.exit(0);
+}
+
+if (MODE === 'rfill') {
+  // RESERVOIR FILL / TAIL-WORK — the asymmetric-fill test. A single
+  // ghost current element A faces committed conduit E pinned at
+  // field B (aligned -> A pulled toward E). Every field-force kick
+  // deposits the counter-impulse into E.fluxV — ONE-SIDED by
+  // construction (the authored field has no partner cell, so no
+  // symmetric cancellation). At t=HOLD the field is killed. With
+  // react=0 the force stops dead; with react>0 the stored strain
+  // keeps pressing A backward until the reservoir drains — delayed
+  // work paid out of the medium, and the integrated tail measures
+  // what was stored.
+  const MK = +(argv.mag ?? 10), F = +(argv.f ?? 200), B = +(argv.b ?? 400);
+  const HOLD = +(argv.hold ?? 40), T = +(argv.ticks ?? 120);
+  const A_ = [15, 16, 16], E_ = [16, 16, 16];
+  function runR(rx, label) {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    q._moore26_field_react_set(rx);
+    wound(...E_);
+    const P_ = [17, 16, 16];          // probe electrode, E's far side
+    let e26h = 0, e27h = 0, e27t = 0, tailMom = 0;
+    const e26_0 = Number(q._moore26_events(26)), e27_0 = Number(q._moore26_events(27));
+    console.log(`  -- ${label}:`);
+    for (let t = 0; t <= T; t++) {
+      const hold = t <= HOLD;
+      if (hold) {
+        q._moore26_charge_set(...A_, 0);
+        q._moore26_flux_set(...A_, 0, F);
+        for (let a = 0; a < 3; a++) q._moore26_flux_set(...E_, a, a === 0 ? B : 0);
+        q._moore26_mass_set(...A_, MASS);
+      } else {
+        for (let a = 0; a < 3; a++) q._moore26_flux_set(...E_, a, 0);
+        q._moore26_mass_set(...P_, MASS);      // measurement electrode:
+        for (let a = 0; a < 3; a++) q._moore26_flux_set(...P_, a, 0);
+      }
+      q._moore26_tick();
+      const d26 = Number(q._moore26_events(26)) - e26_0;
+      const d27 = Number(q._moore26_events(27)) - e27_0;
+      if (hold) { e26h = d26; e27h = d27; }
+      else {
+        e27t = d27 - e27h;
+        let pm = 0;
+        for (const e of [0, 1, 2, 5]) pm += q._moore26_momentum_at_get(...P_, e);
+        tailMom += pm;
+      }
+      if (t % 10 === 0 || t === HOLD + 1 || t === HOLD + 5)
+        console.log(`    t=${String(t).padStart(3)}  E.fluxV_x=${q._moore26_fluxv_get(...E_, 0)}` +
+          `  ev26=${d26}  ev27=${d27}`);
+    }
+    console.log(`    hold: ev26=${e26h} ev27=${e27h}   |   TAIL (field dead): ev27=+${e27t}` +
+      `  probe momentum sum=${tailMom}   |   stranded fluxV=${q._moore26_fluxv_get(...E_, 0)}`);
+  }
+  console.log(`\n=== rfill: B=${B} held ${HOLD}t then killed, F=${F} mag=${MK} ===`);
+  runR(0,               'react=0 (control: force dies with field)');
+  runR(+(argv.react ?? 4), `react=${+(argv.react ?? 4)} (reservoir)`);
+  runR(+(argv.react2 ?? 1), `react=${+(argv.react2 ?? 1)} (tight coupling)`);
   process.exit(0);
 }
 

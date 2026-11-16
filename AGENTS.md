@@ -410,6 +410,16 @@ alignment scheme changes again.
   internal forces cancel on shared conduits (no free creep)
   and pinch erosion is rare threshold kicks, not steady force.
   --react flag on wmerge/fsheath.
+  POLING WRITES: qVacPol=±s writes carrier Δflux onto conduit
+  (negative = diamagnetic/Lenz sign) — history-driven, runaway
+  prone. qPolProp=±s relaxes conduit toward ± carrier's LIVE
+  flux (field ∝ I) — stable, but self-written amplitude caps
+  at ~I vs the ~10x-I a working vessel needs. REACTION PRESS
+  verified: asymmetric fill (rfill --hold=N pulses a field,
+  tail-work = ev27 delivered after field death; react=1 =
+  perfect elastic reflector). Debit is capped 4t<=|fluxV| —
+  uncapped shift<2 minted momentum (limit cycle).
+  moore26_fluxv_get/set exported for reservoir probes.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

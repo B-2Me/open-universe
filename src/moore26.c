@@ -421,6 +421,15 @@ static int qVacPol=0;      /* 0=off. Nonzero = right-shift VACUUM
  * SOURCE (qMagInd law, Δ from en itself) so a polarized chain
  * drives EMF on the endpoint detector: light = a propagating
  * local state-change, observed only through what mass does. */
+static int qPolProp=0;     /* 0=off. Nonzero = PROPORTIONAL POLING:
+ * the conduit relaxes toward its touching carriers' PRESENT flux
+ * (en.flux += (±carrier_flux - en.flux)>>|shift|), not toward the
+ * integrated Δ-history the qVacPol write stores. Field ∝ live
+ * current: ramp-up and death-spike writes can't dominate, and a
+ * wire that stops carrying releases its field. + = paramagnetic
+ * (aligned: pulls carriers to the conduit), - = diamagnetic
+ * (anti: pushes carriers inward — the bottle sign). Uses the
+ * same committed-conduit gate and wave propagation as qVacPol. */
 static int qFieldReact=0;  /* 0=off. Nonzero = right-shift REACTION
  * PRESS: Newton's third law onto the medium — a momentum kick
  * crossing a committed conduit deposits the counter-impulse into
@@ -1255,7 +1264,7 @@ void moore26_tick(void){
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
                     if(qBondShare||qChargeKick||qChargeFlow||qMagKick
-                       ||qMagRange||qMagInd||qVacPol){
+                       ||qMagRange||qMagInd||qVacPol||qPolProp){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1278,12 +1287,38 @@ void moore26_tick(void){
                             if(qVacPol)
                                 for(int a3=0;a3<3;a3++){
                                     int32_t dpo=o->flux[a3]-o->fluxP[a3];
+                                    /* qVacPol<0 = DIAMAGNETIC write (the
+                                     * Lenz sign): the medium's polarization
+                                     * opposes the change that wrote it —
+                                     * a live wire poles its sheath ANTI,
+                                     * which pushes carriers inward instead
+                                     * of pulling them to the walls. */
+                                    if(qVacPol<0)dpo=-dpo;
                                     if(dpo){
                                         int32_t f=grid_next[ei].flux[a3]+dpo;
                                         grid_next[ei].flux[a3]=(int16_t)
                                             (f>32767?32767:f<-32768?-32768:f);
                                         qEvents[25]+=(uint64_t)
                                             (dpo<0?-dpo:dpo);
+                                    }
+                                }
+                            /* PROPORTIONAL POLING (qPolProp) — relax
+                             * toward ± the carrier's PRESENT flux:
+                             * field follows live current, not Δ-
+                             * history. ev25 counts the relaxation
+                             * writes too (same channel, same units). */
+                            if(qPolProp)
+                                for(int a3=0;a3<3;a3++){
+                                    int32_t tg=o->flux[a3];
+                                    if(qPolProp<0)tg=-tg;
+                                    int32_t ps=qPolProp<0?-qPolProp:qPolProp;
+                                    int32_t dp2=(tg-grid_next[ei].flux[a3])>>ps;
+                                    if(dp2){
+                                        int32_t f=grid_next[ei].flux[a3]+dp2;
+                                        grid_next[ei].flux[a3]=(int16_t)
+                                            (f>32767?32767:f<-32768?-32768:f);
+                                        qEvents[25]+=(uint64_t)
+                                            (dp2<0?-dp2:dp2);
                                     }
                                 }
                             /* JUNCTION — a committed conduit couples
@@ -1582,7 +1617,14 @@ void moore26_tick(void){
                             if(qFieldReact)
                                 for(int a3=0;a3<3;a3++){
                                     int32_t v=grid_next[ei].fluxV[a3];
-                                    int32_t t=(v>0?v:-v)>>qFieldReact;
+                                    int32_t vv=v>0?v:-v;
+                                    int32_t t=vv>>qFieldReact;
+                                    int32_t mt=vv>>2;   /* debit cap: 4t<=|v|
+                                     * — an uncapped shift<2 would drain
+                                     * MORE than the reservoir holds each
+                                     * tick (4t>|v|), flipping the sign and
+                                     * minting momentum in a limit cycle */
+                                    if(t>mt)t=mt;
                                     if(t){ if(v<0)t=-t;
                                         for(int i2=0;i2<4;i2++){
                                             int e=AXP[a3][i2];
@@ -2355,7 +2397,7 @@ void moore26_tick(void){
      * exactly like a partner cell's — induction doesn't care
      * whose flux changed). Polarization is persistent, not EWMA:
      * a static field needs no upkeep — only its CHANGE induces. */
-    if(qVacPol)
+    if(qVacPol||qPolProp)
     PROC_NODES
         if(IS_EVEN(x,y,z)){
             const NodeState *o=&grid_current[si];
@@ -2384,8 +2426,11 @@ void moore26_tick(void){
                     deg++;
                     for(int a=0;a<3;a++)lap[a]+=hn->flux[a]-o->flux[a];
                 }
+                int vs=qVacPol<0?-qVacPol:qVacPol;
+                if(!vs){vs=qPolProp<0?-qPolProp:qPolProp;}
+                if(!vs)vs=6;
                 for(int a=0;a<3;a++){
-                    int32_t dv=grid_next[si].fluxV[a]+(lap[a]>>qVacPol);
+                    int32_t dv=grid_next[si].fluxV[a]+(lap[a]>>vs);
                     grid_next[si].fluxV[a]=(int16_t)
                         (dv>32767?32767:dv<-32768?-32768:dv);
                     int32_t f=grid_next[si].flux[a]+grid_next[si].fluxV[a];
@@ -4166,7 +4211,8 @@ void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
 void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
 void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
 void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
-void moore26_vac_pol_set(int v){qVacPol=v>0&&v<16?v:0;}
+void moore26_vac_pol_set(int v){qVacPol=v>-16&&v<16?v:0;}
+void moore26_pol_prop_set(int v){qPolProp=v>-16&&v<16?v:0;}
 void moore26_field_react_set(int v){qFieldReact=v>0&&v<16?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){
@@ -4177,6 +4223,15 @@ void moore26_flux_set(int x,int y,int z,int a,int v){
     if(!grid_current||a<0||a>2)return;
     grid_current[z*QWidth*QHeight+y*QWidth+x].flux[a]=(int16_t)v;
     grid_next[z*QWidth*QHeight+y*QWidth+x].flux[a]=(int16_t)v;
+}
+int32_t moore26_fluxv_get(int x,int y,int z,int a){
+    if(!grid_current||a<0||a>2)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].fluxV[a];
+}
+void moore26_fluxv_set(int x,int y,int z,int a,int v){
+    if(!grid_current||a<0||a>2)return;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].fluxV[a]=(int16_t)v;
+    grid_next[z*QWidth*QHeight+y*QWidth+x].fluxV[a]=(int16_t)v;
 }
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
