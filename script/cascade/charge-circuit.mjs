@@ -37,6 +37,8 @@
 //                    direction change the force between them?
 //   --mode=beam      a flux-carrying probe cell near the wire:
 //                    force on a current element (substrate Lorentz)
+//   --mode=magrange  qMagRange: Ampere force at range along the wire
+//   --mode=faraday   qMagInd: changing flux drives EMF (transformer)
 //
 // Usage: node script/cascade/charge-circuit.mjs --mode=ohm --shift=4
 import { loadM26 } from '../lib/m26.mjs';
@@ -479,6 +481,98 @@ if (MODE === 'beam') {
   runBeam(V, 0, 0,   'probe static      ');
   runBeam(0, 0, +FB, 'no wire current   ');
   console.log('  expect: parallel -> attract (+y), antiparallel -> repel');
+  process.exit(0);
+}
+
+if (MODE === 'magrange') {
+  // Ampère AT RANGE: the force walks a committed zigzag even-cell
+  // wire (even->even hops on {±1,±1,0}) to a flux-bearing terminus.
+  // Both termini are GHOST cells: charge pinned 0, flux[0] pinned —
+  // pure current elements, no conduction, no Coulomb, only the
+  // ranged Ampère law can deliver force.
+  const MK = +(argv.mag ?? 10), MR = +(argv.range ?? 8), F = +(argv.f ?? 200);
+  const T_ = [9, 16, 16], W_ = [19, 16, 16], T = +(argv.ticks ?? 30);
+  const WIRE = [];
+  for (let x = 10; x <= 18; x++) WIRE.push([x, x % 2 ? 15 : 16, 16]);
+  function seedMR(skip = -1) {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    q._moore26_mag_range_set(MR);
+    WIRE.forEach(([x, y, z], i) => { if (i !== skip) wound(x, y, z); });
+    q._moore26_mass_set(...T_, MASS);
+    q._moore26_mass_set(...W_, MASS);
+  }
+  function pinMR(ft, fw) {
+    for (const c of [T_, W_]) {
+      q._moore26_charge_set(...c, 0);
+      q._moore26_mass_set(...c, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(...c, e, 0);
+    }
+    q._moore26_flux_set(...T_, 0, ft);
+    q._moore26_flux_set(...W_, 0, fw);
+  }
+  function runMR(ft, fw, skip = -1) {
+    seedMR(skip);
+    for (let t = 0; t < 20; t++) { q._moore26_tick(); pinMR(ft, fw); }
+    let fx = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (const e of [3, 4, 5, 6])   // x-axis pairs (AXP[0])
+        fx += q._moore26_momentum_at_get(...T_, e);
+      pinMR(ft, fw);
+    }
+    return { fx: fx / T, ev22: Number(q._moore26_events(22)) };
+  }
+  console.log(`\n=== magrange: T ghost at x=9, W ghost at x=19, 9-cell wire, ` +
+    `flux=${F} mag=${MK} range=${MR} ===`);
+  const rp = runMR(+F, +F), ra = runMR(+F, -F), r0 = runMR(+F, 0);
+  const rt0 = runMR(0, +F), rb = runMR(+F, +F, 4);
+  console.log(`  parallel   (+,+): F_x=${rp.fx.toFixed(1)}/tick  ${rp.fx > 0 ? 'TOWARD' : 'AWAY'}  ev22=${rp.ev22}`);
+  console.log(`  antiparallel(+,-): F_x=${ra.fx.toFixed(1)}/tick  ${ra.fx < 0 ? 'AWAY' : 'TOWARD'}  ev22=${ra.ev22}`);
+  console.log(`  dead end   (+,0): F_x=${r0.fx.toFixed(1)}/tick  (no flux terminus -> dead)  ev22=${r0.ev22}`);
+  console.log(`  passive T  (0,+): F_x=${rt0.fx.toFixed(1)}/tick  (no local current -> dead)  ev22=${rt0.ev22}`);
+  console.log(`  broken wire     : F_x=${rb.fx.toFixed(1)}/tick  (force IS the wire)  ev22=${rb.ev22}`);
+  console.log(`  antisymmetric term = ${((rp.fx - ra.fx) / 2).toFixed(1)}` +
+    `  ${rp.fx > ra.fx ? 'AMPERE AT RANGE: parallel attracts' : 'INVERTED'}`);
+  process.exit(0);
+}
+
+if (MODE === 'faraday') {
+  // TRANSFORMER: primary ghost P (x-flux driven by harness) linked
+  // by a committed y-conduit to secondary cell B, whose x-wire runs
+  // C-B-D. Only CHANGING P flux should drive B's charge along x —
+  // ramp => Lenz-signed EMF, steady DC => silence, release =>
+  // reverse spike. ev24 = induced charge.
+  const MI = +(argv.ind ?? 3), RATE = +(argv.rate ?? 64), FMAX = +(argv.fmax ?? 2560);
+  const P = [15, 18, 16], B = [15, 16, 16], C = [13, 16, 16], D = [17, 16, 16];
+  function seedInd() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_ind_set(MI);
+    wound(15, 17, 16);   // P-B coupling conduit
+    wound(14, 16, 16);   // C-B conduit
+    wound(16, 16, 16);   // B-D conduit
+    for (const c of [P, B, C, D]) q._moore26_mass_set(...c, MASS);
+    q._moore26_charge_set(...B, 512);
+  }
+  const pf = t => t < 40 ? Math.min(FMAX, t * RATE)
+                       : t < 80 ? FMAX : 0;   // ramp 40, hold 40, release
+  seedInd();
+  console.log(`\n=== faraday: P flux x ramped ${RATE}/tick to ${FMAX}, held, ` +
+    `released; secondary wire C-B-D along x, B charge=512, ind=${MI} ===`);
+  console.log('   t   P.flux  B.q  C.q  D.q   B.flux_x  ev24');
+  for (let t = 0; t < 100; t++) {
+    q._moore26_tick();
+    q._moore26_flux_set(...P, 0, pf(t));
+    if (t % 5 === 0 || (t >= 78 && t <= 84))
+      console.log(`  ${String(t).padStart(3)}  ${String(q._moore26_flux_get(...P, 0)).padStart(6)}` +
+        `  ${String(q._moore26_charge_get(...B)).padStart(4)}` +
+        ` ${String(q._moore26_charge_get(...C)).padStart(4)}` +
+        ` ${String(q._moore26_charge_get(...D)).padStart(4)}` +
+        `   ${String(q._moore26_flux_get(...B, 0)).padStart(7)}` +
+        `  ${String(Number(q._moore26_events(24))).padStart(6)}`);
+  }
+  console.log('  expect: ev24 ticking during ramp (Lenz -x), SILENT at' +
+    ' DC hold, one reverse spike at release');
   process.exit(0);
 }
 

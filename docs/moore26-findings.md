@@ -3346,3 +3346,49 @@ carrying charge transfer writes parallel flux on both cells, so
 a conductive junction pinches itself. Real Ampère physics, and
 why charge-blocked (diode) probe links are needed to isolate
 the wire-current term.
+
+## Force and induction at range — the field reaches through the wire
+
+(charge-circuit.mjs --mode=magrange / --mode=faraday)
+
+RANGED AMPERE (qMagRange): the magnetic kick walks the committed
+even-cell graph like qChargeRange walks it for charge — BFS to
+the first odd terminus bearing FLUX (a current element; charge
+need not be present — ghost termini count). The push lands on
+the entry face axis. Ghost-termini fixture, 9-cell zigzag wire:
+
+  parallel   (+,+): F_x = +156.0/tick  TOWARD — attraction
+  antiparallel(+,-): F_x = -156.0/tick  AWAY   — repulsion
+  dead end   (+,0): F_x = 0  — no far-end current, no force
+  passive T  (0,+): F_x = 0  — no local current, no force
+                    (F=I x B needs I: the wire feels nothing
+                    without its own current element — correct)
+  broken wire:      F_x = 0  — the force IS the wire
+  antisymmetric term = 156.0, Ampère sign — MEASURED AT RANGE
+
+INDUCTION (qMagInd + fluxP): fluxP snapshots last tick's flux so
+each cell can read partner dI/dt = flux-fluxP. EMF pushes k=|d|>>
+shift of this cell's charge along the PARTNER's current axis to
+the Lenz-signed odd neighbor (committed conduit required).
+Transformer fixture: primary ghost P (harness-driven x-flux)
+y-linked to secondary wire C-B-D along x, B seeded +512:
+
+  RAMP (P flux +64/tick): ev24 ticks at 8/tick = dp>>ind EXACT;
+      B.flux = -60 (LENZ: induced current opposes the growth);
+      B charge drains -> C (induced voltage drives real current)
+  DC HOLD (flux pinned 2560): ev24 FROZEN at 353 — total silence
+      at steady current. The Faraday discriminator: DC wires
+      attract (Ampere) but do NOT induce.
+  RELEASE (flux -> 0): single reverse spike — ev24 +320
+      (=2560>>ind exact), B.flux +341, B charge overshoots to
+      -188. The switch-off kick, correct sign.
+  CONTROL (ind=0): ev24=0, B.flux=0 all run — dead.
+
+Both new laws are conducted: zero action through empty space,
+zero action on passive matter, exact charge conservation (every
+transfer debits+credits), and the EMF/impulse counters close to
+the authored shifts exactly. The conducted E<->B loop is now
+closed in both directions: current->force (Ampere/Lorentz,
+direct AND at range) and CHANGING current->current (Faraday).
+The one thing still absent by construction: free-space
+radiation — nothing crosses a gap without a committed path.

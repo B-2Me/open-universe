@@ -359,6 +359,15 @@ alignment scheme changes again.
   must scale per-pair by QChannelVec[2e][axis] — y/z axes have a
   flipped member (fixed; x was always right). Harness:
   charge-circuit.mjs.
+  RANGE + INDUCTION: `qMagRange` BFS-walks committed evens to a
+  flux-bearing terminus (ghost cells count — no charge needed):
+  Ampère at range measured ±156/tick, dead for dead-end/passive/
+  broken controls. `qMagInd` + `fluxP[3]` (last-tick snapshot —
+  the dI/dt register): partner CHANGING flux drives a Lenz-signed
+  EMF pushing self's charge along the partner's current axis —
+  ramp => 8/tick induced (=dp>>ind exact), DC => total silence,
+  release => +320 reverse spike. Conducted E<->B loop closed
+  both ways; still no free-space radiation by construction.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

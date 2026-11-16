@@ -130,6 +130,9 @@ typedef struct {
      * axis — the cell's current element (q*v analog). Written by
      * conduit transfers, pumps, and charge-relay hops; decays
      * ~1/32/tick so it senses RECENT current, not history. */
+    int16_t  fluxP[3];         /* last tick's flux — the dI/dt register.
+     * A steady DC current has fluxP==flux (Δ=0, no induction);
+     * a ramping current shows the change Faraday's law reads. */
     uint8_t  scarPar;          /* annihilation parity record — bit d
      * (faces 0-5) = handedness of the +d-side cell at cancellation;
      * bit 6 = validity tag. A RECORD, not a conductor: kept out of
@@ -384,6 +387,18 @@ static int qDiode=0;       /* 0=off: conduit bondPar is inert for
  * whose bondPar!=0 passes charge flow only along its signed axis
  * (+bondPar = +axis direction). A one-way junction — the
  * battery's internal-short fix and the seed of nonlinear parts. */
+static int qMagRange=0;    /* 0=direct conduit only. Nonzero = BFS
+ * depth over committed even cells to the first odd terminus
+ * bearing FLUX (a current element — charge may be 0: a ghost
+ * wire carries pure current). The Ampère force walks the wire
+ * like qChargeRange walks it for charge. ev22 = impulse. */
+static int qMagInd=0;      /* 0=off. Nonzero = right-shift INDUCTION:
+ * a conduit's CHANGING partner flux (Δflux = flux-fluxP — DC
+ * reads Δ=0, matching Faraday) drives an EMF: k=|Δ|>>shift of
+ * this cell's charge pushed to its odd neighbor on the
+ * Lenz-signed side — the induced current opposes the change.
+ * Conserving (self debited, neighbor credited); EMF work is
+ * authored like qTension. ev24 = induced charge moved. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1199,7 +1214,8 @@ void moore26_tick(void){
                      * single quanta; the bond is the rigid link).
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
-                    if(qBondShare||qChargeKick||qChargeFlow||qMagKick){
+                    if(qBondShare||qChargeKick||qChargeFlow||qMagKick
+                       ||qMagRange||qMagInd){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1209,7 +1225,7 @@ void moore26_tick(void){
                             int px=x+2*((d==0)-(d==1)),
                                 py=y+2*((d==2)-(d==3)),
                                 pz=z+2*((d==4)-(d==5));
-                            int fired=0;
+                            int fired=0,mfired=0;
                             if(px>=0&&px<QWidth&&py>=0&&py<QHeight&&pz>=0&&pz<QDepth){
                                 int pi=(pz*QHeight+py)*QWidth+px;
                                 if(grid_current[pi].mass){
@@ -1363,6 +1379,69 @@ void moore26_tick(void){
                                                         sgn*(int32_t)km*QChannelVec[2*e][d>>1];
                                                 }
                                                 qEvents[21]+=4*(uint64_t)km;
+                                                mfired=1;
+                                            }
+                                        }
+                                    }
+                                    /* INDUCTION (qMagInd) — Faraday in
+                                     * conducted form: only the partner's
+                                     * CHANGING flux couples. For each axis
+                                     * a3, Δp = flux[a3]-fluxP[a3]; DC
+                                     * current gives Δ=0 (no EMF — the
+                                     * steady-state discriminator). The EMF
+                                     * acts along the PARTNER'S current axis
+                                     * (parallel wires share the current
+                                     * direction): Lenz-signed, a growing
+                                     * +flux pushes k of this cell's charge
+                                     * to its odd neighbor on the −axis
+                                     * side (committed conduit required —
+                                     * the EMF still needs a wire).
+                                     * Conserving: self debited, neighbor
+                                     * credited. ev24 = induced charge. */
+                                    if(qMagInd){
+                                        for(int a3=0;a3<3;a3++){
+                                            int32_t dpf=grid_current[pi].flux[a3]
+                                                       -grid_current[pi].fluxP[a3];
+                                            if(!dpf)continue;
+                                            int dir=dpf>0?-1:1;
+                                            int df=2*a3+(dir>0?0:1);
+                                            int gx=x+((df==0)-(df==1)),
+                                                gy=y+((df==2)-(df==3)),
+                                                gz=z+((df==4)-(df==5));
+                                            int nx2=x+2*((df==0)-(df==1)),
+                                                ny2=y+2*((df==2)-(df==3)),
+                                                nz2=z+2*((df==4)-(df==5));
+                                            if(gx<0||gx>=QWidth||gy<0||gy>=QHeight
+                                               ||gz<0||gz>=QDepth
+                                               ||nx2<0||nx2>=QWidth||ny2<0||ny2>=QHeight
+                                               ||nz2<0||nz2>=QDepth)continue;
+                                            const NodeState *en3=
+                                                &grid_current[(gz*QHeight+gy)*QWidth+gx];
+                                            uint32_t mn3=0;
+                                            for(int e2=0;e2<QChannels/2;e2++){
+                                                uint32_t mm=en3->winding[2*e2]<en3->winding[2*e2+1]
+                                                          ?en3->winding[2*e2]:en3->winding[2*e2+1];
+                                                if(mm>mn3)mn3=mm;}
+                                            int qi=(nz2*QHeight+ny2)*QWidth+nx2;
+                                            int32_t k=(dpf<0?-dpf:dpf)>>qMagInd;
+                                            if(mn3>=qCommitMin
+                                               &&grid_current[qi].mass
+                                               &&k>0&&o->charge){
+                                                int32_t a=grid_next[si].charge-k,
+                                                        b=grid_next[qi].charge+k;
+                                                grid_next[si].charge=(int16_t)
+                                                    (a<-32768?-32768:a>32767?32767:a);
+                                                grid_next[qi].charge=(int16_t)
+                                                    (b<-32768?-32768:b>32767?32767:b);
+                                                /* the induced transfer is
+                                                 * itself a current element */
+                                                {int32_t f=grid_next[si].flux[a3]+dir*k;
+                                                 grid_next[si].flux[a3]=(int16_t)
+                                                     (f>32767?32767:f<-32768?-32768:f);
+                                                 f=grid_next[qi].flux[a3]+dir*k;
+                                                 grid_next[qi].flux[a3]=(int16_t)
+                                                     (f>32767?32767:f<-32768?-32768:f);}
+                                                qEvents[24]+=(uint64_t)k;
                                             }
                                         }
                                     }
@@ -1431,6 +1510,78 @@ void moore26_tick(void){
                                                     sgn*k*QChannelVec[2*e][d>>1];
                                             }
                                             qEvents[58]+=4*(uint64_t)k;
+                                        }
+                                    }
+                                }
+                            }
+                            /* RANGED MAGNETISM (qMagRange) — the Ampère
+                             * force walks the wire: same committed-even BFS
+                             * as the charge chain, but the terminus is a
+                             * current element — mass AND nonzero flux,
+                             * charge not required (ghost termini count).
+                             * Push lands on the entry face axis; the far
+                             * end's flux direction is read at the terminus. */
+                            if(qMagKick&&qMagRange&&!mfired){
+                                int hasf=o->flux[0]||o->flux[1]||o->flux[2];
+                                if(hasf){
+                                    int qv[512];uint8_t dep[512];int nv=0;
+                                    int ti=-1;
+                                    qv[nv]=ei;dep[nv]=0;nv++;
+                                    for(int head=0;head<nv&&ti<0;head++){
+                                        int ci=qv[head],dd=dep[head];
+                                        if(dd>=qMagRange)continue;
+                                        int cx2=ci%QWidth,
+                                            cy2=(ci/QWidth)%QHeight,
+                                            cz2=ci/(QWidth*QHeight);
+                                        for(int f=0;f<6&&ti<0;f++){
+                                            int fx=cx2+((f==0)-(f==1)),
+                                                fy=cy2+((f==2)-(f==3)),
+                                                fz=cz2+((f==4)-(f==5));
+                                            if(fx<0||fx>=QWidth||fy<0||fy>=QHeight||fz<0||fz>=QDepth)continue;
+                                            int fi=(fz*QHeight+fy)*QWidth+fx;
+                                            if(fi==si)continue;
+                                            const NodeState *fo=&grid_current[fi];
+                                            if(fo->mass&&(fo->flux[0]||fo->flux[1]
+                                                         ||fo->flux[2]))ti=fi;
+                                        }
+                                        if(ti>=0)break;
+                                        for(int c=6;c<18;c++){
+                                            const int8_t *v=QChannelVec[c];
+                                            int hx=cx2+v[0],hy=cy2+v[1],hz=cz2+v[2];
+                                            if(hx<0||hx>=QWidth||hy<0||hy>=QHeight||hz<0||hz>=QDepth)continue;
+                                            int hi=(hz*QHeight+hy)*QWidth+hx;
+                                            const NodeState *hn=&grid_current[hi];
+                                            uint32_t mnn=0;
+                                            for(int e3=0;e3<QChannels/2;e3++){
+                                                uint32_t mm2=hn->winding[2*e3]<hn->winding[2*e3+1]
+                                                            ?hn->winding[2*e3]:hn->winding[2*e3+1];
+                                                if(mm2>mnn)mnn=mm2;}
+                                            if(mnn<qCommitMin)continue;
+                                            int dup=0;
+                                            for(int u=0;u<nv;u++)if(qv[u]==hi){dup=1;break;}
+                                            if(dup||nv>=512)continue;
+                                            qv[nv]=hi;dep[nv]=dd+1;nv++;
+                                        }
+                                    }
+                                    if(ti>=0){
+                                        int64_t dot=0;
+                                        for(int a2=0;a2<3;a2++)
+                                            dot+=(int64_t)o->flux[a2]
+                                                *grid_current[ti].flux[a2];
+                                        if(dot){
+                                            int64_t km=dot>0?dot:-dot;
+                                            km>>=qMagKick;
+                                            if(km>0){
+                                                int sgn=(dot>0)
+                                                        ?((d&1)?-1:1)
+                                                        :((d&1)?1:-1);
+                                                for(int i2=0;i2<4;i2++){
+                                                    int e=AXP[d>>1][i2];
+                                                    grid_next[si].momentum[e]+=
+                                                        sgn*(int32_t)km*QChannelVec[2*e][d>>1];
+                                                }
+                                                qEvents[22]+=4*(uint64_t)km;
+                                            }
                                         }
                                     }
                                 }
@@ -1509,8 +1660,13 @@ void moore26_tick(void){
                  * stopped current stops exerting force (remanence
                  * would need a separate committed register, like
                  * winding's wear — v1 keeps it simple) */
-                if(qMagKick||qChargeFlow||qHeatPump)
+                if(qMagKick||qChargeFlow||qHeatPump||qMagInd||qMagRange)
                     for(int a2=0;a2<3;a2++){
+                        /* snapshot BEFORE decay — fluxP holds the
+                         * pre-tick value so next tick's Δflux is the
+                         * true delivered change (ramp reads nonzero,
+                         * steady DC reads ~0: the dI/dt register) */
+                        grid_next[si].fluxP[a2]=o->flux[a2];
                         int32_t f=grid_next[si].flux[a2];
                         if(f)grid_next[si].flux[a2]=(int16_t)(f-(f>>5));
                     }
@@ -3739,6 +3895,8 @@ void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
 void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
 void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
 void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
+void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
+void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){
     if(!grid_current||a<0||a>2)return 0;
