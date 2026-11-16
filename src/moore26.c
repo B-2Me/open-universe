@@ -1652,36 +1652,14 @@ void moore26_tick(void){
                                         qEvents[27]+=4*(t<0?-t:t);
                                     }
                                 }
-                            /* WALL PRESSURE (qWallPress) — incident
-                             * momentum ON the conduit: the carrier's
-                             * face-axis impulse toward ei lands on
-                             * ei.fluxV as outward strain RECORD (no
-                             * carrier debit — debiting jams charge,
-                             * same wake-not-transfer rule as the
-                             * crossing deposit below). Escapers
-                             * BRAAKE at walls —
-                             * this is the deposit that lets erosion
-                             * fund the structure it erodes. ev27. */
-                            if(qWallPress){
-                                int ax=d>>1,sgn=(d&1)?-1:1;
-                                int32_t mf=0;
-                                for(int i2=0;i2<4;i2++){
-                                    int e=AXP[ax][i2];
-                                    mf+=grid_next[si].momentum[e]
-                                       *QChannelVec[2*e][ax];}
-                                mf*=sgn;      /* axis impulse INTO ei */
-                                if(mf>0){
-                                    int s=mf>>qWallPress;
-                                    if(s){
-                                        int32_t rv=grid_next[ei].fluxV[ax]
-                                                  +4*s*sgn;
-                                        grid_next[ei].fluxV[ax]=(int16_t)
-                                            (rv>32767?32767
-                                             :rv<-32768?-32768:rv);
-                                        qEvents[27]+=4*(uint64_t)s;
-                                    }
-                                }
-                            }
+                            /* WALL-PRESSURE NOTE: incident face momentum
+                             * is NOT written to fluxV here — a free
+                             * strain record would be spendable by the
+                             * react press = minting. fluxV is a paid-
+                             * only register; the real pressure channel
+                             * is denial-absorption at the stall gate
+                             * (momentum with no kinematic outlet moves
+                             * carrier->conduit 1:1). */
                             /* FIELD->CARRIER (the conduit as source) —
                              * same qMagInd law, but the CHANGING flux
                              * being read is the conduit's own: the
@@ -2073,42 +2051,37 @@ void moore26_tick(void){
                       * the hop this tick, the knot waits for capacity */
                      if(qCarveLoad&&load>=qCarveLoad&&shift>2)shift--;   /* worn path carves
                       * faster — ledger feedback (history = inertia) */
-                     /* STRAIN STALL (qWallStall) — a conduit holding
-                      * |fluxV| strain resists transit: pressure on the
-                      * wall IS occupancy — a hardened lane blocks the
-                      * hop like a loaded one. Walls that harden under
-                      * attack. FUSE semantics: the in-flight impulse
-                      * counts toward its own test (a hit that loads
-                      * the wall past threshold is resisted, not given
-                      * a free first crossing), and a DENIED attempt
-                      * still writes its strain — the pressure was real
-                      * even though the relay wasn't. Attack funds
-                      * defense: resistance ratchets the wall. */
+                     /* STRAIN STALL (qWallStall) — lane FATIGUE on the
+                      * worn-lane register: winding[] is the conduit's
+                      * transit history (free bookkeeping — crossings
+                      * really happened; it is never spent as momentum).
+                      * Fuse semantics: THIS attempt counts one more
+                      * wear unit toward its own test (the Nth crossing
+                      * is refused, not the N+1th), and a denied attempt
+                      * still wears the lane (attack = history too) so
+                      * resistance ratchets. The denied impulse pd is
+                      * ABSORBED into fluxV 1:1 — momentum with no
+                      * kinematic outlet transfers carrier→conduit
+                      * (inelastic catch, paid currency). */
                      if(qWallStall){
-                         int ws=0;
-                         for(int a=0;a<3;a++){
-                             int32_t v2=grid_current[ci0].fluxV[a];
-                             ws+=v2<0?-v2:v2;}
-                         int dep=0,axs=-1;
-                         if(qWallPress){
+                         int ws=grid_current[ci0].winding[2*be]
+                               +grid_current[ci0].winding[2*be+1];
+                         if(ws+1>=qWallStall){
+                             uint32_t wv=grid_next[ci0].winding[ch]+1;
+                             grid_next[ci0].winding[ch]=
+                                 (uint16_t)(wv>65535?65535:wv);
                              int32_t pd=o->momentum[be];
-                             int s=(pd<0?-pd:pd)>>qWallPress;
-                             if(s){
+                             if(qWallPress&&pd){
+                                 grid_next[si].momentum[be]-=pd;
                                  int ax=0;
                                  for(int a=1;a<3;a++)
                                      if(v[a]*v[a]>v[ax]*v[ax])ax=a;
-                                 if(v[ax]){dep=4*s;axs=ax;}
-                             }
-                         }
-                         if(ws+dep>=qWallStall){
-                             if(axs>=0){
-                                 int vs2=v[axs]>0?1:-1;
-                                 int32_t rv=grid_next[ci0].fluxV[axs]
-                                           +dep*vs2;
-                                 grid_next[ci0].fluxV[axs]=(int16_t)
+                                 int32_t rv=grid_next[ci0].fluxV[ax]
+                                           +(v[ax]>0?pd:-pd);
+                                 grid_next[ci0].fluxV[ax]=(int16_t)
                                      (rv>32767?32767
                                       :rv<-32768?-32768:rv);
-                                 qEvents[27]+=(uint64_t)dep;
+                                 qEvents[27]+=(uint64_t)(pd<0?-pd:pd);
                              }
                              continue;
                          }
@@ -2160,35 +2133,16 @@ void moore26_tick(void){
                      * force record: the knot's own motion carves its
                      * rail — first crossing paves, followers ride
                      * the worn lane. */
-                    if(qRecoilLaw){
+                    if(qRecoilLaw||qWallStall){
                         uint32_t wv=grid_next[ci].winding[ch]+1;
                         grid_next[ci].winding[ch]=(uint16_t)(wv>65535?65535:wv);
                     }
-                    /* TRANSIT WAKE (qWallPress at the crossing) — the
-                     * hop's carried impulse writes a strain RECORD on
-                     * the crossed conduit (same currency qRecoilLaw's
-                     * winding-wear spends: a wake, not a momentum
-                     * transfer — debiting the traveler jams charge
-                     * into fewer carriers and INFLATES flux, measured
-                     * charge-jam pathology). Escapers charge the wall
-                     * they pass through; qWallStall makes it bite. */
-                    if(qWallPress){
-                        int32_t pd=o->momentum[be];
-                        int s=(pd<0?-pd:pd)>>qWallPress;
-                        if(s){
-                            int ax=0;
-                            for(int a=1;a<3;a++)
-                                if(v[a]*v[a]>v[ax]*v[ax])ax=a;
-                            if(v[ax]){
-                                int vs2=v[ax]>0?1:-1;
-                                int32_t rv=grid_next[ci].fluxV[ax]
-                                          +4*s*vs2;
-                                grid_next[ci].fluxV[ax]=(int16_t)
-                                    (rv>32767?32767:rv<-32768?-32768:rv);
-                                qEvents[27]+=4*(uint64_t)s;
-                            }
-                        }
-                    }
+                    /* TRANSIT-WAKE NOTE: a successful crossing deposits
+                     * NO fluxV strain — its momentum traveled with it,
+                     * nothing pressed on the wall. The lane's history
+                     * record is winding[] wear (qRecoilLaw, above);
+                     * fluxV holds only PAID momentum (counter-impulse,
+                     * absorbed denial), never wake bookkeeping. */
                 }
                 /* winding clears too — the committed record re-writes
                  * at the destination odd site: the SKELETON migrates

@@ -3815,9 +3815,36 @@ FUSE-ORDERING FIX (stall gate ordering revisited):
   confinement that matches and locally exceeds the authored bottle,
   needing no field, no poling, no vessel geometry — the wall is
   emergent in the lane itself.
-  CONSERVATION CAVEAT: stall/ratchet deposits are UNPAID records in
-  fluxV — the same register qFieldReact's press treats as spendable
-  momentum. With wall+react enabled together the press could spend
-  unpaid strain = minting. Either wall strain needs its own
-  register, or the press must distinguish paid counter-impulse from
-  wake-records. Unresolved by design — flagged, not hidden.
+  CONSERVATION CAVEAT (resolved below): stall/ratchet deposits were
+  UNPAID records in fluxV — the same register qFieldReact's press
+  treats as spendable momentum.
+
+REGISTER SPLIT (the honest fix — measured):
+  momentum[be] is only the hop's ROUTING TICKET (|p| 1-3 picks the
+  channel; the impact energy is not in it). The lane's real history
+  currency is winding[] — free bookkeeping, never spent as momentum.
+  fluxV is now STRICTLY PAID: FIELD_REACT counter-impulse + denied-
+  hop absorption only. The two unpaid writers (face-touch record,
+  transit-wake record) removed — a successful crossing leaves no
+  strain (its momentum traveled with it); a truck crossing a bridge
+  doesn't leave momentum behind.
+  STALL = lane fatigue: ws = winding wear on the channel pair;
+  fuse test ws+1 >= stall (THIS attempt counts); denial wears the
+  lane (+1, ratchet) AND absorbs pd into fluxV 1:1 (inelastic catch).
+  Allowed crossings wear too (write extended to qWallStall).
+  MEASURED (fsheath --wall=1 --stall=4, 200t): 9/9 cells held at
+  x9..x25 INCLUDING the drive-end terminal — flux trajectory
+  identical to the no-pinch drive control [53,50,50,50]. Better
+  than the authored ghost bottle (8 at x11, loses terminal) and
+  better than the unpaid-strain version (8 cells). ev27=4324 paid
+  absorptions. MECHANISM: traffic-induced rigidity — every lane
+  that sees ~4 transits (crossings + denied retries) work-hardens
+  shut; mass cannot relocate but the charge channel (incip offers)
+  is untouched — a conductor that rigidifies BECAUSE it is
+  conducting. No field, no poling, no vessel geometry — the wall
+  is emergent wear-history in the lane itself.
+  RESERVOIR ANSWER: fluxV is the medium-side momentum reservoir we
+  were looking for — but only denied momentum legitimately arrives
+  (momentum with no kinematic outlet). It is not the carrier-side
+  creep register — that would live on the cell, accumulating
+  sub-threshold impulse on the carrier itself; still unbuilt.

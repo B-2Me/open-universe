@@ -420,18 +420,18 @@ alignment scheme changes again.
   perfect elastic reflector). Debit is capped 4t<=|fluxV| —
   uncapped shift<2 minted momentum (limit cycle).
   moore26_fluxv_get/set exported for reservoir probes.
-  WALL/STRAIN (qWallPress deposit + qWallStall gate): TWO sites —
-  face-touch and transit-wake — both RECORD-ONLY (4*s*sign into
-  conduit fluxV). Debiting carrier momentum at either jams charge
-  into fewer cells (flux 48-74, flux^2 erosion feedback): yield is
-  binary — a sub-threshold toll can only jam, never brake. STALL
-  uses FUSE semantics: in-flight dep counts toward its own test
-  and denied attempts still deposit (ratchet). MEASURED WIN:
-  --wall=1 --stall=8 holds 8 contiguous cells incl. the x9
-  drive-end terminal the ghost bottle always loses — no vessel,
-  no field needed; flux identical to baseline (no jam). CAVEAT:
-  unpaid strain records share fluxV with the paid react reservoir
-  — wall+react together can mint momentum via the press.
+  WALL/STRAIN — REGISTER SPLIT: winding[] = transit HISTORY (free
+  bookkeeping, never spendable); fluxV = PAID momentum only
+  (FIELD_REACT counter-impulse + denied-hop absorption; unpaid
+  face-touch/transit-wake writers removed — a successful crossing
+  leaves no strain, momentum[be] is only a routing ticket ~1-3).
+  qWallStall = lane fatigue: fuse test wear+1 >= stall (this
+  attempt counts), denial wears +1 (ratchet) and absorbs pd into
+  fluxV 1:1. MEASURED WIN: --wall=1 --stall=4 holds 9/9 cells
+  200t incl. x9 terminal, flux = no-pinch control — traffic-
+  induced rigidity, no field/vessel needed. CAUTION: debiting
+  carrier momentum at NON-denial sites jams charge (yield is
+  binary — tolls can only jam, never brake).
   fsheath --wall=N --stall=M.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
