@@ -3870,3 +3870,17 @@ CREEP REGISTER (the third reservoir — built + measured):
   (free bookkeeping, spent on yield). Conservation honest
   throughout: denied pd is paid into fluxV 1:1; creep is a record
   of events that really happened; yield spends the record.
+
+ELASTIC REGIME (wall+react, the closed loop — measured):
+  --wall=1 --stall=4 --wallreact=4: 9/9 cells held AND ev27 rose
+  4324 -> 32544 (7.5x). The loaded wall presses its PAID strain
+  back onto the pressing bodies: mass denied, momentum returned —
+  exactly what a real wall does. The yield barrier's void-sink is
+  now a closed loop: kick -> denial -> stored strain -> press back
+  -> impulse delivered. Third-law accounting WITH A DELAY: the
+  medium is a momentum bank, not a graveyard.
+  THE FULL RHEOLOGY now exists end to end, all from bookkeeping:
+  ELASTIC (react: store+return), YIELD (stall: lanes work-harden
+  under ~4 transits), PLASTIC FLOW (creep: sustained pressure
+  ruptures at threshold). Stress-strain response with no authored
+  force law — emergent from the relay ledger + three registers.

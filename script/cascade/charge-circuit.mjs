@@ -1133,6 +1133,11 @@ if (MODE === 'fsheath') {
         runS(MK, 0, 0, 0, 1, `bare vessel + stall=${WS} creep=${CY} (rupture rate)`, 0, WP, WS, CY);
         runS(MK, 0, 0, 0, 0, `NO vessel + stall=${WS} creep=${CY} (rupture rate)`, 0, WP, WS, CY);
       }
+      const RW = +(argv.wallreact ?? 0);
+      if (RW) {
+        runS(MK, 0, RW, 0, 1, `bare vessel + stall=${WS} + react=${RW} (loaded wall presses back)`, 0, WP, WS);
+        runS(MK, 0, RW, 0, 0, `NO vessel + stall=${WS} + react=${RW} (loaded wall presses back)`, 0, WP, WS);
+      }
     }
   }
   runS(MK, VP, +(argv.react2 ?? 4), 0, 1, `self-poled + react=${+(argv.react2 ?? 4)} (strain-hardened)`);

@@ -263,6 +263,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | wall strain-stall (fuse order, unpaid fluxV) | **8 contiguous cells incl. drive-end x9 terminal, 200t** — beats ghost bottle (8 at x11); stall=8 catches escaper dep~8-12 — but deposits were unpaid records in a spendable register (minting hole) |
 | lane-fatigue stall (winding wear + paid pd absorption) | **9/9 cells held 200t, flux = no-pinch control [53,50,50,50]** — stall=4, traffic-induced rigidity; ev27=4324 paid absorptions; strictly conserving |
 | creep rupture threshold | creep=4: baseline erosion (walls leak); creep=50: wall holds ~50t then discrete yields peel cells 9->3; ev64 counts ruptures | stall=4 wall, 200t | fsheath --creep |
+| elastic wall response | stall=4+react=4: 9/9 held, ev27 4324->32544 — denied momentum stored in fluxV then pressed back onto pressers; mass denied, momentum returned | 200t closed loop | fsheath --wallreact |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
