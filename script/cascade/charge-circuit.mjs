@@ -576,4 +576,65 @@ if (MODE === 'faraday') {
   process.exit(0);
 }
 
+if (MODE === 'pinch') {
+  // Z-PINCH: a single driven link's own transfer writes PARALLEL
+  // flux on both endpoints -> the junction self-attracts.
+  // Signatures vs the two-wire Ampere force:
+  //   * reversal-INVARIANT (both fluxes flip, dot stays +)
+  //   * force ~ I^2 (Bennett relation — pinch pressure ~ I^2)
+  // Fixture: A(9) -e- B(11) committed x-link; A pinned +V,
+  // B pinned 0 -> steady I = V>>shift. Lattice pinned, impulse read.
+  const MK = +(argv.mag ?? 8), T = +(argv.ticks ?? 30);
+  const A = [9, 16, 16], B = [11, 16, 16];
+  function seedP() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    wound(10, 16, 16);
+    q._moore26_mass_set(...A, MASS);
+    q._moore26_mass_set(...B, MASS);
+  }
+  function runPinch(vs, vd) {
+    seedP();
+    const pin = () => {
+      q._moore26_charge_set(...A, vs);
+      q._moore26_charge_set(...B, vd);
+      for (const c of [A, B]) {
+        q._moore26_mass_set(...c, MASS);
+        for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(...c, e, 0);
+      }
+    };
+    for (let t = 0; t < 30; t++) { q._moore26_tick(); pin(); }
+    let fx = 0, fl = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (const e of [3, 4, 5, 6]) fx += q._moore26_momentum_at_get(...B, e);
+      fl += q._moore26_flux_get(...A, 0);
+      pin();
+    }
+    return { fx: fx / T, I: Math.abs(fl / T) };
+  }
+  console.log(`\n=== pinch: driven A-B link, force on B, mag=${MK} shift=${SHIFT} ===`);
+  const base = runPinch(0, 0);
+  console.log(`  baseline (I=0)     : F_x=${base.fx.toFixed(1)}/tick  (gravity)`);
+  const rows = [];
+  for (const V of [256, 512, 1024, 2048, 4096]) {
+    const r = runPinch(V, 0);
+    rows.push({ V, I: r.I, f: r.fx - base.fx });
+    console.log(`  V=${String(V).padStart(4)}  I=${r.I.toFixed(1).padStart(7)}` +
+      `  pinch F=${(r.fx - base.fx).toFixed(1).padStart(9)}/tick` +
+      `  ${r.fx - base.fx < 0 ? 'TOWARD A (pinched)' : 'AWAY'}`);
+  }
+  const rev = runPinch(0, 1024);
+  console.log(`  REVERSED V=1024  : I=${rev.I.toFixed(1)}` +
+    `  pinch F=${(rev.fx - base.fx).toFixed(1)}/tick` +
+    `  ${(rev.fx - base.fx) < 0 ? 'STILL TOWARD — reversal-invariant' : 'REVERSED?'}`);
+  // log-log slope of pinch vs I (expect ~2 = Bennett I^2 law)
+  const lg = rows.map(r => [Math.log(r.I), Math.log(-r.f)]).filter(p => isFinite(p[1]));
+  const n = lg.length, sx = lg.reduce((a, p) => a + p[0], 0), sy = lg.reduce((a, p) => a + p[1], 0);
+  const sxx = lg.reduce((a, p) => a + p[0] * p[0], 0), sxy = lg.reduce((a, p) => a + p[0] * p[1], 0);
+  const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  console.log(`  pinch-vs-I log-log slope = ${slope.toFixed(2)}  (Bennett predicts ~2)`);
+  process.exit(0);
+}
+
 console.log('unknown mode ' + MODE);

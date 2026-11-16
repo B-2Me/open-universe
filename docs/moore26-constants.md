@@ -133,6 +133,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | diode-fixed battery | ring I 2.0→6.7 (3.3×), EMF ±14→±80, funding still 1:1 | polarized flanking conduits | charge-circuit --mode=pump --polarized |
 | Ampère at range | ±156.0/tick attract/repel on 9-cell wire; dead for no-terminus, passive T, broken wire | `qMagKick`=10 `qMagRange`=16, ghost flux=200 | charge-circuit --mode=magrange --range=16 |
 | induction EMF | k=Δflux≫ind exactly: 8/tick during 64/tick ramp, silent at DC, +320 spike at release (Lenz-signed) | `qMagInd`=3, fluxP register | charge-circuit --mode=faraday |
+| junction pinch | self-attraction of a driven link: reversal-invariant, log-log slope **2.00** = I² (Bennett relation) | `qMagKick`=6, single A–B link | charge-circuit --mode=pinch --shift=1 |
 
 ## Confinement & reaction constants
 

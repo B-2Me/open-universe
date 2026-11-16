@@ -3392,3 +3392,31 @@ closed in both directions: current->force (Ampere/Lorentz,
 direct AND at range) and CHANGING current->current (Faraday).
 The one thing still absent by construction: free-space
 radiation — nothing crosses a gap without a committed path.
+
+## The junction pinch measured — the Bennett relation
+
+(charge-circuit.mjs --mode=pinch)
+
+The "contamination" from the beam fixture is its own physics:
+a driven link's transfer writes PARALLEL flux on BOTH endpoints
+regardless of current direction -> every conductive junction
+self-attracts. Two signatures separate it from the two-wire
+Ampere force, and both measured exact:
+
+  REVERSAL-INVARIANT: at |I|~12000 the pinch force is -8.70M
+  forward, -8.94M reversed — same pull toward the junction
+  (both fluxes flip, the dot stays positive).
+
+  I^2 SCALING (Bennett): pinch-vs-I log-log slope = 2.00 over
+  a decade of current (I = 2977 -> 31744, F = -0.55M -> -63.0M).
+  F = I^2/16 at mag=6 — the authored km=|f.f|>>shift law, and
+  the plasma-physics result: a current column's magnetic pinch
+  pressure is quadratic in current (Z-pinch, Bennett 1934).
+
+Consequence for fixtures: ANY probe sharing a conductive link
+with a driven wire feels an I^2 attraction to the junction —
+isolating a true wire-current term requires charge-blocked
+(diode) links, exactly as the beam mode discovered by
+contamination. The pinch is also why the polarized pump's
+internal short carried backward flux: a shorted link pinches
+but also leaks, and the diode fixes the leak not the pinch.
