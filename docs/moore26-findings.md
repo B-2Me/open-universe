@@ -3420,3 +3420,39 @@ isolating a true wire-current term requires charge-blocked
 contamination. The pinch is also why the polarized pump's
 internal short carried backward flux: a shorted link pinches
 but also leaks, and the diode fixes the leak not the pinch.
+
+## A conducted wave — the induction chain self-propagates
+
+(charge-circuit.mjs --mode=wave)
+
+The experiment that tests whether an EMF can induce an EMF down
+a line of cells — the conducted analog of radiation. 9-cell
+x-chain, all cells +200 charge carriers, head cell flux-driven
+(+8192 for 4 ticks, then released — a square current pulse).
+
+PROPAGATION: the disturbance reaches cell 25 (~t=6) — the
+wavefront advances ~1 induction hop/tick, the lattice's causal
+speed. Subtlety: a transfer writes flux on BOTH endpoints, so
+the flux-front reads 2 cells/tick while the charge itself hops
+1 cell/tick.
+
+GAIN BANDS — three regimes measured:
+  ind=3 (k=dp/8): dies in 2 hops — too lossy
+  ind=2 (k=dp/4): UNDER-DAMPED WAVE — propagates the full line,
+      interior cells ring with a decaying period-2/4 envelope
+      for 15+ ticks after the drive releases, leaving a
+      rightward-drifting flux tail. Wave, not diffusion.
+  ind=1 (k=dp/2): REGENERATIVE — the ring doesn't decay, it
+      locks into a period-2 standing oscillation saturated at
+      the int16 rails (+/-~31700). A limit cycle at the
+      lattice's Nyquist frequency (the fastest oscillation the
+      substrate supports), powered by the authored EMF work —
+      the flux clamp is the bounding nonlinearity.
+
+HONEST CAVEAT: the EMF needs charge carriers (o->charge!=0) —
+this is a transmission-line / Alfven-like wave in a populated
+medium, NOT light-in-vacuum. Vacuum radiation would need an
+EMF that acts on the conduit without a carrier to push, which
+no current mechanism provides. Also authored-work caveat: the
+induced EMF transfers charge but spends nothing — the energy
+book for EM work is still open (same status as qTension).

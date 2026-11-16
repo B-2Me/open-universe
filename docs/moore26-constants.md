@@ -134,6 +134,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | Ampère at range | ±156.0/tick attract/repel on 9-cell wire; dead for no-terminus, passive T, broken wire | `qMagKick`=10 `qMagRange`=16, ghost flux=200 | charge-circuit --mode=magrange --range=16 |
 | induction EMF | k=Δflux≫ind exactly: 8/tick during 64/tick ramp, silent at DC, +320 spike at release (Lenz-signed) | `qMagInd`=3, fluxP register | charge-circuit --mode=faraday |
 | junction pinch | self-attraction of a driven link: reversal-invariant, log-log slope **2.00** = I² (Bennett relation) | `qMagKick`=6, single A–B link | charge-circuit --mode=pinch --shift=1 |
+| conducted wave | disturbance propagates ~1 hop/tick; `ind=2` under-damped ringing, `ind=1` saturated period-2 limit cycle, `ind=3` dies in 2 hops | 9-cell induction chain, carrier +200 | charge-circuit --mode=wave --ind=2 |
 
 ## Confinement & reaction constants
 

@@ -637,4 +637,53 @@ if (MODE === 'pinch') {
   process.exit(0);
 }
 
+if (MODE === 'wave') {
+  // CONDUCTED WAVE: a chain of induction-coupled cells. Cell0's
+  // flux is driven +F for K ticks then released — a square current
+  // pulse. Each cell's induced EMF writes REAL flux on its
+  // neighbor, whose CHANGE then induces the next cell: the
+  // disturbance should self-propagate at ~1 hop/tick with
+  // alternating sign, attenuating on the ~1/32 flux decay.
+  // Vacuum caveat: EMF needs charge carriers — this is a
+  // transmission-line wave, not light-in-vacuum.
+  const MI = +(argv.ind ?? 3), F = +(argv.f ?? 1024), K = +(argv.k ?? 4);
+  const T = +(argv.ticks ?? 40), NC = 9;
+  const XS = []; for (let x = 9; x <= 25; x += 2) XS.push(x);
+  function seedWave() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_ind_set(MI);
+    for (let i = 0; i < NC - 1; i++) wound(XS[i] + 1, 16, 16);
+    for (const x of XS) {
+      q._moore26_mass_set(x, 16, 16, MASS);
+      q._moore26_charge_set(x, 16, 16, 200);
+    }
+    q._moore26_charge_set(XS[0], 16, 16, 0);  // drive head is a ghost
+  }
+  seedWave();
+  console.log(`\n=== wave: ${NC}-cell induction chain, drive flux=${F} for K=${K} ticks, ind=${MI} ===`);
+  console.log('  cell x:      ' + XS.map(x => String(x).padStart(5)).join(''));
+  const rows = [];
+  for (let t = 0; t <= T; t++) {
+    if (t) q._moore26_tick();
+    // drive the head's flux register: square pulse, +F then 0
+    q._moore26_flux_set(XS[0], 16, 16, 0, t <= K ? F : 0);
+    const fl = XS.map(x => q._moore26_flux_get(x, 16, 16, 0));
+    rows.push(fl);
+    if (t <= 30)
+      console.log(`  t=${String(t).padStart(2)}      ` +
+        fl.map(f => (f > 0 ? '+' : '') + Math.round(f / 10)).join('  ').padStart(5));
+  }
+  // crossing times: first tick each cell's |flux| > 8 -> speed
+  let prev = 0, first = null, speed = [];
+  for (let i = 0; i < NC; i++) {
+    const tc = rows.findIndex(r => Math.abs(r[i]) > 8);
+    if (tc >= 0) { speed.push(tc - prev); prev = tc; first ??= tc; }
+    else speed.push(null);
+  }
+  console.log('  first |flux|>8 per cell (ticks after predecessor):');
+  console.log('   ' + XS.map((x, i) => `${x}:${speed[i] === null ? 'x' : speed[i]}`).join('  '));
+  console.log('  expect: ~1/hop if the disturbance self-propagates at causal speed');
+  process.exit(0);
+}
+
 console.log('unknown mode ' + MODE);

@@ -368,6 +368,13 @@ alignment scheme changes again.
   ramp => 8/tick induced (=dp>>ind exact), DC => total silence,
   release => +320 reverse spike. Conducted E<->B loop closed
   both ways; still no free-space radiation by construction.
+  WAVE: an induction chain self-propagates a disturbance ~1
+  hop/tick (causal speed); `qMagInd` sets gain — ind=3 dies in
+  2 hops, ind=2 under-damped wave + ringdown, ind=1 saturated
+  period-2 limit cycle at the int16 rails. Carriers required —
+  transmission-line wave, NOT vacuum light. Pinch: driven
+  links self-attract reversal-invariantly, slope exactly 2.00
+  (Bennett I^2). `--mode=pinch|wave|faraday|magrange`.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or
