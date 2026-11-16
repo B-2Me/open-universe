@@ -150,6 +150,7 @@ onUnmounted(() => {
               <option value="repel">charge repel</option>
               <option value="quark">quark</option>
               <option value="laser">laser</option>
+              <option value="walker">walker</option>
               <option value="meson">meson</option>
               <option value="proton">proton</option>
               <option value="zoo">zoo</option>

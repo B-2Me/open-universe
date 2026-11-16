@@ -722,7 +722,15 @@ export async function initCascadeSimulator(root, opts = {}) {
     /* glide = the momentum scenario: inertial drift ON so the knot
      * can walk on stored p; all other scenarios run it off */
     if (wasm._moore26_momentum_set)
-      wasm._moore26_momentum_set(s === 'glide' ? 255 : 0);
+      wasm._moore26_momentum_set(s === 'glide' || s === 'walker' ? 255 : 0);
+    /* composite-coherence tuners — bond-share carries the impulse
+     * through committed conduits (1 bond/tick internal sound speed);
+     * vol-route draws lockstep hops from the shared reservoir.
+     * Only the walker needs them. */
+    if (wasm._moore26_bond_share_set)
+      wasm._moore26_bond_share_set(s === 'walker' ? 1 : 0);
+    if (wasm._moore26_vol_route_set)
+      wasm._moore26_vol_route_set(s === 'walker' ? 1 : 0);
     if (s === 'glide') {
       /* bare-mass knot + seeded momentum — the Newton-1 coast. Mass
        * goes on ODD cells only: the matter lattice walks odd->odd
@@ -856,6 +864,25 @@ export async function initCascadeSimulator(root, opts = {}) {
         ui.laserCells.push([kx, ky, kz]);
       }
       ui.beam = true; ui.beamNu = 32;   /* resonant probe at the line */
+      return 3;
+    }
+    /* walker — the bonded-pair composite: two odd-cell masses linked
+     * by a committed conduit, drift + bond-share + vol-route ON.
+     * The impulse crosses the bond at 1 bond/tick; both cells draw
+     * identical hops from their equilibrated reservoir and translate
+     * in LOCKSTEP — structure that walks, not mass escaping a shell.
+     * Seeded upwind of the {1,1,0} path for ~24 cells of runway
+     * before the boundary (relays can't hop off-grid — the walk
+     * honestly ends at the wall). */
+    if (s === 'walker') {
+      const A = [CX - 9, CY - 8, CZ], B = [CX - 7, CY - 8, CZ],
+            K = [CX - 8, CY - 8, CZ];   /* the shared conduit — even */
+      for (let c = 6; c < 18; c++) wset(K[0], K[1], K[2], c, 64);
+      mset(A[0], A[1], A[2], 200); mset(B[0], B[1], B[2], 200);
+      if (wasm._moore26_momentum_at_set) {
+        wasm._moore26_momentum_at_set(A[0], A[1], A[2], 3, 3200);
+        wasm._moore26_momentum_at_set(B[0], B[1], B[2], 3, 3200);
+      }
       return 3;
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
@@ -1320,6 +1347,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
     glide:   'a bare-mass knot coasting on seeded momentum — the Newton-1 relay.\n· mass walks odd->odd through the even conduit, ~1 cell/tick\n· each hop is a complete local handoff — there is no moving object, only transactions\n· the faint wake it leaves is the trail of formation events; the ≈ trail toggle hides it.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
+    walker:  'a bonded pair — two masses linked by a committed conduit, momentum shared through the bond.\n· the impulse crosses the bond at 1 bond/tick — an internal sound speed\n· both cells draw identical hops from their shared reservoir: LOCKSTEP, geometry held\n· a structure that walks — the pair is a relation, not a transported object.',
     laser:   'stimulated emission — three wound cells sit on the beam path, pumped so their line stays at nu=32, probed by a resonant nu=32 stream.\n· probes arm at the line and fire ev17: the transmitted packet gets a collimated clone — the beam leaves BRIGHTER than it entered\n· the pumped winding holds the line; unwound, the medium would detune and go dark — that detuning IS the measured linewidth.',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',

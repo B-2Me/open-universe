@@ -82,7 +82,8 @@ Compton-ansatz bandwidth · `qMomentum`/`qLaunchMode`/`qRecoilLaw`
 inertia + propulsion · `qVolRoute`/`qVolShare`/`qBondShare`/
 `qChainShare` composite mechanics · `qBondAge` seniority temper ·
 `qParGate` handedness gate · `qWearDecay`/`qIncipTTL`/
-`qStallLoad`/`qCarveLoad` aging + congestion
+`qStallLoad`/`qCarveLoad` aging + congestion · `qSkeletonShift`
+relay skeleton-bleed rate (0=>>3/>>6 baseline … 3=full handoff)
 
 **Phases**: `P0` carry · `P1` flight · `P1b` junction annihilation
 · `P1c` mass launch · `P2` offer · `P3` confirm · `P4` winding
@@ -3085,3 +3086,33 @@ thing: it is trail (timestamps) vs scar (winding, no
 provenance) vs committed structure (both). The record, not
 the magnitude, is what differentiates a structure from a
 disturbance.
+
+## Skeleton-bleed knob (qSkeletonShift) — first survey
+
+The relay's asymmetry is coded, not emergent: mass handoffs whole
+(`k=o->mass`) while the winding skeleton bleeds `>>shift` — >>3 at
+edges, >>6 interior. A wound knot therefore cannot carry its
+structure: the mass escapes and the exoskeleton stays (measured
+this session on the 3^3 glide fixture: mass centroid 16->23.5,
+winding centroid 16.1 — the skeleton stays home).
+
+New tuner `qSkeletonShift` (0..6) subtracts from the bleed shift,
+exposing mid-rate bleed rates on purpose — including the full-
+handoff landmine at +3 edges. First survey on the wound glide
+fixture, 200 ticks:
+
+  shift 0 (baseline):  mass 23.5 / wind 16.1 — mass escapes, ghost
+  shift 2 (edge >>1):  mass 23.5 / wind 16.7 — same stall, ghost
+                       marginally lighter
+  shift 3 (full):      mass 23.5 / wind ~16  — NO accretion
+                       explosion on an isolated knot: the documented
+                       u16-underflow landmine is fixture-dependent,
+                       not automatic. wind total held 3510.
+
+The binding constraint on this fixture is the STALL, not the
+bleed rate — skeleton only migrates during hops, and this knot
+stops walking at x~23 regardless. Mid-rate bleed survivors need a
+mover that keeps moving: the bonded-pair composite (bond-share
+equilibrated reservoirs -> lockstep hops, sep held, verified
+12+ ticks) is the current candidate structure that walks. The
+knob's survey space is open — wound movers, chains, wound walkers.

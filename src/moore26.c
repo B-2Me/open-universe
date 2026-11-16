@@ -310,6 +310,12 @@ static int qBondAge=0;    /* bond seniority -> erosion temper (0=off):
      * its oldest core hardens from its own formation history. */
 static int qVolShare=0;
 static int qChainShare=0;
+static int qSkeletonShift=0; /* 0=baseline: skeleton bleeds >>3 at
+ * edges / >>6 interior during the relay handoff — flesh outruns
+ * bone, the exoskeleton effect. Nonzero = subtract from the bleed
+ * shift (clamped >=0): skeleton migrates faster, up to full
+ * handoff at +3 on edges — the documented underflow landmine,
+ * exposed on purpose so mid-rate bleed survivors can be mapped. */
 static int qBondShare=0;   /* 0=off: momentum strictly per-cell.
  * Nonzero = right-shift: an odd cell deposits momentum[e]>>qBondShare
  * into each committed face conduit (donor-debited) — bound structure
@@ -1336,8 +1342,11 @@ void moore26_tick(void){
                     /* skeleton bleeds fractionally — the record
                      * trails the mass. Full skeleton handoff mints
                      * runaway winding (u16 underflow cascade —
-                     * the accretion explosion) */
-                    uint32_t w2=o->winding[c]>>shift;
+                     * the accretion explosion). qSkeletonShift opens
+                     * the knob: shift-1..shift-3 interpolates the
+                     * bleed rate, 0 clamps to full handoff. */
+                    int sh=shift-qSkeletonShift; if(sh<0)sh=0;
+                    uint32_t w2=o->winding[c]>>sh;
                     if(w2){
                         grid_next[si].winding[c]-=w2;
                         uint32_t d=grid_next[ni].winding[c]+w2;
@@ -3337,6 +3346,7 @@ void moore26_momentum_at_set(int x,int y,int z,int e,int v){
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_vol_route_set(int v){qVolRoute=v;}
 void moore26_bond_share_set(int v){qBondShare=v>0&&v<16?v:0;}
+void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
 void moore26_par_flip_set(int v){qParFlip=v&255;}
