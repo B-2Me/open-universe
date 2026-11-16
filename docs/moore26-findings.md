@@ -3157,3 +3157,53 @@ path), or the conduit pays (decommit = natural range cutoff);
 (b) multi-hop propagation through committed chains -> conducted
 force at range along structure, the worn-lane EM this substrate
 can actually support.
+
+## Charge at range — the wire test, and what had to be fixed first
+
+(script/cascade/charge-kick.mjs --mode=wire/--mode=chain)
+
+qChargeRange (0-31) adds chain mode: BFS over the committed
+even-cell graph (edge-adjacent committed pairs, depth-limited,
+visited-cap 512) from a cell's conduit to the first
+charged+massive odd terminus. Same signed law, same k — the push
+still lands on the entry face's axis: the wire pushes at its
+endpoint, never through space.
+
+Zigzag committed wire, 9 even cells, charged masses at both ends:
+
+  +/+  sep 10 -> 31, ev58=992 — repulsion at range
+  +/-  sep 10 -> 2, converged at the wire midpoint — attraction
+       at range — then passed through and separated (residual p)
+  +/+  broken wire: ev58=0, dead static — the force IS the wire
+  5-odd-cell chain, all +q: ends fly, interior cancels — the
+  classic line-of-charge result, ev58=8x248 exact accounting
+
+TWO MECHANICS THE TEST FORCED:
+
+1. Charge rides the mass relay — before this fix the charge record
+   stayed home while its body walked (only qChargeShed>>4 rode),
+   so a moved charged body went electrically dark after ~2 hops:
+   the wire pair's kicks fired twice then died. Charge now hands
+   off proportionally to mass moved — the signed total is
+   conserved exactly (verified: sum q = 0 across +1000/-1000
+   bodies through 12 hops).
+
+2. Transverse drift — a face-axis push spreads across 4 edge
+   pairs; argmax picks the SAME diagonal member every tick, so
+   the +/- pair converged in x but drifted apart in y/z, passing
+   each other offset by ~10 cells. qVolRoute fixes it: the
+   |p|-weighted draw distributes the transverse components —
+   the pair met at the wire midpoint (x=14, t=6).
+
+REMAINING GAP — no bound state yet: after pass-through the pair
+separates on residual momentum and exits the wire's neighborhood;
+the force can only re-fire while both ends sit adjacent to
+committed cells. An oscillating bound pair needs either a wider
+conductor (a committed SHEET the bodies surf — untested), a
+KE sink, or re-bonding after crossing.
+
+Also riding the handoff now: localTime (a body's tau ledger —
+proportional share, conserved) and phase + bondDist (the
+oscillator state and reach map, whole on clean hops, bondPar
+rule). bondTick STAYS — a site's formation birthday is
+provenance, not body state; it staying is what makes the trail.

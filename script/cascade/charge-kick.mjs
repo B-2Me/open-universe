@@ -35,23 +35,59 @@ const q = await loadM26();
 q._moore26_init(32, 32, 32);
 
 const A = [9, 16, 16], B = [11, 16, 16], COND = [10, 16, 16];
+const RANGE = +(argv.range ?? 0);            // qChargeRange BFS depth
+const WIRE_B = [19, 16, 16];                 // far end of the wire fixture
+// zigzag committed-even-cell wire along x: even cells hop even->even
+// on {±1,±1,0} — the wire alternates y=16/15 so each pair links
+const WIRE = [];
+for (let x = 10; x <= 18; x++) WIRE.push([x, x % 2 ? 15 : 16, 16]);
 
-function seedPair(qa, qb) {
-  for (const fn of ['_moore26_mass_set', '_moore26_winding_set', '_moore26_charge_set']) {}
-  // fresh grid per fixture is simplest: re-init
+function reset(kickShift, rangeDepth) {
   q._moore26_init(32, 32, 32);
   q._moore26_momentum_set(255);
-  q._moore26_charge_kick_set(SHIFT);
-  for (let c = 6; c < 18; c++)
-    q._moore26_winding_set(COND[0], COND[1], COND[2], c, 64);
-  q._moore26_mass_set(A[0], A[1], A[2], MASS);
-  q._moore26_mass_set(B[0], B[1], B[2], MASS);
-  q._moore26_charge_set(A[0], A[1], A[2], qa);
-  q._moore26_charge_set(B[0], B[1], B[2], qb);
+  q._moore26_charge_kick_set(kickShift);
+  q._moore26_charge_range_set(rangeDepth);
+}
+function wound(x, y, z) {
+  for (let c = 6; c < 18; c++) q._moore26_winding_set(x, y, z, c, 64);
 }
 
-function massX() {
-  // x-centroid of the two seeded bodies: split the grid at x=10.5
+function seedPair(qa, qb) {
+  reset(SHIFT, RANGE);
+  wound(...COND);
+  q._moore26_mass_set(...A, MASS);
+  q._moore26_mass_set(...B, MASS);
+  q._moore26_charge_set(...A, qa);
+  q._moore26_charge_set(...B, qb);
+}
+
+// wire fixture: A at x=9, B at x=19, committed zigzag even-cell wire
+// between them. --skip=N removes wire cell N (broken-wire control).
+function seedWire(qa, qb, skip = -1) {
+  reset(SHIFT, RANGE);
+  WIRE.forEach(([x, y, z], i) => { if (i !== skip) wound(x, y, z); });
+  q._moore26_mass_set(...A, MASS);
+  q._moore26_mass_set(...WIRE_B, MASS);
+  q._moore26_charge_set(...A, qa);
+  q._moore26_charge_set(...WIRE_B, qb);
+}
+
+// charged odd chain: odd cells at x=9,11,13,15,17 + conduits between —
+// the v1 composition test: adjacent repulsion should stretch the chain
+function seedChain(qq) {
+  reset(SHIFT, RANGE);
+  const odd = [];
+  for (let x = 9; x <= 17; x += 2) odd.push([x, 16, 16]);
+  for (let x = 10; x <= 16; x += 2) wound(x, 16, 16);
+  for (const [x, y, z] of odd) {
+    q._moore26_mass_set(x, y, z, MASS);
+    q._moore26_charge_set(x, y, z, qq);
+  }
+  return odd;
+}
+
+function massX(split = 10.5) {
+  // x-centroid of the two seeded bodies: split the grid at `split`
   let xa = 0, ma = 0, xb = 0, mb = 0, xmax = 0, xmin = 99;
   for (let z = 0; z < 32; z++)
     for (let y = 0; y < 32; y++)
@@ -60,7 +96,7 @@ function massX() {
         if (m <= 10) continue;
         if (x > xmax) xmax = x;
         if (x < xmin) xmin = x;
-        if (x <= 10) { xa += m * x; ma += m; }
+        if (x < split) { xa += m * x; ma += m; }
         else { xb += m * x; mb += m; }
       }
   return {
@@ -70,13 +106,23 @@ function massX() {
   };
 }
 
-function run(name, qa, qb, kickOn) {
+// every mass site's x — for the chain fixture
+function massXs() {
+  const xs = [];
+  for (let z = 0; z < 32; z++)
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 32; x++)
+        if (q._moore26_mass_get(x, y, z) > 10) xs.push(x);
+  return xs.sort((a, b) => a - b);
+}
+
+function run(name, qa, qb, kickOn, split = 10.5) {
   seedPair(qa, qb);
   if (!kickOn) q._moore26_charge_kick_set(0);
   console.log(`  seed charge: A=${q._moore26_charge_get(...A)} B=${q._moore26_charge_get(...B)}`);
   const rows = [];
   for (let t = 0; t <= TICKS; t++) {
-    const s = massX();
+    const s = massX(split);
     rows.push({ t, sep: s.sep.toFixed(2), ca: s.ca.toFixed(1), cb: s.cb.toFixed(1),
                 ma: s.ma, mb: s.mb, xmax: s.xmax, xmin: s.xmin,
                 ev58: Number(q._moore26_events(58)) });
@@ -89,8 +135,59 @@ function run(name, qa, qb, kickOn) {
   return rows;
 }
 
+// wire-at-range fixture runner
+function runWire(name, qa, qb, skip = -1) {
+  seedWire(qa, qb, skip);
+  const rows = [];
+  for (let t = 0; t <= TICKS; t++) {
+    const s = massX(14.5);
+    rows.push({ t, sep: s.sep.toFixed(2), ca: s.ca.toFixed(1), cb: s.cb.toFixed(1),
+                ma: s.ma, mb: s.mb, xmax: s.xmax, xmin: s.xmin,
+                ev58: Number(q._moore26_events(58)) });
+    if (t < TICKS) q._moore26_tick();
+  }
+  console.log(`\n=== ${name} (qa=${qa} qb=${qb} range=${RANGE}${skip >= 0 ? ' BROKEN@' + skip : ''}) ===`);
+  for (const r of rows.filter(r => r.t % 5 === 0 || r.t <= 3 || r.t === TICKS))
+    console.log(`t=${String(r.t).padStart(3)}  cA=${r.ca.padStart(5)} cB=${r.cb.padStart(5)} ` +
+      `sep=${r.sep.padStart(6)} [x${r.xmin}..x${r.xmax}] mA=${r.ma} mB=${r.mb}  ev58=${r.ev58}`);
+  return rows;
+}
+
+// charged-chain runner: print all mass-site x positions
+function runChain(name, qq, kickOn = true) {
+  seedChain(qq);
+  if (!kickOn) q._moore26_charge_kick_set(0);
+  const rows = [];
+  for (let t = 0; t <= TICKS; t++) {
+    rows.push({ t, xs: massXs(), ev58: Number(q._moore26_events(58)) });
+    if (t < TICKS) q._moore26_tick();
+  }
+  console.log(`\n=== ${name} (all q=${qq}, range=${RANGE}) ===`);
+  for (const r of rows.filter(r => r.t % 5 === 0 || r.t <= 3 || r.t === TICKS))
+    console.log(`t=${String(r.t).padStart(3)}  xs=[${r.xs.join(',')}]  ev58=${r.ev58}`);
+  return rows;
+}
+
 console.log(`charge-kick: shift=${SHIFT} k=min|q|>>${SHIFT} ` +
-  `(${Q} -> ${Q >> SHIFT}/pair x4 pairs), ${TICKS} ticks`);
+  `(${Q} -> ${Q >> SHIFT}/pair x4 pairs), range=${RANGE}, ${TICKS} ticks`);
+
+if (argv.mode === 'wire') {
+  const rF = runWire('F: +/+ wire repel  ', +Q, +Q);
+  const rG = runWire('G: +/- wire attract ', +Q, -Q);
+  const rH = runWire('H: +/+ BROKEN wire  ', +Q, +Q, 4);
+  console.log('\nVERDICT:');
+  const last = r => r[r.length - 1];
+  console.log(`  F sep ${rF[0].sep} -> ${last(rF).sep} ev58=${last(rF).ev58}`);
+  console.log(`  G sep ${rG[0].sep} -> ${last(rG).sep} ev58=${last(rG).ev58}`);
+  console.log(`  H sep ${rH[0].sep} -> ${last(rH).sep} ev58=${last(rH).ev58} (broken: expect 0)`);
+  process.exit(0);
+}
+if (argv.mode === 'chain') {
+  const rI = runChain('I: all-+ chain', +Q, true);
+  const rJ = runChain('J: kick OFF ctrl', +Q, false);
+  console.log('\nVERDICT: see xs spread above (repel -> chain expands)');
+  process.exit(0);
+}
 
 const rA = run('A: +/+  repel?  ', +Q, +Q, true);
 const rB = run('B: +/-  attract?', +Q, -Q, true);

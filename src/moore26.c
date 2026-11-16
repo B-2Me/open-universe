@@ -340,6 +340,12 @@ static int qChargeKick=0;  /* 0=off: charge is a record, not a force.
  * CONDUCTED through shared structure, never cast across a gap.
  * AUTHORED coupling (like qTension): ev58 counts delivered impulse;
  * what funds it is an open question. */
+static int qChargeRange=0; /* 0=direct conduit only. Nonzero = BFS
+ * depth: the kick walks the committed even-cell graph (edge-adjacent
+ * cells with a committed winding pair) to the first charged+massive
+ * odd terminus — force at range ALONG the wire, push still landing
+ * on the entry face's axis. The wire is the medium; the endpoint
+ * is where it pushes. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1165,6 +1171,7 @@ void moore26_tick(void){
                             int px=x+2*((d==0)-(d==1)),
                                 py=y+2*((d==2)-(d==3)),
                                 pz=z+2*((d==4)-(d==5));
+                            int fired=0;
                             if(px>=0&&px<QWidth&&py>=0&&py<QHeight&&pz>=0&&pz<QDepth){
                                 int pi=(pz*QHeight+py)*QWidth+px;
                                 if(grid_current[pi].mass){
@@ -1212,7 +1219,72 @@ void moore26_tick(void){
                                                 for(int i2=0;i2<4;i2++)
                                                     grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
                                                 qEvents[58]+=4*(uint64_t)k;
+                                                fired=1;
                                             }
+                                        }
+                                    }
+                                }
+                            }
+                            /* CHAIN MODE (qChargeRange) — the force
+                             * walks the wire: BFS over committed even
+                             * cells (edge-adjacent, committed pair) from
+                             * this conduit to the first odd terminus
+                             * holding charge AND mass. Push still lands
+                             * on the entry face's axis — the wire pushes
+                             * at its endpoint, not through space. */
+                            if(qChargeKick&&qChargeRange&&!fired){
+                                int32_t qa=o->charge;
+                                if(qa){
+                                    int qv[512];uint8_t dep[512];int nv=0;
+                                    int32_t qb=0;int found=0;
+                                    qv[nv]=ei;dep[nv]=0;nv++;
+                                    for(int head=0;head<nv&&!found;head++){
+                                        int ci=qv[head],dd=dep[head];
+                                        if(dd>=qChargeRange)continue;
+                                        int cx2=ci%QWidth,
+                                            cy2=(ci/QWidth)%QHeight,
+                                            cz2=ci/(QWidth*QHeight);
+                                        for(int f=0;f<6&&!found;f++){
+                                            int fx=cx2+((f==0)-(f==1)),
+                                                fy=cy2+((f==2)-(f==3)),
+                                                fz=cz2+((f==4)-(f==5));
+                                            if(fx<0||fx>=QWidth||fy<0||fy>=QHeight||fz<0||fz>=QDepth)continue;
+                                            int fi=(fz*QHeight+fy)*QWidth+fx;
+                                            if(fi==si)continue;
+                                            const NodeState *fo=&grid_current[fi];
+                                            if(fo->mass&&fo->charge){qb=fo->charge;found=1;}
+                                        }
+                                        if(found)break;
+                                        for(int c=6;c<18;c++){
+                                            const int8_t *v=QChannelVec[c];
+                                            int hx=cx2+v[0],hy=cy2+v[1],hz=cz2+v[2];
+                                            if(hx<0||hx>=QWidth||hy<0||hy>=QHeight||hz<0||hz>=QDepth)continue;
+                                            int hi=(hz*QHeight+hy)*QWidth+hx;
+                                            const NodeState *hn=&grid_current[hi];
+                                            uint32_t mnn=0;
+                                            for(int e3=0;e3<QChannels/2;e3++){
+                                                uint32_t mm2=hn->winding[2*e3]<hn->winding[2*e3+1]
+                                                            ?hn->winding[2*e3]:hn->winding[2*e3+1];
+                                                if(mm2>mnn)mnn=mm2;}
+                                            if(mnn<qCommitMin)continue;
+                                            int dup=0;
+                                            for(int u=0;u<nv;u++)if(qv[u]==hi){dup=1;break;}
+                                            if(dup||nv>=512)continue;
+                                            qv[nv]=hi;dep[nv]=dd+1;nv++;
+                                        }
+                                    }
+                                    if(found){
+                                        int32_t am=qa<0?-qa:qa,
+                                                bm=qb<0?-qb:qb,
+                                                m2=am<bm?am:bm,
+                                                k=m2>>qChargeKick;
+                                        if(k){
+                                            int sgn=((qa>0)==(qb>0))
+                                                    ?((d&1)?1:-1)
+                                                    :((d&1)?-1:1);
+                                            for(int i2=0;i2<4;i2++)
+                                                grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
+                                            qEvents[58]+=4*(uint64_t)k;
                                         }
                                     }
                                 }
@@ -1408,6 +1480,42 @@ void moore26_tick(void){
                         grid_next[si].momentum[e]-=p2;
                         grid_next[ni].momentum[e]+=p2;
                     }
+                }
+                /* charge rides the body it labels — the record belongs
+                 * to the matter: the same FRACTION relocates as the
+                 * share of mass that moved (full handoff on clean
+                 * hops, proportional on tears — the signed total is
+                 * conserved exactly). Before this, the charge record
+                 * stayed home while its body walked — a moving
+                 * charged body went electrically dark ~2 hops out. */
+                if(o->charge&&o->mass){
+                    int32_t move=(int32_t)((int64_t)o->charge*k/o->mass);
+                    if(move){
+                        int32_t ns=grid_next[si].charge-move,
+                                nd=grid_next[ni].charge+move;
+                        grid_next[si].charge=(int16_t)(ns>32767?32767:ns<-32767?-32767:ns);
+                        grid_next[ni].charge=(int16_t)(nd>32767?32767:nd<-32767?-32767:nd);
+                    }
+                }
+                /* tau rides too — proper time is the structure's own
+                 * ledger, not the site's: a relocated clock carries
+                 * its reading (proportional share, conserved). A
+                 * walking knot used to shed its proper age at every
+                 * hop and leave it on the empty site. */
+                if(o->localTime&&o->mass){
+                    uint32_t mv=(uint32_t)((uint64_t)o->localTime*k/o->mass);
+                    if(mv){grid_next[si].localTime-=mv;
+                           grid_next[ni].localTime+=mv;}
+                }
+                /* the oscillator rides whole on a clean handoff —
+                 * phase IS the bound cycle's clock state; a torn hop
+                 * keeps it at the majority site, same rule as
+                 * bondPar/bondDist. bondDist is the body's measured
+                 * reach map — it relocates with the body. */
+                if(k==o->mass){
+                    if(o->phase)grid_next[ni].phase=o->phase;
+                    for(int e=0;e<QChannels/2;e++)
+                        if(o->bondDist[e])grid_next[ni].bondDist[e]=o->bondDist[e];
                 }
                 /* chirality rides a COMPLETE handoff — bondPar is the
                  * pattern's handedness record: whole-residue
@@ -3392,6 +3500,7 @@ void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_vol_route_set(int v){qVolRoute=v;}
 void moore26_bond_share_set(int v){qBondShare=v>0&&v<16?v:0;}
 void moore26_charge_kick_set(int v){qChargeKick=v>0&&v<16?v:0;}
+void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

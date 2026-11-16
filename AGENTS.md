@@ -323,9 +323,16 @@ alignment scheme changes again.
   Conducted charge force: `qChargeKick` (shift 0-15) — charged odd
   cells on a committed conduit push along the bond axis signed by
   the charge product (like repels, unlike attracts), k=min|q|>>shift
-  on the axis's 4 AXP pairs, ev58 counts impulse. Measured: +/-
-  converge, +/+ separate, force dies when link breaks. AUTHORED
-  (unfunded) like qTension. Harness: charge-kick.mjs.
+  on the axis's 4 AXP pairs, ev58 counts impulse. `qChargeRange`
+  (0-31) = BFS depth over the committed even-cell graph — force at
+  range ALONG the wire (push lands on the entry face). Measured:
+  +/- converge, +/+ separate, broken wire = dead static, chain of
+  +q expands from the ends. AUTHORED (unfunded) like qTension.
+  Harness: charge-kick.mjs. RECORDS RIDE THE BODY: charge,
+  localTime (proportional), phase + bondDist (whole, bondPar rule)
+  now hand off with the mass relay — before this, a moving body
+  left its charge/tau/oscillator state home. bondTick stays: site
+  birthday is provenance, and staying is what makes the trail.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or
