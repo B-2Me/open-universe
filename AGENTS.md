@@ -394,6 +394,12 @@ alignment scheme changes again.
   (waveguide, NOT free-space radiation). Strobe test (wmerge
   --strobe): pulsed drive can't creep — yield is a per-tick
   threshold, not an integral; needs a momentum-accumulator layer.
+  FIELD FORCE (ev26): qMagKick dots cell flux against the
+  conduit's own poling — the medium is a mechanical terminus
+  (calibrated ±78 exact at fpush). Field walls stabilize a
+  pinch-eroded wire interior (8 contiguous vs 7 gapped at
+  B≈pinch; walls >pinch erode ends themselves; uniaxial — ends
+  escape diagonally). --mode=fpush|fwire.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

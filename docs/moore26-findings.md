@@ -3622,3 +3622,47 @@ is a per-tick threshold comparison, not an accumulated integral.
 The missing ingredient for creep is therefore a momentum
 reservoir / yield-accumulation register (the "another layer" the
 offer mechanic would need) — not a timing trick on the drive.
+
+## The conduit as mechanical terminus — field force + the bottle
+
+(engine change + charge-circuit.mjs --mode=fpush / --mode=fwire)
+
+FIELD FORCE (engine): the qMagKick Ampère law gains a second
+terminus species — f_cell . f_conduit dots the cell's flux against
+the conduit lattice's own poling. Aligned -> pulled toward the
+polarized structure; anti-aligned -> pushed off. ev26 = delivered
+impulse. Works on EMPTY conduit: the field is lattice-resident —
+it keeps pushing after the matter that wrote it is gone.
+
+CALIBRATION (fpush, ghost cell flux=200 vs ghost conduit B=400,
+mag=10): +78.0/tick aligned, -78.0 anti (both signs), exact zeros
+for no-field, static cell, and perpendicular field. Magnitude
+200*400>>10 = 78.125 -> 78 measured. ev26 = 4*78*50 = 15600 exact.
+
+THE BOTTLE (fwire): ghost-poling the wire's conduits makes field
+WALLS — the magnetic-mirror insight: cells are pushed AWAY from
+anti-aligned walls, so interior cells see balanced ±x pressure.
+Measured on the free-wire pinch fixture (L=8, V=128, mag=16 —
+the slow-erosion regime):
+
+  B=512 (~pinch strength): interior STABILIZED — 8 contiguous
+    cells survive 200t (x11..x25) vs 7 gapped for unpoled. The
+    field walls measurably prevent interior gaps. Anti vs
+    aligned poling: same survival, different flux profile —
+    prevention works because it counters momentum BEFORE yield,
+    not because it restores.
+  B=2048 (4x pinch): WORSE — the walls themselves erode the
+    structure; drain end x25 now lost too. A confinement window
+    exists: field must match the stress it counters.
+  Mirror caps (x8/x26, aligned): no end rescue — the x9 source
+    cell escapes TRANSVERSELY (hops diagonal, leaves the y=16
+    lane entirely; verified: gone from y13..19, not just the
+    row). A uniaxial wall can't catch a diagonal hop.
+
+HONEST VERDICT: medium-resident force is real, calibrated, and
+does preventive work — the wire interior held against pinch for
+the first time in any free fixture. But a 1D wall only confines
+along its axis; the end failure is transverse escape. Full
+bottle needs a poled SHEATH (2D wrap around the wire) or a
+toroidal poling pattern — the medium can carry that structure;
+it's a fixture-complexity question, not a missing law.

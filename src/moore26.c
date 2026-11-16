@@ -1516,6 +1516,40 @@ void moore26_tick(void){
                                     }
                                 }
                             }
+                            /* FIELD FORCE (conduit as terminus) —
+                             * same qMagKick Ampère law, but one of
+                             * the two current elements is the MEDIUM:
+                             * the conduit's own poling dots this
+                             * cell's flux — aligned -> pulled toward
+                             * the polarized structure, anti-aligned
+                             * -> pushed off it. Works on an EMPTY
+                             * conduit: the field is lattice-resident,
+                             * so a persistent poling keeps pushing
+                             * after the matter that wrote it is gone.
+                             * ev26 = delivered impulse. (Newton's 3rd
+                             * onto the medium — counter-impulse into
+                             * en.fluxV — deferred to the radiation-
+                             * reaction layer.) */
+                            if(qMagKick&&(en->flux[0]||en->flux[1]||en->flux[2])){
+                                int64_t dot=0;
+                                for(int a2=0;a2<3;a2++)
+                                    dot+=(int64_t)o->flux[a2]*en->flux[a2];
+                                if(dot){
+                                    int64_t km=dot>0?dot:-dot;
+                                    km>>=qMagKick;
+                                    if(km>0){
+                                        int sgn=(dot>0)
+                                                ?((d&1)?-1:1)
+                                                :((d&1)?1:-1);
+                                        for(int i2=0;i2<4;i2++){
+                                            int e=AXP[d>>1][i2];
+                                            grid_next[si].momentum[e]+=
+                                                sgn*(int32_t)km*QChannelVec[2*e][d>>1];
+                                        }
+                                        qEvents[26]+=4*(uint64_t)km;
+                                    }
+                                }
+                            }
                             /* FIELD->CARRIER (the conduit as source) —
                              * same qMagInd law, but the CHANGING flux
                              * being read is the conduit's own: the

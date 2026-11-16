@@ -991,6 +991,107 @@ if (MODE === 'wmerge') {
   process.exit(0);
 }
 
+if (MODE === 'fwire') {
+  // FIELD-GLUED WIRE — the bottle test: ghost-pole the wire's own
+  // conduits so their field pushes carriers AWAY from the structure
+  // (anti-aligned to the wire current). Interior cells see balanced
+  // ±x pressure; the END cell's single conduit pushes it outward —
+  // countering the pinch's inward necking. Question: does the wire
+  // survive the pinch erosion that killed the unpoled wire?
+  // The field is lattice-resident: erosion can't kill the confiner.
+  const MK = +(argv.mag ?? 16), V = +(argv.v ?? 128), T = +(argv.ticks ?? 200);
+  const L = +(argv.l ?? 8), B = +(argv.field ?? 512);
+  const CX = [];                            // interior conduit x's (even only)
+  for (let x = 10; x < 9 + 2 * L; x += 2) CX.push(x);
+  const CAPS = [8, 10 + 2 * L];             // mirror caps past the ends
+  function seedW(caps) {
+    reset(SHIFT, HEAT);
+    seedWire(L);
+    if (caps) for (const x of CAPS) wound(x, 16, 16);
+  }
+  const extent = () => {
+    let lo = 99, hi = 0, n = 0;
+    for (let x = 0; x < 32; x++)
+      if (q._moore26_mass_get(x, 16, 16) > 10) { n++; if (x < lo) lo = x; if (x > hi) hi = x; }
+    return { lo, hi, n };
+  };
+  function runW(mk, pole, caps, capPole, label) {
+    seedW(caps);
+    q._moore26_mag_kick_set(mk);
+    console.log(`  -- ${label}:`);
+    for (let t = 0; t <= T; t++) {
+      if (t % 25 === 0) {
+        const e = extent();
+        const fl = [9, 13, 17, 21, 25].map(x => Math.round(q._moore26_flux_get(x, ...YZ, 0) / 10));
+        console.log(`    t=${String(t).padStart(3)}  cells=${e.n}  extent=x${e.lo}..x${e.hi}` +
+          `  span=${e.hi - e.lo}  flux=[${fl.join(',')}]`);
+      }
+      if (t < T) {
+        q._moore26_tick();
+        q._moore26_charge_set(9, ...YZ, V);
+        q._moore26_charge_set(9 + 2 * L, ...YZ, 0);
+        for (const x of CX) q._moore26_flux_set(x, 16, 16, 0, pole);    // ghost field walls
+        if (caps) for (const x of CAPS) q._moore26_flux_set(x, 16, 16, 0, capPole);
+      }
+    }
+  }
+  console.log(`\n=== fwire: free wire + poled conduits, V=${V} mag=${MK} B=${B} ===`);
+  runW(MK, -B, 1, +B, 'mirror: interior anti + caps aligned (expect best hold)');
+  runW(MK, -B, 0, 0,  'anti-poled walls (interior bottle)');
+  runW(MK, +B, 0, 0,  'aligned poles  (added necking)');
+  runW(MK, 0,  0, 0,  'unpoled        (baseline erosion)');
+  runW(0,  -B, 1, +B, 'no pinch       (drive only baseline)');
+  process.exit(0);
+}
+
+if (MODE === 'fpush') {
+  // FIELD FORCE calibration — the conduit as a mechanical terminus.
+  // Ghost current element A (flux pinned, charge=0, no conduction)
+  // faces a single committed conduit E carrying a ghost-pinned
+  // poling flux[0]=B. qMagKick's Ampère law with en as terminus:
+  // aligned -> pulled toward the structure, anti-aligned -> pushed
+  // off. Controls: B=0, static A, perpendicular field axis.
+  const MK = +(argv.mag ?? 10), F = +(argv.f ?? 200), T = +(argv.ticks ?? 50);
+  const A_ = [15, 16, 16], E_ = [16, 16, 16];
+  function seedF() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    wound(...E_);
+    q._moore26_mass_set(...A_, MASS);
+  }
+  function pinF(fa, ba) {          // ba: [axis, value] ghost field on E
+    q._moore26_charge_set(...A_, 0);
+    for (let a = 0; a < 3; a++) q._moore26_flux_set(...A_, a, a === 0 ? fa : 0);
+    for (let a = 0; a < 3; a++) q._moore26_flux_set(...E_, a, a === ba[0] ? ba[1] : 0);
+    q._moore26_mass_set(...A_, MASS);
+    for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(...A_, e, 0);
+  }
+  function runF(fa, ba, label) {
+    seedF();
+    for (let t = 0; t < 40; t++) { q._moore26_tick(); pinF(fa, ba); }
+    let fx = 0, e26 = Number(q._moore26_events(26));
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (const e of [0, 1, 2, 5])   // x-axis pairs (AXP[0])
+        fx += q._moore26_momentum_at_get(...A_, e);
+      pinF(fa, ba);
+    }
+    const dE = Number(q._moore26_events(26)) - e26;
+    console.log(`  ${label}: F_x=${(fx / T).toFixed(1)}/tick  ev26=${dE}` +
+      `  ${fx > 0 ? 'TOWARD E' : fx < 0 ? 'AWAY' : 'none'}`);
+    return fx / T;
+  }
+  console.log(`\n=== fpush: A ghost flux=${F} vs conduit ghost field, mag=${MK} ===`);
+  runF(+F, [0, +400], 'aligned   (+f,+B)');
+  runF(-F, [0, +400], 'anti      (-f,+B)');
+  runF(+F, [0, -400], 'anti      (+f,-B)');
+  runF(+F, [0, 0],    'no field  (+f, 0)');
+  runF(0,  [0, +400], 'static A  ( 0,+B)');
+  runF(+F, [1, +400], 'perp field(+f,B_y)');
+  console.log('  expect: aligned -> +x toward conduit, anti -> -x away, all controls 0');
+  process.exit(0);
+}
+
 if (MODE === 'wavevac') {
   // EMPTY-CONDUIT VACUUM POLARIZATION — "light" as a propagating
   // local state-change on bare committed structure. A zigzag line

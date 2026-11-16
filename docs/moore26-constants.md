@@ -141,6 +141,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | vacuum-polarization wave | propagates 21-even bare conduit line at ~0.4 even/tick (2–3 ticks/link), zero mass/charge anywhere; reflection + ringing at a break; persistent DC remnant at driven head | `qVacPol`=3, `fluxV` conjugate, Laplacian coupling | charge-circuit --mode=wavevac --shift=0 |
 | field→carrier detection | detector charge responds only after wave arrival (t≈55 for 20-link packet): ev24=77, det_q −21, Lenz-signed det flux +26 vs arriving −flux | `qMagInd`=4 read on conduit Δ | charge-circuit --mode=wavevac --shift=0 |
 | pulsed-drive creep | null at strobe 4–8, mag 6–16: barrier is a per-tick momentum threshold, not an integral — pulses don't accumulate | wmerge --strobe | charge-circuit --mode=wmerge --strobe=8 --mag=6 |
+| field force | ±78.0/tick on a ghost current element vs poled conduit (200·400≫10=78); exact 0 for no-field, static cell, ⊥ field | `qMagKick` conduit terminus, ev26 | charge-circuit --mode=fpush --shift=0 |
+| field-wall confinement | interior stabilized: 8 contiguous cells vs 7 gapped (B=512≈pinch); B=2048 walls erode ends; mirror caps can't catch transverse escape — uniaxial | free wire, poled conduits | charge-circuit --mode=fwire --shift=1 |
 
 ## Confinement & reaction constants
 
