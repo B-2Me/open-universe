@@ -3913,3 +3913,30 @@ WMERGE CREEP (honest null): creep=8 congestion-rupture enabled,
   only pressure that exists; this barrier lives in the kick
   channel, not the gate channel. (Diagnostic path: probe
   momentum[] on interior cells mid-drive.)
+
+SPRING-PROBE — the wall AS BATTERY, calibrated end to end
+  (script/cascade/spring-probe.mjs: one kicked cell vs one
+  pre-worn stall conduit, full p+fluxV ledger per tick):
+  CHARGE: denied momentum -> fluxV at 100% efficiency, LINEAR
+    (p=3200->fluxV=3200; p=1600->fluxV=1600; ledger pins exact).
+  HOLD: react=0 stores the full charge indefinitely — 3200 units
+    sat untouched 30+ ticks, zero self-discharge.
+  DISCHARGE: the press is CONTACT-BOUND — a touching cell gets
+    min(|v|>>react, |v|>>2) per tick over 4 pair channels.
+    react<=2 dumps ~everything in one tick (stiff spring:
+    3200 back in a single tick, then the cell re-presses and
+    gets re-caught — bounce/rebounce, ev27=8000 total cycles).
+    react=4 releases ~25%/tick exponential (soft spring).
+  RESIDUAL: once the carrier breaks contact the press stops and
+    leftover strain LOCKS IN (1128 left forever at react=4) —
+    the battery only discharges to a customer that stays.
+  The spring constant IS the react shift; the battery's
+  terminal is physical contact. Energy is not what a thing
+  has — it is what the ledger cannot lose.
+
+  THE DEEPER FRAME (worth stating): the substrate is a
+  relational ledger where the grain is HISTORY, not geometry.
+  Winding wear, creep pressure, fatigue locks, strain charge —
+  every "material property" measured so far is a record of
+  what happened, not a property of the site. There is no
+  thing-table; structure is what the ledger remembers.

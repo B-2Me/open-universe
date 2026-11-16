@@ -267,6 +267,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | stall threshold invariance | stall=2,3,8,16 all hold 9/9, ev27=1924 identical @100t — threshold sets lock latency, total absorption is conserved | 100t sweep | fsheath --stall |
 | wall radiation damping | stall=4+wave=3 no-vessel: ev27 1924->116559 (60x) — wall sheds absorbed strain as field waves; dissipation, still 9/9 held | 100t | fsheath --wallwave |
 | wmerge creep barrier | creep=8: sep=2.00 flat, ev64=0 — barrier is upstream of relay (no denied hops exist); creep can't integrate absent pressure | 120t null | wmerge --creep |
+| strain battery charge efficiency | denied momentum -> fluxV exactly 1:1, linear (3200->3200, 1600->1600); react=0 holds indefinitely, zero self-discharge over 30t | spring probe | spring-probe |
+| strain discharge rate | contact-bound press: min(|v|>>react, |v|>>2) per tick, 4-channel spread; react<=2 single-tick dump, react=4 ~25%/tick | spring stiffness = react | spring-probe |
+| strain residual lock | leftover fluxV stays in the wall when contact breaks (1128/3200 at react=4) — discharge requires a staying customer | react=4 run | spring-probe |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
