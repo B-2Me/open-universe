@@ -939,10 +939,12 @@ if (MODE === 'wmerge') {
   for (let i = 0; i <= 6; i++) { wA.push([9 + 2 * i, 16]); wB.push([9 + 2 * i, 18]); }
   for (let x = 11; x <= 19; x += 2) links.push([x, 17]);
   const RX = +(argv.react ?? 0);       // qFieldReact: strain reservoir
+  const CY = +(argv.creep ?? 0);       // qCreepYield: congestion-denial rupture
   function seedMerge() {
     reset(SHIFT, HEAT);
     q._moore26_mag_kick_set(MK);
     q._moore26_field_react_set(RX);
+    q._moore26_creep_yield_set(CY);
     for (const [x, y] of wA.concat(wB)) q._moore26_mass_set(x, y, 16, MASS);
     for (let i = 0; i < 6; i++) { wound(10 + 2 * i, 16, 16); wound(10 + 2 * i, 18, 16); }
     for (const [x, y] of links) wound(x, y, 16);
@@ -985,8 +987,9 @@ if (MODE === 'wmerge') {
       }
       if (t < T) { q._moore26_tick(); drive(par, t); }
     }
+    console.log(`    ev64(yield)=${q._moore26_events(64)}`);
   }
-  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} strobe=${STROBE || 'DC'} react=${RX} ===`);
+  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} strobe=${STROBE || 'DC'} react=${RX} creep=${CY} ===`);
   runMerge(1, 'parallel currents   (expect ATTRACT -> sep shrinks)');
   runMerge(0, 'antiparallel currents (expect REPEL -> sep grows)');
   runMerge(1, 'mag=0 control        (expect static)', 0);
@@ -1137,6 +1140,11 @@ if (MODE === 'fsheath') {
       if (RW) {
         runS(MK, 0, RW, 0, 1, `bare vessel + stall=${WS} + react=${RW} (loaded wall presses back)`, 0, WP, WS);
         runS(MK, 0, RW, 0, 0, `NO vessel + stall=${WS} + react=${RW} (loaded wall presses back)`, 0, WP, WS);
+      }
+      const WV = +(argv.wallwave ?? 0);
+      if (WV) {
+        runS(MK, WV, 0, 0, 1, `bare vessel + stall=${WS} + wave=${WV} (wall rings)`, 0, WP, WS);
+        runS(MK, WV, 0, 0, 0, `NO vessel + stall=${WS} + wave=${WV} (wall rings)`, 0, WP, WS);
       }
     }
   }

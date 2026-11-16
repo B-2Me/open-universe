@@ -264,6 +264,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | lane-fatigue stall (winding wear + paid pd absorption) | **9/9 cells held 200t, flux = no-pinch control [53,50,50,50]** — stall=4, traffic-induced rigidity; ev27=4324 paid absorptions; strictly conserving |
 | creep rupture threshold | creep=4: baseline erosion (walls leak); creep=50: wall holds ~50t then discrete yields peel cells 9->3; ev64 counts ruptures | stall=4 wall, 200t | fsheath --creep |
 | elastic wall response | stall=4+react=4: 9/9 held, ev27 4324->32544 — denied momentum stored in fluxV then pressed back onto pressers; mass denied, momentum returned | 200t closed loop | fsheath --wallreact |
+| stall threshold invariance | stall=2,3,8,16 all hold 9/9, ev27=1924 identical @100t — threshold sets lock latency, total absorption is conserved | 100t sweep | fsheath --stall |
+| wall radiation damping | stall=4+wave=3 no-vessel: ev27 1924->116559 (60x) — wall sheds absorbed strain as field waves; dissipation, still 9/9 held | 100t | fsheath --wallwave |
+| wmerge creep barrier | creep=8: sep=2.00 flat, ev64=0 — barrier is upstream of relay (no denied hops exist); creep can't integrate absent pressure | 120t null | wmerge --creep |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or

@@ -19,24 +19,16 @@
  * Usage: node script/moore26-harness.mjs [--ticks=1000] [--w=128]
  *        [--oct] [--str=16] [--winding=128]
  */
-import { createRequire } from 'node:module';
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
 
-const ROOT = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '../..');
 const arg = (k, d) => {
   const m = process.argv.find(a => a.startsWith(`--${k}=`));
   return m ? m.split('=')[1] : d;
 };
 const flag = k => process.argv.includes(`--${k}`);
 
-// --- load the cascade module (MODULARIZE factory, glue-eval) ---
-const gluePath = resolve(ROOT, 'docs/public/wasm/cascade/moore26.js');
-if (!existsSync(gluePath)) { console.error(`wasm glue not found: ${gluePath} — run src/build.sh first`); process.exit(1); }
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  readFileSync(gluePath, 'utf8'))(mod, mod.exports, createRequire(gluePath), dirname(gluePath), gluePath);
-const M = await mod.exports();
+// --- load the cascade module (stale-guarded shared loader) ---
+import { loadM26 } from '../lib/m26.mjs';
+const M = await loadM26();
 
 const W = parseInt(arg('w', '128')), TICKS = parseInt(arg('ticks', '1000'));
 const STR = parseInt(arg('str', '16'));          // string length in nodes

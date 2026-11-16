@@ -2056,8 +2056,24 @@ void moore26_tick(void){
                  if(cx0>=0&&cx0<QWidth){
                      int ci0=(z*QHeight+y)*QWidth+cx0;
                      uint8_t load=grid_current[ci0].incip[2*be];
-                     if(qStallLoad&&load>=qStallLoad)continue;   /* lane saturated — stall
-                      * the hop this tick, the knot waits for capacity */
+                     if(qStallLoad&&load>=qStallLoad){
+                         /* congestion denial — the cell waits (momentum
+                          * stays with the carrier; a busy lane is not a
+                          * wall, nothing is absorbed) but pushed-and-
+                          * failed is still pressure history: creep.
+                          * At yield the cell squeezes through the jam —
+                          * plastic flow past congestion. */
+                         if(qCreepYield){
+                             if(o->creep>=qCreepYield){
+                                 grid_next[si].creep=0;
+                                 qEvents[64]++;
+                             }else{
+                                 if(grid_next[si].creep<32767)
+                                     grid_next[si].creep++;
+                                 continue;
+                             }
+                         }else continue;
+                     }
                      if(qCarveLoad&&load>=qCarveLoad&&shift>2)shift--;   /* worn path carves
                       * faster — ledger feedback (history = inertia) */
                      /* STRAIN STALL (qWallStall) — lane FATIGUE on the

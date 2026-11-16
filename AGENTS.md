@@ -242,6 +242,22 @@ alignment scheme changes again.
   refuses an artifact older than `src/moore26.c` (opt out:
   `M26_STALE_OK=1`) and prints `rev=` from `moore26_gitrev()` — the
   engine's build commit, compiled in via `-DGIT_REV`.
+- Harness audit (Nov 2026): all 48 `script/cascade/*.mjs` verified —
+  every `_moore26_*` call maps to a current export, all use
+  `loadM26`. `vacuum-isotropy.mjs` was retuned: the `photon_*` API
+  was renamed `packet_*` (same signatures); it again reports
+  `spread=0 ISOTROPIC`. `moore26-harness.mjs` and
+  `hexbuckle-ensemble.mjs` were migrated off inline glue-eval onto
+  `loadM26` for the stale guard.
+- `CascadeSimulator` (docs/.vitepress/cascade/main.js): audited
+  Nov 2026 — all calls exported, no raw NodeState pokes (reads
+  published rg buffers only), every new tuner defaults off, so the
+  creep/stall/fluxV-split work can't break it. The ONE default-path
+  behavioral change since its last tune (11-15, f5241cc) is junction
+  semantics (8a251af): committed conduits now couple EVERY adjacent
+  massive cell, not just the face partner — knots near committed
+  structure legitimately behave differently. Re-tune scenarios by
+  eyeball if they look off; the code itself isn't stale.
 - Grid-size constraint: `NodeState` ≈220B × sites × 2 buffers, so
   256³ (~7.4GB) exceeds wasm32 — use ≤128³ in wasm, or a MEMORY64
   build for bigger. Power-of-2 dims ≥8 required (bitmask wrap +

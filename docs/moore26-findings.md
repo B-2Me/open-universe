@@ -3884,3 +3884,32 @@ ELASTIC REGIME (wall+react, the closed loop — measured):
   under ~4 transits), PLASTIC FLOW (creep: sustained pressure
   ruptures at threshold). Stress-strain response with no authored
   force law — emergent from the relay ledger + three registers.
+
+STALL SWEEP (fatigue law shape — measured): stall=2,3,8,16 ALL
+  hold 9/9 cells with IDENTICAL ev27=1924 @100t. The threshold is
+  not a cliff — it's a latency knob. A denied cell re-presses its
+  lane every tick (momentum persists), ratcheting wear past any
+  threshold in ~stall ticks. Once locked the dynamics are the
+  same, and total absorbed impulse = the momentum that would
+  have escaped — a conserved, threshold-invariant quantity.
+  The wall is the DEFAULT response of a lane under sustained
+  pressure, not a fragile tuned artifact.
+
+WALL RINGS (stall + vacpol wave — measured): --wallwave=3:
+  vessel+wave: 9/9 held, sheath_flux +17->+35 (strain couples to
+  the field channel — the wall rings onto committed structure).
+  NO vessel + wave: 9/9 held but ev27 = 116,559 — 60x the
+  wave-off absorption. Strain doesn't sit, it RADIATES: the wall
+  accepts impulse and sheds it as field waves continuously.
+  A fatigue-locked wall on a radiative medium is a DAMPER —
+  it dissipates incoming momentum into the field rather than
+  storing static stress — and dissipation doesn't weaken the
+  lock (winding keeps the lane shut regardless).
+
+WMERGE CREEP (honest null): creep=8 congestion-rupture enabled,
+  sep=2.00 flat, ev64=0, all cases. No denied relays ever occur —
+  the wmerge yield barrier is UPSTREAM OF THE RELAY: interior
+  cells never get hop-worthy momentum at all. Creep integrates
+  only pressure that exists; this barrier lives in the kick
+  channel, not the gate channel. (Diagnostic path: probe
+  momentum[] on interior cells mid-drive.)

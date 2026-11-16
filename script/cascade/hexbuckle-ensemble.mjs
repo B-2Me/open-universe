@@ -10,8 +10,7 @@
  * Usage: node script/cascade/hexbuckle-ensemble.mjs [--n=20]
  *        [--ticks=100] [--w=128] [--dips=8,16,24,32,40,48] [--out=path]
  */
-import { createRequire } from 'node:module';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 
 const HERE = dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
@@ -21,12 +20,8 @@ const arg = (k, d) => {
   return m ? m.split('=')[1] : d;
 };
 
-const gluePath = resolve(ROOT, 'docs/public/wasm/cascade/moore26.js');
-if (!existsSync(gluePath)) { console.error(`wasm glue not found — run src/build.sh`); process.exit(1); }
-const mod = { exports: {} };
-new Function('module', 'exports', 'require', '__dirname', '__filename',
-  readFileSync(gluePath, 'utf8'))(mod, mod.exports, createRequire(gluePath), dirname(gluePath), gluePath);
-const M = await mod.exports();
+import { loadM26 } from '../lib/m26.mjs';
+const M = await loadM26();
 
 const W = parseInt(arg('w', '128')), TICKS = parseInt(arg('ticks', '100'));
 const N = parseInt(arg('n', '20')), PROBE = 80;
