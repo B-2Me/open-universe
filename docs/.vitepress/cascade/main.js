@@ -55,6 +55,7 @@ uniform float u_dep_center;   // focal depth along the view axis
 uniform float u_depth;        // 0 = z-slab, 1 = camera-depth slab
 uniform float u_ghost_alpha;
 uniform float u_qmin;
+uniform float u_trail;      // 1 = show relay wake, 0 = clip it
 uniform int u_colorMode;    // 0=structure 1=wake 2=thermal 3=pol 4=composite 5=current 6=handed
 out vec4 v_color;
 out vec2 v_uv;
@@ -73,10 +74,15 @@ void main() {
   float chg  = rg.a * 255.0;   // biased 127 = neutral
   float pk   = rg2.r * 255.0;  // packets in flight — rail current
   float dds  = rg2.g * 255.0;  // signed dd — 128 neutral
-  float d = max(strc, max(ph, max(ht, abs(chg - 127.0) * 2.0)));
-  d = max(d, max(pk, abs(dds - 128.0) * 2.0));
+  /* dSlow = inert content (structure/phase/heat/charge/dd); d adds
+   * live packets. Trail-off clips cells that are BOTH dim and
+   * packet-free — the relay-wake signature — while live streams at
+   * any brightness stay visible (feed spokes run at pk~2-4). */
+  float dSlow = max(strc, max(ph, max(ht, abs(chg - 127.0) * 2.0)));
+  dSlow = max(dSlow, abs(dds - 128.0) * 2.0);
+  float d = max(dSlow, pk);
   v_uv = a_corner;
-  if (d < u_qmin) {
+  if (d < u_qmin || (u_trail < 0.5 && pk < 1.0 && dSlow < 8.0)) {
     gl_Position = vec4(0.0, 0.0, 2.0, 1.0); v_color = vec4(0.0); return;
   }
   float halfT = u_z_thickness * 0.5;
@@ -907,7 +913,7 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   const U = {};
   for (const n of ['u_mvp', 'u_vol', 'u_size', 'u_z_center', 'u_z_thickness',
-    'u_ghost_alpha', 'u_qmin', 'u_colorMode', 'u_vol2',
+    'u_ghost_alpha', 'u_qmin', 'u_trail', 'u_colorMode', 'u_vol2',
     'u_cam_pos', 'u_view_dir', 'u_dep_center', 'u_depth',
     'u_nx', 'u_ny', 'u_nxy', 'u_step'])
     U[n] = gl.getUniformLocation(prog, n);
@@ -1116,7 +1122,7 @@ export async function initCascadeSimulator(root, opts = {}) {
   const ui = {
     playing: true, tickMs: 0, budget: 400, tick: 0,
     zCenter: D3 >> 1, zThick: D3, ghostAlpha: 0.06, depthSlice: false,
-    qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0, trail: true,
+    qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0, trail: false,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false, thrustArm: false,
     pump: false, pumpAt: null, pumpRate: 0, chargeSites: null, scenario: 'glide',
@@ -1303,7 +1309,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     pair:    'one condenser of each handedness — a -dd and a +dd coil side by side.\nView: handed (indigo vs amber).',
     attract: 'a -q charged wall with a +par stream aimed at it — opposite-sign packets bind and pass through.\nWatch the stream continue past the wall.',
     repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
-    glide:   'a bare-mass knot coasting on seeded momentum — the Newton-1 relay.\n· mass walks odd->odd through the even conduit, ~1 cell/tick\n· each hop is a complete local handoff — there is no moving object, only transactions\n· the faint wake it leaves is the trail of formation events; the ≋ trail toggle hides it.',
+    glide:   'a bare-mass knot coasting on seeded momentum — the Newton-1 relay.\n· mass walks odd->odd through the even conduit, ~1 cell/tick\n· each hop is a complete local handoff — there is no moving object, only transactions\n· the faint wake it leaves is the trail of formation events; the ≈ trail toggle hides it.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
     laser:   'stimulated emission — three wound cells sit on the beam path, pumped so their line stays at nu=32, probed by a resonant nu=32 stream.\n· probes arm at the line and fire ev17: the transmitted packet gets a collimated clone — the beam leaves BRIGHTER than it entered\n· the pumped winding holds the line; unwound, the medium would detune and go dark — that detuning IS the measured linewidth.',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
@@ -1638,7 +1644,8 @@ export async function initCascadeSimulator(root, opts = {}) {
       /* trail off -> raise the clip floor past relay residue
        * (crumbs mass<=3, worn winding <=4) — the wake the substrate
        * writes. Real structure sits far above 8. */
-      gl.uniform1f(U.u_qmin, ui.trail ? ui.qmin : Math.max(ui.qmin, 8));
+      gl.uniform1f(U.u_qmin, ui.qmin);
+      gl.uniform1f(U.u_trail, ui.trail ? 1 : 0);
       gl.uniform1i(U.u_colorMode, ui.colorMode);
       const si = strideInfo();
       gl.uniform1i(U.u_nx, si.nx); gl.uniform1i(U.u_ny, si.ny);
