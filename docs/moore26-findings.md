@@ -3848,3 +3848,25 @@ REGISTER SPLIT (the honest fix — measured):
   (momentum with no kinematic outlet). It is not the carrier-side
   creep register — that would live on the cell, accumulating
   sub-threshold impulse on the carrier itself; still unbuilt.
+
+CREEP REGISTER (the third reservoir — built + measured):
+  NodeState.creep = per-cell pressure history: +1 per denied relay
+  (pushed-and-failed record; rides the body on hop like momentum).
+  qCreepYield = rupture threshold: at creep>=yield the cell squeezes
+  through the fatigued lane once, spending the record (plastic
+  flow). ev64 counts yields. Subtlety found: moore26_events()
+  clamped i<64 — index 64 unreadable; array now [80].
+  MEASURED (fsheath stall=4): creep=4 yields almost immediately
+  (ev64=4/2, cells collapse to baseline-7); creep=50 holds ~50t
+  then discrete ruptures peel cells (9->6->3 over 150t). The wall
+  is no longer binary: stall sets lane fatigue (how much traffic
+  hardens it), creep sets rupture strength (how much sustained
+  pressure breaks through) — the two ends of a stress-strain
+  curve, tunable. Surviving carriers show elevated flux (same
+  current through fewer cells — geometry, not jam).
+  THE THREE REGISTERS, finally separated: winding[] = lane history
+  (free bookkeeping), fluxV = paid medium momentum (counter-
+  impulse + absorbed denial only), creep = cell pressure history
+  (free bookkeeping, spent on yield). Conservation honest
+  throughout: denied pd is paid into fluxV 1:1; creep is a record
+  of events that really happened; yield spends the record.

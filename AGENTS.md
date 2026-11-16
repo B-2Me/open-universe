@@ -432,7 +432,12 @@ alignment scheme changes again.
   induced rigidity, no field/vessel needed. CAUTION: debiting
   carrier momentum at NON-denial sites jams charge (yield is
   binary — tolls can only jam, never brake).
-  fsheath --wall=N --stall=M.
+  fsheath --wall=N --stall=M. CREEP (qCreepYield + NodeState.creep,
+  ev64): the carrier-side pressure register — +1 per denied relay,
+  rides body on hop, at yield the cell ruptures through the worn
+  lane once (plastic flow). creep=4 leaks, creep=50 holds ~50t —
+  tunable rupture strength vs stall's fatigue rate = a stress-
+  strain curve. moore26_events() must read i<80 for ev64.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

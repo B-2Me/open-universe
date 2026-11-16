@@ -173,6 +173,12 @@ typedef struct {
      * it — moving costs no momentum, only forces change it.
      * Unbounded p: drift chance saturates at 1 hop/tick = c, so
      * v asymptotes while p diverges — gamma for free. */
+    int16_t  creep;          /* per-cell pressure history — ticks this
+     * cell pushed a lane and was REFUSED. The carrier-side strain
+     * register (vs winding[]'s lane-side wear): honest history,
+     * rides the body on hop like momentum; at qCreepYield it
+     * becomes force — the cell ruptures through the fatigued lane
+     * once and spends the record (creep = plastic flow). */
 } NodeState;
 /* eff_dd: effective directional imbalance — committed winding plus
  * parity-weighted HELD offers. The standing-offer cloud steers every
@@ -199,7 +205,7 @@ static int CW,CH,CD,nChunks;
 static uint8_t *chunkLive, *chunkProc;
 static int *procList, nProc;
 
-static uint64_t qEvents[64];   /* 48 used; 60/61 = drift diagnostics */
+static uint64_t qEvents[80];   /* 48 used; 60/61 = drift diagnostics; ev64 = creep yield */
 static uint64_t qTick;
 /* TRANSACTION JOURNAL — God's-eye audit ring: every audited event
  * writes {tick,src,dst,kind,amount}. Conservation becomes replay —
@@ -430,6 +436,9 @@ static int qPolProp=0;     /* 0=off. Nonzero = PROPORTIONAL POLING:
  * (aligned: pulls carriers to the conduit), - = diamagnetic
  * (anti: pushes carriers inward — the bottle sign). Uses the
  * same committed-conduit gate and wave propagation as qVacPol. */
+static int qCreepYield=0;   /* 0=off. Nonzero = creep rupture
+ * threshold: a cell denied this many times yields through the
+ * fatigued lane (plastic flow) and spends its creep record. */
 static int qWallStall=0;   /* 0=off. Nonzero = strain-stall
  * threshold: a mass hop crossing a conduit whose |fluxV| sums to
  * >= this stalls like a saturated lane — strain IS occupancy.
@@ -2067,23 +2076,38 @@ void moore26_tick(void){
                          int ws=grid_current[ci0].winding[2*be]
                                +grid_current[ci0].winding[2*be+1];
                          if(ws+1>=qWallStall){
-                             uint32_t wv=grid_next[ci0].winding[ch]+1;
-                             grid_next[ci0].winding[ch]=
-                                 (uint16_t)(wv>65535?65535:wv);
-                             int32_t pd=o->momentum[be];
-                             if(qWallPress&&pd){
-                                 grid_next[si].momentum[be]-=pd;
-                                 int ax=0;
-                                 for(int a=1;a<3;a++)
-                                     if(v[a]*v[a]>v[ax]*v[ax])ax=a;
-                                 int32_t rv=grid_next[ci0].fluxV[ax]
-                                           +(v[ax]>0?pd:-pd);
-                                 grid_next[ci0].fluxV[ax]=(int16_t)
-                                     (rv>32767?32767
-                                      :rv<-32768?-32768:rv);
-                                 qEvents[27]+=(uint64_t)(pd<0?-pd:pd);
+                             /* CREEP YIELD (qCreepYield) — the cell
+                              * has pushed and failed enough: plastic
+                              * rupture, it squeezes through the worn
+                              * lane once and SPENDS the accumulated
+                              * pressure record. Falls through to the
+                              * relay; the crossing wears normally. */
+                             if(qCreepYield&&o->creep>=qCreepYield){
+                                 grid_next[si].creep=0;
+                                 qEvents[64]++;
+                             }else{
+                                 uint32_t wv=grid_next[ci0].winding[ch]+1;
+                                 grid_next[ci0].winding[ch]=
+                                     (uint16_t)(wv>65535?65535:wv);
+                                 int32_t pd=o->momentum[be];
+                                 if(qWallPress&&pd){
+                                     grid_next[si].momentum[be]-=pd;
+                                     int ax=0;
+                                     for(int a=1;a<3;a++)
+                                         if(v[a]*v[a]>v[ax]*v[ax])ax=a;
+                                     int32_t rv=grid_next[ci0].fluxV[ax]
+                                               +(v[ax]>0?pd:-pd);
+                                     grid_next[ci0].fluxV[ax]=(int16_t)
+                                         (rv>32767?32767
+                                          :rv<-32768?-32768:rv);
+                                     qEvents[27]+=(uint64_t)(pd<0?-pd:pd);
+                                 }
+                                 /* pushed and failed — the carrier-
+                                  * side strain record grows */
+                                 if(grid_next[si].creep<32767)
+                                     grid_next[si].creep++;
+                                 continue;
                              }
-                             continue;
                          }
                      }
                  }}
@@ -2172,6 +2196,13 @@ void moore26_tick(void){
                         grid_next[si].momentum[e]-=p2;
                         grid_next[ni].momentum[e]+=p2;
                     }
+                }
+                /* creep rides too — pressure history belongs to the
+                 * body that earned it */
+                if(o->creep){
+                    int32_t cv=grid_next[ni].creep+o->creep;
+                    grid_next[ni].creep=(int16_t)(cv>32767?32767:cv);
+                    grid_next[si].creep=0;
                 }
                 /* charge rides the body it labels — the record belongs
                  * to the matter: the same FRACTION relocates as the
@@ -4052,7 +4083,7 @@ void moore26_chargeflight_set(int x,int y,int z,int c,int v){
         grid_next[z*QWidth*QHeight+y*QWidth+x].chargeFlight[c]=(int8_t)v;
     mark_chunk(x,y,z);
 }
-uint64_t moore26_events(int i){return (i>=0&&i<64)?qEvents[i]:0;}
+uint64_t moore26_events(int i){return (i>=0&&i<80)?qEvents[i]:0;}
 uint32_t moore26_journal_tick(int i){return qJTick[i&(QJRN-1)];}
 uint32_t moore26_journal_kind(int i){return qJKind[i&(QJRN-1)];}
 int32_t  moore26_journal_src(int i){return qJSrc[i&(QJRN-1)];}
@@ -4281,6 +4312,10 @@ void moore26_vac_pol_set(int v){qVacPol=v>-16&&v<16?v:0;}
 void moore26_pol_prop_set(int v){qPolProp=v>-16&&v<16?v:0;}
 void moore26_wall_press_set(int v){qWallPress=v>0&&v<16?v:0;}
 void moore26_wall_stall_set(int v){qWallStall=v;}
+void moore26_creep_yield_set(int v){qCreepYield=v;}
+int  moore26_creep_get(int x,int y,int z){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].creep;}
 void moore26_field_react_set(int v){qFieldReact=v>0&&v<16?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){

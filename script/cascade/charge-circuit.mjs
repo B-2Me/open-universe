@@ -1082,7 +1082,7 @@ if (MODE === 'fsheath') {
       if (q._moore26_mass_get(x, y, 16) > 10) n++;
     return n;
   };
-  function runS(mk, vp, rx, pole, sheath, label, pp, wp, ws) {
+  function runS(mk, vp, rx, pole, sheath, label, pp, wp, ws, cy) {
     seedS(sheath);
     q._moore26_mag_kick_set(mk);
     q._moore26_vac_pol_set(vp);
@@ -1090,8 +1090,9 @@ if (MODE === 'fsheath') {
     q._moore26_pol_prop_set(pp ?? 0);
     q._moore26_wall_press_set(wp ?? 0);
     q._moore26_wall_stall_set(ws ?? 0);
+    q._moore26_creep_yield_set(cy ?? 0);
     console.log(`  -- ${label}:`);
-    const e25 = Number(q._moore26_events(25)), e27 = Number(q._moore26_events(27));
+    const e25 = Number(q._moore26_events(25)), e27 = Number(q._moore26_events(27)), e64 = Number(q._moore26_events(64));
     for (let t = 0; t <= T; t++) {
       if (t % 25 === 0) {
         const e = extent();
@@ -1110,7 +1111,7 @@ if (MODE === 'fsheath') {
         }
       }
     }
-    console.log(`    ev25(pol)=${Number(q._moore26_events(25)) - e25}  ev27(press)=${Number(q._moore26_events(27)) - e27}`);
+    console.log(`    ev25(pol)=${Number(q._moore26_events(25)) - e25}  ev27(press)=${Number(q._moore26_events(27)) - e27}  ev64(yield)=${Number(q._moore26_events(64)) - e64}`);
   }
   console.log(`\n=== fsheath: wire + conduit vessel, V=${V} mag=${MK} B=${B} ===`);
   runS(MK, VP, 0, 0, 1, `self-poled vessel (vacpol=${VP}, resistive)`);
@@ -1127,6 +1128,11 @@ if (MODE === 'fsheath') {
     if (WS) {
       runS(MK, 0, 0, 0, 1, `bare vessel + wall=${WP} stall=${WS} (self-hardening)`, 0, WP, WS);
       runS(MK, 0, 0, 0, 0, `NO vessel + wall=${WP} stall=${WS} (transit-tax baseline)`, 0, WP, WS);
+      const CY = +(argv.creep ?? 0);
+      if (CY) {
+        runS(MK, 0, 0, 0, 1, `bare vessel + stall=${WS} creep=${CY} (rupture rate)`, 0, WP, WS, CY);
+        runS(MK, 0, 0, 0, 0, `NO vessel + stall=${WS} creep=${CY} (rupture rate)`, 0, WP, WS, CY);
+      }
     }
   }
   runS(MK, VP, +(argv.react2 ?? 4), 0, 1, `self-poled + react=${+(argv.react2 ?? 4)} (strain-hardened)`);
