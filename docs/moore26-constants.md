@@ -138,6 +138,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | transformer loading | funded EMF sags primary flux −8.4% (1695→1552); induced charge feedback −10% — reflected impedance | `qIndLoad`=1, ramping primary | charge-circuit --mode=tload |
 | ring pinch | −0.6/cell/tick inward radial bias (pinned); free ring opens at a corner → stable arc | 32-cell ring, sustained pump | charge-circuit --mode=pring |
 | wire pinch confinement | fails: interior pinch cancels, ends erode — column necks at ends (sausage-instability analog), self-limits | free 9-cell wire | charge-circuit --mode=pwire --shift=1 |
+| vacuum-polarization wave | propagates 21-even bare conduit line at ~0.4 even/tick (2–3 ticks/link), zero mass/charge anywhere; reflection + ringing at a break; persistent DC remnant at driven head | `qVacPol`=3, `fluxV` conjugate, Laplacian coupling | charge-circuit --mode=wavevac --shift=0 |
+| field→carrier detection | detector charge responds only after wave arrival (t≈55 for 20-link packet): ev24=77, det_q −21, Lenz-signed det flux +26 vs arriving −flux | `qMagInd`=4 read on conduit Δ | charge-circuit --mode=wavevac --shift=0 |
+| pulsed-drive creep | null at strobe 4–8, mag 6–16: barrier is a per-tick momentum threshold, not an integral — pulses don't accumulate | wmerge --strobe | charge-circuit --mode=wmerge --strobe=8 --mag=6 |
 
 ## Confinement & reaction constants
 

@@ -956,11 +956,13 @@ if (MODE === 'wmerge') {
   // current survives end-erosion; interior cells x=11..19 stay
   // FREE — they're what the attraction gets to move
   const TERM = [[9, 16], [21, 16], [9, 18], [21, 18]];
-  const drive = (par) => {
-    q._moore26_charge_set(9, 16, 16, V);
+  const STROBE = +(argv.strobe ?? 0);    // 0=DC; N=drive 1 tick in N — pulsed creep
+  const drive = (par, t) => {
+    const on = !STROBE || t % STROBE === 0;
+    q._moore26_charge_set(9, 16, 16, on ? V : 0);
     q._moore26_charge_set(21, 16, 16, 0);
-    q._moore26_charge_set(9, 18, 16, par ? V : 0);
-    q._moore26_charge_set(21, 18, 16, par ? 0 : V);
+    q._moore26_charge_set(9, 18, 16, on && par ? V : 0);
+    q._moore26_charge_set(21, 18, 16, on && !par ? V : 0);
     for (const [x, y] of TERM) {
       q._moore26_mass_set(x, y, 16, MASS);
       for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
@@ -979,13 +981,83 @@ if (MODE === 'wmerge') {
         console.log(`    t=${String(t).padStart(3)}  cA_y=${ca.toFixed(2)} cB_y=${cb.toFixed(2)}` +
           `  sep=${(cb - ca).toFixed(2)}  cells=${n}`);
       }
-      if (t < T) { q._moore26_tick(); drive(par); }
+      if (t < T) { q._moore26_tick(); drive(par, t); }
     }
   }
-  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} ===`);
+  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} strobe=${STROBE || 'DC'} ===`);
   runMerge(1, 'parallel currents   (expect ATTRACT -> sep shrinks)');
   runMerge(0, 'antiparallel currents (expect REPEL -> sep grows)');
   runMerge(1, 'mag=0 control        (expect static)', 0);
+  process.exit(0);
+}
+
+if (MODE === 'wavevac') {
+  // EMPTY-CONDUIT VACUUM POLARIZATION — "light" as a propagating
+  // local state-change on bare committed structure. A zigzag line
+  // of committed even cells (x=10..30, y alternating 16/15 — every
+  // consecutive pair edge-adjacent) carries flux[] as field
+  // orientation, driven by the discrete Laplacian + fluxV momentum
+  // (qVacPol). NO mass or charge anywhere on the line.
+  //   pure: drive the head even's flux directly (ghost field) —
+  //         does polarization propagate through EMPTY structure?
+  //   end2end: antenna odd cell (9,16)Δflux poles the head even;
+  //         detector odd cell (31,16)+target (29,16) reads the
+  //         arriving wave through the FIELD->CARRIER EMF (qMagInd
+  //         on the conduit's own delta) — induced charge + flux.
+  // controls: --skip=i unwinds interior even i (dead beyond),
+  //           --vacpol=0 (no wave), --ind=0 (wave yes, detector no)
+  const VP  = +(argv.vacpol ?? 3), MI2 = +(argv.ind ?? 4);
+  const F   = +(argv.flux ?? 2000), K = +(argv.drive ?? 8);
+  const T   = +(argv.ticks ?? 45), skip = +(argv.skip ?? -1);
+  const NE = 21;                                   // evens x=10..30
+  const EX = i => 10 + i, EY = i => 16 - (i & 1);
+  function seedVac(pure) {
+    reset(SHIFT, HEAT);
+    q._moore26_vac_pol_set(VP);
+    q._moore26_mag_ind_set(MI2);
+    for (let i = 0; i < NE; i++) if (i !== skip) wound(EX(i), EY(i), 16);
+    if (!pure) {
+      q._moore26_mass_set(9, 16, 16, MASS);        // antenna (ghost: flux-driven)
+      q._moore26_mass_set(31, 16, 16, MASS);       // detector
+      q._moore26_charge_set(31, 16, 16, 200);
+      q._moore26_mass_set(29, 16, 16, MASS);       // EMF push target
+    }
+  }
+  const drive = (pure, t) => {                      // bipolar square pulse on axis 0
+    const v = t < K ? F : (t < 2 * K ? -F : 0);
+    if (pure) q._moore26_flux_set(10, 16, 16, 0, v);
+    else      q._moore26_flux_set(9, 16, 16, 0, v);
+  };
+  function runVac(pure, label) {
+    seedVac(pure);
+    const e0 = Number(q._moore26_events(24)), e5 = Number(q._moore26_events(25));
+    console.log(`  -- ${label}:`);
+    console.log('    even x:   ' + Array.from({length: NE}, (_, i) => String(EX(i)).padStart(5)).join(''));
+    const rows = [], det = [];
+    for (let t = 0; t <= T; t++) {
+      if (t) q._moore26_tick();
+      drive(pure, t);
+      rows.push(Array.from({length: NE}, (_, i) => q._moore26_flux_get(EX(i), EY(i), 16, 0)));
+      det.push(pure ? 0 : q._moore26_charge_get(29, 16, 16));
+      if (t <= 24 || t % 5 === 0)
+        console.log(`    t=${String(t).padStart(2)}  ` +
+          rows[t].map(f => String(Math.round(f / 100)).padStart(4)).join(' ') +
+          (pure ? '' : `  det_q=${det[t]}`));
+    }
+    // crossing times: first tick each even's |flux| > 50 -> speed
+    const cross = rows[0].map((_, i) => rows.findIndex(r => Math.abs(r[i]) > 50));
+    let prev = null;
+    const steps = cross.map(c => { const s = c >= 0 && prev !== null ? c - prev : null; if (c >= 0) prev = c; return s; });
+    console.log('    first |flux|>50 (ticks after predecessor): ' +
+      steps.map(s => s === null ? ' x' : String(s).padStart(2)).join(''));
+    console.log(`    ev24(EMF)=${Number(q._moore26_events(24)) - e0}  ev25(pol)=${Number(q._moore26_events(25)) - e5}` +
+      (pure ? '' : `  det charge end=${det[T]}  det flux end=${q._moore26_flux_get(31, 16, 16, 0)}`));
+    return rows;
+  }
+  console.log(`\n=== wavevac: 21-even bare conduit line, vacpol=${VP} ind=${MI2} F=${F} pulse=${K}t skip=${skip} ===`);
+  runVac(true, 'PURE: no mass anywhere — ghost field drive on head even');
+  if (!MI2) console.log('    (ind=0: end-to-end detector is silent by construction)');
+  else runVac(false, 'END-TO-END: antenna Δflux -> wave -> detector EMF');
   process.exit(0);
 }
 

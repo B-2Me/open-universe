@@ -380,6 +380,20 @@ alignment scheme changes again.
   cells in balanced equilibrium, ends neck off — the
   sausage-instability analog (--mode=pring|pwire).
   `--mode=pinch|wave|faraday|magrange|tload|pring|pwire`.
+  VACUUM POLARIZATION (`qVacPol` + `fluxV[3]`, --mode=wavevac):
+  flux[] on an even cell is the field-orientation state (the
+  poling of bare committed structure — no charge/mass needed);
+  fluxV[] is its conjugate wave momentum (Laplacian over
+  committed even neighbors). Carrier Δflux poles the conduit;
+  the conduit itself is an induction source under qMagInd
+  (field→carrier EMF on every touching massive odd cell).
+  MEASURED: dispersive packet crosses a 21-even EMPTY line at
+  ~0.4 even/tick, reflects+rings at a break, detector responds
+  only at causal arrival (t≈55 for 20 links) — "light" as a
+  propagating local state-change riding committed structure
+  (waveguide, NOT free-space radiation). Strobe test (wmerge
+  --strobe): pulsed drive can't creep — yield is a per-tick
+  threshold, not an integral; needs a momentum-accumulator layer.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

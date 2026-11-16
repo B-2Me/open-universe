@@ -133,6 +133,11 @@ typedef struct {
     int16_t  fluxP[3];         /* last tick's flux — the dI/dt register.
      * A steady DC current has fluxP==flux (Δ=0, no induction);
      * a ramping current shows the change Faraday's law reads. */
+    int16_t  fluxV[3];         /* polarization momentum — the wave's
+     * second variable on EVEN cells. flux[] on an even cell is not
+     * a carrier record but the vacuum's field-orientation state:
+     * poled by touching cells' Δflux, carried by the committed
+     * lattice (discrete Laplacian -> fluxV -> flux). */
     uint8_t  scarPar;          /* annihilation parity record — bit d
      * (faces 0-5) = handedness of the +d-side cell at cancellation;
      * bit 6 = validity tag. A RECORD, not a conductor: kept out of
@@ -405,6 +410,17 @@ static int qIndLoad=0;     /* 0=free EMF (authored work). Nonzero =
  * the primary pays for the secondary's induced current. The
  * limit cycle and the wave then draw on a real current, not
  * an authored one — measurable as primary flux sag. */
+static int qVacPol=0;      /* 0=off. Nonzero = right-shift VACUUM
+ * POLARIZATION: flux[] on an even cell is the field-orientation
+ * state of the conduit lattice, not a carrier record. A touching
+ * odd cell's Δflux poles the conduit (en.flux += Δ); committed
+ * even cells couple to committed even neighbors through a
+ * discrete Laplacian carried by fluxV[] (fluxV += Lap>>shift,
+ * flux += fluxV) — a wave living on bare committed structure,
+ * no carriers required. The conduit then reads as an induction
+ * SOURCE (qMagInd law, Δ from en itself) so a polarized chain
+ * drives EMF on the endpoint detector: light = a propagating
+ * local state-change, observed only through what mass does. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1221,7 +1237,7 @@ void moore26_tick(void){
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
                     if(qBondShare||qChargeKick||qChargeFlow||qMagKick
-                       ||qMagRange||qMagInd){
+                       ||qMagRange||qMagInd||qVacPol){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1232,6 +1248,26 @@ void moore26_tick(void){
                                 ey=y+((d==2)-(d==3)),
                                 ez=z+((d==4)-(d==5));
                             int fired=0,mfired=0;
+                            /* VACUUM POLARIZATION, write side (qVacPol)
+                             * — the carrier poles the medium: this cell's
+                             * CHANGING flux (Δ = flux-fluxP; DC reads Δ=0,
+                             * so a steady current holds a steady poling
+                             * without re-driving it) writes its delta
+                             * into the committed conduit's own flux[].
+                             * The field register lives on bare structure
+                             * — no charge or mass required on the even
+                             * cell itself. ev25 = |Δ| delivered. */
+                            if(qVacPol)
+                                for(int a3=0;a3<3;a3++){
+                                    int32_t dpo=o->flux[a3]-o->fluxP[a3];
+                                    if(dpo){
+                                        int32_t f=grid_next[ei].flux[a3]+dpo;
+                                        grid_next[ei].flux[a3]=(int16_t)
+                                            (f>32767?32767:f<-32768?-32768:f);
+                                        qEvents[25]+=(uint64_t)
+                                            (dpo<0?-dpo:dpo);
+                                    }
+                                }
                             /* JUNCTION — a committed conduit couples
                              * EVERY massive odd cell touching it, not
                              * only the partner 2-along-face. Straight
@@ -1480,6 +1516,65 @@ void moore26_tick(void){
                                     }
                                 }
                             }
+                            /* FIELD->CARRIER (the conduit as source) —
+                             * same qMagInd law, but the CHANGING flux
+                             * being read is the conduit's own: the
+                             * polarized structure (qVacPol writes, or a
+                             * ghost field) drives the Lenz EMF on every
+                             * massive odd cell touching it. Works on an
+                             * EMPTY conduit — the wave arriving down a
+                             * bare polarized line induces current in the
+                             * detector. Under qIndLoad the conduit field
+                             * pays (its flux debited) — detector loading
+                             * attenuates the wave. */
+                            if(qMagInd)
+                                for(int a3=0;a3<3;a3++){
+                                    int32_t dfe=en->flux[a3]-en->fluxP[a3];
+                                    if(!dfe)continue;
+                                    int dir=dfe>0?-1:1;
+                                    int df=2*a3+(dir>0?0:1);
+                                    int gx=x+((df==0)-(df==1)),
+                                        gy=y+((df==2)-(df==3)),
+                                        gz=z+((df==4)-(df==5));
+                                    int nx2=x+2*((df==0)-(df==1)),
+                                        ny2=y+2*((df==2)-(df==3)),
+                                        nz2=z+2*((df==4)-(df==5));
+                                    if(gx<0||gx>=QWidth||gy<0||gy>=QHeight
+                                       ||gz<0||gz>=QDepth
+                                       ||nx2<0||nx2>=QWidth||ny2<0||ny2>=QHeight
+                                       ||nz2<0||nz2>=QDepth)continue;
+                                    const NodeState *en3=
+                                        &grid_current[(gz*QHeight+gy)*QWidth+gx];
+                                    uint32_t mn3=0;
+                                    for(int e2=0;e2<QChannels/2;e2++){
+                                        uint32_t mm=en3->winding[2*e2]<en3->winding[2*e2+1]
+                                                  ?en3->winding[2*e2]:en3->winding[2*e2+1];
+                                        if(mm>mn3)mn3=mm;}
+                                    int qi=(nz2*QHeight+ny2)*QWidth+nx2;
+                                    int32_t k=(dfe<0?-dfe:dfe)>>qMagInd;
+                                    if(mn3>=qCommitMin
+                                       &&grid_current[qi].mass
+                                       &&k>0&&o->charge){
+                                        int32_t a=grid_next[si].charge-k,
+                                                b=grid_next[qi].charge+k;
+                                        grid_next[si].charge=(int16_t)
+                                            (a<-32768?-32768:a>32767?32767:a);
+                                        grid_next[qi].charge=(int16_t)
+                                            (b<-32768?-32768:b>32767?32767:b);
+                                        {int32_t f=grid_next[si].flux[a3]+dir*k;
+                                         grid_next[si].flux[a3]=(int16_t)
+                                             (f>32767?32767:f<-32768?-32768:f);
+                                         f=grid_next[qi].flux[a3]+dir*k;
+                                         grid_next[qi].flux[a3]=(int16_t)
+                                             (f>32767?32767:f<-32768?-32768:f);
+                                         if(qIndLoad){
+                                             f=grid_next[ei].flux[a3]+dir*k;
+                                             grid_next[ei].flux[a3]=(int16_t)
+                                                 (f>32767?32767:f<-32768?-32768:f);}
+                                        }
+                                        qEvents[24]+=(uint64_t)k;
+                                    }
+                                }
                             /* CHAIN MODE (qChargeRange) — the force
                              * walks the wire: BFS over committed even
                              * cells (edge-adjacent, committed pair) from
@@ -1693,7 +1788,8 @@ void moore26_tick(void){
                  * stopped current stops exerting force (remanence
                  * would need a separate committed register, like
                  * winding's wear — v1 keeps it simple) */
-                if(qMagKick||qChargeFlow||qHeatPump||qMagInd||qMagRange)
+                if(qMagKick||qChargeFlow||qHeatPump||qMagInd||qMagRange
+                   ||qVacPol)
                     for(int a2=0;a2<3;a2++){
                         /* snapshot BEFORE decay — fluxP holds the
                          * pre-tick value so next tick's Δflux is the
@@ -2166,6 +2262,62 @@ void moore26_tick(void){
             grid_next[si].chargeFlight[fc]=(int8_t)(cf>127?127:cf<-127?-127:cf);
         PROC_NODES_END
     }
+
+    /* Phase 1d: VACUUM WAVE (qVacPol) — the conduit lattice carries
+     * the field. On every committed even cell, flux[] is the
+     * polarization (field-orientation state — NOT a carrier record:
+     * no charge or mass needed) and fluxV[] its conjugate momentum.
+     * The committed-even neighborhood defines the medium:
+     *   fluxV += (Σ_committed_nbrs flux - deg*flux) >> qVacPol
+     *   flux  += fluxV
+     * a discrete wave living on bare structure — the polarization
+     * change hops one committed link per tick. Uncommitted vacuum
+     * carries nothing (deg=0 -> fluxV freezes; a cell that loses
+     * commitment stops propagating). fluxP snapshots let touching
+     * matter read Δfield (the FIELD->CARRIER EMF reads en's delta
+     * exactly like a partner cell's — induction doesn't care
+     * whose flux changed). Polarization is persistent, not EWMA:
+     * a static field needs no upkeep — only its CHANGE induces. */
+    if(qVacPol)
+    PROC_NODES
+        if(IS_EVEN(x,y,z)){
+            const NodeState *o=&grid_current[si];
+            uint32_t mn=0;
+            for(int e2=0;e2<QChannels/2;e2++){
+                uint32_t mm=o->winding[2*e2]<o->winding[2*e2+1]
+                          ?o->winding[2*e2]:o->winding[2*e2+1];
+                if(mm>mn)mn=mm;}
+            for(int a=0;a<3;a++)
+                grid_next[si].fluxP[a]=o->flux[a];
+            if(mn>=qCommitMin){
+                int deg=0;int32_t lap[3]={0,0,0};
+                for(int c=6;c<18;c++){
+                    const int8_t *v=QChannelVec[c];
+                    int hx=x+v[0],hy=y+v[1],hz=z+v[2];
+                    if(hx<0||hx>=QWidth||hy<0||hy>=QHeight
+                       ||hz<0||hz>=QDepth)continue;
+                    int hi=(hz*QHeight+hy)*QWidth+hx;
+                    const NodeState *hn=&grid_current[hi];
+                    uint32_t mnn=0;
+                    for(int e3=0;e3<QChannels/2;e3++){
+                        uint32_t mm2=hn->winding[2*e3]<hn->winding[2*e3+1]
+                                    ?hn->winding[2*e3]:hn->winding[2*e3+1];
+                        if(mm2>mnn)mnn=mm2;}
+                    if(mnn<qCommitMin)continue;
+                    deg++;
+                    for(int a=0;a<3;a++)lap[a]+=hn->flux[a]-o->flux[a];
+                }
+                for(int a=0;a<3;a++){
+                    int32_t dv=grid_next[si].fluxV[a]+(lap[a]>>qVacPol);
+                    grid_next[si].fluxV[a]=(int16_t)
+                        (dv>32767?32767:dv<-32768?-32768:dv);
+                    int32_t f=grid_next[si].flux[a]+grid_next[si].fluxV[a];
+                    grid_next[si].flux[a]=(int16_t)
+                        (f>32767?32767:f<-32768?-32768:f);
+                }
+            }
+        }
+    PROC_NODES_END
 
     AUDIT_PH(3)
     /* Phase 2: OFFER — arrived packets arm incipient transactions.
@@ -3931,6 +4083,7 @@ void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
 void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
 void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
 void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
+void moore26_vac_pol_set(int v){qVacPol=v>0&&v<16?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){
     if(!grid_current||a<0||a>2)return 0;

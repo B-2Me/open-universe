@@ -3541,3 +3541,84 @@ What WOULD work, in order of substrate-honesty:
      in the CONDUIT (even cells), not the cells, so structure
      motion can't kill it — the deepest option: make conduction
      a property of the committed lattice itself.
+
+## Vacuum polarization — the empty-conduit wave (qVacPol + fluxV)
+
+(engine change + charge-circuit.mjs --mode=wavevac)
+
+THE ONTOLOGY MOVE: flux[] on an ODD cell is a current element (recent
+charge throughput); flux[] on an EVEN cell is now the field's
+orientation state — same register, two populations. "Vacuum" here is
+uncommitted-but-polarizable structure; a COMMITTED conduit is
+polarized vacuum literally (paired winding = aligned channels).
+Vacuum polarization = the conduit's own registers reorienting to a
+changing disturbance WITHOUT pushing a charge carrier. fluxV[3] is
+the conjugate momentum — the wave's second variable.
+
+THREE LOCAL RULES, all inside existing machinery:
+  write — a touching odd cell's Δflux (flux−fluxP, so DC holds a
+          steady poling without re-driving it) adds into the
+          committed conduit's flux[]: the carrier poles the medium.
+  wave  — on committed evens only: fluxV += Laplacian>>qVacPol,
+          flux += fluxV, over committed even neighbors. Bare
+          structure carries the disturbance; uncommitted cells
+          carry nothing (deg=0 freezes). Polarization persists —
+          a static field needs no upkeep; only CHANGE induces.
+  read  — the conduit itself becomes an induction source: the
+          qMagInd Lenz EMF fires on en's own Δflux, pushing charge
+          of EVERY massive odd cell touching it. Under qIndLoad the
+          FIELD pays (en.flux debited) — detector loading
+          attenuates the wave.
+
+MEASURED (21-even zigzag line x=10..30, --shift=0 conduction dead):
+  PURE (no mass/charge ANYWHERE — ghost drive on head even):
+    bipolar 8t pulse -> a dispersive packet ~5 cells wide travels
+    the full line at ~0.4 evens/tick (2–3 ticks/link, group
+    velocity < causal max — a real wave, not teleportation).
+    Full crossing every even; ev24=0 ev25=0 — no carriers touched.
+    At the tail the packet keeps ringing at amplitude ~2000–2900.
+    Head even retains a static polarization remnant after drive
+    ends — a DC poling that persists, as it should.
+  BROKEN LINE (skip=10): wave stops dead at the missing even,
+    energy piles up and RINGS backward (reflection at an open
+    boundary — amplitude swings ±4800 at the break cell); every
+    cell past the gap stays exactly 0. Detector dead.
+  vacpol=0: dead everywhere, trivially.
+  ind=0: wave propagates identically — the EMF read is correctly
+    a separate law from the propagation.
+  END-TO-END (antenna odd cell poles head; detector odd cell at
+    the tail): det_q stays 0 until t≈55 — the packet's arrival
+    time at v≈0.4 evens/tick — then moves (ev24=77, det_q −21,
+    det flux +26 Lenz-signed against the arriving −flux). A
+    CAUSALLY DELAYED response: mass at the far end acts only
+    after the state-change physically reaches it.
+  FIRST-RUN CONTAMINATION CAUGHT: at --shift=4 det_q ramps 12→93
+    from tick 1 — ordinary Ohmic conduction of the detector's own
+    charge through the committed line, not the wave. shift=0
+    isolates the EMF channel.
+
+WHAT THIS IS: "light" in the substrate's honest terms — a
+propagating local state-change observable only through what mass
+does at the ends. No photon register, no traveling object; the
+photon-analog is the CHAIN of local updates, exactly the measured
+ontology. It rides COMMITTED structure only — waveguide optics,
+not free-space radiation: uncommitted cells still carry nothing,
+so a true vacuum-to-vacuum hop remains absent by construction.
+
+WHAT IT FIXES ELSEWHERE: the deepest self-confinement obstruction
+was "current dies when matter moves" — the circuit lived on
+matter cells. The conduit now carries a real dynamical state of
+its own: the plasma-and-lattice separation has inverted, at least
+for the field half.
+
+## Pulsed-drive creep (wmerge --strobe) — threshold, not integral
+
+Strobing the drive (1 tick on per N) at mag=6–16, strobe=4–8:
+identical yield-barrier outcome — 2 boundary cells leave early,
+the rest freeze at sep=2.00 for 150 ticks. The strobe hypothesis
+DIES cleanly: momentum drains every tick, so a pulse that doesn't
+clear the hop threshold in ONE tick contributes nothing — force
+is a per-tick threshold comparison, not an accumulated integral.
+The missing ingredient for creep is therefore a momentum
+reservoir / yield-accumulation register (the "another layer" the
+offer mechanic would need) — not a timing trick on the drive.
