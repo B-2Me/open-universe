@@ -114,6 +114,14 @@ translations live in [Nature → Substrate](/nature-translation).
 | mediation | grazing emission → flank deposition | YORP mechanism on conserved engine | torque transfer |
 | conducted charge force | +/+ repels, +/− converges at bond; impulse ∝ min\|q\| (ev58 992@q=1k vs 2000@2k) | committed conduit, `qChargeKick` shift=4, k=min\|q\|>>4 | charge-kick |
 | charge-force range | exactly one bond — kick stops the tick the link breaks | no cast-across-gap mode exists | charge-kick |
+| wire force at range | +/+ sep 10→31, +/− converge at midpoint, broken wire dead | 9-cell committed wire, `qChargeRange` BFS | charge-kick --mode=wire |
+| chain composition | 5-cell +q chain: ends fly, interior cancels, ev58=8×248 | adjacent kicks compose, no new code | charge-kick --mode=chain |
+| conduction (Ohm's law) | I ∝ V to <0.5% (R=12.1 const over 8×V); I ∝ 1/L (R=2L exact at shift=1) | pinned ± terminals, L-link wire, `qChargeFlow` | charge-circuit --mode=ohm |
+| series uniformity | I_drain = I_source = ev60/L within 0.5% | steady state, same L6 wire | charge-circuit --mode=ohm |
+| wire profile | q(x) linear to ±1 (1024,853,682,511,341,170,0) | V=1024 L=6 steady state | charge-circuit --mode=ohm |
+| RC discharge | Σq conserved exactly (1024); settles flat ~Q/(L+1) | unpinned +Q seed | charge-circuit --mode=rc |
+| broken wire | I_drain=0; stub charges to ~source potential | mid-link conduit removed | charge-circuit --mode=broken |
+| Joule heating | interior heat ~1100–1400 @ I≈85, k>>3 mint | `qChargeHeat` shift=3 | charge-circuit --mode=joule |
 
 ## Confinement & reaction constants
 

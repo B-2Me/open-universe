@@ -3207,3 +3207,54 @@ proportional share, conserved) and phase + bondDist (the
 oscillator state and reach map, whole on clean hops, bondPar
 rule). bondTick STAYS — a site's formation birthday is
 provenance, not body state; it staying is what makes the trail.
+
+## Conduction — Ohm's law on the wire (charge-circuit.mjs)
+
+qChargeFlow (shift 0-15) makes the charge record itself mobile on
+the lattice WITHOUT moving mass: across a committed conduit the
+higher-potential side sends k=(qa-qb)>>shift of its signed record
+to the partner. Only the higher side sends (one writer-pair per
+link), reads are pre-tick so the wave travels 1 link/tick, and k
+is clamped to dq/2 so a link can never ring. ev60 = charge in
+transit — the ammeter.
+
+Fixture: L committed conduits in a straight chain, odd lattice
+cells (mass, no momentum) between them. Source pinned +V (ideal
+battery), drain pinned 0 (ideal ground — its inflow IS the
+current). Three independent ammeters cross-check: drain inflow,
+source outflow, ev60/L.
+
+MEASURED (shift=1, mass=100):
+
+  Ohm's law — I ∝ V: R = 12.0-12.2 const across V=256..2048
+  Resistance ∝ length: R = 2L EXACTLY (4.0/8.0/12.1/16.1 at
+      L=2/4/6/8) — matches I = V/(L*2^shift)
+  Kirchhoff series: I_drain = I_source = ev60/L within 0.5%
+  Potential profile: q(x) linear to +/-1 —
+      1024 853 682 511 341 170 0  vs  ideal ...683 512 341 171
+  RC discharge (no pins): source 1024 -> 149 ~= Q/(L+1)=146,
+      profile flattens, Sum q = 1024 EXACT the whole run
+  Broken wire: I_drain = 0 — but the source-side stub charges
+      to ~V (a dead-end wire pulls a filling current, like a
+      real open conductor charging to source potential)
+  Off control: dead static
+  Joule (qChargeHeat): interior cells warm ~1100-1400 @ I~85,
+      k>>3 minted at the receiver — the resistor heats with
+      current (AUTHORED mint; the dropped potential is unbookkept)
+
+What this is: a discrete conductor. The lattice stays home; the
+charge record migrates odd->odd through committed conduits down
+its own gradient. Voltage = the record differential (measured
+linear), amperage = transits/tick (measured, uniform in series),
+resistance = links x 2^shift.
+
+HONEST GAPS — what a circuit layer still lacks:
+  - a FUNDED EMF: pinned terminals are an ideal battery; a real
+    one would spend something (heat? winding? a charge pump law)
+  - no induction: steady current exerts no force on a neighboring
+    wire's charge — the magnetic layer does not exist
+  - no reactive elements: clamped diffusion cannot ring
+  - nonlinear control: conduits whose commitment depends on a
+    control charge (diode/gate analog) — the charge-parity
+    binding law (qCapBase) already discriminates sign, so the
+    seed exists

@@ -333,6 +333,14 @@ alignment scheme changes again.
   now hand off with the mass relay — before this, a moving body
   left its charge/tau/oscillator state home. bondTick stays: site
   birthday is provenance, and staying is what makes the trail.
+  CONDUCTION: `qChargeFlow` (shift 0-15) = charge records diffuse
+  odd->odd down their signed gradient across committed conduits
+  (mass stays home) — ev60 = charge in transit. `qChargeHeat`
+  mints receiver heat k>>shift (Joule analog, authored).
+  MEASURED: I ∝ V (R const), R = L*2^shift exactly, series
+  current uniform (Kirchhoff), linear potential profile, RC
+  discharge conserves Σq, broken wire = no through-current (stub
+  still charges to ~V). Harness: charge-circuit.mjs.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

@@ -346,6 +346,20 @@ static int qChargeRange=0; /* 0=direct conduit only. Nonzero = BFS
  * odd terminus — force at range ALONG the wire, push still landing
  * on the entry face's axis. The wire is the medium; the endpoint
  * is where it pushes. */
+static int qChargeFlow=0;  /* 0=off: charge records are carried only
+ * by the mass relay. Nonzero = right-shift CONDUCTION: across a
+ * committed conduit the higher-potential side sends
+ * k=(qa-qb)>>shift of its signed charge record to the partner —
+ * charge diffuses odd->odd down its own gradient while the lattice
+ * (mass) stays home. This is the wire's amperage: ev60 counts
+ * charge in transit. Only the higher side sends, so each link
+ * resolves in one writer-pair; reads grid_current so the wave
+ * travels 1 link/tick (no in-tick cascade). Clamped to dq/2 —
+ * a link can never ring. */
+static int qChargeHeat=0;  /* 0=off. Nonzero = right-shift Joule
+ * heating: k>>shift of every conducted charge transfer lands as
+ * heat at the receiving site — the resistor warms with current.
+ * AUTHORED mint (funding: the dropped potential, unbookkept). */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1161,7 +1175,7 @@ void moore26_tick(void){
                      * single quanta; the bond is the rigid link).
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
-                    if(qBondShare||qChargeKick){
+                    if(qBondShare||qChargeKick||qChargeFlow){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1220,6 +1234,47 @@ void moore26_tick(void){
                                                     grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
                                                 qEvents[58]+=4*(uint64_t)k;
                                                 fired=1;
+                                            }
+                                        }
+                                    }
+                                    /* CHARGE FLOW (qChargeFlow) —
+                                     * conduction through the same
+                                     * conduit: the higher-potential
+                                     * side pushes k=(qa-qb)>>shift of
+                                     * its signed charge record to the
+                                     * partner. The partner's own scan
+                                     * computes dq<0 and stays silent —
+                                     * one writer-pair per link per
+                                     * tick, reads grid_current so the
+                                     * wave moves 1 link/tick. Clamped
+                                     * to dq/2: no overshoot, no ring.
+                                     * ev59 = charge in transit — the
+                                     * ammeter. Conserved exactly:
+                                     * donor debited, partner credited. */
+                                    if(qChargeFlow){
+                                        int32_t dq=o->charge
+                                                 -grid_current[pi].charge;
+                                        if(dq>0){
+                                            int32_t k=dq>>qChargeFlow;
+                                            if(k>(dq>>1))k=dq>>1;
+                                            if(k){
+                                                /* accumulate — a cell
+                                                 * sending on several
+                                                 * faces must stack its
+                                                 * debits on grid_next */
+                                                int32_t a=grid_next[si].charge-k,
+                                                        b=grid_next[pi].charge+k;
+                                                grid_next[si].charge=(int16_t)
+                                                    (a<-32768?-32768:a>32767?32767:a);
+                                                grid_next[pi].charge=(int16_t)
+                                                    (b<-32768?-32768:b>32767?32767:b);
+                                                qEvents[60]+=(uint64_t)k;
+                                                if(qChargeHeat){
+                                                    uint32_t h=(uint32_t)grid_next[pi].heat
+                                                              +(uint32_t)(k>>qChargeHeat);
+                                                    grid_next[pi].heat=
+                                                        (uint16_t)(h>65535?65535:h);
+                                                }
                                             }
                                         }
                                     }
@@ -3501,6 +3556,8 @@ void moore26_vol_route_set(int v){qVolRoute=v;}
 void moore26_bond_share_set(int v){qBondShare=v>0&&v<16?v:0;}
 void moore26_charge_kick_set(int v){qChargeKick=v>0&&v<16?v:0;}
 void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
+void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
+void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}
