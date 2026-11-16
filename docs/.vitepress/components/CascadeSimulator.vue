@@ -115,6 +115,7 @@ onUnmounted(() => {
         <div class="cascade-grp grp-util">
           <div class="cascade-grp-row">
             <em>util</em>
+            <button data-trail class="cascade-accbtn tog" type="button" aria-pressed="false" aria-label="Relay trail" title="Trail — show/hide the wake a moving structure leaves: relay crumbs + timestamped formation events (the substrate's own history record)"><span class="g">≈</span></button>
             <button class="cascade-accbtn" data-tune aria-expanded="false" title="Tuning sliders" aria-label="Tuning sliders"><span class="g">▤</span></button>
           </div>
         </div>
@@ -131,7 +132,6 @@ onUnmounted(() => {
               <option value="lattice">Single plane</option>
             </select></label>
             <button class="cascade-flab cascade-depth tog" type="button" data-depth aria-pressed="false" aria-label="Depth slice" title="Depth slice — the slab follows the camera; peels the front shell"><i>◧</i></button>
-            <button data-trail class="tog" type="button" aria-pressed="false" aria-label="Relay trail" title="Trail — show/hide the wake a moving structure leaves: relay crumbs + timestamped formation events (the substrate's own history record)"><span class="g">≈</span><span class="l">trail</span></button>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="view" aria-label="About View" title="About View"><i>◐</i></button><select data-colormode aria-label="Data view" title="Data view">
               <option value="4" selected>composite</option>
               <option value="0">structure</option>
