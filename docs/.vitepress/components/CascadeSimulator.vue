@@ -920,13 +920,14 @@ onUnmounted(() => {
   /* inject's six buttons exceed a phone dock — wrap inside the group
      instead of overflowing sideways */
   .cascade-grp-row { flex-wrap: wrap; justify-content: center; gap: 5px; }
-  /* presets row stays ONE line on phones — the three selects +
-     chips scroll horizontally instead of stacking into 3 rows */
+  /* every layer wraps on phones — the dock takes 3+ rows rather
+     than clipping controls off the screen edge */
+  .cascade-presets { flex-wrap: wrap; justify-content: center; }
+  .cascade-grp-line { flex-wrap: wrap; }        /* inject/emit un-fuse */
   .grp-presets .cascade-grp-row {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;                        /* no sideways scroll lane */
   }
   .grp-presets .cascade-grp-row > em { display: none; }   /* label eats a row's worth of space */
   .cascade-field select[data-preset]   { width: 104px; }
