@@ -82,6 +82,14 @@ static int8_t QChannelVec[26][3] = {
     {1,1,1},{-1,-1,-1},{1,1,-1},{-1,-1,1},                    /* corners */
     {1,-1,1},{-1,1,-1},{1,-1,-1},{-1,1,1}
 };
+/* face-axis -> the 4 edge-channel PAIRS whose members carry that
+ * axis component (a push along a face must spread across valid FCC
+ * transport — no collimated-axis cheat). x:{6..13} y:{6..9,14..17}
+ * z:{10..17} */
+static const int8_t AXP[3][4]={
+    {3,4,5,6},   /* x: pairs 3-6 = ch6..13 */
+    {3,4,7,8},   /* y: pairs 3,4 = ch6..9; pairs 7,8 = ch14..17 */
+    {5,6,7,8}};  /* z: pairs 5-8 = ch10..17 */
 static inline int edgeLen2(int c){
     const int8_t *v=QChannelVec[c];
     return v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
@@ -324,6 +332,14 @@ static int qVolRoute=0;    /* 0=argmax-axis hop (baseline). Nonzero:
  * hop axis drawn ~|p| per tick — composite momentum walks its
  * vector (zigzag path, vector centroid). The multi-axis dead state
  * becomes the path distribution. */
+static int qChargeKick=0;  /* 0=off: charge is a record, not a force.
+ * Nonzero = right-shift: two charged odd cells sharing a committed
+ * conduit push each other along the bond axis, signed by the charge
+ * product — like repels, unlike attracts. k=min(|qa|,|qb|)>>shift
+ * spread across the face axis's 4 transport pairs (AXP) — force is
+ * CONDUCTED through shared structure, never cast across a gap.
+ * AUTHORED coupling (like qTension): ev58 counts delivered impulse;
+ * what funds it is an open question. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1036,10 +1052,6 @@ void moore26_tick(void){
                      * that bore the pair spans two sites. Skeleton
                      * is deducted from the mass share — the scar's
                      * budget seals. */
-                    static const int8_t AXP[3][4]={
-                        {3,4,5,6},   /* x: ch6..13 contain x */
-                        {3,4,7,8},   /* y: ch6..9, ch14..17 */
-                        {5,6,7,8}};  /* z: ch10..17 */
                     uint32_t qa=sa>>4,qb=sb>>4,ska=0,skb=0;
                     for(int i2=0;i2<4;i2++){
                         int e=AXP[d>>1][i2];
@@ -1143,7 +1155,7 @@ void moore26_tick(void){
                      * single quanta; the bond is the rigid link).
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
-                    if(qBondShare){
+                    if(qBondShare||qChargeKick){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1156,6 +1168,7 @@ void moore26_tick(void){
                             if(px>=0&&px<QWidth&&py>=0&&py<QHeight&&pz>=0&&pz<QDepth){
                                 int pi=(pz*QHeight+py)*QWidth+px;
                                 if(grid_current[pi].mass){
+                                    if(qBondShare)
                                     for(int m=0;m<QChannels/2;m++){
                                         /* read the PRE-TICK reservoir:
                                          * sourcing from grid_next lets a
@@ -1169,6 +1182,38 @@ void moore26_tick(void){
                                         if(share){
                                             grid_next[pi].momentum[m]+=share;
                                             grid_next[si].momentum[m]-=share;}
+                                    }
+                                    /* CHARGE-KICK (qChargeKick) — the
+                                     * conducted Coulomb law: two charged
+                                     * bodies sharing a committed conduit
+                                     * push along the bond axis, signed by
+                                     * the charge product (like repels,
+                                     * unlike attracts). Each cell applies
+                                     * its OWN push — the partner fires the
+                                     * same law on its own scan, so the
+                                     * Newton pair needs no remote write.
+                                     * k=min|q|>>shift spread across the
+                                     * axis's 4 transport pairs — the push
+                                     * arrives only through FCC-valid
+                                     * channels. AUTHORED work like
+                                     * qTension: ev58 counts the impulse. */
+                                    if(qChargeKick){
+                                        int32_t qa=o->charge,
+                                                qb=grid_current[pi].charge;
+                                        if(qa&&qb){
+                                            int32_t am=qa<0?-qa:qa,
+                                                    bm=qb<0?-qb:qb,
+                                                    m2=am<bm?am:bm,
+                                                    k=m2>>qChargeKick;
+                                            if(k){
+                                                int sgn=((qa>0)==(qb>0))
+                                                        ?((d&1)?1:-1)
+                                                        :((d&1)?-1:1);
+                                                for(int i2=0;i2<4;i2++)
+                                                    grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
+                                                qEvents[58]+=4*(uint64_t)k;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -3346,6 +3391,7 @@ void moore26_momentum_at_set(int x,int y,int z,int e,int v){
 void moore26_vol_share_set(int v){qVolShare=v;}
 void moore26_vol_route_set(int v){qVolRoute=v;}
 void moore26_bond_share_set(int v){qBondShare=v>0&&v<16?v:0;}
+void moore26_charge_kick_set(int v){qChargeKick=v>0&&v<16?v:0;}
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

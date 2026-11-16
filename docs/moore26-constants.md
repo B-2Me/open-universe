@@ -112,6 +112,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | linear force | **null** — no centroid drift | sep=12/16, 1500–3000t | torque transfer |
 | angular (torque) transfer | ddL +1→+23, ddR +5→−15 / 2000t | sep=12, counter-rotating gears | torque transfer |
 | mediation | grazing emission → flank deposition | YORP mechanism on conserved engine | torque transfer |
+| conducted charge force | +/+ repels, +/− converges at bond; impulse ∝ min\|q\| (ev58 992@q=1k vs 2000@2k) | committed conduit, `qChargeKick` shift=4, k=min\|q\|>>4 | charge-kick |
+| charge-force range | exactly one bond — kick stops the tick the link breaks | no cast-across-gap mode exists | charge-kick |
 
 ## Confinement & reaction constants
 

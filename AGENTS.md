@@ -320,6 +320,12 @@ alignment scheme changes again.
   roll (thin arm-rate ~6%/hop attenuates deep emitters);
   winding_set leaves bondTick=0 — authored structure is
   detectably ageless vs grown structure.
+  Conducted charge force: `qChargeKick` (shift 0-15) — charged odd
+  cells on a committed conduit push along the bond axis signed by
+  the charge product (like repels, unlike attracts), k=min|q|>>shift
+  on the axis's 4 AXP pairs, ev58 counts impulse. Measured: +/-
+  converge, +/+ separate, force dies when link breaks. AUTHORED
+  (unfunded) like qTension. Harness: charge-kick.mjs.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

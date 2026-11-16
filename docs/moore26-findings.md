@@ -1110,6 +1110,7 @@ Radiation pressure is real, funded, and bounded.
 | conducted momentum | REAL | relay hands p to the frontier cell ahead of mass each tick — propagates along winding trails/mass chains, the only demonstrated inter-structure coupling |
 | contact bounce / repulsion | AUTHORED + MEASURED | `qReflect` (0-255): declined offers reflect down the mirror channel c^1, refuser takes 2-unit recoil — degeneracy pressure: packed fields push back harder (+33% push at unsaturated flux, +89% saturated, ev53 counted, conservation-sealed) |
 | tension / restoring | AUTHORED + MEASURED | two knobs on the ACK reach meter: `qTension` (harmonic F=k·dd, bidirectional, underdamped oscillation) and `qString` (confinement: constant pull while reach>slack — constant drag, slingback when strong, silent below slack, string-break is the release). ~25-46 stretch events/tick — strain field is pervasive |
+| conducted charge force | AUTHORED + MEASURED | `qChargeKick` (shift 0-15): charged odd cells on a committed conduit push along the bond axis signed by the charge product — like repels, unlike attracts. k=min|q|>>shift spread across the axis's 4 transport pairs (AXP). ev58 counts impulse. Verified: +/- converge at the bond, +/+ separate, uncharged/knob-off controls dead, impulse scales ∝ min|q|. Force dies when the link breaks — conducted, not cast |
 | stored strain energy | CENSUSED | ev56/ev57 bank/release each bond's potential per law: harmonic E=k·r²/2, string E=σ·(reach−slack) — the linear confinement potential. Bombardment banks monotonically (~44k at σ=8, ~167k at σ=32 per 200t): the lattice charges up elastically. Kicks are still authored work, not yet funded from the bank |
 | vacuum back-reaction | NOT AUTHORED | structure cannot locally reshape the bath's flux except through the heat reservoir |
 
@@ -3116,3 +3117,43 @@ mover that keeps moving: the bonded-pair composite (bond-share
 equilibrated reservoirs -> lockstep hops, sep held, verified
 12+ ticks) is the current candidate structure that walks. The
 knob's survey space is open — wound movers, chains, wound walkers.
+
+## Conducted charge force (qChargeKick) — signed Coulomb analog, measured
+
+(script/cascade/charge-kick.mjs) Charge was a conserved record with
+no force law — signed, pair-able, carried on mass flight, policed
+conduits, gated binding — but two charged cells never pushed on
+each other. New tuner wires it through the bond machinery: on a
+committed face conduit, each odd cell reads the partner's charge
+(2 steps along the face), and applies its OWN push along the bond
+axis — k = min(|qa|,|qb|)>>shift spread across the axis's 4
+edge-transport pairs (AXP), signed by the charge product. The
+partner fires the same law on its own scan — Newton pair with no
+remote write. AUTHORED work like qTension; ev58 counts delivered
+impulse.
+
+Fixture: odd mass cells (9,16,16)+(11,16,16), conduit (10,16,16)
+wound 64 on all 12 edge channels. shift=4, q=1000 -> k=62/pair.
+
+  +/+  : ev58=992 (2 cells x 4 pairs x 62 x 2 linked ticks), pair
+         separated 9,11 -> walls at ~1 cell/tick. Kick stops the
+         tick the link breaks — the force is literally the wire.
+  +/-  : both converged at the conduit by t=2 (all mass in one
+         column) — an attracting collision — then passed through
+         on residual momentum and separated. No bound state forms:
+         the link severs on pass-through and the force dies.
+  0/+  : dead static.  +/+ knob-off: dead static.
+  +2q  : ev58=2000 vs 992 — impulse scales exactly with min|q|.
+
+What is measured: a signed, conducted, conduit-gated, magnitude-
+scaled charge force — the substrate's first candidate "EM". What
+it is not yet: funded (authored kick, like qTension), ranged
+beyond one bond (a trail-chained kick could carry it along worn
+lanes — unwritten), or bound (no orbit forms — the collision
+passes through because nothing holds the pair together once the
+wire breaks, and no KE sinks). Open forks: (a) fund the kick —
+charge reservoir spends down doing work (the bond is a discharge
+path), or the conduit pays (decommit = natural range cutoff);
+(b) multi-hop propagation through committed chains -> conducted
+force at range along structure, the worn-lane EM this substrate
+can actually support.
