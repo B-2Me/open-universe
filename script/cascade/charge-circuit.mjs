@@ -938,9 +938,11 @@ if (MODE === 'wmerge') {
   const wA = [], wB = [], links = [];
   for (let i = 0; i <= 6; i++) { wA.push([9 + 2 * i, 16]); wB.push([9 + 2 * i, 18]); }
   for (let x = 11; x <= 19; x += 2) links.push([x, 17]);
+  const RX = +(argv.react ?? 0);       // qFieldReact: strain reservoir
   function seedMerge() {
     reset(SHIFT, HEAT);
     q._moore26_mag_kick_set(MK);
+    q._moore26_field_react_set(RX);
     for (const [x, y] of wA.concat(wB)) q._moore26_mass_set(x, y, 16, MASS);
     for (let i = 0; i < 6; i++) { wound(10 + 2 * i, 16, 16); wound(10 + 2 * i, 18, 16); }
     for (const [x, y] of links) wound(x, y, 16);
@@ -984,7 +986,7 @@ if (MODE === 'wmerge') {
       if (t < T) { q._moore26_tick(); drive(par, t); }
     }
   }
-  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} strobe=${STROBE || 'DC'} ===`);
+  console.log(`\n=== wmerge: two free parallel wires, V=${V} mag=${MK} strobe=${STROBE || 'DC'} react=${RX} ===`);
   runMerge(1, 'parallel currents   (expect ATTRACT -> sep shrinks)');
   runMerge(0, 'antiparallel currents (expect REPEL -> sep grows)');
   runMerge(1, 'mag=0 control        (expect static)', 0);
@@ -1041,6 +1043,79 @@ if (MODE === 'fwire') {
   runW(MK, +B, 0, 0,  'aligned poles  (added necking)');
   runW(MK, 0,  0, 0,  'unpoled        (baseline erosion)');
   runW(0,  -B, 1, +B, 'no pinch       (drive only baseline)');
+  process.exit(0);
+}
+
+if (MODE === 'fsheath') {
+  // SELF-POLED SHEATH — the pressure-vessel test: commit the 4
+  // transverse evens (±y, ±z) around every wire cell — a sheath of
+  // committed conduit wrapping the wire. Under qVacPol the wire's
+  // own Δflux poles the sheath automatically (the circuit writes
+  // its own walls). Field force then acts transversely: anti-poled
+  // sheath squeezes cells toward the axis (bottle), aligned pulls
+  // outward. With qFieldReact, erosion kicks deposit strain into
+  // the walls and the walls press back — self-hardening vessel.
+  const MK = +(argv.mag ?? 16), V = +(argv.v ?? 128), T = +(argv.ticks ?? 200);
+  const L = +(argv.l ?? 8), B = +(argv.field ?? 512), VP = +(argv.vacpol ?? 3);
+  const RX = +(argv.react ?? 0);
+  const SH = [];                              // sheath evens (±y,±z per cell)
+  for (let i = 0; i <= L; i++) {
+    const x = 9 + 2 * i;
+    SH.push([x, 15, 16], [x, 17, 16], [x, 16, 15], [x, 16, 17]);
+  }
+  const CAPS = [[8, 16, 16], [10 + 2 * L, 16, 16]];   // end-cap evens (the vessel's 5th/6th faces)
+  function seedS(sheath) {
+    reset(SHIFT, HEAT);
+    seedWire(L);
+    if (sheath) { for (const [x, y, z] of SH) wound(x, y, z);
+                  for (const [x, y, z] of CAPS) wound(x, y, z); }
+  }
+  const extent = () => {
+    let lo = 99, hi = 0, n = 0;
+    for (let x = 0; x < 32; x++)
+      if (q._moore26_mass_get(x, 16, 16) > 10) { n++; if (x < lo) lo = x; if (x > hi) hi = x; }
+    return { lo, hi, n };
+  };
+  const cellsNear = () => {
+    let n = 0;
+    for (let x = 0; x < 32; x++) for (let y = 13; y <= 19; y++)
+      if (q._moore26_mass_get(x, y, 16) > 10) n++;
+    return n;
+  };
+  function runS(mk, vp, rx, pole, sheath, label) {
+    seedS(sheath);
+    q._moore26_mag_kick_set(mk);
+    q._moore26_vac_pol_set(vp);
+    q._moore26_field_react_set(rx);
+    console.log(`  -- ${label}:`);
+    const e25 = Number(q._moore26_events(25)), e27 = Number(q._moore26_events(27));
+    for (let t = 0; t <= T; t++) {
+      if (t % 25 === 0) {
+        const e = extent();
+        const fl = [11, 15, 19, 23].map(x => Math.round(q._moore26_flux_get(x, ...YZ, 0) / 10));
+        const sp = sheath ? Math.round(q._moore26_flux_get(15, 17, 16, 0) / 10) : 0;
+        console.log(`    t=${String(t).padStart(3)}  cells=${e.n}(${cellsNear()})  extent=x${e.lo}..x${e.hi}` +
+          `  span=${e.hi - e.lo}  flux=[${fl.join(',')}]  sheath_flux=${sp}`);
+      }
+      if (t < T) {
+        q._moore26_tick();
+        q._moore26_charge_set(9, ...YZ, V);
+        q._moore26_charge_set(9 + 2 * L, ...YZ, 0);
+        if (pole) {
+          for (const [x, y, z] of SH) q._moore26_flux_set(x, y, z, 0, pole);
+          for (const [x, y, z] of CAPS) q._moore26_flux_set(x, y, z, 0, -pole);
+        }
+      }
+    }
+    console.log(`    ev25(pol)=${Number(q._moore26_events(25)) - e25}  ev27(press)=${Number(q._moore26_events(27)) - e27}`);
+  }
+  console.log(`\n=== fsheath: wire + conduit vessel, V=${V} mag=${MK} B=${B} ===`);
+  runS(MK, VP, 0, 0, 1, `self-poled vessel (vacpol=${VP}, resistive)`);
+  runS(MK, VP, +(argv.react2 ?? 4), 0, 1, `self-poled + react=${+(argv.react2 ?? 4)} (strain-hardened)`);
+  runS(MK, 0, 0, -B, 1, `ghost vessel: sheath anti ${-B}, caps aligned ${B} (ideal bottle)`);
+  runS(MK, 0, 0, +B, 1, `ghost vessel INVERTED: sheath aligned, caps anti (expect worse)`);
+  runS(MK, 0, 0, 0, 0, `no vessel (baseline pinch)`);
+  runS(0, 0, 0, 0, 1, `no pinch + bare vessel (drive control)`);
   process.exit(0);
 }
 

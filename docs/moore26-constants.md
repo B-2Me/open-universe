@@ -143,6 +143,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | pulsed-drive creep | null at strobe 4–8, mag 6–16: barrier is a per-tick momentum threshold, not an integral — pulses don't accumulate | wmerge --strobe | charge-circuit --mode=wmerge --strobe=8 --mag=6 |
 | field force | ±78.0/tick on a ghost current element vs poled conduit (200·400≫10=78); exact 0 for no-field, static cell, ⊥ field | `qMagKick` conduit terminus, ev26 | charge-circuit --mode=fpush --shift=0 |
 | field-wall confinement | interior stabilized: 8 contiguous cells vs 7 gapped (B=512≈pinch); B=2048 walls erode ends; mirror caps can't catch transverse escape — uniaxial | free wire, poled conduits | charge-circuit --mode=fwire --shift=1 |
+| conduit vessel | anti-sheath + aligned-caps: 8 contiguous cells stable 200t vs 7 gapped baseline; inverted polarity → 6 cells (signature); holds at B=512/1024 | full cage: 4 transverse evens/cell + end caps | charge-circuit --mode=fsheath --shift=1 |
+| self-poled vessel | runaway — write rule poles aligned (wrong sign); erosion writes −Δ → death spiral; even-flux decay >>6 halves growth, doubles survival | `qVacPol` + resistive loss | charge-circuit --mode=fsheath --vacpol=6 |
+| strain reservoir | press delivered (ev27); symmetric internal kicks deposit canceling strain → zero net reservoir (wmerge); pinch erosion = rare threshold kicks (ev21≈8) below press floor | `qFieldReact` | wmerge --react / fsheath |
 
 ## Confinement & reaction constants
 

@@ -3666,3 +3666,55 @@ along its axis; the end failure is transverse escape. Full
 bottle needs a poled SHEATH (2D wrap around the wire) or a
 toroidal poling pattern — the medium can carry that structure;
 it's a fixture-complexity question, not a missing law.
+
+## The conduit vessel + the strain reservoir (qFieldReact)
+
+(engine change + charge-circuit.mjs --mode=fsheath / wmerge --react)
+
+FULL VESSEL (fsheath): commit the 4 transverse evens around every
+wire cell (±y,±z sheath) plus end-cap evens past each terminus —
+a committed conduit CAGE wrapping the wire. Ghost-poling makes it
+a pressure vessel:
+  sheath ANTI + caps ALIGNED: 8 contiguous cells stable 200t
+    (x11..x25) — best free-wire result; only the drive-end cell
+    still leaves (its pinch is strongest and it's the terminal).
+  sheath ALIGNED + caps ANTI (inverted): 6 cells, front half
+    eroded — the polarity signature proves the walls do the
+    holding, and which direction.
+  B=1024: same hold; INVERTED also holds 8 — any wall strong
+    enough beats erosion at this regime.
+  drive control (no pinch): bare vessel conducts perfectly —
+    the cage doesn't cost the healthy wire anything.
+
+SELF-POLED VESSEL (vacpol): RUNAWAY, and now understood — the
+poling write can only add the cell's Δflux sign, which is
+ALIGNED = pulls cells toward walls = the wrong sign for a
+bottle. Worse, erosion itself writes −Δ (dying flux) that grows
+the anti-field into a death spiral: field scatters cells, cells
+lose flux, flux writes more field. Measured: sheath_flux
+−9210 raw, wire gone by t~75 without loss.
+  FIX: even-flux resistive decay (flux -= flux>>6 in the wave
+  pass) — an unsustained field bleeds off; steady state becomes
+  injection/decay-bounded. Doubles survival to ~t150, still
+  terminal. Honest physics: a self-written vessel needs the
+  ANTI sign, which this write rule can't produce — the
+  spheromak's j×B geometry isn't the parallel-attract form.
+
+STRAIN RESERVOIR (qFieldReact + FIELD_REACT): Newton's third law
+onto the medium — kicks crossing a committed conduit deposit
+the counter-impulse into its fluxV (4-pair axis impulse); each
+touching cell then receives fluxV>>react per tick, debited 4x
+from the conduit — elastic strain that spends what it stores.
+  VERIFIED mechanically: ev27 press delivered (fsheath runs).
+  THE NULL THAT TEACHES: in wmerge the wires' attraction kicks
+  are symmetric (+y/−y) — the counter-impulses CANCEL on the
+  shared conduit. Internal equal-opposite forces build zero
+  reservoir — the medium conserves the pair's momentum exactly.
+  No free creep from inside; the reservoir fills only under
+  asymmetric external forcing.
+  And in the free wire, pinch erosion is RARE THRESHOLD EVENTS
+  (ev21 ≈ 8 pair-impulses total), not steady force — sub-16
+  deposits sit below the press floor. The yield barrier is now
+  triply characterized: per-tick threshold, no sub-threshold
+  accumulation channel, and symmetric internal forces can't
+  self-fund a reservoir.

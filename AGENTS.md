@@ -400,6 +400,16 @@ alignment scheme changes again.
   pinch-eroded wire interior (8 contiguous vs 7 gapped at
   B≈pinch; walls >pinch erode ends themselves; uniaxial — ends
   escape diagonally). --mode=fpush|fwire.
+  VESSEL (fsheath): full conduit cage (transverse sheath + end
+  caps) poled anti/aligned holds 8 contiguous cells — the
+  pressure-vessel geometry works; self-poling RUNS AWAY
+  (aligned write = wrong sign for a bottle; even-flux >>6
+  decay bounds it, still terminal). STRAIN (qFieldReact,
+  ev27): kicks deposit counter-impulse in conduit fluxV,
+  press debits it back — verified delivering, but symmetric
+  internal forces cancel on shared conduits (no free creep)
+  and pinch erosion is rare threshold kicks, not steady force.
+  --react flag on wmerge/fsheath.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

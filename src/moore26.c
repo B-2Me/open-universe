@@ -421,6 +421,16 @@ static int qVacPol=0;      /* 0=off. Nonzero = right-shift VACUUM
  * SOURCE (qMagInd law, Δ from en itself) so a polarized chain
  * drives EMF on the endpoint detector: light = a propagating
  * local state-change, observed only through what mass does. */
+static int qFieldReact=0;  /* 0=off. Nonzero = right-shift REACTION
+ * PRESS: Newton's third law onto the medium — a momentum kick
+ * crossing a committed conduit deposits the counter-impulse into
+ * the conduit's fluxV[] (elastic strain, axis-decomposed). The
+ * stored strain PRESSES BACK: each touching odd cell receives
+ * fluxV[a]>>qFieldReact of momentum per tick along a (4-pair
+ * spread), debited 4x from the conduit — the field is an elastic
+ * reservoir, not a sink; it spends exactly what it stores.
+ * Authored kicks become internal force pairs (cell +p, field -p);
+ * erosion attempts HARDEN the walls. ev27 = press delivered. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -475,6 +485,14 @@ static inline int nbr(int x,int y,int z,int dx,int dy,int dz){
             int si=z*QWidth*QHeight+y*QWidth+x;
 
 #define PROC_NODES_END }}
+
+/* FIELD_REACT — third-law deposit: a kick writing axis impulse
+ * 4*SGN*KM on a cell parks the counter-impulse in the crossing
+ * conduit's fluxV[AX] (the medium's strain register). */
+#define FIELD_REACT(KM,SGN,AX) if(qFieldReact){ \
+    int32_t rv_=grid_next[ei].fluxV[AX]-4*(SGN)*(KM); \
+    grid_next[ei].fluxV[AX]=(int16_t) \
+        (rv_>32767?32767:rv_<-32768?-32768:rv_);}
 
 /* content test — a chunk is live if any node carries structure or
  * packets; the scan early-outs on the first live node found. */
@@ -1340,6 +1358,7 @@ void moore26_tick(void){
                                                     grid_next[si].momentum[e]+=
                                                         sgn*k*QChannelVec[2*e][d>>1];
                                                 }
+                                                FIELD_REACT(k,sgn,d>>1)
                                                 qEvents[58]+=4*(uint64_t)k;
                                                 fired=1;
                                             }
@@ -1436,6 +1455,7 @@ void moore26_tick(void){
                                                     grid_next[si].momentum[e]+=
                                                         sgn*(int32_t)km*QChannelVec[2*e][d>>1];
                                                 }
+                                                FIELD_REACT(km,sgn,d>>1)
                                                 qEvents[21]+=4*(uint64_t)km;
                                                 mfired=1;
                                             }
@@ -1546,10 +1566,33 @@ void moore26_tick(void){
                                             grid_next[si].momentum[e]+=
                                                 sgn*(int32_t)km*QChannelVec[2*e][d>>1];
                                         }
+                                        FIELD_REACT(km,sgn,d>>1)
                                         qEvents[26]+=4*(uint64_t)km;
                                     }
                                 }
                             }
+                            /* REACTION PRESS (qFieldReact read side) —
+                             * the strained medium presses on matter:
+                             * the conduit's stored fluxV transfers
+                             * fluxV[a]>>shift per visitor-tick into
+                             * this cell's axis momentum (debited 4x —
+                             * the field spends exactly what it stored;
+                             * ordering across a shared conduit is
+                             * arbitrary but conserving). ev27. */
+                            if(qFieldReact)
+                                for(int a3=0;a3<3;a3++){
+                                    int32_t v=grid_next[ei].fluxV[a3];
+                                    int32_t t=(v>0?v:-v)>>qFieldReact;
+                                    if(t){ if(v<0)t=-t;
+                                        for(int i2=0;i2<4;i2++){
+                                            int e=AXP[a3][i2];
+                                            grid_next[si].momentum[e]+=
+                                                t*QChannelVec[2*e][a3];
+                                        }
+                                        grid_next[ei].fluxV[a3]=(int16_t)(v-4*t);
+                                        qEvents[27]+=4*(t<0?-t:t);
+                                    }
+                                }
                             /* FIELD->CARRIER (the conduit as source) —
                              * same qMagInd law, but the CHANGING flux
                              * being read is the conduit's own: the
@@ -2346,6 +2389,12 @@ void moore26_tick(void){
                     grid_next[si].fluxV[a]=(int16_t)
                         (dv>32767?32767:dv<-32768?-32768:dv);
                     int32_t f=grid_next[si].flux[a]+grid_next[si].fluxV[a];
+                    /* resistive loss — an unsustained field bleeds
+                     * off (~1/64/tick). Bounds the poling feedback:
+                     * steady state = injection/decay, so the field a
+                     * live wire writes stays finite. Polarization is
+                     * still persistent vs the odd-cell flux EWMA. */
+                    if(f)f-=f>>6;
                     grid_next[si].flux[a]=(int16_t)
                         (f>32767?32767:f<-32768?-32768:f);
                 }
@@ -4118,6 +4167,7 @@ void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
 void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
 void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
 void moore26_vac_pol_set(int v){qVacPol=v>0&&v<16?v:0;}
+void moore26_field_react_set(int v){qFieldReact=v>0&&v<16?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){
     if(!grid_current||a<0||a>2)return 0;
