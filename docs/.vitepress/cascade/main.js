@@ -875,15 +875,20 @@ export async function initCascadeSimulator(root, opts = {}) {
      * before the boundary (relays can't hop off-grid — the walk
      * honestly ends at the wall). */
     if (s === 'walker') {
-      const A = [CX - 9, CY - 8, CZ], B = [CX - 7, CY - 8, CZ],
-            K = [CX - 8, CY - 8, CZ];   /* the shared conduit — even */
-      for (let c = 6; c < 18; c++) wset(K[0], K[1], K[2], c, 64);
-      mset(A[0], A[1], A[2], 200); mset(B[0], B[1], B[2], 200);
-      if (wasm._moore26_momentum_at_set) {
-        wasm._moore26_momentum_at_set(A[0], A[1], A[2], 3, 3200);
-        wasm._moore26_momentum_at_set(B[0], B[1], B[2], 3, 3200);
+      /* three-cell chain — odd members at cx-2/cx/cx+2 linked by two
+       * committed conduits (cx must be ODD so members sit on the
+       * relay lattice at every grid size). Verified: the trio walks
+       * ~22 cells in lockstep and re-forms a bound triad at the wall */
+      const cx = CX - 7, cy = Math.max(2, CY - 8);   /* odd cx at any even W3; cy>=2 keeps the chain off the boundary plane */
+      const members = [[cx - 2, cy, CZ], [cx, cy, CZ], [cx + 2, cy, CZ]];
+      for (const [kx, ky, kz] of [[cx - 1, cy, CZ], [cx + 1, cy, CZ]])
+        for (let c = 6; c < 18; c++) wset(kx, ky, kz, c, 64);
+      for (const [x, y, z] of members) {
+        mset(x, y, z, 200);
+        if (wasm._moore26_momentum_at_set)
+          wasm._moore26_momentum_at_set(x, y, z, 3, 3200);
       }
-      return 3;
+      return members.length;
     }
     if (s === 'pair') return seedPair(CX, CY, CZ);
     if (s === 'meson') return seedMeson(CX, CY, CZ);
@@ -1161,7 +1166,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     qmin: 1, size: 0.7, colorMode: 4, tps: 4, tickDebt: 0, trail: false,
     turntable: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     drive: false, beam: false, lumpArm: false, tubeArm: false, ringArm: false, thrustArm: false,
-    pump: false, pumpAt: null, pumpRate: 0, chargeSites: null, scenario: 'glide',
+    pump: false, pumpAt: null, pumpRate: 0, chargeSites: null, scenario: 'walker',
     boostT: 0, laserCells: null, beamNu: 0,
   };
   for (const [sel, max, val] of [['[data-zcenter]', D3 - 1, D3 >> 1], ['[data-zthick]', D3, D3]]) {
@@ -1179,7 +1184,7 @@ export async function initCascadeSimulator(root, opts = {}) {
 
   const spinBtn = root.querySelector('[data-spin]');
   if (spinBtn && !ui.turntable) { spinBtn.classList.remove('on'); spinBtn.setAttribute('aria-pressed', 'false'); }
-  seedScenario(ui.scenario);   /* boot seeds the default scenario (glide) */
+  seedScenario(ui.scenario);   /* boot seeds the default scenario (walker) */
   const bind = (sel, ev, fn) => { const el = root.querySelector(sel); if (el) el.addEventListener(ev, fn); return el; };
   const toggle = (sel, key, onSay, offSay) => bind(sel, 'click', e => {
     ui[key] = !ui[key];
@@ -1296,6 +1301,21 @@ export async function initCascadeSimulator(root, opts = {}) {
   bind('[data-size]', 'input', e => { ui.size = +e.target.value / 100; readout(e); dirty = true; });
   bind('[data-speed]', 'input', e => { ui.tps = +e.target.value; readout(e); });
   bind('[data-colormode]', 'change', e => { ui.colorMode = +e.target.value; dirty = true; });
+  /* grid size is an init-time dim — reload with ?w rather than
+   * trying to hot-resize the engine + 3D textures */
+  const gridSel = root.querySelector('[data-grid]');
+  if (gridSel) {
+    /* an exotic ?w= (16, 128, ...) isn't in the menu — add it so the
+     * select reflects the live grid instead of lying with 32³ */
+    if (![...gridSel.options].some(o => o.value === String(W3)))
+      gridSel.add(new Option(`grid ${W3}³`, W3));
+    gridSel.value = String(W3);
+  }
+  bind('[data-grid]', 'change', e => {
+    const p = new URLSearchParams(location.search);
+    p.set('w', e.target.value);
+    location.search = p.toString();
+  });
   bind('[data-depth]', 'click', e => {
     ui.depthSlice = !ui.depthSlice;
     const b = e.currentTarget;
@@ -1326,6 +1346,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     focus: ['Focus', 'camera presets — named orbits plus a matched slice jump. Double-tap the gizmo to reset to Full lattice.'],
     view: ['View', 'render channel — composite: all layers · structure: occupancy · wake: phase · thermal: rest mass · pol: net charge · current: packets in flight (rail streams) · handed: dd coil handedness (indigo -dd, amber +dd).'],
     scenario: ['Scenario', 'reseed the field — then tap ? again for help specific to the selected scenario.'],
+    grid: ['Grid', 'lattice resolution — 32³ is the default; 64³ gives structures more runway (scenes re-seed scaled to the grid). Changing it reloads the field — the engine allocates its buffers at init.'],
     slice: ['Slice', 'position of the slice plane — cells outside the Width window ghost to silhouettes. Shift+scroll on the canvas scrubs it.'],
     slab: ['Width', 'slice thickness in cells — max shows the whole volume, 1 isolates a single lattice plane.'],
     size: ['Size', 'billboard size per cell — pure cosmetics. Bigger fuses the lattice into foam, smaller resolves the discrete sites.'],
@@ -1347,7 +1368,7 @@ export async function initCascadeSimulator(root, opts = {}) {
     repel:   'a +q charged wall with a +par stream aimed at it — same-sign packets are declined.\nWatch the spray pile up at the wall and the downstream thin out.',
     glide:   'a bare-mass knot coasting on seeded momentum — the Newton-1 relay.\n· mass walks odd->odd through the even conduit, ~1 cell/tick\n· each hop is a complete local handoff — there is no moving object, only transactions\n· the faint wake it leaves is the trail of formation events; the ≈ trail toggle hides it.',
     quark:   'a sparse +dd condenser seed under the quantum pump — the accreting species forming live (amber coil).',
-    walker:  'a bonded pair — two masses linked by a committed conduit, momentum shared through the bond.\n· the impulse crosses the bond at 1 bond/tick — an internal sound speed\n· both cells draw identical hops from their shared reservoir: LOCKSTEP, geometry held\n· a structure that walks — the pair is a relation, not a transported object.',
+    walker:  'a bonded triad — three masses linked by committed conduits, momentum shared through the bonds.\n· the impulse crosses each bond at 1 bond/tick — an internal sound speed\n· the cells draw identical hops from their shared reservoir: LOCKSTEP, geometry held\n· a structure that walks — the triad is a relation, not a transported object.',
     laser:   'stimulated emission — three wound cells sit on the beam path, pumped so their line stays at nu=32, probed by a resonant nu=32 stream.\n· probes arm at the line and fire ev17: the transmitted packet gets a collimated clone — the beam leaves BRIGHTER than it entered\n· the pumped winding holds the line; unwound, the medium would detune and go dark — that detuning IS the measured linewidth.',
     meson:   'two -dd condensers bridged by a heavy flux tube — the strong-force demo.\n· the tube feeds the knots and may fracture (string-break)\n· the knots plateau while the bridge conducts',
     proton:  'three -dd condensers in a triangle — the 3-quark bound-state attempt.',

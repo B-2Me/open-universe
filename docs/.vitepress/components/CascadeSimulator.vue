@@ -142,7 +142,8 @@ onUnmounted(() => {
               <option value="6">handed</option>
             </select></label>
             <label class="cascade-field"><button class="cascade-flab" type="button" data-help="scenario" aria-label="About Scenario" title="About Scenario"><i>◆</i></button><select data-scenario aria-label="Scenario" title="Scenario — reseeds the field">
-              <option value="glide" selected>glide</option>
+              <option value="walker" selected>walker</option>
+              <option value="glide">glide</option>
               <option value="ring">ring</option>
               <option value="tube">flux tube</option>
               <option value="pair">chiral pair</option>
@@ -150,7 +151,6 @@ onUnmounted(() => {
               <option value="repel">charge repel</option>
               <option value="quark">quark</option>
               <option value="laser">laser</option>
-              <option value="walker">walker</option>
               <option value="meson">meson</option>
               <option value="proton">proton</option>
               <option value="zoo">zoo</option>
@@ -158,6 +158,10 @@ onUnmounted(() => {
               <option value="buckle">hexbuckle</option>
               <option value="link">hopf link</option>
               <option value="vacuum">vacuum</option>
+            </select></label>
+            <label class="cascade-field"><button class="cascade-flab" type="button" data-help="grid" aria-label="About Grid size" title="About Grid size"><i>▦</i></button><select data-grid aria-label="Grid size" title="Grid size — reloads the field at the new resolution">
+              <option value="32">grid 32³</option>
+              <option value="64">grid 64³</option>
             </select></label>
           </div>
         </div>
