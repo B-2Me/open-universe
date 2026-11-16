@@ -3294,3 +3294,55 @@ Two branches share the terminals (6-link and 8-link paths):
 I_A=85.0, I_B=63.8 separately; combined I_AB=148.82 — exactly
 I_A+I_B. Current splits at a junction by conductance and rejoins
 — no law was written for it, the pairwise diffusion composes.
+
+## The diode, the Ampère force, and the substrate Lorentz
+
+(charge-circuit.mjs --mode=diode/--mode=ampere/--mode=beam)
+
+DIODE (qDiode): a committed conduit whose bondPar!=0 conducts in
+one direction only (+bondPar = +axis). MEASURED on a 4-link wire
+with the mid conduit polarized: forward I=128.0 (full
+conductance), reverse I=0.00 (completely blocked), diode-off
+control 128.0 both ways. A one-way junction from a record the
+conduit already carried — grown conduits may be born polarized.
+
+FLUX (new register): flux[3] = signed recent charge throughput
+per axis on each cell (EWMA, ~1/32 decay). Written by conduit
+transfers, pumps, and charge-relay hops — a moving charged body
+IS a current element. This is what the earlier probe couldn't
+see: the charge RECORD was blind to motion; flux is motion.
+
+MAGNETIC KICK (qMagKick): on a committed conduit the endpoints'
+flux vectors dot — parallel currents attract, antiparallel
+repel (Ampère's law), push along the link axis. ev21.
+
+  wire-wire (ghost-wire probe, electrostatics excluded):
+    parallel fluxes:   F_y = -636237 (TOWARD, -15.3k vs baseline)
+    antiparallel:      F_y = -605732 (+15.3k repulsive correction)
+    no current:        F_y = -620984 (gravity/curvature baseline)
+    antisymmetric term = -15253 with Ampère sign — MEASURED
+
+  beam probe (current element linked to the wire, link
+  charge-blocked by a diode):
+    probe flux parallel:     F_y = +1806 (TOWARD = attract)
+    probe flux antiparallel: F_y = -1777 (AWAY = repel)
+    probe static (flux=0):   F_y ~ +13 ~ 0 — v=0 means no force
+    no wire current:         F_y = 0 exactly
+  The substrate's Lorentz force: a current element feels a
+  wire's current; a static charge feels nothing.
+
+POLARIZED PUMP: diode-flanking the battery's conduits kills the
+internal short — ring current 2.0 -> 6.7/tick (3.3x), held EMF
++/-14 -> +/-80, funding still exact (ev61=heat).
+
+ALSO FIXED — AXP per-pair sign: the kick wrote sgn*k to all 4
+axis pairs uniformly, but each pair's +channel carries its own
+axis sign (y/z axes have a flipped member). Correct only on x
+before — which is why every x-axis fixture measured right while
+y/z pushes were scrambled. Now *= QChannelVec[2e][axis].
+
+MECHANISM NOTE — junction self-attraction: any committed link
+carrying charge transfer writes parallel flux on both cells, so
+a conductive junction pinches itself. Real Ampère physics, and
+why charge-blocked (diode) probe links are needed to isolate
+the wire-current term.

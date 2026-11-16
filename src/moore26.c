@@ -126,6 +126,10 @@ typedef struct {
     uint32_t phase;            /* bound-state phase 0-511 (double-cover) */
     uint16_t mass;             /* parked mass (the structure) */
     int16_t  charge;           /* SIGNED bound charge (+q/-q pair-able) */
+    int16_t  flux[3];          /* signed recent charge throughput per
+     * axis — the cell's current element (q*v analog). Written by
+     * conduit transfers, pumps, and charge-relay hops; decays
+     * ~1/32/tick so it senses RECENT current, not history. */
     uint8_t  scarPar;          /* annihilation parity record — bit d
      * (faces 0-5) = handedness of the +d-side cell at cancellation;
      * bit 6 = validity tag. A RECORD, not a conductor: kept out of
@@ -367,6 +371,19 @@ static int qHeatPump=0;    /* 0=off. Nonzero = a FUNDED EMF: an odd
  * upstream odd partner to the downstream one — direction by
  * bondPar sign — paying 1 heat per unit. Not a mint: charge is
  * relocated, heat is debited. ev61 = charge pumped. */
+static int qMagKick=0;     /* 0=off: current is invisible to force.
+ * Nonzero = right-shift AMPERE LAW: on a committed conduit the two
+ * endpoint cells' flux registers (recent directed charge
+ * throughput) dot together — k=|f_i.f_j|>>shift pushed along the
+ * link axis, ATTRACT when parallel (dot>0), REPEL when
+ * antiparallel. A relay hop writes flux too — a moving charged
+ * body is a current element, the substrate's Lorentz. ev21 =
+ * delivered impulse. */
+static int qDiode=0;       /* 0=off: conduit bondPar is inert for
+ * conduction. Nonzero = POLARIZED CONDUCTION: a committed conduit
+ * whose bondPar!=0 passes charge flow only along its signed axis
+ * (+bondPar = +axis direction). A one-way junction — the
+ * battery's internal-short fix and the seed of nonlinear parts. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1182,7 +1199,7 @@ void moore26_tick(void){
                      * single quanta; the bond is the rigid link).
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
-                    if(qBondShare||qChargeKick||qChargeFlow){
+                    if(qBondShare||qChargeKick||qChargeFlow||qMagKick){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1237,8 +1254,18 @@ void moore26_tick(void){
                                                 int sgn=((qa>0)==(qb>0))
                                                         ?((d&1)?1:-1)
                                                         :((d&1)?-1:1);
-                                                for(int i2=0;i2<4;i2++)
-                                                    grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
+                                                /* per-pair sign: the
+                                                 * pair's +channel must
+                                                 * carry the face-axis
+                                                 * component (y/z axes
+                                                 * have a flipped member
+                                                 * — uniform sgn writes
+                                                 * a scrambled impulse) */
+                                                for(int i2=0;i2<4;i2++){
+                                                    int e=AXP[d>>1][i2];
+                                                    grid_next[si].momentum[e]+=
+                                                        sgn*k*QChannelVec[2*e][d>>1];
+                                                }
                                                 qEvents[58]+=4*(uint64_t)k;
                                                 fired=1;
                                             }
@@ -1264,6 +1291,16 @@ void moore26_tick(void){
                                         if(dq>0){
                                             int32_t k=dq>>qChargeFlow;
                                             if(k>(dq>>1))k=dq>>1;
+                                            /* DIODE (qDiode): a
+                                             * polarized conduit
+                                             * (bondPar!=0) passes only
+                                             * its signed direction.
+                                             * si->pi is +axis iff the
+                                             * scan face d is even. */
+                                            if(qDiode&&en->bondPar){
+                                                int pass=en->bondPar>0?0:1;
+                                                if((d&1)!=pass)k=0;
+                                            }
                                             if(k){
                                                 /* accumulate — a cell
                                                  * sending on several
@@ -1276,12 +1313,56 @@ void moore26_tick(void){
                                                 grid_next[pi].charge=(int16_t)
                                                     (b<-32768?-32768:b>32767?32767:b);
                                                 qEvents[60]+=(uint64_t)k;
+                                                /* CURRENT RECORD —
+                                                 * the transfer is a
+                                                 * current element on
+                                                 * both endpoints:
+                                                 * flux[axis] gets the
+                                                 * signed throughput
+                                                 * the mag kick reads */
+                                                {int ax2=d>>1,
+                                                      s2=(d&1)?-1:1;
+                                                 int32_t f=grid_next[si].flux[ax2]+s2*k;
+                                                 grid_next[si].flux[ax2]=(int16_t)
+                                                     (f>32767?32767:f<-32768?-32768:f);
+                                                 f=grid_next[pi].flux[ax2]+s2*k;
+                                                 grid_next[pi].flux[ax2]=(int16_t)
+                                                     (f>32767?32767:f<-32768?-32768:f);}
                                                 if(qChargeHeat){
                                                     uint32_t h=(uint32_t)grid_next[pi].heat
                                                               +(uint32_t)(k>>qChargeHeat);
                                                     grid_next[pi].heat=
                                                         (uint16_t)(h>65535?65535:h);
                                                 }
+                                            }
+                                        }
+                                    }
+                                    /* MAGNETIC KICK (qMagKick) — the
+                                     * Ampère force: the two cells'
+                                     * flux vectors dot — parallel
+                                     * currents attract, antiparallel
+                                     * repel. Push along the link
+                                     * axis, own-cell write only,
+                                     * partner fires the same law.
+                                     * ev21 = delivered impulse. */
+                                    if(qMagKick){
+                                        int64_t dot=0;
+                                        for(int a2=0;a2<3;a2++)
+                                            dot+=(int64_t)o->flux[a2]
+                                                *grid_current[pi].flux[a2];
+                                        if(dot){
+                                            int64_t km=dot>0?dot:-dot;
+                                            km>>=qMagKick;
+                                            if(km>0){
+                                                int sgn=(dot>0)
+                                                        ?((d&1)?-1:1)
+                                                        :((d&1)?1:-1);
+                                                for(int i2=0;i2<4;i2++){
+                                                    int e=AXP[d>>1][i2];
+                                                    grid_next[si].momentum[e]+=
+                                                        sgn*(int32_t)km*QChannelVec[2*e][d>>1];
+                                                }
+                                                qEvents[21]+=4*(uint64_t)km;
                                             }
                                         }
                                     }
@@ -1344,8 +1425,11 @@ void moore26_tick(void){
                                             int sgn=((qa>0)==(qb>0))
                                                     ?((d&1)?1:-1)
                                                     :((d&1)?-1:1);
-                                            for(int i2=0;i2<4;i2++)
-                                                grid_next[si].momentum[AXP[d>>1][i2]]+=sgn*k;
+                                            for(int i2=0;i2<4;i2++){
+                                                int e=AXP[d>>1][i2];
+                                                grid_next[si].momentum[e]+=
+                                                    sgn*k*QChannelVec[2*e][d>>1];
+                                            }
                                             qEvents[58]+=4*(uint64_t)k;
                                         }
                                     }
@@ -1406,11 +1490,30 @@ void moore26_tick(void){
                                 qb=grid_next[vi].charge+k;
                         grid_next[ui].charge=(int16_t)(qa<-32768?-32768:qa);
                         grid_next[vi].charge=(int16_t)(qb>32767?32767:qb);
+                        /* the pumped charge is a current element
+                         * too — flux on both endpoints, axis = the
+                         * pump's committed axis, sign = direction */
+                        {int32_t f=grid_next[ui].flux[ax]+sgn*k;
+                         grid_next[ui].flux[ax]=(int16_t)
+                             (f>32767?32767:f<-32768?-32768:f);
+                         f=grid_next[vi].flux[ax]+sgn*k;
+                         grid_next[vi].flux[ax]=(int16_t)
+                             (f>32767?32767:f<-32768?-32768:f);}
                         grid_next[si].heat-=(uint16_t)k;
                         qEvents[61]+=(uint64_t)k;
                         break;
                     }
                 }
+                /* flux forgets: the current element is a RECENT
+                 * throughput record — ~1/32 decay per tick so a
+                 * stopped current stops exerting force (remanence
+                 * would need a separate committed register, like
+                 * winding's wear — v1 keeps it simple) */
+                if(qMagKick||qChargeFlow||qHeatPump)
+                    for(int a2=0;a2<3;a2++){
+                        int32_t f=grid_next[si].flux[a2];
+                        if(f)grid_next[si].flux[a2]=(int16_t)(f-(f>>5));
+                    }
                 int be=-1,dir=1;
                 if(qVolRoute){
                     /* VOLUMETRIC ROUTING — draw the hop axis weighted
@@ -1614,6 +1717,18 @@ void moore26_tick(void){
                                 nd=grid_next[ni].charge+move;
                         grid_next[si].charge=(int16_t)(ns>32767?32767:ns<-32767?-32767:ns);
                         grid_next[ni].charge=(int16_t)(nd>32767?32767:nd<-32767?-32767:nd);
+                        /* a relocating charge IS a current — the
+                         * hop's displacement vector v projects onto
+                         * its face axes; both cells book the flux
+                         * so a moving charged body couples qMagKick */
+                        for(int a2=0;a2<3;a2++)if(v[a2]){
+                            int32_t f=grid_next[si].flux[a2]+v[a2]*move;
+                            grid_next[si].flux[a2]=(int16_t)
+                                (f>32767?32767:f<-32768?-32768:f);
+                            f=grid_next[ni].flux[a2]+v[a2]*move;
+                            grid_next[ni].flux[a2]=(int16_t)
+                                (f>32767?32767:f<-32768?-32768:f);
+                        }
                     }
                 }
                 /* tau rides too — proper time is the structure's own
@@ -3623,6 +3738,17 @@ void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
 void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
 void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
 void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
+void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
+void moore26_diode_set(int v){qDiode=v?1:0;}
+int32_t moore26_flux_get(int x,int y,int z,int a){
+    if(!grid_current||a<0||a>2)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].flux[a];
+}
+void moore26_flux_set(int x,int y,int z,int a,int v){
+    if(!grid_current||a<0||a>2)return;
+    grid_current[z*QWidth*QHeight+y*QWidth+x].flux[a]=(int16_t)v;
+    grid_next[z*QWidth*QHeight+y*QWidth+x].flux[a]=(int16_t)v;
+}
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

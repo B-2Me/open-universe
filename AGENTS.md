@@ -345,10 +345,20 @@ alignment scheme changes again.
   charge uphill along its committed axis, pays 1 heat/unit (ev61)
   — ring circuit holds EMF until battery dies; ~3/4 shorts back
   through the pump cell (no internal resistance → diode wanted).
-  MAGNETISM NULL: conducted force reads the charge RECORD, blind
-  to current direction (72.8/72.4/74.8 |p|/tick under +x/−x/off).
-  Charged wires self-repel (~568 |p|/tick) — pin lattice or it
-  disassembles. Harness: charge-circuit.mjs.
+  MAGNETISM (flux register): charge RECORD is blind to current
+  (72.8/72.4/74.8 |p|/tick under reversal), but `flux[3]` — the
+  cell's signed recent charge throughput per axis (EWMA ~1/32) —
+  sees motion. `qMagKick` dots endpoint fluxes on a conduit:
+  parallel attract/antiparallel repel (Ampère, ev21) — measured
+  wire-wire ±15.3k vs gravity baseline, and a current-element
+  probe ±1800 with v=0 => F=0. Conductive junctions self-attract
+  (link flux is a parallel element) — isolate probes with a
+  diode. `qDiode`: conduit bondPar!=0 conducts one-way (forward
+  128.0/reverse 0.0); polarized pump flanks kill the battery's
+  internal short (I 2.0→6.7, EMF ±14→±80). AXP NOTE: kick writes
+  must scale per-pair by QChannelVec[2e][axis] — y/z axes have a
+  flipped member (fixed; x was always right). Harness:
+  charge-circuit.mjs.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

@@ -127,6 +127,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | funded EMF | ring current ~2/tick sustained til battery death; heat:charge 1:1 exact | `qHeatPump` rate=8, heat=3000, 12-cell ring | charge-circuit --mode=pump |
 | pump EMF | sawtooth ±14 terminal differential held constant | same ring | charge-circuit --mode=pump |
 | battery internal short | ~3/4 pumped charge back-flows through pump cell | pump links ~7/tick vs ring ~2 | charge-circuit --mode=pump |
+| diode junction | forward I=128.0, reverse I=0.00 — one-way conduit | mid-conduit bondPar=+1, `qDiode` | charge-circuit --mode=diode |
+| Ampère force | parallel currents attract, antiparallel repel; antisymmetric term −15.3k/tick vs gravity baseline | `qMagKick`=10, ghost-wire flux=200 | charge-circuit --mode=ampere |
+| substrate Lorentz | current element: ±~1800/tick attract/repel by flux direction; static probe ≈0, no current =0 | probe flux=200 linked to wire, diode-blocked link | charge-circuit --mode=beam |
+| diode-fixed battery | ring I 2.0→6.7 (3.3×), EMF ±14→±80, funding still 1:1 | polarized flanking conduits | charge-circuit --mode=pump --polarized |
 
 ## Confinement & reaction constants
 

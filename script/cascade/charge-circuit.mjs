@@ -32,6 +32,11 @@
 //                    force a static wire doesn't? (magnetic test)
 //   --mode=pump      funded EMF: heat-paid charge pump drives a
 //                    closed ring until the battery dies
+//   --mode=diode     polarized conduit (bondPar!=0): one-way flow?
+//   --mode=ampere    qMagKick: two parallel wires — does current
+//                    direction change the force between them?
+//   --mode=beam      a flux-carrying probe cell near the wire:
+//                    force on a current element (substrate Lorentz)
 //
 // Usage: node script/cascade/charge-circuit.mjs --mode=ohm --shift=4
 import { loadM26 } from '../lib/m26.mjs';
@@ -286,13 +291,20 @@ if (MODE === 'pump') {
   const links = [[10,16],[12,16],[14,16],[16,16],[18,16],[19,17],
                  [18,18],[16,18],[14,18],[12,18],[10,18],[9,17]];
   const PUMP = [11, 16];
+  const POL = argv.polarized ? 1 : 0;
   reset(SHIFT, HEAT);
   q._moore26_heat_pump_set(RATE);
+  q._moore26_diode_set(POL);
   for (const [x, y] of ring) q._moore26_mass_set(x, y, 16, MASS);
   for (const [x, y] of links) wound(x, y, 16);
   q._moore26_bondpar_set(...PUMP, 16, +1);
   q._moore26_heat_set(...PUMP, 16, H);
-  console.log(`\n=== funded EMF ring: heat=${H} rate=${RATE} shift=${SHIFT} ===`);
+  if (POL) {   // diode the pump's flanking conduits: block back-flow
+    q._moore26_bondpar_set(10, 16, 16, +1);
+    q._moore26_bondpar_set(12, 16, 16, +1);
+  }
+  console.log(`\n=== funded EMF ring: heat=${H} rate=${RATE} shift=${SHIFT}` +
+    `${POL ? ' DIODE-flanked pump' : ''} ===`);
   console.log('  I_ring = ev60/12 per tick; ev61 = charge pumped; ' +
     'battery dies when heat runs out');
   let ev60p = 0, tp = 0;
@@ -309,6 +321,164 @@ if (MODE === 'pump') {
     if (t < T) q._moore26_tick();
   }
   console.log('  audit: charge moved (ev61) vs heat spent — 1:1 funding');
+  process.exit(0);
+}
+
+if (MODE === 'diode') {
+  // Polarized conduit = one-way junction. 4-link wire; the middle
+  // conduit (14,16) gets bondPar=+1 -> passes only +x flow.
+  // Forward: pin +V left, 0 right -> current should pass.
+  // Reverse: pin +V right, 0 left -> junction should block it.
+  const V = +(argv.v ?? 1024), T = +(argv.ticks ?? 120);
+  function seedDiode(on) {
+    reset(SHIFT, HEAT);
+    q._moore26_diode_set(on ? 1 : 0);
+    for (let i = 0; i <= 4; i++) q._moore26_mass_set(9 + 2 * i, 16, 16, MASS);
+    for (let i = 0; i < 4; i++) wound(10 + 2 * i, 16, 16);
+    q._moore26_bondpar_set(14, 16, 16, +1);   // polarize mid conduit +x
+  }
+  function runDiode(vs, vd, on) {
+    seedDiode(on);
+    const src = [vs > 0 ? 9 : 17, 16, 16], dst = [vs > 0 ? 17 : 9, 16, 16];
+    let iD = 0, n = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      if (t >= T - 20) { iD += q._moore26_charge_get(...dst); n++; }
+      q._moore26_charge_set(...src, Math.abs(vs - vd));
+      q._moore26_charge_set(...dst, 0);
+    }
+    return iD / n;
+  }
+  const If = runDiode(V, 0, true), Ir = runDiode(0, V, true), I0 = runDiode(0, V, false);
+  console.log(`\n=== diode: mid-conduit bondPar=+1 (passes +x only), V=${V} ===`);
+  console.log(`  forward (+x drive): I=${If.toFixed(2)}`);
+  console.log(`  reverse (-x drive): I=${Ir.toFixed(2)}  (blocked if < ~1%)`);
+  console.log(`  reverse, qDiode OFF: I=${I0.toFixed(2)}  (control: conducts)`);
+  process.exit(0);
+}
+
+if (MODE === 'ampere') {
+  // Two parallel x-wires (y=16, y=18), coupled by committed y-links
+  // at (x,17) for odd x. qMagKick reads the cells' flux registers:
+  // parallel currents should ATTRACT the wires (dot>0), antiparallel
+  // should REPEL — the antisymmetric part of the y-impulse on wire2
+  // is the magnetic signature (electrostatics are reversal-symmetric).
+  const V = +(argv.v ?? 1024), T = +(argv.ticks ?? 40);
+  const MK = +(argv.mag ?? 10), KICK = +(argv.kick ?? 0);
+  const w1 = [], w2 = [];
+  for (let i = 0; i <= 6; i++) { w1.push([9 + 2 * i, 16]); w2.push([9 + 2 * i, 18]); }
+  const links = [[11, 17], [13, 17], [15, 17], [17, 17], [19, 17]];
+  function seedAmp() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    q._moore26_charge_kick_set(KICK);
+    for (const [x, y] of w1) q._moore26_mass_set(x, y, 16, MASS);
+    for (const [x, y] of w2) q._moore26_mass_set(x, y, 16, MASS);
+    for (let i = 0; i < 6; i++) {
+      wound(10 + 2 * i, 16, 16);   // wire1 x-links
+      wound(10 + 2 * i, 18, 16);   // wire2 x-links
+    }
+    for (const [x, y] of links) wound(x, y, 16);  // coupling links
+  }
+  // wire2 is a GHOST wire: charge pinned 0 on every cell (no
+  // leakage possible) and its current is a pinned flux[0] — a
+  // lattice of pure current elements. Only the Ampère law can
+  // push it (kick=0 here -> electrostatics excluded by design).
+  function pinAmp(f2) {
+    q._moore26_charge_set(9, 16, 16, V);
+    q._moore26_charge_set(21, 16, 16, 0);
+    for (const [x, y] of w1) {
+      q._moore26_mass_set(x, y, 16, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
+    }
+    for (const [x, y] of w2) {
+      q._moore26_charge_set(x, y, 16, 0);
+      q._moore26_flux_set(x, y, 16, 0, f2);
+      q._moore26_mass_set(x, y, 16, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
+    }
+  }
+  function runAmp(f2) {
+    seedAmp();
+    for (let t = 0; t < 50; t++) { q._moore26_tick(); pinAmp(f2); }
+    let fy = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (const [x, y] of w2)
+        for (const e of [3, 4, 7, 8])   // y-axis pairs (AXP[1])
+          fy += q._moore26_momentum_at_get(x, y, 16, e);
+      pinAmp(f2);
+    }
+    return { fy: fy / T, f1: q._moore26_flux_get(15, 16, 16, 0) };
+  }
+  const F2 = +(argv.f2 ?? 200);
+  console.log(`\n=== ampere: V=${V} mag=${MK} kick=${KICK} ghost-wire flux=${F2} ===`);
+  // label by MEASURED flux direction — a wire's charge record can
+  // go negative (provenance), so 'current' flows where flux says
+  const rp = runAmp(+F2), ra = runAmp(-F2), r0 = runAmp(0);
+  const s1 = Math.sign(rp.f1) || 1;
+  const par = s1 * F2 > 0 ? rp : ra, ant = s1 * F2 > 0 ? ra : rp;
+  console.log(`  wire1 flux_x=${rp.f1}  (negative => record conduction runs -x)`);
+  console.log(`  parallel   : F_y=${par.fy.toFixed(1)}/tick  ${par.fy < 0 ? 'TOWARD' : 'AWAY'}`);
+  console.log(`  antiparallel: F_y=${ant.fy.toFixed(1)}/tick  ${ant.fy < 0 ? 'TOWARD' : 'AWAY'}`);
+  console.log(`  no current : F_y=${r0.fy.toFixed(1)}/tick  (gravity baseline)`);
+  console.log(`  magnetic term = (par - ant)/2 = ${((par.fy - ant.fy) / 2).toFixed(1)}` +
+    `  ${par.fy < ant.fy ? 'AMPERE: parallel attracts' : 'INVERTED'}`);
+  process.exit(0);
+}
+
+if (MODE === 'beam') {
+  // A current element, not a body: probe cell (15,14) carries a
+  // pinned flux[0] (its q*v analog), linked to wire cell (15,16)
+  // carrying the wire's +x current. qMagKick: parallel fluxes
+  // attract -> probe pushed +y; antiparallel -> repelled.
+  const V = +(argv.v ?? 1024), FB = +(argv.fb ?? 200), T = +(argv.ticks ?? 40);
+  const MK = +(argv.mag ?? 10);
+  const TB = [15, 14, 16];
+  function seedBeam() {
+    reset(SHIFT, HEAT);
+    q._moore26_mag_kick_set(MK);
+    q._moore26_diode_set(1);
+    seedWire(6);
+    wound(15, 15, 16);
+    // probe link is committed but charge-BLOCKED (bondPar<0 passes
+    // only -y; the probe is always the higher side so nothing
+    // flows) — isolates the flux coupling from link leakage
+    q._moore26_bondpar_set(15, 15, 16, -1);
+    q._moore26_mass_set(...TB, MASS);
+  }
+  function pinBeam(vs, vd, fb) {
+    q._moore26_charge_set(9, 16, 16, vs);
+    q._moore26_charge_set(21, 16, 16, vd);
+    q._moore26_flux_set(...TB, 0, fb);
+    q._moore26_mass_set(...TB, MASS);
+    for (let i = 0; i <= 6; i++) {
+      q._moore26_mass_set(9 + 2 * i, 16, 16, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(9 + 2 * i, 16, 16, e, 0);
+    }
+    for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(...TB, e, 0);
+  }
+  function runBeam(vs, vd, fb, label) {
+    seedBeam();
+    for (let t = 0; t < 50; t++) { q._moore26_tick(); pinBeam(vs, vd, fb); }
+    let fy = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (const e of [3, 4, 7, 8])   // y-axis pairs (AXP[1])
+        fy += q._moore26_momentum_at_get(...TB, e);
+      pinBeam(vs, vd, fb);
+    }
+    const fw = q._moore26_flux_get(15, 16, 16, 0);
+    console.log(`  ${label}: probe F_y=${(fy / T).toFixed(1)}/tick` +
+      `  (wire flux_x=${fw})  ${fy > 0 ? 'TOWARD wire' : fy < 0 ? 'AWAY' : 'none'}`);
+    return fy / T;
+  }
+  console.log(`\n=== beam probe: V=${V} probe flux=${FB} mag=${MK} ===`);
+  runBeam(V, 0, +FB, 'probe +x, wire +x ');
+  runBeam(V, 0, -FB, 'probe -x, wire +x ');
+  runBeam(V, 0, 0,   'probe static      ');
+  runBeam(0, 0, +FB, 'no wire current   ');
+  console.log('  expect: parallel -> attract (+y), antiparallel -> repel');
   process.exit(0);
 }
 
