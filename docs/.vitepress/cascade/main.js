@@ -1021,9 +1021,14 @@ export async function initCascadeSimulator(root, opts = {}) {
         } else if (ui.thrustArm) {
           /* the kick — write momentum[3] directly on a 3³ block at the
            * tap point: an impulse to the pair3 axis, then it coasts
-           * on stored p. Shift-click kicks the opposite direction. */
+           * on stored p. Shift-click kicks the opposite direction.
+           * Two gotchas: the engine only listens to p when inertial
+           * drift is ON (glide turns it on — other scenarios run it
+           * off, so enable it here like the ring tool arms rail_gate);
+           * and kicking vacuum does nothing — say so honestly. */
           if (wasm._moore26_momentum_at_set) {
             const dir = shiftKey ? -1 : 1;
+            let mass = 0;
             for (let dz = -1; dz <= 1; dz++)
               for (let dy = -1; dy <= 1; dy++)
                 for (let dx = -1; dx <= 1; dx++) {
@@ -1033,9 +1038,13 @@ export async function initCascadeSimulator(root, opts = {}) {
                      * even cells just feed the field-drag */
                     const odd = ((kx + ky + kz) & 1) !== 0;
                     wasm._moore26_momentum_at_set(kx, ky, kz, 3, (odd ? 3200 : 400) * dir);
+                    mass += wasm._moore26_mass_get(kx, ky, kz);
                   }
                 }
-            say(`${dir > 0 ? '+' : '-'}{1,1,0} impulse applied — coasting on stored momentum`, 3500);
+            if (wasm._moore26_momentum_set) wasm._moore26_momentum_set(255);
+            say(mass > 0
+              ? `${dir > 0 ? '+' : '-'}{1,1,0} impulse applied — inertial drift on, coasting`
+              : 'kick went to vacuum — tap on a structure to move it', 3500);
           } else say('momentum register not in this wasm build', 3500);
         } else {
           /* shift-click flips the handedness — paint chiral pairs */
