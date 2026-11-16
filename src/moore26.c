@@ -430,6 +430,22 @@ static int qPolProp=0;     /* 0=off. Nonzero = PROPORTIONAL POLING:
  * (aligned: pulls carriers to the conduit), - = diamagnetic
  * (anti: pushes carriers inward — the bottle sign). Uses the
  * same committed-conduit gate and wave propagation as qVacPol. */
+static int qWallStall=0;   /* 0=off. Nonzero = strain-stall
+ * threshold: a mass hop crossing a conduit whose |fluxV| sums to
+ * >= this stalls like a saturated lane — strain IS occupancy.
+ * Pairs with qWallPress's transit tax: escaping cells charge the
+ * wall they cross, and a wall charged enough resists the next
+ * crossing. The self-hardening-vessel loop. */
+static int qWallPress=0;   /* 0=off. Nonzero = right-shift WALL
+ * PRESSURE deposit: a carrier's momentum component INTO a touching
+ * committed conduit debits mf>>shift of that incident impulse off
+ * the carrier and stores the equal outward strain on the conduit's
+ * fluxV[axis] — pressure ON the wall, the deposit the force-pair
+ * model lacks: erosion funding is where the impulse LANDS, not
+ * which pair generated it. The REACTION PRESS then transmits the
+ * stored vector to visitors — momentum passes through the wall
+ * like a real boundary. Conserving: cell -4s toward, wall +4s
+ * outward. ev27 counts the wall deposits too. */
 static int qFieldReact=0;  /* 0=off. Nonzero = right-shift REACTION
  * PRESS: Newton's third law onto the medium — a momentum kick
  * crossing a committed conduit deposits the counter-impulse into
@@ -1264,7 +1280,8 @@ void moore26_tick(void){
                      * Conserved: donor debited, partner credited.
                      * 0 = off (strictly per-cell momentum, baseline). */
                     if(qBondShare||qChargeKick||qChargeFlow||qMagKick
-                       ||qMagRange||qMagInd||qVacPol||qPolProp){
+                       ||qMagRange||qMagInd||qVacPol||qPolProp
+                       ||qWallPress){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -1635,6 +1652,36 @@ void moore26_tick(void){
                                         qEvents[27]+=4*(t<0?-t:t);
                                     }
                                 }
+                            /* WALL PRESSURE (qWallPress) — incident
+                             * momentum ON the conduit: the carrier's
+                             * face-axis impulse toward ei lands on
+                             * ei.fluxV as outward strain RECORD (no
+                             * carrier debit — debiting jams charge,
+                             * same wake-not-transfer rule as the
+                             * crossing deposit below). Escapers
+                             * BRAAKE at walls —
+                             * this is the deposit that lets erosion
+                             * fund the structure it erodes. ev27. */
+                            if(qWallPress){
+                                int ax=d>>1,sgn=(d&1)?-1:1;
+                                int32_t mf=0;
+                                for(int i2=0;i2<4;i2++){
+                                    int e=AXP[ax][i2];
+                                    mf+=grid_next[si].momentum[e]
+                                       *QChannelVec[2*e][ax];}
+                                mf*=sgn;      /* axis impulse INTO ei */
+                                if(mf>0){
+                                    int s=mf>>qWallPress;
+                                    if(s){
+                                        int32_t rv=grid_next[ei].fluxV[ax]
+                                                  +4*s*sgn;
+                                        grid_next[ei].fluxV[ax]=(int16_t)
+                                            (rv>32767?32767
+                                             :rv<-32768?-32768:rv);
+                                        qEvents[27]+=4*(uint64_t)s;
+                                    }
+                                }
+                            }
                             /* FIELD->CARRIER (the conduit as source) —
                              * same qMagInd law, but the CHANGING flux
                              * being read is the conduit's own: the
@@ -2026,6 +2073,18 @@ void moore26_tick(void){
                       * the hop this tick, the knot waits for capacity */
                      if(qCarveLoad&&load>=qCarveLoad&&shift>2)shift--;   /* worn path carves
                       * faster — ledger feedback (history = inertia) */
+                     /* STRAIN STALL (qWallStall) — a conduit holding
+                      * |fluxV| strain resists transit: pressure on the
+                      * wall IS occupancy — a hardened lane blocks the
+                      * hop like a loaded one. Walls that harden under
+                      * attack. */
+                     if(qWallStall){
+                         int ws=0;
+                         for(int a=0;a<3;a++){
+                             int32_t v2=grid_current[ci0].fluxV[a];
+                             ws+=v2<0?-v2:v2;}
+                         if(ws>=qWallStall)continue;
+                     }
                  }}
                 /* INVERTED — relocation is a complete handoff: the
                  * decode zone fully passes through a site, clearing
@@ -2076,6 +2135,31 @@ void moore26_tick(void){
                     if(qRecoilLaw){
                         uint32_t wv=grid_next[ci].winding[ch]+1;
                         grid_next[ci].winding[ch]=(uint16_t)(wv>65535?65535:wv);
+                    }
+                    /* TRANSIT WAKE (qWallPress at the crossing) — the
+                     * hop's carried impulse writes a strain RECORD on
+                     * the crossed conduit (same currency qRecoilLaw's
+                     * winding-wear spends: a wake, not a momentum
+                     * transfer — debiting the traveler jams charge
+                     * into fewer carriers and INFLATES flux, measured
+                     * charge-jam pathology). Escapers charge the wall
+                     * they pass through; qWallStall makes it bite. */
+                    if(qWallPress){
+                        int32_t pd=o->momentum[be];
+                        int s=(pd<0?-pd:pd)>>qWallPress;
+                        if(s){
+                            int ax=0;
+                            for(int a=1;a<3;a++)
+                                if(v[a]*v[a]>v[ax]*v[ax])ax=a;
+                            if(v[ax]){
+                                int vs2=v[ax]>0?1:-1;
+                                int32_t rv=grid_next[ci].fluxV[ax]
+                                          +4*s*vs2;
+                                grid_next[ci].fluxV[ax]=(int16_t)
+                                    (rv>32767?32767:rv<-32768?-32768:rv);
+                                qEvents[27]+=4*(uint64_t)s;
+                            }
+                        }
                     }
                 }
                 /* winding clears too — the committed record re-writes
@@ -4213,6 +4297,8 @@ void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
 void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
 void moore26_vac_pol_set(int v){qVacPol=v>-16&&v<16?v:0;}
 void moore26_pol_prop_set(int v){qPolProp=v>-16&&v<16?v:0;}
+void moore26_wall_press_set(int v){qWallPress=v>0&&v<16?v:0;}
+void moore26_wall_stall_set(int v){qWallStall=v;}
 void moore26_field_react_set(int v){qFieldReact=v>0&&v<16?v:0;}
 void moore26_diode_set(int v){qDiode=v?1:0;}
 int32_t moore26_flux_get(int x,int y,int z,int a){

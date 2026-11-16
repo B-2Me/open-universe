@@ -3766,3 +3766,30 @@ THE THREE WRITE RULES (self-poling, fsheath):
   route needs either gain (strain accumulation over time,
   i.e. the fluxV reservoir as the field's integrator) or a
   geometry that concentrates the write.
+
+WALL-PRESSURE / STRAIN-STALL (fsheath --wall --stall):
+  TWO DEPOSIT SITES exist — face-touch (carrier momentum incident on a
+  touching committed conduit) and transit-wake (momentum carried through
+  a conduit at the crossing). FIRST VERSION debited carrier momentum at
+  both sites: charge-jam — relays slow, same current piles onto fewer
+  cells, flux inflates 48-74 vs baseline 3-13, flux^2 force feedback
+  accelerates erosion (all wall runs 6 cells, WORSE than 7 baseline and
+  8 ghost). Charged-jam diagnosis: any mechanism that blocks or taxes
+  relays inside the wire corrupts the current record — yield is binary
+  (zero momentum = pinned, nonzero = gone), there is no sub-threshold
+  "slow", so a toll below yield can only jam, never brake.
+  RECORD-ONLY fix (both sites now write 4*s*sign into conduit fluxV,
+  no carrier debit): jam GONE — flux tracks baseline exactly
+  [28,13,10,7]->[3,3,3,3], cells restore to 7 (bare) and 8 (ghost+wall
+  unharmed). ev27 counts deposits: 80 bare / 24 ghost / 64 no-vessel.
+  HONEST NULL: stall=16 never bites — bare+wall and bare+wall+stall are
+  identical. The wire sheds only ~2 cells (~5 transits across ~80
+  conduit faces); no wall sees the ~16 strain needed to deny a relay,
+  and the deposit lands AFTER the relay decision — the first crossing
+  is always free. Wrong-scale result, recorded: the mechanism is
+  correct and conserving, the fixture's erosion budget is too thin to
+  charge a wall before the wire stabilizes.
+  react=4 press channel still actively harms (wire dead by t=50):
+  deposits land on WIRE conduits along the force axis, so the press
+  feeds longitudinal jitter = extra dislodging kicks, never transverse
+  wall pressure. Erosion cannot fund walls under force-pair deposits.

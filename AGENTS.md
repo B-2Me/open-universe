@@ -420,6 +420,15 @@ alignment scheme changes again.
   perfect elastic reflector). Debit is capped 4t<=|fluxV| —
   uncapped shift<2 minted momentum (limit cycle).
   moore26_fluxv_get/set exported for reservoir probes.
+  WALL/STRAIN (qWallPress deposit + qWallStall gate): TWO sites —
+  face-touch and transit-wake — both RECORD-ONLY (4*s*sign into
+  conduit fluxV). Debiting carrier momentum at either jams charge
+  into fewer cells (flux 48-74, flux^2 erosion feedback): yield is
+  binary — a sub-threshold toll can only jam, never brake. Record-
+  only is conserving and clean (ghost+wall still holds 8), but the
+  stall never bites at this scale (~5 escaper transits spread over
+  ~80 wall faces; first crossing always free since the deposit
+  lands post-relay). fsheath --wall=N --stall=M.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

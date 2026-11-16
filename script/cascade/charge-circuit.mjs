@@ -1082,12 +1082,14 @@ if (MODE === 'fsheath') {
       if (q._moore26_mass_get(x, y, 16) > 10) n++;
     return n;
   };
-  function runS(mk, vp, rx, pole, sheath, label, pp) {
+  function runS(mk, vp, rx, pole, sheath, label, pp, wp, ws) {
     seedS(sheath);
     q._moore26_mag_kick_set(mk);
     q._moore26_vac_pol_set(vp);
     q._moore26_field_react_set(rx);
     q._moore26_pol_prop_set(pp ?? 0);
+    q._moore26_wall_press_set(wp ?? 0);
+    q._moore26_wall_stall_set(ws ?? 0);
     console.log(`  -- ${label}:`);
     const e25 = Number(q._moore26_events(25)), e27 = Number(q._moore26_events(27));
     for (let t = 0; t <= T; t++) {
@@ -1117,6 +1119,15 @@ if (MODE === 'fsheath') {
   if (PP) {
     runS(MK, 0, 0, 0, 1, `PROP-poled anti-sheath (polprop=${-PP}: field ~ -I live)`, -Math.abs(PP));
     runS(MK, 0, 0, 0, 1, `PROP-poled aligned (polprop=+${PP}: control)`, Math.abs(PP));
+  }
+  const WP = +(argv.wall ?? 0), WS = +(argv.stall ?? 0);
+  if (WP) {
+    runS(MK, 0, 0, 0, 1, `bare vessel + wall=${WP} (incident-momentum brake)`, 0, WP);
+    runS(MK, 0, 0, -B, 1, `ghost vessel + wall=${WP} (does it beat 8?)`, 0, WP);
+    if (WS) {
+      runS(MK, 0, 0, 0, 1, `bare vessel + wall=${WP} stall=${WS} (self-hardening)`, 0, WP, WS);
+      runS(MK, 0, 0, 0, 0, `NO vessel + wall=${WP} stall=${WS} (transit-tax baseline)`, 0, WP, WS);
+    }
   }
   runS(MK, VP, +(argv.react2 ?? 4), 0, 1, `self-poled + react=${+(argv.react2 ?? 4)} (strain-hardened)`);
   runS(MK, 0, 0, -B, 1, `ghost vessel: sheath anti ${-B}, caps aligned ${B} (ideal bottle)`);
