@@ -360,6 +360,13 @@ static int qChargeHeat=0;  /* 0=off. Nonzero = right-shift Joule
  * heating: k>>shift of every conducted charge transfer lands as
  * heat at the receiving site — the resistor warms with current.
  * AUTHORED mint (funding: the dropped potential, unbookkept). */
+static int qHeatPump=0;    /* 0=off. Nonzero = a FUNDED EMF: an odd
+ * cell carrying heat + a bondPar polarity is a battery. Along the
+ * first axis whose both face conduits are committed (the wire runs
+ * through the pump), it moves k=qHeatPump charge units from the
+ * upstream odd partner to the downstream one — direction by
+ * bondPar sign — paying 1 heat per unit. Not a mint: charge is
+ * relocated, heat is debited. ev61 = charge pumped. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1345,6 +1352,63 @@ void moore26_tick(void){
                                 }
                             }
                         }
+                    }
+                }
+                /* HEAT PUMP (qHeatPump) — funded EMF: this cell is a
+                 * battery while its heat lasts. Along the first axis
+                 * whose BOTH face conduits are committed (the wire
+                 * passes through), move k charge from the upstream
+                 * odd partner to the downstream one — direction =
+                 * bondPar sign — paying 1 heat per unit moved.
+                 * Conserving: donor debited, receiver credited, heat
+                 * spent. ev61 = charge pumped = delivered work. */
+                if(qHeatPump&&o->bondPar&&grid_next[si].heat){
+                    int sgn=o->bondPar>0?1:-1;
+                    for(int ax=0;ax<3;ax++){
+                        int du=2*ax+(sgn>0?1:0),
+                            dv=2*ax+(sgn>0?0:1);
+                        int ux=x+2*((du==0)-(du==1)),
+                            uy=y+2*((du==2)-(du==3)),
+                            uz=z+2*((du==4)-(du==5));
+                        int vx=x+2*((dv==0)-(dv==1)),
+                            vy=y+2*((dv==2)-(dv==3)),
+                            vz=z+2*((dv==4)-(dv==5));
+                        if(ux<0||ux>=QWidth||uy<0||uy>=QHeight||uz<0||uz>=QDepth)continue;
+                        if(vx<0||vx>=QWidth||vy<0||vy>=QHeight||vz<0||vz>=QDepth)continue;
+                        int eux=x+(du==0)-(du==1),
+                            euy=y+(du==2)-(du==3),
+                            euz=z+(du==4)-(du==5);
+                        int evx=x+(dv==0)-(dv==1),
+                            evy=y+(dv==2)-(dv==3),
+                            evz=z+(dv==4)-(dv==5);
+                        uint32_t mn2=0;
+                        const NodeState *en2=
+                            &grid_current[(euz*QHeight+euy)*QWidth+eux];
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            uint32_t mm=en2->winding[2*e2]<en2->winding[2*e2+1]
+                                      ?en2->winding[2*e2]:en2->winding[2*e2+1];
+                            if(mm>mn2)mn2=mm;}
+                        if(mn2<qCommitMin)continue;
+                        mn2=0;
+                        en2=&grid_current[(evz*QHeight+evy)*QWidth+evx];
+                        for(int e2=0;e2<QChannels/2;e2++){
+                            uint32_t mm=en2->winding[2*e2]<en2->winding[2*e2+1]
+                                      ?en2->winding[2*e2]:en2->winding[2*e2+1];
+                            if(mm>mn2)mn2=mm;}
+                        if(mn2<qCommitMin)continue;
+                        int ui=(uz*QHeight+uy)*QWidth+ux;
+                        int vi=(vz*QHeight+vy)*QWidth+vx;
+                        if(!grid_current[ui].mass||!grid_current[vi].mass)continue;
+                        int32_t k=qHeatPump;
+                        if(k>grid_next[si].heat)k=grid_next[si].heat;
+                        if(k<=0)break;
+                        int32_t qa=grid_next[ui].charge-k,
+                                qb=grid_next[vi].charge+k;
+                        grid_next[ui].charge=(int16_t)(qa<-32768?-32768:qa);
+                        grid_next[vi].charge=(int16_t)(qb>32767?32767:qb);
+                        grid_next[si].heat-=(uint16_t)k;
+                        qEvents[61]+=(uint64_t)k;
+                        break;
                     }
                 }
                 int be=-1,dir=1;
@@ -3558,6 +3622,7 @@ void moore26_charge_kick_set(int v){qChargeKick=v>0&&v<16?v:0;}
 void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
 void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
 void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
+void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
 void moore26_skeleton_shift_set(int v){qSkeletonShift=v<0?0:v>6?6:v;}
 void moore26_chain_share_set(int v){qChainShare=v;}
 void moore26_res_emit_set(int v){qResEmit=v;}

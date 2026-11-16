@@ -122,6 +122,11 @@ translations live in [Nature → Substrate](/nature-translation).
 | RC discharge | Σq conserved exactly (1024); settles flat ~Q/(L+1) | unpinned +Q seed | charge-circuit --mode=rc |
 | broken wire | I_drain=0; stub charges to ~source potential | mid-link conduit removed | charge-circuit --mode=broken |
 | Joule heating | interior heat ~1100–1400 @ I≈85, k>>3 mint | `qChargeHeat` shift=3 | charge-circuit --mode=joule |
+| Kirchhoff junction | I_AB = 148.82 = I_A+I_B exactly (85.0+63.8) | 6-link + 8-link parallel branches, V=1024 | charge-circuit --mode=parallel |
+| magnetism probe | T impulse 72.8/72.4/74.8 under +x/−x/no current — NULL | pinned probe, matched local charge | charge-circuit --mode=induct |
+| funded EMF | ring current ~2/tick sustained til battery death; heat:charge 1:1 exact | `qHeatPump` rate=8, heat=3000, 12-cell ring | charge-circuit --mode=pump |
+| pump EMF | sawtooth ±14 terminal differential held constant | same ring | charge-circuit --mode=pump |
+| battery internal short | ~3/4 pumped charge back-flows through pump cell | pump links ~7/tick vs ring ~2 | charge-circuit --mode=pump |
 
 ## Confinement & reaction constants
 

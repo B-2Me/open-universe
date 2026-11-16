@@ -340,7 +340,15 @@ alignment scheme changes again.
   MEASURED: I ∝ V (R const), R = L*2^shift exactly, series
   current uniform (Kirchhoff), linear potential profile, RC
   discharge conserves Σq, broken wire = no through-current (stub
-  still charges to ~V). Harness: charge-circuit.mjs.
+  still charges to ~V), parallel branches: I_AB = I_A+I_B exact.
+  `qHeatPump` (rate 1-511) = FUNDED EMF: heat+bondPar cell pumps
+  charge uphill along its committed axis, pays 1 heat/unit (ev61)
+  — ring circuit holds EMF until battery dies; ~3/4 shorts back
+  through the pump cell (no internal resistance → diode wanted).
+  MAGNETISM NULL: conducted force reads the charge RECORD, blind
+  to current direction (72.8/72.4/74.8 |p|/tick under +x/−x/off).
+  Charged wires self-repel (~568 |p|/tick) — pin lattice or it
+  disassembles. Harness: charge-circuit.mjs.
 
 `npm run docs:build` fails on Windows (cmd.exe can't parse `mkdir -p`
 in the wasm:build script). Run `npx vitepress build docs` directly, or

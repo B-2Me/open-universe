@@ -3249,12 +3249,48 @@ linear), amperage = transits/tick (measured, uniform in series),
 resistance = links x 2^shift.
 
 HONEST GAPS — what a circuit layer still lacks:
-  - a FUNDED EMF: pinned terminals are an ideal battery; a real
-    one would spend something (heat? winding? a charge pump law)
   - no induction: steady current exerts no force on a neighboring
-    wire's charge — the magnetic layer does not exist
+    wire's charge — MEASURED NULL (--mode=induct): a pinned probe
+    linked to a current-carrying wire reads identical impulse
+    under +x / -x / no current at matched local charge (72.8 /
+    72.4 / 74.8 |p|/tick). The kick reads the charge RECORD;
+    nothing couples to its motion. Magnetism does not exist here.
+    Side finding: an unpinned charged wire DISASSEMBLES itself
+    under the kick (mutual repulsion ~568 |p|/tick) — conductor
+    lattices aren't self-bound against their own conducted force.
   - no reactive elements: clamped diffusion cannot ring
   - nonlinear control: conduits whose commitment depends on a
     control charge (diode/gate analog) — the charge-parity
     binding law (qCapBase) already discriminates sign, so the
-    seed exists
+    seed exists. The pump's internal short (below) is the diode
+    motivation arriving on its own.
+
+## The funded EMF — a real battery (charge-circuit.mjs --mode=pump)
+
+qHeatPump (rate 1-511): an odd cell with heat + a bondPar polarity
+pumps charge through itself — along the first axis whose BOTH face
+conduits are committed, it moves k charge from the upstream odd
+partner to the downstream one (direction = bondPar sign), paying
+1 heat per unit. Not a mint: charge relocates, heat is debited,
+ev61 = charge pumped.
+
+Fixture: closed 12-cell ring (bottom y=16, top y=18, verticals at
+x=9,19), pump at (11,16) driving -x -> +x along the bottom.
+
+MEASURED (heat=3000, rate=8, shift=1):
+  - sustained ring current ~2/tick for the battery's WHOLE LIFE;
+    dies when the battery dies (t~375)
+  - EMF held: sawtooth terminal differential +/-14 constant for
+    the run — the pump MAINTAINS voltage against back-flow
+  - funding exact: ev61 = 3000 = heat spent — 1:1, no mint
+  - INTERNAL SHORT: ~3/4 of the pumped charge back-flows through
+    the pump cell's own links (~7/tick backward vs ~2 forward
+    around the ring) — a battery with zero internal resistance.
+    A diode layer (one-way conduit) is the natural fix.
+
+## Kirchhoff measured (--mode=parallel)
+
+Two branches share the terminals (6-link and 8-link paths):
+I_A=85.0, I_B=63.8 separately; combined I_AB=148.82 — exactly
+I_A+I_B. Current splits at a junction by conductance and rejoins
+— no law was written for it, the pairwise diffusion composes.

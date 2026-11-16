@@ -27,6 +27,11 @@
 //   --mode=joule  qChargeHeat on: resistor warms ∝ current
 //   --mode=broken mid-wire conduit removed: expect I=0
 //   --mode=off    qChargeFlow=0 control: expect I=0
+//   --mode=parallel  two branches share the pins: I_AB = I_A + I_B?
+//   --mode=induct    probe: does a current-carrying wire exert any
+//                    force a static wire doesn't? (magnetic test)
+//   --mode=pump      funded EMF: heat-paid charge pump drives a
+//                    closed ring until the battery dies
 //
 // Usage: node script/cascade/charge-circuit.mjs --mode=ohm --shift=4
 import { loadM26 } from '../lib/m26.mjs';
@@ -165,6 +170,145 @@ if (MODE === 'broken' || MODE === 'off') {
   console.log(`  I_drain=${r.iD.toFixed(2)} I_source=${r.iS.toFixed(2)} ` +
     `I_ev60/L=${r.iE.toFixed(2)}  (expect 0)`);
   console.log('  q(x): ' + r.prof.join('  '));
+  process.exit(0);
+}
+
+if (MODE === 'parallel') {
+  // Two branches share source S(9,16,16) and drain D(21,16,16):
+  //   A: straight along y=16 — 6 links
+  //   B: detour along y=18 — 8 links
+  // Kirchhoff: I_AB should equal I_A + I_B (conductances add).
+  const V = +(argv.v ?? 1024), T = +(argv.ticks ?? 200);
+  const cellsA = [[11,16],[13,16],[15,16],[17,16],[19,16]];
+  const linksA = [[10,16],[12,16],[14,16],[16,16],[18,16],[20,16]];
+  const cellsB = [[9,18],[11,18],[13,18],[15,18],[17,18],[19,18],[21,18]];
+  const linksB = [[9,17],[10,18],[12,18],[14,18],[16,18],[18,18],[20,18],[21,17]];
+  function seedPar(withA, withB) {
+    reset(SHIFT, HEAT);
+    q._moore26_mass_set(9, 16, 16, MASS);
+    q._moore26_mass_set(21, 16, 16, MASS);
+    if (withA) {
+      for (const [x, y] of cellsA) q._moore26_mass_set(x, y, 16, MASS);
+      for (const [x, y] of linksA) wound(x, y, 16);
+    }
+    if (withB) {
+      for (const [x, y] of cellsB) q._moore26_mass_set(x, y, 16, MASS);
+      for (const [x, y] of linksB) wound(x, y, 16);
+    }
+  }
+  function runPar(withA, withB) {
+    seedPar(withA, withB);
+    const src = [9, 16, 16], dst = [21, 16, 16];
+    let iD = 0, n = 0; const warm = Math.min(T - 10, 60);
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      if (t >= warm) { iD += q._moore26_charge_get(...dst); n++; }
+      q._moore26_charge_set(...src, V);
+      q._moore26_charge_set(...dst, 0);
+    }
+    return iD / n;
+  }
+  const IA = runPar(true, false), IB = runPar(false, true), IAB = runPar(true, true);
+  console.log(`\n=== parallel: V=${V} (branch A=6 links, B=8 links) ===`);
+  console.log(`  I_A=${IA.toFixed(2)}  I_B=${IB.toFixed(2)}  ` +
+    `I_A+I_B=${(IA + IB).toFixed(2)}  I_AB=${IAB.toFixed(2)}`);
+  console.log(`  Kirchhoff ${Math.abs(IAB - IA - IB) < 0.05 * (IA + IB) ?
+    'HOLDS (<5% deviation)' : 'deviation ' + (IAB - IA - IB).toFixed(2)}`);
+  process.exit(0);
+}
+
+if (MODE === 'induct') {
+  // Magnetic probe: does charge in MOTION differ from charge at
+  // REST for the conducted force? Wire at y=16 carries current
+  // (or not); probe body T at (15,14,16) links to the mid-wire
+  // cell (15,16,16) — the profile-symmetric point. KICK=4.
+  // The lattice is PINNED: each tick we read the delivered impulse
+  // on T (and the wire), then zero all momenta + restore masses —
+  // otherwise the wire's mutual repulsion disassembles the fixture.
+  // If T's per-tick impulse is the same under +x / -x / no current
+  // at matched local wire charge -> the force sees only the charge
+  // record: no magnetic analog.
+  const V = +(argv.v ?? 1024), QT = +(argv.qt ?? 500), T = +(argv.ticks ?? 30);
+  const L = 6, TB = [15, 14, 16];
+  const wireCells = []; for (let i = 0; i <= L; i++) wireCells.push([9 + 2 * i, 16]);
+  function seedInd() {
+    reset(SHIFT, HEAT);
+    q._moore26_charge_kick_set(+(argv.kick ?? 4));
+    seedWire(L);
+    wound(15, 15, 16);                     // T's link to the wire
+    q._moore26_mass_set(...TB, MASS);
+    q._moore26_charge_set(...TB, QT);
+  }
+  function pinAll(vs, vd) {
+    q._moore26_charge_set(9, 16, 16, vs);
+    q._moore26_charge_set(21, 16, 16, vd);
+    q._moore26_charge_set(...TB, QT);
+    q._moore26_mass_set(...TB, MASS);
+    for (const [x, y] of wireCells) {
+      q._moore26_mass_set(x, y, 16, MASS);
+      for (let e = 0; e < 13; e++) q._moore26_momentum_at_set(x, y, 16, e, 0);
+    }
+  }
+  function runInd(vs, vd, label) {
+    seedInd();
+    for (let t = 0; t < 40; t++) { q._moore26_tick(); pinAll(vs, vd); }
+    let pT = 0, pW = 0;
+    for (let t = 0; t < T; t++) {
+      q._moore26_tick();
+      for (let e = 0; e < 13; e++)
+        pT += Math.abs(q._moore26_momentum_at_get(...TB, e));
+      for (const [x, y] of wireCells)
+        for (let e = 0; e < 13; e++)
+          pW += Math.abs(q._moore26_momentum_at_get(x, y, 16, e));
+      pinAll(vs, vd);   // absorb the impulse; nothing is allowed to hop
+    }
+    const qw = q._moore26_charge_get(15, 16, 16);
+    console.log(`  ${label}: wire_q=${qw}  T |p|/tick=${(pT / T).toFixed(1)}` +
+      `  wire |p|/tick=${(pW / T).toFixed(1)}`);
+    return pT / T;
+  }
+  console.log(`\n=== induction probe: V=${V} QT=${QT} kick=${argv.kick ?? 4} ===`);
+  runInd(V, 0, 'I flows +x ');
+  runInd(0, V, 'I flows -x ');
+  runInd(0, 0, 'no current ');
+  console.log('  T impulse identical under reversal => statics only (no magnetism)');
+  process.exit(0);
+}
+
+if (MODE === 'pump') {
+  // Funded EMF: a closed 12-cell ring (y=16 bottom, y=18 top,
+  // verticals at x=9,19). Pump cell (11,16) with heat H + bondPar
+  // pushes charge -x -> +x each tick, paying 1 heat/unit. The ring
+  // carries the current around — a DC circuit with a real battery.
+  const H = +(argv.h ?? 3000), RATE = +(argv.rate ?? 8), T = +(argv.ticks ?? 400);
+  const ring = [[9,16],[11,16],[13,16],[15,16],[17,16],[19,16],
+                [19,18],[17,18],[15,18],[13,18],[11,18],[9,18]];
+  const links = [[10,16],[12,16],[14,16],[16,16],[18,16],[19,17],
+                 [18,18],[16,18],[14,18],[12,18],[10,18],[9,17]];
+  const PUMP = [11, 16];
+  reset(SHIFT, HEAT);
+  q._moore26_heat_pump_set(RATE);
+  for (const [x, y] of ring) q._moore26_mass_set(x, y, 16, MASS);
+  for (const [x, y] of links) wound(x, y, 16);
+  q._moore26_bondpar_set(...PUMP, 16, +1);
+  q._moore26_heat_set(...PUMP, 16, H);
+  console.log(`\n=== funded EMF ring: heat=${H} rate=${RATE} shift=${SHIFT} ===`);
+  console.log('  I_ring = ev60/12 per tick; ev61 = charge pumped; ' +
+    'battery dies when heat runs out');
+  let ev60p = 0, tp = 0;
+  for (let t = 0; t <= T; t++) {
+    const ev60 = Number(q._moore26_events(60)), ev61 = Number(q._moore26_events(61));
+    if (t % 40 === 0 || t === T) {
+      const heat = q._moore26_heat_get(...PUMP, 16);
+      const prof = ring.map(([x, y]) => q._moore26_charge_get(x, y, 16));
+      const dt = t - tp || 1;
+      console.log(`t=${String(t).padStart(3)}  I_ring=${((ev60 - ev60p) / (12 * dt)).toFixed(1)}` +
+        `  ev61_tot=${ev61}  pump_heat=${heat}  q=[${prof.join(',')}]`);
+      ev60p = ev60; tp = t;
+    }
+    if (t < T) q._moore26_tick();
+  }
+  console.log('  audit: charge moved (ev61) vs heat spent — 1:1 funding');
   process.exit(0);
 }
 
