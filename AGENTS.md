@@ -258,6 +258,17 @@ alignment scheme changes again.
   massive cell, not just the face partner — knots near committed
   structure legitimately behave differently. Re-tune scenarios by
   eyeball if they look off; the code itself isn't stale.
+  ⚡ thrust tool: verified headlessly via
+  `script/cascade/thrust-probe.mjs` (mirrors seedLump + the exact
+  fireInject kick — momentum_at_set 3^3 block, momentum_set=255).
+  PASS: lump translates ~1.5 cells/40t, decelerating crawl.
+  Kickable = every mass-bearing scenario (walker, glide, lump,
+  quark, proton, meson, pair, zoo, tube anchors, attract/repel/
+  laser walls). `ring`/`vacuum` are honest nulls — waveguides are
+  lanes not bodies (packets don't ride momentum[]). pickCell
+  targets the slice plane (ui.zCenter): off-slice structures read
+  "kick went to vacuum", correct but worth knowing. Dead code:
+  `ui.boostT` is never set (a retired boost path — harmless).
 - Grid-size constraint: `NodeState` ≈220B × sites × 2 buffers, so
   256³ (~7.4GB) exceeds wasm32 — use ≤128³ in wasm, or a MEMORY64
   build for bigger. Power-of-2 dims ≥8 required (bitmask wrap +
