@@ -99,12 +99,15 @@ void main() {
   mv.xy += a_corner * ps;
   gl_Position = mv;
   vec3 rgb;
-  // structure: deep indigo -> brilliant cyan (winding saturation 128)
+  // structure: deep indigo -> saturated cyan (winding saturation 128)
+  // — the top stop is deliberately NOT white: a solidified knot must
+  // read as a stable COLOR, not a hot white blob (whiteness belongs
+  // to heat; a cooling knot fading white->cyan looked like decay)
   float s = pow(strc / 255.0, 0.7);
   vec3 strcRamp = (s < 0.25 ? mix(vec3(0.02,0.02,0.14), vec3(0.05,0.16,0.62), s * 4.0)
       :  s < 0.55 ? mix(vec3(0.05,0.16,0.62), vec3(0.00,0.60,1.00), (s - 0.25) * 3.33)
-      :  s < 0.80 ? mix(vec3(0.00,0.60,1.00), vec3(0.40,0.90,1.00), (s - 0.55) * 4.0)
-      :             mix(vec3(0.40,0.90,1.00), vec3(0.95,1.00,1.00), (s - 0.80) * 5.0));
+      :  s < 0.80 ? mix(vec3(0.00,0.60,1.00), vec3(0.30,0.82,1.00), (s - 0.55) * 4.0)
+      :             mix(vec3(0.30,0.82,1.00), vec3(0.55,0.95,1.00), (s - 0.80) * 5.0));
   // wake: translucent green -> yellow (phase field)
   float w = ph / 255.0;
   vec3 wakeRamp = mix(vec3(0.02,0.30,0.10), vec3(0.85,0.90,0.20), w);
