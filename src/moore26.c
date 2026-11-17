@@ -612,9 +612,13 @@ static uint64_t loop_winding(const NodeState *o){
 }
 /* geometric gap: the emitted nu is the weakest committed edge's
  * rung energy — the spectrum IS the structure (1/r2 weighted). */
-static int geo_gap(const NodeState *o){
+static int geo_gap(const NodeState *o,int si){
     int be=-1;uint32_t bm=0;
-    for(int e=0;e<QChannels/2;e++){
+    int rot=rand_site(si,72)%13;   /* tie-break rotates per
+     * site+tick — a first-tie-wins scan on symmetric winding
+     * always picks axis 0, an emission/erosion lattice wind */
+    for(int k_=0;k_<QChannels/2;k_++){
+        int e=(k_+rot)%(QChannels/2);
         uint32_t a=o->winding[2*e],b=o->winding[2*e+1];
         uint32_t m=a<b?a:b;
         if(m>=qCommitMin&&(be<0||m<bm)){bm=m;be=e;}
@@ -641,7 +645,10 @@ static int geo_gap(const NodeState *o){
 static uint32_t site_unwind(int x,int y,int z,int si){
     NodeState *n=&grid_next[si];
     int be=-1;uint32_t bm=0;
-    for(int e=0;e<QChannels/2;e++){
+    int rot=rand_site(si,73)%13;   /* same tie-break rotation —
+     * symmetric knots must not always unwind axis 0 first */
+    for(int k_=0;k_<QChannels/2;k_++){
+        int e=(k_+rot)%(QChannels/2);
         uint32_t a=n->winding[2*e],b=n->winding[2*e+1];
         uint32_t m=a<b?a:b;
         if(m<qCommitMin)continue;
@@ -2816,7 +2823,7 @@ void moore26_tick(void){
             n->incipOp[c]=(uint8_t)opn;
             /* stim flag in bit7: an offer at the node's own loop gap
              * stimulates a downward transition instead of depositing */
-            if(nu==geo_gap(o))n->incipNu[c]|=0x80;
+            if(nu==geo_gap(o,si))n->incipNu[c]|=0x80;
             n->incipBorn[c]=n->packetBorn[c];
             n->incipPar[c]=n->packetPar[c];
             n->packet[c]--;
@@ -3640,7 +3647,7 @@ void moore26_tick(void){
             uint32_t aged=(uint32_t)qTick-o->bondTick;
             if((rand_site(si,12)<<8)<(int)((aged*(uint32_t)qBondAge)>>8))continue;
         }
-        int line=geo_gap(&grid_next[si]);     /* the gap gates emission */
+        int line=geo_gap(&grid_next[si],si);  /* the gap gates emission */
         if(line<1)continue;
         /* channel occupancy — graded refusal: P(accept)=1-occ/128,
          * up to 4 tries on different modes. A saturated directional
@@ -4057,7 +4064,7 @@ uint32_t moore26_incipient_nu_get(int x,int y,int z,int c){
 }
 uint32_t moore26_geo_gap(int x,int y,int z){
     if(!grid_current)return 0;
-    return (uint32_t)geo_gap(&grid_current[z*QWidth*QHeight+y*QWidth+x]);
+    return (uint32_t)geo_gap(&grid_current[z*QWidth*QHeight+y*QWidth+x],z*QWidth*QHeight+y*QWidth+x);
 }
 void moore26_incipient_set(int x,int y,int z,int c,uint32_t v){
     if(!grid_current)return;
