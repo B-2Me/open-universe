@@ -4076,11 +4076,13 @@ STRAIN-INTERFERE — the wave is LINEAR (superposition proven)
     absorption. Linear superposition confirmed.
   SAME (+2000 both ends): mirror-symmetric field, center flux
     peaks 9805 vs 5251 lone — ~2x constructive.
-  CAVEAT: the L1 field norm grows during ringing (leapfrog
-    fluxV->flux integration is not norm-conserving; the only
-    sink is the 1/64 resistive bleed). flux/fluxV amplitude is
-    field state, not the conserved currency — paid momentum
-    conservation lives in the deposit/press ledger.
+  CAVEAT: the field norm is NOT energy. Measured: injected
+    fluxV=2000 -> Sigma(f^2+v^2) grows 4M to 356M over 60t;
+    Sigma v^2 decays 4M->0.7M while Sigma f^2 climbs to 356M.
+    The injected momentum converts to a QUASI-STATIC compression
+    field (~15k/link x 16 links) — the wire DC-absorbs momentum
+    into static strain, like a spring pressed and held. The
+    conserved currency remains the deposit/press ledger.
 
 STRAIN-SPLIT — the medium has IMPEDANCE (junctions scatter)
   (script/cascade/strain-split.mjs: committed wire, 8-link
