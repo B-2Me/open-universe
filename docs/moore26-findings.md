@@ -4167,3 +4167,19 @@ STRAIN-SPLIT + DISPERSION — the medium's full wave spec
     quasi-static compression field (the wire as a held
     spring). The wave stores DC strain; the conserved currency
     remains the deposit/press ledger.
+
+BENT-WIRE — the wave is GEOMETRY-BLIND (deepest medium result)
+  A 90-degree corner in the committed wire changes NOTHING:
+  identical arrival ticks, peaks, transmission (1.036 both) —
+  BIT-IDENTICAL trajectories. The Laplacian couples committed
+  neighbors without any direction term, so the wave propagates
+  on the COMMITMENT GRAPH, not through space. Straight chain
+  and bent chain are the same graph = the same physics. The
+  medium's "distance" is graph-distance; geometric embedding
+  is reconstructed, not fundamental. This is the ledger frame
+  made measurable: the grain is history (connectivity), not
+  geometry — and now we can PROVE the field can't tell a
+  corner from a straight line. It also reframes the membrane
+  anisotropy: the diamond wavefront isn't the wave preferring
+  a direction — the commitment graph itself is anisotropic
+  and the wave just follows it faithfully.
