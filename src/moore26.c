@@ -2711,8 +2711,15 @@ void moore26_tick(void){
                 }
                 /* DECLINED — deflect to the freest channel: the packet
                  * bounces off the dense field to find another target
-                 * rather than stacking inside it. */
+                 * rather than stacking inside it. Rotate the scan by
+                 * a site+tick hash — a first-tie-wins loop on equally-
+                 * free channels always picked ch6 (+1,+1,0): every
+                 * decline jetted to the same corner (the lattice wind
+                 * bug). A site-only hash just moves the jet to a
+                 * per-site fixed direction — qTick salting spreads it
+                 * over time too. */
                 int fc=6;uint32_t fo=255;
+                int rot=rand_site(si,70)%12;
                 /* deflection target must be a transporting edge —
                  * scattering onto a face/corner register freezes the
                  * packet in a dead channel under the FCC gate.
@@ -2723,14 +2730,16 @@ void moore26_tick(void){
                  * freest edge when the forward set is saturated. */
                 if(qDeflectAlign){
                     const int8_t *vc=QChannelVec[c];
-                    for(int c2=6;c2<18;c2++){
+                    for(int k_=0;k_<12;k_++){
+                        int c2=6+((k_+rot)%12);
                         const int8_t *v2=QChannelVec[c2];
                         if(vc[0]*v2[0]+vc[1]*v2[1]+vc[2]*v2[2]!=1)continue;
                         if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
                     }
                 }
                 if(fo==255||!qDeflectAlign){
-                    for(int c2=6;c2<18;c2++){
+                    for(int k_=0;k_<12;k_++){
+                        int c2=6+((k_+rot)%12);
                         if(n->packet[c2]<fo){fo=n->packet[c2];fc=c2;}
                     }
                 }
@@ -3508,9 +3517,10 @@ void moore26_tick(void){
                 int fo=-1;uint32_t fr=128;
                 /* rotated scan order — a first-tie-wins loop on a
                  * symmetric knot always picks channel 0 (+x), the
-                 * lattice wind. Rotate by node hash so ties break
-                 * isotropically across the ensemble. */
-                int rot=(x+y+z+si)%13;
+                 * lattice wind. Rotate by site+tick hash so ties
+                 * break isotropically per site over time, not just
+                 * across the ensemble. */
+                int rot=rand_site(si,71)%13;
                 for(int k_=0;k_<QChannels/2;k_++){
                     int e2=(k_+rot)%13;
                     int ni2=nbr(nx,ny,nz,QChannelVec[2*e2][0],QChannelVec[2*e2][1],QChannelVec[2*e2][2]);
