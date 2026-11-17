@@ -4016,3 +4016,25 @@ MOORE26-HARNESS — dead-grid guard (found while auditing):
   at init (initM26() in m26.mjs does init+check together). At 64^3
   the string scenario is healthy: break=1 at ~t20, mass spike,
   winding drain — the classic fracture signature.
+
+STRAIN-WAVE — the medium has sound (script/cascade/strain-wave.mjs)
+  A committed {1,1,0} wire of 16 conduits (winding 6/7=64 each),
+  fluxV=2000 injected at link 0, qVacPol wave layer on.
+  PROPAGATES: the stored strain rings down the wire as a
+    polarization wave — oscillating, reflecting off the free end,
+    sustained front ~2.3 ticks/link = 0.43 committed-link/tick
+    at vs=3. First arrivals L1..L15 = t2..t34, near-linear.
+  COUPLING-DEPENDENT: vs=6 slows the front (~0.19 link/tick) and
+    SELF-EXTINGUISHES at link 7 — the Laplacian needs gradients
+    >= 2^vs to register, so a spreading wave falls below its own
+    visibility threshold. Weak coupling also PILES amplitude at
+    the source (~12000 from a 2000 injection — fluxV keeps
+    integrating into flux while neighbors drain slowly).
+  CONTROL: vs=0 -> the phase is skipped entirely; the charge
+    freezes on link 0 forever. The battery's ONLY self-discharge
+    channel is radiation into committed structure — no medium,
+    no leak. A charged wall in vacuum-structure is perfect; a
+    charged wall in a committed lattice is an antenna.
+  THIS CLOSES THE LOOP: the same register (fluxV) is the battery's
+  stored momentum AND the wave's momentum. Catch -> hold -> press
+  back -> or radiate away, all one conserved currency.

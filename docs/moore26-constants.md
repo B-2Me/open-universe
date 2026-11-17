@@ -270,6 +270,12 @@ translations live in [Nature → Substrate](/nature-translation).
 | strain battery charge efficiency | denied momentum -> fluxV exactly 1:1, linear (3200->3200, 1600->1600); react=0 holds indefinitely, zero self-discharge over 30t | spring probe | spring-probe |
 | strain discharge rate | contact-bound press: min(|v|>>react, |v|>>2) per tick, 4-channel spread; react<=2 single-tick dump, react=4 ~25%/tick | spring stiffness = react | spring-probe |
 | strain residual lock | leftover fluxV stays in the wall when contact breaks (1128/3200 at react=4) — discharge requires a staying customer | react=4 run | spring-probe |
+| strain charge fungibility | second customer on far face receives FULL stored reservoir in one tick (3200 -> B); duel: si-order customer wins per tick | spring-handoff swap/duel | spring-handoff |
+| strain discharge exit lane | press spreads impulse over all 4 FCC axis pairs -> customer exits least-worn DIAGONAL, never back through the stalled lane | duel mass track (1,-1,0)/(1,1,0) | spring-handoff |
+| carve-load tear law | conduit incipient load: <16 baseline src>>3, 16-31 carved src>>2 (2.0x), >=32 stall-denied | single-hop response curve | carve-lane |
+| stress-wave speed | fluxV impulse on committed wire propagates as polarization wave: ~2.3 ticks/link (0.43 link/tick) sustained front at vs=3 | strain-wave | strain-wave |
+| stress-wave damping | vs=6 front dies at link 7 (self-extinguishing below lap threshold); amplitude piles ~6x injection at source when coupling weak | strain-wave vs sweep | strain-wave |
+| battery radiation channel | stored strain's ONLY self-discharge path is radiation into committed structure — absent without vacpol coupling | vs=0 control | strain-wave |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
