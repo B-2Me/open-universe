@@ -34,11 +34,12 @@ const TICKS = parseInt(arg('ticks', '120'));
 const MASS = 256;
 const WALL = [8, 8, 16], A = [7, 8, 16];
 
-const run = (stall, decay) => {
+const run = (stall, decay, cy) => {
   initM26(q, W, W, W);
   q._moore26_wall_press_set(1);
   q._moore26_wall_stall_set(stall);
   q._moore26_wear_decay_set(decay);
+  if (cy) q._moore26_creep_yield_set(cy);
   /* marginal wall: ws just above the stall threshold so the
    * ratchet-vs-decay equilibrium decides immediately instead
    * of decaying from a deep-fatigue 400. */
@@ -62,13 +63,32 @@ const run = (stall, decay) => {
   }
   const denials = q._moore26_creep_get(...A);   /* creep counts denied attempts */
   const mAtA = q._moore26_mass_get(...A);
-  return { ws, wsSeries, maxW, denials, escT, held: mAtA >= MASS / 2 };
+  const yields = q._moore26_events(64);         /* creep-yield escapes */
+  return { ws, wsSeries, maxW, denials, escT, yields, held: mAtA >= MASS / 2 };
 };
 
-const oneStall = arg('stall', ''), oneDecay = arg('decay', '');
+const oneStall = arg('stall', ''), oneDecay = arg('decay', ''), oneCy = arg('creep', '0');
 if (oneStall && oneDecay) {
-  const r = run(+oneStall, +oneDecay);
-  console.log(`stall=${oneStall} decay=${oneDecay}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} held=${r.held}`);
+  const r = run(+oneStall, +oneDecay, +oneCy);
+  console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);
+} else if (process.argv.includes('--race')) {
+  /* creepYield x decay race: which failure opens first —
+   * the cell's plastic rupture (~cy denials) or the wall's
+   * heal (~ws decay to stall). stall is deep (200) so the
+   * wall can't open elastically soon; vary cy to see where
+   * plastic yield beats healing. */
+  console.log(`=== race: stall=200 creepYield x decay — 'y'=yielded(rupture) 'h'=healed 'L'=locked, =t ===`);
+  const decays = [4, 5, 6];
+  process.stdout.write('creep\\decay |' + decays.map(d => String(d).padStart(10)).join('') + '\n');
+  for (const cy of [20, 40, 80, 120]) {
+    const cells = [];
+    for (const d of decays) {
+      const r = run(200, d, cy);
+      const tag = r.yields > 0 ? 'y' : (r.held ? 'L' : 'h');
+      cells.push(`${tag}${r.escT >= 0 ? '@' + r.escT : ''}`.padStart(10));
+    }
+    console.log(`  ${String(cy).padStart(4)}    |` + cells.join(''));
+  }
 } else {
   console.log(`=== fatigue-cal: wall=stall+20 p=${P} — (stall x decay) boundary map, ${TICKS}t ===`);
   console.log(`rows=stall, cols=wearDecay: 'L'=locked(held), 'h'=healed(escaped), trailing = final ws / denials`);

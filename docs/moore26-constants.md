@@ -330,3 +330,4 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | stratigraphy survival | 21 birthdays persist after 150t decay | 200t feed + 150t idle | devage.mjs |
 | relay speed | bare kicked mass: 1 cell/tick complete handoff, odd->odd via even conduit | odd cell m512, momentum pair7=32768 | thingtrack.mjs |
 | birthday trail | every vacated site writes m=1 + bondTick=confirm-tick | same | thingtrack.mjs |
+| rupture-vs-heal race | stall=200, ws seeded +20: healing phase (decay<=6) healT = 3/6/23t at d4/5/6 — rupture wins iff creepYield <~ healT (cy=20/d6 y@21 beats heal@23; cy=22 loses). Locked phase (decay>=7): ratchet sustains ws above stall (d7 ws->237, d8 280 pinned) — healing NEVER opens, rupture is the only escape at t~=cy+1 (deterministic, control decay=0/cy=30 -> y@31) | fatigue-cal --race + point runs | fatigue-cal |

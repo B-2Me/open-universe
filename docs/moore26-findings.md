@@ -4183,3 +4183,37 @@ BENT-WIRE — the wave is GEOMETRY-BLIND (deepest medium result)
   anisotropy: the diamond wavefront isn't the wave preferring
   a direction — the commitment graph itself is anisotropic
   and the wave just follows it faithfully.
+
+FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
+  A lane under sustained 1-denial/tick pressure has TWO failure
+  clocks racing: wall HEALING (winding decays w>>wearDecay per
+  tick, opens when ws < stall) and carrier RUPTURE (creep +=1 per
+  denial, yields through once at creep >= qCreepYield, ev64).
+  Map at stall=200, marginal wall seeded ws=stall+20:
+
+    HEALING PHASE (decay <= ~6): heal time scales ~4x per decay
+      step — d4: 3t, d5: 6t, d6: 23t. Rupture wins iff
+      creepYield < healT: cy=20/d6 yields at t=21 beating the
+      t=23 heal; cy=22 loses. Sharp boundary cy* ~= healT - 1.
+      Loser's record resets: creep reads 0 after a heal-escape.
+    LOCKED PHASE (decay >= 7): fatigue is SELF-SUSTAINING — the
+      +1/denial ratchet outpaces healing, ws equilibrates ABOVE
+      stall (d7: ws->237 vs stall 200; d8: 280 pinned). Healing
+      never opens; rupture is the ONLY escape, firing at
+      t ~= cy+1 exactly (cy=40->y@41, cy=80->y@81, cy=60/d8->y@61).
+    CONTROL (decay=0): cy=30 -> y@31 — one creep per denied tick,
+      no stochasticity. The rupture clock is deterministic; only
+      the heal clock carries rand_site noise.
+
+  The physical read: a fatigue-locked wall is a RATCHET — while
+  pressure persists, denial wear refreshes faster than memory
+  fades, so the lock is permanent and the only way through is to
+  break (plastic yield). Reduce the decay persistence far enough
+  (d<=6 at this pressure) and the wall becomes a fuse with a
+  stochastic melt-time; whether the carrier ruptures through or
+  the fuse melts first is set by cy vs healT (healT grows
+  super-exponentially in decay near the ratchet/decay balance —
+  3/6/23t at d4/5/6 for stall=200, margin=20).
+  Combined with stall* ~ 2^(decay+~1.2): the (stall, decay)
+  plane splits into OPEN / RUPTURE-WIN / LOCK-then-rupture
+  regions — a three-phase failure diagram from two registers.
