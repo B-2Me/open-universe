@@ -3968,3 +3968,51 @@ LAYOUT API — moore26_node_off(fid), and the audit that forced it
   paid labor). moore26-harness (128^3 string scen): runs clean,
   185ms/tick — but zero mass/zero events in 1000t; flagged, needs
   scenario re-tuning, not offset-related.
+
+SPRING-HANDOFF — the battery's second customer (fungibility)
+  (script/cascade/spring-handoff.mjs: charge wall at react=0, then
+  swap/duel customers on opposite faces):
+  SWAP: wall charged to fluxV=3200, carrier deleted, fresh cell B
+    seated on the FAR face. react=2 flips on -> the wall dumps the
+    ENTIRE stored charge into B in one tick (4 channels x 800) and
+    B launches +x at hop speed. The charge is fully fungible —
+    the reservoir doesn't care who paid it in.
+  DUEL: A (near face, lower si) + B (far face) both touching.
+    A drinks the whole reservoir at t=12; B gets only the 800 that
+    trickles through A's next denied hop at t=13. Serving order =
+    si scan order, first-come-per-tick, no queuing fairness.
+  EXIT LANES: the press spreads the returned impulse over all 4
+    FCC pairs of the axis — the discharged customer does NOT
+    ricochet straight back through the (still stalled) lane, it
+    exits along the least-worn diagonal. Rebound angle is set by
+    the medium's channel geometry, not the incident direction.
+
+CARVE-LANE — lane history vs matter throughput (qCarveLoad)
+  (script/cascade/carve-lane.mjs: dense slug tearing into a
+  partially-filled dest through a conduit held at seeded incipient
+  load). Measured single-hop response curve, src=60000 dest=40000:
+    load<16            -> tear = 7500  (src>>3, baseline)
+    16<=load<32        -> tear = 15000 (src>>2, CARVED 2.0x)
+    load>=32 (stall)   -> tear = 0     (congestion denial, creep)
+  Control carve=0: the middle regime collapses to baseline — the
+  delta is the carve LAW, not the incipient presence.
+  HONEST FRAME: lane history changes THROUGHPUT (merge quantum per
+  hop), not propagation speed — the hop is still 1 cell/tick. For
+  the Fermi-analog: packets remain ballistic-absolute; matter
+  throughput bends to traffic history. Congestion widens the
+  squeeze — it doesn't speed the walk.
+  ARTIFACT NOTE: re-seeding moore26_incipient_set every tick is an
+  INJECTION PUMP — each armed incipient carries nu=1 real energy
+  that confirms into mass (+24/tick measured, landed on cells
+  adjacent to the conduit). Not a conservation bug — the driver
+  was feeding the lane. Single-tick measurement avoids it.
+
+MOORE26-HARNESS — dead-grid guard (found while auditing):
+  NodeState grew to 568B -> 128^3 needs ~2.4GB for both buffers,
+  calloc fails in wasm, init falls into the dead-but-safe path
+  (grid_current=NULL, every getter 0) — and the harness reported
+  all-zero telemetry for 1000 "ticks" at 185ms/tick (the cost was
+  the JS getter loop itself). Now guarded by _moore26_grid_ready()
+  at init (initM26() in m26.mjs does init+check together). At 64^3
+  the string scenario is healthy: break=1 at ~t20, mass spike,
+  winding drain — the classic fracture signature.

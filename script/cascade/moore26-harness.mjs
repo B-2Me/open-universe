@@ -12,9 +12,9 @@
  * angular phase twist over the central region — a rotating
  * magnetic-wake analog).
  *
- * NOTE: 128^3 default — NodeState is ~220B x N x 2 buffers, so
- * 256^3 (~7.4GB) exceeds wasm32 memory. 256^3 needs a MEMORY64
- * build. A 16-node string fits comfortably at 128^3.
+ * NOTE: NodeState is now ~568B — 128^3 (~2.4GB both buffers)
+ * exceeds the wasm heap and init falls dead-silent (grid_ready=0).
+ * Use <=64^3 in wasm; bigger needs the native build or MEMORY64.
  *
  * Usage: node script/moore26-harness.mjs [--ticks=1000] [--w=128]
  *        [--oct] [--str=16] [--winding=128]
@@ -35,6 +35,15 @@ const STR = parseInt(arg('str', '16'));          // string length in nodes
 const TUBE_W = parseInt(arg('winding', '128'));  // saturated tube winding
 const SCEN = arg('scen', 'string');              // string | hexbuckle
 M._moore26_init(W, W, W);
+/* NodeState is 568B now (was ~220B when the 128^3 default was
+ * written): 128^3 needs ~2.4GB for both buffers, the wasm heap
+ * refuses, and init falls into the dead-but-safe path — the run
+ * then ticks a NULL grid and reports all-zero telemetry at full
+ * cost. grid_ready is the only honest check. */
+if (!M._moore26_grid_ready()) {
+  console.error(`init ${W}^3 FAILED — NodeState*2 buffers exceed the wasm heap (use <=64^3)`);
+  process.exit(1);
+}
 
 const c0 = W >> 1;
 const x0 = c0 - (STR >> 1), x1 = c0 + (STR >> 1);   // core positions

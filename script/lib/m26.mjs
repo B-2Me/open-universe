@@ -95,3 +95,16 @@ export function nodeOff(q) {
     o[NODE_FIELDS[i]] = q._moore26_node_off(i);
   return o;
 }
+
+// init + liveness check — a failed calloc leaves the dead-but-safe
+// engine where every getter returns 0 and the run LOOKS fine while
+// measuring nothing (moore26-harness silently ticked a NULL grid
+// 1000 ticks at 128^3 after NodeState grew to 568B). Always init
+// through this.
+export function initM26(q, w, h, d) {
+  q._moore26_init(w, h, d);
+  if (!q._moore26_grid_ready()) {
+    console.error(`init ${w}x${h}x${d} FAILED — NodeState*2 buffers exceed the wasm heap (max ~64^3 at 568B/node)`);
+    process.exit(1);
+  }
+}
