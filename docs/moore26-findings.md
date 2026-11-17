@@ -4266,3 +4266,19 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   sits inert (c frozen at 6) even while denied forever.
   Magnitude-blindness verified: p=50 and p=3200 both yield at
   exactly t=31 — ws+1>=stall counts ATTEMPTS, not force.
+  ELASTICITY SHEDS THE PRESSER (fatigue-cal --bounce): with
+  fieldReact>0 the wall's press-back returns the denied impulse
+  spread across the axis's channel pairs — the carrier is thrown
+  off on a diagonal ((7,8)->(11,4) by 200t) and the rupture
+  clock stops (maxCreep=6 vs c=30 needed). react=0 yields at
+  t=30; react=1/2/4 never yield — ANY elasticity makes a wall
+  rupture-proof against an UNCONFINED presser. Plastic flow
+  requires sustained contact; a springy wall breaks contact.
+  CONFINEMENT FLIPS THE TARGET: a kicked carrier inside a
+  fully-fatigued 5x5 ring can't rupture the walls — it TEARS
+  ITSELF into ~37 fragments in one tick (256->2816 shed+spawn
+  mass, settling ~2212) and the creep record fragments with
+  the body (pieces found carrying c=1..9 debts independently).
+  Total denial doesn't break the wall; it shatters the presser.
+  Rupture (ev64) needs exactly ONE hard contact with nowhere
+  else to go — free pressers leave, confined pressers burst.
