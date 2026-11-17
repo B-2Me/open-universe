@@ -283,6 +283,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 | wave Y-split ratio | deg=3 junction splits transmission exactly 50/50 between mirror arms; per-arm amplitude 0.66 of deg=2 thru case — matches Kirchhoff t=2/3 | strain-split arms=2 vs 1 | strain-split |
 | wave dead-end pile-up | deg=1 junction flux 7415 vs 3420 thru (2.2x) — fixed-end standing-wave pile-up; reflections superpose positively (flux is DC-offset) | strain-split arms=0 | strain-split |
+| wave speed vs coupling | c ~ 2^(-vs/2) below the causal ceiling: vs=1 ~1.0, vs=2 ~0.55, vs=3 ~0.43, vs=4 ~0.30 link/tick — discrete wave-equation scaling, capped at 1 link/tick | vs sweep, amp=2000 | strain-wave |
+| wave speed vs amplitude | independent — amp 500/2000/8000 arrival times differ <=1-2t/link (threshold artifact on the leading edge, not speed) | amp sweep, vs=3 | strain-wave |
+| wave extinction distance | weak coupling self-extinguishes: vs=4 dies L11, vs=5 L9, vs=6 L7 — lap falls below 2^vs as the pulse spreads, truncation kills it | vs sweep | strain-wave |
 | hexbuckle dip16 suppression | U-curvature suppresses charge dipole: dip16 chpol=15495+-3782 vs flat 28200+-4634 (~45% cut) | 64^3, n=4 pilot, t=60 | hexbuckle-ensemble |
 
 *Method note: every number above was produced against a fresh grid or
