@@ -155,6 +155,29 @@ if (process.argv.includes('--race')) {
   console.log(`bruised: yield@t=${b.done} freshDenials~${b.fresh} c=${b.c} pos=(${b.pos})`);
   console.log(`virgin : yield@t=${v.done} freshDenials~${v.fresh} c=${v.c} pos=(${v.pos})`);
   console.log(`debt carried = ${v.fresh - b.fresh} denials`);
+} else if (process.argv.includes('--bounce')) {
+  /* react>0 sheds an unconfined presser: the wall's press-back
+   * spreads the returned impulse across the axis's channel pairs,
+   * the carrier leaves on a diagonal, and the rupture clock
+   * never accumulates. Elasticity = rupture protection. */
+  const react = +arg('react', '2'), cy = +arg('creep', '30');
+  initM26(q, W, W, W);
+  q._moore26_wall_press_set(1); q._moore26_wall_stall_set(200);
+  q._moore26_wear_decay_set(0); q._moore26_creep_yield_set(cy);
+  q._moore26_field_react_set(react);
+  q._moore26_winding_set(...WALL, 6, 110); q._moore26_winding_set(...WALL, 7, 110);
+  q._moore26_mass_set(...A, MASS); q._moore26_momentum_set(255);
+  let pos = A.slice(), maxC = 0;
+  for (let t = 0; t <= 200; t++) {
+    q._moore26_momentum_at_set(pos[0], pos[1], pos[2], 3, P);
+    q._moore26_tick();
+    for (let x = 4; x <= 24; x++) for (let y = 4; y <= 24; y++) for (let z = 14; z <= 18; z++)
+      if (q._moore26_mass_get(x, y, z) > 100) pos = [x, y, z];
+    const c = q._moore26_creep_get(...pos);
+    if (c > maxC) maxC = c;
+    if (q._moore26_events(64) > 0) { console.log(`react=${react}: yield@t=${t} pos=(${pos}) c=${c}`); process.exit(0); }
+  }
+  console.log(`react=${react}: no yield in 200t — presser shed to (${pos}), maxCreep=${maxC}`);
 } else if (oneStall && oneDecay) {
   const r = run(+oneStall, +oneDecay, +oneCy);
   console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);
