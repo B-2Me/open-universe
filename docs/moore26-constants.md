@@ -290,7 +290,7 @@ translations live in [Nature → Substrate](/nature-translation).
 | medium exchange clock | fast flux<->fluxV oscillation ~11t spacing at midpoint, INDEPENDENT of wire length — local restoring clock set by vs, not the cavity mode | ringdown len sweep | strain-cavity |
 | stub resonator | 4-link dead-end branch stores MORE field than the thru arm: stub peak 6120 vs armA 5561, E_stub ~96M vs ~52M late — amplitude grows toward the free end (quarter-wave mode), a field-side strain capacitor | strain-stub slen=4 | strain-stub |
 | wave momentum ledger | Sigma fluxV over the wire: 2000 -> 1812 in 40t (-0.24%/tick, lap>>vs truncation) — the injected momentum CONSERVED in the v register; ZERO off-wire cells touched (medium-bounded exactly); Sigma flux grows 0->56k as the strain integrator | whole-grid audit | inline scan |
-| hexbuckle dip16 suppression | U-curvature suppresses charge dipole: dip16 chpol=15495+-3782 vs flat 28200+-4634 (~45% cut) | 64^3, n=4 pilot, t=60 | hexbuckle-ensemble |
+| hexbuckle curvature screening | U-bend suppresses the charge dipole non-monotonically: dip8 -29%, dip16 -36%, dip24 -35%, dip48 -18% vs flat 25128+-4861 — screening maximum at dip16-24, recovers at deep curvature; zero fractures in 84 runs (elastic screening, not break-related) | 64^3, n=12, t=60 | hexbuckle-ensemble |
 
 *Method note: every number above was produced against a fresh grid or
 isolated trial; shared-state ordering contamination was audited out of

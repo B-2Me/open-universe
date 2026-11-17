@@ -4121,9 +4121,12 @@ HEXBUCKLE-ENSEMBLE — dead-grid regression FIXED
   The 128^3 default silently calloc-failed (568B NodeState x2
   buffers > wasm heap) and 120 trials ticked a NULL grid:
   all-zero chpol, brk=0. Now initM26-guarded + --w=64 default.
-  At 64^3 (n=4 pilot, t=60): flat chpol=28200+-4634,
-  dip16 chpol=15495+-3782 — the U-curvature suppresses the
-  charge dipole ~45% at dip16. Full ensemble pending.
+  FULL ENSEMBLE (n=12, t=60, 64^3): curvature screens the
+  charge dipole non-monotonically — dip8 -29%, dip16 -36%,
+  dip24 -35%, dip48 -18% vs flat 25128+-4861. Screening
+  peaks at dip16-24 then recovers at deep curvature. All
+  84 runs fracture-free: this is ELASTIC screening by the
+  bent tube, not break-related.
 
 STRAIN-SPLIT + DISPERSION — the medium's full wave spec
   JUNCTION IMPEDANCE (strain-split.mjs): a deg=3 Y-junction
