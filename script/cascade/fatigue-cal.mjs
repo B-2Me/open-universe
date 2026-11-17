@@ -114,6 +114,47 @@ if (process.argv.includes('--race')) {
     }
     console.log(`carrier#${cyc}: yield@${yT} ws@yield=${yWs} ev64=${q._moore26_events(64)} wsNow=${wsNow()}`);
   }
+} else if (process.argv.includes('--inherit')) {
+  /* creep rides the BODY (relocating hops carry it, moore26.c
+   * ~2224). A carrier that accumulates denials at wall1 and then
+   * escapes via heal keeps its debt: at wall2 it yields after
+   * cy-residue fresh denials, not cy. Virgin control: cy. */
+  const stall = +arg('stall', '200'), cy = +arg('creep', '30');
+  const runInherit = (virgin) => {
+    initM26(q, W, W, W);
+    q._moore26_wall_press_set(1); q._moore26_wall_stall_set(stall);
+    q._moore26_wear_decay_set(5); q._moore26_creep_yield_set(cy);
+    if (!virgin) { q._moore26_winding_set(...WALL, 6, 110); q._moore26_winding_set(...WALL, 7, 110); }
+    q._moore26_mass_set(...A, MASS);
+    q._moore26_momentum_set(255);
+    let armed = false, pos = A.slice(), prevC = 0, pressT = -1;
+    for (let t = 0; t <= 80; t++) {
+      /* a denied hop drains the whole momentum register into gate
+       * fluxV — sustained pressure = re-kick the carrier wherever
+       * it currently sits */
+      q._moore26_momentum_at_set(pos[0], pos[1], pos[2], 3, P);
+      if (!armed && q._moore26_mass_get(...A) < MASS / 2) {
+        armed = true; q._moore26_wear_decay_set(0);
+        for (let k = 9; k <= 16; k++) { q._moore26_winding_set(k, k, 16, 6, 110); q._moore26_winding_set(k, k, 16, 7, 110); }
+      }
+      q._moore26_tick();
+      for (let x = 6; x <= 24; x++) for (let y = 6; y <= 24; y++) for (let z = 14; z <= 18; z++) {
+        if (q._moore26_mass_get(x, y, z) > 100) {
+          pos = [x, y, z];
+          const c = q._moore26_creep_get(x, y, z);
+          if (c > prevC && pressT < 0 && armed) pressT = t;
+          prevC = c;
+        }
+      }
+      if (q._moore26_events(64) > 0)
+        return { yieldT: -1, done: t, fresh: t - pressT + 1, pos, c: prevC };
+    }
+    return { done: -1, c: prevC };
+  };
+  const b = runInherit(false), v = runInherit(true);
+  console.log(`bruised: yield@t=${b.done} freshDenials~${b.fresh} c=${b.c} pos=(${b.pos})`);
+  console.log(`virgin : yield@t=${v.done} freshDenials~${v.fresh} c=${v.c} pos=(${v.pos})`);
+  console.log(`debt carried = ${v.fresh - b.fresh} denials`);
 } else if (oneStall && oneDecay) {
   const r = run(+oneStall, +oneDecay, +oneCy);
   console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);

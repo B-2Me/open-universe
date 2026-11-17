@@ -4251,3 +4251,18 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
     pressure), while winding — the lane's own record — only ever
     grows or fades. A ruptured wall is not a broken wall; it's a
     wall that remembers being tested.
+
+  PORTABLE DEBT (fatigue-cal --inherit): creep is BODY history,
+  not site history — a relocating hop carries the register with
+  the mass (engine: "creep rides too — pressure history belongs
+  to the body that earned it"). A carrier denied 5x at wall1
+  that escapes via heal arrives at wall2 with c=5 and yields
+  after ~26 fresh denials (vs ~31 virgin — debt carried = 5
+  exactly). Two ledgers, two owners: transit-debt (winding)
+  rides LANES, pressure-debt (creep) rides BODIES. And a detail
+  the trace exposed: a denied hop drains the WHOLE momentum
+  register into gate fluxV — sustained pressure requires a
+  re-kick every tick; a single kicked carrier presses once and
+  sits inert (c frozen at 6) even while denied forever.
+  Magnitude-blindness verified: p=50 and p=3200 both yield at
+  exactly t=31 — ws+1>=stall counts ATTEMPTS, not force.
