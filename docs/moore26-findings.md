@@ -4404,3 +4404,37 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   geometry and plumbing, never by 1-Tc/Th. A closed-loop version
   (unpinned baths, Joule return) would wind down only through the
   drain's per-cycle tithe — measure that next if needed.
+
+  THE CARNOT PUMP (qPumpCarnot, heat-engine --carnot) — the
+  conversion limit, FOUND. The demon's flaw was structural: it
+  DELETED the heat it spent, so no entropy ever had to be
+  accounted. The fix is thermodynamic, not a throttle: for every
+  w units of charge work the pump must REJECT r=w*hc/(hp-hc) heat
+  onto its downstream (cold-side) cell — so eta = w/(w+r) =
+  1-hc/hp EXACTLY, the Carnot bound computed from the substrate's
+  own locally-read temperatures. ev65 = rejected heat (the
+  entropy tithe); eta_pump = ev61/(ev61+ev65) is directly
+  measurable. Results:
+    STRICT ISOTHERMAL (uniform 8000-heat bath, no pinning):
+      ev61=0, ev65=0 for 120t — the demon is DEAD. The pump
+      never fires; T_c tracks T_p ~4% hot so it stays refused.
+    GRADIENT (Th=40000, Tc=4000, pump on a ring): W~100-140/t vs
+      the demon's flat 511/t. eta_pump measured 3.6-7.5% —
+      matching the LOCAL Carnot bound 1-T_c/T_p at firing time
+      (4.1% vs 3.8% at t=150). Note the bound is set by the
+      pump's own cold-side PARTNER (the downstream ring cell),
+      not the bath label — correct physics.
+    COLD-RESERVOIR-FILLS dynamics: rejected heat piles onto the
+      cold cell (T_c: 0->12000) until hc>=hp — the pump STALLS,
+      waits for conduction/drain to clear the sink, fires again.
+      Stall-fire oscillation = a real engine fighting a warming
+      sink; snapshots catching hc>hp show it refused.
+    CONSERVATION: pump debits spend=w+r, vi gains r heat, charge
+      gains w — nothing destroyed, entropy booked.
+  THE CLAIM: nature's conversion limit now lives in the substrate
+  — not authored as a cap, but emerging from a structural rule
+  (work must be paid with entropy rejected at the cold
+  temperature). The 2nd law content splits cleanly: conversion
+  bound (this pump), transport irreversibility (conduction),
+  entropy export (h>>7 drain). Legacy qPumpCarnot=0 retains the
+  demon for funded-EMF fixtures.

@@ -386,6 +386,13 @@ static int qHeatPump=0;    /* 0=off. Nonzero = a FUNDED EMF: an odd
  * upstream odd partner to the downstream one — direction by
  * bondPar sign — paying 1 heat per unit. Not a mint: charge is
  * relocated, heat is debited. ev61 = charge pumped. */
+static int qPumpCarnot=0;  /* 0=legacy pump (unbounded converter —
+ * measured as an isothermal demon). Nonzero = the CARNOT pump:
+ * work must be paid with entropy. For every w units of charge
+ * work the pump REJECTS r=w*hc/(hp-hc) heat onto the downstream
+ * (cold-side) cell, so eta = w/(w+r) = 1-hc/hp EXACTLY — the
+ * Carnot bound computed from locally-read temperatures. The
+ * isothermal demon dies: hc>=hp means no gradient, no work. */
 static int qHeatFlow=0;    /* 0=off. Nonzero = conduction shift: each
  * tick every unordered Moore pair transfers (ha-hb)>>qHeatFlow from
  * hot to cold — a discrete Laplacian on the whole stencil,
@@ -1940,6 +1947,34 @@ void moore26_tick(void){
                         if(k>(int32_t)grid_next[ui].charge+32768)
                             k=(int32_t)grid_next[ui].charge+32768;
                         if(k<=0)break;
+                        int32_t spend=k;   /* heat the pump debits */
+                        if(qPumpCarnot){
+                            /* k is the candidate WORK. The pump must
+                             * reject r=k*hc/(hp-hc) heat onto the
+                             * cold-side partner so w/(w+r)=1-hc/hp
+                             * exactly — the Carnot bound read off the
+                             * substrate's own registers. hc>=hp: no
+                             * gradient, refuse. Cold-side room
+                             * throttles: a warm sink is back-pressure.
+                             */
+                            int64_t hp=grid_next[si].heat,
+                                    hc=grid_next[vi].heat;
+                            if(hc>=hp)break;
+                            int64_t r=hc?((int64_t)k*hc)/(hp-hc):0;
+                            int64_t hroom=65535-hc;
+                            if(r>hroom){k=(int32_t)(hroom*(hp-hc)/hc);
+                                        r=hroom;}
+                            if(k<=0)break;
+                            spend=(int32_t)(k+r);
+                            if(spend>hp){spend=(int32_t)hp;
+                                k=(int32_t)(hp*(hp-hc)/hp);r=spend-k;}
+                            if(k<=0||r>(int64_t)(65535-hc))break;
+                            grid_next[vi].heat+=(uint16_t)r;
+                            qEvents[65]+=(uint64_t)r;   /* rejected
+                                heat — the entropy tithe; ev65/(ev61+
+                                ev65) = Tc/Th, so eta = ev61/(ev61+
+                                ev65) measures Carnot directly */
+                        }
                         int32_t qa=grid_next[ui].charge-k,
                                 qb=grid_next[vi].charge+k;
                         grid_next[ui].charge=(int16_t)qa;
@@ -1953,7 +1988,7 @@ void moore26_tick(void){
                          f=grid_next[vi].flux[ax]+sgn*k;
                          grid_next[vi].flux[ax]=(int16_t)
                              (f>32767?32767:f<-32768?-32768:f);}
-                        grid_next[si].heat-=(uint16_t)k;
+                        grid_next[si].heat-=(uint16_t)spend;
                         qEvents[61]+=(uint64_t)k;
                         break;
                     }
@@ -4460,6 +4495,7 @@ void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
 void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
 void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
 void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
+void moore26_pump_carnot_set(int v){qPumpCarnot=v?1:0;}
 void moore26_heat_flow_set(int v){qHeatFlow=v>0&&v<16?v:0;}
 void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
 void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}

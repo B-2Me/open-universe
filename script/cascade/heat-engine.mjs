@@ -40,6 +40,7 @@ const SHIFT = +(argv.shift ?? 4);      /* charge-flow shift */
 const JOULE = +(argv.joule ?? 3);      /* Joule mint shift, 0=off */
 const T     = +(argv.ticks ?? 300);
 const PUMP  = argv.pump === '0' ? 0 : RATE;
+const CARNOT = argv.carnot ? 1 : 0;   /* entropy-rejecting pump */
 
 const q = await loadM26();
 q._moore26_init(32, 32, 32);
@@ -47,6 +48,7 @@ q._moore26_momentum_set(255);
 q._moore26_vac_rate_set(0);          /* no re-emission — pure baths */
 q._moore26_heat_flow_set(FLOW);
 q._moore26_heat_pump_set(PUMP);
+if (CARNOT) q._moore26_pump_carnot_set(1);
 q._moore26_charge_flow_set(SHIFT);
 q._moore26_charge_heat_set(JOULE);
 
@@ -59,6 +61,7 @@ const links = [[10,16],[12,16],[14,16],[16,16],[18,16],[19,17],
 for (const [x, y] of ring) q._moore26_mass_set(x, y, 16, 100);
 for (const [x, y] of links) wound(x, y, 16);
 const PC = [11, 16, 16];              /* pump sits mid-gradient z=16 */
+const COLDP = [13, 16, 16];           /* pump's downstream (cold-side) cell */
 q._moore26_bondpar_set(...PC, +1);
 q._moore26_heat_set(...PC, 2000);     /* seed heat to start pumping */
 
@@ -82,20 +85,25 @@ console.log(`\n=== heat engine: Th=${TH} Tc=${TC} Carnot=${(100 * carnot).toFixe
 console.log('  eta = ev61/Q_h — pump converts heat->charge 1:1, so eta' +
   ' measures TRANSPORT (how much bath heat reaches the engine)');
 
-let Qh = 0, Qc = 0, ev61p = 0, ev44p = 0, ev60p = 0;
+let Qh = 0, Qc = 0, ev61p = 0, ev44p = 0, ev60p = 0, ev65p = 0;
 for (let t = 0; t <= T; t++) {
   Qh += pin(HOT, TH); Qc += pin(COLD, TC);
   if (t % 50 === 0 || t === T) {
     const ev61 = Number(q._moore26_events(61)),
           ev44 = Number(q._moore26_events(44)),
-          ev60 = Number(q._moore26_events(60));
-    const dt = 50, w = (ev61 - ev61p) / dt, qh = Qh / dt, qc = Qc / dt;
-    const Tp = q._moore26_heat_get(...PC);
-    console.log(`t=${String(t).padStart(3)}  W/t=${w.toFixed(1)}  Qh/t=${qh.toFixed(0)}` +
-      `  Qc/t=${qc.toFixed(0)}  I=${((ev60 - ev60p) / (12 * dt)).toFixed(1)}` +
-      `  drain/t=${((ev44 - ev44p) / dt).toFixed(0)}  T_pump=${Tp}` +
-      `  eta=${qh > 0 ? (100 * w / qh).toFixed(1) + '%' : '—'}`);
-    ev61p = ev61; ev44p = ev44; ev60p = ev60; Qh = 0; Qc = 0;
+          ev60 = Number(q._moore26_events(60)),
+          ev65 = Number(q._moore26_events(65));
+    const dt = 50, w = (ev61 - ev61p) / dt, r = (ev65 - ev65p) / dt,
+          qh = Qh / dt, qc = Qc / dt;
+    const Tp = q._moore26_heat_get(...PC),
+          Tcold = q._moore26_heat_get(...COLDP);
+    const etaP = w + r > 0 ? 100 * w / (w + r) : 0,        /* pump's own eta */
+          etaC = Tp > 0 ? 100 * (1 - Tcold / Tp) : 0;      /* local Carnot */
+    console.log(`t=${String(t).padStart(3)}  W/t=${w.toFixed(1)}  rej/t=${r.toFixed(1)}` +
+      `  Qh/t=${qh.toFixed(0)}  Qc/t=${qc.toFixed(0)}  I=${((ev60 - ev60p) / (12 * dt)).toFixed(1)}` +
+      `  drain/t=${((ev44 - ev44p) / dt).toFixed(0)}  T_p=${Tp} T_c=${Tcold}` +
+      `  eta_pump=${etaP.toFixed(1)}%  eta_carnot=${etaC.toFixed(1)}%`);
+    ev61p = ev61; ev44p = ev44; ev60p = ev60; ev65p = ev65; Qh = 0; Qc = 0;
   }
   if (t < T) q._moore26_tick();
 }

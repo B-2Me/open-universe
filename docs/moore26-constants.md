@@ -195,7 +195,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | conduction conservation | deficit == ev44 drain to <0.01% | conduction moves heat, only the `h>>7` drain removes it | heat-conduct --sweep |
 | local drain | `h>>7` per tick per node | booked to ev44 — the tracked entropy export | heat-conduct |
 | pump rate cap | ≤511 charge units/tick (`v<512` bound) | engine saturates supply at any delivery > cap | heat-engine |
-| isothermal conversion | pump works at Th=Tc — **no Carnot bound** | W=511/t, I=135 identical at Carnot=0% vs 90% | heat-engine |
+| isothermal conversion (legacy) | pump works at Th=Tc — no Carnot bound | W=511/t, I=135 identical at Carnot=0% vs 90%; `qPumpCarnot=0` | heat-engine |
+| **Carnot efficiency** | η = 1−T_c/T_p **exact** | pump rejects w·hc/(hp−hc) heat cold-side; isothermal → ev61=0 strictly | heat-engine --carnot |
+| rejected-heat counter | ev65 = entropy tithe | η_pump = ev61/(ev61+ev65) measurable; 3.6–7.5% matched local bound | heat-engine --carnot |
+| sink-saturation stall | pump refuses when h_c ≥ h_p | rejected heat fills cold cell → stall-fire oscillation | heat-engine --carnot |
 | system efficiency | η ≈ 0.4% (W/Q_h) | dominated by stencil-leak into bulk, not thermodynamics | heat-engine |
 | parasitic leak | Q_h/t ≈ 250K for 25-cell plate @40000 | >99% bath maintenance, pump-on vs off identical | heat-engine --pump=0 |
 

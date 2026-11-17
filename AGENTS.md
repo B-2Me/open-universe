@@ -382,6 +382,10 @@ alignment scheme changes again.
   charge uphill along its committed axis, pays 1 heat/unit (ev61)
   — ring circuit holds EMF until battery dies; ~3/4 shorts back
   through the pump cell (no internal resistance → diode wanted).
+  `qPumpCarnot` (default 0) = the engine with a 2nd law: work w
+  must reject r=w·hc/(hp−hc) heat onto the cold-side partner so
+  η=1−hc/hp exactly; isothermal ⇒ refuses (ev65 = tithe). Measured
+  η_pump 3.6–7.5% tracking the local bound; sink fills → stalls.
   MAGNETISM (flux register): charge RECORD is blind to current
   (72.8/72.4/74.8 |p|/tick under reversal), but `flux[3]` — the
   cell's signed recent charge throughput per axis (EWMA ~1/32) —
