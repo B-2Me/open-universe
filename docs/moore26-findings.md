@@ -4283,17 +4283,24 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   Rupture (ev64) needs exactly ONE hard contact with nowhere
   else to go — free pressers leave, confined pressers burst.
 
-  BATTERY CAPACITY — the ledger has a page limit (fatigue-cal
-  --cap): fluxV is int16, clamps at 32767 (~10 denials at
-  p=3200). On BARE VACUUM the clamp destroys: ev27 credits
-  131200 by t=40 while the register holds 32767 — deficit
-  98433 destroyed (75%). The event ledger is honest about what
-  was PAID; the register just can't HOLD it. On COMMITTED
-  STRUCTURE (gate on a wired chain, vs=3): nothing pins — the
-  wave carries the excess down the wire (|v|sum ~48k spread
-  over links, |f|sum ->393k as the field integrates the
-  inflow). Capacity is bounded by CONNECTIVITY, not by the
-  cell: a disconnected battery overflows and the excess
-  momentum is destroyed; a wired one is part of the field's
-  book and the ledger never loses a unit. Conservation is a
-  property of the medium's reach, not the register's width.
+  BATTERY CAPACITY — the ledger has a page limit, and the
+  clamp is a KNOB not a sink (fatigue-cal --cap): fluxV is
+  int16, saturates at 32767 (~10 denials at p=3200). First
+  measurement caught the clamp DESTROYING the excess: ev27
+  credited 131200 while the register held 32767 — 75% of paid
+  momentum silently lost. Fix (this engine rev): the catch is
+  now capacity-limited — the wall absorbs only what fits and
+  the residual momentum STAYS with the carrier. A saturated
+  battery is a REFUSAL, not a graveyard: denials still count
+  (creep grows, ev27 stops), momentum is never destroyed.
+  Verified: one 200000 kick -> fluxV=32767 + carrier retains
+  167233, deficit=0; --cap deficit column now reads 0 forever.
+  ev27 semantics upgraded: it credits only PAID absorption,
+  not attempts — more honest bookkeeping. Consequence worth
+  noting: a carrier that yields through a SATURATED wall now
+  exits with its residual momentum — hot escapees vs the old
+  fully-drained cold exit. On COMMITTED STRUCTURE the clamp
+  never binds anyway — the wave carries the excess down the
+  wire (|v|sum ~48k, |f|sum ->393k). Capacity is bounded by
+  connectivity: a lone cell's bookkeeping saturates; a cell
+  embedded in a medium is part of a bigger ledger.

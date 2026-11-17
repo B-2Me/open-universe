@@ -2115,16 +2115,32 @@ void moore26_tick(void){
                                      (uint16_t)(wv>65535?65535:wv);
                                  int32_t pd=o->momentum[be];
                                  if(qWallPress&&pd){
-                                     grid_next[si].momentum[be]-=pd;
                                      int ax=0;
                                      for(int a=1;a<3;a++)
                                          if(v[a]*v[a]>v[ax]*v[ax])ax=a;
-                                     int32_t rv=grid_next[ci0].fluxV[ax]
-                                               +(v[ax]>0?pd:-pd);
-                                     grid_next[ci0].fluxV[ax]=(int16_t)
-                                         (rv>32767?32767
-                                          :rv<-32768?-32768:rv);
-                                     qEvents[27]+=(uint64_t)(pd<0?-pd:pd);
+                                     /* capacity-limited catch: the
+                                      * battery pays only what fits.
+                                      * Excess pd STAYS with the
+                                      * carrier (back-pressure, not
+                                      * data loss — a full battery
+                                      * refuses the deposit) */
+                                     int32_t dep=(v[ax]>0?pd:-pd),
+                                             rv=grid_next[ci0].fluxV[ax],
+                                             room=(dep>0?32767-rv
+                                                       :-32768-rv),
+                                             pay=(dep>0?(dep<room?dep:room)
+                                                       :(dep>room?dep:room));
+                                     if(pay){
+                                         /* pay rides fluxV's sign
+                                          * convention; momentum keeps
+                                          * pd's — flip back for v<0 */
+                                         grid_next[si].momentum[be]-=
+                                             (v[ax]>0?pay:-pay);
+                                         grid_next[ci0].fluxV[ax]=
+                                             (int16_t)(rv+pay);
+                                         qEvents[27]+=(uint64_t)
+                                             (pay<0?-pay:pay);
+                                     }
                                  }
                                  /* pushed and failed — the carrier-
                                   * side strain record grows */
