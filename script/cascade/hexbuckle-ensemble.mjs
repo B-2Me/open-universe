@@ -20,10 +20,12 @@ const arg = (k, d) => {
   return m ? m.split('=')[1] : d;
 };
 
-import { loadM26 } from '../lib/m26.mjs';
+import { loadM26, initM26 } from '../lib/m26.mjs';
 const M = await loadM26();
 
-const W = parseInt(arg('w', '128')), TICKS = parseInt(arg('ticks', '100'));
+/* NodeState 568B: 128^3 exceeds the wasm heap -> dead grid,
+ * all-zero telemetry. 64^3 is the wasm ceiling. */
+const W = parseInt(arg('w', '64')), TICKS = parseInt(arg('ticks', '100'));
 const N = parseInt(arg('n', '20')), PROBE = 80;
 const DIPS = arg('dips', '8,16,24,32,40,48').split(',').map(Number);
 const c0 = W >> 1;
@@ -83,7 +85,7 @@ const chpol = () => {
  * beam — keeps continuity with the flat/dip8/dip16 rows. */
 const AXES = arg('axes', 'all');
 const run = (seedFn) => {
-  M._moore26_init(W, W, W);
+  initM26(M, W, W, W);
   seedFn();
   const jit = (Math.random() * 4 | 0) - 2;
   for (let t = 1; t <= TICKS; t++) {

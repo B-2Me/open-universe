@@ -4081,3 +4081,32 @@ STRAIN-INTERFERE — the wave is LINEAR (superposition proven)
     sink is the 1/64 resistive bleed). flux/fluxV amplitude is
     field state, not the conserved currency — paid momentum
     conservation lives in the deposit/press ledger.
+
+STRAIN-SPLIT — the medium has IMPEDANCE (junctions scatter)
+  (script/cascade/strain-split.mjs: committed wire, 8-link
+  incident arm -> junction -> 0/1/2 outgoing arms):
+  Y-JUNCTION (deg=3): transmission splits EXACTLY 50/50 between
+    the two outgoing arms (peak flux 3452 each — mirror-symmetric
+    arms, mirror-symmetric split). Per-arm amplitude = 0.66 of
+    the no-branch thru arm — matching the Kirchhoff expectation
+    t=2/3 for a 3-edge star. The degree in the Laplacian IS the
+    medium's impedance.
+  THRU (deg=2 control): junction flux 3420, arm peak 5242.
+  DEAD END (deg=1): flux piles at the junction to 7415 (2.2x
+    the thru case) — a fixed-end standing-wave pile-up; the
+    incident arm rings up to ~8000.
+  No negative flux anywhere: flux is a DC-offset integrated
+    quantity, so reflections superpose positively — read
+    reflection as junction pile-up, not sign flips.
+  ENERGY CAVEAT (same as interfere): Sigma flux^2 grows during
+    ringing — the fluxV->flux leapfrog is not norm-conserving.
+    The split ratio, not the absolute amplitude, is the robust
+    observable.
+
+HEXBUCKLE-ENSEMBLE — dead-grid regression FIXED
+  The 128^3 default silently calloc-failed (568B NodeState x2
+  buffers > wasm heap) and 120 trials ticked a NULL grid:
+  all-zero chpol, brk=0. Now initM26-guarded + --w=64 default.
+  At 64^3 (n=4 pilot, t=60): flat chpol=28200+-4634,
+  dip16 chpol=15495+-3782 — the U-curvature suppresses the
+  charge dipole ~45% at dip16. Full ensemble pending.

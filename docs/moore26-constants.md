@@ -281,6 +281,9 @@ translations live in [Nature → Substrate](/nature-translation).
 | strain superposition | anti-polarity pulses cross mid-wire and pass through (neg packet ends LEFT at t=28+); E dips->rebuilds — destructive interference transient, not absorption | strain-interfere | strain-interfere |
 | strain constructive node | same-polarity pulses: center flux 9805 vs 5251 lone (~2x) | strain-interfere same | strain-interfere |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
+| wave Y-split ratio | deg=3 junction splits transmission exactly 50/50 between mirror arms; per-arm amplitude 0.66 of deg=2 thru case — matches Kirchhoff t=2/3 | strain-split arms=2 vs 1 | strain-split |
+| wave dead-end pile-up | deg=1 junction flux 7415 vs 3420 thru (2.2x) — fixed-end standing-wave pile-up; reflections superpose positively (flux is DC-offset) | strain-split arms=0 | strain-split |
+| hexbuckle dip16 suppression | U-curvature suppresses charge dipole: dip16 chpol=15495+-3782 vs flat 28200+-4634 (~45% cut) | 64^3, n=4 pilot, t=60 | hexbuckle-ensemble |
 
 *Method note: every number above was produced against a fresh grid or
 isolated trial; shared-state ordering contamination was audited out of
