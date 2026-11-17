@@ -194,6 +194,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | thermal diffusivity | **D = 9.3·2^−shift cells²/tick** | σ²(t) linear after ~4t transient; flow=4→0.58, 5→0.29, 6→0.14, 7→0.07 | heat-conduct --sweep |
 | conduction conservation | deficit == ev44 drain to <0.01% | conduction moves heat, only the `h>>7` drain removes it | heat-conduct --sweep |
 | local drain | `h>>7` per tick per node | booked to ev44 — the tracked entropy export | heat-conduct |
+| pump rate cap | ≤511 charge units/tick (`v<512` bound) | engine saturates supply at any delivery > cap | heat-engine |
+| isothermal conversion | pump works at Th=Tc — **no Carnot bound** | W=511/t, I=135 identical at Carnot=0% vs 90% | heat-engine |
+| system efficiency | η ≈ 0.4% (W/Q_h) | dominated by stencil-leak into bulk, not thermodynamics | heat-engine |
+| parasitic leak | Q_h/t ≈ 250K for 25-cell plate @40000 | >99% bath maintenance, pump-on vs off identical | heat-engine --pump=0 |
 
 ## Force from density (offer->momentum)
 

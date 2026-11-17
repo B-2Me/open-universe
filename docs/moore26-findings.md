@@ -4371,3 +4371,36 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   Carnot-style efficiency experiment is now possible. The 65535
   saturation risk is largely defused: hot nodes shed to neighbors
   before clamping, so the clamp becomes rare rather than routine.
+
+  THE HEAT ENGINE (heat-engine.mjs) — a closed thermodynamic
+  cycle, all four elements measured: HOT BATH (pinned plate)
+  --conduction--> PUMP cell --qHeatPump: heat->charge 1:1--> RING
+  current --qChargeHeat: Joule mint--> COLD BATH + h>>7 ambient
+  drain. Results:
+    FULL CYCLE (Th=40000, Tc=4000, Carnot=90%): pump at its 511/t
+      cap, ring current I~135, cold bath went NET ABSORBER (Qc<0)
+      — heat rejection confirmed. System eta = W/Qh ~0.4%.
+    ISOTHERMAL DEMON (Th=Tc=20000, Carnot=0%): IDENTICAL output —
+      W=511/t, I~135. The pump converts heat->work from a SINGLE
+      uniform-temperature bath: no Carnot bound exists on the
+      conversion channel. This is a second-kind perpetual-motion
+      machine in classical terms — the substrate's "heat" behaves
+      like free energy, not thermodynamic entropy, at the engine.
+      The 2nd-law content lives entirely in TRANSPORT (conduction
+      is irreversible) and the h>>7 entropy export, not in any
+      conversion bound.
+    PUMP OFF: W=0, I=0, Qh unchanged — clean control.
+    PARASITIC LEAK dominates the system efficiency: the pinned
+      bath re-seed cost Qh/t~250K is >99% stencil-conduction bleed
+      into open bulk — identical with pump on or off. The engine's
+      511/t draw is lost in the noise. Qh is bath maintenance, not
+      useful input: insulation doesn't exist on the raw stencil.
+    T_pump ~11000 = the ambient conduction equilibrium at that
+      site — the pump's heat bank reflects the local bath, not
+      its own work history.
+  INTERPRETATION: the substrate has thermodynamic transport and
+  honest entropy export, but its "engine" is a rate-capped direct
+  converter with no temperature-ratio limit — eta is bounded by
+  geometry and plumbing, never by 1-Tc/Th. A closed-loop version
+  (unpinned baths, Joule return) would wind down only through the
+  drain's per-cycle tithe — measure that next if needed.
