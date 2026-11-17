@@ -287,6 +287,11 @@ alignment scheme changes again.
   legacy hardcode) mints `h>>3` packets from heat on edge
   channels; `heat_set` seeds a bath — it writes BOTH buffers and
   must `mark_chunk` or the vacuum-skip ledger never wakes.
+  `qHeatFlow` (shift, default 0=off) = heat conduction: each
+  unordered Moore pair swaps `(ha-hb)>>shift`/tick, exactly
+  conserved; measured D = 9.3·2^−shift cells²/tick
+  (heat-conduct.mjs). `vac_rate=0` disables re-emission for
+  clean conduction calibrations.
   Flux-aware ledger: Δheat = ev51(mint)+ev44(drain)−ev7(decay)
   −ev52(all 19 reabsorb sites) — verified closing exactly 0.
 - Clock/history stack (all measured, commit ea6d720 era):

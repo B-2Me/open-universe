@@ -189,7 +189,11 @@ translations live in [Nature → Substrate](/nature-translation).
 | heat-ledger closure | **exactly 0** residual | Δheat = ev51+ev44−ev7−ev52, 200t | seeded bath |
 | `ev51` | heat→packet minted nu | bath energy flux | counter |
 | `ev52` | all reabsorbed nu→heat (19 sites) | caps/declines/remainders/TTL/annih/recoil | counter |
-| heat saturation | >65535 clamps silently | caveat: extreme drives only | engine |
+| heat saturation | >65535 clamps silently | caveat: extreme drives only; rare once `qHeatFlow>0` lets hot nodes shed to neighbors | engine |
+| conduction rate | swap `(ha−hb)>>qHeatFlow` per unordered Moore pair/tick | antisymmetric pairwise Laplacian, default 0=off | heat-conduct |
+| thermal diffusivity | **D = 9.3·2^−shift cells²/tick** | σ²(t) linear after ~4t transient; flow=4→0.58, 5→0.29, 6→0.14, 7→0.07 | heat-conduct --sweep |
+| conduction conservation | deficit == ev44 drain to <0.01% | conduction moves heat, only the `h>>7` drain removes it | heat-conduct --sweep |
+| local drain | `h>>7` per tick per node | booked to ev44 — the tracked entropy export | heat-conduct |
 
 ## Force from density (offer->momentum)
 

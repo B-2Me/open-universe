@@ -4330,7 +4330,44 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
     FLAGGED (open design questions, not silent bugs):
       heat 65535 clamps — energy->disorder is one-way mint;
         overflow routing needs a physics decision (radiate?
-        shed packets?) not a mechanical fix.
+        shed packets?) not a mechanical fix. ANSWERED below:
+        the missing feedback was CONDUCTION, not overflow.
       massFlight 65535 — likely unreachable in measured regimes.
     Regressions after all four fixes: fatigue y@31, deflect-iso
     isotropic, charge-circuit Ohmic sweeps all unchanged.
+
+  HEAT CONDUCTION — the thermodynamic feedback the substrate was
+  missing (heat-conduct.mjs): heat minted/drained/re-emitted per
+  cell, but NOTHING moved it between cells — a 60000 node beside
+  a 0 node never equilibrated. No temperature gradients, no
+  Fourier's law: bookkeeping without dynamics, and the 65535 clamp
+  bound only because a node that can't conduct can only saturate.
+  Implemented qHeatFlow (right-shift, default 0=off): every
+  unordered pair of the 26-Moore stencil swaps (ha-hb)>>shift once
+  per tick — an antisymmetric discrete Laplacian, EXACTLY
+  conserved by construction. Runs as the final tick phase before
+  rescan, on the committed-neighbor stencil (geometry-blind like
+  every other transport channel).
+  Measured (4^3 block @60000 in cold vacuum, vac_rate=0):
+    flow  D(cells^2/tick)   sigma^2(t) linear?   conservation
+    4     0.58              yes                  deficit=424972 vs ev44=424975
+    5     0.29              yes                  deficit=485103 vs ev44=485118
+    6     0.14              yes                  deficit=515084 vs ev44=515095
+    7     0.07              yes                  deficit=527457 vs ev44=527491
+    0     ~0 (control)      sigma^2 frozen 1.3   deficit=drain exactly
+  LAWS:
+    D = 9.3 x 2^(-shift) cells^2/tick — halving exactly per shift,
+      i.e. the conduction rate is 26 pairs x (1/2^shift) against a
+      ~3 lattice-geometry factor. sigma^2(t) grows strictly linear
+      after ~4 ticks of transient — clean discrete heat equation.
+    CONSERVATION: conduction itself loses NOTHING — every unit the
+      grid loses matches ev44 (the honest sub-grid drain) to <0.01%.
+      Conduction is pure redistribution.
+    The drain h>>7/tick remains a genuine entropy export — now
+      distinguishable from transport because conduction moves heat
+      and drain removes it, both separately booked.
+  CONSEQUENCE: heat gradients now relax; the heat pump (heat->
+  charge work) can sit across a real hot/cold reservoir pair — a
+  Carnot-style efficiency experiment is now possible. The 65535
+  saturation risk is largely defused: hot nodes shed to neighbors
+  before clamping, so the clamp becomes rare rather than routine.

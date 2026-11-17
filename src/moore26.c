@@ -386,6 +386,13 @@ static int qHeatPump=0;    /* 0=off. Nonzero = a FUNDED EMF: an odd
  * upstream odd partner to the downstream one — direction by
  * bondPar sign — paying 1 heat per unit. Not a mint: charge is
  * relocated, heat is debited. ev61 = charge pumped. */
+static int qHeatFlow=0;    /* 0=off. Nonzero = conduction shift: each
+ * tick every unordered Moore pair transfers (ha-hb)>>qHeatFlow from
+ * hot to cold — a discrete Laplacian on the whole stencil,
+ * antisymmetric so the exchange is EXACTLY conserved. Until this,
+ * heat was strictly per-node (minted, drained, re-emitted, pumped —
+ * never flowing): no gradients, no equilibration, no Fourier's law.
+ * Diffusivity ~ stencil geometry / 2^qHeatFlow. */
 static int qMagKick=0;     /* 0=off: current is invisible to force.
  * Nonzero = right-shift AMPERE LAW: on a committed conduit the two
  * endpoint cells' flux registers (recent directed charge
@@ -4038,6 +4045,32 @@ void moore26_tick(void){
             memset(&grid_next[z*W*H+y*W+x],0,sizeof(NodeState));
         }
     }
+    /* thermal conduction — the missing transport channel. Per
+     * unordered pair (even channels visit each once): (ha-hb)>>s
+     * moves hot->cold — the discrete Laplacian, antisymmetric so
+     * heat sums are EXACTLY conserved. Sequential updates
+     * (Gauss-Seidel flavor) but bounded. Cross-chunk writes are
+     * atomic — a cold neighbor heats up and joins the process
+     * list on the next rescan. Reads next, writes next. */
+    if(qHeatFlow){
+    PROC_NODES
+        /* even channels = one member of each (c,c^1) opposite pair
+         * — every unordered pair is visited exactly once */
+        for(int c=0;c<QChannels;c+=2){
+            const int8_t *v=QChannelVec[c];
+            int ni=nbr(x,y,z,v[0],v[1],v[2]);
+            int32_t d=((int32_t)grid_next[si].heat
+                     -(int32_t)grid_next[ni].heat)>>qHeatFlow;
+            if(d){
+                #pragma omp atomic
+                grid_next[si].heat-=d;
+                #pragma omp atomic
+                grid_next[ni].heat+=d;
+            }
+        }
+    PROC_NODES_END
+    }
+
     rescan_live();
     AUDIT_PH(9)   /* last phase sample — BEFORE the swap, while
                  * grid_next still holds the staged tick */
@@ -4427,6 +4460,7 @@ void moore26_charge_range_set(int v){qChargeRange=v>0&&v<32?v:0;}
 void moore26_charge_flow_set(int v){qChargeFlow=v>0&&v<16?v:0;}
 void moore26_charge_heat_set(int v){qChargeHeat=v>0&&v<16?v:0;}
 void moore26_heat_pump_set(int v){qHeatPump=v>0&&v<512?v:0;}
+void moore26_heat_flow_set(int v){qHeatFlow=v>0&&v<16?v:0;}
 void moore26_mag_kick_set(int v){qMagKick=v>0&&v<32?v:0;}
 void moore26_mag_range_set(int v){qMagRange=v>0&&v<32?v:0;}
 void moore26_mag_ind_set(int v){qMagInd=v>0&&v<32?v:0;}
