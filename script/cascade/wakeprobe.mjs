@@ -5,7 +5,7 @@
 // trailing face persists (old) -> mean bondAge skews along v.
 // Isotropic bath => axis asymmetry is signal ONLY if it tracks the
 // measured drift direction. Hemispheric age split per axis + drift.
-import { loadM26, rng } from '../lib/m26.mjs';
+import { loadM26, rng, nodeOff } from '../lib/m26.mjs';
 
 const TICKS = parseInt((process.argv.find(a => a.startsWith('--ticks=')) || '--ticks=2000').split('=')[1]);
 const WIND = process.argv.includes('--wind');
@@ -14,7 +14,7 @@ const q = await loadM26();
 const N = 32;
 q._moore26_init(N, N, N); q._moore26_evap_shift_set(4);
 
-const OFF = { bondTick: 448, workAge: 452, winding: 0 };
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
 const heap = () => new Uint8Array(q.wasmMemory.buffer, q._moore26_state_pointer(), nodeSize * N * N * N);

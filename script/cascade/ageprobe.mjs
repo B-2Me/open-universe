@@ -4,7 +4,7 @@
 // volumetric "nestedness": seeded core = primordial (tick 0),
 // accreting shell = young. A drifting knot should skew the age
 // field along its velocity axis (old trailing edge, young leading).
-import { loadM26 } from '../lib/m26.mjs';
+import { loadM26, nodeOff } from '../lib/m26.mjs';
 
 const TICKS = parseInt((process.argv.find(a => a.startsWith('--ticks=')) || '--ticks=800').split('=')[1]);
 const FEED = !process.argv.includes('--nofeed');
@@ -13,7 +13,7 @@ const q = await loadM26();
 const N = 32;
 q._moore26_init(N, N, N); q._moore26_evap_shift_set(4);
 
-const OFF = { bondTick: 448, mass: 436, incip: 156 };
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
 const heap = () => new Uint8Array(q.wasmMemory.buffer, q._moore26_state_pointer(), nodeSize * N * N * N);

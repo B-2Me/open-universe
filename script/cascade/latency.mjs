@@ -11,7 +11,7 @@
 // binding processes literally take longer in ticks — emergent
 // time dilation for anything whose dynamics run through
 // transactions (which is everything bound).
-import { loadM26 } from '../lib/m26.mjs';
+import { loadM26, nodeOff } from '../lib/m26.mjs';
 
 const BATHS = (process.argv.find(a => a.startsWith('--baths=')) || '--baths=0,0.05,0.2,0.5').split('=')[1].split(',').map(Number);
 const PROBE = 256, WARM = 600;
@@ -20,10 +20,10 @@ const q = await loadM26();
 const N = 32;
 
 // NodeState offsets (same layout as fluxprobe.mjs)
-const OFF = { incipBorn: 208, ack: 312, ackTtl: 338, ackRtt: 364, bondDist: 390 };
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
-const heap = () => new Uint8Array(q.wasmMemory.buffer);
+const heap = () => new Uint8Array(q.wasmMemory.buffer, q._moore26_state_pointer(), nodeSize * N * N * N);
 
 const CV = [,,,,,, [1,1,0],[-1,-1,0],[1,-1,0],[-1,1,0],[1,0,1],[-1,0,-1],[1,0,-1],[-1,0,1],[0,1,1],[0,-1,-1],[0,1,-1],[0,-1,1]];
 const spokes = [[6, -8, 0], [8, -8, 0], [10, 0, -8], [14, 0, -8]];
@@ -53,7 +53,7 @@ function sample() {
       const bd = b0[i + OFF.bondDist + e];
       if (bd) { bondSum += bd; bondN++; }
     }
-    for (let c = 0; c < 26; c++) if (b0[i + 156 + c]) incipN++;
+    for (let c = 0; c < 26; c++) if (b0[i + OFF.incip + c]) incipN++;
   }
   return { rtt: rttN ? +(rttSum / rttN).toFixed(2) : 0, rttN,
            bond: bondN ? +(bondSum / bondN).toFixed(2) : 0, bondN, incipN };

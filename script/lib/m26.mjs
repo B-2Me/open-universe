@@ -79,3 +79,19 @@ export function centroid(q, N, axis = 'x') {
 // event counter shorthand — indices from the native harness:
 // 3 conf  4 emit  5 arm  7 decayedE  9 annih  23 fuse
 export const ev = (q, i) => Number(q._moore26_events(i));
+
+// NodeState field-name -> byte offset, resolved LIVE from the engine
+// via moore26_node_off — NEVER hardcode these: the struct grows, and
+// stale tables read the wrong registers silently (seven harnesses
+// broke this way when incipOp/strainBank/chargeFlight/creep landed).
+const NODE_FIELDS = ['winding','massFlight','packet','packetNu','incip',
+  'incipNu','incipBorn','incipOp','packetBorn','packetPar','incipPar',
+  'ack','ackTtl','ackRtt','bondDist','strainBank','chargeFlight','phase',
+  'mass','charge','flux','fluxP','fluxV','scarPar','heat','localDensity',
+  'txnWork','bondTick','workAge','localTime','bondPar','momentum','creep'];
+export function nodeOff(q) {
+  const o = {};
+  for (let i = 0; i < NODE_FIELDS.length; i++)
+    o[NODE_FIELDS[i]] = q._moore26_node_off(i);
+  return o;
+}

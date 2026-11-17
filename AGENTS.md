@@ -249,6 +249,12 @@ alignment scheme changes again.
   `spread=0 ISOTROPIC`. `moore26-harness.mjs` and
   `hexbuckle-ensemble.mjs` were migrated off inline glue-eval onto
   `loadM26` for the stale guard.
+- Raw-register reads: NEVER hardcode `NodeState` byte offsets —
+  the struct grows and stale tables read garbage silently (seven
+  harnesses rotted when incipOp/strainBank/chargeFlight/creep
+  shifted every later field). `moore26_node_off(fid)` in the
+  engine resolves offsetof() live; `nodeOff(q)` in m26.mjs maps
+  names -> offsets and all raw harnesses use it.
 - `CascadeSimulator` (docs/.vitepress/cascade/main.js): audited
   Nov 2026 — all calls exported, no raw NodeState pokes (reads
   published rg buffers only), every new tuner defaults off, so the

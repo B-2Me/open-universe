@@ -14,23 +14,15 @@
 // Phases: warm 600t fed -> FED probe 256t -> UNFED probe 256t.
 // ACF on the flux series: a periodic peak = a real circulation clock;
 // flat/zero = no flux at that site at all.
-import { loadM26, rng } from '../lib/m26.mjs';
+import { loadM26, rng, nodeOff } from '../lib/m26.mjs';
 
 const q = await loadM26();
 const N = 32;
 q._moore26_init(N, N, N); q._moore26_evap_shift_set(4);
 
-// ---- NodeState field offsets (src/moore26.c typedef, little-endian) --
-const OFF = {
-  winding: 0, massFlight: 52,          // u16[26] each
-  packet: 104, packetNu: 130, incip: 156, incipNu: 182,
-  incipBorn: 208, packetBorn: 234, packetPar: 260, incipPar: 286,
-  ack: 312, ackTtl: 338, ackRtt: 364, bondDist: 390,
-  chargeFlight: 403,                    // i8[26]
-  phase: 432, mass: 436, charge: 438, heat: 440, localDensity: 442,
-};
+// NodeState offsets resolved live — never hardcode (struct grows)
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
-if (nodeSize < 444) { console.error(`node_size=${nodeSize} < expected 444 — struct layout drifted`); process.exit(1); }
 
 const idx = (x, y, z) => (z * N * N + y * N + x);
 const state8 = () => new Uint8Array(q.wasmMemory.buffer, q._moore26_state_pointer(), nodeSize * N * N * N);

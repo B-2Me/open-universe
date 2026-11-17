@@ -3940,3 +3940,31 @@ SPRING-PROBE — the wall AS BATTERY, calibrated end to end
   every "material property" measured so far is a record of
   what happened, not a property of the site. There is no
   thing-table; structure is what the ledger remembers.
+
+LAYOUT API — moore26_node_off(fid), and the audit that forced it
+  Raw-register harnesses used to keep hardcoded NodeState byte
+  offsets. The struct grew (incipOp inserted at +234, strainBank +
+  chargeFlight before phase, creep at the tail) and EVERY table
+  silently rotted — seven harnesses (ageprobe, epochclock,
+  fluxprobe, latency, moveclock, phaseclock, wakeprobe) were
+  reading wrong registers while running "successfully". fluxprobe's
+  node_size guard only checked a minimum, so 568 >= 444 passed
+  while every field past incipBorn was off by +26..+48.
+  Fix: int moore26_node_off(int fid) in the engine resolves
+  offsetof(NodeState, field) live (fids 0..32, -1 unknown);
+  script/lib/m26.mjs exports nodeOff(q) -> {winding, massFlight,
+  ..., creep} and all seven harnesses now use it. node_size stays
+  the stride. Any future harness touching raw registers MUST use
+  nodeOff — never a literal.
+  Bonus find in latency.mjs: it viewed the wasm buffer from byte 0
+  WITHOUT the state_pointer() base — it had been reading an
+  unrelated memory region all along. Fixed; first correct run:
+  meanAckRtt~11.0, meanBondDist~2.8 (previously-reported 5.38 was
+  garbage memory, not a measurement). wakeprobe -/- under the stale
+  table now reads real hemispheric ages (t=2000: lo/hi ~1478/1477 x,
+  ~1459/1498 y — a real accretion age field, nearly isotropic at
+  bath=0.02). phaseclock: inner phase ~500 vs shell ~129, work/t
+  ~0 — phase advances without txn work (the qTick drumbeat, not
+  paid labor). moore26-harness (128^3 string scen): runs clean,
+  185ms/tick — but zero mass/zero events in 1000t; flagged, needs
+  scenario re-tuning, not offset-related.

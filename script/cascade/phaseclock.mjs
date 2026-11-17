@@ -8,7 +8,7 @@
 //      busiest members
 // Telemetry: per-site phase + armed count over time; mean phase of
 // the seeded 3x3x3 core vs the shell box; wrap-aware phase velocity.
-import { loadM26 } from '../lib/m26.mjs';
+import { loadM26, nodeOff } from '../lib/m26.mjs';
 
 const ADV = parseFloat((process.argv.find(a => a.startsWith('--adv=')) || '--adv=4').split('=')[1]);
 const CAP = parseInt((process.argv.find(a => a.startsWith('--cap=')) || '--cap=32').split('=')[1]);
@@ -41,7 +41,7 @@ q._moore26_evap_shift_set(4);
 q._moore26_phase_adv_set(ADV);
 q._moore26_work_cap_set(CAP);
 
-const OFF = { incip: 156, phase: 432, txnWork: 444 };
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
 // state_pointer() is the grid_current base — refetch each tick

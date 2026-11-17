@@ -6,7 +6,7 @@
 // rate. Log per epoch: shell slope, knot velocity |dc|/t, mass,
 // work/t. Then test: does slope anti-correlate with velocity?
 // The knot is its own control — same bath, varying v and mass.
-import { loadM26, rng } from '../lib/m26.mjs';
+import { loadM26, rng, nodeOff } from '../lib/m26.mjs';
 
 const N = 32, ADV = 8, CAP = 6, BATH = 0.02, EPOCH = 200, WINDUP = 40, EPOCHS = 9;
 
@@ -16,7 +16,7 @@ q._moore26_evap_shift_set(4);
 q._moore26_phase_adv_set(ADV);
 q._moore26_work_cap_set(CAP);
 
-const OFF = { phase: 432, txnWork: 444 };
+const OFF = nodeOff(q);
 const nodeSize = q._moore26_node_size();
 const idx = (x, y, z) => (z * N * N + y * N + x);
 const heap = () => new Uint8Array(q.wasmMemory.buffer, q._moore26_state_pointer(), nodeSize * N * N * N);

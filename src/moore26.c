@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #ifdef _OPENMP
 #ifndef __EMSCRIPTEN__
 #include <omp.h>      /* native OpenMP — emscripten's sysroot ships no
@@ -4236,6 +4237,50 @@ uint32_t moore26_cm(int axis){
  * JS strides it by moore26_node_size() to render the grid state. */
 void *moore26_state_pointer(void){return grid_current;}
 int moore26_node_size(void){return (int)sizeof(NodeState);}
+/* moore26_node_off — field id -> byte offset inside NodeState.
+ * Harnesses that read raw registers via state_pointer + node_size
+ * MUST resolve offsets through this — a hardcoded table silently
+ * rots every time the struct grows (incipOp/strainBank/
+ * chargeFlight/creep insertions shifted every later field; seven
+ * harnesses were reading garbage registers until this was added). */
+int moore26_node_off(int fid){
+    switch(fid){
+        case 0:  return offsetof(NodeState,winding);
+        case 1:  return offsetof(NodeState,massFlight);
+        case 2:  return offsetof(NodeState,packet);
+        case 3:  return offsetof(NodeState,packetNu);
+        case 4:  return offsetof(NodeState,incip);
+        case 5:  return offsetof(NodeState,incipNu);
+        case 6:  return offsetof(NodeState,incipBorn);
+        case 7:  return offsetof(NodeState,incipOp);
+        case 8:  return offsetof(NodeState,packetBorn);
+        case 9:  return offsetof(NodeState,packetPar);
+        case 10: return offsetof(NodeState,incipPar);
+        case 11: return offsetof(NodeState,ack);
+        case 12: return offsetof(NodeState,ackTtl);
+        case 13: return offsetof(NodeState,ackRtt);
+        case 14: return offsetof(NodeState,bondDist);
+        case 15: return offsetof(NodeState,strainBank);
+        case 16: return offsetof(NodeState,chargeFlight);
+        case 17: return offsetof(NodeState,phase);
+        case 18: return offsetof(NodeState,mass);
+        case 19: return offsetof(NodeState,charge);
+        case 20: return offsetof(NodeState,flux);
+        case 21: return offsetof(NodeState,fluxP);
+        case 22: return offsetof(NodeState,fluxV);
+        case 23: return offsetof(NodeState,scarPar);
+        case 24: return offsetof(NodeState,heat);
+        case 25: return offsetof(NodeState,localDensity);
+        case 26: return offsetof(NodeState,txnWork);
+        case 27: return offsetof(NodeState,bondTick);
+        case 28: return offsetof(NodeState,workAge);
+        case 29: return offsetof(NodeState,localTime);
+        case 30: return offsetof(NodeState,bondPar);
+        case 31: return offsetof(NodeState,momentum);
+        case 32: return offsetof(NodeState,creep);
+        default: return -1;
+    }
+}
 #ifndef GIT_REV
 #define GIT_REV "nogit"
 #endif
