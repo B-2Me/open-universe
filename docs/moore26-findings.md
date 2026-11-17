@@ -4152,6 +4152,16 @@ STRAIN-SPLIT + DISPERSION — the medium's full wave spec
     37/56/74/112 within ~10%. The ~11t fast peak spacing is a
     SEPARATE clock: the medium's local flux<->fluxV exchange,
     length-independent, set by vs coupling alone.
+  STRAIN SATURATION — the medium's first nonlinearity:
+    the int16 clamp (flux<=32767) is a YIELD STRAIN. An
+    amp=30000 impulse can't raise the field past the clamp,
+    so instead of a taller pulse it forms an advancing
+    FLAT-TOPPED SHELF (~7 links pinned at exactly 32767,
+    sharp leading edge) — a shock-like waveform. Below the
+    clamp the medium is exactly linear (superposition,
+    amplitude-independent speed); at it, excess strain
+    redistributes FORWARD to unsaturated links — the same
+    physics as a real material's elastic limit.
   FIELD NORM != ENERGY: Sigma(f^2+v^2) grows 4M->356M/60t on
     a LEN16 ringdown — injected fluxV momentum converts into a
     quasi-static compression field (the wire as a held
