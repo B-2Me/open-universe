@@ -4112,3 +4112,33 @@ HEXBUCKLE-ENSEMBLE — dead-grid regression FIXED
   At 64^3 (n=4 pilot, t=60): flat chpol=28200+-4634,
   dip16 chpol=15495+-3782 — the U-curvature suppresses the
   charge dipole ~45% at dip16. Full ensemble pending.
+
+STRAIN-SPLIT + DISPERSION — the medium's full wave spec
+  JUNCTION IMPEDANCE (strain-split.mjs): a deg=3 Y-junction
+    splits transmission EXACTLY 50/50 between mirror arms at
+    0.66 of the deg=2 thru amplitude — the Kirchhoff t=2/3.
+    A deg=1 dead end piles flux 2.2x at the junction
+    (fixed-end standing wave). The Laplacian's degree term
+    IS the impedance; there are no negative flux reflections
+    because flux carries a DC offset — read reflection as
+    junction pile-up.
+  DISPERSION (strain-wave vs sweep): wave speed follows the
+    discrete wave-equation law c ~ 2^(-vs/2) up to the
+    stencil's causal ceiling: vs=1 ~1.0, vs=2 ~0.55,
+    vs=3 ~0.43, vs=4 ~0.30 link/tick. Weak coupling self-
+    extinguishes — the pulse front falls below the >>vs
+    truncation floor (vs4 dies L11, vs5 L9, vs6 L7).
+  AMPLITUDE-INDEPENDENT SPEED: 500/2000/8000 impulses arrive
+    within 1-2 ticks at every link — speed is a medium
+    property, not a pulse property. Second proof of linearity
+    after superposition.
+  CAVITY MODE = STANDING WAVE: ringdown envelope returns at
+    t~40/57/74/108 for LEN 8/12/16/24 — matching 2L/c =
+    37/56/74/112 within ~10%. The ~11t fast peak spacing is a
+    SEPARATE clock: the medium's local flux<->fluxV exchange,
+    length-independent, set by vs coupling alone.
+  FIELD NORM != ENERGY: Sigma(f^2+v^2) grows 4M->356M/60t on
+    a LEN16 ringdown — injected fluxV momentum converts into a
+    quasi-static compression field (the wire as a held
+    spring). The wave stores DC strain; the conserved currency
+    remains the deposit/press ledger.
