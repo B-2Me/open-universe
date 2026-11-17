@@ -3941,6 +3941,18 @@ SPRING-PROBE — the wall AS BATTERY, calibrated end to end
   what happened, not a property of the site. There is no
   thing-table; structure is what the ledger remembers.
 
+  THE DETECTION PROBLEM (why a substrate hides): the only
+  instruments available are made of the substrate, so every
+  measurement returns substrate-normalized numbers. Nobody
+  inside the lattice can see "1 hop/tick" — what they can see
+  is exactly what we measured: a linear medium with a wave
+  speed, impedance set by connectivity, resonators that
+  charge like capacitors, and momentum that conserves. The
+  lattice is invisible TO the wave precisely because the
+  wave's conservation law is written in lattice registers.
+  Ticks and links are the only honest units until a second
+  independent constant lands in SI.
+
 LAYOUT API — moore26_node_off(fid), and the audit that forced it
   Raw-register harnesses used to keep hardcoded NodeState byte
   offsets. The struct grew (incipOp inserted at +234, strainBank +
