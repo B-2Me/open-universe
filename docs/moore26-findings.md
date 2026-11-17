@@ -4217,3 +4217,17 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   Combined with stall* ~ 2^(decay+~1.2): the (stall, decay)
   plane splits into OPEN / RUPTURE-WIN / LOCK-then-rupture
   regions — a three-phase failure diagram from two registers.
+  REFINEMENT (stall-scaling + the equilibrium reframe):
+    Locked-phase ws settles at ws* ~ 2^(decay+~1) regardless of
+    stall — d6 -> 121-128, d7 -> 237, d8 -> 280 (seed was 220 for
+    the d7/8 runs, so 280 is pure ratchet gain). stall* IS that
+    equilibrium: lock iff stall < ws*, i.e. the lane holds while
+    denial-wear refresh outpaces w>>decay healing.
+    healT is margin-driven, not absolute — decay is multiplicative
+    (w>>N ~ w/2^N per tick), so a wall seeded stall+20 sheds the
+    20-unit margin faster at HIGHER stall: d4 gives 9/5/3t at
+    stall 64/128/256 (~2x the pure-decay estimate — the +1/denial
+    ratchet halves the net fade). Near stall* the ratchet almost
+    balances healing and healT stretches to a plateau (~23t for
+    stall 150-200 at d6). cy=150/d7 confirmed yields at t=151 on
+    a 300t run — the locked phase never self-opens.
