@@ -4064,3 +4064,20 @@ STRAIN-RELAY — force transmitted THROUGH the medium (Newton's
   So momentum crossed the lattice without matter: the substrate's
   phonon channel. The wall didn't push the receiver — the history
   stored in the conduit lattice did.
+
+STRAIN-INTERFERE — the wave is LINEAR (superposition proven)
+  (script/cascade/strain-interfere.mjs: pulses injected at both
+  ends of one committed wire, three arms):
+  ANTI (+2000 left, -2000 right): mirror-antisymmetric field held
+    12+ ticks; the packets cross mid-wire and PASS THROUGH —
+    by t=28 the negative packet sits on the LEFT, positive on
+    the RIGHT. E_total dips to 17337 at the crossing then
+    rebuilds: destructive interference is TRANSIENT, not
+    absorption. Linear superposition confirmed.
+  SAME (+2000 both ends): mirror-symmetric field, center flux
+    peaks 9805 vs 5251 lone — ~2x constructive.
+  CAVEAT: the L1 field norm grows during ringing (leapfrog
+    fluxV->flux integration is not norm-conserving; the only
+    sink is the 1/64 resistive bleed). flux/fluxV amplitude is
+    field state, not the conserved currency — paid momentum
+    conservation lives in the deposit/press ledger.

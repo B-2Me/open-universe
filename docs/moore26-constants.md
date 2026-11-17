@@ -278,6 +278,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | battery radiation channel | stored strain's ONLY self-discharge path is radiation into committed structure — absent without vacpol coupling | vs=0 control | strain-wave |
 | strain relay (remote press) | denied momentum -> wall fluxV -> wave -> distant cell pressed: near t=7, far t=11 (~1t/link press arrival) | strain-relay | strain-relay |
 | strain relay controls | vs=0 and uncommitted-wire arms: receivers get exactly 0 while A still bounces — transmission needs BOTH wave law and committed medium | 2 clean nulls | strain-relay |
+| strain superposition | anti-polarity pulses cross mid-wire and pass through (neg packet ends LEFT at t=28+); E dips->rebuilds — destructive interference transient, not absorption | strain-interfere | strain-interfere |
+| strain constructive node | same-polarity pulses: center flux 9805 vs 5251 lone (~2x) | strain-interfere same | strain-interfere |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
