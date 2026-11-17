@@ -4304,3 +4304,33 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   wire (|v|sum ~48k, |f|sum ->393k). Capacity is bounded by
   connectivity: a lone cell's bookkeeping saturates; a cell
   embedded in a medium is part of a bigger ledger.
+
+  CLAMP AUDIT — every int16/u16 bound in the engine classified:
+    ALREADY FEEDBACK: mass handoff computes room and sheds a
+      tear fraction (the tear IS the back-pressure); the wave
+      integrator clamps are the measured yield-strain nonlinearity;
+      winding/creep caps are history records, not currency.
+    FIXED AS BACK-PRESSURE (this rev):
+      charge RELOCATION: handoff pays only what the destination
+        holds — residual stays with the source; the current-
+        element flux writes use the PAID amount (a partially-
+        moved charge is a partially-recorded current). Verified:
+        carrier+20000 hopping into a saturated cell -> sum
+        52767 conserved exactly; the landed body then carried
+        the destination's own 32767 onward on its next hop
+        (charge record joins whatever body occupies the cell).
+      chargeFlight PAIR MINT: qc throttled to both ledgers' room
+        — also fixed a latent asymmetric clamp (upper bound only)
+        that could WRAP int8, not just leak.
+      BOND HANDSHAKE mint (+q/-q pair): now atomic — if either
+        endpoint can't hold its quantum neither is written. A
+        bond can't mint a charge the ledger can't record.
+      HEAT PUMP: k throttled by both endpoints' charge room —
+        partial pump conserves, heat stays for later.
+    FLAGGED (open design questions, not silent bugs):
+      heat 65535 clamps — energy->disorder is one-way mint;
+        overflow routing needs a physics decision (radiate?
+        shed packets?) not a mechanical fix.
+      massFlight 65535 — likely unreachable in measured regimes.
+    Regressions after all four fixes: fatigue y@31, deflect-iso
+    isotropic, charge-circuit Ohmic sweeps all unchanged.

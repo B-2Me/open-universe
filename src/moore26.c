@@ -1925,11 +1925,18 @@ void moore26_tick(void){
                         if(!grid_current[ui].mass||!grid_current[vi].mass)continue;
                         int32_t k=qHeatPump;
                         if(k>grid_next[si].heat)k=grid_next[si].heat;
+                        /* throttle the pump to BOTH charge ledgers'
+                         * room — clamping either side would mint
+                         * or destroy net charge */
+                        if(k>32767-grid_next[vi].charge)
+                            k=32767-grid_next[vi].charge;
+                        if(k>(int32_t)grid_next[ui].charge+32768)
+                            k=(int32_t)grid_next[ui].charge+32768;
                         if(k<=0)break;
                         int32_t qa=grid_next[ui].charge-k,
                                 qb=grid_next[vi].charge+k;
-                        grid_next[ui].charge=(int16_t)(qa<-32768?-32768:qa);
-                        grid_next[vi].charge=(int16_t)(qb>32767?32767:qb);
+                        grid_next[ui].charge=(int16_t)qa;
+                        grid_next[vi].charge=(int16_t)qb;
                         /* the pumped charge is a current element
                          * too — flux on both endpoints, axis = the
                          * pump's committed axis, sign = direction */
@@ -2254,8 +2261,17 @@ void moore26_tick(void){
                 if(o->charge&&o->mass){
                     int32_t move=(int32_t)((int64_t)o->charge*k/o->mass);
                     if(move){
-                        int32_t ns=grid_next[si].charge-move,
-                                nd=grid_next[ni].charge+move;
+                        /* capacity-limited handoff: the destination
+                         * accepts only what it can hold — the residual
+                         * charge stays with the source (the signed
+                         * sum is exact at every saturation) */
+                        int32_t dn=grid_next[ni].charge,
+                                room=move>0?32767-dn:-32767-dn,
+                                paid=move>0?(move<room?move:room)
+                                          :(move>room?move:room);
+                        if(paid){
+                        int32_t ns=grid_next[si].charge-paid,
+                                nd=grid_next[ni].charge+paid;
                         grid_next[si].charge=(int16_t)(ns>32767?32767:ns<-32767?-32767:ns);
                         grid_next[ni].charge=(int16_t)(nd>32767?32767:nd<-32767?-32767:nd);
                         /* a relocating charge IS a current — the
@@ -2263,12 +2279,13 @@ void moore26_tick(void){
                          * its face axes; both cells book the flux
                          * so a moving charged body couples qMagKick */
                         for(int a2=0;a2<3;a2++)if(v[a2]){
-                            int32_t f=grid_next[si].flux[a2]+v[a2]*move;
+                            int32_t f=grid_next[si].flux[a2]+v[a2]*paid;
                             grid_next[si].flux[a2]=(int16_t)
                                 (f>32767?32767:f<-32768?-32768:f);
-                            f=grid_next[ni].flux[a2]+v[a2]*move;
+                            f=grid_next[ni].flux[a2]+v[a2]*paid;
                             grid_next[ni].flux[a2]=(int16_t)
                                 (f>32767?32767:f<-32768?-32768:f);
+                        }
                         }
                     }
                 }
@@ -2621,10 +2638,15 @@ void moore26_tick(void){
                 /* SIGNED pair: the separating fragments carry +q/-q
                  * (net zero minted — gamma+gamma -> e+ + e-). */
                 int32_t qc=(int32_t)(dep>>4);
-                int32_t cf0=(int32_t)n->chargeFlight[c]+qc;
-                int32_t cf1=(int32_t)n->chargeFlight[oc]-qc;
-                n->chargeFlight[c]=(int8_t)(cf0>127?127:cf0);
-                n->chargeFlight[oc]=(int8_t)(cf1<-127?-127:cf1);
+                /* throttle the pair mint to what BOTH flight ledgers
+                 * can hold — asymmetric clamping would mint net
+                 * charge; the signed sum stays exact at saturation */
+                int32_t lim=127-n->chargeFlight[c];
+                if(127+n->chargeFlight[oc]<lim)lim=127+n->chargeFlight[oc];
+                if(lim<0)lim=0;
+                if(qc>lim)qc=lim;
+                n->chargeFlight[c]=(int8_t)(n->chargeFlight[c]+qc);
+                n->chargeFlight[oc]=(int8_t)(n->chargeFlight[oc]-qc);
                 uint32_t f0=n->massFlight[c]+pair,f1=n->massFlight[oc]+pair;
                 n->massFlight[c]=(uint16_t)(f0>65535?65535:f0);
                 n->massFlight[oc]=(uint16_t)(f1>65535?65535:f1);
@@ -3185,14 +3207,21 @@ void moore26_tick(void){
                     if(o->incipPar[c]){
                         int q2=(o->incipPar[c]>0?1:-1);
                         int32_t nc=(int32_t)n->charge+q2;
-                        n->charge=(int16_t)(nc>32767?32767:nc<-32767?-32767:nc);
                         const int8_t *bv=QChannelVec[c];
                         int bxx=x-bv[0],byy=y-bv[1],bzz=z-bv[2];
+                        /* the pair mint is ATOMIC: if either endpoint
+                         * can't hold its quantum neither is written —
+                         * a bond can't mint a charge the ledger can't
+                         * record (zero-sum preserved at saturation) */
+                        int inr=nc<=32767&&nc>=-32767;
                         if(bxx>=0&&bxx<QWidth&&byy>=0&&byy<QHeight&&bzz>=0&&bzz<QDepth){
                             int bi=(bzz*QHeight+byy)*QWidth+bxx;
                             int32_t oc=(int32_t)grid_next[bi].charge-q2;
-                            grid_next[bi].charge=(int16_t)(oc>32767?32767:oc<-32767?-32767:oc);
-                            grid_current[bi].charge=grid_next[bi].charge;
+                            if(inr&&oc<=32767&&oc>=-32767){
+                                n->charge=(int16_t)nc;
+                                grid_next[bi].charge=(int16_t)oc;
+                                grid_current[bi].charge=grid_next[bi].charge;
+                            }
                         }
                     }
                     /* an offer absorbed into structure pushes it the
