@@ -68,10 +68,7 @@ const run = (stall, decay, cy) => {
 };
 
 const oneStall = arg('stall', ''), oneDecay = arg('decay', ''), oneCy = arg('creep', '0');
-if (oneStall && oneDecay) {
-  const r = run(+oneStall, +oneDecay, +oneCy);
-  console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);
-} else if (process.argv.includes('--race')) {
+if (process.argv.includes('--race')) {
   /* creepYield x decay race: which failure opens first —
    * the cell's plastic rupture (~cy denials) or the wall's
    * heal (~ws decay to stall). stall is deep (200) so the
@@ -89,6 +86,37 @@ if (oneStall && oneDecay) {
     }
     console.log(`  ${String(cy).padStart(4)}    |` + cells.join(''));
   }
+} else if (process.argv.includes('--repeat')) {
+  /* successive carriers vs one wall: does a yield-through DAMAGE
+   * the lane, or only spend the carrier's own creep record? Seat
+   * fresh carriers at A back to back; each should need the full
+   * ~cy denials (creep reset at yield), while the wall's ws keeps
+   * ratcheting — plastic flow HARDENS the wall. */
+  const stall = +arg('stall', '200'), decay = +arg('decay', '0'), cy = +arg('creep', '30');
+  const NCYC = +arg('ncyc', '4');
+  initM26(q, W, W, W);
+  q._moore26_wall_press_set(1);
+  q._moore26_wall_stall_set(stall);
+  q._moore26_wear_decay_set(decay);
+  if (cy) q._moore26_creep_yield_set(cy);
+  const seed = stall + 20;
+  q._moore26_winding_set(...WALL, 6, seed >> 1);
+  q._moore26_winding_set(...WALL, 7, seed - (seed >> 1));
+  const wsNow = () => q._moore26_winding_get(...WALL, 6) + q._moore26_winding_get(...WALL, 7);
+  console.log(`=== repeat: stall=${stall} decay=${decay} creep=${cy} — ${NCYC} successive carriers, one wall ===`);
+  for (let cyc = 1; cyc <= NCYC; cyc++) {
+    q._moore26_mass_set(...A, MASS);
+    let yT = -1, yWs = wsNow();
+    for (let t = 0; t <= TICKS; t++) {
+      q._moore26_momentum_at_set(...A, 3, P);
+      if (q._moore26_mass_get(...A) < MASS / 2) { yT = t; yWs = wsNow(); break; }
+      q._moore26_tick();
+    }
+    console.log(`carrier#${cyc}: yield@${yT} ws@yield=${yWs} ev64=${q._moore26_events(64)} wsNow=${wsNow()}`);
+  }
+} else if (oneStall && oneDecay) {
+  const r = run(+oneStall, +oneDecay, +oneCy);
+  console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);
 } else {
   console.log(`=== fatigue-cal: wall=stall+20 p=${P} — (stall x decay) boundary map, ${TICKS}t ===`);
   console.log(`rows=stall, cols=wearDecay: 'L'=locked(held), 'h'=healed(escaped), trailing = final ws / denials`);

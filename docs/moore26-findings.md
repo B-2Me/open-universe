@@ -4231,3 +4231,23 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
     balances healing and healT stretches to a plateau (~23t for
     stall 150-200 at d6). cy=150/d7 confirmed yields at t=151 on
     a 300t run — the locked phase never self-opens.
+
+  REPEAT LOADING (fatigue-cal --repeat, successive carriers vs one
+  wall): rupture NEVER damages the lane — it feeds it.
+    decay=0: every carrier yields at exactly t=31 and the wall
+      ratchets +31 wear per rupture (30 denials + the yielded
+      transit) — ws 220->251->282->313->344. Plastic flow IS
+      work-hardening: the wall gets more fatigued with every
+      break it survives.
+    decay=7 (locked): same y@31 cadence but ws pins at the
+      equilibrium 237-238 — a saturated wall yields carrier after
+      carrier forever, damage capped by the ratchet balance.
+    decay=5 (healing): wall melts at t=6 before creep can reach
+      cy=30 (ev64=0 — a heal-escape, not a yield); once open it
+      stays open, later carriers walk through at t=1 while ws
+      decays away (191->183).
+    The breach is PERSONAL, not structural: creep resets to 0 at
+    each yield (carrier#2 needs the full 30 denials — no inherited
+    pressure), while winding — the lane's own record — only ever
+    grows or fades. A ruptured wall is not a broken wall; it's a
+    wall that remembers being tested.
