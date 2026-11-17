@@ -4282,3 +4282,18 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   Total denial doesn't break the wall; it shatters the presser.
   Rupture (ev64) needs exactly ONE hard contact with nowhere
   else to go — free pressers leave, confined pressers burst.
+
+  BATTERY CAPACITY — the ledger has a page limit (fatigue-cal
+  --cap): fluxV is int16, clamps at 32767 (~10 denials at
+  p=3200). On BARE VACUUM the clamp destroys: ev27 credits
+  131200 by t=40 while the register holds 32767 — deficit
+  98433 destroyed (75%). The event ledger is honest about what
+  was PAID; the register just can't HOLD it. On COMMITTED
+  STRUCTURE (gate on a wired chain, vs=3): nothing pins — the
+  wave carries the excess down the wire (|v|sum ~48k spread
+  over links, |f|sum ->393k as the field integrates the
+  inflow). Capacity is bounded by CONNECTIVITY, not by the
+  cell: a disconnected battery overflows and the excess
+  momentum is destroyed; a wired one is part of the field's
+  book and the ledger never loses a unit. Conservation is a
+  property of the medium's reach, not the register's width.

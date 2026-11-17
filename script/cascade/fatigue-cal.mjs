@@ -178,6 +178,32 @@ if (process.argv.includes('--race')) {
     if (q._moore26_events(64) > 0) { console.log(`react=${react}: yield@t=${t} pos=(${pos}) c=${c}`); process.exit(0); }
   }
   console.log(`react=${react}: no yield in 200t — presser shed to (${pos}), maxCreep=${maxC}`);
+} else if (process.argv.includes('--cap')) {
+  /* the battery's capacity: fluxV is int16 (32767). On bare
+   * vacuum the clamp destroys the excess — ev27 credits every
+   * denial but the register can't hold it. On committed
+   * structure the wave carries the excess down the wire. */
+  const vs = +arg('vs', '3'), wired = process.argv.includes('--wired');
+  initM26(q, W, W, W);
+  q._moore26_wall_press_set(1); q._moore26_wall_stall_set(200);
+  q._moore26_wear_decay_set(0); q._moore26_creep_yield_set(0);
+  if (vs) q._moore26_vac_pol_set(vs);
+  q._moore26_winding_set(...WALL, 6, 110); q._moore26_winding_set(...WALL, 7, 110);
+  if (wired) for (let i = 1; i < 12; i++) { q._moore26_winding_set(8 + i, 8 + i, 16, 6, 64); q._moore26_winding_set(8 + i, 8 + i, 16, 7, 64); }
+  q._moore26_mass_set(...A, MASS); q._moore26_momentum_set(255);
+  console.log(`=== cap: vs=${vs} wired=${wired} — |v|sum/|f|sum vs ev27 credit ===`);
+  for (let t = 0; t <= TICKS; t++) {
+    q._moore26_momentum_at_set(...A, 3, P);
+    q._moore26_tick();
+    if (t % 10 === 0) {
+      let vsum = 0, fsum = 0;
+      for (let x = 0; x < W; x++) for (let y = 0; y < W; y++) for (let z = 0; z < W; z++) {
+        for (let a = 0; a < 3; a++) vsum += Math.abs(q._moore26_fluxv_get(x, y, z, a));
+        fsum += Math.abs(q._moore26_flux_get(x, y, z));
+      }
+      console.log(`t=${String(t).padStart(3)} |v|sum=${vsum} |f|sum=${fsum} ev27=${q._moore26_events(27)} deficit=${q._moore26_events(27) - vsum}`);
+    }
+  }
 } else if (oneStall && oneDecay) {
   const r = run(+oneStall, +oneDecay, +oneCy);
   console.log(`stall=${oneStall} decay=${oneDecay} creep=${oneCy}: ws=${r.ws} maxW=${r.maxW} denials=${r.denials} escT=${r.escT} yields=${r.yields} held=${r.held}`);
