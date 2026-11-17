@@ -4038,3 +4038,29 @@ STRAIN-WAVE — the medium has sound (script/cascade/strain-wave.mjs)
   THIS CLOSES THE LOOP: the same register (fluxV) is the battery's
   stored momentum AND the wave's momentum. Catch -> hold -> press
   back -> or radiate away, all one conserved currency.
+
+STRAIN-RELAY — force transmitted THROUGH the medium (Newton's
+  cradle, substrate edition; script/cascade/strain-relay.mjs)
+  The complete causal chain measured end to end: carrier A denied
+  at a stall wall (link 0 of a committed {1,1,0} wire) -> 3200
+  units of paid momentum land in the wall's fluxV -> the vacpol
+  wave propagates the strain down the lattice -> a receiver cell
+  touching link 4 is pressed at t=7, a receiver touching link 8
+  at t=11 — pushed by a collision it never saw, through a medium
+  that remembered it.
+  DELAY IS REAL: ~1t/link effective press-arrival (the press
+  threshold |v|>=4 triggers before the flux front peaks —
+  consistent with the 2.3t/link wave speed measured in
+  strain-wave).
+  RINGING, NOT DC: fluxV at link 8 oscillates +-350 — the medium
+  transmits an oscillatory strain packet, not a steady force.
+  Net delivered momentum is small (the receivers hopped away on
+  ~12 units) — most of the deposited charge sloshes in the wire
+  or bleeds resistively. The medium telegraphs force lossily.
+  CONTROLS (identical A-bounce, receivers untouched):
+    vs=0   — wave layer off: charge stays on the wall, tN=tF=-1
+    nomed  — wire uncommitted: deg=0 freezes the wave at the
+             source, tN=tF=-1
+  So momentum crossed the lattice without matter: the substrate's
+  phonon channel. The wall didn't push the receiver — the history
+  stored in the conduit lattice did.

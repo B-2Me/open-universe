@@ -291,19 +291,18 @@ alignment scheme changes again.
   −ev52(all 19 reabsorb sites) — verified closing exactly 0.
 - Clock/history stack (all measured, commit ea6d720 era):
   `qTick` = absolute drumbeat (rail ring: exact period 3, bath-immune;
-  ballistic time is NOT dilatable). `localTime` (τ, NodeState off
-  456) = conserved proper-time accumulator integrating
+  ballistic time is NOT dilatable). `localTime` (τ, NodeState off 504 via nodeOff) = conserved proper-time accumulator integrating
   free_*qPhaseAdv each tick — twins diverge 22× under targeted
   congestion; bound knots are DEPTH-GRADED, not uniformly frozen:
   core ticks at max (shielded), shell crawls (congestion tax).
-  `bondTick` (off 448) = first-confirm birthday — volumetric
+  `bondTick` (off 496 via nodeOff) = first-confirm birthday — volumetric
   provenance: fed knots write concentric rings (surface-filtered
   accretion), bath knots write a sponge (volumetric fill);
   directional wind writes a 5.7× fossil age-gradient (windward
   face = OLD accretion crust — inverted vs nature's erosion).
-  `workAge` (off 452) = cumulative txnWork — callus vs relic:
+  `workAge` (off 500 via nodeOff) = cumulative txnWork — callus vs relic:
   effort peaks at working shell, birthday at formation site.
-  `bondPar` (int8, off 460) = net parity of confirmed bonds,
+  `bondPar` (int8, off 508 via nodeOff) = net parity of confirmed bonds,
   saturating ±127 — the node's conserved chirality record, set by
   its FIRST bond (self-polarizing). `qParGate` declines offers
   whose incipPar disagrees — verified: +polarized knot refuses
@@ -532,7 +531,7 @@ forced to collapse) · dd-biased 520W (sheds 57% mass to tax,
 structure intact) · charged · big-mass exact (2600=200x13) ·
 thin-27 stable at commit floor. All survive quiet vacuum.
 
-`momentum[13]` (int32, off 464): conserved Noether charge of
+`momentum[13]` (int32, off 512 via nodeOff): conserved Noether charge of
 translation — written only by force (ev43 recoil, confirmed-offer
 direction), read by `qMomentum` drift, never spent by it.
 NEWTON-1 VERIFIED: trailing-boundary donor predicate (shed only

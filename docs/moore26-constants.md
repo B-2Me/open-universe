@@ -276,6 +276,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | stress-wave speed | fluxV impulse on committed wire propagates as polarization wave: ~2.3 ticks/link (0.43 link/tick) sustained front at vs=3 | strain-wave | strain-wave |
 | stress-wave damping | vs=6 front dies at link 7 (self-extinguishing below lap threshold); amplitude piles ~6x injection at source when coupling weak | strain-wave vs sweep | strain-wave |
 | battery radiation channel | stored strain's ONLY self-discharge path is radiation into committed structure — absent without vacpol coupling | vs=0 control | strain-wave |
+| strain relay (remote press) | denied momentum -> wall fluxV -> wave -> distant cell pressed: near t=7, far t=11 (~1t/link press arrival) | strain-relay | strain-relay |
+| strain relay controls | vs=0 and uncommitted-wire arms: receivers get exactly 0 while A still bounces — transmission needs BOTH wave law and committed medium | 2 clean nulls | strain-relay |
 | wall momentum toll (either sign) | **negative** — debiting carrier momentum at wall sites jams charge into fewer cells (flux 48-74 vs 3-13), flux^2 feedback accelerates erosion; yield is binary so sub-threshold tolls can only jam, never brake |
 
 *Method note: every number above was produced against a fresh grid or
