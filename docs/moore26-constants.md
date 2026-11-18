@@ -87,6 +87,11 @@ translations live in [Nature → Substrate](/nature-translation).
 | mass-scaled tick rate | τ ∝ k·m: 14400/72000/288000 | mass 10/40/160, qMassCap | Compton ansatz |
 | vacuum proper time | mass=0 → cap=0 → no τ | mass-scaled bandwidth | isolated nodes |
 | depth-graded freezing | core max, shell crawls | bound knot, congestion tax | knot census |
+| **mass clock rate** | dτ/dt = m·cap·adv/16 **exact**, r/m=1.0000 at cap·adv=16 | uniform mass lattice, m=8..128 | debroglie --mode=rate |
+| **phase-gate window** | settle iff \|φ_S − nu·age\| ≤ g **exact** — 9/256 accepted at g=4 | phase_set cell, age=1 probe | debroglie --mode=gate |
+| lattice coherence drag | ~0.19%/tick (dφ=15.97 vs dτ=16.00, m=16) | unperturbed uniform lattice | debroglie --mode=rate |
+| phase decoherence | shared phase scrambles under packet traffic | probe-seeded lattice, trace | debroglie --mode=trace |
+| proper-time dilation | dτ loss = armed+txnWork units exactly | S vs quiet REF, ~1.25/t under light load | debroglie --mode=tax |
 
 ## Structure & knots
 

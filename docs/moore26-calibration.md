@@ -171,19 +171,18 @@ power law would give the substrate a real blackbody law.
 
 ### Tier 3 — internal consistency checks (no nature needed)
 
-**The two-action test.** Packet sector: `ħ_sub = 40.7 nu·tick`.
-Mass sector: proper time accrues at `τ ∝ 1440·m` (mass-scaled tick
-rate, Compton ansatz). If mass and `nu` are the same energy
-(c=1), a body's de Broglie rate should satisfy `ω = m/ħ` — i.e.
-the mass clock and the packet phase should reduce to one action.
-Measured: they don't obviously (factor ~4–56 depending on window
-convention, and the mass clock is documented as a *congestion tax*,
-not a phase). Either mass doesn't yet oscillate (no de Broglie
-sector — honest current answer) or there's a hidden factor of
-2π-ish. **Worth one dedicated harness** — it's the cleanest
-internal test of whether wave-particle duality is actually unified
-in this engine or still two separate laws wearing each other's
-vocabulary.
+**The two-action test — RESOLVED.** Packet sector: `ħ_sub = 40.7
+nu·tick` (`ω = nu` per tick). Mass sector: `localTime` accrues
+`free_·adv` per tick, `free_ = m·cap/16 − armed − txnWork`. Measured
+(debroglie.mjs, uniform mass lattice): `dτ/dt = m` **exactly**
+(r/m = 1.0000, m=8..128) — at `cap·adv = 16` the mass clock runs at
+`ω = E` in the *same phase units* as packets. The actions unify at
+the register level, and the phase gate arbitrates absorption by
+that clock exactly (`|φ_S − nu·age| ≤ g` verified to the unit).
+**But** the coherent phase layer decoheres under load — mass has a
+clock, not yet a wave (matches the documented `phase_sync` = 0.09%
+overhead). The remaining gap is dynamical coherence, not the
+action itself.
 
 **Binding fraction.** String-break mints +128 mass/endpoint;
 production yield is 62.5–64% of scar→mass. Nature's nuclear
@@ -200,10 +199,13 @@ Ordered by evidential weight if it landed:
 2. **A force law measured at range** — if anything in the substrate
    falls as `1/L²` (charge, routing-gravity, or pressure), its
    dimensionless strength is immediately comparable.
-3. **A second action** agreeing with `h_sub = 256` from an
-   independent sector (mass de Broglie, or energy·period of a bound
-   oscillation) — internal consistency that makes the first one
-   load-bearing.
+3. **A second action agreeing with `h_sub = 256`** from an
+   independent sector. Partially resolved: the mass clock CAN be
+   tuned to `ω = E` in packet units (`cap·adv=16`, measured exact)
+   — but that's a knob setting, not a derived constant. What
+   remains load-bearing: a *bound oscillation* whose measured
+   period satisfies `E·T = 256` — a knot that ticks at its own
+   Compton rate without the knob being told.
 4. **A mass ratio between two stable species** — the substrate's
    m_p/m_e equivalent. Needs a second particle species first.
 5. **The T⁴ blackbody law emerging** from mint statistics rather

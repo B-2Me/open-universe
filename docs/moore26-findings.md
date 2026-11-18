@@ -4549,3 +4549,42 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
       lifetime gate, density refusal ~live/26, channel pick);
       gravRad multiplies by the local slope — it decides WHERE
       emission happens, not how fast.
+
+  THE TWO-ACTION TEST — de Broglie sector probe
+  (debroglie.mjs): does mass carry a phase clock consistent with
+  the packet action? Packet sector: op = nu*age mod 256 -> omega =
+  nu phase-units/tick. Mass sector: localTime += free_*qPhaseAdv,
+  free_ = mass*qMassCap/16 - armed - txnWork. If mass and nu are
+  the same energy (c=1), a mass-m cell should run like a nu=m
+  packet internally.
+    RATE (uniform mass lattice, 16^3 torus fill so every cell is
+      live and the phase-sync pull cancels): dTau/dt = m EXACT —
+      r/m = 1.0000 for m=8,16,32,64,128 (cap=16, adv=1). The mass
+      clock is perfectly linear in mass — the Compton form, and at
+      cap*adv=16 the rate law is IDENTICAL to the packet's: omega
+      = E in the same phase units. The two actions unify at the
+      register level.
+    GATE: the phase gate is the arbitration — a packet offer
+      settles iff |phi_S - nu*age| <= qPhaseGate. phase_set the
+      absorber to 100, g=4: settled nu = 96..104 exactly (9/256).
+      The cell's internal clock IS the absorption arbiter — a
+      massive cell is a resonant absorber at its own frequency.
+    DECOHERENCE: but the SHARED phase layer is load-fragile.
+      Unperturbed lattice holds ~99.8% coherence (emergent drag
+      ~0.19%/tick — dphi=15.97 vs dtau=16.00). Under probe traffic
+      the phase register scrambles (0,447,350,192...) — declined
+      packets wander, arm, and confirm into structure across the
+      lattice; the ~26/16-gain pull then amplifies heterogeneity
+      into chaos. localTime is immune (a counter, not a synced
+      phase); the interference-capable phase is not.
+    TAX: proper time is a budget — tau_S lagged tau_ref ~1.25/tick
+      under probe load; each standing incipient + unit of txnWork
+      debits the clock exactly.
+    VERDICT: mass HAS a clock — exact, linear, Compton-formed, and
+      it arbitrates absorption. Mass does NOT yet have a wave —
+      no persistent coherent phase under load. Consistent with the
+      ontology (mass is history/structure; packets carry
+      transport+coherence) and with the prior measurement that
+      phase_sync contributes 0.09% to bound states (pure overhead).
+      A coherent mass-phase layer is now a known gap, not an
+      unknown one.
