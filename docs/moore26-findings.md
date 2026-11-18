@@ -4458,11 +4458,37 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
     THE VERDICT: the substrate's spread floor is CAPACITY (one
       cell-page holds <=65535, period), nature's is ENERGY
       (density costs ~1/dx). Same outcome — a minimum volume per
-      unit mass — different mechanism. If we want nature's
-      economics, the hook exists: denied-compression already
-      mints heat; a qPackHeat-style knob scaling that mint with
-      destination fullness would make the last unit of
-      compression the most expensive, like degeneracy pressure.
+      unit mass — different mechanism.
+    THE EQUATION OF STATE (compress-collide, fullness sweep):
+      mass0=30000/cell: blocks merge freely 150->88 cells until
+        destinations can't fit the remaining residue — a hard
+        EXCLUSION EQUILIBRIUM at ~92% page density (60000), not
+        a soft stop. Cheap: ~74 heat total, then lock.
+      mass0=45000: cells saturate to 65535 one by one — an
+        interface layer fills (12->37->50 full), compression
+        stalls at the wall, sustained press keeps minting the
+        ~50/t rattle.
+      mass0=65535: zero merges from the start — pure rattle.
+      EOS shape: compression is nearly free until the page
+      limit looms, then effectively infinite — a wall, not a
+      curve. Nature's degeneracy pressure (P ~ rho^(5/3)) is a
+      graded divergence; ours is binary. The honest gap.
+    LEAK FOUND + FIXED (same silent-sink class as the clamp
+      audit): the tear branch set k=mass>>shift WITHOUT capping
+      to destination room — the u16 clamp ate the difference.
+      Measured ~18,369 mass destroyed at a saturated interface
+      (ledger m+flight+heat = 6,731,631 vs seeded 6,750,000).
+      Fix: k=min(k,room) — refused mass stays with the source.
+      Post-fix ledger: mass flat at 6,750,000 exactly.
+    OPEN DESIGN — where degeneracy pressure SHOULD live: the
+      mass-relay refusal isn't governed by the armed-cap (that's
+      the packet layer), and the capacity check only fires on
+      confirmed transactions. Two honest prototypes: (a) refused
+      handoff deposits the denied press into destination fluxV
+      as STRAIN — stored, elastic, qFieldReact pushes back —
+      the wall-catch semantics extended to mass-merge; (b) mint
+      heat ∝ refused share. (a) is the nature-analog (degeneracy
+      stores, doesn't dissipate) — unprototyped as of this rev.
 
   SURFACE-GRAVITY RADIATION (qGravRad, default 0) — emission as
   a horizon phenomenon: the evap tax's drive is multiplied by

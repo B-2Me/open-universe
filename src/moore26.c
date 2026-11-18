@@ -2217,6 +2217,11 @@ void moore26_tick(void){
                 uint32_t room=65535-grid_next[ni].mass;
                 if(k>room)k=room>0?(o->mass>>shift?o->mass>>shift:1):0;
                 if(k>o->mass)k=o->mass;
+                if(k>room)k=room;   /* tear sheds only what fits —
+                 * the destination clamp ate the difference silently
+                 * (compress-collide: ~18k mass lost at a saturated
+                 * interface). Refused mass stays with the source —
+                 * a full page is back-pressure, not a shredder. */
                 grid_next[si].mass-=k;
                 /* AUDITED — the offer lands as INCIPIENT state on the
                  * destination odd cell (a transaction in flight through

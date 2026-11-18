@@ -196,6 +196,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | local drain | `h>>7` per tick per node | booked to ev44 — the tracked entropy export | heat-conduct |
 | mass-page limit | 65535 mass/cell — hard exclusion | full blocks can't merge; the substrate's Pauli is geometric | compress-collide |
 | compression tax | ~50 heat/tick at a full-density interface | magnitude-blind (p=800=12800); sustained press rattles work to heat | compress-collide |
+| exclusion equilibrium | merges stop at ~60000/cell (~92% page) | 150→88 cells then hard lock; mass0=30000 | compress-collide |
+| mass-tear leak | ~18.4K destroyed at saturated interface (fixed) | k=mass>>shift uncapped vs room — now k=min(k,room) | compress-collide audit |
 | holding cost | zero — 64800/cell inert for 200t | localization free once achieved; floor is capacity, not energy | compress-probe |
 | surface-gravity radiation | evap drive × (mass−min nbr)>>qGravRad | interior immune exactly; corner>face>core ordering | gravRad probe |
 | radiation self-quench | ~14 units then stall (lone emitter) | exhaust congests unwound vacuum — graded-Pauli vent back-pressure | gravRad probe |
