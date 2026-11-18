@@ -413,3 +413,8 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | fusion null | two objects at gap 4/6/8 coexist 120t, no merger or drift — no inter-object attractive channel in this config | inline pair probe |
 | exchange channel | mutual resonant capture between gap-4 pair: partner retains m=200 vs isolated 198 (~2 units/100t) — Kirchhoff exchange between bodies | inline pair probe |
 | vacuum opacity | lone-quantum transmission ~0.38-0.50 over ~10-link transit (drip ~1/8/hop virgin lane) — vacuum itself is an absorptive medium | xsec.mjs --blank |
+| isotropic line re-emission | object absorbing nu=150 probes re-radiates isotropically at nu~7-8 (its settled line): fwd 642 + side 231 + back 373 detected E; 50+ hits at the line | detect.mjs, M=4000, 24 probes |
+| field-deepened capture | same object + eikonal well (65535 core, 62K@r=6): fwd E 642->300, total detE 1246->678 — the well eats beam AND escaping products | detect.mjs --lens hop=512 |
+| absorption partition | of 3600 beam E: ~1200 radiated (detector), ~2600 thermalized (ev7), residue into structure — prompt emission, no metastable tail | detect.mjs M=4000 |
+| delayed tail ~0 | post-beam hits ~0-2/probe — no metastable hold in this mode; emission is prompt | detect.mjs timing bins |
+| instrument response | detector: shell r=8-10, nu-merge resolution ~few units, vacuum transmission 0.38-0.50 — biases quoted with rates | detect.mjs design |

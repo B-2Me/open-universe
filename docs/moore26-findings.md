@@ -5094,3 +5094,60 @@ sigma(b) disk, sigma(nu) blackness, deposit channel, shatter
 threshold, fusion null), transport (partial: capture disk,
 lensing). Open: dσ/dΩ, multiplicity curves, object-object
 collisions with momentum, multi-line level schemes.
+
+## Detector-level measurement — what 0.1-10fm measurement LOOKS like
+
+Harness: `script/cascade/detect.mjs` — a spherical detector shell
+(r=8-10) around the target logs every crossing: species (nu),
+angle vs beam axis, arrival tick. Physicists never see the vertex;
+they see rates, spectra, angles, timing on surfaces far from the
+interaction. The simulator's internal registers are NOT used for
+the headline numbers — everything below is reconstructed from
+shell crossings, the way a real calorimeter works.
+
+### The calorimetric result (24 probes at nu=150 -> beamE=3600)
+
+| arm | fwd E | non-fwd E | detected products | reading |
+|---|---|---|---|---|
+| vacuum | 204 | ~12 | none | beam mostly survives, no products |
+| M=200 obj | 642 | 301 | soft nu~4-6 | partial capture, soft isotropic shower |
+| M=4000 obj | 642 | 604 | LINE at nu~7-8 (50+ hits) | absorbed -> isotropic re-emission at the characteristic line |
+| M=4000+lens | 300 | 378 | nu~8 suppressed | deep field eats the beam — less radiation escapes, more into structure |
+
+Three honest fm-scale facts the detector established:
+1. ISOTROPIC RE-EMISSION AT THE LINE: an object absorbing hard
+   quanta radiates them back isotropically at its own
+   characteristic frequency — the signature "line in, line out,
+   all angles" — how physicists identify a resonant absorber
+   (Mossbauer-like closure: it emits what it absorbs at).
+2. FIELD DEEPENS BLACKNESS: with a mass-sourced well (65535 at
+   r=0, ~62K at r=6), forward beam energy halves (642->300) and
+   total detected radiation drops — the field captures both the
+   probe and the escaping products. A radiating object inside
+   its own well is blacker than its skeleton.
+3. MISSING ENERGY LEDGER: of 3600 beam energy: ~1200 detected
+   radiated, ~2600 thermalized (ev7 tax) — the absorption
+   deposit is heat+circulation, only a fraction returns as
+   radiation in this window.
+
+### What the measurement is NOT sensitive to (yet)
+- delayed-emission tail: ~0-2 hits post-beam — the object has no
+  measurable metastable hold in this mode; emission is prompt.
+  A real lifetime measurement needs a state that STORES energy
+  then decays — the mode cloud (incipient halo) is the candidate.
+- single-event vertices: overlapping showers merge — the detector
+  sees rates not individual cascade trees.
+- the detector reads packetNu per crossing — nu-merging on shared
+  channels means spectral resolution is finite (a real calorimeter
+  has resolution too; ours is channel-merge width ~few nu).
+
+### The deeper methodological point
+At this scale "the object" and "the measurement" are made of the
+same stuff — the detector shell is a census of what ESCAPES, and
+what escapes is filtered by the medium (vacuum opacity, the well,
+the object's own halo). There is no external probe that doesn't
+interact with the substrate — exactly like nature, where every
+detector is atoms measuring atoms. The instrument response
+function IS part of the physics: vacuum transmission ~0.4-0.5,
+shell coverage r=8-10, nu-window merge — all documented biases
+folded into the quoted rates.
