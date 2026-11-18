@@ -499,6 +499,12 @@ static int qEvapShift=0; /* mass tax shift (0=off): per-tick evap
                            * a heavy deadlock. Heavier cells exhaust
                            * more — size-dependent dissipation gives
                            * a true plateau, not a ratio gate. */
+static int qGravRad=0;   /* 0=off: evaporation is a per-cell tax.
+ * Nonzero = SURFACE GRAVITY (shift): the evap drive is multiplied
+ * by the local mass gradient (o->mass - min nbr mass)>>shift —
+ * interior cells sit in flat field and don't radiate; a body's
+ * skin emits proportionally to its well depth. Hawking analog:
+ * radiation is a horizon phenomenon, rate ~ surface gravity. */
 static int QMaskX, QMaskY, QMaskZ, QMaskCX, QMaskCY, QMaskCZ;
 
 /* thread-safe stochasticity: a hash of (site, tick) — no shared RNG
@@ -3812,8 +3818,21 @@ void moore26_tick(void){
              * outgrow it under ambient flux; big knots bleed until
              * evaporation = supply — a dynamic equilibrium set by
              * thermodynamics, not an authored ratio. */
+            uint32_t edrive=o->mass>>qEvapShift;
+            if(qGravRad){
+                /* the well's slope: drop to the lightest of all 26
+                 * neighbors — flat field (interior) radiates ~zero */
+                uint32_t mn=o->mass;
+                for(int gc=0;gc<QChannels;gc++){
+                    const int8_t *gv=QChannelVec[gc];
+                    int gn=nbr(x,y,z,gv[0],gv[1],gv[2]);
+                    if(grid_current[gn].mass<mn)mn=grid_current[gn].mass;
+                }
+                edrive=(uint32_t)(((uint64_t)edrive*(o->mass-mn))
+                                  >>qGravRad);
+            }
             if(qEvapShift&&o->mass>1&&
-               (rand_site(si,15)&1023)<((o->mass>>qEvapShift)&1023)){
+               (rand_site(si,15)&1023)<(edrive&1023)){
                 grid_next[si].mass--;
                 jrn(si,-1,60,1);   /* radiative evaporation */
                 /* RADIATIVE decay — the evaporated mass leaves as a
@@ -4555,5 +4574,6 @@ int moore26_workage_get(int x,int y,int z){
     if(x<0||x>=QWidth||y<0||y>=QHeight||z<0||z>=QDepth)return 0;
     return (int)grid_current[(z*QHeight+y)*QWidth+x].workAge;}
 void moore26_evap_shift_set(int v){qEvapShift=v;}
+void moore26_grav_rad_set(int v){qGravRad=v>0&&v<16?v:0;}
 
 void moore26_absorb_set(int v){qAbsorbWall=v;}

@@ -529,6 +529,12 @@ run inside a Linux container.
   active ledger → node unprocessed → no evap/emission → stays
   quiet forever. A pure-vacuum knot is off the causal ledger —
   not just stable, unprocessed.
+- Mass tax gates: the evap tax lives in Phase-6 emission —
+  needs site_level≥2 (committed winding) + channel pick +
+  density-refusal pass. Bare mass cells NEVER evaporate
+  (compress-probe: 64800/cell inert). `qGravRad` multiplies the
+  drive by local mass gradient — interior flat-field cells
+  immune; lone emitters self-quench by exhaust congestion.
 - Congestion dilation (clock): load → armed full → free_=0 →
   tau frozen — bound matter's own traffic taxes its clock.
 

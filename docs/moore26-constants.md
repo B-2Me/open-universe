@@ -194,6 +194,11 @@ translations live in [Nature → Substrate](/nature-translation).
 | thermal diffusivity | **D = 9.3·2^−shift cells²/tick** | σ²(t) linear after ~4t transient; flow=4→0.58, 5→0.29, 6→0.14, 7→0.07 | heat-conduct --sweep |
 | conduction conservation | deficit == ev44 drain to <0.01% | conduction moves heat, only the `h>>7` drain removes it | heat-conduct --sweep |
 | local drain | `h>>7` per tick per node | booked to ev44 — the tracked entropy export | heat-conduct |
+| mass-page limit | 65535 mass/cell — hard exclusion | full blocks can't merge; the substrate's Pauli is geometric | compress-collide |
+| compression tax | ~50 heat/tick at a full-density interface | magnitude-blind (p=800=12800); sustained press rattles work to heat | compress-collide |
+| holding cost | zero — 64800/cell inert for 200t | localization free once achieved; floor is capacity, not energy | compress-probe |
+| surface-gravity radiation | evap drive × (mass−min nbr)>>qGravRad | interior immune exactly; corner>face>core ordering | gravRad probe |
+| radiation self-quench | ~14 units then stall (lone emitter) | exhaust congests unwound vacuum — graded-Pauli vent back-pressure | gravRad probe |
 | pump rate cap | ≤511 charge units/tick (`v<512` bound) | engine saturates supply at any delivery > cap | heat-engine |
 | isothermal conversion (legacy) | pump works at Th=Tc — no Carnot bound | W=511/t, I=135 identical at Carnot=0% vs 90%; `qPumpCarnot=0` | heat-engine |
 | **Carnot efficiency** | η = 1−T_c/T_p **exact** | pump rejects w·hc/(hp−hc) heat cold-side; isothermal → ev61=0 strictly | heat-engine --carnot |

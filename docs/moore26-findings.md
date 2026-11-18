@@ -4438,3 +4438,47 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
   bound (this pump), transport irreversibility (conduction),
   entropy export (h>>7 drain). Legacy qPumpCarnot=0 retains the
   demon for funded-EMF fixtures.
+
+  WHY MASS IS SPREAD OUT — the confinement question, measured
+  (compress-probe.mjs, compress-collide.mjs): nature's spread
+  floor is confinement economics (packing past ~1fm costs hbar*c/
+  dx > m*c^2). Does the substrate charge for the same trick?
+    HOLDING is FREE: one cell at mass=64800, or 27x2400, or
+      125x518 — all inert for 200t. No heat, no shedding, no
+      evaporation. Localization costs nothing once achieved.
+    COMPRESSING COSTS — but as a RATTLE, not an energy function:
+      two full-density 3x5x5 blocks (65535/cell) pressed with a
+      sustained vice mint ~50 heat/tick steadily — identical at
+      p=800/3200/12800 (magnitude-blind again: the substrate reads
+      attempts, not force). The work can't write into full mass
+      registers, so it thermalizes at the contact interface.
+      Blocks never merge: the u16 cell page-limit is a hard
+      exclusion — the substrate's Pauli is geometric, not
+      energetic.
+    THE VERDICT: the substrate's spread floor is CAPACITY (one
+      cell-page holds <=65535, period), nature's is ENERGY
+      (density costs ~1/dx). Same outcome — a minimum volume per
+      unit mass — different mechanism. If we want nature's
+      economics, the hook exists: denied-compression already
+      mints heat; a qPackHeat-style knob scaling that mint with
+      destination fullness would make the last unit of
+      compression the most expensive, like degeneracy pressure.
+
+  SURFACE-GRAVITY RADIATION (qGravRad, default 0) — emission as
+  a horizon phenomenon: the evap tax's drive is multiplied by
+  the local mass gradient (o->mass - min nbr mass)>>shift — the
+  well's local slope. Flat field radiates nothing.
+    INTERIOR IMMUNE exactly: a 5^3 wound blob's core cell held
+      1000->1000 for 100t while the skin bled — corner > face >
+      core, a pure surface-exposure ordering.
+    SELF-QUENCH: a lone wound cell (mass=1000) radiated ~14
+      units then STOPPED — its own exhaust congests the vent:
+      emitted packets can't leave through unwound vacuum,
+      channel occupancy rises, the graded-Pauli pick fails and
+      the tax becomes unreachable. Radiation stalls by back-
+      pressure — a body embedded in a routing medium would keep
+      radiating; a stranded one chokes on its own exhaust.
+    The upstream gates still dominate absolute rate (1/4
+      lifetime gate, density refusal ~live/26, channel pick);
+      gravRad multiplies by the local slope — it decides WHERE
+      emission happens, not how fast.
