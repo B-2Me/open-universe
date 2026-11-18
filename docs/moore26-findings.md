@@ -4907,3 +4907,64 @@ channels 921/1060; beam below (b=-4) bends to +z channels
 535/999; b=0 splits near-symmetrically. The earlier "binary
 capture, no deflection" reading was corrupted by the bend-clear
 bug and is superseded.
+
+## Bound-cloud characterization — constituents, chirality, thermometry
+
+### Constituent count (lump experiment): congestion artifact, no fixed number
+
+Sweeping injection density at R=4 (stable ring): cnt=8 and cnt=40
+both produce ONE coherent azimuth-filling object (single connected
+component, stable 5-6K quanta for 60+t). At cnt=120 the same ring
+shatters into 50-78 separate lumps. The lump count is set by
+congestion/decline shattering, not an intrinsic quantization —
+there is no substrate "quark number" yet. Honest null.
+
+What the bound cloud DOES preserve: constituent nu identity. A
+ring seeded with mixed nu=32/64/96 keeps all three peaks 60+t
+(plus merge-blend harmonics ~52-55) — orbiting packets do not
+thermalize against each other. A bound object at this scale
+carries a mixed-frequency inventory, like a parton distribution.
+
+### Transaction geometry: the bound fraction IS the circulating fraction
+
+- The bound ring carries persistent angular momentum: L_z = -3896
+  measured, maintained 60+t — chirality is a conserved record.
+- ISOTROPIC tangent seeding still self-organizes: random tangents
+  collapse to the bound radius <r>=3.9 with a coherent net L
+  (~4400 -> 3200, stable direction). This is the substrate's
+  "why planar orbits" answer: radial trajectories hit the core or
+  escape; tangential trajectories persist. The bound fraction IS
+  the coherently-circulating fraction — orbital order from
+  isotropy, no authored plane. Same selection as nature: angular
+  momentum picks the plane.
+- Channel census shows directed flow (antiparallel imbalance:
+  ch10 920 vs ch11 401; ch15 1155 vs ch14 266) — the cloud is a
+  circulating current, not a static soup.
+
+### fm-scale thermometry: there is no thermometer ON the object
+
+At 0.1-10fm the measurement question is "what reads T when the
+object is a 3-constituent bound state?" Nature's answer: nothing
+on the object — nuclear T comes from the EVAPORATION SPECTRUM of
+what it emits. The substrate reproduces both regimes:
+
+- Occupation slope T_eff(h): non-monotonic (10.0 at h=2000, 7.9
+  at h=4000 on 32^3) — the ladder ensemble adapts with deposited
+  mass, so T leaks into structure rather than slope. Not a clean
+  thermometer (like nuclear level-density being structure-
+  dependent — correct physics, bad thermometer).
+- EVAPORATION spectrum (nu histogram of packets >r=4 from source,
+  equilibrium window):
+    h=1000 -> soft tail peaking nu~4-5, slope -0.108 (T_evap~9)
+    h=3000 -> LINE-dominated: top 3 bins all nu=16-18 = the grown
+    lattice's ladder gap. Not thermal — characteristic emission.
+- So the fm-appropriate thermometer is the emitted spectrum's
+  SHAPE: cold objects evaporate a soft low-nu tail; hot objects
+  emit at their characteristic gap (like gamma lines from
+  nuclear level transitions). Temperature is an ensemble
+  inference, not a register — at this scale even nature has no
+  thermometer you can stick in a proton.
+
+Deferred: the nu=1-4 ground-floor pileup (modes below every local
+ladder can't cascade further) is a Bose-like condensation feature
+worth characterizing separately.
