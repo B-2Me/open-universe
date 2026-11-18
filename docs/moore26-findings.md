@@ -5151,3 +5151,56 @@ detector is atoms measuring atoms. The instrument response
 function IS part of the physics: vacuum transmission ~0.4-0.5,
 shell coverage r=8-10, nu-window merge — all documented biases
 folded into the quoted rates.
+
+## Mechanics audit — what's right and what's wrong at 0.1-10fm
+
+Direct register/code audit of every interaction channel against
+fm-scale requirements, plus dedicated measurements (decay.mjs,
+pair.mjs). Verdicts are mechanics-level, not analogy.
+
+### CORRECT — verified in code and/or measurement
+| mechanic | status |
+|---|---|
+| emission recoil | Newton III implemented: emitted quantum on ch c pays mass -> massFlight[c^1] + momentum register (lines ~4200, ~4358) |
+| radiation pressure | absorbed quantum books momentum kick + massFlight along arrival direction (deposit path ~3620-3680) |
+| speed limit | packets hop 1 link/tick on edge channels — a hard c |
+| metastable register | off-shell incipient modes STAND (~50t collective hold measured, + long sparse tail to +190t) — stored excitation is real |
+| radiative decay | mode_ledger: TTL expiry radiates the standing population at incipNu — detailed-balance leg exists |
+| decay spectrum | delayed products carry the mode's cascade frequency (nu=90,68,26... modes at different decay stages) — a readable decay chain |
+| confining field | eikonal wavefront well = linear V = m - c*r — the fm-correct potential class |
+
+### WRONG / MISSING for fm — honest list
+| # | mechanics | why it's wrong at fm |
+|---|---|---|
+| 1 | qRecoilLaw=0 default = LEGACY MINTED recoil: flat +-1 kick independent of nu (momentum doesn't scale with E); internally-routed offers re-deposit EVERY tick until TTL = per-tick energy mint | momentum impulse must scale with quantum energy (p=E/c); funded law exists (recoil_law=N -> kick=nu>>N debited from deposit) but is OFF — all published momentum numbers ran on minted law |
+| 2 | composite-composite coupling ~zero: two settled objects exchange ~12 quanta/200t — dark objects do NOT interact; the only force channel is radiation pressure (repulsive by construction); no attractive mass-mass channel exists | fusion null is STRUCTURAL, not statistical — no residual-strong-force analog; nuclei can't bind from composites |
+| 3 | catch is unconditional at b=0 for ALL nu — geometric blackness, no elastic channel | real nuclei scatter elastically (diffraction); ours thermalize everything — no form-factor observable possible |
+| 4 | vacuum is dissipative: lone-quantum survival ~0.4-0.5 per 10 links | no photon-class free-streaming carrier exists — all carriers are hadron-like (medium-interacting); EM sector absent by construction |
+| 5 | odd-cell decay radiation is stillborn/self-absorbed: modes seeded on odd cells shed 80-165K energy with ZERO detector escape; even-cell modes show a rich tail | parity asymmetry in the decay channel — modes arm at odd catch-cells but their radiative decay is structurally disadvantaged vs even cells |
+| 6 | boson-like mode stacking only (same-nu arrivals stack on one channel) | no exclusion statistics -> no shell structure/magic numbers possible; composites can't be fermionic |
+| 7 | spontaneous emission rate ~0 in the capacitor band (objects go dark) | a real bound object in equilibrium still has vacuum fluctuations; ours freeze — related to #2 (dark objects don't couple) |
+
+### The lifetime measurement (decay.mjs)
+- Seeded 24-40 off-shell modes (nu=90 on cells with winding-stub
+  line=4 -> off-shell -> must stand/cascade/expire):
+  - population holds ~50 ticks as a collective (incip count steady
+    ~1900-2400), then synchronized discharge — superradiant-like pulse
+  - THEN a sparse tail lingers to +190t (5-90 units) — longer-lived
+    excitations = a lifetime SPECTRUM, not a single Gamma
+  - even-cell modes: detector sees the decay chain — dominant nu=11
+    (26K units) + nu=68,90,26,31,15,17 — modes radiating at different
+    cascade stages
+  - odd-cell modes: 80-165K shed energy, ZERO escapes — decay
+    radiation dies in/around its own cell (self-shielding)
+- Beam-driven (nu=90 probes): ~1 mode arms per 24 probes and stands
+  ~90t — the register works in the natural drive too, just rare
+
+### What this means for the fm program
+The substrate's biggest structural gaps vs fm physics: no attractive
+composite force, no elastic channel, no exclusion statistics, and the
+default recoil law mints momentum. The metastable + radiative-decay
+machinery EXISTS (mode ledger) but the decay channel has a parity
+asymmetry — odd-cell modes can't radiate out of their own cell
+efficiently, so the object's OWN excitations are internally converted
+(self-shielding = internal-conversion analog — arguably correct
+physics, since real nuclear states DO decay by internal conversion).

@@ -418,3 +418,8 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | absorption partition | of 3600 beam E: ~1200 radiated (detector), ~2600 thermalized (ev7), residue into structure — prompt emission, no metastable tail | detect.mjs M=4000 |
 | delayed tail ~0 | post-beam hits ~0-2/probe — no metastable hold in this mode; emission is prompt | detect.mjs timing bins |
 | instrument response | detector: shell r=8-10, nu-merge resolution ~few units, vacuum transmission 0.38-0.50 — biases quoted with rates | detect.mjs design |
+| metastable collective hold | ~40 seeded off-shell modes (nu=90, local line=4) stand ~50 ticks then synchronously discharge; sparse tail 5-90 units to +190t | decay.mjs --seed |
+| decay spectrum readable | delayed detector products at nu=11 (26K), 68, 90, 26, 31 — modes radiating at different cascade stages | decay.mjs, even-cell seeds |
+| odd-cell decay stillborn | 80-165K cascade energy shed on odd cells -> 0 detector escape; even cells -> rich tail. parity asymmetry in the decay channel | decay.mjs odd/even arms |
+| inter-object coupling ~0 | two dark composites exchange ~12 quanta/200t; momentum register stays 0; sep fixed at 3.94 | pair.mjs gap=4 |
+| legacy recoil law | qRecoilLaw=0 (default): flat +-1 minted kick (no E scaling) + full-edge offers re-deposit per tick = minted energy; funded law recoil_law=N exists, OFF | code audit moore26.c ~3620-3830, ~311 |
