@@ -4631,3 +4631,44 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
     arithmetic selects what a cavity can hold, and the dark-mode
     signature (op pinned off-window => phase-locked eternal rider)
     is real at the mechanism level.
+
+## The thermal spectrum is a comb — occupation-law null (thermal-spectrum.mjs)
+
+Sealed bath under a thermostat (uniform h re-seeded every 4t) and a
+free-cooling arm. The mint is a delta at nu=h>>3, but the question was
+whether recirculation (emit -> catch -> deposit -> structure re-emits
+at geo_gap + declines -> heat -> re-mint) relaxes the in-flight nu
+distribution toward a thermal tail.
+
+**Thermostat arm (steady state):** the spectrum is a discrete COMB —
+the mint line plus structure sidebands (geo_gap emission lines from
+the winding the bath builds: wind 98K -> 4.9M, mass 0 -> 51K over
+600t). Line occupations ~500-1000 packets; off-comb ~1-30. T-sweep:
+h=1000 peaks ~125, h=2000 ~250 — peak = h>>3 exactly (Wien
+displacement at the comb level, lambda_peak*h = 2048). h=4000
+collapses to a single bin at nu=255 — the uint8 mint ceiling
+(h>=2040 saturates every emission).
+
+**Free-cooling arm:** the peak slides 90 -> 5 over 600t, tracking the
+draining bath — a thermometer, not a thermalizer.
+
+**Verdict:** no statistical mechanics. The cascade mixes nu locally
+(sidebands at +-~18 nu are incipient-mixing products) but has no
+Boltzmann fixed point — the occupation distribution is set by the
+source and the structure, not by T. Temperature is a ledger variable
+with a Wien-tracked comb position, not an equilibrium.
+
+**The scale argument cuts the other way, though:** Stefan-Boltzmann
+T^4 is an infinite-volume law — inside a fm-scale box nature's own
+mode spectrum is discrete (a 1fm cavity has ~600MeV level spacing vs
+QGP T~160MeV — the continuum approximation fails there). A hadron-
+sized fireball emits a line spectrum. The substrate's 256x12-mode
+comb is the RIGHT KIND of object at 0.1-10fm; what's missing is the
+occupation law (n-bar(nu) = Bose-like, T-set). The honest mechanism:
+incipient mixing currently thermalizes at the CELL level (avg +
+remainder->heat). A CONSERVATIVE nu-splitter (divide nu_a+nu_b
+randomly between outputs, zero heat) would give the packet gas a
+scattering process with a Boltzmann fixed point — Compton-like
+thermalization. If a run then shows the comb relaxing toward an
+exponential tail, that's emergent statistical mechanics — the next
+experiment.

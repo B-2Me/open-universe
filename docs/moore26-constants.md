@@ -218,6 +218,11 @@ translations live in [Nature → Substrate](/nature-translation).
 | rejected-heat counter | ev65 = entropy tithe | η_pump = ev61/(ev61+ev65) measurable; 3.6–7.5% matched local bound | heat-engine --carnot |
 | sink-saturation stall | pump refuses when h_c ≥ h_p | rejected heat fills cold cell → stall-fire oscillation | heat-engine --carnot |
 | system efficiency | η ≈ 0.4% (W/Q_h) | dominated by stencil-leak into bulk, not thermodynamics | heat-engine |
+| equilibrium spectrum shape | **discrete comb, source-dominated** — mint line + geo_gap structure sidebands; ~500–1000 pkts/line vs ~1–30 off-comb | thermostatted bath (topup=4); no Boltzmann tail | thermal-spectrum |
+| comb peak tracks T | `nu_peak = h>>3` at h=1000→125, 2000→250 | Wien displacement at comb level; `λ_peak·h = 2048` | thermal-spectrum |
+| mint saturation | h≥2040 → every emission clamps at nu=255 (single-bin spectrum) | uint8 nu ceiling — hard upper register bound | thermal-spectrum |
+| free-cooling spectral drift | bath cooling → peak slides 90→5 over 600t | spectrum tracks falling h — thermometer, not thermalizer | thermal-spectrum |
+| occupation-law verdict | **no statistical mechanics** — cascade mixes locally (sidebands ±~18 nu) but has no Boltzmann fixed point; T is a ledger variable | interpretation of the two arms | thermal-spectrum |
 | parasitic leak | Q_h/t ≈ 250K for 25-cell plate @40000 | >99% bath maintenance, pump-on vs off identical | heat-engine --pump=0 |
 
 ## Force from density (offer->momentum)
