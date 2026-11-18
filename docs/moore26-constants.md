@@ -406,3 +406,10 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | rung-walking | bare wound site w=256->132 walks line 64->33; emitted spectrum smears 35-46 = decay-chain record | spectro.mjs --walk |
 | resonant absorption | nu=34 (object's line): quantitative capture, zero re-emission — Kirchhoff closure; nu=150 (above gap): shatters to ~119 photons at nu~4-5 through soft neighbor lines | inline excitation probe |
 | purity=selection rule | off-resonant arrivals on occupied channels thermalize/reflect — the absorption spectrum is discrete | moore26.c mode-purity arm |
+| sigma(nu) b=0 | P_int|arrived = 1.00 for nu = 8,17,34,80,150 — head-on geometric blackness, nu-independent | xsec.mjs nu-scan |
+| sigma(b) disk | vacuum P_past=0.38 vs object 0.20 -> P_int~0.46 avg; attenuation concentrated b<=3-4 = cloud radius; semi-transparent disk not hard sphere | xsec.mjs b-scan, M=200, nu=34 |
+| absorption deposit | captured nu -> winding on the ARRIVAL edge pair (capacitor intake); mass unchanged (+2-3 drift only) | xsec.mjs + moore26.c deposit path |
+| shatter threshold | single nu=150 probe -> clean absorption; 5-burst -> ~119 quanta at nu~4-5: pile-up not per-quantum energy | xsec.mjs + excitation probe |
+| fusion null | two objects at gap 4/6/8 coexist 120t, no merger or drift — no inter-object attractive channel in this config | inline pair probe |
+| exchange channel | mutual resonant capture between gap-4 pair: partner retains m=200 vs isolated 198 (~2 units/100t) — Kirchhoff exchange between bodies | inline pair probe |
+| vacuum opacity | lone-quantum transmission ~0.38-0.50 over ~10-link transit (drip ~1/8/hop virgin lane) — vacuum itself is an absorptive medium | xsec.mjs --blank |

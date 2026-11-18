@@ -5030,3 +5030,67 @@ re-radiates coherently. What is NOT yet shown: multi-line level
 schemes on ONE object (geo_gap always picks the single weakest
 bond — a one-line-per-structure emitter), and stimulated
 resonant fluorescence.
+
+## Reaction cross-sections — the substrate's first sigma(b) and sigma(nu)
+
+Harness: `script/cascade/xsec.mjs` — single probes on ch6 at a settled
+M=200 composite (line~34), vacuum-controlled. Two measurement traps
+had to be fixed first: (1) `rand_site(si,salt)` is deterministic per
+site+tick — identical shots replay identically; per-shot launch
+jitter is required for real statistics; (2) the lone-quantum transit
+drip (~1/8/hop on virgin lanes) kills most probes in transit — the
+vacuum control (--blank) gives the normalization, P_int is quoted
+per-arrival.
+
+### sigma(nu) at b=0: black at every energy
+Probes at nu = 8, 17, 34, 80, 150 all interact (P_int|arr = 1.00) —
+head-on geometric absorption is nu-independent, exactly like a
+nucleus's geometric cross-section. The discriminating physics is in
+the DEPOSIT channel, not the probability:
+- absorbed nu deposits as WINDING on the arrival edge pair — the
+  object stores absorbed energy as circulation on the entry channel
+  (the capacitor's intake port)
+- the nu=34 resonance measured earlier lives in WHERE energy can
+  persist (mode purity), not in whether it is captured
+
+### sigma(b): partially transparent cloud, R_eff ~ 3-4 links
+- Vacuum control: P_past = 0.38 mean (drip-dominated, lane noise
+  0.17-0.67) — the substrate vacuum is itself an absorptive medium
+  for lone quanta, ~0.5 transmission over ~10 links
+- With object: P_past = 0.20 mean -> P_int ~ 0.46 averaged
+- Profile: strong attenuation b <= ~3 (the bound-cloud radius),
+  vacuum-like beyond ~4-5.6 — a semi-transparent interaction disk,
+  not a hard sphere. The object's cross-section includes its
+  emission halo (a radiating target is thicker than its skeleton).
+- sigma_eff ~ 15-30 links^2; at the aspirational scale ~0.15-0.30
+  fm^2 = 1.5-3 barns — larger than nucleon sigma_tot (~40mb) by
+  ~50x, consistent with the object being a ~4-link cloud vs a ~1fm
+  hard nucleon.
+
+### Shattering is a flux x energy threshold
+- SINGLE probe at nu=150: clean absorption, zero shower
+- 5-packet burst at nu=150: ~119 soft quanta at nu~4-5 (energy
+  conserved) — the shower is a congestion/saturation phenomenon,
+  not per-quantum energy. Deep-inelastic analog: shattering needs
+  pile-up, matching nuclear showers driven by cascade density.
+
+### Fusion/merge: honest null + weak exchange
+- Two M=200 objects at gap 4/6/8 over 120t: NO merger, no drift —
+  coexist independently. Mass does not feel the packet well
+  (qLens steers packets only), so there is no attractive channel
+  between bound objects in this configuration. Fusion needs an
+  explicit force or momentum injection.
+- Weak exchange channel exists: the downstream partner kept m=200
+  vs the isolated object's 198 — mutual resonant capture transfers
+  ~2 units/100t. Each object absorbs the other's line radiation
+  (Kirchhoff closure working between bodies), but the rate is too
+  feeble to bind them.
+
+### Target-observables status (docs/moore26-targets.md)
+The measurement contract is now pinned: structure (done: radius,
+composition, L, mass:bond), spectral (done: lines, species ID,
+evaporation/line regimes, resonant absorption), reactions (done:
+sigma(b) disk, sigma(nu) blackness, deposit channel, shatter
+threshold, fusion null), transport (partial: capture disk,
+lensing). Open: dσ/dΩ, multiplicity curves, object-object
+collisions with momentum, multi-line level schemes.
