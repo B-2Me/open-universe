@@ -480,6 +480,17 @@ static int qFieldReact=0;  /* 0=off. Nonzero = right-shift REACTION
  * reservoir, not a sink; it spends exactly what it stores.
  * Authored kicks become internal force pairs (cell +p, field -p);
  * erosion attempts HARDEN the walls. ev27 = press delivered. */
+static int qPackPress=0;   /* 0=off. Nonzero = ELASTIC DEGENERACY
+ * at the mass relay: the momentum handoff follows the MOVED mass
+ * fraction (p2*k/m — the same proportionality charge/localTime
+ * use) instead of the legacy full-p transfer that lets a
+ * saturated wall inherit the whole kick and walk on it. The
+ * refused share splits: dep=(back*pp)>>4 banks on the shared
+ * conduit's fluxV as COUNTER-strain (react press pushes visitors
+ * back — elastic recoil), the rest stays with the source as
+ * retained back-pressure. pp=15 ~fully elastic, pp low = the
+ * refused carrier keeps ramming. Conserving: every unit of p is
+ * destination + conduit + source. ev27 counts the banked dep. */
 static int qResEmit=0;
 static int qRailGate=0;   /* rail-bypass threshold (0=off): packets on
      * channels with committed winding >= this ride THROUGH — the
@@ -1318,7 +1329,7 @@ void moore26_tick(void){
                      * 0 = off (strictly per-cell momentum, baseline). */
                     if(qBondShare||qChargeKick||qChargeFlow||qMagKick
                        ||qMagRange||qMagInd||qVacPol||qPolProp
-                       ||qWallPress){
+                       ||qWallPress||qFieldReact||qPackPress){
                         uint32_t mn=0;
                         for(int e2=0;e2<QChannels/2;e2++){
                             uint32_t mm=en->winding[2*e2]<en->winding[2*e2+1]
@@ -2289,12 +2300,59 @@ void moore26_tick(void){
                 /* p clears too — FULL handoff matching the mass: if
                  * the whole residue relocates, the whole momentum
                  * goes with it (fractional p bleed deadlocked the
-                 * walk after ~60 hops — inertia died mid-march) */
+                 * walk after ~60 hops — inertia died mid-march).
+                 * qPackPress changes the refused-share semantics:
+                 * the impulse follows the mass FRACTION that moved
+                 * (p2*k/m — the same proportionality charge and
+                 * localTime already use), and the refused share is
+                 * split — dep=(back*pp)>>4 banks on the shared
+                 * conduit as counter-strain (the react press pushes
+                 * visitors back: elastic degeneracy), the remainder
+                 * stays with the source as retained back-pressure.
+                 * Default off: legacy full-p handoff untouched. */
+                int pcx=x+v[0];
+                int pci=(pcx>=0&&pcx<QWidth)
+                        ?(z*QHeight+y)*QWidth+pcx:-1;
                 for(int e=0;e<QChannels/2;e++){
                     int32_t p2=o->momentum[e];
-                    if(p2){
-                        grid_next[si].momentum[e]-=p2;
-                        grid_next[ni].momentum[e]+=p2;
+                    if(!p2)continue;
+                    int32_t mv=p2;
+                    if(qPackPress&&o->mass)
+                        mv=(int32_t)((int64_t)p2*k/o->mass);
+                    int32_t back=p2-mv;
+                    grid_next[si].momentum[e]-=p2;
+                    grid_next[ni].momentum[e]+=mv;
+                    if(back){
+                        int32_t bmag=back>0?back:-back,
+                                dep=(int32_t)(((int64_t)bmag
+                                              *qPackPress)>>4);
+                        if(dep&&pci>=0){
+                            const int8_t *ve=QChannelVec
+                                [p2>0?2*e:2*e+1];
+                            /* throttle dep to the tightest axis
+                             * room — a saturated strain register
+                             * refuses the excess, and the refused
+                             * impulse stays with the source */
+                            for(int a=0;a<3;a++){
+                                if(!ve[a])continue;
+                                int32_t rv=grid_next[pci].fluxV[a],
+                                        rm=ve[a]>0?rv+32768:32767-rv;
+                                if(dep>rm)dep=rm;
+                            }
+                            if(dep>0){
+                                for(int a=0;a<3;a++){
+                                    if(!ve[a])continue;
+                                    grid_next[pci].fluxV[a]=(int16_t)
+                                        (grid_next[pci].fluxV[a]
+                                         -ve[a]*dep);
+                                }
+                                qEvents[27]+=(uint64_t)dep;
+                            }
+                        }else dep=0;
+                        int32_t stay=bmag-dep;
+                        if(stay)
+                            grid_next[si].momentum[e]+=
+                                p2>0?stay:-stay;
                     }
                 }
                 /* creep rides too — pressure history belongs to the
@@ -4528,6 +4586,7 @@ void moore26_ind_load_set(int v){qIndLoad=v?1:0;}
 void moore26_vac_pol_set(int v){qVacPol=v>-16&&v<16?v:0;}
 void moore26_pol_prop_set(int v){qPolProp=v>-16&&v<16?v:0;}
 void moore26_wall_press_set(int v){qWallPress=v>0&&v<16?v:0;}
+void moore26_pack_press_set(int v){qPackPress=v>0&&v<16?v:0;}
 void moore26_wall_stall_set(int v){qWallStall=v;}
 void moore26_creep_yield_set(int v){qCreepYield=v;}
 int  moore26_creep_get(int x,int y,int z){

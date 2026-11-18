@@ -198,6 +198,8 @@ translations live in [Nature → Substrate](/nature-translation).
 | compression tax | ~50 heat/tick at a full-density interface | magnitude-blind (p=800=12800); sustained press rattles work to heat | compress-collide |
 | exclusion equilibrium | merges stop at ~60000/cell (~92% page) | 150→88 cells then hard lock; mass0=30000 | compress-collide |
 | mass-tear leak | ~18.4K destroyed at saturated interface (fixed) | k=mass>>shift uncapped vs room — now k=min(k,room) | compress-collide audit |
+| ghost momentum | refused handoff still pays dest 100% of p | wall walks on zero mass transfer — fixed under qPackPress (p ∝ k/m) | compress-piston |
+| elastic degeneracy | pp=15 banks ~195K strain, rebound 21.6→7.7; pp=8 ~100K, partial; pp=0 wall dissolves | monotone elastic coefficient; ev27 counts banked dep=(back*pp)>>4 | compress-piston |
 | holding cost | zero — 64800/cell inert for 200t | localization free once achieved; floor is capacity, not energy | compress-probe |
 | surface-gravity radiation | evap drive × (mass−min nbr)>>qGravRad | interior immune exactly; corner>face>core ordering | gravRad probe |
 | radiation self-quench | ~14 units then stall (lone emitter) | exhaust congests unwound vacuum — graded-Pauli vent back-pressure | gravRad probe |

@@ -535,6 +535,19 @@ run inside a Linux container.
   (compress-probe: 64800/cell inert). `qGravRad` multiplies the
   drive by local mass gradient — interior flat-field cells
   immune; lone emitters self-quench by exhaust congestion.
+- `qPackPress` (0=off): elastic degeneracy at refused mass
+  handoffs. Legacy pays destination FULL p even on refusal —
+  a saturated wall inherits the kick and walks (ghost momentum).
+  With pp on, p hands off proportional to moved mass (k/m, like
+  charge/localTime) and the refused share splits:
+  (back*pp)>>4 banks as counter-strain on the shared conduit's
+  fluxV (qFieldReact springs it back), rest stays as source
+  back-pressure. FIXTURE RULE: mass must sit on ODD-parity
+  cells only — mass+winding on one cell runs the mass<->winding
+  capacitor (reads as a leak: mass bleeds ~8/t into winding).
+  Edge-element press, not face: a face hop's conduit index IS
+  its destination (undeliverable strain on odd cells).
+  compress-piston.mjs is the clean probe.
 - Congestion dilation (clock): load → armed full → free_=0 →
   tau frozen — bound matter's own traffic taxes its clock.
 

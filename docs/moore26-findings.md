@@ -4490,6 +4490,47 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
       heat ∝ refused share. (a) is the nature-analog (degeneracy
       stores, doesn't dissipate) — unprototyped as of this rev.
 
+  ELASTIC DEGENERACY — qPackPress IMPLEMENTED + MEASURED
+  (compress-piston.mjs): the deeper bug the probe exposed was
+  momentum ghosting — the relay pays the destination the FULL p
+  even when the mass handoff is refused, so a saturated wall
+  inherits every kick and WALKS on it (wallX 24->54 in early
+  fixtures). Charge and localTime already hand off the moved
+  fraction k/m; momentum alone went all-or-nothing (deliberate —
+  fractional bleed deadlocked walkers). Under qPackPress the
+  handoff goes proportional p2*k/m too, and the refused share
+  splits: dep=(back*pp)>>4 banks on the shared conduit's fluxV
+  as counter-strain (react press returns it — the spring), the
+  remainder stays with the source (retained back-pressure).
+  Conserving by construction: dest + conduit + source = p.
+    PISTON vs WALL (full odd cells x=23-25, committed even
+      conduits x=23, 3x3x3 odd-only pusher, +x edge press):
+      pp=0  control: pusher DISSOLVES through the wall — 2.42M
+        mass -> 43 in 20t, wall walks off on ghost momentum.
+      pp=8  (half banked): ~100K strain banked, partial recoil
+        pusherX 21.6 -> ~15 on release.
+      pp=15 (full bank):  ~195K strain banked, wall holds at
+        ~26.8 (creep, not walk), pusher rebounds 21.6 -> 7.7 —
+        the field spends back what it stored. Monotone in pp —
+        a real elastic coefficient, not a binary.
+      MASS CONSERVED exactly in all arms (flat at seeded total;
+        a small +N at t=0..10 is seeded conduit winding -> mass
+        capacitor conversion, expected and signable).
+    FIXTURE LESSON — the sublattice is real: mass must live on
+      ODD-parity cells only. An edge hop preserves parity (+2
+      displacement), so even-parity mass lands on even conduit
+      cells; mass+winding on one cell runs the mass<->winding
+      capacitor (starved composite evaporates mass into
+      circulation, ~8/t — a REAL conversion that reads exactly
+      like a leak in a mass-only audit). Face hops are worse:
+      their conduit index IS the destination, so pack-press
+      strain on them is undeliverable (odd-cell fluxV is never
+      scanned). Edge-element press is the honest probe.
+    ALSO FIXED: the face-scan gate that wraps the react-press
+      read side now includes qFieldReact||qPackPress — the
+      register a knob writes should be readable under that knob
+      alone.
+
   SURFACE-GRAVITY RADIATION (qGravRad, default 0) — emission as
   a horizon phenomenon: the evap tax's drive is multiplied by
   the local mass gradient (o->mass - min nbr mass)>>shift — the
