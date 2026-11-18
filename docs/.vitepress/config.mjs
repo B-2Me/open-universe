@@ -27,6 +27,7 @@ const readingOrder = [
   { text: 'Moore26 Findings', link: '/moore26-findings' },
   { text: 'Moore26 Constants', link: '/moore26-constants' },
   { text: 'Moore26 Substrate', link: '/moore26-substrate' },
+  { text: 'Moore26 Tour', link: '/moore26-tour' },
   { text: 'Nature → Substrate', link: '/nature-translation' },
 
   { text: 'Build & Validate', link: '/interference/reproduce' },
@@ -77,6 +78,7 @@ const interferenceItems = [
   { text: 'Overview', link: '/interference' },
   { text: 'Moore26', items: [
     { text: 'Substrate', link: '/moore26-substrate' },
+    { text: 'Tour', link: '/moore26-tour' },
     { text: 'Findings', link: '/moore26-findings' },
     { text: 'Constants', link: '/moore26-constants' },
     { text: 'Transaction Ledger', link: '/transaction-ledger' }

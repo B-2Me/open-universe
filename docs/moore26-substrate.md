@@ -51,7 +51,8 @@ that discriminates grown structure from authored fixtures —
 identity as a reconstructed formation trail, not a stored thing.
 
 See also: [fcc-substrate](fcc-substrate) (geometry),
-[moore26-findings](moore26-findings) (phenomenology),
+[moore26-tour](moore26-tour) (plain-language tour + open
+questions), [moore26-findings](moore26-findings) (phenomenology),
 [moore26-constants](moore26-constants) (measured constants),
 [transaction-ledger](transaction-ledger) (mechanics), and the
 [rules reference](/data/ref/moore26-rules.html).
