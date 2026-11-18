@@ -308,7 +308,7 @@ static int qCommitMin=32;
 static int qGroundFloor=512;
 static int qLaunchMode=0;   /* 0=massFlight 1=packet+fwd 2=packet-bck 3=direct */
 static int qConfirmCap=160;
-static int qRecoilLaw=0;   /* 0 = legacy flat minted ±1 confirm kick.
+static int qRecoilLaw=4;   /* 0 = legacy flat minted ±1 confirm kick.
     * N>0: funded species-aware impulse — confirm kick = nu>>N debited
     * from the structure deposit (p=E/c quantized), and hop-transit
     * bookkeeping records (incipNu 0x40) clear the ledger without
@@ -1444,9 +1444,8 @@ void moore26_tick(void){
                     jrn(si,ia,64,(int32_t)half);
                     jrn(si,ib,64,-(int32_t)(scar-half));
                 }
-                continue;   /* even cells take no relay path */
             }
-            {
+            if(!IS_EVEN(x,y,z)){
                 int hasW=0;
                 {for(int c=6;c<18;c++)if(o->winding[c]){hasW=1;break;}}
                 if(o->mass<4&&!hasW)continue;   /* relay fires on mass OR
@@ -1466,6 +1465,9 @@ void moore26_tick(void){
                     int ex=x+(d==0)-(d==1),ey=y+(d==2)-(d==3),ez=z+(d==4)-(d==5);
                     if(ex<0||ex>=QWidth||ey<0||ey>=QHeight||ez<0||ez>=QDepth)continue;
                     int ei=(ez*QHeight+ey)*QWidth+ex;
+                    /* conduit = the shared EVEN face cell between two
+                     * odd sites — the exchange record they clear
+                     * through */
                     if(!IS_EVEN(ex,ey,ez))continue;
                     const NodeState *en=&grid_current[ei];
                     for(int e=0;e<QChannels/2;e++){
@@ -3067,7 +3069,7 @@ void moore26_tick(void){
                         n->packet[mc]++;
                         n->packetNu[mc]=(uint8_t)(qModeLedger?nu:(nu>127?127:nu));
                         n->packetBorn[mc]=n->packetBorn[c];
-                        int sgn=(c&1)?1:-1;
+                        int sgn=(c&1)?-1:1;
                         n->momentum[c>>1]+=sgn*2;
                         qEvents[53]++;
                         n->packet[c]--;
@@ -3136,7 +3138,7 @@ void moore26_tick(void){
                             n->packet[mc]++;
                             n->packetNu[mc]=(uint8_t)nu;
                             n->packetBorn[mc]=n->packetBorn[c];
-                            int sgn=(c&1)?1:-1;
+                            int sgn=(c&1)?-1:1;
                             n->momentum[c>>1]+=sgn*2;
                             qEvents[53]++;
                             n->packet[c]--;
@@ -3192,7 +3194,7 @@ void moore26_tick(void){
                             n->packet[mc]++;
                             n->packetNu[mc]=(uint8_t)(qModeLedger?nu:(nu>127?127:nu));
                             n->packetBorn[mc]=n->packetBorn[c];
-                            int sgn=(c&1)?1:-1;
+                            int sgn=(c&1)?-1:1;
                             n->momentum[c>>1]+=sgn*2;
                             qEvents[53]++;
                             n->packet[c]--;
@@ -3629,8 +3631,8 @@ void moore26_tick(void){
                     int kick=qRecoilLaw?(int)(nu>>qRecoilLaw):1;
                     uint32_t nuIn=nu-(uint32_t)kick;
                     {int pe=c>>1;int32_t *mp=&n->momentum[pe];
-                     if(c&1){if(*mp<(1<<30)-kick)(*mp)+=kick;}
-                     else   {if(*mp>-(1<<30)+kick)(*mp)-=kick;}}
+                     if(c&1){if(*mp>-(1<<30)+kick)(*mp)-=kick;}
+                     else   {if(*mp<(1<<30)-kick)(*mp)+=kick;}}
                     /* direction-aware deposit: qDirBias (0-256) biases
                      * the pair toward the packet's arrival channel —
                      * the offer carries a direction bit; transducing it
@@ -3792,8 +3794,8 @@ void moore26_tick(void){
                         TXN_WORK(n);
                         int kick=(int)(nu>>qRecoilLaw);
                         int pe=c>>1;int32_t *mp=&n->momentum[pe];
-                        if(c&1){if(*mp<(1<<30)-kick)(*mp)+=kick;}
-                        else   {if(*mp>-(1<<30)+kick)(*mp)-=kick;}
+                        if(c&1){if(*mp>-(1<<30)+kick)(*mp)-=kick;}
+                        else   {if(*mp<(1<<30)+kick)(*mp)+=kick;}
                         nuIn2=nu-(uint32_t)kick;
                     }
                     int fe=-1;int32_t dd=0;

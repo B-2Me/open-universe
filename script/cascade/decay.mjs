@@ -43,7 +43,7 @@ q._moore26_vac_rate_set(0);
 q._moore26_rung_shift_set(num('rung', 1) | 0);
 q._moore26_incip_ttl_set(120);
 q._moore26_mode_ledger_set(opt('nomodes') ? 0 : 1);
-q._moore26_recoil_law_set(num('recoil', 0) | 0);
+q._moore26_recoil_law_set(num('recoil', 4) | 0);
 
 q._moore26_mass_set(TX, TY, TZ, M);
 const wq = Math.max(160, Math.round(M * 0.8));
@@ -81,8 +81,8 @@ if (SEED) {
         // a winding stub makes the mode OFF-SHELL: local line =
         // (mass + winding>>2)>>2 = 4, and 90%4=2 — the confirm gate
         // refuses it, so the mode must stand, cascade, or expire.
-        h[i + OFF.winding + c] = 64;
-        h[i + OFF.winding + (c ^ 1)] = 64;
+        h[i + OFF.winding + 2 * c] = 64;
+        h[i + OFF.winding + 2 * (c ^ 1)] = 64;
         h[i + OFF.incip + c] = 120;          // stand ~TTL
         h[i + OFF.incipNu + c] = NU;
         h[i + OFF.incipBorn + c] = 0;
