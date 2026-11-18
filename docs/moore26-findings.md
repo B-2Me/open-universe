@@ -4968,3 +4968,65 @@ what it emits. The substrate reproduces both regimes:
 Deferred: the nu=1-4 ground-floor pileup (modes below every local
 ladder can't cascade further) is a Bose-like condensation feature
 worth characterizing separately.
+
+## Emission spectroscopy — the substrate reads its own bound states
+
+Harness: `script/cascade/spectro.mjs` — authored committed structure
+(winding pairs on a mass cell), `qResEmit=1` so emitted packets carry
+`geo_gap(node) = (min_committed_w>>2)*2/L^2` exactly. Every emission
+is a photon: energy in packetNu, count in packet[].
+
+### The law — Phase 6 emission is a capacitor, not a lamp
+A site radiates a line photon only inside the band
+`4*mass < loop_winding < 8*mass`:
+- lw < 4m: EVAPORATION — mass converts to winding on the weakest
+  committed pair (ev42) — the capacitor charges
+- lw > 8m: CONDENSE — shed rungs deposit back as mass (ev29,
+  "species-inverse") — the capacitor discharges inward
+- Inside the band: the weakest committed edge sheds a rung and a
+  packet escapes at nu = geo_gap — the object self-tunes INTO the
+  radiating band and holds a dynamic equilibrium line.
+
+### Prediction test — emitted nu = computed geo_gap
+- M=200, seeded pairs {160,240,320}: settles w3=136 -> predicted
+  line=34; emitted centroid 38.1 (n=42 photons, peak 35-40). The
+  +4 offset is the settle transient — early photons carry the
+  pre-equilibrium line. Verified correspondence.
+- Mass scaling: M=200 -> line~34-38; M=400 -> line~46-53. The
+  equilibrium weakest-bond winding grows sublinearly with mass
+  (136 -> 184), so heavier species radiate harder lines.
+- TWO-SPECIES ensemble (M=200 + M=400 in one box): emitted
+  spectrum shows both lines resolved — strong 36-40 cluster
+  (species A) + faint 48 line (species B). Spectral species ID
+  works.
+- RUNG-WALKING: a bare wound site decays w=256->132; predicted
+  line walks 64->33; the emitted spectrum smears across 35-46 —
+  a time-integrated decay chain recorded in the spectrum.
+
+### Absorption — a selection rule + a shattering threshold
+- RESONANT (nu=34 = the object's line): quantitative capture —
+  5 injected photons vanish whole, no arm, no rejection events,
+  no re-emission. The object is a perfect absorber at its own
+  emission frequency (Kirchhoff closure: the emissivity line IS
+  the absorptivity line).
+- ABOVE-GAP (nu=150): inelastic shattering — 5 photons become
+  ~119 soft quanta at nu~4-5 (energy conserved ~750 in -> ~600
+  measured out through neighbor soft lines). No fluorescence at
+  line2 — the bound object thermalizes above-gap excitations and
+  re-radiates through its lowest rungs. The deep-inelastic analog.
+- The mode-purity rule (off-resonant arrivals on occupied
+  channels thermalize or reflect, never merge) IS the selection
+  rule: the object's absorption spectrum is discrete because its
+  mode lattice cannot hold non-commensurate energy.
+
+### fm-scale interpretation
+At 0.1fm/node this is the right physics shape: bound objects
+have line spectra set by internal structure (the weakest-bond
+rung = the level spacing), species are distinguishable
+spectroscopically, resonant absorption is quantitative, and
+above-gap absorption shatters — matching nuclear physics where
+absorption above the separation energy fragments rather than
+re-radiates coherently. What is NOT yet shown: multi-line level
+schemes on ONE object (geo_gap always picks the single weakest
+bond — a one-line-per-structure emitter), and stimulated
+resonant fluorescence.

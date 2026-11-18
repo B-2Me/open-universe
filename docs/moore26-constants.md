@@ -400,3 +400,9 @@ the engine is `src/moore26.c`; builds through `src/build.sh` only.*
 | orbital order from isotropy | random-tangent shell seeding collapses to <r>=3.9 with coherent net L~4400->3200: radial trajectories die at the core, tangential persist — the bound fraction IS the circulating fraction | orbit.mjs isotropic arm |
 | T_eff non-monotonic | occupation slope: T_eff=10.0 @ h=2000, 7.9 @ h=4000 (32^3) — ladder ensemble adapts with mass, T leaks into structure | inline T_eff sweep |
 | evaporation->line transition | emitted spectrum (r>4): h=1000 -> soft tail peak nu~4-5 slope -0.108; h=3000 -> LINE at nu=16-18 = ladder gap | the fm thermometer is spectral shape, not slope — evaporation vs characteristic emission | inline evaporation probe |
+| emission-line law | line photon escapes only for 4*mass < loop_winding < 8*mass; emitted nu = geo_gap = (weakest_committed_w>>2)*2/L^2 | spectro.mjs, res_emit=1 |
+| line=structure verified | M=200 settles w3=136 -> pred line 34, emitted centroid 38.1 (n=42); M=400 -> pred 46-47, emitted 53. Offset ~+4 = settle transient | spectro.mjs mass sweep |
+| spectral species ID | two-source box (M=200+M=400) emits resolved lines: strong 36-40 + faint 48 | spectro.mjs --two arm |
+| rung-walking | bare wound site w=256->132 walks line 64->33; emitted spectrum smears 35-46 = decay-chain record | spectro.mjs --walk |
+| resonant absorption | nu=34 (object's line): quantitative capture, zero re-emission — Kirchhoff closure; nu=150 (above gap): shatters to ~119 photons at nu~4-5 through soft neighbor lines | inline excitation probe |
+| purity=selection rule | off-resonant arrivals on occupied channels thermalize/reflect — the absorption spectrum is discrete | moore26.c mode-purity arm |
