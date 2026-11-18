@@ -4672,3 +4672,58 @@ scattering process with a Boltzmann fixed point — Compton-like
 thermalization. If a run then shows the comb relaxing toward an
 exponential tail, that's emergent statistical mechanics — the next
 experiment.
+
+## The mode ledger + rung cascade — emergent occupation statistics
+
+The audit's thermal mis-map, made concrete: `heat` (scalar) was being
+treated as the thermal state when the mode-resolved register already
+existed — the standing-offer cloud (`incip[c]` occupation x
+`incipNu[c]` frequency is literally Sigma n_i*nu_i per cell). Three
+faults: incipNu was 7-bit (stim flag stole bit7 — nu>127 could not
+EXIST as a mode, its surplus dissolved to scalar h at arming); the
+merge averaged nu (mean-seeking — collapsed every spectrum to its
+source delta); TTL expiry dissolved modes to heat.
+
+qModeLedger (default off) fixed the plumbing — 8-bit mode register,
+one channel holds ONE mode (same-nu stacks boson-like, off-resonant
+reflects conserving full nu — also fixed a silent nu>127 reflect
+leak), TTL radiates at mode frequency. But the spectrum stayed
+source-dominated: every conservative channel preserves nu; only the
+mint and structure lines convert frequency. No Boltzmann fixed point
+because no process moves energy between frequencies.
+
+qRungShift added the missing channel — RUNG CASCADES: an off-shell
+standing mode at nu on a cell with ladder `line=(m+w/4)/4` drops one
+rung per roll (nu -> nu-line), emitting its population as photons at
+`line` — h*nu = h*(nu-line) + h*line, exact. The emitted photons are
+on-shell BY CONSTRUCTION (nu=line) — they settle into cells one rung
+at a time. This is matter-mediated photon transition — the same way
+nature thermalizes radiation (atoms absorb/re-emit, not
+photon-photon scattering).
+
+MEASURED (thermostatted bath, modes=1 ttl=120 rung=1): the standing-
+cloud occupation is no longer the source comb — it's a monotonic
+geometric-ish falloff from nu=1 (7490/6501/4866/4130/3047... ratios
+~0.8), slope ~-0.2/nu at h=2000. At h=1000 the tail is clearly
+softer — the occupation scale TRACKS THE BATH TEMPERATURE. The
+energy spectrum nu*n̄ peaks at the grown lattice's ladder frequency
+(nu~12) — a Wien peak emerging from occupation statistics, not the
+mint delta. Occupation piles at nu=1-4: modes below every local
+ladder can't cascade — a ground-floor accumulation whose shape
+matches the low-frequency divergence of a Bose distribution
+(unproven, suggestive). Structure-line bumps (nu~12/15 at h=2000)
+ride on top — real spectroscopy of the grown lattice.
+
+The mechanism story: each rung step is stochastic survival (a mode
+drops until it lands on-shell somewhere or hits the floor) —
+geometric survival = the exponential profile; the scale is set by
+the ladder ensemble, which the thermalized structure itself sets.
+That's a feedback loop from structure to statistics — temperature
+as an emergent property of the lattice, not a scalar register.
+
+Honest limits: not yet a clean single-temperature Boltzmann fit
+(structure bumps overlay the tail; the low-nu region is flatter);
+the T-scaling is indirect (through mass/ladder feedback); and the
+mode sector is still bounded (26 modes x 255 nu per cell) — a
+finite-box spectrum, correct at fm scale where nature's own
+blackbody is also discrete.

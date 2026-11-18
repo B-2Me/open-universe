@@ -223,6 +223,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | mint saturation | h≥2040 → every emission clamps at nu=255 (single-bin spectrum) | uint8 nu ceiling — hard upper register bound | thermal-spectrum |
 | free-cooling spectral drift | bath cooling → peak slides 90→5 over 600t | spectrum tracks falling h — thermometer, not thermalizer | thermal-spectrum |
 | occupation-law verdict | **no statistical mechanics** — cascade mixes locally (sidebands ±~18 nu) but has no Boltzmann fixed point; T is a ledger variable | interpretation of the two arms | thermal-spectrum |
+| mode register (qModeLedger) | `incipNu` full 8-bit mode frequency; one channel = one mode (same-nu stacks, off-resonant reflects conserving nu); TTL radiates at mode frequency | bookkeeping clears silently; stim re-evaluated at confirm (bit7 flag dropped) | thermal-spectrum --modes=1 |
+| rung cascade (qRungShift) | off-shell mode drops `nu -> nu-line` per 1/2^s roll, emitting h photons AT `line` — `h*nu = h*(nu-line)+h*line` exact | ladder `line=(mass+winding[c]/4)/4` per cell; isotropic edge emission; ev66 | moore26.c |
+| emergent occupation law | **n̄(nu) falls ~geometrically from nu=1** — slope -0.2/nu at h=2000 (T_eff~5 nu-units), steeper tail at h=1000; energy spectrum nu*n̄ peaks at the grown lattice's ladder frequency (nu~12 at h=2000) | thermostat bath, modes=1 ttl=120 rung=1; bumps at 12/15 = structure lines | thermal-spectrum --modes=1 |
+| ground-state pile-up | occupation concentrates at nu=1-4 — modes below every local ladder can't cascade further | consistent with a 1/(e^x-1)-shaped ground floor — unproven | thermal-spectrum |
 | parasitic leak | Q_h/t ≈ 250K for 25-cell plate @40000 | >99% bath maintenance, pump-on vs off identical | heat-engine --pump=0 |
 
 ## Force from density (offer->momentum)

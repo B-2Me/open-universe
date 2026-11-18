@@ -27,6 +27,10 @@ const FLOOR = parseInt(arg('floor', '32'));
 const RATE = parseInt(arg('rate', '8'));
 const MODES = parseInt(arg('modes', '0'));   /* qModeLedger: heat
    * underpinned by standing-offer modes */
+const TTL = parseInt(arg('ttl', '0'));       /* incipient TTL
+   * override — modes must outlive their cascade to thermalize */
+const RUNG = parseInt(arg('rung', '2'));     /* qRungShift: 1/2^s
+   * cascade probability per standing mode per tick */
 const TOPUP = parseInt(arg('topup', '4'));   /* re-seed bath every N
    * ticks — thermostat hold; 0 = free cooling */
 
@@ -35,7 +39,9 @@ initM26(q, N, N, N);
 q._moore26_vac_floor_set(FLOOR);
 q._moore26_vac_rate_set(RATE);
 q._moore26_heat_flow_set(FLOW);
-q._moore26_mode_ledger_set(MODES);   /* drain is hardcoded h>>7 — the
+q._moore26_mode_ledger_set(MODES);
+if (TTL) q._moore26_incip_ttl_set(TTL);
+if (RUNG) q._moore26_rung_shift_set(RUNG);   /* drain is hardcoded h>>7 — the
    * entropy export; the box cools over the run, which is itself
    * useful: watch the spectrum track the mint delta as h falls */
 
@@ -71,7 +77,7 @@ const census = () => {
   return { hist, mhist, pkN, pkE, heat, wind, mass, moN, moE };
 };
 
-console.log(`=== thermal-spectrum: uniform bath h=${H} floor=${FLOOR} rate=${RATE} flow=${FLOW} modes=${MODES} ===`);
+console.log(`=== thermal-spectrum: uniform bath h=${H} floor=${FLOOR} rate=${RATE} flow=${FLOW} modes=${MODES} ttl=${TTL||6} rung=${RUNG} ===`);
 console.log(`  mint delta would sit at nu = ${H >> 3}`);
 for (let t = 0; t <= T; t++) {
   if (t % EVERY === 0 || t === T) {

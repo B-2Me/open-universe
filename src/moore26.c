@@ -106,7 +106,11 @@ typedef struct {
     uint8_t  packet[26];       /* packet counts (the offers) */
     uint8_t  packetNu[26];     /* packet nu tags (the energy) */
     uint8_t  incip[26];        /* armed incipients per channel (negotiations) */
-    uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag) */
+    uint8_t  incipNu[26];      /* each incipient's nu (bit7 = stim flag
+                                * under legacy; a full 8-bit MODE
+                                * frequency under qModeLedger — the
+                                * stim condition re-evaluates at
+                                * confirm instead) */
     uint8_t  incipBorn[26];    /* each incipient's offer birth tick (tau) */
     uint8_t  incipOp[26];      /* arrival-phase signature: op=nu*age at
                                 * arming, frozen — the standing offer's
@@ -200,6 +204,10 @@ static int qModeLedger=0; /* heat underpinned by modes, not a scalar
  * path clipped nu>127 silently — an unbooked leak). */
 static int INU(const NodeState *o,int c){return qModeLedger
     ?o->incipNu[c]:(o->incipNu[c]&0x7f);}
+static int qRungShift=2;  /* rung-cascade rate: an off-shell standing
+ * mode sheds one rung with probability 1/2^qRungShift per tick
+ * (mode-ledger only). The frequency-converting channel — matter
+ * mediates photon transitions through its own level ladder. */
 static inline int32_t eff_dd(const NodeState *n,int e){
     /* held offers weight by ENERGY (incipNu) × parity — a strong
      * field's standing cloud steers proportionally, not per-count */
@@ -223,6 +231,19 @@ static int *procList, nProc;
 
 static uint64_t qEvents[80];   /* 48 used; 60/61 = drift diagnostics; ev64 = creep yield */
 static uint64_t qTick;
+/* radiate: emit `emit` packets at `nu` on channel c, born/par given.
+ * Packet-register overflow thermalizes to heat (ev52 — booked,
+ * never dropped). Shared by TTL radiative decay and rung cascades. */
+static void radiate(NodeState *n,int c,uint32_t nu,
+                    uint32_t emit,uint32_t born,int8_t par){
+    uint32_t room=255-n->packet[c];
+    if(emit>room){uint32_t over=(emit-room)*nu;
+        uint32_t h2=(uint32_t)n->heat+over;
+        n->heat=(uint16_t)(h2>65535?65535:h2);
+        qEvents[52]+=over;emit=room;}
+    if(emit){n->packet[c]+=(uint8_t)emit;n->packetNu[c]=(uint8_t)nu;
+             n->packetBorn[c]=(uint8_t)born;n->packetPar[c]=par;}
+}
 /* TRANSACTION JOURNAL — God's-eye audit ring: every audited event
  * writes {tick,src,dst,kind,amount}. Conservation becomes replay —
  * a ledger imbalance is a discovery, not an error. */
@@ -3199,30 +3220,43 @@ void moore26_tick(void){
                      * on its own channel: mode->radiation is the second
                      * leg of detailed balance (arming is the first).
                      * packetBorn preserves the offer's epoch — the
-                     * mode's phase clock resumes where it froze.
-                     * Register-full overflow falls back to heat —
-                     * booked, nothing leaves the ledger. */
-                    uint32_t emit=h;
-                    uint32_t room=255-n->packet[c];
-                    if(emit>room){
-                        uint32_t over=emit-room;
-                        uint32_t h2=(uint32_t)n->heat+over*inu;
-                        n->heat=(uint16_t)(h2>65535?65535:h2);
-                        qEvents[52]+=(uint64_t)over*inu;
-                        emit=room;
-                    }
-                    if(emit){
-                        n->packet[c]+=(uint8_t)emit;
-                        n->packetNu[c]=(uint8_t)inu;
-                        n->packetBorn[c]=o->incipBorn[c];
-                        n->packetPar[c]=o->incipPar[c];
-                    }
+                     * mode's phase clock resumes where it froze. */
+                    radiate(n,c,inu,h,o->incipBorn[c],o->incipPar[c]);
                     continue;
                 }
                 uint32_t ht=(uint32_t)n->heat+h*inu;
                 n->heat=(uint16_t)(ht>65535?65535:ht);
                 qEvents[52]+=(uint64_t)h*inu;
                 continue;
+            }
+            if(qModeLedger&&qRungShift){
+                /* RUNG CASCADE — an off-shell standing mode above its
+                 * cell's ladder spacing sheds one rung per tick: the
+                 * whole mode drops nu -> nu-line and emits its
+                 * population as photons at `line` on its own channel.
+                 * h*nu = h*(nu-line) + h*line — exact conservation,
+                 * matter-mediated frequency conversion. Off-shell
+                 * only (nu%line!=0): on-shell modes belong to the
+                 * confirm. Terminates at nu<=line: an exact rung
+                 * landing settles at the next confirm, a leftover
+                 * remainder radiates at TTL. The emitted photons are
+                 * on-shell BY CONSTRUCTION (nu=line) — the cascade
+                 * feeds the ladder's own ground line. */
+                uint32_t inu0=INU(o,c);
+                uint32_t line2=((uint32_t)o->mass+(o->winding[c]>>2))>>2;
+                if(line2<1)line2=1;
+                if(inu0>line2&&(inu0%line2)!=0
+                   &&(rand_site(si,90+c)&((1<<qRungShift)-1))==0){
+                    n->incipNu[c]=(uint8_t)(inu0-line2);
+                    /* ISOTROPIC emission — a standing mode is a
+                     * non-propagating excitation; the shed rung
+                     * radiates onto a random edge, not the armed
+                     * channel (that's transmission, not decay). */
+                    int ec=6+rand_site(si,91)%12;
+                    radiate(n,ec,line2,h,(uint32_t)qTick,o->incipPar[c]);
+                    qEvents[66]+=(uint64_t)h*line2;
+                    continue;
+                }
             }
             uint8_t iv=o->incipNu[c];
             uint32_t nu=qModeLedger?(iv?iv:1):((iv&0x7f)?(iv&0x7f):1);
@@ -4342,7 +4376,7 @@ void moore26_incipient_set(int x,int y,int z,int c,uint32_t v){
               *n1=&grid_next[z*QWidth*QHeight+y*QWidth+x];
     n0->incip[c]=n1->incip[c]=(uint8_t)(v>255?255:v);
     n0->incipBorn[c]=n1->incipBorn[c]=(uint8_t)qTick;
-    if(!(n0->incipNu[c]&0x7f)){n0->incipNu[c]=n1->incipNu[c]=1;}
+    if(!n0->incipNu[c]){n0->incipNu[c]=n1->incipNu[c]=1;}
     mark_chunk(x,y,z);
 }
 uint32_t moore26_localdensity_get(int x,int y,int z){
@@ -4583,6 +4617,7 @@ void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
 void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_mode_ledger_set(int v){qModeLedger=v;}
+void moore26_rung_shift_set(int v){qRungShift=v>0&&v<10?v:2;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
