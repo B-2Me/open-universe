@@ -185,12 +185,27 @@ typedef struct {
  * parity-weighted HELD offers. The standing-offer cloud steers every
  * pick the node makes (influence without answer — the virtual layer);
  * confirmed energy still settles through winding only. */
+static int qModeLedger=0; /* heat underpinned by modes, not a scalar
+ * dump. When set: incipNu is a full 8-bit mode frequency (the stim
+ * bit7 flag is dropped — geo_gap is re-evaluated at confirm, the
+ * current line decides instead of an arming-time snapshot); a
+ * channel holds ONE mode — same-nu arrivals stack (boson-like mode
+ * sharing), off-resonant arrivals REFLECT back to radiation with
+ * their full nu (conservative redistribution replaces the weighted-
+ * average merge, which collapsed every spectrum onto its source
+ * mean); TTL expiry RADIATES the standing population as packets at
+ * incipNu on the standing channel (mode->radiation decay — the
+ * second leg of detailed balance after arming), overflow falls back
+ * to heat; reflected offers keep their full nu (the legacy reflect
+ * path clipped nu>127 silently — an unbooked leak). */
+static int INU(const NodeState *o,int c){return qModeLedger
+    ?o->incipNu[c]:(o->incipNu[c]&0x7f);}
 static inline int32_t eff_dd(const NodeState *n,int e){
     /* held offers weight by ENERGY (incipNu) × parity — a strong
      * field's standing cloud steers proportionally, not per-count */
     return (int)n->winding[2*e]-(int)n->winding[2*e+1]
-          +(int)n->incip[2*e]*(n->incipNu[2*e]&127)*n->incipPar[2*e]
-          -(int)n->incip[2*e+1]*(n->incipNu[2*e+1]&127)*n->incipPar[2*e+1];
+          +(int)n->incip[2*e]*INU(n,2*e)*n->incipPar[2*e]
+          -(int)n->incip[2*e+1]*INU(n,2*e+1)*n->incipPar[2*e+1];
 }
 static NodeState *grid_current, *grid_next;
 /* Jacobi scratch planes — deterministic phase-sync (read-old/
@@ -789,7 +804,7 @@ static uint64_t audit_L(void){
         for(int c=0;c<QChannels;c++){
             t+=n->winding[c];
             t+=(uint64_t)n->packet[c]*n->packetNu[c];
-            t+=(uint64_t)n->incip[c]*(n->incipNu[c]&127);
+            t+=(uint64_t)n->incip[c]*INU(n,c);
             t+=n->massFlight[c];
             t+=n->chargeFlight[c]<0?-(int32_t)n->chargeFlight[c]:n->chargeFlight[c];
         }
@@ -2856,7 +2871,7 @@ void moore26_tick(void){
                     int mc=c^1;
                     if(n->packet[mc]<255){
                         n->packet[mc]++;
-                        n->packetNu[mc]=(uint8_t)(nu>127?127:nu);
+                        n->packetNu[mc]=(uint8_t)(qModeLedger?nu:(nu>127?127:nu));
                         n->packetBorn[mc]=n->packetBorn[c];
                         int sgn=(c&1)?1:-1;
                         n->momentum[c>>1]+=sgn*2;
@@ -2911,7 +2926,38 @@ void moore26_tick(void){
              * instead of overwriting, so the virtual layer's energy
              * is the real sum, not the last armer's. The remainder
              * thermalizes — nothing leaves the ledger. */
-            {
+            if(qModeLedger){
+                /* MODE PURITY — one channel holds ONE mode. Same-nu
+                 * arrivals stack (boson-like sharing); off-resonant
+                 * arrivals on an occupied channel reflect back to
+                 * radiation with their FULL nu — conservative
+                 * redistribution instead of spectral averaging.
+                 * incipNu==0 marks a bookkeeping-only channel: the
+                 * offer adopts it as a real mode (legacy merge
+                 * semantics). */
+                if(n->incip[c]&&n->incipNu[c]&&n->incipNu[c]!=(uint8_t)nu){
+                    if(REFLECT(si,c)){
+                        int mc=c^1;
+                        if(n->packet[mc]<255){
+                            n->packet[mc]++;
+                            n->packetNu[mc]=(uint8_t)nu;
+                            n->packetBorn[mc]=n->packetBorn[c];
+                            int sgn=(c&1)?1:-1;
+                            n->momentum[c>>1]+=sgn*2;
+                            qEvents[53]++;
+                            n->packet[c]--;
+                            qEvents[50]++;
+                            continue;
+                        }
+                    }
+                    n->heat=(uint16_t)((n->heat+nu)>65535?65535:n->heat+nu);
+                    qEvents[52]+=nu;
+                    n->packet[c]--;
+                    qEvents[50]++;
+                    continue;
+                }
+                if(!n->incipNu[c])n->incipNu[c]=(uint8_t)nu;
+            } else {
                 uint32_t nnu=nu>127?127:nu;
                 if(nu>127){uint32_t h2=n->heat+(nu-127);
                            n->heat=(uint16_t)(h2>65535?65535:h2);
@@ -2950,7 +2996,7 @@ void moore26_tick(void){
                         int mc=c^1;
                         if(n->packet[mc]<255){
                             n->packet[mc]++;
-                            n->packetNu[mc]=(uint8_t)(nu>127?127:nu);
+                            n->packetNu[mc]=(uint8_t)(qModeLedger?nu:(nu>127?127:nu));
                             n->packetBorn[mc]=n->packetBorn[c];
                             int sgn=(c&1)?1:-1;
                             n->momentum[c>>1]+=sgn*2;
@@ -2971,8 +3017,10 @@ void moore26_tick(void){
             n->incip[c]++;TXN_WORK(n);   /* arming = table work */
             n->incipOp[c]=(uint8_t)opn;
             /* stim flag in bit7: an offer at the node's own loop gap
-             * stimulates a downward transition instead of depositing */
-            if(nu==geo_gap(o,si))n->incipNu[c]|=0x80;
+             * stimulates a downward transition instead of depositing.
+             * Under qModeLedger incipNu is a full 8-bit mode register
+             * — no flag; the gap is re-evaluated at confirm. */
+            if(!qModeLedger&&nu==geo_gap(o,si))n->incipNu[c]|=0x80;
             n->incipBorn[c]=n->packetBorn[c];
             n->incipPar[c]=n->packetPar[c];
             n->packet[c]--;
@@ -3120,7 +3168,7 @@ void moore26_tick(void){
              * no energy. Clear them through the ledger without
              * gates, force, acks or thermalized expiry: the ledger
              * sees every crossing, paperwork is not an interaction. */
-            if(qRecoilLaw&&!(o->incipNu[c]&0x7f)){
+            if((qRecoilLaw||qModeLedger)&&!INU(o,c)){
                 n->incip[c]-=h;
                 continue;
             }
@@ -3144,15 +3192,42 @@ void moore26_tick(void){
                  * was consumed into it at arming), so the full h*nu
                  * thermalizes, not just the count. This was the
                  * last unbooked leak in the ledger. */
-                uint32_t inu=(o->incipNu[c]&0x7f)?(o->incipNu[c]&0x7f):1;
+                uint32_t inu=INU(o,c);if(!inu)inu=1;
+                if(qModeLedger){
+                    /* RADIATIVE DECAY — an expired standing mode sheds
+                     * its population as packets at the mode frequency
+                     * on its own channel: mode->radiation is the second
+                     * leg of detailed balance (arming is the first).
+                     * packetBorn preserves the offer's epoch — the
+                     * mode's phase clock resumes where it froze.
+                     * Register-full overflow falls back to heat —
+                     * booked, nothing leaves the ledger. */
+                    uint32_t emit=h;
+                    uint32_t room=255-n->packet[c];
+                    if(emit>room){
+                        uint32_t over=emit-room;
+                        uint32_t h2=(uint32_t)n->heat+over*inu;
+                        n->heat=(uint16_t)(h2>65535?65535:h2);
+                        qEvents[52]+=(uint64_t)over*inu;
+                        emit=room;
+                    }
+                    if(emit){
+                        n->packet[c]+=(uint8_t)emit;
+                        n->packetNu[c]=(uint8_t)inu;
+                        n->packetBorn[c]=o->incipBorn[c];
+                        n->packetPar[c]=o->incipPar[c];
+                    }
+                    continue;
+                }
                 uint32_t ht=(uint32_t)n->heat+h*inu;
                 n->heat=(uint16_t)(ht>65535?65535:ht);
                 qEvents[52]+=(uint64_t)h*inu;
                 continue;
             }
             uint8_t iv=o->incipNu[c];
-            uint32_t nu=(iv&0x7f)?(iv&0x7f):1;
-            if(iv&0x80){
+            uint32_t nu=qModeLedger?(iv?iv:1):((iv&0x7f)?(iv&0x7f):1);
+            int stim=qModeLedger?((int)nu==geo_gap(o,si)):(iv&0x80);
+            if(stim){
                 /* STIMULATED emission — the resonant offer triggers a
                  * downward transition: ONE clone + a rung shed (the
                  * laser analog — not a deposit). */
@@ -3769,7 +3844,7 @@ void moore26_tick(void){
                     for(int c=0;c<QChannels;c++){
                         uint32_t ic=grid_next[si].incip[c];if(!ic)continue;
                         int age=((int)(qTick&255)-(int)grid_current[si].incipBorn[c])&255;
-                        int op=((int)(grid_current[si].incipNu[c]&0x7f)*age)&255;
+                        int op=(INU(&grid_current[si],c)*age)&255;
                         int dp=op-(int)(ph&255);
                         if(dp>128)dp-=256;if(dp<-128)dp+=256;
                         pull+=(dp*(int)ic)>>qOfferTorque;
@@ -4422,7 +4497,7 @@ uint64_t moore26_sum(int what){
             case 2:for(int c=0;c<QChannels;c++)t+=n->packet[c];break;
             case 3:t+=n->heat;break;
             case 4:t+=n->charge<0?-(int32_t)n->charge:n->charge;break;
-            case 5:for(int c=0;c<QChannels;c++)t+=n->incip[c]*(n->incipNu[c]&127);break;
+            case 5:for(int c=0;c<QChannels;c++)t+=n->incip[c]*INU(n,c);break;
             case 6:for(int c=0;c<QChannels;c++)t+=n->massFlight[c];break;
             case 9:for(int c=0;c<QChannels;c++)t+=(int64_t)n->packet[c]*n->packetPar[c];break;
             /* signed in-flight parity — the L ledger's flight term */
@@ -4507,6 +4582,7 @@ void moore26_recoil_law_set(int v){qRecoilLaw=v<0?0:v>7?7:v;}
 void moore26_catch_gate_set(int v){qCatchGate=v>0?v:16;}
 void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
+void moore26_mode_ledger_set(int v){qModeLedger=v;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
