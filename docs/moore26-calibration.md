@@ -142,19 +142,18 @@ shapes. None yet pins the scale — they are all self-ratios.
 
 ### Tier 2 — measurable now, would carry real weight
 
-**Knot compactness `R·m`.** Nature's sharpest dimensionless
-statement about a proton: its rms radius is ~4× its reduced
-Compton wavelength — `R·m ≈ 4.2` (in ℏ=c=1). Nuclear matter scales
-differently: `R ∝ m^(1/3)` (constant density), so `R·m ∝ m^(4/3)`.
-The substrate's mass behaves like packed matter (92% exclusion
-equilibrium, ~0 packing penalty), which predicts the *nuclear*
-branch — but bound states (the 519-winding dimer, string-tension
-tubes) might obey `R·m = const` instead. **Measure R(m) for stable
-knots.** Three outcomes, all interesting: `const` → Compton-like
-hadron analog; `m^(1/3)` → packed nuclear matter (already
-suspected); neither → new physics to characterize. This is the
-single best next calibration experiment — pure geometry × mass,
-no authored constants involved.
+**Knot compactness `R·m` — MEASURED (knot-radius.mjs).** Nature's
+sharpest dimensionless statement about a proton: `R·m ≈ 4.2`
+(ℏ=c=1); bulk nuclear matter: `R ∝ m^(1/3)`. Result: the substrate
+shows **only the packed branch** — two density phases (accretion
+haze ~10/cell, bulk ~60000/cell), both `R∝M^⅓`, and **no
+Compton-like `R·m = const` structure**. Mass doesn't carry its
+size in its Compton wavelength — confinement economics (`E∝1/R`
+cost of squeezing) has no analog in the mass distribution. But
+the size-energy tie DOES exist in the bond: `geo_gap` emits
+`nu = (bm>>2)·2/L²` → **`nu·L² = const`** — a particle-in-box
+level spacing (`E ∝ 1/L²`, not QCD's linear confinement). That
+is the real structural constant to compare, not `R·m`.
 
 **Dimensionless charge coupling `α_sub`.** At 1-link range the
 charge force delivers impulse `≈ min|q|>>4`. Define
@@ -194,18 +193,22 @@ structural difference to document, not hide.
 
 Ordered by evidential weight if it landed:
 
-1. **`R·m ≈ 4`** for a stable bound knot — would be a dimensionless
-   match nobody tuned, against nature's most concrete fm-scale fact.
+1. ~~`R·m ≈ 4`~~ — **measured, negative for the Compton branch**:
+   mass clouds are density-set (`R∝M^⅓` at haze ~10 or packed
+   ~60000/cell). The size-energy tie lives in the bond:
+   `nu·L² = const` — a real bound-state spectrum constant
+   (box-like, not confinement-like). Its dimensionless value vs
+   nature's is the live comparison.
 2. **A force law measured at range** — if anything in the substrate
    falls as `1/L²` (charge, routing-gravity, or pressure), its
    dimensionless strength is immediately comparable.
-3. **A second action agreeing with `h_sub = 256`** from an
-   independent sector. Partially resolved: the mass clock CAN be
-   tuned to `ω = E` in packet units (`cap·adv=16`, measured exact)
-   — but that's a knob setting, not a derived constant. What
-   remains load-bearing: a *bound oscillation* whose measured
-   period satisfies `E·T = 256` — a knot that ticks at its own
-   Compton rate without the knob being told.
+3. **The action ladder — MEASURED (action-ladder.mjs).** Ring
+   cavity mode selection: `nu·C ≡ 0` rows absorb 76–202 of a
+   300-packet train vs 29–54 off-ladder — the 256-ring appears in
+   survival statistics, a dynamical observable. What remains
+   load-bearing: a *bound oscillation* whose measured period is
+   `E·T = 256` without a gate imposing it — a knot that ticks at
+   its own Compton rate.
 4. **A mass ratio between two stable species** — the substrate's
    m_p/m_e equivalent. Needs a second particle species first.
 5. **The T⁴ blackbody law emerging** from mint statistics rather

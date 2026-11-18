@@ -4588,3 +4588,46 @@ FATIGUE-vs-HEALING — the two-clock phase map (fatigue-cal.mjs)
       phase_sync contributes 0.09% to bound states (pure overhead).
       A coherent mass-phase layer is now a known gap, not an
       unknown one.
+
+  THE COMPACTNESS MEASUREMENT R(M) — density-set, not frequency-set
+  (knot-radius.mjs): nature has two branches: hadrons R*M ~ 4
+  (confined bound states — size set by Compton wavelength) and
+  nuclear bulk R ~ M^1/3 (packed matter). Fixture: wound anchor
+  accreting mass under a seeded heat bath vs a seeded packed blob.
+    BLOB (control): 6^3 odd-parity block at 60000/cell — perfectly
+      static over 100t, R=2.96 — the packed-matter reference
+      (density = the ~92% exclusion equilibrium, by construction).
+    GROW (accretion): NOT compact matter. The "knot" is a tiny
+      dense core (~200-270 at r=1) inside a vast dilute haze:
+      mass spread over thousands of cells at a CHARACTERISTIC
+      ~9-10/cell, cells proportional to M exactly (10559 cells at
+      107001 mass). The halo is a constant-density phase — R~M^1/3
+      at the haze density, bounded by bath reach, not page limit.
+    VERDICT: TWO density phases — haze ~10/cell (accretion) and
+      packed ~60000/cell (bulk) — nothing in between measured, and
+      NO Compton-like R*M=const structure: the substrate's mass
+      does NOT carry its size in its Compton wavelength. Nature's
+      confinement economics (energy cost of squeezing, E~1/R) has
+      no analog in the MASS DISTRIBUTION — the substrate's
+      size-energy tie lives in the BOND instead: geo_gap emits
+      nu = (bm>>2)*2/L^2 -> nu*L^2 = const, a particle-in-box-like
+      level spacing (E ~ 1/L^2). That's the real structural
+      constant to compare, not R*M.
+
+  THE ACTION LADDER — h_sub read dynamically
+  (action-ladder.mjs): rail ring, circumference C=24, mass
+  absorber at one node (phase gate g=8, catch=4), continuous
+  same-nu train injected one hop downstream. A packet lapping the
+  ring returns with op += nu*C per lap; only nu*C ~ 0 mod 256 is
+  self-consistent.
+    ABSORBED of a 300-packet train:
+      nu=32/64/96/128  (d=0, ON-LADDER): 76 / 128 / 95 / 202
+      nu=8/11/16/21/24/43/48 (off):      29..54
+    Every on-ladder row out-absorbs every off-ladder row; orbiting
+    survivors anti-correlate (nu=128: 202 absorbed, 6 left). The
+    comb spacing dnu = 256/C is the mode ladder — the 256-ring
+    appearing in SURVIVAL STATISTICS, a dynamical observable, not
+    authored gate arithmetic. Bound-mode physics exists: phase
+    arithmetic selects what a cavity can hold, and the dark-mode
+    signature (op pinned off-window => phase-locked eternal rider)
+    is real at the mechanism level.

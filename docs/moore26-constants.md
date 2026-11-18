@@ -83,6 +83,10 @@ translations live in [Nature → Substrate](/nature-translation).
 | constant | value | conditions | harness |
 |---|---|---|---|
 | drumbeat (qTick) | exact rail-ring period 3 | bath-immune, ballistic | ring control |
+| accretion haze density | ~9–10 mass/cell, cells ∝ M | bath-driven accretion on wound anchor | knot-radius --arm=grow |
+| compactness branch | R∝M^⅓ both phases (haze ~10, packed ~60000); **no R·M=const** | bound knots are density-set, not Compton-set | knot-radius |
+| bound-state box law | nu·L² = 2·(bm>>2) — E∝1/L² | committed-pair emission line | geo_gap / resonance |
+| action ladder | d=0 rows absorb 76–202 vs off-ladder 29–54 (300-packet train) | ring C=24, gate=8, catch=4 | action-ladder |
 | proper time divergence | twins diverge 22× | targeted congestion on localTime | twin experiment |
 | mass-scaled tick rate | τ ∝ k·m: 14400/72000/288000 | mass 10/40/160, qMassCap | Compton ansatz |
 | vacuum proper time | mass=0 → cap=0 → no τ | mass-scaled bandwidth | isolated nodes |
