@@ -222,6 +222,12 @@ static int qAttract=0;   /* attractive deflection, 0-255: on a declined
  * toward mass. The substrate's only redirection rule is repulsive
  * (deflect-to-freest); this is the first attractive one — gravity as
  * a statistical bias of scattering toward occupied space. */
+static int qLens=0;      /* ballistic deflection, 0-255: per hop, an
+ * in-flight packet may swap onto the forward-cone edge channel whose
+ * target cell has the deepest `well` — the free particle curves down
+ * the potential gradient. The missing half of the force law: qAttract
+ * acts only on declines (contact); qLens bends trajectories in vacuum
+ * — gravitational lensing, and the precondition for bound orbits. */
 static inline int32_t eff_dd(const NodeState *n,int e){
     /* held offers weight by ENERGY (incipNu) × parity — a strong
      * field's standing cloud steers proportionally, not per-count */
@@ -968,10 +974,48 @@ void moore26_tick(void){
                 qEvents[52]+=(uint64_t)(r-255)*nuv;
                 r=255;
             }
-            grid_next[si].packet[c]=(uint8_t)r;
-            grid_next[si].packetNu[c]=(uint8_t)nuv;
-            grid_next[si].packetBorn[c]=born[c];
-            grid_next[si].packetPar[c]=par[c];
+            int cb=c;
+            if(qLens&&(rand_site(si,94+c)&255)<qLens){
+                /* LENSING — free-flight deflection down -grad(well):
+                 * among the forward cone of c (dot>0 — never a
+                 * reversal), hop onto the edge whose target cell has
+                 * the deepest well, but only if it beats going
+                 * straight. The packet curves toward mass WITHOUT a
+                 * scattering event — geodesic deviation. Momentum
+                 * is exchanged with the field (the well's source is
+                 * the momentum sink — not yet booked). ev68 */
+                int bw=grid_current[nbr(x,y,z,QChannelVec[c][0],
+                    QChannelVec[c][1],QChannelVec[c][2])].well;
+                for(int k_=0;k_<12;k_++){
+                    int c2=6+k_;
+                    const int8_t *v2=QChannelVec[c2];
+                    if(QChannelVec[c][0]*v2[0]+QChannelVec[c][1]*v2[1]
+                       +QChannelVec[c][2]*v2[2]<=0)continue;
+                    int w=grid_current[nbr(x,y,z,v2[0],v2[1],v2[2])].well;
+                    if(w>bw){bw=w;cb=c2;}
+                }
+                if(cb!=c)qEvents[68]++;
+            }
+            if(cb==c){
+                grid_next[si].packet[c]=(uint8_t)r;
+                grid_next[si].packetNu[c]=(uint8_t)nuv;
+                grid_next[si].packetBorn[c]=born[c];
+                grid_next[si].packetPar[c]=par[c];
+            }else{
+                /* bent onto a channel that may hold another arrival —
+                 * merge count-weighted, truncation remainder to heat */
+                uint32_t pc=grid_next[si].packet[cb];
+                uint32_t tot=pc*(uint32_t)grid_next[si].packetNu[cb]+r*nuv;
+                uint32_t nr=r+pc;if(nr>255)nr=255;
+                uint32_t nn=nr?tot/nr:0;
+                if(nn>255)nn=255;
+                uint32_t h3=grid_next[si].heat+(tot-nn*nr);
+                grid_next[si].heat=(uint16_t)(h3>65535?65535:h3);
+                grid_next[si].packet[cb]=(uint8_t)nr;
+                grid_next[si].packetNu[cb]=(uint8_t)nn;
+                grid_next[si].packetBorn[cb]=born[c];
+                grid_next[si].packetPar[cb]=par[c];
+            }
         }
         /* local heat drain — the reservoir cools into the sub-grid
          * depth (per-node state, NOT a global bath): each node's
@@ -4356,7 +4400,7 @@ void moore26_tick(void){
      * well's reach extends far past any neighbor sample, so a deep
      * source outscores every local clump. Retarded — a fresh mass's
      * well grows outward 1 cell/tick. */
-    if(qAttract){
+    if(qAttract||qLens){
         for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)
         for(int x=0;x<QWidth;x++){
             uint32_t si=(z*QHeight+y)*QWidth+x;
@@ -4365,10 +4409,19 @@ void moore26_tick(void){
             for(int cc=0;cc<QChannels;cc++)
                 s+=grid_current[nbr(x,y,z,QChannelVec[cc][0],
                     QChannelVec[cc][1],QChannelVec[cc][2])].well;
-            int32_t nw=(int32_t)o->well
-                     +(((int32_t)(s/QChannels)-(int32_t)o->well)>>3)
-                     +(o->mass?(int32_t)(o->mass>>6):0)
-                     -((int32_t)o->well>>8);
+            /* Jacobi step w += (s-26w)/(26*8) with STOCHASTIC
+             * rounding — integer floors killed the diffusion front
+             * (a neighbor's <1-cell contribution vanished; the well
+             * stayed a spike). Fractional increments propagate at the
+             * right expectation rate. */
+            int32_t d=(int32_t)s-QChannels*(int32_t)o->well;
+            int32_t inc=d/(QChannels*4);
+            int32_t frac=d-inc*(QChannels*4);
+            if(frac&&(rand_site(si,95)%(QChannels*4))<(frac<0?-frac:frac))
+                inc+=frac>0?1:-1;
+            int32_t nw=(int32_t)o->well+inc
+                     +(o->mass?(int32_t)(o->mass>65535?65535:(int32_t)o->mass):0)
+                     -((int32_t)o->well>>10);
             grid_next[si].well=(uint16_t)(nw<0?0:nw>65535?65535:nw);
         }
     }
@@ -4700,6 +4753,7 @@ void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_mode_ledger_set(int v){qModeLedger=v;}
 void moore26_rung_shift_set(int v){qRungShift=v>0&&v<10?v:2;}
 void moore26_attract_set(int v){qAttract=v<0?0:v>255?255:v;}
+void moore26_lens_set(int v){qLens=v<0?0:v>255?255:v;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}

@@ -4784,3 +4784,45 @@ the orbital-analog object — density profile rho(r), not a path).
 What the substrate lacks is not the cloud but a restoring central
 force on ballistic trajectories — currently only congested cells
 scatter, and only declined packets steer.
+
+## Free-flight lensing (qLens) — force at range measured: capture, not curvature
+
+`qLens` bends packets down -grad(well) during ballistic flight
+(forward-cone only, magnitude-capped — geodesic deviation, ev68).
+The lensing harness shoots a collimated ch8 swarm past a mass at
+impact parameters b=-12..+12 and counts survival/direction.
+
+**lens=0 control: the mass never touches the beam** — survival
+~480/512 at EVERY impact parameter, including b=0 dead-center
+(over/under-toroid path — the beam's slant misses the point mass
+exactly). No shadow, no absorption, no steering. Baseline clean.
+
+**lens=255: a capture disk, not a lens.**
+- m=60000, tage=400: b<=8 -> 0-60/512 survivors; b>=10 -> ~480.
+- m=2000, tage=200: r_c ~6-7 cells, with a lopsided shadow
+  (b=-4: 239 survive; b=+4: 0 — the well gradient is sampled on
+  wrapped neighbors, so off-axis capture is asymmetric).
+- Mid-capture snapshot (m=60000): swarm enters the well, clusters
+  at r~6-10 at t=20 (542 packets inside r<14), fully absorbed by
+  t=25. Dwell ~5 ticks ~= traversal time — packets fall in and
+  are eaten in a few hops; no inspiral, no partial orbit.
+- ev68 fires 28-59 times per run but zero survivors changed
+  channel — every bent packet is inside the capture radius.
+  **There is no deflection band**: the well's nonzero gradient
+  (~r<=6) is contained inside the capture radius (~7-8). The
+  transition is binary: inside -> spirals in and deposits;
+  outside -> ballistic, unbent, unperturbed.
+
+**The measured force law is therefore contact-scale**: range
+~5-7 cells ~= 0.5-0.7 fm at the aspirational 0.1 fm/node scale.
+That is nuclear-force phenomenology (Yukawa-short, absorptive
+core) — NOT a long-range inverse-square interaction and NOT a
+Coulomb field. If one node really is ~0.1 fm, the substrate has
+spontaneously produced the right force class for the fm domain:
+confinement-scale attraction with a hard absorbing center, no
+atomic-scale field at all. (See deviations audit below.)
+
+Well parameterization that produced this: source = mass (full),
+Jacobi step /4, leak >>10, stochastic rounding on the /26
+contribution (integer truncation otherwise pins the tail to 0 —
+measured: the field never leaves r<=1 without stochastic carry).
