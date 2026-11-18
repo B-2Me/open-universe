@@ -37,10 +37,16 @@ const CNT  = parseInt(arg('cnt', '64'));  /* count per packet — a SWARM:
    * virgin-vacuum drip kills ~1/8 of a lone quantum per hop; a swarm
    * loses ~1 unit per hop and survives the baseline */
 
+const CORE = parseInt(arg('core', '0'));  /* hard-core well threshold */
+const WMODE = parseInt(arg('wmode', '0')); /* well kernel: 0=Jacobi, 1=eikonal cone */
+const HOP  = parseInt(arg('hop', '2048')); /* eikonal hop cost (slope=force) */
+
 const q = await loadM26();
 initM26(q, N, N, N);
 q._moore26_catch_gate_set(255);  /* ~ballistic beam (1/255 arm/hop) */
 q._moore26_lens_set(LENS);
+q._moore26_core_set(CORE);       /* excluded volume: well>=core repels */
+if (WMODE) q._moore26_wellmode_set(WMODE, HOP);
 q._moore26_attract_set(0);       /* isolate: free-flight bending only */
 
 /* mass at C, on an even cell so its own offers work normally */
@@ -50,8 +56,8 @@ q._moore26_mass_set(CX, CY, CZ, M);
 /* season the well — retarded propagation: ~1 cell/tick + settling */
 for (let t = 0; t < TAGE; t++) q._moore26_tick();
 const wellAt = (x, y, z) => Number(q._moore26_well_get(x, y, z));
-console.log(`=== lensing N=${N} M=${M} lens=${LENS} tage=${TAGE} t=${T} ` +
-  `nu=${NU} ===`);
+console.log(`=== lensing N=${N} M=${M} lens=${LENS} core=${CORE} ` +
+  `tage=${TAGE} t=${T} nu=${NU} ===`);
 console.log(`well profile r=0..8: ` +
   [0, 1, 2, 4, 8].map(r =>
     `${r}:${wellAt(CX + r, CY, CZ)}`).join('  ') +
@@ -63,12 +69,15 @@ console.log(`well profile r=0..8: ` +
  * = |z0-CZ| = b exactly. Seed PER packets per b as an x-train for
  * independent rand rolls. */
 const X0 = 4, Y0 = CY + (CX - X0), CH = 8;
+const XSPC = parseInt(arg('xspc', '2'));  /* x spacing of the train;
+   * >2 dilutes the swarm — a converged swarm self-thermalizes in
+   * the focused shell (density tax) before reaching the core */
 const seeds = [];
 for (let b = -BMAX; b <= BMAX; b += 2) {
   const z0 = CZ + b;
   if (z0 < 0 || z0 >= N) continue;
   for (let k = 0; k < PER; k++) {
-    const x = X0 + 2 * k;
+    const x = X0 + XSPC * k;
     if (((x + Y0 + z0) & 1) !== 0) continue;   /* even cells only */
     q._moore26_packet_set(x, Y0, z0, CH, CNT);
     q._moore26_packet_nu_set(x, Y0, z0, CH, NU);
@@ -86,8 +95,12 @@ const V = [
   [1,1,1],[-1,-1,-1],[1,1,-1],[-1,-1,1],
   [1,-1,1],[-1,1,-1],[1,-1,-1],[-1,1,1]];
 const ev68_0 = Number(q._moore26_events(68));
+const ev69_0 = Number(q._moore26_events(69));
+const ev70_0 = Number(q._moore26_events(70));
 for (let t = 0; t < T; t++) q._moore26_tick();
-console.log(`ev68 bends total: ${Number(q._moore26_events(68)) - ev68_0}`);
+console.log(`ev68 bends: ${Number(q._moore26_events(68)) - ev68_0}  ` +
+  `ev69 core-defl: ${Number(q._moore26_events(69)) - ev69_0}  ` +
+  `ev70 escapes: ${Number(q._moore26_events(70)) - ev70_0}`);
 
 /* census: each surviving packet -> (b bin, Deltaz, channel) */
 const rows = new Map();

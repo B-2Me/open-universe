@@ -4826,3 +4826,84 @@ Well parameterization that produced this: source = mass (full),
 Jacobi step /4, leak >>10, stochastic rounding on the /26
 contribution (integer truncation otherwise pins the tail to 0 —
 measured: the field never leaves r<=1 without stochastic carry).
+
+## Bound trajectories — the hard-cored linear well produces a real orbital ring
+
+This is the largest structural result since the mode cloud, and it
+took three substrate-level fixes to reach — each one a register
+collision of the kind the cavity walls exposed:
+
+**(1) The field is a substance.** `node_live` did not count `well`,
+so rescan_live's phantom-resurrection seal memset the field of every
+chunk whose only content was potential — the well died exactly at
+the live-chunk boundary (r=8) regardless of kernel parameters.
+A cell carrying potential is not vacuum: `node_live` now counts it.
+
+**(2) Potential is not opacity.** With well on the ledger,
+localDensity counted every cell inside the cone as opaque —
+packets crossing the field paid the full ~10%/hop thermalization
+tax and nothing could orbit. `node_opaque` splits off: mass,
+records, packets, modes tax flight; a bare potential does not
+(light crosses a gravitational field without being absorbed).
+
+**(3) The bend-clear ordering bug (measured, fixed).** Phase 1
+cleared `packet[c]=0` inline for channels with no arrival — a bend
+onto a channel index > c was wiped when the loop reached it.
+~50% of bent packets were silently deleted: the "capture disk" of
+the first lensing runs was partly phantom absorption, and all
+pre-fix survival/deflection numbers are suspect. Clears now run
+in a separate pass before arrivals are processed.
+
+**(4) The eikonal kernel.** Jacobi relaxation cannot express a
+long-range field on the 26-stencil: the equilibrium is the
+harmonic fixed point w=mean(neighbors), which dies ~5x/cell near
+the source no matter the (D,gamma) tuning — measured directly
+(profiles identical at t=400 and t=1200). `qWellMode=1` replaces
+relaxation with a max-rule wavefront: w <- max(w, max_n(w_n)-hop),
+propagating exactly 1 cell/tick (retarded, locally causal),
+leaving a LINEAR ramp V = m - hop*r behind the front. Range =
+m/hop cells; verified slope = hop/cell. A linear potential is the
+strong force's confining form — the substrate's locally-causal
+wavefront field produces confinement, not 1/r^2.
+
+**(5) The hard core.** `qCore` makes well>=core excluded volume:
+the packet picks the deepest ALLOWED forward channel — it skims
+the boundary tangentially instead of diving into the sink
+(ev69 = core deflections; ev70 = trapped-core escapes). This is
+the nucleon hard core / Lennard-Jones repulsive wall.
+
+### The bound-state verdict (orbit.mjs)
+
+Seed a ring of tangent packets at radius R around M=60000
+(eikonal cone hop=2048 -> range ~32 cells):
+
+- `lens=0` control: ring evaporates — 4590 -> 5-10 stragglers in
+  ~15 ticks (the field is the binding, not the fixture).
+- `lens=255, core=0`: trajectories spiral in and DEPOSIT —
+  ring drains 5239 -> ~500 while mass grows 60000 -> 60019.
+  Attraction without a repulsive core = capture, not orbit.
+- `lens=255, core=60000`: a STABLE bound ring at r~3-4 —
+  9-12K quanta sustained 70+ ticks, one coherent azimuth-filling
+  clump (all 16 azimuth bins populated), radial histogram pinned
+  at r=3-4, zero mass growth. Population is sustained partly by
+  re-emission recapture — a bound-state/thermal equilibrium.
+- Marginally-bound ring (R=6, same field): the cloud fragments
+  into 50-78 discrete lumps and its radial peak drifts outward
+  (r~4 -> r~10) — the bound region is the skim shell at r~3-4;
+  beyond it, dispersion wins.
+
+Force-law requirement measured: bound trajectories need BOTH the
+attractive ramp AND the repulsive core — attract-alone captures,
+core-alone reflects. The two-zone force is the minimal orbit-
+capable interaction, which is the same answer nature gives at
+fm scale (attractive strong force + repulsive hard core).
+
+### Lensing re-measured (post bend-clear fix)
+
+Dilute beam, same fixture: ev68=273 real bends, ev69=10 core
+deflections, survivors end on bent channels with the CORRECT
+sign flip — beam above the mass plane (b=+2) bends to -z
+channels 921/1060; beam below (b=-4) bends to +z channels
+535/999; b=0 splits near-symmetrically. The earlier "binary
+capture, no deflection" reading was corrupted by the bend-clear
+bug and is superseded.

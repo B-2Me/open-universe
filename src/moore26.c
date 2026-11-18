@@ -228,6 +228,30 @@ static int qLens=0;      /* ballistic deflection, 0-255: per hop, an
  * the potential gradient. The missing half of the force law: qAttract
  * acts only on declines (contact); qLens bends trajectories in vacuum
  * — gravitational lensing, and the precondition for bound orbits. */
+static int qCore=0;      /* repulsive core, 0=off / 1..65535 = well
+ * threshold: flight targets at/above it are excluded volume — the
+ * nucleon-nucleon hard core. Without it every infalling trajectory
+ * reaches the absorbing catch zone and deposits; with it the deep
+ * well becomes a hill the packet cannot climb, so near-misses skim
+ * the boundary tangentially instead of sinking — the precondition
+ * for scattering (and possibly orbits). ev69=core deflections,
+ * ev70=trapped-core escapes. */
+static int qWellDiff=104; /* Jacobi step divisor (s-26w)/qWellDiff —
+ * diffusion coefficient D=1/qWellDiff per tick. Stability needs
+ * 26/qWellDiff <~ 1 (self-coefficient bounded). */
+static int qWellLeak=10; /* leak shift — the field loses w>>qWellLeak
+ * per tick (gamma=2^-qWellLeak). Range lambda~sqrt(D/gamma):
+ * default (104,10) -> ~3 cells; (26,14) -> ~25. */
+static int qWellMode=0;  /* 0=Jacobi relaxation (legacy: harmonic
+ * equilibrium — screened ~5x/cell near source, no far tail).
+ * 1=EIKONAL cone: w <- max(w, max_n(w_n)-qWellHop), a level-set
+ * front propagating 1 cell/tick leaving V = m - qWellHop*r — the
+ * LINEAR potential of confinement. Mean-relaxation can't express
+ * a long-range field on a 26-stencil (harmonic fixed point dies
+ * geometrically); the max-rule carries amplitude outward as a
+ * wavefront, which is what a potential IS. */
+static int qWellHop=512; /* hop cost for the eikonal cone — sets the
+ * slope (force magnitude) and range m/qWellHop cells. */
 static inline int32_t eff_dd(const NodeState *n,int e){
     /* held offers weight by ENERGY (incipNu) × parity — a strong
      * field's standing cloud steers proportionally, not per-count */
@@ -631,6 +655,26 @@ static int node_live(const NodeState *n){
     for(int c=0;c<QChannels;c++)
         if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
     if(n->strainBank)return 1;
+    if(n->well)return 1;   /* the field is a substance — a cell
+        * carrying potential is not vacuum. Without this the
+        * phantom-resurrection seal erased every chunk whose only
+        * content was the well: the cone died at the mass chunk's
+        * boundary (r=8) no matter the kernel parameters. */
+    return 0;
+}
+
+/* opacity test — the localDensity tax: neighbors whose content can
+ * THERMALIZE flight. A bare potential is not opaque — light crosses
+ * a field without being absorbed (the well bends, it doesn't eat).
+ * If well counted here, a lattice-spanning cone would tax every
+ * hop inside it ~10% and no trajectory could ever be bound. */
+static int node_opaque(const NodeState *n){
+    if(n->mass||n->heat)return 1;
+    if(n->charge||n->bondPar)return 1;
+    for(int e=0;e<13;e++)if(n->momentum[e])return 1;
+    for(int c=0;c<QChannels;c++)
+        if(n->winding[c]||n->packet[c]||n->massFlight[c]||n->incip[c])return 1;
+    if(n->strainBank)return 1;
     return 0;
 }
 
@@ -904,15 +948,22 @@ void moore26_tick(void){
         if(anyp||o->mass){
             for(int cc=0;cc<QChannels;cc++){
                 int ni=nbr(x,y,z,QChannelVec[cc][0],QChannelVec[cc][1],QChannelVec[cc][2]);
-                if(node_live(&grid_current[ni]))live++;
+                if(node_opaque(&grid_current[ni]))live++;
             }
             grid_next[si].localDensity=(uint16_t)(live*255/QChannels);
         }
+        /* clear empty slots FIRST — a bent packet may be written onto
+         * a channel whose own iteration hasn't run yet; if its clear
+         * landed after the bend write it silently deleted the packet
+         * (bent arrivals died ~50% of the time — the phantom
+         * absorption that masqueraded as capture in early lensing). */
+        for(int c=6;c<18;c++)
+            if(!v[c])grid_next[si].packet[c]=0;
         for(int c=0;c<QChannels;c++){
             /* non-edge channels don't transport — the register keeps
              * whatever was parked there (structural reservoir). */
             if(!IS_EDGE(c))continue;
-            if(!v[c]){grid_next[si].packet[c]=0;continue;}
+            if(!v[c])continue;
             TXN_WORK(&grid_next[si]);   /* a hop through = routing work */
             /* PER-HOP WEAR — the transit itself books a record on
              * the conduit's own lane: even a packet that dies here
@@ -983,18 +1034,43 @@ void moore26_tick(void){
                  * straight. The packet curves toward mass WITHOUT a
                  * scattering event — geodesic deviation. Momentum
                  * is exchanged with the field (the well's source is
-                 * the momentum sink — not yet booked). ev68 */
-                int bw=grid_current[nbr(x,y,z,QChannelVec[c][0],
+                 * the momentum sink — not yet booked). ev68
+                 *
+                 * HARD CORE (qCore>0): targets with well>=qCore are
+                 * excluded volume — the nucleon-nucleon repulsive
+                 * core. The packet then picks the deepest ALLOWED
+                 * forward target: it skims the core boundary
+                 * tangentially instead of diving into the sink. Only
+                 * when EVERY forward target is in the core does it
+                 * take the shallowest — the fastest escape. A
+                 * skimming hop counts ev69 (the core-deflection —
+                 * the orbit/scattering signature); a trapped-core
+                 * escape counts ev70. */
+                int w0=grid_current[nbr(x,y,z,QChannelVec[c][0],
                     QChannelVec[c][1],QChannelVec[c][2])].well;
+                int core=qCore&&w0>=qCore;
+                int bDeep=core?-1:w0;
+                int cDeep=core?-1:c;
+                int bLow=-1,cLow=-1;
                 for(int k_=0;k_<12;k_++){
                     int c2=6+k_;
                     const int8_t *v2=QChannelVec[c2];
                     if(QChannelVec[c][0]*v2[0]+QChannelVec[c][1]*v2[1]
                        +QChannelVec[c][2]*v2[2]<=0)continue;
                     int w=grid_current[nbr(x,y,z,v2[0],v2[1],v2[2])].well;
-                    if(w>bw){bw=w;cb=c2;}
+                    if(bLow<0||w<bLow){bLow=w;cLow=c2;}
+                    if(qCore&&w>=qCore)continue;   /* the hard core */
+                    if(w>bDeep){bDeep=w;cDeep=c2;}
                 }
-                if(cb!=c)qEvents[68]++;
+                if(cDeep>=0)cb=cDeep;
+                else{cb=cLow;qEvents[70]++;}   /* trapped — the only
+                             * escape is back up the hill (the
+                             * forward cone always has a low side) */
+                if(cb!=c){
+                    if(core)qEvents[69]++;   /* deflected off the
+                             * core surface — tangential skim */
+                    else qEvents[68]++;
+                }
             }
             if(cb==c){
                 grid_next[si].packet[c]=(uint8_t)r;
@@ -4045,7 +4121,7 @@ void moore26_tick(void){
         int live=0;
         for(int cc=0;cc<QChannels;cc++){
             int ni=nbr(x,y,z,QChannelVec[cc][0],QChannelVec[cc][1],QChannelVec[cc][2]);
-            if(node_live(&grid_current[ni]))live++;
+            if(node_opaque(&grid_current[ni]))live++;
         }
         /* unified 0-255 density scale — same field Phase 1 writes */
         uint32_t dens=live*255/QChannels;
@@ -4414,15 +4490,37 @@ void moore26_tick(void){
              * (a neighbor's <1-cell contribution vanished; the well
              * stayed a spike). Fractional increments propagate at the
              * right expectation rate. */
-            int32_t d=(int32_t)s-QChannels*(int32_t)o->well;
-            int32_t inc=d/(QChannels*4);
-            int32_t frac=d-inc*(QChannels*4);
-            if(frac&&(rand_site(si,95)%(QChannels*4))<(frac<0?-frac:frac))
-                inc+=frac>0?1:-1;
-            int32_t nw=(int32_t)o->well+inc
-                     +(o->mass?(int32_t)(o->mass>65535?65535:(int32_t)o->mass):0)
-                     -((int32_t)o->well>>10);
-            grid_next[si].well=(uint16_t)(nw<0?0:nw>65535?65535:nw);
+            if(qWellMode==0){
+                int32_t d=(int32_t)s-QChannels*(int32_t)o->well;
+                int32_t inc=d/qWellDiff;
+                int32_t frac=d-inc*qWellDiff;
+                if(frac&&(rand_site(si,95)%qWellDiff)<(frac<0?-frac:frac))
+                    inc+=frac>0?1:-1;
+                int32_t nw=(int32_t)o->well+inc
+                         +(o->mass?(int32_t)(o->mass>65535?65535:(int32_t)o->mass):0)
+                         -((int32_t)o->well>>qWellLeak);
+                grid_next[si].well=(uint16_t)(nw<0?0:nw>65535?65535:nw);
+            }else{
+                /* EIKONAL — the level-set cone: a cell inherits its
+                 * deepest neighbor's field minus one hop cost. The
+                 * front advances 1 cell/tick (retarded); behind it
+                 * sits a linear ramp V = m - hop*r — confinement
+                 * geometry. The mass re-mints its source each tick;
+                 * leak rounds the far tail. */
+                uint32_t mx=0;
+                for(int cc=0;cc<QChannels;cc++){
+                    uint32_t wn=grid_current[nbr(x,y,z,QChannelVec[cc][0],
+                        QChannelVec[cc][1],QChannelVec[cc][2])].well;
+                    if(wn>mx)mx=wn;
+                }
+                int32_t nw=mx>qWellHop?(int32_t)mx-qWellHop:0;
+                if(nw<(int32_t)o->well)nw=o->well;   /* the cone
+                     * holds itself — erosion is the leak's job,
+                     * not the front's */
+                if(o->mass)nw+=(int32_t)(o->mass>65535?65535:o->mass);
+                nw-=(int32_t)o->well>>qWellLeak;
+                grid_next[si].well=(uint16_t)(nw<0?0:nw>65535?65535:nw);
+            }
         }
     }
 
@@ -4754,6 +4852,15 @@ void moore26_mode_ledger_set(int v){qModeLedger=v;}
 void moore26_rung_shift_set(int v){qRungShift=v>0&&v<10?v:2;}
 void moore26_attract_set(int v){qAttract=v<0?0:v>255?255:v;}
 void moore26_lens_set(int v){qLens=v<0?0:v>255?255:v;}
+void moore26_core_set(int v){qCore=v<0?0:v>65535?65535:v;}
+void moore26_welltune_set(int diff,int leak){
+    qWellDiff=diff<26?26:diff>4096?4096:diff;
+    qWellLeak=leak<0?0:leak>16?16:leak;
+}
+void moore26_wellmode_set(int mode,int hop){
+    qWellMode=mode?1:0;
+    qWellHop=hop<1?1:hop>65535?65535:hop;
+}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
