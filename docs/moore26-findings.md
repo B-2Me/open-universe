@@ -4727,3 +4727,60 @@ the T-scaling is indirect (through mass/ladder feedback); and the
 mode sector is still bounded (26 modes x 255 nu per cell) — a
 finite-box spectrum, correct at fm scale where nature's own
 blackbody is also discrete.
+
+
+## Mode clouds + attractive deflection — the volumetric question
+
+Follow-up to the "linear knots" concern: are the substrate's bound
+states intrinsically 1D (graph/topology objects) or can it express
+volumetric occupation? Harness: `script/cascade/modecloud.mjs` —
+one hot mass at the center of a 32^3 lattice, census of standing
+modes/packets/mass/well binned by Euclidean shell + on-ray flag
+(cell lies on one of the 12 mint rays).
+
+**The mode cloud IS volumetric.** With mint rate 1 (vrate=1), a
+self-consistent halo forms: shell filling decays smoothly
+(100% -> 67% -> 19% -> ~10% -> ~4% -> ~2% -> <1% by r=15) and
+on-ray occupancy falls from 100% (r=1) to ~10-40% at r>=5 — the
+cloud leaves the mint rays; the occupation field is a decaying 3D
+halo, not a knot. The halo SURVIVES source-cut (incip_total grew
+300->571 with no new mints) — cascades recirculate energy; it is
+not a driven fountain.
+
+**But it is not centrally bound.** Without attraction the halo
+drifts to wherever radiation deposits — the seeded nucleus
+evaporates (m=200 -> 145) while daughter masses accrete ~10 links
+out and inherit local clouds. Deposits nucleate at ~one mean free
+path from the source (Poisson arming at gate=8 -> ~8 hops), so the
+"bound" population lives on a shell, not a center.
+
+**qAttract + the well field** — the first attractive transaction
+rule. Declined offers steer toward the densest edge-neighbor —
+later upgraded to steer down a mass-sourced scalar `well` per cell
+(Jacobi diffusion + mass>>6 source + >>8 leak -> steady-state
+Yukawa-like well, lambda ~16 links; sweep is unconditional so the
+field fills vacuum — RETARDED gravity, propagating at lattice
+speed). ev67 counts steered packets.
+
+Result: gravitational phenomenology, not orbital mechanics —
+clumps at the mean-free-path shell self-amplify (mass cells of
+60-110K at r=9-21; deepest wells at the clumps, not the seed:
+Sigma-well r~17-19 = 30-48K vs 546 at the m=4000 center). The
+well field faithfully tracks the mass distribution; steering
+faithfully follows the well; the system nucleates and collapses —
+self-consistent gravity, complete with accretion instability.
+
+What is still missing for an orbital: force on FREE packets.
+Attraction only fires on declines (needs congestion). A packet
+flying past a mass never feels the well — the substrate has
+scattering-mediated attraction but no geodesic deflection of
+ballistic flight. Bending free flight by -grad(well) would be
+gravitational lensing, and a collimated-beam deflection-vs-impact-
+parameter run would give the first force-at-range measurement —
+also the missing piece for alpha_sub.
+
+Honest verdict: bound states CAN be volumetric (the mode cloud is
+the orbital-analog object — density profile rho(r), not a path).
+What the substrate lacks is not the cloud but a restoring central
+force on ballistic trajectories — currently only congested cells
+scatter, and only declined packets steer.

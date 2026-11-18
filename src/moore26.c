@@ -149,6 +149,13 @@ typedef struct {
      * charge so the scar's memory can't itself conduct a burn. */
     uint16_t heat;             /* vacuum heat reservoir (the local temp) */
     uint16_t localDensity;     /* neighbor-sampled density (the gradient) */
+    uint16_t well;             /* potential well — mass-sourced scalar,
+     * diffused 1 cell/tick with a slow leak: ∇²φ ≈ γφ − βm, a Yukawa
+     * profile around mass. RETARDED (the field propagates at lattice
+     * speed, so a new mass's reach grows outward — local causality
+     * preserved). qAttract declines steer down-gradient toward it —
+     * the range a bare neighbor-sample can't carry. Fills vacuum —
+     * the sweep is unconditional, not PROC_NODES. */
     uint8_t  txnWork;          /* transaction events THIS tick — hops,
      * arms, confirms, transfers, emissions. In a memoryless substrate
      * load leaves no backlog, only throughput: this is the counter.
@@ -208,6 +215,13 @@ static int qRungShift=2;  /* rung-cascade rate: an off-shell standing
  * mode sheds one rung with probability 1/2^qRungShift per tick
  * (mode-ledger only). The frequency-converting channel — matter
  * mediates photon transitions through its own level ladder. */
+static int qAttract=0;   /* attractive deflection, 0-255: on a declined
+ * offer the packet steers toward the DENSEST edge-neighbor (mass +
+ * standing + in-flight occupation) instead of reflecting or scattering
+ * to the freest channel — a restoring bias: refused transactions fall
+ * toward mass. The substrate's only redirection rule is repulsive
+ * (deflect-to-freest); this is the first attractive one — gravity as
+ * a statistical bias of scattering toward occupied space. */
 static inline int32_t eff_dd(const NodeState *n,int e){
     /* held offers weight by ENERGY (incipNu) × parity — a strong
      * field's standing cloud steers proportionally, not per-count */
@@ -2883,6 +2897,45 @@ void moore26_tick(void){
                 qEvents[samesign?45:46]++;   /* ev45 = same-sign
                  * decline (the Coulomb repulsion signature),
                  * ev46 = baseline/congestion decline */
+                if(qAttract&&(rand_site(si,93)&255)<qAttract){
+                    /* ATTRACT — steer down the potential-well
+                     * gradient: the retarded field carries the
+                     * attractor's reach far past contact range, so a
+                     * deep source wins over every local clump. Before
+                     * the field diffuses out (all wells zero), fall
+                     * back to contact density — mass + standing +
+                     * in-flight occupation. Refusals curve radiation
+                     * toward mass -> a potential well, not a mirror.
+                     * ev67 */
+                    uint32_t best=0;int bc=-1;
+                    int wmax=0,wch=-1;
+                    for(int k_=0;k_<12;k_++){
+                        int c2=6+((k_+rand_site(si,70))%12);
+                        const int8_t *v2=QChannelVec[c2];
+                        int w=grid_current[
+                            nbr(x,y,z,v2[0],v2[1],v2[2])].well;
+                        if(w>wmax){wmax=w;wch=c2;}
+                    }
+                    if(wmax>0){bc=wch;best=1;}
+                    else for(int k_=0;k_<12;k_++){
+                        int c2=6+((k_+rand_site(si,70))%12);
+                        const int8_t *v2=QChannelVec[c2];
+                        const NodeState *nb=&grid_current[
+                            nbr(x,y,z,v2[0],v2[1],v2[2])];
+                        uint32_t s=nb->mass;
+                        for(int cc2=0;cc2<QChannels;cc2++)
+                            s+=nb->incip[cc2]+nb->packet[cc2];
+                        if(s>best){best=s;bc=c2;}
+                    }
+                    if(bc>=0&&best>0&&n->packet[bc]<255){
+                        n->packet[bc]++;
+                        n->packetNu[bc]=(uint8_t)nu;
+                        n->packetBorn[bc]=n->packetBorn[c];
+                        n->packet[c]--;
+                        qEvents[67]++;
+                        continue;
+                    }
+                }
                 if(REFLECT(si,c)){
                     /* REFLECTION — the offer returns down the mirror
                      * member of its own pair: the packet keeps its nu,
@@ -4297,6 +4350,29 @@ void moore26_tick(void){
     PROC_NODES_END
     }
 
+    /* potential-well sweep — unconditional (NOT PROC_NODES): the
+     * field must fill vacuum. Jacobi diffusion + mass source + slow
+     * leak → steady state φ ~ m·exp(-r/λ)/r with λ≈16 links: the
+     * well's reach extends far past any neighbor sample, so a deep
+     * source outscores every local clump. Retarded — a fresh mass's
+     * well grows outward 1 cell/tick. */
+    if(qAttract){
+        for(int z=0;z<QDepth;z++)for(int y=0;y<QHeight;y++)
+        for(int x=0;x<QWidth;x++){
+            uint32_t si=(z*QHeight+y)*QWidth+x;
+            const NodeState *o=&grid_current[si];
+            uint32_t s=0;
+            for(int cc=0;cc<QChannels;cc++)
+                s+=grid_current[nbr(x,y,z,QChannelVec[cc][0],
+                    QChannelVec[cc][1],QChannelVec[cc][2])].well;
+            int32_t nw=(int32_t)o->well
+                     +(((int32_t)(s/QChannels)-(int32_t)o->well)>>3)
+                     +(o->mass?(int32_t)(o->mass>>6):0)
+                     -((int32_t)o->well>>8);
+            grid_next[si].well=(uint16_t)(nw<0?0:nw>65535?65535:nw);
+        }
+    }
+
     rescan_live();
     AUDIT_PH(9)   /* last phase sample — BEFORE the swap, while
                  * grid_next still holds the staged tick */
@@ -4401,6 +4477,10 @@ void moore26_mass_set(int x,int y,int z,uint32_t v){
 uint32_t moore26_mass_get(int x,int y,int z){
     if(!grid_current)return 0;
     return grid_current[z*QWidth*QHeight+y*QWidth+x].mass;
+}
+uint16_t moore26_well_get(int x,int y,int z){
+    if(!grid_current)return 0;
+    return grid_current[z*QWidth*QHeight+y*QWidth+x].well;
 }
 uint16_t moore26_heat_get(int x,int y,int z){
     if(!grid_current)return 0;
@@ -4599,6 +4679,7 @@ int moore26_node_off(int fid){
         case 30: return offsetof(NodeState,bondPar);
         case 31: return offsetof(NodeState,momentum);
         case 32: return offsetof(NodeState,creep);
+        case 33: return offsetof(NodeState,well);
         default: return -1;
     }
 }
@@ -4618,6 +4699,7 @@ void moore26_axial_catch_set(int v){qAxialCatch=v>=0&&v<16?v:0;}
 void moore26_incip_ttl_set(int v){qIncipTtl=v>0&&v<250?v:6;}
 void moore26_mode_ledger_set(int v){qModeLedger=v;}
 void moore26_rung_shift_set(int v){qRungShift=v>0&&v<10?v:2;}
+void moore26_attract_set(int v){qAttract=v<0?0:v>255?255:v;}
 void moore26_dir_bias_set(int v){qDirBias=v;}
 void moore26_deflect_align_set(int v){qDeflectAlign=v;}
 void moore26_reflect_set(int v){qReflect=v<0?0:v>255?255:v;}
