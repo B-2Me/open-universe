@@ -79,6 +79,7 @@ const interferenceItems = [
   { text: 'Moore26', items: [
     { text: 'Substrate', link: '/moore26-substrate' },
     { text: 'Tour', link: '/moore26-tour' },
+    { text: 'Calibration', link: '/moore26-calibration' },
     { text: 'Findings', link: '/moore26-findings' },
     { text: 'Constants', link: '/moore26-constants' },
     { text: 'Transaction Ledger', link: '/transaction-ledger' }
